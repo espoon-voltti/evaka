@@ -11,6 +11,10 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -37,16 +41,16 @@ import fi.espoo.evaka.daycare.service.CareType as AbsenceCareType
 class OccupancyTest : PureJdbiTest() {
     val today = LocalDate.of(2020, 1, 16) // Thursday
 
-    val careArea1: UUID = UUID.randomUUID()
-    val careArea2: UUID = UUID.randomUUID()
+    val careArea1: AreaId = AreaId(UUID.randomUUID())
+    val careArea2: AreaId = AreaId(UUID.randomUUID())
 
-    val daycareInArea1: UUID = UUID.randomUUID()
-    val daycareGroup1: UUID = UUID.randomUUID()
-    val daycareGroup2: UUID = UUID.randomUUID()
+    val daycareInArea1: DaycareId = DaycareId(UUID.randomUUID())
+    val daycareGroup1: GroupId = GroupId(UUID.randomUUID())
+    val daycareGroup2: GroupId = GroupId(UUID.randomUUID())
 
-    val familyUnitInArea2: UUID = UUID.randomUUID()
-    val familyGroup1: UUID = UUID.randomUUID()
-    val familyGroup2: UUID = UUID.randomUUID()
+    val familyUnitInArea2: DaycareId = DaycareId(UUID.randomUUID())
+    val familyGroup1: GroupId = GroupId(UUID.randomUUID())
+    val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
     val employeeId: UUID = UUID.randomUUID()
 
@@ -562,7 +566,7 @@ class OccupancyTest : PureJdbiTest() {
 
     private fun getAndAssertOccupancyInUnit(
         tx: Database.Read,
-        unitId: UUID,
+        unitId: DaycareId,
         type: OccupancyType,
         date: LocalDate,
         expectedSum: Double
@@ -582,8 +586,8 @@ class OccupancyTest : PureJdbiTest() {
 
     private fun getAndAssertOccupancyInGroup(
         tx: Database.Read,
-        unitId: UUID,
-        groupId: UUID,
+        unitId: DaycareId,
+        groupId: GroupId,
         type: OccupancyType,
         date: LocalDate,
         expectedSum: Double
@@ -604,7 +608,7 @@ class OccupancyTest : PureJdbiTest() {
     private fun <K : OccupancyGroupingKey> assertOccupancySum(
         expectedSum: Double,
         date: LocalDate,
-        groupingId: UUID,
+        groupingId: Id<*>,
         occupancyValues: List<DailyOccupancyValues<K>>
     ) {
         assertEquals(

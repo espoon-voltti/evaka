@@ -10,6 +10,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VardaDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -413,7 +417,7 @@ internal fun getVardaPlacements(db: Database.Connection) = db.read {
         .toList()
 }
 
-internal fun insertVardaUnit(db: Database.Connection, unitId: UUID = testDaycare.id, unitOid: String? = "1.2.3") {
+internal fun insertVardaUnit(db: Database.Connection, unitId: DaycareId = testDaycare.id, unitOid: String? = "1.2.3") {
     db.transaction {
         it
             .createUpdate(
@@ -436,8 +440,8 @@ VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
     }
 }
 
-internal fun insertTestVardaDecision(db: Database.Connection, decisionId: UUID? = null, placementId: UUID? = null): UUID {
-    val id = UUID.randomUUID()
+internal fun insertTestVardaDecision(db: Database.Connection, decisionId: DecisionId? = null, placementId: PlacementId? = null): VardaDecisionId {
+    val id = VardaDecisionId(UUID.randomUUID())
     db.transaction {
         insertVardaDecision(
             it,
@@ -459,8 +463,8 @@ internal fun insertPlacement(
     childId: UUID,
     period: FiniteDateRange,
     type: PlacementType = DAYCARE,
-    unitId: UUID = testDaycare.id
-): UUID {
+    unitId: DaycareId = testDaycare.id
+): PlacementId {
     return db.transaction {
         it.insertTestPlacement(
             childId = childId,
@@ -472,7 +476,7 @@ internal fun insertPlacement(
     }
 }
 
-internal fun updatePlacement(db: Database.Connection, id: UUID, updatedAt: Instant) {
+internal fun updatePlacement(db: Database.Connection, id: PlacementId, updatedAt: Instant) {
     db.transaction {
         it.createUpdate("UPDATE placement SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)

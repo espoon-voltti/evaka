@@ -7,6 +7,11 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -29,21 +34,21 @@ enum class OccupancyType {
 }
 
 interface OccupancyGroupingKey {
-    val groupingId: UUID
-    val unitId: UUID
+    val groupingId: Id<*>
+    val unitId: DaycareId
 }
 
 data class UnitKey(
-    override val unitId: UUID,
+    override val unitId: DaycareId,
     val unitName: String
 ) : OccupancyGroupingKey {
     override val groupingId = unitId
 }
 
 data class UnitGroupKey(
-    override val unitId: UUID,
+    override val unitId: DaycareId,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String
 ) : OccupancyGroupingKey {
     override val groupingId = groupId
@@ -74,7 +79,7 @@ data class OccupancyPeriod(
 )
 
 data class OccupancyPeriodGroupLevel(
-    val groupId: UUID,
+    val groupId: GroupId,
     val period: FiniteDateRange,
     val sum: Double,
     val headcount: Int,
@@ -86,8 +91,8 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    areaId: UUID? = null,
-    unitId: UUID? = null
+    areaId: AreaId? = null,
+    unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
@@ -116,8 +121,8 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    areaId: UUID? = null,
-    unitId: UUID? = null
+    areaId: AreaId? = null,
+    unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
@@ -191,8 +196,8 @@ private fun getAndValidatePeriod(
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretakers(
     type: OccupancyType,
     period: FiniteDateRange,
-    areaId: UUID?,
-    unitId: UUID?,
+    areaId: AreaId?,
+    unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
     // language=sql
@@ -461,7 +466,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         }
 }
 
-private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Array<UUID>): List<Placement> {
+private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Array<DaycareId>): List<Placement> {
     return this.createQuery(
         """
 SELECT
@@ -539,10 +544,10 @@ private data class Caretakers<K : OccupancyGroupingKey>(
 )
 
 private data class Placement(
-    val groupingId: UUID,
-    val placementId: UUID,
+    val groupingId: DaycareId,
+    val placementId: PlacementId,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val type: PlacementType,
     val familyUnitPlacement: Boolean,
     val period: FiniteDateRange
@@ -561,7 +566,7 @@ private data class Child(
 )
 
 private data class ServiceNeed(
-    val placementId: UUID,
+    val placementId: PlacementId,
     val occupancyCoefficient: BigDecimal,
     val period: FiniteDateRange
 )

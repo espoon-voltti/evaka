@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -12,17 +14,16 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
-import java.util.UUID
 
 @Service
 class StaffAttendanceService {
-    fun getUnitAttendancesForDate(db: Database.Connection, unitId: UUID, date: LocalDate): UnitStaffAttendance {
+    fun getUnitAttendancesForDate(db: Database.Connection, unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
         return db.read { tx ->
             tx.getUnitStaffAttendanceForDate(unitId, date)
         }
     }
 
-    fun getGroupAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: UUID): StaffAttendanceForDates {
+    fun getGroupAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: GroupId): StaffAttendanceForDates {
         val rangeStart = LocalDate.of(year, month, 1)
         val rangeEnd = rangeStart.with(lastDayOfMonth())
 
@@ -48,7 +49,7 @@ class StaffAttendanceService {
 }
 
 data class GroupStaffAttendance(
-    val groupId: UUID,
+    val groupId: GroupId,
     val date: LocalDate,
     val count: Double,
     val countOther: Double,
@@ -64,7 +65,7 @@ data class UnitStaffAttendance(
 )
 
 data class StaffAttendanceForDates(
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
@@ -72,20 +73,20 @@ data class StaffAttendanceForDates(
 )
 
 data class GroupInfo(
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class StaffAttendanceUpdate(
-    val groupId: UUID,
+    val groupId: GroupId,
     val date: LocalDate,
     val count: Double?,
     val countOther: Double?
 )
 
-fun Database.Read.getGroupInfo(groupId: UUID): GroupInfo? {
+fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? {
     //language=SQL
     val sql =
         """
@@ -146,7 +147,7 @@ fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceU
 fun Database.Read.getStaffAttendanceByRange(
     rangeStart: LocalDate,
     rangeEnd: LocalDate,
-    groupId: UUID
+    groupId: GroupId
 ): List<GroupStaffAttendance> {
     //language=SQL
     val sql =
@@ -165,7 +166,7 @@ fun Database.Read.getStaffAttendanceByRange(
         .list()
 }
 
-fun Database.Read.getUnitStaffAttendanceForDate(unitId: UUID, date: LocalDate): UnitStaffAttendance {
+fun Database.Read.getUnitStaffAttendanceForDate(unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
     //language=SQL
     val sql =
         """

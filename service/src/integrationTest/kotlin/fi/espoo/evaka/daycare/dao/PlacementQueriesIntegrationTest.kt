@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,7 +18,7 @@ import java.util.UUID
 class PlacementQueriesIntegrationTest : PureJdbiTest() {
     // data from migration scripts
     val childId = UUID.fromString("2b929594-13ab-4042-9b13-74e84921e6f0")
-    val daycareId = UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c")
+    val daycareId = DaycareId(UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c"))
 
     val placementId = UUID.randomUUID()
     val placementStart = LocalDate.now().plusDays(300)

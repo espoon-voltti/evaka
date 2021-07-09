@@ -10,6 +10,9 @@ import fi.espoo.evaka.daycare.controllers.PublicUnit
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -26,7 +29,7 @@ data class DaycareFields(
     val name: String,
     val openingDate: LocalDate?,
     val closingDate: LocalDate?,
-    val areaId: UUID,
+    val areaId: AreaId,
     val type: Set<CareType>,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
@@ -62,7 +65,7 @@ data class DaycareFields(
     }
 }
 
-data class DaycareGroupSummary(val id: UUID, val name: String)
+data class DaycareGroupSummary(val id: GroupId, val name: String)
 
 private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL
@@ -89,13 +92,13 @@ fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> 
     .toList()
 
 data class UnitApplyPeriods(
-    val id: UUID,
+    val id: DaycareId,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
     val clubApplyPeriod: DateRange?
 )
 
-fun Database.Read.getUnitApplyPeriods(ids: Collection<UUID>): List<UnitApplyPeriods> = createQuery(
+fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> = createQuery(
     // language=SQL
     """
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
@@ -106,20 +109,20 @@ WHERE id = ANY(:ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
-fun Database.Read.getDaycare(id: UUID): Daycare? = getDaycaresQuery()
+fun Database.Read.getDaycare(id: DaycareId): Daycare? = getDaycaresQuery()
     .bindNullable("idFilter", listOf(id))
     .mapTo<Daycare>()
     .asSequence()
     .firstOrNull()
 
-fun Database.Read.isValidDaycareId(id: UUID): Boolean = createQuery(
+fun Database.Read.isValidDaycareId(id: DaycareId): Boolean = createQuery(
     // language=SQL
     """
 SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
     """.trimIndent()
 ).bind("id", id).mapTo<Boolean>().asSequence().single()
 
-fun Database.Read.getDaycareStub(daycareId: UUID): UnitStub? = createQuery(
+fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? = createQuery(
     // language=SQL
     """
 SELECT id, name
@@ -132,7 +135,7 @@ WHERE id = :daycareId
     .asSequence()
     .firstOrNull()
 
-fun Database.Transaction.createDaycare(areaId: UUID, name: String): UUID = createUpdate(
+fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId = createUpdate(
     // language=SQL
     """
 WITH insert_manager AS (
@@ -147,10 +150,10 @@ FROM insert_manager
     .bind("name", name)
     .bind("areaId", areaId)
     .executeAndReturnGeneratedKeys()
-    .mapTo<UUID>()
+    .mapTo<DaycareId>()
     .one()
 
-fun Database.Transaction.updateDaycareManager(daycareId: UUID, manager: UnitManager) = createUpdate(
+fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) = createUpdate(
     // language=SQL
     """
 UPDATE unit_manager
@@ -165,7 +168,7 @@ WHERE id = (SELECT unit_manager_id FROM daycare WHERE id = :daycareId)
     .bindKotlin(manager)
     .execute()
 
-fun Database.Transaction.updateDaycare(id: UUID, fields: DaycareFields) = createUpdate(
+fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) = createUpdate(
     // language=SQL
     """
 UPDATE daycare
@@ -297,7 +300,7 @@ ORDER BY name ASC
         .toList()
 }
 
-fun Database.Read.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
+fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? = createQuery(
     // language=SQL
     """
     SELECT coalesce(m.name, '') AS name, coalesce(m.email, '') AS email, coalesce(m.phone, '') AS phone
@@ -310,7 +313,7 @@ fun Database.Read.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
     .mapTo<DaycareManager>()
     .firstOrNull()
 
-fun Database.Read.getDaycareGroupSummaries(daycareId: UUID): List<DaycareGroupSummary> = createQuery(
+fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> = createQuery(
     """
 SELECT id, name
 FROM daycare_group

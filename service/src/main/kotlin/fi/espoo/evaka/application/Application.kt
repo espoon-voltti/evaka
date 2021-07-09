@@ -8,6 +8,9 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -59,10 +62,10 @@ data class PlacementProposalStatus(
 )
 
 data class PersonApplicationSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val childId: UUID,
     val guardianId: UUID,
-    val preferredUnitId: UUID?,
+    val preferredUnitId: DaycareId?,
     val preferredUnitName: String?,
     val childName: String?,
     val childSsn: String?,
@@ -76,7 +79,7 @@ data class PersonApplicationSummary(
 )
 
 data class ApplicationDetails(
-    val id: UUID,
+    val id: ApplicationId,
     val type: ApplicationType,
     val form: ApplicationForm,
     val status: ApplicationStatus,
@@ -142,13 +145,13 @@ enum class ApplicationOrigin {
 }
 
 data class PreferredUnit(
-    val id: UUID,
+    val id: DaycareId,
     val name: String
 )
 
 data class ApplicationNote(
-    val id: UUID,
-    val applicationId: UUID,
+    val id: ApplicationNoteId,
+    val applicationId: ApplicationId,
     val content: String,
     val createdBy: UUID,
     val createdByName: String,
@@ -159,7 +162,7 @@ data class ApplicationNote(
 )
 
 data class ApplicationUnitSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -175,7 +178,7 @@ data class ApplicationUnitSummary(
 )
 
 data class CitizenApplicationSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val type: String,
     val childId: UUID,
     val childName: String?,
@@ -193,7 +196,7 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     user: AuthenticatedUser,
     tx: Database.Transaction,
     personService: PersonService,
-    applicationId: UUID
+    applicationId: ApplicationId
 ): ApplicationDetails? = tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)
     ?.let { application ->
         application.copy(

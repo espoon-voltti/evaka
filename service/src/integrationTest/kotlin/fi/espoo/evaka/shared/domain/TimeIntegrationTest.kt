@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.domain
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.testAreaId
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
 import kotlin.test.assertEquals
 
 class TimeIntegrationTest : PureJdbiTest() {
@@ -60,8 +60,8 @@ class TimeIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `operational days with no holidays and multiple round the clock units in database`() {
-        var secondUnitId: UUID? = null
-        var thirdUnitId: UUID? = null
+        var secondUnitId: DaycareId? = null
+        var thirdUnitId: DaycareId? = null
         db.transaction { tx ->
             secondUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
             thirdUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))

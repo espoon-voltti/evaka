@@ -4,13 +4,15 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDevice(id: UUID): MobileDevice {
+fun Database.Read.getDevice(id: MobileDeviceId): MobileDevice {
     // language=sql
     val sql = "SELECT * FROM mobile_device WHERE id = :id AND deleted = false"
     return createQuery(sql)
@@ -24,7 +26,7 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQu
 ).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
     ?: throw NotFound("Device not found with token $token")
 
-fun Database.Read.listDevices(unitId: UUID): List<MobileDevice> {
+fun Database.Read.listDevices(unitId: DaycareId): List<MobileDevice> {
     // language=sql
     val sql = "SELECT * FROM mobile_device WHERE unit_id = :unitId AND deleted = false"
     return createQuery(sql)
@@ -33,7 +35,7 @@ fun Database.Read.listDevices(unitId: UUID): List<MobileDevice> {
         .list()
 }
 
-fun Database.Transaction.renameDevice(id: UUID, name: String) {
+fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
     // language=sql
     val deviceUpdate = "UPDATE mobile_device SET name = :name WHERE id = :id"
     createUpdate(deviceUpdate)
@@ -49,7 +51,7 @@ fun Database.Transaction.renameDevice(id: UUID, name: String) {
         .execute()
 }
 
-fun Database.Transaction.softDeleteDevice(id: UUID) {
+fun Database.Transaction.softDeleteDevice(id: MobileDeviceId) {
     // language=sql
     val sql = "UPDATE mobile_device SET deleted = true WHERE id = :id"
     createUpdate(sql).bind("id", id).execute()

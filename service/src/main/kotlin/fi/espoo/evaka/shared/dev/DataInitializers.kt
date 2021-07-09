@@ -23,6 +23,19 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -136,16 +149,16 @@ private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sq
     .asSequence()
     .single()
 
-fun Database.Transaction.insertTestCareArea(area: DevCareArea): UUID = insertTestDataRow(
+fun Database.Transaction.insertTestCareArea(area: DevCareArea): AreaId = insertTestDataRow(
     area,
     """
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
 VALUES (:id, :name, :shortName, :areaCode, :subCostCenter)
 RETURNING id
 """
-)
+).let(::AreaId)
 
-fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): UUID = insertTestDataRow(
+fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): DaycareId = insertTestDataRow(
     daycare,
     """
 WITH insert_unit_manager AS (
@@ -173,9 +186,9 @@ INSERT INTO daycare (
 )
 RETURNING id
 """
-)
+).let(::DaycareId)
 
-fun Database.Transaction.updateDaycareAcl(daycareId: UUID, externalId: ExternalId, role: UserRole) {
+fun Database.Transaction.updateDaycareAcl(daycareId: DaycareId, externalId: ExternalId, role: UserRole) {
     createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)")
         .bind("daycare_id", daycareId)
         .bind("external_id", externalId)
@@ -183,7 +196,7 @@ fun Database.Transaction.updateDaycareAcl(daycareId: UUID, externalId: ExternalI
         .execute()
 }
 
-fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: UUID, employeeId: UUID, role: UserRole) {
+fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, employeeId: UUID, role: UserRole) {
     createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)")
         .bind("daycare_id", daycareId)
         .bind("employeeId", employeeId)
@@ -191,7 +204,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: UUID, employeeI
         .execute()
 }
 
-fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: String = "Nimeämätön laite") {
+fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, name: String = "Nimeämätön laite") {
     // language=sql
     val sql =
         """
@@ -245,10 +258,10 @@ RETURNING id
 fun Database.Transaction.insertTestParentship(
     headOfChild: UUID,
     childId: UUID,
-    id: UUID = UUID.randomUUID(),
+    id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): ParentshipId {
     createUpdate(
         """
             INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
@@ -269,7 +282,7 @@ fun Database.Transaction.insertTestParentship(
 }
 
 fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevParentship {
-    val withId = if (parentship.id == null) parentship.copy(id = UUID.randomUUID()) else parentship
+    val withId = if (parentship.id == null) parentship.copy(id = ParentshipId(UUID.randomUUID())) else parentship
     // language=sql
     val sql =
         """
@@ -283,10 +296,10 @@ fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevPar
 fun Database.Transaction.insertTestPartnership(
     adult1: UUID,
     adult2: UUID,
-    id: UUID = UUID.randomUUID(),
+    id: PartnershipId = PartnershipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): PartnershipId {
     createUpdate(
         """
             INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
@@ -323,7 +336,7 @@ fun Database.Transaction.insertTestPartnership(
 }
 
 fun Database.Transaction.insertTestApplication(
-    id: UUID = UUID.randomUUID(),
+    id: ApplicationId = ApplicationId(UUID.randomUUID()),
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
     status: ApplicationStatus = ApplicationStatus.SENT,
@@ -332,7 +345,7 @@ fun Database.Transaction.insertTestApplication(
     otherGuardianId: UUID? = null,
     hideFromGuardian: Boolean = false,
     transferApplication: Boolean = false
-): UUID {
+): ApplicationId {
     createUpdate(
         """
             INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
@@ -356,7 +369,7 @@ fun Database.Transaction.insertTestApplication(
     return id
 }
 
-fun Database.Transaction.insertTestApplicationForm(applicationId: UUID, document: DaycareFormV0, revision: Int = 1) {
+fun Database.Transaction.insertTestApplicationForm(applicationId: ApplicationId, document: DaycareFormV0, revision: Int = 1) {
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -378,7 +391,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
         .execute()
 }
 
-fun Database.Transaction.insertTestClubApplicationForm(applicationId: UUID, document: ClubFormV0, revision: Int = 1) {
+fun Database.Transaction.insertTestClubApplicationForm(applicationId: ApplicationId, document: ClubFormV0, revision: Int = 1) {
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -418,16 +431,16 @@ INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
 VALUES (:id, :type, :childId, :unitId, :startDate, :endDate)
 RETURNING id
 """
-)
+).let(::PlacementId)
 
 fun Database.Transaction.insertTestPlacement(
-    id: UUID = UUID.randomUUID(),
+    id: PlacementId = PlacementId(UUID.randomUUID()),
     childId: UUID = UUID.randomUUID(),
-    unitId: UUID = UUID.randomUUID(),
+    unitId: DaycareId = DaycareId(UUID.randomUUID()),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): PlacementId {
     createUpdate(
         """
             INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date)
@@ -450,14 +463,14 @@ fun Database.Transaction.insertTestPlacement(
 
 fun Database.Transaction.insertTestServiceNeed(
     confirmedBy: UUID,
-    placementId: UUID,
+    placementId: PlacementId,
     period: FiniteDateRange,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: UUID = UUID.randomUUID(),
+    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
     updated: HelsinkiDateTime = HelsinkiDateTime.now()
-): UUID {
+): ServiceNeedId {
     createUpdate(
         """
 ALTER TABLE service_need DISABLE TRIGGER set_timestamp;
@@ -586,15 +599,15 @@ fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insert
 INSERT INTO daycare_group (id, daycare_id, name, start_date)
 VALUES (:id, :daycareId, :name, :startDate)
 """
-)
+).let(::GroupId)
 
 fun Database.Transaction.insertTestDaycareGroupPlacement(
-    daycarePlacementId: UUID = UUID.randomUUID(),
-    groupId: UUID = UUID.randomUUID(),
-    id: UUID = UUID.randomUUID(),
+    daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
+    groupId: GroupId = GroupId(UUID.randomUUID()),
+    id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): GroupPlacementId {
     createUpdate(
         """
                 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
@@ -615,8 +628,8 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
 }
 
 fun Database.Transaction.insertTestPlacementPlan(
-    applicationId: UUID,
-    unitId: UUID,
+    applicationId: ApplicationId,
+    unitId: DaycareId,
     id: UUID = UUID.randomUUID(),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -653,8 +666,8 @@ fun Database.Transaction.insertTestPlacementPlan(
 data class TestDecision(
     val createdBy: UUID,
     val sentDate: LocalDate = LocalDate.now(),
-    val unitId: UUID,
-    val applicationId: UUID,
+    val unitId: DaycareId,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -673,7 +686,7 @@ INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, star
 VALUES (:createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
 RETURNING id
 """
-)
+).let(::DecisionId)
 
 fun Database.Transaction.insertTestAssistanceNeed(assistanceNeed: DevAssistanceNeed) = insertTestDataRow(
     assistanceNeed,
@@ -682,9 +695,9 @@ INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, cap
 VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :capacityFactor, :description, :bases::assistance_basis[], :otherBasis)
 RETURNING id
 """
-)
+).let(::AssistanceNeedId)
 
-fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): UUID {
+fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): AssistanceActionId {
     val id = insertTestDataRow(
         assistanceAction,
         """
@@ -692,14 +705,14 @@ INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, o
 VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction, :measures::assistance_measure[])
 RETURNING id
 """
-    )
+    ).let(::AssistanceActionId)
     val counts = insertAssistanceActionOptionRefs(id, assistanceAction.actions)
     assert(counts.size == assistanceAction.actions.size)
     return id
 }
 
 fun Database.Transaction.insertTestCaretakers(
-    groupId: UUID,
+    groupId: GroupId,
     id: UUID = UUID.randomUUID(),
     amount: Double = 3.0,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -725,7 +738,7 @@ fun Database.Transaction.insertTestCaretakers(
 
 fun Database.Transaction.insertTestStaffAttendance(
     id: UUID = UUID.randomUUID(),
-    groupId: UUID,
+    groupId: GroupId,
     date: LocalDate,
     count: Double
 ) {
@@ -778,7 +791,7 @@ fun Database.Transaction.insertTestAbsence(
 fun Database.Transaction.insertTestChildAttendance(
     id: UUID = UUID.randomUUID(),
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     arrived: Instant,
     departed: Instant?
 ) {
@@ -803,10 +816,10 @@ fun Database.Transaction.insertTestChildAttendance(
 
 fun Database.Transaction.insertTestBackUpCare(
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
-    groupId: UUID? = null,
+    groupId: GroupId? = null,
     id: UUID = UUID.randomUUID()
 ) {
     //language=sql
@@ -846,8 +859,8 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
     .bind("endDate", backupCare.period.end)
     .execute()
 
-fun Database.Transaction.insertApplication(application: ApplicationWithForm): UUID {
-    val id = application.id ?: UUID.randomUUID()
+fun Database.Transaction.insertApplication(application: ApplicationWithForm): ApplicationId {
+    val id = application.id ?: ApplicationId(UUID.randomUUID())
 
     //language=sql
     val sql =
@@ -936,7 +949,7 @@ RETURNING id
 )
 
 data class DevFridgeChild(
-    val id: UUID,
+    val id: ParentshipId,
     val childId: UUID,
     val headOfChild: UUID,
     val startDate: LocalDate,
@@ -953,7 +966,7 @@ RETURNING id
 )
 
 data class DevFridgePartner(
-    val partnershipId: UUID,
+    val partnershipId: PartnershipId,
     val indx: Int,
     val personId: UUID,
     val startDate: LocalDate,
@@ -967,7 +980,7 @@ INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_dat
 VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
 RETURNING partnership_id
 """
-)
+).let(::PartnershipId)
 
 data class DevEmployeePin(
     val id: UUID,

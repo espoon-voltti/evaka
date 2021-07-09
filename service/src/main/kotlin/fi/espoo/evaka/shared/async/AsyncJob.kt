@@ -9,6 +9,11 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -50,7 +55,7 @@ interface AsyncJobPayload {
     val user: AuthenticatedUser?
 }
 
-data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
+data class GarbageCollectPairing(val pairingId: PairingId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.GARBAGE_COLLECT_PAIRING
     override val user: AuthenticatedUser? = null
 }
@@ -124,39 +129,39 @@ data class NotifyIncomeUpdated(
     override val user: AuthenticatedUser? = null
 }
 
-data class NotifyDecisionCreated(val decisionId: UUID, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJobPayload {
+data class NotifyDecisionCreated(val decisionId: DecisionId, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.DECISION_CREATED
 }
 
 data class SendDecision(
-    val decisionId: UUID,
+    val decisionId: DecisionId,
     @Deprecated(message = "only for backwards compatibility")
     override val user: AuthenticatedUser? = null
 ) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_DECISION
 }
 
-data class NotifyFeeDecisionApproved(val decisionId: UUID) : AsyncJobPayload {
+data class NotifyFeeDecisionApproved(val decisionId: FeeDecisionId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.FEE_DECISION_APPROVED
     override val user: AuthenticatedUser? = null
 }
 
-data class NotifyFeeDecisionPdfGenerated(val decisionId: UUID) : AsyncJobPayload {
+data class NotifyFeeDecisionPdfGenerated(val decisionId: FeeDecisionId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.FEE_DECISION_PDF_GENERATED
     override val user: AuthenticatedUser? = null
 }
 
-data class NotifyVoucherValueDecisionApproved(val decisionId: UUID) : AsyncJobPayload {
+data class NotifyVoucherValueDecisionApproved(val decisionId: VoucherValueDecisionId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED
     override val user: AuthenticatedUser? = null
 }
 
-data class NotifyVoucherValueDecisionPdfGenerated(val decisionId: UUID) : AsyncJobPayload {
+data class NotifyVoucherValueDecisionPdfGenerated(val decisionId: VoucherValueDecisionId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED
     override val user: AuthenticatedUser? = null
 }
 
-data class InitializeFamilyFromApplication(val applicationId: UUID, override val user: AuthenticatedUser) :
+data class InitializeFamilyFromApplication(val applicationId: ApplicationId, override val user: AuthenticatedUser) :
     AsyncJobPayload {
     override val asyncJobType = AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION
 }

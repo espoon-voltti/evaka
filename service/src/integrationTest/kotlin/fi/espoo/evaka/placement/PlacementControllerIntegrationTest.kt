@@ -10,6 +10,9 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -313,7 +316,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd
             )
@@ -341,7 +344,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart.minusDays(1),
                 placementEnd
             )
@@ -355,7 +358,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd.plusDays(1)
             )
@@ -546,7 +549,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     }
 
     private fun createGroupPlacement(
-        placementId: UUID,
+        placementId: PlacementId,
         groupPlacement: GroupPlacementRequestBody
     ): ResponseResultOf<ByteArray> {
         return http.post("/placements/$placementId/group-placements")
@@ -555,7 +558,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .response()
     }
 
-    private fun getGroupPlacements(childId: UUID, daycareId: UUID): List<DaycareGroupPlacement> {
+    private fun getGroupPlacements(childId: UUID, daycareId: DaycareId): List<DaycareGroupPlacement> {
         return http.get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)

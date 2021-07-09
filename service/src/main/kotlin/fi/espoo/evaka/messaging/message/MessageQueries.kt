@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
@@ -355,7 +357,7 @@ fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants?
 
 data class MessageReceiversResult(
     val childId: UUID,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val childFirstName: String,
     val childLastName: String,
@@ -367,7 +369,7 @@ data class MessageReceiversResult(
 
 fun Database.Read.getReceiversForNewMessage(
     employeeId: UUID,
-    unitId: UUID
+    unitId: DaycareId
 ): List<MessageReceiversResponse> {
     // language=sql
     val sql = """

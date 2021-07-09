@@ -8,6 +8,8 @@ import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -23,7 +25,7 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class AbsenceService {
-    fun getAbsencesByMonth(tx: Database.Read, groupId: UUID, year: Int, month: Int): AbsenceGroup {
+    fun getAbsencesByMonth(tx: Database.Read, groupId: GroupId, year: Int, month: Int): AbsenceGroup {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
         val period = FiniteDateRange(startDate, endDate)
@@ -169,7 +171,7 @@ enum class CareType {
 }
 
 data class AbsenceGroup(
-    val groupId: UUID,
+    val groupId: GroupId,
     val daycareName: String,
     var groupName: String,
     var children: List<AbsenceChild>,
@@ -313,7 +315,7 @@ fun Database.Read.getUserNameById(userId: UUID): String {
         .first()
 }
 
-fun Database.Read.getGroupName(groupId: UUID): String? {
+fun Database.Read.getGroupName(groupId: GroupId): String? {
     //language=SQL
     val sql =
         """
@@ -328,7 +330,7 @@ fun Database.Read.getGroupName(groupId: UUID): String? {
         .firstOrNull()
 }
 
-fun Database.Read.getDaycareIdByGroup(groupId: UUID): UUID {
+fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
     //language=SQL
     val sql =
         """
@@ -340,11 +342,11 @@ fun Database.Read.getDaycareIdByGroup(groupId: UUID): UUID {
 
     return createQuery(sql)
         .bind("groupId", groupId)
-        .mapTo<UUID>()
+        .mapTo<DaycareId>()
         .first()
 }
 
-fun Database.Read.getPlacementsByRange(groupId: UUID, period: FiniteDateRange): List<AbsencePlacement> {
+fun Database.Read.getPlacementsByRange(groupId: GroupId, period: FiniteDateRange): List<AbsencePlacement> {
     //language=SQL
     val sql =
         """
@@ -381,7 +383,7 @@ fun Database.Read.getPlacementsByRange(groupId: UUID, period: FiniteDateRange): 
         .list()
 }
 
-fun Database.Read.getAbsencesByRange(groupId: UUID, period: FiniteDateRange): List<Absence> {
+fun Database.Read.getAbsencesByRange(groupId: GroupId, period: FiniteDateRange): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -445,7 +447,7 @@ fun Database.Read.getAbsencesByChildByPeriod(childId: UUID, period: DateRange): 
         .list()
 }
 
-private fun Database.Read.getBackupCaresAffectingGroup(groupId: UUID, period: FiniteDateRange): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingGroup(groupId: GroupId, period: FiniteDateRange): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """

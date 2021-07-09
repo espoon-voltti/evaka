@@ -18,6 +18,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -38,7 +39,6 @@ import fi.espoo.evaka.toDaycareFormChild
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -274,7 +274,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
     }
 
     private fun checkPlacementPlanDraft(
-        applicationId: UUID,
+        applicationId: ApplicationId,
         type: PlacementType,
         child: PersonData.Detailed = testChild_1,
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
@@ -311,7 +311,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
     }
 
     private fun createPlacementPlanAndAssert(
-        applicationId: UUID,
+        applicationId: ApplicationId,
         type: PlacementType,
         proposal: DaycarePlacementPlan
     ) {
@@ -342,7 +342,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         preschoolDaycare: Boolean = false,
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
-    ): UUID = db.transaction { tx ->
+    ): ApplicationId = db.transaction { tx ->
         val applicationId = tx.insertTestApplication(
             status = status,
             guardianId = adult.id,

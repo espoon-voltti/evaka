@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -32,7 +35,7 @@ WHERE child_id = :childId
     .mapTo<ChildBackupCare>()
     .list()
 
-fun Database.Read.getBackupCaresForDaycare(daycareId: UUID, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
+fun Database.Read.getBackupCaresForDaycare(daycareId: DaycareId, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
     // language=SQL
     """
 SELECT
@@ -69,7 +72,7 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
     .mapTo<UnitBackupCare>()
     .list()
 
-fun Database.Transaction.createBackupCare(childId: UUID, backupCare: NewBackupCare): UUID = createUpdate(
+fun Database.Transaction.createBackupCare(childId: UUID, backupCare: NewBackupCare): BackupCareId = createUpdate(
     // language=SQL
     """
 INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)
@@ -83,10 +86,10 @@ RETURNING id
     .bind("start", backupCare.period.start)
     .bind("end", backupCare.period.end)
     .executeAndReturnGeneratedKeys()
-    .mapTo<UUID>()
+    .mapTo<BackupCareId>()
     .one()
 
-fun Database.Transaction.updateBackupCare(id: UUID, period: FiniteDateRange, groupId: UUID?) = createUpdate(
+fun Database.Transaction.updateBackupCare(id: BackupCareId, period: FiniteDateRange, groupId: GroupId?) = createUpdate(
     // language=SQL
     """
 UPDATE backup_care
@@ -103,7 +106,7 @@ WHERE id = :id
     .bindNullable("groupId", groupId)
     .execute()
 
-fun Database.Transaction.deleteBackupCare(id: UUID) = createUpdate(
+fun Database.Transaction.deleteBackupCare(id: BackupCareId) = createUpdate(
     // language=SQL
     """
 DELETE FROM backup_care

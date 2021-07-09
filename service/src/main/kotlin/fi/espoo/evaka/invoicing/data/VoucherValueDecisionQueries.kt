@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -143,7 +144,7 @@ INSERT INTO voucher_value_decision (
     batch.execute()
 }
 
-fun Database.Read.getValueDecisionsByIds(ids: List<UUID>): List<VoucherValueDecision> {
+fun Database.Read.getValueDecisionsByIds(ids: List<VoucherValueDecisionId>): List<VoucherValueDecision> {
     return createQuery("SELECT * FROM voucher_value_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .mapTo<VoucherValueDecision>()
@@ -172,7 +173,7 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
         .toList()
 }
 
-fun Database.Transaction.deleteValueDecisions(ids: List<UUID>) {
+fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>) {
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
@@ -265,7 +266,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
         .let(mapToPaged(pageSize))
 }
 
-fun Database.Read.getVoucherValueDecision(id: UUID): VoucherValueDecisionDetailed? {
+fun Database.Read.getVoucherValueDecision(id: VoucherValueDecisionId): VoucherValueDecisionDetailed? {
     // language=sql
     val sql =
         """
@@ -324,7 +325,7 @@ WHERE decision.id = :id
         .singleOrNull()
 }
 
-fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant) {
+fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<VoucherValueDecisionId>, approvedBy: UUID, approvedAt: Instant) {
     // language=sql
     val sql =
         """
@@ -354,7 +355,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<UUID>, a
     batch.execute()
 }
 
-fun Database.Read.getVoucherValueDecisionDocumentKey(id: UUID): String? {
+fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId): String? {
     // language=sql
     val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
 
@@ -364,7 +365,7 @@ fun Database.Read.getVoucherValueDecisionDocumentKey(id: UUID): String? {
         .singleOrNull()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) {
+fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId, documentKey: String) {
     // language=sql
     val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
 
@@ -374,7 +375,7 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: UUID, documen
         .execute()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, status: VoucherValueDecisionStatus) {
+fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<VoucherValueDecisionId>, status: VoucherValueDecisionStatus) {
     // language=sql
     val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
@@ -384,7 +385,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, statu
         .execute()
 }
 
-fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<UUID>, now: Instant) {
+fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDecisionId>, now: Instant) {
     createUpdate("UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .bind("sent", VoucherValueDecisionStatus.SENT)
@@ -413,7 +414,7 @@ fun Database.Transaction.lockValueDecisionsForChild(childId: UUID) {
         .execute()
 }
 
-fun Database.Transaction.lockValueDecisions(ids: List<UUID>) {
+fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()

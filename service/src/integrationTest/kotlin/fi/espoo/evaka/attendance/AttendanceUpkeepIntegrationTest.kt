@@ -8,6 +8,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -31,8 +33,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var scheduledJobs: ScheduledJobs
 
-    private val groupId = UUID.randomUUID()
-    private val daycarePlacementId = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
+    private val daycarePlacementId = PlacementId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 

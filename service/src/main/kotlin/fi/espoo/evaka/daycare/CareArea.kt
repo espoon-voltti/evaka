@@ -6,6 +6,8 @@ package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
@@ -28,7 +30,7 @@ data class MailingAddress(
 )
 
 data class Daycare(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val openingDate: LocalDate?,
     val closingDate: LocalDate?,
@@ -88,17 +90,17 @@ data class DaycareDecisionCustomization(
     val handlerAddress: String
 )
 
-data class DaycareCareArea(val id: UUID, val name: String, val shortName: String)
+data class DaycareCareArea(val id: AreaId, val name: String, val shortName: String)
 
 enum class CareType {
     CLUB, FAMILY, CENTRE, GROUP_FAMILY, PRESCHOOL, PREPARATORY_EDUCATION
 }
 
 data class Location(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val type: Set<CareType>,
-    val care_area_id: UUID,
+    val care_area_id: AreaId,
     @Nested("")
     val visitingAddress: VisitingAddress,
     @Nested("mailing")
@@ -114,13 +116,13 @@ data class Location(
 )
 
 data class CareArea(
-    val id: UUID,
+    val id: AreaId,
     val name: String,
     val shortName: String,
     val locations: List<Location>
 )
 
 data class UnitStub(
-    val id: UUID,
+    val id: DaycareId,
     val name: String
 )

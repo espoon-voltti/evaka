@@ -26,6 +26,9 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -54,11 +57,11 @@ import java.util.UUID
  Queries and data classes for initializing integration tests with person and unit data
  */
 
-val testAreaId = UUID.randomUUID()
+val testAreaId = AreaId(UUID.randomUUID())
 val testAreaCode = 200
-val testArea2Id = UUID.randomUUID()
+val testArea2Id = AreaId(UUID.randomUUID())
 val testArea2Code = 300
-val svebiTestId = UUID.randomUUID()
+val svebiTestId = AreaId(UUID.randomUUID())
 val svebiTestCode = 400
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
@@ -68,7 +71,7 @@ val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString(
 
 val testDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare",
         areaId = testAreaId,
         areaName = "Test Area",
@@ -76,16 +79,16 @@ val testDaycare =
     )
 val testDaycare2 =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare 2",
         areaId = testArea2Id,
         areaName = "Lwiz Foo",
         language = "fi"
     )
-val testDaycareNotInvoiced = UnitData.InvoicedByMunicipality(id = UUID.randomUUID(), invoicedByMunicipality = false)
+val testDaycareNotInvoiced = UnitData.InvoicedByMunicipality(id = DaycareId(UUID.randomUUID()), invoicedByMunicipality = false)
 val testSvebiDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Svebi Daycare",
         areaId = svebiTestId,
         areaName = "Svenska Bildningstjanster",
@@ -94,7 +97,7 @@ val testSvebiDaycare =
 
 val testPurchasedDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Purchased Daycare",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -103,7 +106,7 @@ val testPurchasedDaycare =
 
 val testVoucherDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Voucher Daycare",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -112,7 +115,7 @@ val testVoucherDaycare =
 
 val testVoucherDaycare2 =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Voucher Daycare 2",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -120,7 +123,7 @@ val testVoucherDaycare2 =
     )
 
 val testClub = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Club",
     areaId = testAreaId,
     type = setOf(CareType.CLUB),
@@ -132,7 +135,7 @@ val testClub = DevDaycare(
 )
 
 val testGhostUnitDaycare = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
     areaId = testAreaId,
     type = setOf(CareType.CENTRE),
@@ -142,7 +145,7 @@ val testGhostUnitDaycare = DevDaycare(
 )
 
 val testRoundTheClockDaycare = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
     areaId = testAreaId,
     type = setOf(CareType.CENTRE),
@@ -676,7 +679,7 @@ fun Database.Transaction.insertApplication(
     hasAdditionalInfo: Boolean = false,
     maxFeeAccepted: Boolean = false,
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {

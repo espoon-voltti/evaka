@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -36,7 +37,7 @@ data class EmployeeUser(
 )
 
 data class DaycareRole(
-    val daycareId: UUID,
+    val daycareId: DaycareId,
     val daycareName: String,
     val role: UserRole
 )

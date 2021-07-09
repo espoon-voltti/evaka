@@ -11,6 +11,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -185,10 +188,10 @@ class BackupCareIntegrationTest : FullApplicationTest() {
 
     private fun createBackupCareAndAssert(
         childId: UUID = testChild_1.id,
-        unitId: UUID = testDaycare.id,
-        groupId: UUID? = null,
+        unitId: DaycareId = testDaycare.id,
+        groupId: GroupId? = null,
         period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-    ): UUID {
+    ): BackupCareId {
         val (_, res, result) = http.post("/children/$childId/backup-cares")
             .jsonBody(
                 objectMapper.writeValueAsString(

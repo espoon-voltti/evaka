@@ -11,6 +11,10 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -50,7 +54,7 @@ class PlacementController(
     fun getPlacements(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "daycareId", required = false) daycareId: UUID? = null,
+        @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
         @RequestParam(
             value = "from",
@@ -85,7 +89,7 @@ class PlacementController(
     fun getPlacementPlans(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "daycareId", required = true) daycareId: UUID,
+        @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
         @RequestParam(
             value = "from",
             required = false
@@ -144,7 +148,7 @@ class PlacementController(
     fun updatePlacementById(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID,
+        @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
     ): ResponseEntity<Unit> {
         Audit.PlacementUpdate.log(targetId = placementId)
@@ -176,7 +180,7 @@ class PlacementController(
     fun deletePlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID
+        @PathVariable("placementId") placementId: PlacementId
     ): ResponseEntity<Unit> {
         Audit.PlacementCancel.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
@@ -198,9 +202,9 @@ class PlacementController(
     fun createGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID,
+        @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<GroupPlacementId> {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         acl.getRolesForPlacement(user, placementId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -221,8 +225,8 @@ class PlacementController(
     fun deleteGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
-        @PathVariable("groupPlacementId") groupPlacementId: UUID
+        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
+        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
@@ -237,8 +241,8 @@ class PlacementController(
     fun transferGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
-        @PathVariable("groupPlacementId") groupPlacementId: UUID,
+        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
+        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
@@ -254,7 +258,7 @@ class PlacementController(
 data class PlacementCreateRequestBody(
     val type: PlacementType,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
@@ -265,12 +269,12 @@ data class PlacementUpdateRequestBody(
 )
 
 data class GroupPlacementRequestBody(
-    val groupId: UUID,
+    val groupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class GroupTransferRequestBody(
-    val groupId: UUID,
+    val groupId: GroupId,
     val startDate: LocalDate
 )

@@ -5,11 +5,13 @@
 package fi.espoo.evaka.application.notes
 
 import fi.espoo.evaka.application.ApplicationNote
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getApplicationNoteCreatedBy(id: UUID): UUID {
+fun Database.Read.getApplicationNoteCreatedBy(id: ApplicationNoteId): UUID {
     // language=SQL
     val sql = "SELECT created_by FROM application_note WHERE id = :id"
 
@@ -19,7 +21,7 @@ fun Database.Read.getApplicationNoteCreatedBy(id: UUID): UUID {
         .first()
 }
 
-fun Database.Read.getApplicationNotes(applicationId: UUID): List<ApplicationNote> {
+fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> {
     // language=SQL
     val sql =
         """
@@ -40,7 +42,7 @@ ORDER BY n.created
         .toList()
 }
 
-fun Database.Transaction.createApplicationNote(applicationId: UUID, content: String, createdBy: UUID): ApplicationNote {
+fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: UUID): ApplicationNote {
     // language=SQL
     val sql =
         """
@@ -61,7 +63,7 @@ LEFT JOIN employee e ON n.created_by = e.id
         .first()
 }
 
-fun Database.Transaction.updateApplicationNote(id: UUID, content: String, updatedBy: UUID): ApplicationNote {
+fun Database.Transaction.updateApplicationNote(id: ApplicationNoteId, content: String, updatedBy: UUID): ApplicationNote {
     // language=SQL
     val sql =
         """
@@ -86,7 +88,7 @@ LEFT JOIN employee e2 ON n.updated_by = e2.id
         .first()
 }
 
-fun Database.Transaction.deleteApplicationNote(id: UUID) {
+fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) {
     // language=SQL
     val sql = "DELETE FROM application_note WHERE id = :id"
 

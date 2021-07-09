@@ -56,7 +56,7 @@ private val clubDecision = createValidDecision(applicationId = application.id, t
 private val voucherDecision = daycareDecision.copy(
     endDate = LocalDate.of(2019, 7, 31),
     unit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkodin esiopetus",
@@ -176,13 +176,13 @@ class PDFServiceTest {
 }
 
 fun createValidDecision(
-    id: UUID = UUID.randomUUID(),
+    id: DecisionId = DecisionId(UUID.randomUUID()),
     createdBy: String = "John Doe",
     type: DecisionType = DecisionType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     unit: DecisionUnit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkodin esiopetus",
@@ -195,7 +195,7 @@ fun createValidDecision(
         "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL
     ),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: UUID = UUID.randomUUID(),
     documentKey: String? = null,
     otherGuardianDocumentKey: String? = null,

@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -46,10 +48,10 @@ class AttachmentsController(
     fun uploadApplicationAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<AttachmentId> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -61,10 +63,10 @@ class AttachmentsController(
     fun uploadApplicationAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<AttachmentId> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
@@ -78,10 +80,10 @@ class AttachmentsController(
     private fun handleFileUpload(
         db: Database,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         file: MultipartFile,
         type: AttachmentType
-    ): UUID {
+    ): AttachmentId {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
             ?: throw BadRequest("Filename missing")
@@ -89,7 +91,7 @@ class AttachmentsController(
         val contentType = file.contentType ?: throw BadRequest("Missing content type")
         checkFileContentType(file.inputStream, contentType)
 
-        val id = UUID.randomUUID()
+        val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insertAttachment(
                 id,
@@ -118,7 +120,7 @@ class AttachmentsController(
     fun getAttachment(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable attachmentId: UUID
+        @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<ByteArray> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
         db.authorizeAttachmentDownload(user, attachmentId)
@@ -140,7 +142,7 @@ class AttachmentsController(
     }
 
     @DeleteMapping("/citizen/{id}")
-    fun deleteAttachmentCitizen(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+    fun deleteAttachmentCitizen(db: Database, user: AuthenticatedUser, @PathVariable id: AttachmentId): ResponseEntity<Unit> {
         Audit.AttachmentsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")
@@ -151,7 +153,7 @@ class AttachmentsController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteAttachmentEmployee(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+    fun deleteAttachmentEmployee(db: Database, user: AuthenticatedUser, @PathVariable id: AttachmentId): ResponseEntity<Unit> {
         Audit.AttachmentsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
         if (!db.read { it.isSelfUploadedAttachment(id, user) }) throw Forbidden("Permission denied")
@@ -161,13 +163,13 @@ class AttachmentsController(
         return ResponseEntity.noContent().build()
     }
 
-    fun deleteAttachment(db: Database.Transaction, id: UUID) {
+    fun deleteAttachment(db: Database.Transaction, id: AttachmentId) {
         db.deleteAttachment(id)
         documentClient.delete(filesBucket, "$id")
     }
 }
 
-private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attachmentId: UUID) {
+private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attachmentId: AttachmentId) {
     if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) return
     if (user.hasOneOfRoles(UserRole.END_USER) && read { it.isOwnAttachment(attachmentId, user) }) return
     if (read { it.userHasSupervisorRights(user, attachmentId) }) return
@@ -175,7 +177,7 @@ private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attach
     throw NotFound("Attachment $attachmentId not found")
 }
 
-fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser): Boolean {
+fun Database.Read.isOwnApplication(applicationId: ApplicationId, user: AuthenticatedUser): Boolean {
     return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
         .bind("id", applicationId)
         .bind("userId", user.id)
@@ -190,7 +192,7 @@ fun Database.Read.userAttachmentCount(userId: UUID): Int {
         .first()
 }
 
-fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: UUID): Boolean {
+fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: AttachmentId): Boolean {
     return this.createQuery(
         """
 SELECT 1

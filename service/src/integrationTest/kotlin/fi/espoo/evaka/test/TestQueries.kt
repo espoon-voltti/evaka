@@ -8,6 +8,13 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
@@ -15,7 +22,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getApplicationStatus(applicationId: UUID): ApplicationStatus = createQuery(
+fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus = createQuery(
     // language=SQL
     """
 SELECT status
@@ -27,12 +34,12 @@ WHERE id = :applicationId
     .one()
 
 data class DecisionTableRow(
-    val id: UUID,
+    val id: DecisionId,
     val number: Int,
     val createdBy: UUID,
     val sentDate: LocalDate,
-    val unitId: UUID,
-    val applicationId: UUID,
+    val unitId: DaycareId,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -45,21 +52,21 @@ data class DecisionTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getDecisionRowsByApplication(applicationId: UUID) = createQuery(
+fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
 ).bind("applicationId", applicationId).mapTo<DecisionTableRow>()
 
-fun Database.Read.getDecisionRowById(id: UUID) = createQuery(
+fun Database.Read.getDecisionRowById(id: DecisionId) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE id = :id"
 ).bind("id", id).mapTo<DecisionTableRow>()
 
 data class PlacementTableRow(
-    val id: UUID,
+    val id: PlacementId,
     val type: PlacementType,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {
@@ -72,10 +79,10 @@ fun Database.Read.getPlacementRowsByChild(childId: UUID) = createQuery(
 ).bind("childId", childId).mapTo<PlacementTableRow>()
 
 data class PlacementPlanTableRow(
-    val id: UUID,
+    val id: PlacementPlanId,
     val type: PlacementType,
-    val unitId: UUID,
-    val applicationId: UUID,
+    val unitId: DaycareId,
+    val applicationId: ApplicationId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val preschoolDaycareStartDate: LocalDate?,
@@ -92,23 +99,23 @@ data class PlacementPlanTableRow(
         ) else null
 }
 
-fun Database.Read.getPlacementPlanRowByApplication(applicationId: UUID) = createQuery(
+fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) = createQuery(
     // language=SQL
     "SELECT * FROM placement_plan WHERE application_id = :applicationId"
 ).bind("applicationId", applicationId).mapTo<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
-    val id: UUID,
+    val id: BackupCareId,
     val childId: UUID,
-    val unitId: UUID,
-    val groupId: UUID?,
+    val unitId: DaycareId,
+    val groupId: GroupId?,
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getBackupCareRowById(id: UUID) = createQuery(
+fun Database.Read.getBackupCareRowById(id: BackupCareId) = createQuery(
     // language=SQL
     "SELECT * FROM backup_care WHERE id = :id"
 ).bind("id", id).mapTo<BackupCareTableRow>()

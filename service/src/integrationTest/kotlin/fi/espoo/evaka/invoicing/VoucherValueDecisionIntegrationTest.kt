@@ -18,7 +18,9 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -37,7 +39,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
@@ -245,8 +246,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun createPlacement(
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: UUID = testVoucherDaycare.id
-    ): UUID {
+        unitId: DaycareId = testVoucherDaycare.id
+    ): PlacementId {
         val body = PlacementCreateRequestBody(
             type = PlacementType.DAYCARE,
             childId = testChild_1.id,
@@ -272,7 +273,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         return data.get().first().id
     }
 
-    private fun updatePlacement(id: UUID, startDate: LocalDate, endDate: LocalDate) {
+    private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
         val body = PlacementUpdateRequestBody(
             startDate = startDate,
             endDate = endDate

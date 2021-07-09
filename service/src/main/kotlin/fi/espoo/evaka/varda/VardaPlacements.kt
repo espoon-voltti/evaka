@@ -5,6 +5,9 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VardaDecisionId
+import fi.espoo.evaka.shared.VardaPlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -42,7 +45,7 @@ fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
                 insertVardaPlacement(
                     it,
                     VardaPlacementTableRow(
-                        id = UUID.randomUUID(),
+                        id = VardaPlacementId(UUID.randomUUID()),
                         vardaPlacementId = vardaPlacementId,
                         evakaPlacementId = placementId,
                         decisionId = decisionId,
@@ -121,7 +124,7 @@ JOIN sent_decision d
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     """.trimIndent()
 
-fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String, sourceSystem: String): List<Triple<UUID, UUID, VardaPlacement>> {
+fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String, sourceSystem: String): List<Triple<VardaDecisionId, PlacementId, VardaPlacement>> {
     val sql =
         """
 $placementBaseQuery
@@ -169,7 +172,7 @@ private fun getUpdatedPlacements(
     tx: Database.Read,
     getDecisionUrl: (Long) -> String,
     sourceSystem: String
-): List<Triple<UUID, Long, VardaPlacement>> {
+): List<Triple<VardaPlacementId, Long, VardaPlacement>> {
     val sql =
         """
 $placementBaseQuery
@@ -183,7 +186,7 @@ WHERE vp.uploaded_at < GREATEST(p.updated, u.updated)
         .toList()
 }
 
-private fun updatePlacementUploadTimestamp(tx: Database.Transaction, id: UUID, uploadedAt: Instant = Instant.now()) {
+private fun updatePlacementUploadTimestamp(tx: Database.Transaction, id: VardaPlacementId, uploadedAt: Instant = Instant.now()) {
     val sql = "UPDATE varda_placement SET uploaded_at = :uploadedAt WHERE id = :id"
     tx.createUpdate(sql)
         .bind("id", id)
@@ -234,10 +237,10 @@ data class VardaPlacementResponse(
 )
 
 data class VardaPlacementTableRow(
-    val id: UUID,
+    val id: VardaPlacementId,
     val vardaPlacementId: Long,
-    val evakaPlacementId: UUID,
-    val decisionId: UUID,
+    val evakaPlacementId: PlacementId,
+    val decisionId: VardaDecisionId,
     val createdAt: Instant,
     val uploadedAt: Instant
 )
@@ -245,11 +248,11 @@ data class VardaPlacementTableRow(
 private fun toVardaPlacementWithDecisionAndPlacementId(
     getDecisionUrl: (Long) -> String,
     sourceSystem: String
-): (ResultSet, StatementContext) -> Triple<UUID, UUID, VardaPlacement> =
+): (ResultSet, StatementContext) -> Triple<VardaDecisionId, PlacementId, VardaPlacement> =
     { rs, _ ->
         Triple(
-            rs.getUUID("decision_id"),
-            rs.getUUID("placement_id"),
+            VardaDecisionId(rs.getUUID("decision_id")),
+            PlacementId(rs.getUUID("placement_id")),
             toVardaPlacement(rs, getDecisionUrl, sourceSystem)
         )
     }
@@ -257,10 +260,10 @@ private fun toVardaPlacementWithDecisionAndPlacementId(
 private fun toVardaPlacementWithIdAndVardaId(
     getDecisionUrl: (Long) -> String,
     sourceSystem: String
-): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaPlacement> =
+): (ResultSet, StatementContext) -> Triple<VardaPlacementId, Long, VardaPlacement> =
     { rs, _ ->
         Triple(
-            rs.getUUID("id"),
+            VardaPlacementId(rs.getUUID("id")),
             rs.getLong("varda_placement_id"),
             toVardaPlacement(rs, getDecisionUrl, sourceSystem)
         )
@@ -280,10 +283,10 @@ private fun toVardaPlacement(
 
 val toVardaPlacementRow: (ResultSet, StatementContext) -> VardaPlacementTableRow = { rs, _ ->
     VardaPlacementTableRow(
-        id = rs.getUUID("id"),
+        id = VardaPlacementId(rs.getUUID("id")),
         vardaPlacementId = rs.getLong("varda_placement_id"),
-        evakaPlacementId = rs.getUUID("evaka_placement_id"),
-        decisionId = rs.getUUID("decision_id"),
+        evakaPlacementId = PlacementId(rs.getUUID("evaka_placement_id")),
+        decisionId = VardaDecisionId(rs.getUUID("decision_id")),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         uploadedAt = rs.getTimestamp("uploaded_at").toInstant()
     )

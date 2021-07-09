@@ -45,7 +45,7 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
         assertEquals(listOf(partnership1), person1Partnerships)
 
         val person2Partnerships = db.read { it.getPartnershipsForPerson(person2.id) }
-        assertEquals(listOf(partnership1, partnership2), person2Partnerships)
+        assertEquals(listOf(partnership1, partnership2).sortedBy { it.id }, person2Partnerships.sortedBy { it.id })
 
         val person3Partnerships = db.read { it.getPartnershipsForPerson(person3.id) }
         assertEquals(listOf(partnership2), person3Partnerships)

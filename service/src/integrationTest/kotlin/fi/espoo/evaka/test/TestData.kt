@@ -17,6 +17,7 @@ import fi.espoo.evaka.application.PersonBasics
 import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testClub
@@ -44,7 +45,7 @@ val validVoucherApplication =
     )
 
 private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: Boolean = false) = ApplicationDetails(
-    id = UUID.randomUUID(),
+    id = ApplicationId(UUID.randomUUID()),
     type = ApplicationType.DAYCARE,
     status = ApplicationStatus.WAITING_DECISION,
     origin = ApplicationOrigin.ELECTRONIC,
@@ -127,7 +128,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
 )
 
 val validPreschoolApplication = ApplicationDetails(
-    id = UUID.randomUUID(),
+    id = ApplicationId(UUID.randomUUID()),
     type = ApplicationType.PRESCHOOL,
     status = ApplicationStatus.WAITING_DECISION,
     origin = ApplicationOrigin.ELECTRONIC,
@@ -215,7 +216,7 @@ val validPreschoolApplication = ApplicationDetails(
 )
 
 val validClubApplication = ApplicationDetails(
-    id = UUID.randomUUID(),
+    id = ApplicationId(UUID.randomUUID()),
     type = ApplicationType.CLUB,
     status = ApplicationStatus.WAITING_DECISION,
     origin = ApplicationOrigin.ELECTRONIC,

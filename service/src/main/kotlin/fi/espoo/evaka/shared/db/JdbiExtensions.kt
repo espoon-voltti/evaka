@@ -20,6 +20,11 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -28,6 +33,7 @@ import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
 import org.jdbi.v3.core.config.ConfigRegistry
+import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
@@ -72,6 +78,8 @@ val identityArgumentFactory = customArgumentFactory<ExternalIdentifier>(Types.VA
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
+val idArgumentFactory = customArgumentFactory<Id<*>>(Types.OTHER) { CustomObjectArgument(it.raw) }
+
 val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
     CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
 }
@@ -108,12 +116,14 @@ val coordinateColumnMapper = PgObjectColumnMapper {
 val externalIdColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getString(columnNumber)?.let { ExternalId.parse(it) } }
 
+val idColumnMapper = ColumnMapper<Id<*>> { r, columnNumber, _ -> r.getObject(columnNumber, UUID::class.java)?.let { Id<DatabaseTable>(it) } }
+
 val helsinkiDateTimeColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getObject(columnNumber, OffsetDateTime::class.java)?.let { HelsinkiDateTime.from(it.toInstant()) } }
 
 class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(
-        if (type == clazz) {
+        if (clazz.isAssignableFrom(GenericTypes.getErasedType(type))) {
             Function { nullableValue -> clazz.cast(nullableValue)?.let(f) ?: NullArgument(sqlType) }
         } else {
             null
@@ -152,7 +162,7 @@ class PgObjectColumnMapper<T>(private inline val deserializer: (PGobject) -> T?)
 
 fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapper { rs, ctx ->
     FeeDecision(
-        id = UUID.fromString(rs.getString("id")),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = FeeDecisionStatus.valueOf(rs.getString("status")),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         decisionType = rs.getEnum("decision_type"),
@@ -172,7 +182,7 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
                         dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
                     ),
                     placement = FeeDecisionPlacement(
-                        unit = UnitData.JustId(rs.getUUID("placement_unit_id")),
+                        unit = UnitData.JustId(DaycareId(rs.getUUID("placement_unit_id"))),
                         type = rs.getEnum("placement_type"),
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
@@ -200,7 +210,7 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
 
 fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDetailed> = RowMapper { rs, ctx ->
     FeeDecisionDetailed(
-        id = UUID.fromString(rs.getString("id")),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = FeeDecisionStatus.valueOf(rs.getString("status")),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         decisionType = FeeDecisionType.valueOf(rs.getString("decision_type")),
@@ -252,10 +262,10 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
                     ),
                     placementType = rs.getEnum("placement_type"),
                     placementUnit = UnitData.Detailed(
-                        id = UUID.fromString(rs.getString("placement_unit_id")),
+                        id = DaycareId(rs.getUUID("placement_unit_id")),
                         name = rs.getString("placement_unit_name"),
                         language = rs.getString("placement_unit_lang"),
-                        areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
+                        areaId = AreaId(rs.getUUID("placement_unit_area_id")),
                         areaName = rs.getString("placement_unit_area_name")
                     ),
                     serviceNeedFeeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
@@ -288,7 +298,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
 
 val feeDecisionSummaryRowMapper: RowMapper<FeeDecisionSummary> = RowMapper { rs, ctx ->
     FeeDecisionSummary(
-        id = rs.getUUID("id"),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = rs.getEnum("status"),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         validDuring = ctx.mapColumn(rs, "valid_during"),

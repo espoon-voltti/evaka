@@ -11,7 +11,9 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
@@ -129,7 +131,7 @@ data class FamilyOverviewPerson(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val incomeTotal: Int? = null,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val incomeId: UUID? = null,
+    val incomeId: IncomeId? = null,
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val incomeEffect: IncomeEffect? = null
 )
@@ -145,7 +147,7 @@ fun toFamilyOverviewPerson(rs: ResultSet, objectMapper: ObjectMapper): FamilyOve
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
         headOfChild = rs.getString("head_of_child")?.let { UUID.fromString(it) },
-        incomeId = rs.getString("income_id")?.let { UUID.fromString(it) },
+        incomeId = rs.getNullableUUID("income_id")?.let(::IncomeId),
         incomeEffect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
         incomeTotal = rs.getString("income_data")?.let { incomeTotal(objectMapper.readValue(it)) }
     )

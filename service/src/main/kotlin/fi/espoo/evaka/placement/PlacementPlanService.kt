@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
@@ -28,7 +30,7 @@ class PlacementPlanService(
 ) {
     private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
 
-    fun getPlacementPlanDraft(tx: Database.Read, applicationId: UUID): PlacementPlanDraft {
+    fun getPlacementPlanDraft(tx: Database.Read, applicationId: ApplicationId): PlacementPlanDraft {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
 
@@ -104,7 +106,7 @@ class PlacementPlanService(
         }
     }
 
-    fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: UUID) =
+    fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: ApplicationId) =
         tx.softDeletePlacementPlanIfUnused(applicationId)
 
     fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
@@ -201,7 +203,7 @@ class PlacementPlanService(
         }
     }
 
-    fun isSvebiUnit(tx: Database.Read, unitId: UUID): Boolean {
+    fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
         return tx.createQuery(
             """
             SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi

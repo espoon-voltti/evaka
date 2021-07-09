@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import org.jdbi.v3.core.kotlin.mapTo
@@ -11,7 +12,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 
 fun orMax(date: LocalDate?): LocalDate = date ?: LocalDate.MAX
 
@@ -191,9 +191,9 @@ fun asDistinctPeriods(periods: List<DateRange>, spanningPeriod: DateRange): List
 data class OperationalDays(
     val fullMonth: List<LocalDate>,
     val generalCase: List<LocalDate>,
-    private val specialCases: Map<UUID, List<LocalDate>>
+    private val specialCases: Map<DaycareId, List<LocalDate>>
 ) {
-    fun forUnit(id: UUID): List<LocalDate> = specialCases[id] ?: generalCase
+    fun forUnit(id: DaycareId): List<LocalDate> = specialCases[id] ?: generalCase
 }
 
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
@@ -203,7 +203,7 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays = createQuery("SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')")
-        .map { rs, _ -> rs.getUUID("id") to rs.getArray("operation_days").array as Array<*> }
+        .map { rs, _ -> DaycareId(rs.getUUID("id")) to rs.getArray("operation_days").array as Array<*> }
         .map { (id, days) -> id to days.map { it as Int }.map { DayOfWeek.of(it) } }
         .toList()
 

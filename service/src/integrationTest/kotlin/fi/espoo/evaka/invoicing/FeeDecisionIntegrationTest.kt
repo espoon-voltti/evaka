@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -301,7 +302,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works with distinctions param UNCONFIRMED_HOURS`() {
         val testDecision = testDecisions[0]
         val testDecisionMissingServiceNeed = testDecisions[1].copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             children = testDecisions[1].children[0].let { part ->
                 listOf(part.copy(serviceNeed = part.serviceNeed.copy(missing = true)))
             }
@@ -938,7 +939,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting sent decision end date on confirm`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = draft.validDuring.copy(start = draft.validFrom.minusDays(30))
         )
@@ -964,7 +965,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting decisions with exactly same validity dates to annulled state`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
@@ -989,12 +990,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates completely overlapped conflicting decisions to annulled state`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict1 = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(5), draft.validFrom.plusDays(10))
         )
         val conflict2 = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(11), draft.validFrom.plusDays(20))
         )
@@ -1030,7 +1031,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting sent decision to annulled even when the sent decision would end later`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = draft.validDuring.copy(end = draft.validTo!!.plusDays(10))
         )
@@ -1057,16 +1058,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val originalDraft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val splitDrafts = listOf(
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = originalDraft.validDuring.copy(end = originalDraft.validFrom.plusDays(7))
             ),
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = originalDraft.validDuring.copy(start = originalDraft.validFrom.plusDays(8))
             )
         )
         val conflict = originalDraft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
@@ -1092,16 +1093,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val originalDraft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val splitDrafts = listOf(
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = DateRange(originalDraft.validFrom.minusDays(1), originalDraft.validFrom.plusDays(7))
             ),
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = DateRange(originalDraft.validFrom.plusDays(8), originalDraft.validTo!!.plusDays(1))
             )
         )
         val conflict = originalDraft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }

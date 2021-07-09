@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -402,7 +403,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
             )
         )
 
@@ -457,7 +458,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
             )
         )
 
@@ -513,7 +514,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
                 decision.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                     familySize = decision.familySize + 1,
                     children = decision.children + createFeeDecisionChildFixture(
@@ -813,7 +814,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
                 decision.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                     children = listOf(decision.children[0], decision.children[1].copy(fee = 10000, finalFee = 10000))
                 )
@@ -1068,7 +1069,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 endDate = period.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
@@ -1122,7 +1123,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 endDate = placementPeriod.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
@@ -2266,7 +2267,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
             )
         )
     }

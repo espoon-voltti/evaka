@@ -10,6 +10,8 @@ import fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 import fi.espoo.evaka.daycare.service.StaffAttendanceService
 import fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
 import fi.espoo.evaka.daycare.service.UnitStaffAttendance
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -24,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/staff-attendances")
@@ -36,7 +37,7 @@ class StaffAttendanceController(
     fun getAttendancesByUnit(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID
+        @PathVariable unitId: DaycareId
     ): ResponseEntity<UnitStaffAttendance> {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
@@ -50,7 +51,7 @@ class StaffAttendanceController(
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Wrapper<StaffAttendanceForDates>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -64,7 +65,7 @@ class StaffAttendanceController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)

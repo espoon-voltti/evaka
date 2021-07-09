@@ -23,6 +23,10 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -192,7 +196,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             )
         }
 
-        val deletedSnId = UUID.randomUUID()
+        val deletedSnId = ServiceNeedId(UUID.randomUUID())
 
         db.transaction {
             it.insertVardaServiceNeed(
@@ -217,7 +221,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds removed evaka service needs that exists in varda and there are no other changes`() {
         val since = HelsinkiDateTime.now()
         val childId: UUID = UUID.randomUUID()
-        val deletedSnId = UUID.randomUUID()
+        val deletedSnId = ServiceNeedId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(
                 DevPerson(
@@ -547,7 +551,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertEquals(0, db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }.size)
     }
 
-    private fun assertVardaServiceNeedIds(evakaServiceNeedId: UUID, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
+    private fun assertVardaServiceNeedIds(evakaServiceNeedId: ServiceNeedId, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
         assertEquals(expectedVardaDecisionId, vardaServiceNeed!!.vardaDecisionId)
         assertEquals(expectedVardaPlacementId, vardaServiceNeed!!.vardaPlacementId)
@@ -560,7 +564,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         serviceNeedPeriod: DateRange,
         feeDecisionPeriod: DateRange,
         voucherDecisionPeriod: DateRange
-    ): UUID {
+    ): ServiceNeedId {
         val id = createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
         createFeeDecision(db, child, adult.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, adult.id, child, since.toInstant(), VoucherValueDecisionStatus.SENT)
@@ -610,8 +614,8 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate()): UUID {
-        var serviceNeedId = UUID.randomUUID()
+    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate()): ServiceNeedId {
+        var serviceNeedId = ServiceNeedId(UUID.randomUUID())
         db.transaction { tx ->
             FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
                 .addChild().usePerson(child).saveAnd {
@@ -628,7 +632,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): UUID {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -656,7 +660,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         db: Database.Connection,
         validFrom: LocalDate,
         validTo: LocalDate?,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         adultId: UUID,
@@ -692,7 +696,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: UUID): UUID? = createQuery(
+private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): UUID? = createQuery(
     """
 SELECT p.child_id FROM placement p LEFT JOIN service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId
@@ -708,7 +712,7 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNee
     missing = false
 )
 
-private fun Database.Transaction.setFeeDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+private fun Database.Transaction.setFeeDecisionSentAt(id: FeeDecisionId, sentAt: Instant) = createUpdate(
     """
 UPDATE fee_decision SET sent_at = :sentAt
 WHERE id = :id 
@@ -717,7 +721,7 @@ WHERE id = :id
     .bind("sentAt", sentAt)
     .execute()
 
-private fun Database.Transaction.setVoucherValueDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+private fun Database.Transaction.setVoucherValueDecisionSentAt(id: VoucherValueDecisionId, sentAt: Instant) = createUpdate(
     """
 UPDATE voucher_value_decision SET sent_at = :sentAt
 WHERE id = :id 

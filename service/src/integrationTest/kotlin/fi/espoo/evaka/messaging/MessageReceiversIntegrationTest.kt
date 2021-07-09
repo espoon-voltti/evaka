@@ -20,6 +20,9 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -60,9 +63,9 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     private val supervisor2Id = UUID.randomUUID()
     private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
     private val guardianPerson = testAdult_6
-    private val groupId = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
-    private val secondGroupId = UUID.randomUUID()
+    private val secondGroupId = GroupId(UUID.randomUUID())
     private val secondGroupName = "Koekaniinit"
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
@@ -71,8 +74,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         tx: Database.Transaction,
         childId: UUID,
         guardianId: UUID,
-        unitId: UUID
-    ): UUID {
+        unitId: DaycareId
+    ): PlacementId {
         tx.insertGuardian(guardianId, childId)
         return tx.insertTestPlacement(
             DevPlacement(
@@ -88,8 +91,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         tx: Database.Transaction,
         childId: UUID,
         guardianId: UUID,
-        groupId: UUID,
-        unitId: UUID
+        groupId: GroupId,
+        unitId: DaycareId
     ) {
         val daycarePlacementId = insertChildToUnit(tx, childId, guardianId, unitId)
         tx.insertTestDaycareGroupPlacement(

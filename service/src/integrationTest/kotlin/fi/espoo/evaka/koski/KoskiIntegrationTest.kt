@@ -16,6 +16,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
@@ -318,7 +320,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchByExistingDaycare.size)
 
         val searchByRandomDaycare = db.read {
-            it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(UUID.randomUUID())))
+            it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID()))))
         }
         assertEquals(0, searchByRandomDaycare.size)
     }
@@ -749,10 +751,10 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     private fun insertPlacement(
         child: PersonData.Detailed = testChild_1,
-        daycareId: UUID = testDaycare.id,
+        daycareId: DaycareId = testDaycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
-    ): UUID = db.transaction {
+    ): PlacementId = db.transaction {
         it.insertTestPlacement(
             DevPlacement(
                 childId = child.id,

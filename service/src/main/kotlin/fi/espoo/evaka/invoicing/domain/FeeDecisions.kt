@@ -6,6 +6,8 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -18,7 +20,7 @@ import java.util.UUID
 import kotlin.math.max
 
 data class FeeDecision(
-    override val id: UUID,
+    override val id: FeeDecisionId,
     override val children: List<FeeDecisionChild>,
     val validDuring: DateRange,
     @Nested("head_of_family")
@@ -46,7 +48,7 @@ data class FeeDecision(
 ) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionChild, FeeDecision> {
     override val validFrom: LocalDate = validDuring.start
     override val validTo: LocalDate? = validDuring.end
-    override fun withRandomId() = this.copy(id = UUID.randomUUID())
+    override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
     override fun contentEquals(decision: FeeDecision): Boolean {
         return this.children.toSet() == decision.children.toSet() &&
@@ -125,7 +127,7 @@ enum class FeeDecisionType {
 }
 
 data class FeeDecisionDetailed(
-    override val id: UUID,
+    override val id: FeeDecisionId,
     override val children: List<FeeDecisionChildDetailed>,
     val validDuring: DateRange,
     val status: FeeDecisionStatus,
@@ -205,7 +207,7 @@ data class FeeDecisionChildDetailed(
 )
 
 data class FeeDecisionSummary(
-    override val id: UUID,
+    override val id: FeeDecisionId,
     override val children: List<PersonData.Basic>,
     val validDuring: DateRange,
     val status: FeeDecisionStatus,
@@ -220,14 +222,14 @@ data class FeeDecisionSummary(
 }
 
 private interface Mergeable<Child, Decision : Mergeable<Child, Decision>> {
-    val id: UUID
+    val id: Id<*>
     val children: List<Child>
 
     fun withChildren(children: List<Child>): Decision
 }
 
 fun <Child, Decision : Mergeable<Child, Decision>, Decisions : Iterable<Decision>> Decisions.merge(): List<Decision> {
-    val map = mutableMapOf<UUID, Decision>()
+    val map = mutableMapOf<Id<*>, Decision>()
     for (decision in this) {
         val id = decision.id
         if (map.containsKey(id)) {

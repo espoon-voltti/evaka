@@ -16,6 +16,8 @@ import fi.espoo.evaka.decision.getDecisionsByGuardian
 import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getGuardianChildIds
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -78,7 +80,7 @@ class ApplicationControllerCitizen(
     fun getApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
@@ -98,7 +100,7 @@ class ApplicationControllerCitizen(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: CreateApplicationBody
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
         user.requireOneOfRoles(UserRole.END_USER)
 
@@ -195,7 +197,7 @@ class ApplicationControllerCitizen(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
@@ -217,7 +219,7 @@ class ApplicationControllerCitizen(
     fun saveApplicationAsDraft(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
@@ -240,7 +242,7 @@ class ApplicationControllerCitizen(
     fun deleteUnprocessedApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         Audit.ApplicationDelete.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
@@ -262,7 +264,7 @@ class ApplicationControllerCitizen(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland(), isEnduser = true) }
         return ResponseEntity.noContent().build()
@@ -279,7 +281,7 @@ class ApplicationControllerCitizen(
     fun getApplicationDecisions(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
@@ -297,7 +299,7 @@ class ApplicationControllerCitizen(
     fun acceptDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
         // note: applicationStateService handles logging and authorization
@@ -318,7 +320,7 @@ class ApplicationControllerCitizen(
     fun rejectDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
         // note: applicationStateService handles logging and authorization
@@ -332,7 +334,7 @@ class ApplicationControllerCitizen(
     fun downloadDecisionPdf(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
@@ -365,13 +367,13 @@ data class CreateApplicationBody(
 )
 
 data class ApplicationDecisions(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val childName: String,
     val decisions: List<DecisionSummary>
 )
 
 data class DecisionSummary(
-    val decisionId: UUID,
+    val decisionId: DecisionId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,

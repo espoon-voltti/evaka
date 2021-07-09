@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -223,7 +224,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
     @Test
     fun `update assistance action, not found responds 404`() {
         whenPutAssistanceActionThenExpectError(
-            UUID.randomUUID(),
+            AssistanceActionId(UUID.randomUUID()),
             AssistanceActionRequest(
                 startDate = testDate(9),
                 endDate = testDate(22)
@@ -261,12 +262,12 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete assistance action, not found responds 404`() {
-        whenDeleteAssistanceActionThenExpectError(UUID.randomUUID(), 404)
+        whenDeleteAssistanceActionThenExpectError(AssistanceActionId(UUID.randomUUID()), 404)
     }
 
     private fun testDate(day: Int) = LocalDate.of(2000, 1, day)
 
-    private fun givenAssistanceAction(start: Int, end: Int, childId: UUID = testChild_1.id): UUID {
+    private fun givenAssistanceAction(start: Int, end: Int, childId: UUID = testChild_1.id): AssistanceActionId {
         return db.transaction {
             it.insertTestAssistanceAction(
                 DevAssistanceAction(
@@ -307,7 +308,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun whenPutAssistanceActionThenExpectSuccess(id: UUID, request: AssistanceActionRequest): AssistanceAction {
+    private fun whenPutAssistanceActionThenExpectSuccess(id: AssistanceActionId, request: AssistanceActionRequest): AssistanceAction {
         val (_, res, result) = http.put("/assistance-actions/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
@@ -317,7 +318,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun whenPutAssistanceActionThenExpectError(id: UUID, request: AssistanceActionRequest, status: Int) {
+    private fun whenPutAssistanceActionThenExpectError(id: AssistanceActionId, request: AssistanceActionRequest, status: Int) {
         val (_, res, _) = http.put("/assistance-actions/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
@@ -326,7 +327,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenDeleteAssistanceActionThenExpectSuccess(id: UUID) {
+    private fun whenDeleteAssistanceActionThenExpectSuccess(id: AssistanceActionId) {
         val (_, res, _) = http.delete("/assistance-actions/$id")
             .asUser(assistanceWorker)
             .response()
@@ -334,7 +335,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun whenDeleteAssistanceActionThenExpectError(id: UUID, status: Int) {
+    private fun whenDeleteAssistanceActionThenExpectError(id: AssistanceActionId, status: Int) {
         val (_, res, _) = http.delete("/assistance-actions/$id")
             .asUser(assistanceWorker)
             .response()

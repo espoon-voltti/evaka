@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
@@ -131,7 +132,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
             val decisions = listOf(
                 testDecisions[0],
                 testDecisions[0].copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = DateRange(testPeriod.start.minusYears(1), testPeriod.end!!.minusYears(1))
                 )
             )

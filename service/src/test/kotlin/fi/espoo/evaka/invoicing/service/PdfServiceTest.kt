@@ -19,6 +19,9 @@ import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -81,10 +84,10 @@ class PdfServiceTest {
                 ),
                 placementType = it.placement.type,
                 placementUnit = UnitData.Detailed(
-                    id = UUID.randomUUID(),
+                    id = DaycareId(UUID.randomUUID()),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = "fi",
-                    areaId = UUID.randomUUID(),
+                    areaId = AreaId(UUID.randomUUID()),
                     areaName = "Test Area"
                 ),
                 serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
@@ -105,7 +108,7 @@ class PdfServiceTest {
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
 
     private val normalVoucherValueDecision = VoucherValueDecisionDetailed(
-        id = testDecision1.id,
+        id = VoucherValueDecisionId(testDecision1.id.raw),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -152,10 +155,10 @@ class PdfServiceTest {
         childAge = 3,
         placement = VoucherValueDecisionPlacementDetailed(
             UnitData.Detailed(
-                id = UUID.randomUUID(),
+                id = DaycareId(UUID.randomUUID()),
                 name = "Test Daycare",
                 language = "fi",
-                areaId = UUID.randomUUID(),
+                areaId = AreaId(UUID.randomUUID()),
                 areaName = "Test Area"
             ),
             PlacementType.DAYCARE

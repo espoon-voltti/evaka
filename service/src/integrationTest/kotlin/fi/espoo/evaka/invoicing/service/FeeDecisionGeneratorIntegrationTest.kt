@@ -31,6 +31,10 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -1726,14 +1730,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = Instant.now()
-        UUID.randomUUID().let { uuid ->
+        FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(expected.copy(id = uuid, created = createdAt), actual.copy(id = uuid, created = createdAt))
         }
     }
 
     private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
         val createdAt = Instant.now()
-        UUID.randomUUID().let { uuid ->
+        FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
                 expected.map { it.copy(id = uuid, created = createdAt) },
                 actual.map { it.copy(id = uuid, created = createdAt) }
@@ -1741,7 +1745,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: UUID): UUID {
+    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -1768,9 +1772,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertServiceNeed(
-        placementId: UUID,
+        placementId: PlacementId,
         period: FiniteDateRange,
-        optionId: UUID
+        optionId: ServiceNeedOptionId
     ) {
         db.transaction { tx ->
             tx.insertTestServiceNeed(

@@ -29,6 +29,10 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.time.Instant
@@ -98,7 +102,7 @@ val testFeeThresholds = FeeThresholds(
 val testDecisionChild1 =
     FeeDecisionChild(
         child = testChild1,
-        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -109,7 +113,7 @@ val testDecisionChild1 =
 val testDecisionChild2 =
     FeeDecisionChild(
         child = testChild2,
-        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -119,7 +123,7 @@ val testDecisionChild2 =
     )
 
 val testDecision1 = FeeDecision(
-    id = uuid1,
+    id = FeeDecisionId(uuid1),
     status = FeeDecisionStatus.DRAFT,
     decisionNumber = 1010101010L,
     decisionType = FeeDecisionType.NORMAL,
@@ -159,7 +163,7 @@ val testInvoice = Invoice(
 val testPisFridgeParentId = UUID.randomUUID()
 
 val testIncome = Income(
-    id = UUID.randomUUID(),
+    id = IncomeId(UUID.randomUUID()),
     personId = UUID.randomUUID(),
     validFrom = LocalDate.of(2000, 1, 1),
     validTo = null,
@@ -187,7 +191,7 @@ fun createFeeDecisionAlterationFixture(
 fun createFeeDecisionChildFixture(
     childId: UUID,
     dateOfBirth: LocalDate,
-    placementUnitId: UUID,
+    placementUnitId: DaycareId,
     placementType: PlacementType,
     serviceNeed: FeeDecisionServiceNeed,
     baseFee: Int = 28900,
@@ -214,7 +218,7 @@ fun createFeeDecisionFixture(
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
-    id = UUID.randomUUID(),
+    id = FeeDecisionId(UUID.randomUUID()),
     status = status,
     decisionType = decisionType,
     validDuring = period,
@@ -234,7 +238,7 @@ fun createVoucherValueDecisionFixture(
     headOfFamilyId: UUID,
     childId: UUID,
     dateOfBirth: LocalDate,
-    unitId: UUID,
+    unitId: DaycareId,
     familySize: Int = 2,
     placementType: PlacementType,
     serviceNeed: VoucherValueDecisionServiceNeed,
@@ -246,7 +250,7 @@ fun createVoucherValueDecisionFixture(
     coPayment: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf()
 ) = VoucherValueDecision(
-    id = UUID.randomUUID(),
+    id = VoucherValueDecisionId(UUID.randomUUID()),
     status = status,
     validFrom = validFrom,
     validTo = validTo,

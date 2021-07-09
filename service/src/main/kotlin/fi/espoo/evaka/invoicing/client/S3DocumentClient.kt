@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.client
 
+import fi.espoo.evaka.shared.FeeDecisionId
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -11,7 +12,6 @@ import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,9 +43,9 @@ class S3DocumentClient(
         logger.debug { "PDF (object name: $key) uploaded to S3 bucket $bucket." }
     }
 
-    private fun getFeeDecisionDocumentKey(decisionId: UUID, lang: String) = "feedecision_${decisionId}_$lang.pdf"
+    private fun getFeeDecisionDocumentKey(decisionId: FeeDecisionId, lang: String) = "feedecision_${decisionId}_$lang.pdf"
 
-    fun uploadFeeDecisionPdf(decisionId: UUID, documentBytes: ByteArray, lang: String): String {
+    fun uploadFeeDecisionPdf(decisionId: FeeDecisionId, documentBytes: ByteArray, lang: String): String {
         val documentKey = getFeeDecisionDocumentKey(decisionId, lang)
 
         logger.debug { "Uploading fee decision PDF for $decisionId to S3." }

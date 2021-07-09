@@ -20,6 +20,7 @@ import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -71,7 +72,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val person2 = AuthenticatedUser.Citizen(id = person2Id)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id)
     private val person4 = AuthenticatedUser.Citizen(id = person4Id)
-    private val groupId = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
@@ -79,10 +80,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
         tx.insertTestChild(DevChild(id = child.id))
 
-        val placementId = UUID.randomUUID()
-        tx.insertTestPlacement(
+        val placementId = tx.insertTestPlacement(
             DevPlacement(
-                id = placementId,
                 childId = child.id,
                 unitId = testDaycare.id,
                 startDate = placementStart,

@@ -27,6 +27,8 @@ import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -40,7 +42,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import java.time.LocalDate
-import java.util.UUID
 
 val basicDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 val detailedDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -52,7 +53,7 @@ class UnitsView(private val acl: AccessControlList) {
     fun getUnitViewData(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam(
             value = "to",
@@ -119,7 +120,7 @@ data class UnitDataResponse(
 
 data class Caretakers(
     val unitCaretakers: Stats,
-    val groupCaretakers: Map<UUID, Stats>
+    val groupCaretakers: Map<GroupId, Stats>
 )
 
 data class UnitOccupancies(
@@ -130,7 +131,7 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange
 ): UnitOccupancies {
     return UnitOccupancies(
@@ -149,13 +150,13 @@ private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyR
 }
 
 data class GroupOccupancies(
-    val confirmed: Map<UUID, OccupancyResponse>,
-    val realized: Map<UUID, OccupancyResponse>
+    val confirmed: Map<GroupId, OccupancyResponse>,
+    val realized: Map<GroupId, OccupancyResponse>
 )
 
 private fun getGroupOccupancies(
     tx: Database.Read,
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange
 ): GroupOccupancies {
     return GroupOccupancies(
@@ -176,7 +177,7 @@ private fun getGroupOccupancies(
     )
 }
 
-private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<UUID, OccupancyResponse> {
+private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<GroupId, OccupancyResponse> {
     return occupancies
         .groupBy { it.groupId }
         .mapValues { (_, value) ->

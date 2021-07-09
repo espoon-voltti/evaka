@@ -10,6 +10,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -33,7 +36,7 @@ import kotlin.test.assertTrue
 class ServiceNeedIntegrationTest : FullApplicationTest() {
     private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
 
-    lateinit var placementId: UUID
+    lateinit var placementId: PlacementId
 
     @BeforeEach
     private fun beforeEach() {
@@ -291,7 +294,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun testDate(day: Int) = LocalDate.now().plusDays(day.toLong())
 
-    private fun givenServiceNeed(start: Int, end: Int, placementId: UUID, optionId: UUID = snDefaultDaycare.id): UUID {
+    private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: ServiceNeedOptionId = snDefaultDaycare.id): ServiceNeedId {
         return db.transaction { tx ->
             tx.insertTestServiceNeed(
                 confirmedBy = unitSupervisor.id,
@@ -311,7 +314,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun getServiceNeeds(childId: UUID, placementId: UUID): List<ServiceNeed> {
+    private fun getServiceNeeds(childId: UUID, placementId: PlacementId): List<ServiceNeed> {
         val (_, res, result) = http.get("/placements?childId=$childId")
             .asUser(unitSupervisor)
             .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)
@@ -320,7 +323,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         return result.get().first { it.id == placementId }.serviceNeeds
     }
 
-    private fun putServiceNeed(id: UUID, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 204) {
+    private fun putServiceNeed(id: ServiceNeedId, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 204) {
         val (_, res, _) = http.put("/service-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(unitSupervisor)
@@ -329,7 +332,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun deleteServiceNeed(id: UUID) {
+    private fun deleteServiceNeed(id: ServiceNeedId) {
         val (_, res, _) = http.delete("/service-needs/$id")
             .asUser(unitSupervisor)
             .response()

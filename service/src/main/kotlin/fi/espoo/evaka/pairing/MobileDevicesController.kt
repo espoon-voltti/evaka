@@ -5,6 +5,8 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class MobileDevicesController(
@@ -27,7 +28,7 @@ class MobileDevicesController(
     fun getMobileDevices(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam unitId: UUID
+        @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -40,7 +41,7 @@ class MobileDevicesController(
     fun getMobileDevice(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: MobileDeviceId
     ): ResponseEntity<MobileDevice> {
         Audit.MobileDevicesRead.log(targetId = id)
         user.assertSystemInternalUser()
@@ -57,7 +58,7 @@ class MobileDevicesController(
     fun putMobileDeviceName(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesRename.log(targetId = id)
@@ -71,7 +72,7 @@ class MobileDevicesController(
     fun deleteMobileDevice(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: MobileDeviceId
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesDelete.log(targetId = id)
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)

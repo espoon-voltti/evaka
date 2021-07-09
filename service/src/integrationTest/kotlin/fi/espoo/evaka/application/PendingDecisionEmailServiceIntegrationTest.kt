@@ -12,6 +12,7 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -40,7 +41,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var scheduledJobs: ScheduledJobs
 
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
     private val childId = testChild_1.id
     private val guardianId = testAdult_6.id
     private val unitId = testDaycare.id

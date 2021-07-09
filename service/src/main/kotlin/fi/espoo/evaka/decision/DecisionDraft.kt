@@ -4,12 +4,13 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.shared.DaycareId
 import java.time.LocalDate
 import java.util.UUID
 
 data class DecisionDraft(
     val id: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,

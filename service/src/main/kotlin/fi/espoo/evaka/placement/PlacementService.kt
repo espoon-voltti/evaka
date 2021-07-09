@@ -12,6 +12,10 @@ import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -28,7 +32,7 @@ fun createPlacement(
     tx: Database.Transaction,
     type: PlacementType,
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
     useFiveYearsOldDaycare: Boolean
@@ -47,7 +51,7 @@ fun createPlacement(
 }
 
 fun Database.Transaction.updatePlacement(
-    id: UUID,
+    id: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     aclAuth: AclAuthorization = AclAuthorization.All,
@@ -94,11 +98,11 @@ fun Database.Transaction.updatePlacement(
 }
 
 fun Database.Transaction.checkAndCreateGroupPlacement(
-    daycarePlacementId: UUID,
-    groupId: UUID,
+    daycarePlacementId: PlacementId,
+    groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
-): UUID {
+): GroupPlacementId {
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
 
@@ -139,7 +143,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     }
 }
 
-fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementId: UUID, groupId: UUID, startDate: LocalDate) {
+fun Database.Transaction.transferGroup(daycarePlacementId: PlacementId, groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
     val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
 
@@ -168,7 +172,7 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
     createGroupPlacement(daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
-private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: UUID? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
+private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
     getPlacementsForChildDuring(childId, from, to)
@@ -246,7 +250,7 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
-    daycareId: UUID?,
+    daycareId: DaycareId?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
@@ -353,11 +357,11 @@ private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, ty
 
 fun getMissingGroupPlacements(
     tx: Database.Read,
-    unitId: UUID
+    unitId: DaycareId
 ): List<MissingGroupPlacement> {
     data class GroupPlacementGap(
         val backup: Boolean,
-        val placementId: UUID,
+        val placementId: PlacementId,
         val placementType: PlacementType?,
         val placementRange: FiniteDateRange,
         val childId: UUID,
@@ -367,7 +371,7 @@ fun getMissingGroupPlacements(
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     data class PlacementResult(
-        val id: UUID,
+        val id: PlacementId,
         val type: PlacementType,
         val range: FiniteDateRange,
         val childId: UUID,
@@ -451,7 +455,7 @@ fun getMissingGroupPlacements(
 }
 
 data class DaycarePlacement(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -460,7 +464,7 @@ data class DaycarePlacement(
 )
 
 data class DaycarePlacementDetails(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -470,7 +474,7 @@ data class DaycarePlacementDetails(
 )
 
 data class DaycarePlacementWithDetails(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -483,16 +487,16 @@ data class DaycarePlacementWithDetails(
 )
 
 data class DaycareGroupPlacement(
-    val id: UUID?,
-    val groupId: UUID?,
+    val id: GroupPlacementId?,
+    val groupId: GroupId?,
     val groupName: String?,
-    val daycarePlacementId: UUID,
+    val daycarePlacementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class MissingGroupPlacement(
-    val placementId: UUID,
+    val placementId: PlacementId,
     val placementType: PlacementType?, // null for backup care
     val backup: Boolean,
     val placementPeriod: FiniteDateRange,
@@ -512,7 +516,7 @@ data class ChildBasics(
 )
 
 data class DaycareBasics(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val area: String,
     val providerType: ProviderType

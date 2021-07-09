@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
@@ -176,7 +177,7 @@ private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
     insertChildren(partsWithDecisionIds)
 }
 
-private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<FeeDecisionChild>>>) {
+private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>) {
     val sql =
         """
         INSERT INTO fee_decision_child (
@@ -235,7 +236,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<
     batch.execute()
 }
 
-private fun Database.Transaction.deleteChildren(decisionIds: List<UUID>) {
+private fun Database.Transaction.deleteChildren(decisionIds: List<FeeDecisionId>) {
     if (decisionIds.isEmpty()) return
 
     createUpdate("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
@@ -243,7 +244,7 @@ private fun Database.Transaction.deleteChildren(decisionIds: List<UUID>) {
         .execute()
 }
 
-fun Database.Transaction.deleteFeeDecisions(ids: List<UUID>) {
+fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
@@ -389,7 +390,7 @@ fun Database.Read.searchFeeDecisions(
         .let { it.copy(data = it.data.merge()) }
 }
 
-fun Database.Read.getFeeDecisionsByIds(ids: List<UUID>): List<FeeDecision> {
+fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
@@ -404,7 +405,7 @@ WHERE decision.id = ANY(:ids)
         .merge()
 }
 
-fun Database.Read.getDetailedFeeDecisionsByIds(ids: List<UUID>): List<FeeDecisionDetailed> {
+fun Database.Read.getDetailedFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
@@ -420,7 +421,7 @@ ORDER BY part.child_date_of_birth DESC
         .merge()
 }
 
-fun Database.Read.getFeeDecision(uuid: UUID): FeeDecisionDetailed? {
+fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
     val sql =
         """
         $feeDecisionDetailedQueryBase
@@ -460,7 +461,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
         .merge()
 }
 
-fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
+fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisionId>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
     val sql =
         """
         WITH youngest_child AS (
@@ -501,7 +502,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
     batch.execute()
 }
 
-fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
+fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: FeeDecisionId) {
     val sql =
         """
         UPDATE fee_decision
@@ -518,7 +519,7 @@ fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
+fun Database.Transaction.setFeeDecisionSent(ids: List<FeeDecisionId>) {
     val sql =
         """
         UPDATE fee_decision
@@ -552,7 +553,7 @@ fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<
         .execute()
 }
 
-fun Database.Transaction.updateFeeDecisionDocumentKey(id: UUID, key: String) {
+fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: String) {
     val sql =
         """
         UPDATE fee_decision
@@ -566,7 +567,7 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: UUID, key: String) {
         .execute()
 }
 
-fun Database.Read.getFeeDecisionDocumentKey(decisionId: UUID): String? {
+fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? {
     val sql =
         """
         SELECT document_key 
@@ -580,7 +581,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: UUID): String? {
         .firstOrNull()
 }
 
-fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
+fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
     //language=SQL
     val sql =
         """
@@ -603,7 +604,7 @@ fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
         .execute()
 }
 
-fun Database.Transaction.lockFeeDecisions(ids: List<UUID>) {
+fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
     createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()

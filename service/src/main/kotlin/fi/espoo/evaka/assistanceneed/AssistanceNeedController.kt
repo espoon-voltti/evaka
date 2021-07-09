@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -60,7 +61,7 @@ class AssistanceNeedController(
     fun updateAssistanceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") assistanceNeedId: UUID,
+        @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
@@ -77,7 +78,7 @@ class AssistanceNeedController(
     fun deleteAssistanceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") assistanceNeedId: UUID
+        @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
         acl.getRolesForAssistanceNeed(user, assistanceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)

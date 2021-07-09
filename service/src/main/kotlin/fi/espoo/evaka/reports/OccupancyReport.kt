@@ -9,6 +9,9 @@ import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.OccupancyValues
 import fi.espoo.evaka.occupancy.calculateDailyGroupOccupancyValues
 import fi.espoo.evaka.occupancy.calculateDailyUnitOccupancyValues
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class OccupancyReportController {
@@ -28,7 +30,7 @@ class OccupancyReportController {
         db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
-        @RequestParam careAreaId: UUID,
+        @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyUnitReportResultRow>> {
@@ -54,7 +56,7 @@ class OccupancyReportController {
         db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
-        @RequestParam careAreaId: UUID,
+        @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyGroupReportResultRow>> {
@@ -77,22 +79,22 @@ class OccupancyReportController {
 }
 
 data class OccupancyUnitReportResultRow(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val occupancies: Map<LocalDate, OccupancyValues>
 )
 
 data class OccupancyGroupReportResultRow(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val occupancies: Map<LocalDate, OccupancyValues>
 )
 
 private fun Database.Read.calculateUnitOccupancyReport(
     today: LocalDate,
-    areaId: UUID,
+    areaId: AreaId,
     queryPeriod: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyUnitReportResultRow> {
@@ -109,7 +111,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
 
 private fun Database.Read.calculateGroupOccupancyReport(
     today: LocalDate,
-    areaId: UUID,
+    areaId: AreaId,
     queryPeriod: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyGroupReportResultRow> {

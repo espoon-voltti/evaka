@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.controllers.DaycareResponse
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -29,7 +30,6 @@ import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -117,7 +117,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
 
-    private fun getAndAssertDaycareFields(daycareId: UUID, fields: DaycareFields) {
+    private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
         val (_, _, body) = http.get("/daycares/$daycareId")
             .asUser(admin)
             .responseObject<DaycareResponse>(objectMapper)

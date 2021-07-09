@@ -10,6 +10,11 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
@@ -158,7 +163,7 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
+        private var unitId: DaycareId? = null
         private var type: PlacementType? = null
         private var deleted = false
         private var preschoolDaycareDates: FiniteDateRange? = null
@@ -167,7 +172,7 @@ class FixtureBuilder(
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
         fun asDeleted() = this.apply { this.deleted = true }
         fun withPreschoolDaycareDates(range: FiniteDateRange) = this.apply { this.preschoolDaycareDates = range }
@@ -200,15 +205,15 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
-        private var groupId: UUID? = null
+        private var unitId: DaycareId? = null
+        private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
-        fun toGroup(id: UUID) = this.apply { this.groupId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
+        fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): ChildFixture {
             tx.insertTestBackUpCare(
@@ -229,14 +234,14 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
+        private var unitId: DaycareId? = null
         private var type: PlacementType? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
 
         fun save(): ChildFixture {
@@ -272,7 +277,7 @@ class FixtureBuilder(
     class PlacementFixture(
         private val tx: Database.Transaction,
         private val today: LocalDate,
-        val placementId: UUID,
+        val placementId: PlacementId,
         val placementPeriod: FiniteDateRange
     ) {
         fun addGroupPlacement() = GroupPlacementBuilder(tx, today, this)
@@ -287,13 +292,13 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate? = null
         private var to: LocalDate? = null
-        private var groupId: UUID? = null
+        private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
-        fun toGroup(id: UUID) = this.apply { this.groupId = id }
+        fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): PlacementFixture {
             tx.insertTestDaycareGroupPlacement(
@@ -313,21 +318,21 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate? = null
         private var to: LocalDate? = null
-        private var optionId: UUID? = null
+        private var optionId: ServiceNeedOptionId? = null
         private var serviceNeedOption: ServiceNeedOption? = null
         private var employeeId: UUID? = null
         private var updated: HelsinkiDateTime = HelsinkiDateTime.now()
-        private var id: UUID? = null
+        private var id: ServiceNeedId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
-        fun withOption(id: UUID) = this.apply { this.optionId = id }
+        fun withOption(id: ServiceNeedOptionId) = this.apply { this.optionId = id }
         fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
-        fun withId(id: UUID) = this.apply { this.id = id }
+        fun withId(id: ServiceNeedId) = this.apply { this.id = id }
 
         fun save(): PlacementFixture {
             if (serviceNeedOption != null) tx.insertServiceNeedOption(serviceNeedOption!!)
@@ -341,7 +346,7 @@ class FixtureBuilder(
                     to ?: placementFixture.placementPeriod.end
                 ),
                 updated = updated,
-                id = id ?: UUID.randomUUID()
+                id = id ?: ServiceNeedId(UUID.randomUUID())
             )
 
             return placementFixture

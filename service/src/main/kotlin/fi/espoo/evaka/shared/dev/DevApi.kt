@@ -55,6 +55,18 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -147,7 +159,7 @@ class DevApi(
     @PutMapping("/daycares/{daycareId}/acl")
     fun addAclRoleForDaycare(
         db: Database,
-        @PathVariable daycareId: UUID,
+        @PathVariable daycareId: DaycareId,
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -189,7 +201,7 @@ class DevApi(
     }
 
     data class Caretaker(
-        val groupId: UUID,
+        val groupId: GroupId,
         val amount: Double,
         val startDate: LocalDate,
         val endDate: LocalDate?
@@ -227,10 +239,10 @@ class DevApi(
     }
 
     data class DecisionRequest(
-        val id: UUID,
+        val id: DecisionId,
         val employeeId: UUID,
-        val applicationId: UUID,
-        val unitId: UUID,
+        val applicationId: ApplicationId,
+        val unitId: DaycareId,
         val type: DecisionType,
         val startDate: LocalDate,
         val endDate: LocalDate
@@ -256,7 +268,7 @@ class DevApi(
     }
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
-    fun createDecisionPdf(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+    fun createDecisionPdf(db: Database, @PathVariable id: DecisionId): ResponseEntity<Unit> {
         db.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
         return ResponseEntity.noContent().build()
     }
@@ -264,7 +276,7 @@ class DevApi(
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
         db: Database.Connection,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
         return db.read { tx ->
             tx.fetchApplicationDetails(applicationId)
@@ -274,7 +286,7 @@ class DevApi(
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database.Connection,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
         return db.read { tx ->
             tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -422,7 +434,7 @@ RETURNING id
     fun createApplications(
         db: Database,
         @RequestBody applications: List<ApplicationWithForm>
-    ): ResponseEntity<List<UUID>> {
+    ): ResponseEntity<List<ApplicationId>> {
         val uuids =
             db.transaction { tx ->
                 applications.map { application ->
@@ -450,7 +462,7 @@ RETURNING id
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable("application-id") applicationId: UUID,
+        @PathVariable("application-id") applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -517,7 +529,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
         db: Database,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
         val simpleActions = mapOf(
@@ -541,7 +553,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -554,7 +566,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
     fun createDefaultPlacementPlan(
         db: Database,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
             tx.ensureFakeAdminExists()
@@ -585,7 +597,7 @@ RETURNING id
     @PostMapping("/mobile/pairings/{id}/response")
     fun postPairingResponse(
         db: Database.Connection,
-        @PathVariable id: UUID,
+        @PathVariable id: PairingId,
         @RequestBody body: PairingsController.PostPairingResponseReq
     ): ResponseEntity<Pairing> {
         db.transaction { it.incrementAttempts(id, body.challengeKey) }
@@ -608,8 +620,8 @@ RETURNING id
     }
 
     data class MobileDeviceReq(
-        val id: UUID,
-        val unitId: UUID,
+        val id: MobileDeviceId,
+        val unitId: DaycareId,
         val name: String,
         val deleted: Boolean,
         val longTermToken: UUID
@@ -756,7 +768,7 @@ INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4
 }
 
 data class DevCareArea(
-    val id: UUID = UUID.randomUUID(),
+    val id: AreaId = AreaId(UUID.randomUUID()),
     val name: String = "Test Care Area",
     val shortName: String = "test_area",
     val areaCode: Int? = 200,
@@ -766,8 +778,8 @@ data class DevCareArea(
 data class DevBackupCare(
     val id: UUID? = null,
     val childId: UUID,
-    val unitId: UUID,
-    val groupId: UUID?,
+    val unitId: DaycareId,
+    val groupId: GroupId?,
     val period: FiniteDateRange
 )
 
@@ -781,11 +793,11 @@ data class DevChild(
 )
 
 data class DevDaycare(
-    val id: UUID? = UUID.randomUUID(),
+    val id: DaycareId? = DaycareId(UUID.randomUUID()),
     val name: String = "Test Daycare",
     val openingDate: LocalDate? = null,
     val closingDate: LocalDate? = null,
-    val areaId: UUID,
+    val areaId: AreaId,
     val type: Set<CareType> = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
     val daycareApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val preschoolApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
@@ -828,22 +840,22 @@ data class DevDaycare(
 )
 
 data class DevDaycareGroup(
-    val id: UUID = UUID.randomUUID(),
-    val daycareId: UUID,
+    val id: GroupId = GroupId(UUID.randomUUID()),
+    val daycareId: DaycareId,
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1)
 )
 
 data class DevDaycareGroupPlacement(
-    val id: UUID = UUID.randomUUID(),
-    val daycarePlacementId: UUID,
-    val daycareGroupId: UUID,
+    val id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
+    val daycarePlacementId: PlacementId,
+    val daycareGroupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class DevAssistanceNeed(
-    val id: UUID = UUID.randomUUID(),
+    val id: AssistanceNeedId = AssistanceNeedId(UUID.randomUUID()),
     val childId: UUID,
     val updatedBy: UUID,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -855,7 +867,7 @@ data class DevAssistanceNeed(
 )
 
 data class DevAssistanceAction(
-    val id: UUID = UUID.randomUUID(),
+    val id: AssistanceActionId = AssistanceActionId(UUID.randomUUID()),
     val childId: UUID,
     val updatedBy: UUID,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -866,10 +878,10 @@ data class DevAssistanceAction(
 )
 
 data class DevPlacement(
-    val id: UUID = UUID.randomUUID(),
+    val id: PlacementId = PlacementId(UUID.randomUUID()),
     val type: PlacementType = PlacementType.DAYCARE,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31)
 )
@@ -924,7 +936,7 @@ data class DevPerson(
 }
 
 data class DevParentship(
-    val id: UUID?,
+    val id: ParentshipId?,
     val childId: UUID,
     val headOfChildId: UUID,
     val startDate: LocalDate,
@@ -941,8 +953,8 @@ data class DevEmployee(
 )
 
 data class DevMobileDevice(
-    val id: UUID = UUID.randomUUID(),
-    val unitId: UUID,
+    val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
+    val unitId: DaycareId,
     val name: String = "Laite",
     val deleted: Boolean = false,
     val longTermToken: UUID? = null
@@ -954,7 +966,7 @@ data class DaycareAclInsert(
 )
 
 data class PlacementPlan(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val preschoolDaycarePeriodStart: LocalDate?,
@@ -962,7 +974,7 @@ data class PlacementPlan(
 )
 
 data class ApplicationWithForm(
-    val id: UUID?,
+    val id: ApplicationId?,
     val createdDate: OffsetDateTime?,
     val modifiedDate: OffsetDateTime?,
     var sentDate: LocalDate?,
@@ -980,11 +992,11 @@ data class ApplicationWithForm(
 
 data class ApplicationForm(
     val id: UUID? = UUID.randomUUID(),
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val createdDate: OffsetDateTime? = OffsetDateTime.now(),
     val revision: Int,
     val document: DaycareFormV0,
     val updated: OffsetDateTime? = OffsetDateTime.now()
 )
 
-data class DevDaycareGroupAcl(val groupId: UUID, val employeeId: UUID)
+data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: UUID)

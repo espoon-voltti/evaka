@@ -19,6 +19,11 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -886,7 +891,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             .toList()
     }
 
-    private fun updateServiceNeed(id: UUID, updatedAt: Instant) = db.transaction {
+    private fun updateServiceNeed(id: ServiceNeedId, updatedAt: Instant) = db.transaction {
         it.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)
             .bind("updatedAt", updatedAt)
@@ -900,10 +905,10 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
 internal fun insertServiceNeed(
     db: Database.Connection,
-    placementId: UUID,
+    placementId: PlacementId,
     period: FiniteDateRange,
-    optionId: UUID
-): UUID {
+    optionId: ServiceNeedOptionId
+): ServiceNeedId {
     return db.transaction {
         it.insertTestServiceNeed(
             confirmedBy = testDecisionMaker_1.id,
@@ -939,11 +944,11 @@ fun insertDecisionWithApplication(
     db: Database.Connection,
     child: PersonData.Detailed,
     period: FiniteDateRange,
-    unitId: UUID = testDaycare.id,
+    unitId: DaycareId = testDaycare.id,
     decisionType: DecisionType = DecisionType.DAYCARE,
     sentDate: LocalDate = LocalDate.of(2019, 1, 1),
     decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED
-): UUID = db.transaction {
+): DecisionId = db.transaction {
     val applicationId = it.insertTestApplication(childId = child.id, guardianId = testAdult_1.id, sentDate = sentDate)
     it.insertTestApplicationForm(
         applicationId,
@@ -975,7 +980,7 @@ fun insertDecisionWithApplication(
     it.insertTestDecision(acceptedDecision)
 }
 
-fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: UUID, period: FiniteDateRange): Pair<UUID, UUID> {
+fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: DaycareId, period: FiniteDateRange): Pair<DecisionId, PlacementId> {
     val decisionId = insertDecisionWithApplication(db, child = child, period = period, unitId = unitId)
     return db.transaction {
         val placementId = it.insertTestPlacement(
@@ -994,7 +999,7 @@ fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detai
     }
 }
 
-private fun deletePlacement(db: Database.Connection, id: UUID) = db.transaction {
+private fun deletePlacement(db: Database.Connection, id: PlacementId) = db.transaction {
     it.createUpdate("DELETE FROM placement WHERE id = :id")
         .bind("id", id)
         .execute()

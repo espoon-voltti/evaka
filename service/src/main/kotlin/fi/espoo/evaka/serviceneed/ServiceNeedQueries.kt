@@ -5,6 +5,10 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -37,7 +41,7 @@ fun Database.Read.getServiceNeedsByChild(
 }
 
 fun Database.Read.getServiceNeedsByUnit(
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate?,
     endDate: LocalDate?
 ): List<ServiceNeed> {
@@ -63,7 +67,7 @@ fun Database.Read.getServiceNeedsByUnit(
         .toList()
 }
 
-fun Database.Read.getServiceNeed(id: UUID): ServiceNeed {
+fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     // language=sql
     val sql = """
         SELECT 
@@ -82,7 +86,7 @@ fun Database.Read.getServiceNeed(id: UUID): ServiceNeed {
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-fun Database.Read.getServiceNeedChildRange(id: UUID): ServiceNeedChildRange {
+fun Database.Read.getServiceNeedChildRange(id: ServiceNeedId): ServiceNeedChildRange {
     // language=sql
     val sql = """
         SELECT p.child_id, daterange(sn.start_date, sn.end_date, '[]')
@@ -98,14 +102,14 @@ fun Database.Read.getServiceNeedChildRange(id: UUID): ServiceNeedChildRange {
 }
 
 fun Database.Transaction.insertServiceNeed(
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedBy: UUID,
     confirmedAt: HelsinkiDateTime
-): UUID {
+): ServiceNeedId {
     // language=sql
     val sql = """
         INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
@@ -120,15 +124,15 @@ fun Database.Transaction.insertServiceNeed(
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
-        .mapTo<UUID>()
+        .mapTo<ServiceNeedId>()
         .one()
 }
 
 fun Database.Transaction.updateServiceNeed(
-    id: UUID,
+    id: ServiceNeedId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedBy: UUID,
     confirmedAt: HelsinkiDateTime
@@ -152,7 +156,7 @@ fun Database.Transaction.updateServiceNeed(
 }
 
 fun Database.Transaction.deleteServiceNeed(
-    id: UUID
+    id: ServiceNeedId
 ) {
     createUpdate("DELETE FROM service_need WHERE id = :id")
         .bind("id", id)
@@ -160,10 +164,10 @@ fun Database.Transaction.deleteServiceNeed(
 }
 
 fun Database.Read.getOverlappingServiceNeeds(
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    excluding: UUID?
+    excluding: ServiceNeedId?
 ): List<ServiceNeed> {
     // language=sql
     val sql = """

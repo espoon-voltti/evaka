@@ -4,6 +4,10 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
@@ -24,7 +28,7 @@ private val placementSelector =
         FROM placement p
     """.trimIndent()
 
-fun Database.Read.getPlacement(id: UUID): Placement? {
+fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery("$placementSelector WHERE p.id = :id")
         .bind("id", id)
         .mapTo<Placement>()
@@ -33,10 +37,10 @@ fun Database.Read.getPlacement(id: UUID): Placement? {
 
 fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacement> {
     data class QueryResult(
-        val id: UUID,
+        val id: PlacementId,
         val type: PlacementType,
         val childId: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val unitName: String,
         val startDate: LocalDate,
         val endDate: LocalDate
@@ -86,7 +90,7 @@ fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, e
 fun Database.Transaction.insertPlacement(
     type: PlacementType,
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
 ): Placement {
@@ -107,7 +111,7 @@ fun Database.Transaction.insertPlacement(
         .first()
 }
 
-fun Database.Transaction.updatePlacementStartDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -119,7 +123,7 @@ fun Database.Transaction.updatePlacementStartDate(placementId: UUID, date: Local
         .execute()
 }
 
-fun Database.Transaction.updatePlacementEndDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -131,7 +135,7 @@ fun Database.Transaction.updatePlacementEndDate(placementId: UUID, date: LocalDa
         .execute()
 }
 
-fun Database.Transaction.updatePlacementStartAndEndDate(placementId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId, startDate: LocalDate, endDate: LocalDate) {
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
@@ -139,7 +143,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(placementId: UUID, start
         .execute()
 }
 
-fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, LocalDate> {
+fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<UUID, LocalDate, LocalDate> {
     data class QueryResult(
         val childId: UUID,
         val startDate: LocalDate,
@@ -180,7 +184,7 @@ fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, Loca
         }
 }
 
-fun Database.Transaction.clearGroupPlacementsAfter(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -204,7 +208,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: UUID, date: Loca
         .execute()
 }
 
-fun Database.Transaction.clearGroupPlacementsBefore(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -229,7 +233,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: UUID, date: Loc
 }
 
 fun Database.Read.getDaycarePlacements(
-    daycareId: UUID?,
+    daycareId: DaycareId?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
@@ -268,7 +272,7 @@ fun Database.Read.getDaycarePlacements(
         .toList()
 }
 
-fun Database.Read.getDaycarePlacement(id: UUID): DaycarePlacement? {
+fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
     // language=SQL
     val sql =
         """
@@ -299,7 +303,7 @@ fun Database.Read.getDaycarePlacement(id: UUID): DaycarePlacement? {
         .firstOrNull()
 }
 
-fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
+fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
     val sql =
         """
@@ -322,8 +326,8 @@ fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
 }
 
 fun Database.Read.getIdenticalPrecedingGroupPlacement(
-    daycarePlacementId: UUID,
-    groupId: UUID,
+    daycarePlacementId: PlacementId,
+    groupId: GroupId,
     startDate: LocalDate
 ): DaycareGroupPlacement? {
     // language=SQL
@@ -350,8 +354,8 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
 }
 
 fun Database.Read.getIdenticalPostcedingGroupPlacement(
-    daycarePlacementId: UUID,
-    groupId: UUID,
+    daycarePlacementId: PlacementId,
+    groupId: GroupId,
     endDate: LocalDate
 ): DaycareGroupPlacement? {
     // language=SQL
@@ -377,14 +381,14 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
         .firstOrNull()
 }
 
-fun Database.Read.hasGroupPlacements(groupId: UUID): Boolean = createQuery(
+fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean = createQuery(
     "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = :groupId)"
 )
     .bind("groupId", groupId)
     .mapTo<Boolean>()
     .one()
 
-fun Database.Read.getGroupPlacementsAtDaycare(daycareId: UUID, placementRange: DateRange): List<DaycareGroupPlacement> {
+fun Database.Read.getGroupPlacementsAtDaycare(daycareId: DaycareId, placementRange: DateRange): List<DaycareGroupPlacement> {
     // language=SQL
     val sql =
         """
@@ -438,11 +442,11 @@ fun Database.Read.getChildGroupPlacements(
 }
 
 fun Database.Transaction.createGroupPlacement(
-    placementId: UUID,
-    groupId: UUID,
+    placementId: PlacementId,
+    groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
-): UUID {
+): GroupPlacementId {
     // language=SQL
     val sql =
         """
@@ -456,11 +460,11 @@ fun Database.Transaction.createGroupPlacement(
         .bind("groupId", groupId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .one()
 }
 
-fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementStartDate(id: GroupPlacementId, startDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET start_date = :startDate WHERE id = :id RETURNING id"
 
@@ -471,30 +475,30 @@ fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: Loca
         .firstOrNull() != null
 }
 
-fun Database.Transaction.updateGroupPlacementEndDate(id: UUID, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementEndDate(id: GroupPlacementId, endDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET end_date = :endDate WHERE id = :id RETURNING id"
 
     return createQuery(sql)
         .bind("id", id)
         .bind("endDate", endDate)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.deleteGroupPlacement(id: UUID): Boolean {
+fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .firstOrNull() != null
 }
 
 private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacement = { rs, _ ->
     DaycarePlacement(
-        id = rs.getUUID("placement_id"),
+        id = PlacementId(rs.getUUID("placement_id")),
         child = ChildBasics(
             id = rs.getUUID("child_id"),
             socialSecurityNumber = rs.getString("child_ssn"),
@@ -503,7 +507,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
             dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
         ),
         daycare = DaycareBasics(
-            id = rs.getUUID("unit_id"),
+            id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("unit_name"),
             area = rs.getString("area_name"),
             providerType = rs.getEnum("provider_type")
@@ -516,7 +520,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
 
 private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, _ ->
     DaycarePlacementDetails(
-        id = rs.getUUID("id"),
+        id = PlacementId(rs.getUUID("id")),
         child = ChildBasics(
             id = rs.getUUID("child_id"),
             socialSecurityNumber = rs.getString("social_security_number"),
@@ -525,7 +529,7 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
             dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
         ),
         daycare = DaycareBasics(
-            id = rs.getUUID("unit_id"),
+            id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("daycare_name"),
             area = rs.getString("area_name"),
             providerType = rs.getEnum("provider_type")

@@ -16,6 +16,8 @@ import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.insertMessageContent
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -188,7 +190,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(Stats(minimum = 8.5, maximum = 8.5), stats.unitTotalCaretakers)
     }
 
-    private fun getDaycare(daycareId: UUID): DaycareResponse {
+    private fun getDaycare(daycareId: DaycareId): DaycareResponse {
         val (_, res, body) = http.get("/daycares/$daycareId")
             .asUser(staffMember)
             .responseObject<DaycareResponse>(objectMapper)
@@ -197,7 +199,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         return body.get()
     }
 
-    private fun getDaycareStats(daycareId: UUID, from: LocalDate, to: LocalDate): DaycareCapacityStats {
+    private fun getDaycareStats(daycareId: DaycareId, from: LocalDate, to: LocalDate): DaycareCapacityStats {
         val (_, res, body) = http.get("/daycares/$daycareId/stats?from=$from&to=$to")
             .asUser(staffMember)
             .responseObject<DaycareCapacityStats>(objectMapper)
@@ -207,7 +209,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     }
 
     private fun createDaycareGroup(
-        daycareId: UUID,
+        daycareId: DaycareId,
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
@@ -229,7 +231,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         return body.get()
     }
 
-    private fun deleteDaycareGroup(daycareId: UUID, groupId: UUID, expectedStatus: Int = 204) {
+    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId, expectedStatus: Int = 204) {
         val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
             .asUser(supervisor)
             .response()
@@ -237,7 +239,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun groupHasMessageAccount(groupId: UUID): Boolean {
+    private fun groupHasMessageAccount(groupId: GroupId): Boolean {
         // language=SQL
         val sql = """
             SELECT EXISTS(

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.async
 
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
@@ -50,7 +51,7 @@ class AsyncJobRunnerTest {
     fun testPlanRollback() {
         assertThrows<LetsRollbackException> {
             db.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(NotifyDecisionCreated(UUID.randomUUID(), user, false)))
+                asyncJobRunner.plan(tx, listOf(NotifyDecisionCreated(DecisionId(UUID.randomUUID()), user, false)))
                 throw LetsRollbackException()
             }
         }
@@ -59,7 +60,7 @@ class AsyncJobRunnerTest {
 
     @Test
     fun testCompleteHappyCase() {
-        val decisionId = UUID.randomUUID()
+        val decisionId = DecisionId(UUID.randomUUID())
         val future = this.setAsyncJobCallback { msg -> msg }
         db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false))) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
@@ -70,7 +71,7 @@ class AsyncJobRunnerTest {
 
     @Test
     fun testCompleteRetry() {
-        val decisionId = UUID.randomUUID()
+        val decisionId = DecisionId(UUID.randomUUID())
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
         db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false)), 20, Duration.ZERO) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)

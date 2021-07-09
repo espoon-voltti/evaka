@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
@@ -42,7 +43,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         }
     }
 
-    fun updateParentshipDuration(tx: Database.Transaction, id: UUID, startDate: LocalDate, endDate: LocalDate): Parentship {
+    fun updateParentshipDuration(tx: Database.Transaction, id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Parentship {
         val oldParentship = tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
@@ -61,7 +62,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryParentship(tx: Database.Transaction, id: UUID) {
+    fun retryParentship(tx: Database.Transaction, id: ParentshipId) {
         try {
             tx.getParentship(id)
                 ?.takeIf { it.conflict }
@@ -78,7 +79,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         }
     }
 
-    fun deleteParentship(tx: Database.Transaction, id: UUID) {
+    fun deleteParentship(tx: Database.Transaction, id: ParentshipId) {
         val parentship = tx.getParentship(id)
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
@@ -105,7 +106,7 @@ private fun validateDates(childDateOfBirth: LocalDate, startDate: LocalDate, end
 }
 
 data class Parentship(
-    val id: UUID,
+    val id: ParentshipId,
     val childId: UUID,
     val child: PersonJSON,
     val headOfChildId: UUID,
