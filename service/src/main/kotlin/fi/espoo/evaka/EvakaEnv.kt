@@ -12,14 +12,44 @@ import java.util.Locale
  * A type-safe configuration parsed from environment variables / other property sources supported by Spring Boot by default
  */
 data class EvakaEnv(
-    val koskiEnabled: Boolean
+    val koskiEnabled: Boolean,
+    val frontendBaseUrlFi: String,
+    val frontendBaseUrlSv: String,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
             return EvakaEnv(
-                koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false
+                koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false,
+                frontendBaseUrlFi = env.lookup("evaka.frontend.base_url.fi", "application.frontend.baseurl"),
+                frontendBaseUrlSv = env.lookup("evaka.frontend.base_url.sv", "application.frontend.baseurl.sv"),
             )
         }
+    }
+}
+
+data class EmailEnv(
+    val enabled: Boolean,
+    val whitelist: List<Regex>?,
+    val senderAddress: String,
+    val senderNameFi: String,
+    val senderNameSv: String,
+    val applicationReceivedSenderAddressFi: String,
+    val applicationReceivedSenderAddressSv: String,
+    val applicationReceivedSenderNameFi: String,
+    val applicationReceivedSenderNameSv: String
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = EmailEnv(
+            enabled = env.lookup("evaka.email.enabled", "application.email.enabled") ?: false,
+            whitelist = env.lookup<List<String>?>("evaka.email.whitelist", "application.email.whitelist")?.map(::Regex),
+            senderAddress = env.lookup("evaka.email.sender_address", "fi.espoo.evaka.email.reply_to_address"),
+            senderNameFi = env.lookup("evaka.email.sender_name.fi", "fi.espoo.evaka.email.sender_name.fi"),
+            senderNameSv = env.lookup("evaka.email.sender_name.sv", "fi.espoo.evaka.email.sender_name.sv"),
+            applicationReceivedSenderAddressFi = env.lookup("evaka.email.application_received.sender_address.fi", "application.email.address.fi") ?: "",
+            applicationReceivedSenderAddressSv = env.lookup("evaka.email.application_received.sender_address.sv", "application.email.address.sv") ?: "",
+            applicationReceivedSenderNameFi = env.lookup("evaka.email.application_received.sender_name.fi", "application.email.name.fi") ?: "",
+            applicationReceivedSenderNameSv = env.lookup("evaka.email.application_received.sender_name.sv", "application.email.name.sv") ?: ""
+        )
     }
 }
 

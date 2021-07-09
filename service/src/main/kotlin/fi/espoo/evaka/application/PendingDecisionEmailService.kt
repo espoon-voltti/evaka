@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.pis.getPersonById
@@ -13,7 +14,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.util.UUID
@@ -24,15 +24,15 @@ private val logger = KotlinLogging.logger { }
 class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner,
     private val emailClient: IEmailClient,
-    env: Environment
+    env: EmailEnv
 ) {
     init {
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
     }
 
-    val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
-    val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
-    val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
+    val senderAddress: String = env.senderAddress
+    val senderNameFi: String = env.senderNameFi
+    val senderNameSv: String = env.senderNameSv
 
     fun getFromAddress(language: Language) = when (language) {
         Language.sv -> "$senderNameSv <$senderAddress>"
