@@ -28,6 +28,7 @@ import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
@@ -40,6 +41,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -84,6 +86,44 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(testChild_1.dateOfBirth.plusYears(3), decision.validFrom)
             assertEquals(period.end, decision.validTo)
             assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(BigDecimal("1.00"), decision.ageCoefficient)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(87000, decision.voucherValue)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions get correct age coefficients for child not born on first of month`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
+
+        val testChild = testChild_6
+
+        assertNotEquals(1, testChild.dateOfBirth.dayOfMonth)
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild.id), period)
+        insertPlacement(testChild.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(2, voucherValueDecisions.size)
+        val assumedPeriodStart = testChild.dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(assumedPeriodStart.minusDays(1), decision.validTo)
+            assertEquals(testChild.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(BigDecimal("1.55"), decision.ageCoefficient)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(134850, decision.voucherValue)
+        }
+        voucherValueDecisions.last().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(assumedPeriodStart, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild.id, decision.child.id)
             assertEquals(87000, decision.baseValue)
             assertEquals(BigDecimal("1.00"), decision.ageCoefficient)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)

@@ -203,16 +203,21 @@ data class VoucherValueDecisionServiceNeed(
     val voucherValueDescriptionSv: String
 )
 
-fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
-    val thirdBirthday = dateOfBirth.plusYears(3)
-    val birthdayInMiddleOfPeriod = period.includes(thirdBirthday) && thirdBirthday != period.start && thirdBirthday != period.end
+fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (dateOfBirth.dayOfMonth) {
+    1 -> dateOfBirth.plusYears(3)
+    else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
+}
 
-    check(!birthdayInMiddleOfPeriod) {
-        "Third birthday ($thirdBirthday) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
+fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
+    val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
+    val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
+
+    check(!periodStartInMiddleOfTargetPeriod) {
+        "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
     }
 
     return when {
-        period.start < thirdBirthday -> BigDecimal("1.55")
+        period.start < thirdBirthdayPeriodStart -> BigDecimal("1.55")
         else -> BigDecimal("1.00")
     }
 }
