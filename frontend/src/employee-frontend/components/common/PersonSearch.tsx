@@ -2,47 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import { Result, Success } from 'lib-common/api'
+import { getAge } from 'lib-common/utils/local-date'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import ReactSelect, { components, OptionProps } from 'react-select'
-
-import { Translations, useTranslation } from '../../state/i18n'
+import Combobox from '../../../lib-components/atoms/form/Combobox'
 import {
   findByNameOrAddress,
   getOrCreatePersonBySsn,
   getPersonDetails
 } from '../../api/person'
-import { Result, Success } from 'lib-common/api'
-import { formatName } from '../../utils'
-import { useDebounce } from 'lib-common/utils/useDebounce'
-import { isSsnValid } from '../../utils/validation/validations'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { CHILD_AGE } from '../../constants'
+
+import { useTranslation } from '../../state/i18n'
 import { PersonDetails } from '../../types/person'
-import { getAge } from 'lib-common/utils/local-date'
+import { formatName } from '../../utils'
+import { isSsnValid } from '../../utils/validation/validations'
 
 const Container = styled.div`
   margin: 10px 0;
 `
-
-const customComponents = (i18n: Translations) => ({
-  Option: React.memo(function Option(props: OptionProps<PersonDetails>) {
-    const {
-      id,
-      firstName,
-      lastName,
-      dateOfBirth,
-      streetAddress
-    } = props.data as PersonDetails
-    return (
-      <components.Option {...props} data-qa={`value-${id}`}>
-        {formatName(firstName, lastName, i18n)} ({dateOfBirth.format()})
-        <br />
-        {streetAddress}
-      </components.Option>
-    )
-  })
-})
 
 const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   if (isSsnValid(q.toUpperCase())) {
@@ -104,27 +85,40 @@ function PersonSearch({
     [persons] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
+  const formatItemLabel = useCallback(
+    ({ firstName, lastName }: PersonDetails): string =>
+      formatName(firstName, lastName, i18n),
+    [i18n]
+  )
+
+  const formatMenuItemLabel = useCallback(
+    ({
+      dateOfBirth,
+      firstName,
+      lastName,
+      streetAddress
+    }: PersonDetails): string =>
+      `${formatName(firstName, lastName, i18n)} (${dateOfBirth.format()})${
+        streetAddress ? `\n${streetAddress}` : ''
+      }`,
+    [i18n]
+  )
+
   return (
     <Container>
-      <ReactSelect
+      <Combobox
         placeholder={i18n.common.search}
-        isClearable
-        escapeClearsValue
-        value={selectedPerson}
-        options={options}
-        getOptionValue={(option) => option.id}
-        getOptionLabel={({ firstName, lastName }) =>
-          formatName(firstName, lastName, i18n)
-        }
+        clearable
+        selectedItem={selectedPerson ?? null}
+        items={options}
+        getItemLabel={formatItemLabel}
+        getMenuItemLabel={formatMenuItemLabel}
+        getItemDataQa={({ id }) => `value-${id}`}
         onInputChange={setQuery}
-        onChange={(option) =>
-          setSelectedPerson(option && 'id' in option ? option : undefined)
-        }
-        isLoading={persons.isLoading || (!!query && query !== debouncedQuery)}
-        loadingMessage={() => i18n.common.loading}
-        noOptionsMessage={() => i18n.common.noResults}
-        components={customComponents(i18n)}
-        filterOption={() => true}
+        onChange={(option) => setSelectedPerson(option || undefined)}
+        isLoading={persons.isLoading || query !== debouncedQuery}
+        menuEmptyLabel={i18n.common.noResults}
+        filterItems={(_, items) => items}
         onFocus={onFocus}
       />
     </Container>
