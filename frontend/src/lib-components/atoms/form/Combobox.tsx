@@ -81,6 +81,7 @@ const MenuItem = styled.div`
   &.clickable {
     cursor: pointer;
   }
+  white-space: pre-line;
 `
 
 const Input = styled.input`
@@ -136,6 +137,7 @@ interface Props<T> {
   filterItems?: (inputValue: string, items: T[]) => T[]
   getItemLabel?: (item: T) => string
   getItemDataQa?: (item: T) => string | undefined
+  getMenuItemLabel?: (item: T) => string
   isLoading?: boolean
   menuEmptyLabel?: string
   onFocus?: FocusEventHandler<HTMLInputElement>
@@ -180,6 +182,7 @@ export default function Combobox<T>(props: Props<T>) {
     disabled,
     placeholder,
     getItemLabel = defaultGetItemLabel,
+    getMenuItemLabel = getItemLabel,
     getItemDataQa,
     isLoading,
     menuEmptyLabel,
@@ -203,13 +206,13 @@ export default function Combobox<T>(props: Props<T>) {
   const defaultRenderMenuItem = useCallback(
     ({ highlighted, item }: MenuItemProps<T>) => (
       <MenuItem
-        data-qa={getItemDataQa && getItemDataQa(item)}
+        data-qa={getItemDataQa?.(item)}
         className={classNames({ highlighted, clickable: true })}
       >
-        {getItemLabel(item)}
+        {getMenuItemLabel(item)}
       </MenuItem>
     ),
-    [getItemLabel, getItemDataQa]
+    [getMenuItemLabel, getItemDataQa]
   )
 
   const filterItems = useMemo(() => props.filterItems ?? defaultFilterItems, [
