@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -73,7 +74,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -90,8 +90,10 @@ class ApplicationStateService(
     private val asyncJobRunner: AsyncJobRunner,
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
-    private val env: Environment
+    env: BucketEnv
 ) {
+    private val filesBucket = env.attachments
+
     // STATE TRANSITIONS
 
     fun sendApplication(
@@ -463,7 +465,6 @@ class ApplicationStateService(
 
         val updatedForm = original.form.update(update)
 
-        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
             val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.id)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
@@ -507,7 +508,6 @@ class ApplicationStateService(
         val updatedForm = original.form.update(update.form)
         validateApplication(tx, original.type, updatedForm, currentDate, strict = false)
 
-        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
             val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, userId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }

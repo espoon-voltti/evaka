@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
@@ -39,9 +40,10 @@ import java.util.UUID
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
-    env: Environment
+    env: Environment,
+    bucketEnv: BucketEnv
 ) {
-    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
+    private val filesBucket = bucketEnv.attachments
     private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

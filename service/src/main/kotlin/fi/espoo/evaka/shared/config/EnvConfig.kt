@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.config
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.KoskiEnv
 import org.springframework.context.annotation.Bean
@@ -22,4 +23,7 @@ class EnvConfig {
         true -> KoskiEnv.fromEnvironment(env)
         false -> null
     }
+
+    @Bean
+    fun bucketEnv(env: Environment): BucketEnv = BucketEnv.fromEnvironment(env)
 }

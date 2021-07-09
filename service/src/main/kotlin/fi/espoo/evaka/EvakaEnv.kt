@@ -5,6 +5,7 @@
 package fi.espoo.evaka
 
 import org.springframework.core.env.Environment
+import java.net.URI
 import java.util.Locale
 
 /**
@@ -19,6 +20,28 @@ data class EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false
             )
         }
+    }
+}
+
+data class BucketEnv(
+    val s3MockUrl: URI,
+    val data: String,
+    val attachments: String,
+    val decisions: String,
+    val feeDecisions: String,
+    val voucherValueDecisions: String
+) {
+    fun allBuckets() = listOf(data, attachments, decisions, feeDecisions, voucherValueDecisions)
+
+    companion object {
+        fun fromEnvironment(env: Environment) = BucketEnv(
+            s3MockUrl = env.lookup("evaka.s3mock.url", "fi.espoo.voltti.s3mock.url"),
+            data = env.lookup("evaka.bucket.data", "fi.espoo.voltti.document.bucket.data"),
+            attachments = env.lookup("evaka.bucket.attachments", "fi.espoo.voltti.document.bucket.attachments"),
+            decisions = env.lookup("evaka.bucket.decisions", "fi.espoo.voltti.document.bucket.daycaredecision"),
+            feeDecisions = env.lookup("evaka.bucket.fee_decisions", "fi.espoo.voltti.document.bucket.paymentdecision"),
+            voucherValueDecisions = env.lookup("evaka.bucket.voucher_value_decisions", "fi.espoo.voltti.document.bucket.vouchervaluedecision"),
+        )
     }
 }
 
