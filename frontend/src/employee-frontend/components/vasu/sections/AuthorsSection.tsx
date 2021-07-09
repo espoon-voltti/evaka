@@ -2,24 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useEffect } from 'react'
-import { ContentArea } from '../../../../lib-components/layout/Container'
-import { H2, Label } from '../../../../lib-components/typography'
-import { AuthorInfo, AuthorsContent } from '../api'
-import { useTranslation } from '../../../state/i18n'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import InputField from '../../../../lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
+import React, { Dispatch, SetStateAction, useEffect } from 'react'
+import InputField from '../../../../lib-components/atoms/form/InputField'
+import { ContentArea } from '../../../../lib-components/layout/Container'
+import { H2, Label } from '../../../../lib-components/typography'
+import { useTranslation } from '../../../state/i18n'
+import { AuthorInfo, AuthorsContent } from '../api'
+import { ReadOnlyValue } from '../components/ReadOnlyValue'
 
 interface Props {
   sectionIndex: number
   content: AuthorsContent
   setContent: Dispatch<SetStateAction<AuthorsContent>>
 }
-export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
+
+export function EditableAuthorsSection({
+  sectionIndex,
+  content,
+  setContent
+}: Props) {
   const { i18n } = useTranslation()
   const t = i18n.vasu.staticSections.authors
 
@@ -151,3 +157,37 @@ const authorIsEmpty = (author: AuthorInfo) =>
   author.name.trim() === '' &&
   author.title.trim() === '' &&
   author.phone.trim() === ''
+
+const formatAuthor = ({ name, phone, title }: AuthorInfo) =>
+  [name, title ? `(${title}) ` : '', phone].filter(Boolean).join(' ')
+
+export function AuthorsSection({
+  sectionIndex,
+  content
+}: Pick<Props, 'sectionIndex' | 'content'>) {
+  const { i18n } = useTranslation()
+  const t = i18n.vasu.staticSections.authors
+
+  return (
+    <ContentArea opaque>
+      <H2>
+        {sectionIndex + 1}. {t.title}
+      </H2>
+
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.1 ${t.primaryAuthor}`}
+        value={formatAuthor(content.primaryAuthor)}
+      />
+
+      <Gap />
+
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.2 ${t.otherAuthors}`}
+        value={content.otherAuthors
+          .filter((a) => !authorIsEmpty(a))
+          .map(formatAuthor)
+          .join(', ')}
+      />
+    </ContentArea>
+  )
+}

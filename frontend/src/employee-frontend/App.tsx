@@ -68,6 +68,7 @@ import { client } from './api/client'
 import MessagesPage from './components/messages/MessagesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import WelcomePage from './components/WelcomePage'
+import VasuEditPage from './components/vasu/VasuEditPage'
 import VasuPage from './components/vasu/VasuPage'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
@@ -392,28 +393,32 @@ export default function App() {
               title={i18n.titles.welcomePage}
             />
             {featureFlags.vasu && (
-              <RouteWithTitle
-                exact
-                path="/vasu/:id"
-                component={ensureAuthenticated(VasuPage)}
-                title={i18n.titles.vasuPage}
-              />
-            )}
-            {featureFlags.vasu && (
-              <RouteWithTitle
-                exact
-                path="/vasu-templates"
-                component={ensureAuthenticated(VasuTemplatesPage)}
-                title={i18n.titles.vasuTemplates}
-              />
-            )}
-            {featureFlags.vasu && (
-              <RouteWithTitle
-                exact
-                path="/vasu-templates/:id"
-                component={ensureAuthenticated(VasuTemplateEditor)}
-                title={i18n.titles.vasuTemplates}
-              />
+              <>
+                <RouteWithTitle
+                  exact
+                  path="/vasu/:id"
+                  component={ensureAuthenticated(VasuPage)}
+                  title={i18n.titles.vasuPage}
+                />
+                <RouteWithTitle
+                  exact
+                  path="/vasu/:id/edit"
+                  component={ensureAuthenticated(VasuEditPage)}
+                  title={i18n.titles.vasuPage}
+                />
+                <RouteWithTitle
+                  exact
+                  path="/vasu-templates"
+                  component={ensureAuthenticated(VasuTemplatesPage)}
+                  title={i18n.titles.vasuTemplates}
+                />
+                <RouteWithTitle
+                  exact
+                  path="/vasu-templates/:id"
+                  component={ensureAuthenticated(VasuTemplateEditor)}
+                  title={i18n.titles.vasuTemplates}
+                />
+              </>
             )}
             {redirectRoutes([
               {
