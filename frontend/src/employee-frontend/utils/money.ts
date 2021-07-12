@@ -20,7 +20,7 @@ export function formatCents(
   }
 }
 
-export const eurosRegex = /^-?[0-9]+((,|\.){1}[0-9]{0,2})?$/
+export const eurosRegex = /^-?[0-9]+(([,.])[0-9]{0,2})?$/
 
 export function isValidCents(value: string): boolean {
   return eurosRegex.test(value)
