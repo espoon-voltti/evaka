@@ -2571,21 +2571,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/browser@npm:^6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/browser@npm:6.4.1"
+"@sentry/browser@npm:^6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/browser@npm:6.9.0"
   dependencies:
-    "@sentry/core": 6.4.1
-    "@sentry/types": 6.4.1
-    "@sentry/utils": 6.4.1
+    "@sentry/core": 6.9.0
+    "@sentry/types": 6.9.0
+    "@sentry/utils": 6.9.0
     tslib: ^1.9.3
-  checksum: 154f8591277ad8a793fde18a01df2e53d889be826d96064038ad63fc1dcd5eae188ecf7f872a012b50a7acb0f1020301866bbd5792cf21401953670c17219853
+  checksum: 11a86a3b6c096bd2ef051f27255808f81b28393275c4d85508a4638fe1614a8115a3565c4fe000abe8a258619233dc7d018c026c0bd05df1ffd966e196166e04
   languageName: node
   linkType: hard
 
-"@sentry/cli@npm:^1.64.1":
-  version: 1.64.2
-  resolution: "@sentry/cli@npm:1.64.2"
+"@sentry/cli@npm:^1.67.1":
+  version: 1.67.1
+  resolution: "@sentry/cli@npm:1.67.1"
   dependencies:
     https-proxy-agent: ^5.0.0
     mkdirp: ^0.5.5
@@ -2595,68 +2595,68 @@ __metadata:
     proxy-from-env: ^1.1.0
   bin:
     sentry-cli: bin/sentry-cli
-  checksum: 93e14868fae0f11a7b7347a28664d533281d60cd43bac35bccaad96e2ecba47543611072647cb567eab79d23f75e3641a7355c15c7ed22f0b48ae6ab8c5ddd5e
+  checksum: d7bf1e297d1df07133bc48522fc3944ae30e9659917aa48b7ee8cabe3271a0a828984d30c9e7b39e709aff9716b29aab22a7bf054dff16a405f6036115922cfa
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/core@npm:6.4.1"
+"@sentry/core@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/core@npm:6.9.0"
   dependencies:
-    "@sentry/hub": 6.4.1
-    "@sentry/minimal": 6.4.1
-    "@sentry/types": 6.4.1
-    "@sentry/utils": 6.4.1
+    "@sentry/hub": 6.9.0
+    "@sentry/minimal": 6.9.0
+    "@sentry/types": 6.9.0
+    "@sentry/utils": 6.9.0
     tslib: ^1.9.3
-  checksum: a10fb796b0020630ca568a42f2b4e763ac43cbfd8e5c61c56cfc6fb3f6184d75c6a14e44c7fa59b29fb40d4c7b947d0c0fa6929a9bcc9846a49b708575e96bad
+  checksum: 4e7931f33347c6fe8aba30264ad0293e36e9991e00de2f5989aee10700aeb99fabe881529695202b8dc4a27834862176b67febbb3732fa17264da3aca1b681fe
   languageName: node
   linkType: hard
 
-"@sentry/hub@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/hub@npm:6.4.1"
+"@sentry/hub@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/hub@npm:6.9.0"
   dependencies:
-    "@sentry/types": 6.4.1
-    "@sentry/utils": 6.4.1
+    "@sentry/types": 6.9.0
+    "@sentry/utils": 6.9.0
     tslib: ^1.9.3
-  checksum: 48bfabb8e1068f09079adddb6db7660e67542762f99356ea283ce5ed3409ea27f8e5f98ba1eb9f2cc255965239128cf7dfed4b100c66a6d2edab2f847cd7bf19
+  checksum: e774c9433d087e78c8bd3b0be8226df77d5d410527e4ee8c3408145695bdf52304541da405c66c869d2e2d2b2d7d0408b89e3aa6f7a694a8b75bb77c8d7e0a55
   languageName: node
   linkType: hard
 
-"@sentry/minimal@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/minimal@npm:6.4.1"
+"@sentry/minimal@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/minimal@npm:6.9.0"
   dependencies:
-    "@sentry/hub": 6.4.1
-    "@sentry/types": 6.4.1
+    "@sentry/hub": 6.9.0
+    "@sentry/types": 6.9.0
     tslib: ^1.9.3
-  checksum: 704dd35fba1dcd16730eaf50a4cc0e9bec401416983a0dd5db56905fe3484a577fe3b2b5fd939cf54d36437693ad8f923969e0ded68b1fe8434ff0d107e156d0
+  checksum: a8c99ecd68a3c637e29af8bbde3b0b734d59c32898d81ff23b65229092c904e4aea76837e3a105c822fbab9f9a9d50217338075a2b8e7ce1f680a8fa66431bb2
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/types@npm:6.4.1"
-  checksum: b510754d32b381931e89f62367e9720e3641279cba7abae2416c5a86775607f3f973925080f6e36144f72d4714f433935c505ec3a156a20b9d785c9509ba1f57
+"@sentry/types@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/types@npm:6.9.0"
+  checksum: b533e9ee9cc20fdab32fc61cef52abf115f34a34bac7b4612b46a600e1a925c81058029c7f917fefca6e9d4ee971353c300212ff65383e2d77af237583e4d94d
   languageName: node
   linkType: hard
 
-"@sentry/utils@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@sentry/utils@npm:6.4.1"
+"@sentry/utils@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@sentry/utils@npm:6.9.0"
   dependencies:
-    "@sentry/types": 6.4.1
+    "@sentry/types": 6.9.0
     tslib: ^1.9.3
-  checksum: a482b685f221c1a6d59c51fa4bb41e44a61b6926d2f687ec5d147b73bad1b14c9d7fcaa84834118104bb62c83cfd9556b760223504ba77ef3c791dcddd60021c
+  checksum: e75ae0deb052c4182bd5e998e7ac8d4570c35790eb9a0cfe63e57774f9070b668bb4b042c12f71eea597ac7f096690ac80046c406577dcf0466f4c8b532ec99d
   languageName: node
   linkType: hard
 
-"@sentry/webpack-plugin@npm:^1.15.1":
-  version: 1.15.1
-  resolution: "@sentry/webpack-plugin@npm:1.15.1"
+"@sentry/webpack-plugin@npm:^1.16.0":
+  version: 1.16.0
+  resolution: "@sentry/webpack-plugin@npm:1.16.0"
   dependencies:
-    "@sentry/cli": ^1.64.1
-  checksum: 6c80491ba17f91b1d01284379daba951d4dd82f78ff9e2dece6c649937e4b3ae213eb89125713f04f706a3c9c25093840c61ee2e6fd2f908f910c990d441622e
+    "@sentry/cli": ^1.67.1
+  checksum: 8be45c91472e3879f182ec38f3fc30bdc694dffe82be9f28ceb2ea7fec6b94237f6a58015ea5a9cee1c556e650a5ae6e776a3d50408264f1b2529ea57ae39471
   languageName: node
   linkType: hard
 
@@ -8744,8 +8744,8 @@ __metadata:
     "@fortawesome/free-regular-svg-icons": 5.14.0
     "@fortawesome/free-solid-svg-icons": 5.14.0
     "@fortawesome/react-fontawesome": 0.1.11
-    "@sentry/browser": ^6.4.1
-    "@sentry/webpack-plugin": ^1.15.1
+    "@sentry/browser": ^6.9.0
+    "@sentry/webpack-plugin": ^1.16.0
     "@storybook/addon-actions": ^6.1.21
     "@storybook/react": ^6.1.21
     "@types/jest": ^26.0.23
@@ -16753,7 +16753,14 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"regenerator-runtime@npm:^0.13.3, regenerator-runtime@npm:^0.13.4, regenerator-runtime@npm:^0.13.7":
+"regenerator-runtime@npm:^0.13.3":
+  version: 0.13.8
+  resolution: "regenerator-runtime@npm:0.13.8"
+  checksum: 20178f5753f181d59691e5c3b4c59a2769987f75c7ccf325777673b5478acca61a553b10e895585086c222f72f5ee428090acf50320264de4b79f630f7388653
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.13.4, regenerator-runtime@npm:^0.13.7":
   version: 0.13.7
   resolution: "regenerator-runtime@npm:0.13.7"
   checksum: 6ef567c662088b1b292214920cbd72443059298d477f72e1a37e0a113bafbfac9057cbfe35ae617284effc4b423493326a78561bbff7b04162c7949bdb9624e8
