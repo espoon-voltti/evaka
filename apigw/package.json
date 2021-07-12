@@ -95,8 +95,7 @@
     "xmldom": "^0.6.0"
   },
   "resolutions": {
-    "@types/node": "^14.14.6",
-    "xml-crypto": "2.1.2"
+    "@types/node": "^14.14.6"
   },
   "jest": {
     "preset": "ts-jest",
