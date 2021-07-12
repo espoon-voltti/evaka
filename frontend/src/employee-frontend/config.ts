@@ -52,7 +52,7 @@ const features: Features = {
     messaging: true,
     financeBasicsPage: true,
     vasu: false,
-    ai: false
+    ai: true
   },
   prod: {
     voucherValueDecisionsPage: false,
