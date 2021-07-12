@@ -46,16 +46,15 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
   const disabled = actionInFlight || checkedIds.length === 0
   const handlePromise = (promise: Promise<void>) => {
     void promise
-      .then(() => void clearApplicationList())
-      .catch(
-        () =>
-          void setErrorMessage({
-            type: 'error',
-            title: i18n.common.error.unknown,
-            resolveLabel: i18n.common.ok
-          })
+      .then(() => clearApplicationList())
+      .catch(() =>
+        setErrorMessage({
+          type: 'error',
+          title: i18n.common.error.unknown,
+          resolveLabel: i18n.common.ok
+        })
       )
-      .finally(() => void setActionInFlight(false))
+      .finally(() => setActionInFlight(false))
   }
 
   const actions: Action[] = [

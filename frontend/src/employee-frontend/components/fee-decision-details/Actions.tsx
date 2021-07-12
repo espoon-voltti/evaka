@@ -37,18 +37,18 @@ const Actions = React.memo(function Actions({
 
   const updateType = () =>
     setDecisionType(decision.id, newDecisionType)
-      .then(() => void setError(false))
+      .then(() => setError(false))
       .catch(() => setError(true))
 
   const confirmDecision = () =>
     confirmFeeDecisions([decision.id])
-      .then(() => void setError(false))
-      .catch(() => void setError(true))
+      .then(() => setError(false))
+      .catch(() => setError(true))
 
   const markSent = () =>
     markFeeDecisionSent([decision.id])
-      .then(() => void setError(false))
-      .catch(() => void setError(true))
+      .then(() => setError(false))
+      .catch(() => setError(true))
 
   const isDraft = decision.status === 'DRAFT'
   const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'

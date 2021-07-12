@@ -66,8 +66,8 @@ const Actions = React.memo(function Actions({
         disabled={checkedIds.length === 0}
         onClick={() =>
           deleteInvoices(checkedIds)
-            .then(() => void setError(false))
-            .catch(() => void setError(true))
+            .then(() => setError(false))
+            .catch(() => setError(true))
         }
         onSuccess={() => {
           actions.clearChecked()

@@ -50,7 +50,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   const [filters, setFilters] = useState(defaultState.filters)
   const [unitData, setUnitData] = useState<Result<UnitData>>(Loading.of())
   const [position, setPosition] = useState<number>(-1)
-  const savePosition = useCallback(() => void setPosition(window.scrollY), [
+  const savePosition = useCallback(() => setPosition(window.scrollY), [
     setPosition
   ])
   const scrollToPosition = useCallback(() => {

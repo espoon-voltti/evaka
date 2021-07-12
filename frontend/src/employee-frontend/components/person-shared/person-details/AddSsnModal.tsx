@@ -56,7 +56,7 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
           }
         }
       })
-      .catch(() => void setError('unknown'))
+      .catch(() => setError('unknown'))
       .finally(() => isMounted && setSubmitting(false))
   }
 
