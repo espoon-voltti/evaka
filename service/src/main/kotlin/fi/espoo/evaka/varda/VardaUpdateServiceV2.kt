@@ -208,6 +208,8 @@ fun updateAllVardaData(
  */
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
     val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client).toMutableSet()
+    logger.info { "VardaUpdate: successfully processed ${processedServiceNeedIds.size} unsuccessful service needs" }
+
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
     val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }.groupBy { it.serviceNeedId }
 
@@ -324,8 +326,9 @@ fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClien
                 handleUpdatedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
             else
                 handleDeletedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
+            logger.info("VardaUpdate: successfully processed unsuccessful service need ${it.evakaServiceNeedId}")
         } catch (e: Exception) {
-            logger.error("VardaUpdate: got an error while trying to redo a failed service need varda update: ${e.localizedMessage}")
+            logger.error("VardaUpdate: got an error while processing an unsuccessful service need: ${e.localizedMessage}")
         }
         it.evakaServiceNeedId
     }
