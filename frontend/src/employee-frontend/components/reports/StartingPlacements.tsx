@@ -13,12 +13,7 @@ import Title from 'lib-components/atoms/Title'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  RowCountInfo,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import {
@@ -27,7 +22,7 @@ import {
 } from '../../api/reports'
 import { StartingPlacementsRow } from '../../types/reports'
 import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FlexRow } from '../common/styled/containers'
 import _ from 'lodash'
 import { distinct } from '../../utils'
 import Combobox from 'lib-components/atoms/form/Combobox'

@@ -31,13 +31,9 @@ import {
 } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { UUID } from '../../types'
-import { SelectOptionProps } from '../../components/common/Select'
+import { SelectOptionProps } from '../common/Select'
 
 import { defaultMargins } from 'lib-components/white-space'
 

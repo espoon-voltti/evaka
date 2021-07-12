@@ -13,11 +13,7 @@ import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import { InvoiceReport, InvoiceReportRow } from '../../types/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'

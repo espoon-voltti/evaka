@@ -11,10 +11,10 @@ import {
   ApplicationNote
 } from '../types/application'
 import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { CreatePersonBody } from '../api/person'
+import { CreatePersonBody } from './person'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
 import { PlacementPlanConfirmationStatus } from '../types/unit'
 import FiniteDateRange from 'lib-common/finite-date-range'

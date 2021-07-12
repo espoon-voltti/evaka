@@ -9,7 +9,7 @@ import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { sendVoucherValueDecisions } from '../../api/invoicing'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
-import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
+import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`

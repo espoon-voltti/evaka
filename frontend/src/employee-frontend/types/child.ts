@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types/index'
+import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroupPlacement, ProviderType } from './unit'

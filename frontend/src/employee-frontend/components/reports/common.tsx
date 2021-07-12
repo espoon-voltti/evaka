@@ -6,8 +6,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Table } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
-import { FlexRow } from '../../components/common/styled/containers'
-import { GapVerticalSmall } from '../../components/common/styled/separators'
+import { FlexRow } from '../common/styled/containers'
+import { GapVerticalSmall } from '../common/styled/separators'
 import colors from 'lib-customizations/common'
 
 export const TableScrollableWrapper = styled.div`

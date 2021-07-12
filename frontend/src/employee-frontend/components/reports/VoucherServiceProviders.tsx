@@ -11,7 +11,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { SelectOptionProps } from '../../components/common/Select'
+import { SelectOptionProps } from '../common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { VoucherServiceProviderReport } from '../../types/reports'
@@ -26,12 +26,8 @@ import { formatDate } from 'lib-common/date'
 import { fi } from 'date-fns/locale'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { FlexRow } from '../common/styled/containers'
 import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import { defaultMargins } from 'lib-components/white-space'

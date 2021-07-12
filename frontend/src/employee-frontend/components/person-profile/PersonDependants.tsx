@@ -19,7 +19,7 @@ import Loader from 'lib-components/atoms/Loader'
 import { getPersonDependants } from '../../api/person'
 import { DependantAddress, PersonWithChildren } from '../../types/person'
 import { formatName } from '../../utils'
-import { NameTd } from '../../components/PersonProfile'
+import { NameTd } from '../PersonProfile'
 import { getAge } from 'lib-common/utils/local-date'
 
 interface Props {

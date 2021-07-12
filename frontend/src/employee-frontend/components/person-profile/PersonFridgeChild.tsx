@@ -25,7 +25,7 @@ import {
   removeParentship,
   retryParentship
 } from '../../api/parentships'
-import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import Toolbar from '../../components/common/Toolbar'
 import { getAge } from 'lib-common/utils/local-date'

@@ -27,7 +27,7 @@ import {
   removePartnership,
   retryPartnership
 } from '../../api/partnerships'
-import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 

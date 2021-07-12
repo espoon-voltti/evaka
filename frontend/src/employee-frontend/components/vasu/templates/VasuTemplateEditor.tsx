@@ -2,24 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3 } from 'lib-components/typography'
+import React, { Fragment, useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
+import { Prompt, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { Loading, Result } from '../../../../lib-common/api'
+import { UUID } from '../../../../lib-common/types'
+import { useRestApi } from '../../../../lib-common/utils/useRestApi'
+import Button from '../../../../lib-components/atoms/buttons/Button'
+import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
+import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
+import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
+import InputField from '../../../../lib-components/atoms/form/InputField'
+import Radio from '../../../../lib-components/atoms/form/Radio'
+import TextArea from '../../../../lib-components/atoms/form/TextArea'
+import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
 import Container, {
   ContentArea
 } from '../../../../lib-components/layout/Container'
 import { Gap } from '../../../../lib-components/white-space'
-import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import {
-  getVasuTemplate,
-  updateVasuTemplateContents,
-  VasuTemplate
-} from './api'
-import { Loading, Result } from '../../../../lib-common/api'
-import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import { Prompt, useParams } from 'react-router-dom'
-import { UUID } from '../../../../lib-common/types'
-import styled from 'styled-components'
+import colors from '../../../../lib-customizations/common'
+import { faArrowDown, faArrowUp, faPlus, faTrash } from '../../../../lib-icons'
+import { useTranslation } from '../../../state/i18n'
+import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
@@ -31,23 +42,12 @@ import {
   TextQuestion,
   VasuQuestion
 } from '../vasu-content'
-import InputField from '../../../../lib-components/atoms/form/InputField'
-import TextArea from '../../../../lib-components/atoms/form/TextArea'
-import colors from '../../../../lib-customizations/common'
 import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import { faArrowDown, faArrowUp, faPlus, faTrash } from '../../../../lib-icons'
-import { Fragment } from 'react'
-import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
+  getVasuTemplate,
+  updateVasuTemplateContents,
+  VasuTemplate
+} from './api'
 import CreateQuestionModal from './CreateQuestionModal'
-import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
-import Radio from '../../../../lib-components/atoms/form/Radio'
-import Button from '../../../../lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../../state/i18n'
-import { useHistory } from 'react-router'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
@@ -62,23 +62,7 @@ export default React.memo(function VasuTemplateEditor() {
 
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
-
-  useEffect(() => {
-    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-      if (dirty) {
-        // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
-        e.preventDefault()
-        e.returnValue = i18n.vasuTemplates.unsavedWarning
-        return i18n.vasuTemplates.unsavedWarning
-      }
-      return
-    }
-
-    window.addEventListener('beforeunload', beforeUnloadHandler)
-    return () => {
-      window.removeEventListener('beforeunload', beforeUnloadHandler)
-    }
-  }, [dirty, i18n])
+  useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
 
   function moveSection(index: number, dir: 'up' | 'down') {
     setDirty(true)

@@ -5,7 +5,7 @@
 import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { ChildBackupPickup } from '../../types/child'
-import { client } from '../../api/client'
+import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 
 export async function getChildBackupPickups(

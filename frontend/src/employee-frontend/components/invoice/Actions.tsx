@@ -32,13 +32,13 @@ const Actions = React.memo(function Actions({
 
   const saveChanges = () =>
     updateInvoice(invoice)
-      .then(() => void setError(false))
-      .catch(() => void setError(true))
+      .then(() => setError(false))
+      .catch(() => setError(true))
 
   const markSent = () =>
     markInvoiceSent([invoice.id])
-      .then(() => void setError(false))
-      .catch(() => void setError(true))
+      .then(() => setError(false))
+      .catch(() => setError(true))
 
   return (
     <FixedSpaceRow justifyContent="flex-end">

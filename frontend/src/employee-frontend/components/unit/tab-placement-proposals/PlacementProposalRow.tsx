@@ -11,7 +11,7 @@ import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus
 } from '../../../types/unit'
-import { careTypesFromPlacementType } from '../../../components/common/CareTypeLabel'
+import { careTypesFromPlacementType } from '../../common/CareTypeLabel'
 import { formatName } from '../../../utils'
 import styled from 'styled-components'
 import {

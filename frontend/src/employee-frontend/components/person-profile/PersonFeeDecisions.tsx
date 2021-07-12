@@ -24,7 +24,7 @@ import {
   createRetroactiveDecisions
 } from '../../api/invoicing'
 import { FeeDecision } from '../../types/invoicing'
-import { DateTd, StatusTd } from '../../components/PersonProfile'
+import { DateTd, StatusTd } from '../PersonProfile'
 import { formatCents } from '../../utils/money'
 import colors from 'lib-customizations/common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'

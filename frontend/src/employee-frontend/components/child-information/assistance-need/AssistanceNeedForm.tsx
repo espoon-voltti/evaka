@@ -29,7 +29,7 @@ import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DivFitContent } from '../../../components/common/styled/containers'
+import { DivFitContent } from '../../common/styled/containers'
 import {
   AssistanceNeedRequest,
   createAssistanceNeed,

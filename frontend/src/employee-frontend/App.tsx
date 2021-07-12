@@ -10,8 +10,8 @@ import {
   Redirect,
   useParams
 } from 'react-router-dom'
-import ChildInformation from './/components/ChildInformation'
-import StateProvider from './/state/StateProvider'
+import ChildInformation from './components/ChildInformation'
+import StateProvider from './state/StateProvider'
 import PersonProfile from './components/PersonProfile'
 import ErrorMessage from './components/common/ErrorMessage'
 import UnitPage from './components/UnitPage'

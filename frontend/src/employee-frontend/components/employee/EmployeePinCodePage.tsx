@@ -2,24 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Gap } from 'lib-components/white-space'
-import Title from 'lib-components/atoms/Title'
-import { Label, P } from 'lib-components/typography'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { faLockAlt } from 'lib-icons'
-
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { isPinCodeLocked, updatePinCode } from 'employee-frontend/api/employees'
+import { useTranslation } from 'employee-frontend/state/i18n'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import Title from 'lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faLockAlt } from 'lib-icons'
+import React, { useEffect, useState } from 'react'
+import { Prompt } from 'react-router-dom'
 import { Result } from '../../../lib-common/api'
 import { AlertBox } from '../../../lib-components/molecules/MessageBoxes'
-import { Prompt } from 'react-router-dom'
+import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 
 export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
@@ -80,22 +79,7 @@ export default React.memo(function EmployeePinCodePage() {
       : undefined
   }
 
-  useEffect(() => {
-    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-      if (dirty) {
-        // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
-        e.preventDefault()
-        e.returnValue = i18n.pinCode.unsavedDataWarning
-        return i18n.pinCode.unsavedDataWarning
-      }
-      return
-    }
-
-    window.addEventListener('beforeunload', beforeUnloadHandler)
-    return () => {
-      window.removeEventListener('beforeunload', beforeUnloadHandler)
-    }
-  }, [dirty]) // eslint-disable-line react-hooks/exhaustive-deps
+  useWarnOnUnsavedChanges(dirty, i18n.pinCode.unsavedDataWarning)
 
   return (
     <Container>

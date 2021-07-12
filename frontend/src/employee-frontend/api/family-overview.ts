@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import { UUID } from '../types'
 import { FamilyContact, FamilyOverview } from '../types/family-overview'
 import { JsonOf } from 'lib-common/json'

@@ -11,7 +11,7 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 
-import { UUID } from '../types'
+import { UUID } from './index'
 import { Translations } from '../state/i18n'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 

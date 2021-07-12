@@ -20,12 +20,7 @@ import {
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import {
-  FilterLabel,
-  FilterRow,
-  TableFooter,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import Combobox from 'lib-components/atoms/form/Combobox'

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import { Unit } from '../../../types/unit'
-import { DataList } from '../../../components/common/DataList'
+import { DataList } from '../../common/DataList'
 import { RequireRole } from '../../../utils/roles'
 import { Gap } from 'lib-components/white-space'
 
