@@ -10,7 +10,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import InputField from 'lib-components/atoms/form/InputField'
-import Select, { SelectOptionProps } from '../common/Select'
+import Select, { SelectOption } from '../common/Select'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
@@ -58,7 +58,7 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const productOpts: SelectOptionProps[] = invoiceCodes
+  const productOpts: SelectOption[] = invoiceCodes
     .map((codes) =>
       codes.products.map((product) => ({
         value: product,
@@ -67,7 +67,7 @@ function InvoiceRowSectionRow({
     )
     .getOrElse([])
 
-  const subCostCenterOpts: SelectOptionProps[] = invoiceCodes
+  const subCostCenterOpts: SelectOption[] = invoiceCodes
     .map((codes) =>
       codes.subCostCenters.map((subCostCenter) => ({
         value: subCostCenter,
@@ -88,12 +88,12 @@ function InvoiceRowSectionRow({
           <ProductSelect
             name="product"
             placeholder=" "
-            value={productOpts.find((elem) => elem.value === product)}
-            options={productOpts}
+            selectedItem={
+              productOpts.find((elem) => elem.value === product) ?? null
+            }
+            items={productOpts}
             onChange={(value) =>
-              value && 'value' in value
-                ? update({ product: value.value as Product })
-                : undefined
+              value ? update({ product: value.value as Product }) : undefined
             }
             data-qa="select-product"
           />
@@ -139,14 +139,13 @@ function InvoiceRowSectionRow({
           <SubCostCenterSelect
             name="subCostCenter"
             placeholder=" "
-            value={subCostCenterOpts.find(
-              (elem) => elem.value == subCostCenter
-            )}
-            options={subCostCenterOpts}
+            selectedItem={
+              subCostCenterOpts.find((elem) => elem.value == subCostCenter) ??
+              null
+            }
+            items={subCostCenterOpts}
             onChange={(value) =>
-              value && 'value' in value
-                ? update({ subCostCenter: value.value })
-                : undefined
+              value ? update({ subCostCenter: value.value }) : undefined
             }
             data-qa="select-sub-cost-center"
           />

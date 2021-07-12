@@ -11,7 +11,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { SelectOptionProps } from '../common/Select'
+import { SelectOption } from '../common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { VoucherServiceProviderReport } from '../../types/reports'
@@ -52,7 +52,7 @@ const LockedDate = styled(FixedSpaceRow)`
   margin-bottom: ${defaultMargins.xs};
 `
 
-const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+const monthOptions: SelectOption[] = range(0, 12).map((num) => ({
   value: String(num + 1),
   label: String(fi.localize?.month(num))
 }))
@@ -60,7 +60,7 @@ const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
 const minYear = new Date().getFullYear() - 4
 // Max year is next year if current date is in December and current year otherwise
 const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
-const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+const yearOptions: SelectOption[] = range(maxYear, minYear - 1, -1).map(
   (num) => ({
     value: String(num),
     label: String(num)

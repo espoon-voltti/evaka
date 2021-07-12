@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { t, Selector } from 'testcafe'
+import { selectFirstComboboxOption } from '../../../utils/helpers'
 
 export default class MessagesPage {
   readonly unitsListUnit = (id: string) => Selector(`[data-qa="unit-${id}"]`)
@@ -22,8 +23,7 @@ export default class MessagesPage {
 
   async draftNewMessage(title: string, content: string) {
     await t.click(this.newMessageBtn)
-    await t.click(this.messageEditorSender)
-    await t.pressKey('enter')
+    await selectFirstComboboxOption(this.messageEditorSender)
     await t.click(this.messageEditorReceiver)
     await t.pressKey('enter')
     await t.typeText(this.messageEditorTitle, title)
@@ -36,8 +36,7 @@ export default class MessagesPage {
     await t.click(this.newMessageBtn)
     await t.typeText(this.messageEditorTitle, title)
     await t.typeText(this.messageEditorContent, content)
-    await t.click(this.messageEditorSender)
-    await t.pressKey('enter')
+    await selectFirstComboboxOption(this.messageEditorSender)
     await t.click(this.messageEditorReceiver)
     await t.pressKey('enter')
     await t.click(this.sendMessageBtn)

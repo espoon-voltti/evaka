@@ -88,10 +88,12 @@ export const selectFirstOption = async (
 
 export const selectFirstComboboxOption = async (
   container: Selector,
-  searchString: string
+  searchString?: string
 ) => {
   await t.click(container)
   const input = container.find('input')
-  await t.typeText(input, searchString)
+  if (searchString) {
+    await t.typeText(input, searchString)
+  }
   await t.click(container.find('[data-qa="item"]'))
 }

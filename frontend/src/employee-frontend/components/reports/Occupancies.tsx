@@ -25,7 +25,7 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
-import { SelectOptionProps } from '../common/Select'
+import { SelectOption } from '../common/Select'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -39,7 +39,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function monthOptions(): SelectOptionProps[] {
+function monthOptions(): SelectOption[] {
   const monthOptions = []
   for (let i = 1; i <= 12; i++) {
     monthOptions.push({
@@ -50,7 +50,7 @@ function monthOptions(): SelectOptionProps[] {
   return monthOptions
 }
 
-function yearOptions(): SelectOptionProps[] {
+function yearOptions(): SelectOption[] {
   const currentYear = new Date().getFullYear()
   const yearOptions = []
   for (let year = currentYear + 2; year > currentYear - 5; year--) {

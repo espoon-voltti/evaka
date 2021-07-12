@@ -18,7 +18,7 @@ import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import Select, { SelectOptionProps } from '../../components/common/Select'
+import Select, { SelectOption } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import {
   deselectAll,
@@ -39,7 +39,7 @@ import {
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
-  sender: SelectOptionProps
+  sender: SelectOption
   recipientAccountIds: UUID[]
 }
 
@@ -60,7 +60,7 @@ const emptyMessage = {
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: SelectOptionProps
+  sender: SelectOption
 ): Message =>
   draft
     ? { ...draft, sender, recipientAccountIds: [] }
@@ -76,9 +76,9 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
   )
 
 interface Props {
-  defaultSender: SelectOptionProps
+  defaultSender: SelectOption
   accounts: MessageAccount[]
-  selectedUnit: SelectOptionProps
+  selectedUnit: SelectOption
   availableReceivers: SelectorNode
   onSend: (
     accountId: UUID,
@@ -133,18 +133,15 @@ export default React.memo(function MessageEditor({
     [contentTouched, message, setDraft]
   )
 
-  const updateReceiverTree = useCallback(
-    (newSelection: SelectOptionProps[]) => {
-      setReceiverTree((old) =>
-        createReceiverTree(
-          old,
-          newSelection.map((s) => s.value)
-        )
+  const updateReceiverTree = useCallback((newSelection: SelectOption[]) => {
+    setReceiverTree((old) =>
+      createReceiverTree(
+        old,
+        newSelection.map((s) => s.value)
       )
-      setContentTouched(true)
-    },
-    []
-  )
+    )
+    setContentTouched(true)
+  }, [])
 
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
@@ -263,11 +260,11 @@ export default React.memo(function MessageEditor({
           <div>{i18n.messages.messageEditor.sender}</div>
         </div>
         <Select
-          options={senderOptions}
-          onChange={(sender) => {
-            sender && 'value' in sender && updateMessage({ sender })
-          }}
-          value={message.sender}
+          items={senderOptions}
+          onChange={(sender) =>
+            sender ? updateMessage({ sender }) : undefined
+          }
+          selectedItem={message.sender}
           data-qa="select-sender"
         />
         <div>

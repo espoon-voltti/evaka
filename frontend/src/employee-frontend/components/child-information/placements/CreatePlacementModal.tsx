@@ -133,13 +133,16 @@ function CreatePlacementModal({ childId, reload }: Props) {
           <div className="bold">{i18n.childInformation.placements.type}</div>
 
           <Select
-            options={placementTypes.map((type) => ({
+            items={placementTypes.map((type) => ({
               value: type,
               label: i18n.placement.type[type]
             }))}
-            value={{ value: form.type, label: i18n.placement.type[form.type] }}
+            selectedItem={{
+              value: form.type,
+              label: i18n.placement.type[form.type]
+            }}
             onChange={(value) =>
-              value && 'value' in value
+              value
                 ? setForm({
                     ...form,
                     type: value.value as PlacementType

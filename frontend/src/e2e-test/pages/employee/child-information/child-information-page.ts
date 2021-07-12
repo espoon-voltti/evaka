@@ -239,12 +239,10 @@ export default class ChildInformationPage {
     await t.click(Selector('[data-qa="button-create-application"]'))
   }
 
-  public async selectGuardian(index: number) {
+  public async selectGuardian(name: string) {
     const selectGuardianSelector = Selector('[data-qa="select-guardian"]')
     await t.click(selectGuardianSelector)
-    await t.click(
-      selectGuardianSelector.find(`[id^="react-select-2-option-${index}"`)
-    )
+    await t.click(selectGuardianSelector.find(`[data-qa="guardian-${name}"`))
   }
 
   // For selecting application guardian from vtj in application creation modal

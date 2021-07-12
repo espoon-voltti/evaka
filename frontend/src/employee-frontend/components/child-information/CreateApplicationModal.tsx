@@ -2,41 +2,49 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { useTranslation } from '../../state/i18n'
-import { faFileAlt } from 'lib-icons'
-import { UIContext } from '../../state/ui'
-import { PersonDetails } from '../../types/person'
-import { Label } from 'lib-components/typography'
-import { formatName } from '../../utils'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Radio from 'lib-components/atoms/form/Radio'
-import {
-  DbPersonSearch as PersonSearch,
-  VtjPersonSearch
-} from '../../components/common/PersonSearch'
-import { UUID } from '../../types'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'
-import Select from '../../components/common/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { applicationTypes } from 'lib-customizations/employee'
+import { faFileAlt } from 'lib-icons'
+import React, { useContext, useState } from 'react'
 import {
   createPaperApplication,
   PaperApplicationRequest
 } from '../../api/applications'
-import { getEmployeeUrlPrefix } from '../../constants'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import CreatePersonInput from '../../components/common/CreatePersonInput'
 import { CreatePersonBody } from '../../api/person'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
-import { applicationTypes } from 'lib-customizations/employee'
+import CreatePersonInput from '../../components/common/CreatePersonInput'
+import {
+  DbPersonSearch as PersonSearch,
+  VtjPersonSearch
+} from '../../components/common/PersonSearch'
+import Select, { SelectOption } from '../../components/common/Select'
+import { getEmployeeUrlPrefix } from '../../constants'
+import { Translations, useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { UUID } from '../../types'
+import { PersonDetails } from '../../types/person'
+import { formatName } from '../../utils'
+
+type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
+
+const personToSelectOption = (
+  { firstName, id, lastName }: PersonDetails,
+  i18n: Translations
+): SelectOption => ({
+  label: formatName(firstName, lastName, i18n),
+  value: id
+})
 
 interface CreateApplicationModalProps {
   child: PersonDetails
   guardians: PersonDetails[]
 }
-
-type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 
 function CreateApplicationModal({
   child,
@@ -49,8 +57,8 @@ function CreateApplicationModal({
   const [personType, setPersonType] = useState<PersonType>(
     guardians.length > 0 ? 'GUARDIAN' : 'DB_SEARCH'
   )
-  const [guardianId, setGuardiaId] = useState<UUID | undefined>(
-    guardians.length > 0 ? guardians[0].id : undefined
+  const [guardian, setGuardian] = useState<SelectOption | null>(
+    guardians.length > 0 ? personToSelectOption(guardians[0], i18n) : null
   )
   const [personId, setPersonId] = useState<UUID | undefined>(undefined)
   const [newVtjPersonSsn, setNewVtjPersonSsn] = useState<string | undefined>(
@@ -84,7 +92,7 @@ function CreateApplicationModal({
     if (isSubmitting) return false
     switch (personType) {
       case 'GUARDIAN':
-        return !!guardianId
+        return !!guardian
       case 'DB_SEARCH':
         return !!personId
       case 'VTJ':
@@ -111,7 +119,7 @@ function CreateApplicationModal({
         ? () =>
             createPaperApplication({
               ...commonBody,
-              guardianId: guardianId ?? ''
+              guardianId: guardian?.value ?? ''
             })
         : personType === 'DB_SEARCH'
         ? () =>
@@ -187,33 +195,12 @@ function CreateApplicationModal({
                 />
                 <div>
                   <Select
-                    options={guardians.map((guardian) => ({
-                      value: guardian.id,
-                      label: formatName(
-                        guardian.firstName,
-                        guardian.lastName,
-                        i18n,
-                        false
-                      )
-                    }))}
-                    onChange={(value) =>
-                      value && 'value' in value
-                        ? setGuardiaId(value.value)
-                        : undefined
-                    }
-                    value={guardians
-                      .filter((guardian) => guardian.id === guardianId)
-                      .map((guardian) => ({
-                        value: guardian.id,
-                        label: formatName(
-                          guardian.firstName,
-                          guardian.lastName,
-                          i18n,
-                          false
-                        )
-                      }))}
+                    items={guardians.map((g) => personToSelectOption(g, i18n))}
+                    onChange={setGuardian}
+                    selectedItem={guardian}
                     onFocus={() => setPersonType('GUARDIAN')}
                     data-qa="select-guardian"
+                    getItemDataQa={({ label }) => `guardian-${label}`}
                   />
                 </div>
               </div>
@@ -267,16 +254,14 @@ function CreateApplicationModal({
           <Label>{i18nView.applicationType}</Label>
           <div>
             <Select
-              options={applicationTypes.map((type) => ({
+              items={applicationTypes.map((type) => ({
                 value: type,
                 label: i18nView.applicationTypes[type]
               }))}
               onChange={(value) =>
-                value && 'value' in value
-                  ? setType(value.value as ApplicationType)
-                  : undefined
+                value ? setType(value.value as ApplicationType) : undefined
               }
-              value={{
+              selectedItem={{
                 value: type,
                 label: i18nView.applicationTypes[type]
               }}

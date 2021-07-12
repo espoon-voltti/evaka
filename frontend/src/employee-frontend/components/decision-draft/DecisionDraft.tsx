@@ -354,18 +354,20 @@ const Decision = memo(function Decision({
                           <UnitSelectContainer>
                             {units.isSuccess && (
                               <Select
-                                onChange={(value) =>
-                                  value && 'value' in value
-                                    ? onUnitSelect(value.value)
-                                    : undefined
+                                onChange={(unit) =>
+                                  unit ? onUnitSelect(unit.value) : undefined
                                 }
-                                options={unitOptions}
-                                value={units.value
-                                  .filter((elem) => selectedUnit.id === elem.id)
-                                  .map((elem) => ({
-                                    label: elem.name,
-                                    value: elem.id
-                                  }))}
+                                items={unitOptions}
+                                selectedItem={
+                                  units.value
+                                    .filter(
+                                      (elem) => selectedUnit.id === elem.id
+                                    )
+                                    .map((elem) => ({
+                                      label: elem.name,
+                                      value: elem.id
+                                    }))[0]
+                                }
                               />
                             )}
                             <WarningContainer

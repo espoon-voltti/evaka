@@ -2,29 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { fi } from 'date-fns/locale'
+import { Loading, Result, Success } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from 'lib-common/api'
-import { EndedPlacementsReportRow } from '../../types/reports'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import {
   getEndedPlacementsReport,
   PlacementsReportFilters
 } from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ReportDownload from '../../components/reports/ReportDownload'
-import { SelectOptionProps } from '../common/Select'
-import { fi } from 'date-fns/locale'
-import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-import { Link } from 'react-router-dom'
-import LocalDate from 'lib-common/local-date'
+import { Translations, useTranslation } from '../../state/i18n'
+import { EndedPlacementsReportRow } from '../../types/reports'
+import { SelectOption } from '../common/Select'
 import { FlexRow } from '../common/styled/containers'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import ReportDownload from '../reports/ReportDownload'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -34,7 +33,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function monthOptions(): SelectOptionProps[] {
+function monthOptions(): SelectOption[] {
   const monthOptions = []
   for (let i = 1; i <= 12; i++) {
     monthOptions.push({
@@ -45,7 +44,7 @@ function monthOptions(): SelectOptionProps[] {
   return monthOptions
 }
 
-function yearOptions(): SelectOptionProps[] {
+function yearOptions(): SelectOption[] {
   const currentYear = LocalDate.today().year
   const yearOptions = []
   for (let year = currentYear; year > currentYear - 5; year--) {

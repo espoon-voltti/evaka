@@ -64,7 +64,7 @@ test('Paper application can be created for guardian and child with ssn', async (
 
 test('Paper application can be created for other guardian and child with ssn', async () => {
   await childInforationPage.openCreateApplicationModal()
-  await childInforationPage.selectGuardian(1)
+  await childInforationPage.selectGuardian('Ville Vilkas')
   await childInforationPage.clickCreateApplicationModalCreateApplicationButton()
   await applicationEditPage.assertApplicationGuardian(
     formatPersonName(fixtures.enduserChildJariOtherGuardianFixture),
