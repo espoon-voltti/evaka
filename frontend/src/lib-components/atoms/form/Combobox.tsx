@@ -149,10 +149,6 @@ function stopPropagation(e: React.SyntheticEvent) {
   e.stopPropagation()
 }
 
-function preventDefault(e: React.SyntheticEvent) {
-  e.preventDefault()
-}
-
 function ensureElementIsInView(element: HTMLElement) {
   computeScrollIntoView(element, {
     block: 'end',
@@ -317,7 +313,7 @@ export default function Combobox<T>(props: Props<T>) {
           {...getToggleButtonProps({
             disabled,
             // avoid toggling the menu twice
-            onClick: preventDefault
+            onClick: stopPropagation
           })}
         >
           <FontAwesomeIcon icon={faChevronDown} />
