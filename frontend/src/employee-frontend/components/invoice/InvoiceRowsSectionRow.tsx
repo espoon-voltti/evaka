@@ -62,7 +62,7 @@ function InvoiceRowSectionRow({
     .map((codes) =>
       codes.products.map((product) => ({
         value: product,
-        label: i18n.product[product]
+        label: i18n.product[product] ?? product
       }))
     )
     .getOrElse([])
@@ -98,7 +98,7 @@ function InvoiceRowSectionRow({
             data-qa="select-product"
           />
         ) : (
-          <div>{i18n.product[product]}</div>
+          <div>{i18n.product[product] ?? product}</div>
         )}
       </Td>
       <Td>
