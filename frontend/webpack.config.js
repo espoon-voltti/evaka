@@ -232,7 +232,7 @@ function employeeMobile(flags) {
           ),
           size: 180,
           type: 'image/png',
-          purpose: 'maskable'
+          purpose: 'maskable any'
         },
         {
           src: path.resolve(
@@ -241,7 +241,7 @@ function employeeMobile(flags) {
           ),
           size: 192,
           type: 'image/png',
-          purpose: 'maskable'
+          purpose: 'maskable any'
         },
         {
           src: path.resolve(
@@ -250,7 +250,7 @@ function employeeMobile(flags) {
           ),
           size: 512,
           type: 'image/png',
-          purpose: 'maskable'
+          purpose: 'maskable any'
         }
       ]
     })
