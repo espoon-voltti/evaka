@@ -458,7 +458,7 @@ fun createFeeDataToVardaFromFeeDecision(
     val guardians = try {
         getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
     } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}"}
+        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}" }
         return null
     }
 
@@ -498,7 +498,7 @@ fun createFeeDataToVardaFromVoucherValueDecision(
     val guardians = try {
         getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
     } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}"}
+        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}" }
         return null
     }
 
