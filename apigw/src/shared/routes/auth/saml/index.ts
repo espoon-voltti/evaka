@@ -74,11 +74,11 @@ function createLoginHandler({
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err, req) ||
-            'Could not parse SAML error'
+            'Could not parse SAML message'
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in_failed`,
             req,
-            `Error authenticating user. Description: ${description}. Error: ${err}`
+            `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
           return res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
         }
