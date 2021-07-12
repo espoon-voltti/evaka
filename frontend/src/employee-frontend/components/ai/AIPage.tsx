@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useEffect, useState } from 'react'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
