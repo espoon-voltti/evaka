@@ -196,24 +196,15 @@ function VoucherServiceProviders() {
               <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
               <FilterWrapper data-qa="select-area">
                 <Combobox
-                  items={[
-                    ...areas.map((area) => ({
-                      value: area.id,
-                      label: area.name
-                    }))
-                  ]}
+                  items={areas}
                   selectedItem={
-                    areas
-                      .filter(({ id }) => id === filters.areaId)
-                      .map((area) => ({ value: area.id, label: area.name }))[0]
+                    areas.find(({ id }) => id === filters.areaId) ?? null
                   }
-                  onChange={(value) => {
-                    if (value) {
-                      setFilters({ ...filters, areaId: value.value })
-                    }
-                  }}
+                  onChange={(area) =>
+                    setFilters({ ...filters, areaId: area?.id })
+                  }
                   placeholder={i18n.reports.common.careAreaName}
-                  getItemLabel={(item) => item.label}
+                  getItemLabel={({ name }) => name}
                 />
               </FilterWrapper>
             </FilterRow>
