@@ -2,30 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
-import ReactSelect from 'react-select'
-import styled from 'styled-components'
-import { Link } from 'react-router-dom'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Loading, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../common/Select'
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { Gap } from 'lib-components/white-space'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import Combobox from '../../../lib-components/atoms/form/Combobox'
+import { InfoBox } from '../../../lib-components/molecules/MessageBoxes'
 import { getDecisionsReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { distinct, reducePropertySum } from '../../utils'
-import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../common/styled/containers'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { useTranslation } from '../../state/i18n'
 import { DecisionsReportRow } from '../../types/reports'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
-import { InfoBox } from '../../../lib-components/molecules/MessageBoxes'
-import { Gap } from 'lib-components/white-space'
+import { distinct, reducePropertySum } from '../../utils'
+import { FlexRow } from '../common/styled/containers'
+import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
 interface DisplayFilters {
   careArea: string
@@ -95,8 +94,8 @@ function Decisions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper data-qa="select-area">
-            <ReactSelect
-              options={[
+            <Combobox
+              items={[
                 { label: i18n.common.all, value: '' },
                 ...rows
                   .map((rs) =>
@@ -107,15 +106,16 @@ function Decisions() {
                   )
                   .getOrElse([])
               ]}
+              getItemLabel={(item) => item.label}
               onChange={(option) =>
-                option && 'value' in option
+                option
                   ? setDisplayFilters({
                       ...displayFilters,
                       careArea: option.value
                     })
                   : undefined
               }
-              value={
+              selectedItem={
                 displayFilters.careArea !== ''
                   ? {
                       label: displayFilters.careArea,
@@ -126,7 +126,6 @@ function Decisions() {
                       value: ''
                     }
               }
-              styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
             />
           </Wrapper>

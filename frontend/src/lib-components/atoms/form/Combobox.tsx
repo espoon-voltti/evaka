@@ -1,18 +1,22 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCombobox, UseComboboxStateChange } from 'downshift'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  FocusEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import { faChevronDown, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import computeScrollIntoView from 'compute-scroll-into-view'
 import classNames from 'classnames'
+import { SpinnerSegment } from '../state/Spinner'
 
 const borderRadius = '2px'
 
@@ -77,6 +81,7 @@ const MenuItem = styled.div`
   &.clickable {
     cursor: pointer;
   }
+  white-space: pre-line;
 `
 
 const Input = styled.input`
@@ -132,7 +137,11 @@ interface Props<T> {
   filterItems?: (inputValue: string, items: T[]) => T[]
   getItemLabel?: (item: T) => string
   getItemDataQa?: (item: T) => string | undefined
+  getMenuItemLabel?: (item: T) => string
+  isLoading?: boolean
   menuEmptyLabel?: string
+  onFocus?: FocusEventHandler<HTMLInputElement>
+  onInputChange?: (newValue: string) => void
   children?: {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
     menuEmptyItem?: (label: string) => React.ReactNode
@@ -169,8 +178,12 @@ export default function Combobox<T>(props: Props<T>) {
     disabled,
     placeholder,
     getItemLabel = defaultGetItemLabel,
+    getMenuItemLabel = getItemLabel,
     getItemDataQa,
+    isLoading,
     menuEmptyLabel,
+    onFocus,
+    onInputChange,
     children,
     fullWidth,
     'data-qa': dataQa
@@ -189,13 +202,13 @@ export default function Combobox<T>(props: Props<T>) {
   const defaultRenderMenuItem = useCallback(
     ({ highlighted, item }: MenuItemProps<T>) => (
       <MenuItem
-        data-qa={getItemDataQa && getItemDataQa(item)}
+        data-qa={getItemDataQa?.(item)}
         className={classNames({ highlighted, clickable: true })}
       >
-        {getItemLabel(item)}
+        {getMenuItemLabel(item)}
       </MenuItem>
     ),
-    [getItemLabel, getItemDataQa]
+    [getMenuItemLabel, getItemDataQa]
   )
 
   const filterItems = useMemo(() => props.filterItems ?? defaultFilterItems, [
@@ -230,11 +243,12 @@ export default function Combobox<T>(props: Props<T>) {
     ({ isOpen, inputValue }: UseComboboxStateChange<T>) => {
       if (isOpen) {
         setCurrentFilter(inputValue ?? '')
+        onInputChange?.(inputValue ?? '')
       } else {
         setCurrentFilter('')
       }
     },
-    [setCurrentFilter]
+    [onInputChange, setCurrentFilter]
   )
   const onIsOpenChange = useCallback(
     ({ isOpen }: UseComboboxStateChange<T>) => {
@@ -298,7 +312,8 @@ export default function Combobox<T>(props: Props<T>) {
         <Input
           {...getInputProps({
             disabled,
-            placeholder
+            placeholder,
+            onFocus
           })}
         />
         {clearable && selectedItem && (
@@ -330,23 +345,28 @@ export default function Combobox<T>(props: Props<T>) {
         >
           {isOpen && (
             <>
-              {filteredItems.length === 0 && (
+              {isLoading ? (
+                <MenuItemWrapper>
+                  <SpinnerSegment />
+                </MenuItemWrapper>
+              ) : filteredItems.length === 0 ? (
                 <MenuItemWrapper>
                   {renderEmptyResult(menuEmptyLabel ?? '')}
                 </MenuItemWrapper>
+              ) : (
+                filteredItems.map((item, index) => (
+                  <MenuItemWrapper
+                    data-qa="item"
+                    key={index}
+                    {...getItemProps({ item, index })}
+                  >
+                    {renderMenuItem({
+                      item,
+                      highlighted: highlightedIndex === index
+                    })}
+                  </MenuItemWrapper>
+                ))
               )}
-              {filteredItems.map((item, index) => (
-                <MenuItemWrapper
-                  data-qa="item"
-                  key={index}
-                  {...getItemProps({ item, index })}
-                >
-                  {renderMenuItem({
-                    item,
-                    highlighted: highlightedIndex === index
-                  })}
-                </MenuItemWrapper>
-              ))}
             </>
           )}
         </Menu>

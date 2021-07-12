@@ -40,9 +40,9 @@ import {
 import { flow, set } from 'lodash/fp'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { AttachmentType } from '../../../lib-common/api-types/application/enums'
+import Combobox from '../../../lib-components/atoms/form/Combobox'
 import { getAttachmentBlob } from '../../api/applications'
 import { deleteAttachment, saveAttachment } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
@@ -512,35 +512,32 @@ export default React.memo(function ApplicationEditView({
         <ListGrid>
           <Label>{i18n.application.preferences.preferredUnits}</Label>
           <VerticalContainer data-qa="preferred-unit">
-            <ReactSelect
+            <Combobox
               placeholder={i18n.common.search}
               isLoading={units.isLoading}
-              value={null}
-              options={units
+              selectedItem={null}
+              items={units
                 .map((us) =>
                   us
                     .filter(
                       ({ id }) => !preferredUnits.some((unit) => unit.id === id)
                     )
-                    .map(({ id, name }) => ({
-                      value: id,
-                      label: name
-                    }))
+                    .map(({ id, name }) => ({ id, name }))
                 )
                 .getOrElse([])}
-              isDisabled={preferredUnits.length >= 3}
+              getItemLabel={({ name }) => name}
+              disabled={preferredUnits.length >= 3}
               onChange={(option) => {
-                if (option && 'value' in option) {
+                if (option) {
                   setApplication(
                     set('form.preferences.preferredUnits', [
                       ...preferredUnits,
-                      { id: option.value, name: option.label }
+                      { id: option.id, name: option.name }
                     ])
                   )
                 }
               }}
-              loadingMessage={() => i18n.common.loading}
-              noOptionsMessage={() => i18n.common.noResults}
+              menuEmptyLabel={i18n.common.noResults}
               data-qa="select-preferred-unit"
             />
             <Gap size="s" />

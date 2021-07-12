@@ -40,6 +40,7 @@ import {
 } from 'e2e-test-common/dev-api/types'
 import LocalDate from '../../../lib-common/local-date'
 import { mobileLogin } from '../../config/users'
+import { selectFirstComboboxOption } from '../../utils/helpers'
 
 const employeeId = uuidv4()
 const mobileDeviceId = employeeId
@@ -194,10 +195,10 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childSensitiveInfoLink)
 
-  await t.click(mobileGroupsPage.pinLoginStaffSelector)
-  await t
-    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
-    .pressKey('tab')
+  await selectFirstComboboxOption(
+    mobileGroupsPage.pinLoginStaffSelector,
+    employee.data.lastName
+  )
 
   await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin)
   await t.click(mobileGroupsPage.submitPin)
@@ -277,10 +278,10 @@ test('Wrong pin shows error, and user can log in with correct pin after that', a
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childSensitiveInfoLink)
 
-  await t.click(mobileGroupsPage.pinLoginStaffSelector)
-  await t
-    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
-    .pressKey('tab')
+  await selectFirstComboboxOption(
+    mobileGroupsPage.pinLoginStaffSelector,
+    employee.data.lastName
+  )
 
   await t.typeText(mobileGroupsPage.pinInput, '9999')
   await t.click(mobileGroupsPage.submitPin)
@@ -290,10 +291,6 @@ test('Wrong pin shows error, and user can log in with correct pin after that', a
   await t
     .expect(mobileGroupsPage.pinInputInfo.textContent)
     .eql('Väärä PIN-koodi')
-
-  await t
-    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
-    .pressKey('tab')
 
   await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
     replace: true
@@ -313,9 +310,10 @@ test('After successful PIN login user can log out after which new PIN is require
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childSensitiveInfoLink)
 
-  await t
-    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
-    .pressKey('tab')
+  await selectFirstComboboxOption(
+    mobileGroupsPage.pinLoginStaffSelector,
+    employee.data.lastName
+  )
 
   await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
     replace: true
@@ -358,9 +356,10 @@ test('After 5 unsuccessful tries user is locked and cannot login with correct PI
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childSensitiveInfoLink)
 
-  await t
-    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
-    .pressKey('tab')
+  await selectFirstComboboxOption(
+    mobileGroupsPage.pinLoginStaffSelector,
+    employee.data.lastName
+  )
 
   for (const f of [
     submitPin('1111', 'Väärä PIN-koodi'),

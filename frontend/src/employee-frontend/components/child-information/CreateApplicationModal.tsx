@@ -12,7 +12,10 @@ import { Label } from 'lib-components/typography'
 import { formatName } from '../../utils'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Radio from 'lib-components/atoms/form/Radio'
-import PersonSearch from '../../components/common/PersonSearch'
+import {
+  DbPersonSearch as PersonSearch,
+  VtjPersonSearch
+} from '../../components/common/PersonSearch'
 import { UUID } from '../../types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
@@ -23,7 +26,6 @@ import {
 } from '../../api/applications'
 import { getEmployeeUrlPrefix } from '../../constants'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import VtjPersonSearch from '../../components/common/VtjPersonSearch'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import { CreatePersonBody } from '../../api/person'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
@@ -236,6 +238,7 @@ function CreateApplicationModal({
                 onChange={() => setPersonType('VTJ')}
               />
               <VtjPersonSearch
+                data-qa="select-search-from-vtj-guardian"
                 onResult={(res) =>
                   setNewVtjPersonSsn(res?.socialSecurityNumber || undefined)
                 }

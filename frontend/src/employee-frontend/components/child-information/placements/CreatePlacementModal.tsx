@@ -2,28 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Loading, Result } from 'lib-common/api'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import DateRange from 'lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import colors from 'lib-customizations/common'
+import { placementTypes } from 'lib-customizations/employee'
+import { faMapMarkerAlt } from 'lib-icons'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from '../../../types'
-import { useTranslation } from '../../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { faMapMarkerAlt } from 'lib-icons'
-import { UIContext } from '../../../state/ui'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { createPlacement } from '../../../api/child/placements'
-import Select from '../../../components/common/Select'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
-import { Unit } from '../../../types/unit'
-import { getDaycares } from '../../../api/unit'
 import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import DateRange from 'lib-common/date-range'
-import { placementTypes } from 'lib-customizations/employee'
-import colors from 'lib-customizations/common'
+import Combobox from '../../../../lib-components/atoms/form/Combobox'
+import { createPlacement } from '../../../api/child/placements'
+import { getDaycares } from '../../../api/unit'
+import Select from '../../../components/common/Select'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { UUID } from '../../../types'
+import { Unit } from '../../../types/unit'
 
 export interface Props {
   childId: UUID
@@ -32,10 +32,9 @@ export interface Props {
 
 interface Form {
   type: PlacementType
-  unitId: UUID | undefined
   startDate: LocalDate
   endDate: LocalDate
-  ghostUnit: boolean
+  unit: { id: string; name: string; ghostUnit: boolean } | null
 }
 
 function CreatePlacementModal({ childId, reload }: Props) {
@@ -44,33 +43,39 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
-    unitId: undefined,
+    unit: null,
     startDate: LocalDate.today(),
-    endDate: LocalDate.today(),
-    ghostUnit: false
+    endDate: LocalDate.today()
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
 
-  const activeUnits = useMemo(() => {
-    if (form.startDate.isAfter(form.endDate)) return units
-
-    return units.map((list) =>
-      list.filter((u) =>
-        new DateRange(
-          u.openingDate ?? LocalDate.of(1900, 1, 1),
-          u.closingDate
-        ).overlapsWith(new DateRange(form.startDate, form.endDate))
+  const unitOptions = useMemo(() => {
+    const activeUnits = form.startDate.isAfter(form.endDate)
+      ? units
+      : units.map((list) =>
+          list.filter((u) =>
+            new DateRange(
+              u.openingDate ?? LocalDate.of(1900, 1, 1),
+              u.closingDate
+            ).overlapsWith(new DateRange(form.startDate, form.endDate))
+          )
+        )
+    return activeUnits
+      .map((us) =>
+        us
+          .map(({ id, name, ghostUnit }) => ({ id, name, ghostUnit }))
+          .sort((a, b) => (a.name < b.name ? -1 : 1))
       )
-    )
+      .getOrElse([])
   }, [units, form.startDate, form.endDate])
 
   const errors = useMemo(() => {
     const errors = []
-    if (!form.unitId) {
+    if (!form.unit?.id) {
       errors.push(i18n.childInformation.placements.createPlacement.unitMissing)
     }
 
-    if (form.ghostUnit) {
+    if (form.unit?.ghostUnit) {
       errors.push(i18n.childInformation.placements.warning.ghostUnit)
     }
 
@@ -86,13 +91,13 @@ function CreatePlacementModal({ childId, reload }: Props) {
   useEffect(loadUnits, [loadUnits])
 
   const submitForm = () => {
-    if (!form.unitId) return
+    if (!form.unit?.id) return
 
     setSubmitting(true)
     createPlacement({
       childId: childId,
       type: form.type,
-      unitId: form.unitId,
+      unitId: form.unit.id,
       startDate: form.startDate,
       endDate: form.endDate
     })
@@ -149,31 +154,12 @@ function CreatePlacementModal({ childId, reload }: Props) {
             {i18n.childInformation.placements.daycareUnit}
           </div>
 
-          <ReactSelect
+          <Combobox
+            items={unitOptions}
+            selectedItem={form.unit}
+            onChange={(unit) => setForm((prev) => ({ ...prev, unit }))}
             placeholder={i18n.common.select}
-            options={activeUnits
-              .map((us) =>
-                us
-                  .map(({ id, name, ghostUnit }) => ({
-                    label: name,
-                    value: id,
-                    ghostUnit: ghostUnit
-                  }))
-                  .sort((a, b) => (a.label < b.label ? -1 : 1))
-              )
-              .getOrElse([])}
-            onChange={(option) =>
-              option && 'value' in option
-                ? setForm({
-                    ...form,
-                    unitId: option.value,
-                    ghostUnit: option.ghostUnit || false
-                  })
-                : undefined
-            }
-            isLoading={activeUnits.isLoading}
-            loadingMessage={() => i18n.common.loading}
-            noOptionsMessage={() => i18n.common.loadingFailed}
+            getItemLabel={({ name }) => name}
           />
         </section>
 
