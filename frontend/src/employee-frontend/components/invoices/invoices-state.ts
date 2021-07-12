@@ -2,7 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Paged, Result } from 'lib-common/api'
 import {
@@ -41,7 +49,7 @@ const initialState: State = {
   showModal: false
 }
 
-const useActions = (setState: React.Dispatch<React.SetStateAction<State>>) =>
+const useActions = (setState: Dispatch<SetStateAction<State>>) =>
   useMemo(
     () => ({
       setPage: (page: number) => setState((s) => ({ ...s, page })),
