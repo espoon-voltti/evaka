@@ -12,7 +12,10 @@ import { Label } from 'lib-components/typography'
 import { formatName } from '../../utils'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Radio from 'lib-components/atoms/form/Radio'
-import PersonSearch from '../../components/common/PersonSearch'
+import {
+  DbPersonSearch as PersonSearch,
+  VtjPersonSearch
+} from '../../components/common/PersonSearch'
 import { UUID } from '../../types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
@@ -234,8 +237,7 @@ function CreateApplicationModal({
                 label={i18nView.personTypes.VTJ}
                 onChange={() => setPersonType('VTJ')}
               />
-              <PersonSearch
-                searchFrom="vtj"
+              <VtjPersonSearch
                 data-qa="select-search-from-vtj-guardian"
                 onResult={(res) =>
                   setNewVtjPersonSsn(res?.socialSecurityNumber || undefined)

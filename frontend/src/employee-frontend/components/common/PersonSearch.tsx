@@ -51,20 +51,24 @@ const search = async (q: string): Promise<Result<PersonDetails[]>> => {
 }
 
 interface Props extends BaseProps {
+  getItemDataQa: (item: PersonDetails) => string
+  filterItems: (inputValue: string, items: PersonDetails[]) => PersonDetails[]
+  searchFn: (q: string) => Promise<Result<PersonDetails[]>>
   onResult: (result: PersonDetails | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
   onlyChildren?: boolean
   onlyAdults?: boolean
-  searchFrom?: 'db' | 'vtj'
 }
 
 function PersonSearch({
+  filterItems,
+  searchFn,
   onResult,
   onFocus,
   onlyChildren = false,
   onlyAdults = false,
-  searchFrom = 'db',
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  getItemDataQa
 }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
@@ -78,10 +82,7 @@ function PersonSearch({
     onResult(selectedPerson)
   }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const searchPeople = useRestApi(
-    searchFrom === 'db' ? search : searchFromVtj,
-    setPersons
-  )
+  const searchPeople = useRestApi(searchFn, setPersons)
   useEffect(() => {
     searchPeople(debouncedQuery)
   }, [searchPeople, debouncedQuery])
@@ -121,18 +122,6 @@ function PersonSearch({
     [i18n]
   )
 
-  const filterItems = useCallback(
-    (_, items: PersonDetails[]) =>
-      searchFrom === 'vtj'
-        ? items.filter((i) => i.socialSecurityNumber)
-        : items,
-    [searchFrom]
-  )
-  const getItemDataQa = useCallback(
-    ({ id, socialSecurityNumber }: PersonDetails) =>
-      `person-${searchFrom === 'db' ? id : socialSecurityNumber ?? 'null'}`,
-    [searchFrom]
-  )
   const onChange = useCallback(
     (option: PersonDetails | null) => setSelectedPerson(option || undefined),
     []
@@ -158,4 +147,40 @@ function PersonSearch({
   )
 }
 
-export default PersonSearch
+type PersonSearchProps = Omit<
+  Props,
+  'filterItems' | 'getItemDataQa' | 'searchFn'
+>
+
+export function DbPersonSearch(props: PersonSearchProps) {
+  const filterItems = useCallback((_, items: PersonDetails[]) => items, [])
+  const getItemDataQa = useCallback((p: PersonDetails) => `person-${p.id}`, [])
+
+  return (
+    <PersonSearch
+      {...props}
+      filterItems={filterItems}
+      getItemDataQa={getItemDataQa}
+      searchFn={search}
+    />
+  )
+}
+
+export function VtjPersonSearch(props: PersonSearchProps) {
+  const filterItems = useCallback(
+    (_, items: PersonDetails[]) => items.filter((i) => i.socialSecurityNumber),
+    []
+  )
+  const getItemDataQa = useCallback(
+    (p: PersonDetails) => `person-${p.socialSecurityNumber ?? 'null'}`,
+    []
+  )
+  return (
+    <PersonSearch
+      {...props}
+      filterItems={filterItems}
+      getItemDataQa={getItemDataQa}
+      searchFn={searchFromVtj}
+    />
+  )
+}
