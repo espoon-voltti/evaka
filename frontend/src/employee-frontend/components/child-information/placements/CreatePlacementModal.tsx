@@ -34,7 +34,7 @@ interface Form {
   type: PlacementType
   startDate: LocalDate
   endDate: LocalDate
-  unit: { id: string; name: string; isGhost: boolean } | null
+  unit: { id: string; name: string; ghostUnit: boolean } | null
 }
 
 function CreatePlacementModal({ childId, reload }: Props) {
@@ -63,11 +63,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
     return activeUnits
       .map((us) =>
         us
-          .map(({ id, name, ghostUnit }) => ({
-            id,
-            name,
-            isGhost: ghostUnit
-          }))
+          .map(({ id, name, ghostUnit }) => ({ id, name, ghostUnit }))
           .sort((a, b) => (a.name < b.name ? -1 : 1))
       )
       .getOrElse([])
@@ -79,7 +75,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
       errors.push(i18n.childInformation.placements.createPlacement.unitMissing)
     }
 
-    if (form.unit?.isGhost) {
+    if (form.unit?.ghostUnit) {
       errors.push(i18n.childInformation.placements.warning.ghostUnit)
     }
 
