@@ -366,7 +366,7 @@ const Decision = memo(function Decision({
                                     .map((elem) => ({
                                       label: elem.name,
                                       value: elem.id
-                                    }))[0]
+                                    }))[0] ?? null
                                 }
                               />
                             )}
