@@ -16,12 +16,7 @@ import { FamilyConflictReportRow } from '../../types/reports'
 import { getFamilyConflictsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  RowCountInfo,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { distinct } from '../../utils'
 import Combobox from 'lib-components/atoms/form/Combobox'
 

@@ -12,7 +12,7 @@ import {
   markFeeDecisionSent,
   setDecisionType
 } from '../../api/invoicing'
-import { ErrorMessage } from '../../components/fee-decision-details/FeeDecisionDetailsPage'
+import { ErrorMessage } from './FeeDecisionDetailsPage'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 interface Props {

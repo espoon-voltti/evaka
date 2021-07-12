@@ -6,7 +6,7 @@ import { JsonOf } from 'lib-common/json'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
-import { API_URL, client } from '../api/client'
+import { API_URL, client } from './client'
 import { SearchOrder, UUID } from '../types'
 import { deserializeIncome } from '../types/income'
 import {

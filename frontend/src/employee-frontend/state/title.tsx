@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, createContext } from 'react'
-import { useTranslation } from '../state/i18n'
+import { useTranslation } from './i18n'
 
 export interface TitleState {
   setTitle: (title: string | undefined) => void

@@ -4,7 +4,7 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import { client } from '../api/client'
+import { client } from './client'
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
 import { UUID } from '../../lib-common/types'

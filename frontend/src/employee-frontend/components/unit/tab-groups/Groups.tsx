@@ -31,7 +31,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Link } from 'react-router-dom'
 import { requireRole } from '../../../utils/roles'
 import { UserContext } from '../../../state/user'
-import { DataList } from '../../../components/common/DataList'
+import { DataList } from '../../common/DataList'
 import UnitDataFilters from '../../../components/unit/UnitDataFilters'
 
 function renderGroups(

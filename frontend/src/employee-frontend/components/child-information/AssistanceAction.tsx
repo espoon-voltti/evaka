@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
-import { ChildContext } from '../../state/child'
+import { ChildContext } from '../../state'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { UUID } from '../../types'

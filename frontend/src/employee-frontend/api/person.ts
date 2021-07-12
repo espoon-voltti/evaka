@@ -11,12 +11,12 @@ import {
   SearchColumn
 } from '../types/person'
 import { SearchOrder, UUID } from '../types'
-import { client } from '../api/client'
+import { client } from './client'
 import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { Recipient } from '../../employee-frontend/components/messages/types'
+import { Recipient } from '../components/messages/types'
 
 export async function getPersonDetails(
   id: UUID

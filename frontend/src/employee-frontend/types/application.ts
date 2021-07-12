@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types/index'
+import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
-import { Decision } from '../types/decision'
-import { PersonDetails } from '../types/person'
-import { PlacementPlanConfirmationStatus } from '../types/unit'
+import { Decision } from './decision'
+import { PersonDetails } from './person'
+import { PlacementPlanConfirmationStatus } from './unit'
 import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,

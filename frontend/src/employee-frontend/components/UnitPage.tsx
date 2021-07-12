@@ -11,7 +11,7 @@ import React, {
 } from 'react'
 import { Redirect, Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
-import { RouteWithTitle } from '../components/RouteWithTitle'
+import { RouteWithTitle } from './RouteWithTitle'
 import { Gap } from 'lib-components/white-space'
 import Tabs from 'lib-components/molecules/Tabs'
 import { UUID } from '../types'

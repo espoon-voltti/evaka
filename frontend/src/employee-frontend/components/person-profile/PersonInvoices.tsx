@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 
 import { Loading } from 'lib-common/api'
 import { getPersonInvoices } from '../../api/invoicing'
-import { StatusTd } from '../../components/PersonProfile'
+import { StatusTd } from '../PersonProfile'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'

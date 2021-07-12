@@ -19,7 +19,7 @@ import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
 import { H2, H3 } from 'lib-components/typography'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
 import { UserContext } from '../../state/user'
-import { DataList } from '../../components/common/DataList'
+import { DataList } from '../common/DataList'
 import { useTranslation } from '../../state/i18n'
 import { Gap } from 'lib-components/white-space'
 

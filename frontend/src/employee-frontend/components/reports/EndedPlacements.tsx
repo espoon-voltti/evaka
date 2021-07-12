@@ -18,17 +18,12 @@ import {
 } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { SelectOptionProps } from '../../components/common/Select'
+import { SelectOptionProps } from '../common/Select'
 import { fi } from 'date-fns/locale'
-import {
-  FilterLabel,
-  FilterRow,
-  RowCountInfo,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { Link } from 'react-router-dom'
 import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FlexRow } from '../common/styled/containers'
 import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`

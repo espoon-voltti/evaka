@@ -15,7 +15,7 @@ import { FamilyContactsReportRow } from '../../types/reports'
 import { getFamilyContactsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { TableScrollable } from '../../components/reports/common'
+import { TableScrollable } from './common'
 import { UUID } from '../../types'
 import { getDaycare, UnitResponse } from '../../api/unit'
 

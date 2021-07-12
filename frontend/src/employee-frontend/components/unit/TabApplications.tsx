@@ -16,7 +16,7 @@ import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
+import { careTypesFromPlacementType } from '../common/CareTypeLabel'
 import { isPartDayPlacement } from '../../utils/placements'
 
 function TabApplications() {

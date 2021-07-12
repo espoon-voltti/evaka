@@ -8,7 +8,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../../components/common/StickyActionBar'
 import { UIContext } from '../../state/ui'
-import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
+import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import {
   batchCancelPlacementPlan,
   batchMoveToWaitingPlacement,
