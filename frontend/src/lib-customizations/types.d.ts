@@ -5,6 +5,7 @@
 import type { LatLngExpression } from 'leaflet'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { Theme } from 'lib-common/theme'
+import { DeepReadonly } from 'lib-common/types'
 import {
   Lang as LangCitizen,
   Translations as TranslationsCitizen
@@ -68,15 +69,45 @@ interface MapConfig {
   }
 }
 
-interface FeatureFlags {
+/**
+ * Frontend features to enable.
+ *
+ * See lib-customizations/espoo/featureFlags.tsx for an example of configuring
+ * feature flags separately per environment with shared defaults.
+ */
+interface BaseFeatureFlags {
+  assistanceActionOtherEnabled: boolean
   daycareApplication: {
     dailyTimesEnabled: boolean
     serviceNeedOptionsEnabled: boolean
   }
-  urgencyAttachmentsEnabled: boolean
+  evakaLogin: boolean
+  financeBasicsPage: boolean
+  messaging: boolean
   preschoolEnabled: boolean
-  assistanceActionOtherEnabled: boolean
+  urgencyAttachmentsEnabled: boolean
+  vasu: boolean
+  voucher: {
+    /**
+     * TODO: is this actually needed anywhere?
+     * @deprecated
+     */
+    serviceProviders: boolean
+    valueDecisionsPage: boolean
+  }
+
+  /**
+   * Experimental flags are features in development: features that aren't yet
+   * recommended/tested for production usage but can be enabled for testing
+   * in eVaka implementations. These flags will either be dropped when features
+   * are deemed ready or promoted to top-level flags.
+   */
+  experimental: {
+    ai: boolean
+  }
 }
+
+export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 
 export interface EmployeeCustomizations {
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>

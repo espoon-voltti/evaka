@@ -2,36 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../state/i18n'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChild,
   faClock,
+  faCopy,
+  faDatabase,
+  faDiagnoses,
+  faEuroSign,
+  faFileAlt,
+  faGavel,
+  faHandHolding,
   faHomeAlt,
   faHourglassEnd,
   faHourglassStart,
+  faMoneyBillWave,
   faPercentage,
   faUserAltSlash,
-  faUsers,
-  faEuroSign,
-  faHandHolding,
-  faCopy,
-  faFileAlt,
-  faDiagnoses,
-  faDatabase,
-  faMoneyBillWave,
-  faGavel
+  faUsers
 } from 'lib-icons'
-import colors from 'lib-customizations/common'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import { useTranslation } from '../state/i18n'
 import { RequireRole } from '../utils/roles'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from '../config'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -359,7 +358,7 @@ function Reports() {
               <Description>{i18n.reports.presence.description}</Description>
             </ReportItem>
           </RequireRole>
-          {featureFlags.voucherValueDecisionsPage && (
+          {featureFlags.voucher.valueDecisionsPage && (
             <RequireRole
               oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}
             >

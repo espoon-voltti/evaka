@@ -2,77 +2,77 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { featureFlags } from 'lib-customizations/employee'
 import React, { useContext, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
+  Redirect,
   Route,
   Switch,
-  Redirect,
   useParams
 } from 'react-router-dom'
-import ChildInformation from './components/ChildInformation'
-import StateProvider from './state/StateProvider'
-import PersonProfile from './components/PersonProfile'
-import ErrorMessage from './components/common/ErrorMessage'
-import UnitPage from './components/UnitPage'
-import Header from './components/Header'
-import Search from './components/Search'
-import ensureAuthenticated from './components/ensureAuthenticated'
-import LoginPage from './components/LoginPage'
-import Units from './components/Units'
+import { AuthStatus, getAuthStatus } from './api/auth'
+import { client } from './api/client'
+import Absences from './components/absences/Absences'
+import AIPage from './components/ai/AIPage'
+import ApplicationPage from './components/ApplicationPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
+import ChildInformation from './components/ChildInformation'
+import ErrorMessage from './components/common/ErrorMessage'
+import DecisionPage from './components/decision-draft/DecisionDraft'
+import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
+import EmployeePage from './components/employees/EmployeePage'
+import EmployeesPage from './components/employees/EmployeesPage'
+import ensureAuthenticated from './components/ensureAuthenticated'
+import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import FinancePage from './components/FinancePage'
-import InvoicePage from './components/invoice/InvoicePage'
-import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
-import EmployeesPage from './components/employees/EmployeesPage'
-import EmployeePage from './components/employees/EmployeePage'
-import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
-import Absences from './components/absences/Absences'
 import GroupCaretakers from './components/GroupCaretakers'
+import Header from './components/Header'
+import InvoicePage from './components/invoice/InvoicePage'
+import LoginPage from './components/LoginPage'
+import MessagesPage from './components/messages/MessagesPage'
+import PersonProfile from './components/PersonProfile'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
-import DecisionPage from './components/decision-draft/DecisionDraft'
 import Reports from './components/Reports'
+import ReportApplications from './components/reports/Applications'
+import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
+import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
+import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
+import ReportDecisions from './components/reports/Decisions'
 import ReportDuplicatePeople from './components/reports/DuplicatePeople'
+import ReportEndedPlacements from './components/reports/EndedPlacements'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
+import ReportInvoices from './components/reports/Invoices'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
-import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
-import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
-import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
-import ReportApplications from './components/reports/Applications'
-import ReportDecisions from './components/reports/Decisions'
-import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import ReportOccupancies from './components/reports/Occupancies'
-import ReportInvoices from './components/reports/Invoices'
-import ReportEndedPlacements from './components/reports/EndedPlacements'
-import ReportStartingPlacements from './components/reports/StartingPlacements'
+import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
+import PlacementSketching from './components/reports/PlacementSketching'
 import ReportPresences from './components/reports/PresenceReport'
-import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportRaw from './components/reports/Raw'
-import { RouteWithTitle } from './components/RouteWithTitle'
-import { useTranslation } from './state/i18n'
-import { UserContext, UserContextProvider } from './state/user'
-import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
-import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
-import ApplicationPage from './components/ApplicationPage'
-import { hasRole } from './utils/roles'
-import { getAuthStatus, AuthStatus } from './api/auth'
+import ReportServiceNeeds from './components/reports/ServiceNeeds'
+import ReportStartingPlacements from './components/reports/StartingPlacements'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
-import { featureFlags } from './config'
-import PlacementSketching from './components/reports/PlacementSketching'
-import { idleTracker } from 'lib-common/utils/idleTracker'
-import { client } from './api/client'
-import MessagesPage from './components/messages/MessagesPage'
-import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
-import WelcomePage from './components/WelcomePage'
+import { RouteWithTitle } from './components/RouteWithTitle'
+import Search from './components/Search'
+import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
+import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
+import UnitPage from './components/UnitPage'
+import Units from './components/Units'
+import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
+import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VasuEditPage from './components/vasu/VasuEditPage'
 import VasuPage from './components/vasu/VasuPage'
-import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
-import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
-import AIPage from './components/ai/AIPage'
+import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
+import WelcomePage from './components/WelcomePage'
+import { useTranslation } from './state/i18n'
+import StateProvider from './state/StateProvider'
+import { UserContext, UserContextProvider } from './state/user'
+import { hasRole } from './utils/roles'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -120,7 +120,7 @@ export default function App() {
               component={LoginPage}
               title={i18n.titles.login}
             />
-            {featureFlags.ai && (
+            {featureFlags.experimental.ai && (
               <RouteWithTitle
                 exact
                 path="/ai"
@@ -332,7 +332,7 @@ export default function App() {
               component={ensureAuthenticated(ReportServiceNeeds)}
               title={i18n.titles.reports}
             />
-            {featureFlags.voucherValueDecisionsPage && (
+            {featureFlags.voucher.valueDecisionsPage && (
               <RouteWithTitle
                 exact
                 path="/reports/voucher-service-providers"
@@ -340,7 +340,7 @@ export default function App() {
                 title={i18n.titles.reports}
               />
             )}
-            {featureFlags.voucherValueDecisionsPage && (
+            {featureFlags.voucher.valueDecisionsPage && (
               <RouteWithTitle
                 exact
                 path="/reports/voucher-service-providers/:unitId"
