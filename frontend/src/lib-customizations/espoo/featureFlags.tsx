@@ -3,25 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FeatureFlags } from 'lib-customizations/types'
-
-type Env = 'staging' | 'prod'
+import { env, Env } from './env'
 
 type Features = {
   default: FeatureFlags
 } & {
   [k in Env]: FeatureFlags
-}
-
-const env = (): Env | 'default' => {
-  if (window.location.host === 'espoonvarhaiskasvatus.fi') {
-    return 'prod'
-  }
-
-  if (window.location.host === 'staging.espoonvarhaiskasvatus.fi') {
-    return 'staging'
-  }
-
-  return 'default'
 }
 
 const features: Features = {
