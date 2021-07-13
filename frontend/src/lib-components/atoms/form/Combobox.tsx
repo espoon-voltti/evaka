@@ -12,7 +12,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { faChevronDown, faTimes } from 'lib-icons'
+import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import computeScrollIntoView from 'compute-scroll-into-view'
 import classNames from 'classnames'
@@ -337,7 +337,7 @@ export default function Combobox<T>(props: ComboboxProps<T>) {
             onClick: stopPropagation
           })}
         >
-          <FontAwesomeIcon icon={faChevronDown} />
+          <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
         </Button>
       </InputWrapper>
       <MenuWrapper onClick={stopPropagation}>
