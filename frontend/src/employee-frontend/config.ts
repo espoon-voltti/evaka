@@ -19,7 +19,6 @@ const env = (): Env | 'default' => {
 type FeatureFlags = {
   voucherValueDecisionsPage: boolean
   voucherServiceProviders: boolean
-  attachments: boolean
   evakaLogin: boolean
   messaging: boolean
   financeBasicsPage: boolean
@@ -37,7 +36,6 @@ const features: Features = {
   default: {
     voucherValueDecisionsPage: true,
     voucherServiceProviders: true,
-    attachments: true,
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
@@ -47,7 +45,6 @@ const features: Features = {
   staging: {
     voucherValueDecisionsPage: true,
     voucherServiceProviders: true,
-    attachments: true,
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
@@ -57,7 +54,6 @@ const features: Features = {
   prod: {
     voucherValueDecisionsPage: false,
     voucherServiceProviders: false,
-    attachments: false,
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
