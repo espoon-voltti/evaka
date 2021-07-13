@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { CitizenCustomizations } from 'lib-customizations/types'
-import EspooLogo from './espoo-logo.svg'
+import EspooLogo from './assets/espoo-logo.svg'
 import mapConfig from './mapConfig'
 import featureFlags from './featureFlags'
 

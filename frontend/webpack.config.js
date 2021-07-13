@@ -217,7 +217,7 @@ function employeeMobile(flags) {
   config.plugins.push(
     new WebpackPwaManifest({
       fingerprints: !flags.isDevelopment,
-
+      ios: true,
       name: 'eVaka',
       display: 'fullscreen',
       start_url: '/employee/mobile',
@@ -225,13 +225,32 @@ function employeeMobile(flags) {
       theme_color: '#3273c9',
       icons: [
         {
+          ios: true,
           src: path.resolve(
             __dirname,
-            'src/employee-mobile-frontend/evaka.png'
+            'src/employee-mobile-frontend/assets/evaka-180px.png'
           ),
-          sizes: '160x160',
+          size: 180,
           type: 'image/png',
-          purpose: 'maskable'
+          purpose: 'maskable any'
+        },
+        {
+          src: path.resolve(
+            __dirname,
+            'src/employee-mobile-frontend/assets/evaka-192px.png'
+          ),
+          size: 192,
+          type: 'image/png',
+          purpose: 'maskable any'
+        },
+        {
+          src: path.resolve(
+            __dirname,
+            'src/employee-mobile-frontend/assets/evaka-512px.png'
+          ),
+          size: 512,
+          type: 'image/png',
+          purpose: 'maskable any'
         }
       ]
     })
