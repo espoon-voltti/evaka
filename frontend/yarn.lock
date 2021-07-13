@@ -9048,7 +9048,6 @@ __metadata:
     react-focus-lock: 2.5.1
     react-image-crop: ^8.6.9
     react-leaflet: ^3.2.0
-    react-meta-tags: 1.0.1
     react-router-dom: ^5.2.0
     react-select: ^3.0.8
     react-spring: ^8.0.27
@@ -16834,16 +16833,6 @@ fsevents@^1.2.7:
   version: 3.0.4
   resolution: "react-lifecycles-compat@npm:3.0.4"
   checksum: 82176a55ef7526414d770d5e07dc1d28b4c7f20281f22c6f53f3a98df9dbbb5d70c94bebee57b4ea8ccc2eee430b907ca7b564a42fbdd0ed21e7c43bfee35404
-  languageName: node
-  linkType: hard
-
-"react-meta-tags@npm:1.0.1":
-  version: 1.0.1
-  resolution: "react-meta-tags@npm:1.0.1"
-  peerDependencies:
-    react: ^16.6.0
-    react-dom: ^16.6.0
-  checksum: 7b7804cbed4a8caeb22aa2c958d85cafcb7d4fea0b1c6a316a666b33d4577792504b800fcbfc0a6f5a3e63b35ba7c61d22572c2e6eef6ca3b0119dee3e74825f
   languageName: node
   linkType: hard
 
