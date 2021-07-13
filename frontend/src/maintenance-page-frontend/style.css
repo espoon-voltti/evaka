@@ -1,0 +1,219 @@
+/* FONTS */
+
+/* Montserrat */
+
+/* 300 */
+/* latin-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300;
+  src: local(''),
+       url('./fonts/montserrat-v15-latin-ext-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/montserrat-v15-latin-ext-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300;
+  src: local(''),
+       url('./fonts/montserrat-v15-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/montserrat-v15-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Open Sans */
+
+/* 400 */
+/* latin-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''),
+       url('./fonts/open-sans-v20-latin-ext-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/open-sans-v20-latin-ext-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''),
+       url('./fonts/open-sans-v20-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/open-sans-v20-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* STYLES */
+
+body,
+h1,
+html,
+p {
+  margin: 0;
+  padding: 0;
+}
+html {
+  box-sizing: border-box;
+  background-color: #f5f5f5;
+  font-size: 15px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  min-width: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+*,
+:after,
+:before {
+  box-sizing: inherit;
+}
+img {
+  height: auto;
+  max-width: 100%;
+}
+body {
+  font-family: Open Sans, Arial, sans-serif;
+  color: #0f0f0f;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.container {
+  margin: 0 auto;
+  position: relative;
+}
+@media screen and (min-width: 1024px) {
+  .container {
+    max-width: 960px;
+    width: 960px;
+  }
+}
+@media screen and (min-width: 1216px) {
+  .container {
+    max-width: 1152px;
+    width: 1152px;
+  }
+}
+@media screen and (min-width: 1408px) {
+  .container {
+    max-width: 1344px;
+    width: 1344px;
+  }
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background: #fff;
+  box-shadow: 0 0 4px 6px hsla(0, 0%, 60.8%, 0.2);
+  padding-top: 5rem;
+}
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+}
+.icon {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  height: 1.5rem;
+  width: 1.5rem;
+}
+.title {
+  font-family: Montserrat, Arial, sans-serif;
+  word-break: break-word;
+  font-size: 2.4rem;
+  font-weight: 300;
+}
+.title:not(:last-child) {
+  margin-bottom: 1.5rem;
+}
+.title span {
+  font-weight: inherit;
+}
+.header .title {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .header .title .title-logo {
+    max-height: 100px;
+  }
+}
+.header .title > span {
+  border-left: 1px solid #c4c4c4;
+  margin-top: 1.4rem;
+  margin-left: 0.2rem;
+  padding-left: 1.5rem;
+}
+@media (max-width: 768px) {
+  .header .title > span {
+    display: none;
+  }
+}
+.main {
+  max-width: 40.8rem;
+  margin-top: 8rem;
+  padding-top: 7.5rem;
+  padding-bottom: 7rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+@media (max-width: 768px) {
+  .main {
+    margin-top: 4rem;
+  }
+}
+.main .icon {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5rem;
+  height: 5rem;
+  transform: translate(-50%, -50%);
+  box-sizing: initial;
+  border-radius: 100%;
+  background: #ff7300;
+  border: 0.8rem solid #f9f9f9;
+  color: #fff;
+  font-size: 3rem;
+}
+.main .title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.main .title * + *,
+.main p {
+  margin-top: 1.5rem;
+}
+.container {
+  text-align: center;
+}
+.svg-inline {
+  display: inline-block;
+  font-size: inherit;
+  height: 1em;
+  overflow: visible;
+  vertical-align: -0.125em;
+}

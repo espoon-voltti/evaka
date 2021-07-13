@@ -365,13 +365,6 @@ commands:
             ICONS=pro yarn build
             ls -lRa ./dist/bundle
 
-  build_maintenance_page:
-    steps:
-      - run:
-          name: yarn build-maintenance-page
-          working_directory: *workspace_frontend
-          command: yarn build-maintenance-page
-
   build_storybook:
     steps:
       - run:
@@ -538,7 +531,7 @@ commands:
           to: employee/mobile
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/dist/maintenance-page
+          from: frontend/src/maintenance-page-frontend
           to: maintenance-page
       - storybook_to_s3:
           target_env: << parameters.target_env >>
@@ -831,12 +824,10 @@ jobs:
       - run:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
-      - build_maintenance_page
       - build_storybook
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
-            - frontend/dist/maintenance-page
             - frontend/storybook-build
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/frontend/test-results
