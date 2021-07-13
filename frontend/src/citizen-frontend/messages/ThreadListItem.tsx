@@ -37,13 +37,13 @@ export default React.memo(function ThreadListItem({
       data-qa="thread-list-item"
     >
       <FixedSpaceColumn>
-        <Header>
+        <Header isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-participants">
             {participants.join(', ')}
           </Truncated>
           <MessageTypeChip type={thread.type} labels={i18n.messages.types} />
         </Header>
-        <TitleAndDate>
+        <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
           <span>
             {formatDate(
@@ -96,18 +96,18 @@ const Container = styled.button<{ isRead: boolean; active: boolean }>`
       : ''}
 `
 
-const Header = styled.div`
+const Header = styled.div<{ isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: bold;
+  font-weight: ${({ isRead }) => (isRead ? 'normal' : '600')};
   font-size: 16px;
   margin-bottom: 12px;
 `
 
-const TitleAndDate = styled.div`
+const TitleAndDate = styled.div<{ isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: 600;
+  font-weight: ${({ isRead }) => (isRead ? 'normal' : '600')};
   margin-bottom: ${defaultMargins.xxs};
 `
 
