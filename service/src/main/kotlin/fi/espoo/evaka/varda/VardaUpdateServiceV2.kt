@@ -350,13 +350,20 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     val errors = mutableListOf<String>()
 
     try {
+        val personHasSsnOrOid = !db.read { it.getPersonSsnOrOid(evakaServiceNeed.childId) }.isNullOrBlank()
+        check(personHasSsnOrOid) {
+            "VardaUpdate: child ${evakaServiceNeed.childId} has no ssn or oid"
+        }
+
+        val serviceNeedDaycareHasOid = !evakaServiceNeed.ophOrganizerOid.isNullOrBlank()
+        check(serviceNeedDaycareHasOid) {
+            "VardaUpdate: service need daycare oph_organizer_oid is null or empty"
+        }
+
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) error("VardaUpdate: service need ${evakaServiceNeed.id} related oph_organizer_oid is null or empty")
-            if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) error("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
-
-            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
+            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid!!, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
             newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData)
@@ -461,7 +468,7 @@ fun createFeeDataToVardaFromFeeDecision(
     val guardians = try {
         getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
     } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}" }
+        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: no paying guardian found for child ${evakaServiceNeedInfoForVarda.childId}" }
         return null
     }
 
@@ -501,7 +508,7 @@ fun createFeeDataToVardaFromVoucherValueDecision(
     val guardians = try {
         getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
     } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: can't find paying guardians for child ${evakaServiceNeedInfoForVarda.childId}" }
+        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: no paying guardian found for child ${evakaServiceNeedInfoForVarda.childId}" }
         return null
     }
 
@@ -921,10 +928,16 @@ WHERE update_failed = true"""
         .mapTo<UnsuccessfullyUploadedServiceNeed>()
         .list()
 
-fun Database.Read.personHasSsn(id: UUID): Boolean = createQuery("SELECT CASE WHEN (social_security_number IS NOT NULL AND social_security_number <> '') THEN 'True' ELSE 'False' END FROM person WHERE id = :id")
+fun Database.Read.getPersonSsnOrOid(id: UUID): String? = createQuery(
+    """
+        SELECT COALESCE(social_security_number, oph_person_oid)
+        FROM person 
+        WHERE id = :id
+    """
+)
     .bind("id", id)
-    .mapTo<Boolean>()
-    .firstOrNull() ?: false
+    .mapTo<String>()
+    .first()
 
 fun Database.Read.getVardaChildrenToReset(): List<UUID> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")
