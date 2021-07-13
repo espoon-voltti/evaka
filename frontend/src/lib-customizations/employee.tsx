@@ -12,6 +12,7 @@ import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
+  appConfig,
   cityLogo,
   featureFlags,
   assistanceMeasures,
@@ -19,6 +20,7 @@ const {
   placementPlanRejectReasons
 }: EmployeeCustomizations = customizations
 export {
+  appConfig,
   cityLogo,
   featureFlags,
   assistanceMeasures,

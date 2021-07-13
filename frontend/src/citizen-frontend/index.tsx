@@ -11,14 +11,14 @@ import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import App from './App'
 import './index.css'
 import { getEnvironment } from 'lib-common/utils/helpers'
-import { config } from './configs'
 
 import 'leaflet/dist/leaflet.css'
+import { appConfig } from 'lib-customizations/citizen'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({
-  enabled: config.sentry.enabled,
-  dsn: config.sentry.dsn,
+  enabled: appConfig.sentry?.enabled === true,
+  dsn: appConfig.sentry?.dsn,
   environment: getEnvironment()
 })
 

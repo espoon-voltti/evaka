@@ -37,11 +37,19 @@ export type PlacementPlanRejectReason =
   | 'REASON_2'
   | 'REASON_3'
 
+export interface BaseAppConfig {
+  sentry?: {
+    dsn: string
+    enabled: boolean
+  }
+}
+
 export interface CommonCustomizations {
   theme: Theme
 }
 
 export interface CitizenCustomizations {
+  appConfig: BaseAppConfig
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: {
@@ -110,6 +118,7 @@ interface BaseFeatureFlags {
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 
 export interface EmployeeCustomizations {
+  appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
   cityLogo: {
     src: string
@@ -119,4 +128,8 @@ export interface EmployeeCustomizations {
   placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
+}
+
+export interface EmployeeMobileCustomizations {
+  appConfig: BaseAppConfig
 }
