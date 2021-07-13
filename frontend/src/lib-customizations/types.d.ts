@@ -102,8 +102,8 @@ interface BaseFeatureFlags {
    * in eVaka implementations. These flags will either be dropped when features
    * are deemed ready or promoted to top-level flags.
    */
-  experimental: {
-    ai: boolean
+  experimental?: {
+    ai?: boolean
   }
 }
 

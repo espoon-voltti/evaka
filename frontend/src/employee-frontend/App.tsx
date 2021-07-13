@@ -120,7 +120,7 @@ export default function App() {
               component={LoginPage}
               title={i18n.titles.login}
             />
-            {featureFlags.experimental.ai && (
+            {featureFlags.experimental?.ai && (
               <RouteWithTitle
                 exact
                 path="/ai"
