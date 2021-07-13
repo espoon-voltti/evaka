@@ -15,8 +15,8 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
-import { featureFlags } from '../config'
 import { CircledChar } from './DesktopNav'
+import { featureFlags } from 'lib-customizations/citizen'
 
 type Props = {
   showMenu: boolean
