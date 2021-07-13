@@ -286,6 +286,39 @@ e2e_test_wip:
 - Test data isn't cleared from local DB on test failure when running with `--stop-on-first-fail`
 - Testcafe issue: `Fixture.after` isn't called when using the option (unlike `.afterEach`)
 
+### Tips & tricks
+
+#### Overriding backend URLs
+
+When running any local development servers, set the `API_PROXY_URL` to
+override the default API proxy URL.
+This is useful if you want to use the [`compose-e2e` stack](compose/README.md) for running the backend services.
+
+## Deployment
+
+### Configuration and feature flags
+
+All configuration of frontend apps is done as [customizations](#customizing-the-frontend)
+in [`lib-customizations`](./src/lib-customizations).
+
+Configuration is split into two categories:
+
+1. App configuration: global app (and optionally environment) specific configs
+1. Feature flags: generally global toggles (and optionally environment and/or
+  app specific toggles) to enable eVaka features
+
+and feature flags are further split into:
+
+1. Optional features that are considered production ready
+1. Optional in-development (`experimental.*`) features that can be enabled
+  in eVaka customizations to test in e.g. non-production environments
+
+Customizations make no assumptions and provide no direct tooling for ways to
+make environment specific configurations (though examples may be provided
+in the included `espoo` theme) but instead this is left to the customizers.
+
+For more details, [see below](#customizing-the-frontend).
+
 ### Production builds
 
 Production build compiles the application into a minimized and optimized
@@ -298,27 +331,21 @@ To create a production build, run
 yarn build
 ```
 
-**NOTE:** All application configuration should be made in packages'
-config files, and only build-time configuration should be placed in
-`.env*` files. The CI only creates a single build for _all_
-environments (per frontend).
+**NOTE:** CI builds a **single build for all environments** (per frontend).
+Therefore, all environment-specific configs/feature flags should be done
+as customizations and only build-time configuration should be placed in `.env*`
+files.
 
-This allows us to make the CI loop shorter by avoiding duplicate
+This allows us to keep the CI loop shorter by avoiding duplicate
 builds, and also to use complex types in configs (instead of strings).
 
-### Overriding backend URLs
-
-When running any local development servers, set the `API_PROXY_URL` to
-override the default API proxy URL.
-This is useful if you want to use the [`compose-e2e` stack](compose/README.md) for running the backend services.
-
-## Error logging and monitoring
+### Error logging and monitoring
 
 eVaka has a support for using [Sentry](https://sentry.io) for error
 logging in the frontend applications. Sentry's application monitoring
 platform is a commercial product, that is not free to use.
 **Please note, that you can run the application also without Sentry.**
 
-## Customizing the frontend in forks
+## Customizing the frontend
 
 See the [docs in `src/lib-customizations/`](./src/lib-customizations/README.md).
