@@ -2,14 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import styled from 'styled-components'
-import { range, sortBy } from 'lodash'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fi } from 'date-fns/locale'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Loading, Result } from 'lib-common/api'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   SortableTh,
   Tbody,
@@ -18,39 +25,30 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
+import { range, sortBy } from 'lodash'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import {
+  getVoucherServiceProviderUnitReport,
+  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
+} from '../../api/reports'
+import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+import { UUID } from '../../types'
 import {
   VoucherReportRowType,
   VoucherServiceProviderUnitReport,
   VoucherServiceProviderUnitRow
 } from '../../types/reports'
-import {
-  getVoucherServiceProviderUnitReport,
-  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
-} from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { UUID } from '../../types'
-import { SelectOptionProps } from '../common/Select'
-
-import { defaultMargins } from 'lib-components/white-space'
-
-import { formatCents } from '../../utils/money'
 import { formatName } from '../../utils'
+import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import colors from 'lib-customizations/common'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import { SelectOption } from '../common/Select'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -89,14 +87,14 @@ const StyledTh = styled(Th)`
   white-space: nowrap;
 `
 
-const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+const monthOptions: SelectOption[] = range(0, 12).map((num) => ({
   value: String(num + 1),
   label: String(fi.localize?.month(num))
 }))
 
 const minYear = new Date().getFullYear() - 4
 const maxYear = new Date().getFullYear()
-const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+const yearOptions: SelectOption[] = range(maxYear, minYear - 1, -1).map(
   (num) => ({
     value: String(num),
     label: String(num)

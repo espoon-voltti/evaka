@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import { SelectOptionProps } from 'employee-frontend/components/common/Select'
+import { SelectOption } from 'employee-frontend/components/common/Select'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,
@@ -56,8 +56,8 @@ export interface MessagesState {
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   setSelectedAccount: (view: AccountView) => void
-  selectedUnit: SelectOptionProps | undefined
-  setSelectedUnit: (unit: SelectOptionProps) => void
+  selectedUnit: SelectOption | undefined
+  setSelectedUnit: (unit: SelectOption) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -131,9 +131,7 @@ export const MessageContextProvider = React.memo(
     )
     const [hasPilotAccess, setPilotAccess] = useState(false)
 
-    const [selectedUnit, setSelectedUnit] = useState<
-      SelectOptionProps | undefined
-    >()
+    const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
 
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()

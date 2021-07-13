@@ -2,24 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext } from 'react'
+import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { faExchange } from 'lib-icons'
+import React, { useContext, useState } from 'react'
+import { transferGroup } from '../../../../../api/unit'
+import Select, { SelectOption } from '../../../../../components/common/Select'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { Result } from 'lib-common/api'
-import { faExchange } from 'lib-icons'
-import { transferGroup } from '../../../../../api/unit'
-import { UUID } from '../../../../../types'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { formatName } from '../../../../../utils'
 import {
-  DaycareGroupPlacementDetailed,
-  DaycareGroup
+  DaycareGroup,
+  DaycareGroupPlacementDetailed
 } from '../../../../../types/unit'
-import Select from '../../../../../components/common/Select'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { formatName } from '../../../../../utils'
 
 interface Props {
   placement: DaycareGroupPlacementDetailed
@@ -29,7 +28,7 @@ interface Props {
 
 interface GroupPlacementForm {
   startDate: LocalDate
-  groupId: UUID | null
+  group: SelectOption | null
   errors: string[]
 }
 
@@ -56,17 +55,22 @@ export default React.memo(function GroupTransferModal({
 
   const initialFormState = {
     startDate: minDate,
-    groupId: placement.groupId,
+    group: placement.groupId
+      ? {
+          value: placement.groupId,
+          label: groups.find((g) => g.id === placement.groupId)?.name ?? '??'
+        }
+      : null,
     errors: []
   }
   const [form, setForm] = useState<GroupPlacementForm>(initialFormState)
 
   const validate = (form: GroupPlacementForm): string[] => {
     const errors = []
-    if (form.groupId == null)
+    if (!form.group) {
       errors.push(i18n.unit.placements.modal.errors.noGroup)
-    else {
-      const group = openGroups.find((g) => g.id == form.groupId)
+    } else {
+      const group = openGroups.find((g) => g.id == form.group?.value)
       if (group) {
         if (form.startDate.isBefore(group.startDate))
           errors.push(i18n.unit.placements.modal.errors.groupNotStarted)
@@ -89,12 +93,12 @@ export default React.memo(function GroupTransferModal({
   }
 
   const submitForm = () => {
-    if (form.groupId == null) return
+    if (!form.group) return
 
     void transferGroup(
       daycarePlacementId,
       groupPlacementId || '',
-      form.groupId,
+      form.group.value,
       form.startDate
     ).then((res: Result<null>) => {
       if (res.isFailure) {
@@ -136,17 +140,14 @@ export default React.memo(function GroupTransferModal({
         <section>
           <div className="bold">{i18n.unit.placements.modal.group}</div>
           <Select
-            options={openGroups.map((group) => ({
+            items={openGroups.map((group) => ({
               value: group.id,
               label: group.name
             }))}
-            onChange={(value) =>
-              value && 'value' in value
-                ? assignFormValues({
-                    groupId: value.value
-                  })
-                : undefined
+            onChange={(group) =>
+              group ? assignFormValues({ group }) : undefined
             }
+            selectedItem={form.group}
           />
         </section>
         <section>

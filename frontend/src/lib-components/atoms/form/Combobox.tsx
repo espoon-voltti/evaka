@@ -127,7 +127,8 @@ interface MenuItemProps<T> {
   highlighted: boolean
 }
 
-interface Props<T> {
+export interface ComboboxProps<T> {
+  id?: string
   items: T[]
   selectedItem: T | null
   onChange: (item: T | null) => void
@@ -140,6 +141,7 @@ interface Props<T> {
   getMenuItemLabel?: (item: T) => string
   isLoading?: boolean
   menuEmptyLabel?: string
+  name?: string
   onFocus?: FocusEventHandler<HTMLInputElement>
   onInputChange?: (newValue: string) => void
   children?: {
@@ -169,8 +171,9 @@ function ensureElementIsInView(element: HTMLElement) {
   })
 }
 
-export default function Combobox<T>(props: Props<T>) {
+export default function Combobox<T>(props: ComboboxProps<T>) {
   const {
+    id,
     items,
     selectedItem,
     onChange,
@@ -182,6 +185,7 @@ export default function Combobox<T>(props: Props<T>) {
     getItemDataQa,
     isLoading,
     menuEmptyLabel,
+    name,
     onFocus,
     onInputChange,
     children,
@@ -311,6 +315,8 @@ export default function Combobox<T>(props: Props<T>) {
       >
         <Input
           {...getInputProps({
+            id,
+            name,
             disabled,
             placeholder,
             onFocus

@@ -1659,6 +1659,7 @@ export const fi = {
     DAYCARE_DISCOUNT: 'Alennus (maksup.)',
     DAYCARE_INCREASE: 'Korotus (maksup.)',
     PRESCHOOL_WITH_DAYCARE: 'Varhaiskasvatus + Esiopetus',
+    SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
     PRESCHOOL_WITH_DAYCARE_DISCOUNT: 'Alennus (maksup.)',
     PRESCHOOL_WITH_DAYCARE_INCREASE: 'Korotus (maksup.)',
     TEMPORARY_CARE: 'Tilapäinen varhaiskasvatus',

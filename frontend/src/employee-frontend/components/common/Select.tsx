@@ -4,32 +4,19 @@
 
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import ReactSelect, { StylesConfig, ValueType } from 'react-select'
+import Combobox, {
+  ComboboxProps
+} from '../../../lib-components/atoms/form/Combobox'
+import { BaseProps } from '../../../lib-components/utils'
 
-export interface SelectOptionProps {
+export interface SelectOption {
   value: string
   label: string
 }
 
-export interface SelectProps {
-  className?: string
-  disabled?: boolean
-  id?: string
-  name?: string
-  onChange?: (option: ValueType<SelectOptionProps>) => void
-  onFocus?: () => void
-  options: SelectOptionProps[]
-  placeholder?: string
-  'data-qa'?: string
-  value?: ValueType<SelectOptionProps>
-  clearable?: boolean
-}
-
-interface ContainerProps {
+const Container = styled.div<{
   fullWidth?: boolean
-}
-
-const Container = styled.div<ContainerProps>`
+}>`
   position: relative;
   ${(p) => (p.fullWidth ? 'width: 100%;' : '')}
   min-width: 150px;
@@ -39,47 +26,19 @@ const Container = styled.div<ContainerProps>`
   }
 `
 
-type SelectComponentProps = SelectProps & ContainerProps
+const getItemLabel = ({ label }: SelectOption) => label
 
 const Select = memo(function Select({
+  'data-qa': dataQa,
   className,
   fullWidth,
-  disabled,
-  id,
-  name,
-  onChange,
-  onFocus,
-  options,
-  placeholder,
-  'data-qa': dataQa,
-  value,
-  clearable
-}: SelectComponentProps) {
+  ...rest
+}: ComboboxProps<SelectOption> & BaseProps) {
   return (
     <Container fullWidth={fullWidth} data-qa={dataQa} className={className}>
-      <ReactSelect
-        isDisabled={disabled}
-        id={id}
-        name={name}
-        options={options}
-        placeholder={placeholder}
-        onChange={onChange}
-        onFocus={onFocus}
-        value={value}
-        styles={reactSelectStyles}
-        isClearable={clearable ?? false}
-      />
+      <Combobox getItemLabel={getItemLabel} fullWidth={fullWidth} {...rest} />
     </Container>
   )
 })
-
-export const reactSelectStyles: StylesConfig = {
-  menu: (styles) => {
-    return {
-      ...styles,
-      zIndex: 4
-    }
-  }
-}
 
 export default Select

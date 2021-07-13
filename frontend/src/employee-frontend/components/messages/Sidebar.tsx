@@ -169,11 +169,9 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
           {unitSelectionEnabled && (
             <UnitSelection>
               <Select
-                options={unitOptions}
-                onChange={(val) =>
-                  val && 'value' in val && setSelectedUnit(val)
-                }
-                value={selectedUnit}
+                items={unitOptions}
+                onChange={(val) => (val ? setSelectedUnit(val) : undefined)}
+                selectedItem={selectedUnit ?? null}
               />
             </UnitSelection>
           )}

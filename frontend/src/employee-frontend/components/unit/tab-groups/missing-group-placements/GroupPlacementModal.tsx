@@ -184,23 +184,25 @@ export default React.memo(function GroupPlacementModal({
         <section>
           <Bold>{i18n.unit.placements.modal.group}</Bold>
           <Select
-            options={openGroups.map((group) => ({
+            items={openGroups.map((group) => ({
               value: group.id,
               label: group.name
             }))}
             onChange={(value) =>
-              value && 'value' in value
+              value
                 ? assignFormValues({
                     groupId: value.value
                   })
                 : undefined
             }
-            value={openGroups
-              .map((group) => ({
-                value: group.id,
-                label: group.name
-              }))
-              .find(({ value }) => value === form.groupId)}
+            selectedItem={
+              openGroups
+                .map((group) => ({
+                  value: group.id,
+                  label: group.name
+                }))
+                .find(({ value }) => value === form.groupId) ?? null
+            }
             placeholder={i18n.common.select}
           />
         </section>
