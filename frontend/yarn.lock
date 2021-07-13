@@ -2784,7 +2784,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/addon-actions@npm:^6.1.21":
+"@storybook/addon-actions@npm:^6.3.4":
   version: 6.3.4
   resolution: "@storybook/addon-actions@npm:6.3.4"
   dependencies:
@@ -3340,7 +3340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/react@npm:^6.1.21":
+"@storybook/react@npm:^6.3.4":
   version: 6.3.4
   resolution: "@storybook/react@npm:6.3.4"
   dependencies:
@@ -8976,8 +8976,8 @@ __metadata:
     "@fortawesome/react-fontawesome": 0.1.14
     "@sentry/browser": ^6.9.0
     "@sentry/webpack-plugin": ^1.16.0
-    "@storybook/addon-actions": ^6.1.21
-    "@storybook/react": ^6.1.21
+    "@storybook/addon-actions": ^6.3.4
+    "@storybook/react": ^6.3.4
     "@types/jest": ^26.0.23
     "@types/leaflet": ^1.7.0
     "@types/lodash": ^4.14.169
