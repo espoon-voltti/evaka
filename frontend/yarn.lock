@@ -3946,15 +3946,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-tooltip@npm:^4.2.4":
-  version: 4.2.4
-  resolution: "@types/react-tooltip@npm:4.2.4"
-  dependencies:
-    react-tooltip: "*"
-  checksum: 331b7082479ece1db30153fc209c5e819bef000e426af6b6f37fc84ada437a059c52e10309ca9b902b27574d061bb4bd1d53a8bc51a41f93c88761072f8976c8
-  languageName: node
-  linkType: hard
-
 "@types/react-transition-group@npm:*":
   version: 4.4.2
   resolution: "@types/react-transition-group@npm:4.4.2"
@@ -8998,7 +8989,6 @@ __metadata:
     "@types/react-image-crop": ^8.1.2
     "@types/react-router-dom": ^5.1.7
     "@types/react-select": 3.0.22
-    "@types/react-tooltip": ^4.2.4
     "@types/styled-components": ^5.1.9
     "@typescript-eslint/eslint-plugin": ^4.24.0
     "@typescript-eslint/parser": ^4.24.0
@@ -17029,7 +17019,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-tooltip@npm:*, react-tooltip@npm:^4.2.19":
+"react-tooltip@npm:^4.2.19":
   version: 4.2.21
   resolution: "react-tooltip@npm:4.2.21"
   dependencies:
