@@ -84,12 +84,28 @@ data class VasuDocumentChild(
 @Json
 data class VasuContent(
     val sections: List<VasuSection>
-)
+) {
+    fun matchesStructurally(content: VasuContent): Boolean {
+        if (this.sections.size != content.sections.size) return false
+        for ((index, section) in this.sections.withIndex()) {
+            if (!section.matchesStructurally(content.sections.getOrNull(index))) return false
+        }
+        return true
+    }
+}
 
 data class VasuSection(
     val name: String,
     val questions: List<VasuQuestion>
-)
+) {
+    fun matchesStructurally(section: VasuSection?): Boolean {
+        if (section == null || section.name != this.name || section.questions.size != this.questions.size) return false
+        for ((index, question) in this.questions.withIndex()) {
+            if (!question.equalsIgnoringValue(section.questions.getOrNull(index))) return false
+        }
+        return true
+    }
+}
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -107,26 +123,39 @@ sealed class VasuQuestion(
 ) {
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
+    abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
     data class TextQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         val multiline: Boolean,
         val value: String
-    ) : VasuQuestion(VasuQuestionType.TEXT)
+    ) : VasuQuestion(VasuQuestionType.TEXT) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is TextQuestion && question.copy(value = this.value) == this
+        }
+    }
 
     data class CheckboxQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         val value: Boolean
-    ) : VasuQuestion(VasuQuestionType.CHECKBOX)
+    ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is CheckboxQuestion && question.copy(value = this.value) == this
+        }
+    }
 
     data class RadioGroupQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         val options: List<QuestionOption>,
         val value: String?
-    ) : VasuQuestion(VasuQuestionType.RADIO_GROUP)
+    ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is RadioGroupQuestion && question.copy(value = this.value) == this
+        }
+    }
 
     data class MultiSelectQuestion(
         override val name: String,
@@ -135,7 +164,11 @@ sealed class VasuQuestion(
         val minSelections: Int,
         val maxSelections: Int?,
         val value: List<String>
-    ) : VasuQuestion(VasuQuestionType.MULTISELECT)
+    ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is MultiSelectQuestion && question.copy(value = this.value) == this
+        }
+    }
 }
 
 data class QuestionOption(

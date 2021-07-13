@@ -93,6 +93,8 @@ class VasuController(
         )
 
         db.transaction { tx ->
+            val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+            validateVasuDocumentUpdate(vasu, body)
             tx.updateVasuDocumentMaster(
                 id,
                 body.content,
@@ -101,6 +103,11 @@ class VasuController(
                 body.evaluationDiscussionContent
             )
         }
+    }
+
+    private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
+        if (!vasu.content.matchesStructurally(body.content))
+            throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
     }
 
     @GetMapping("/children/{childId}/vasu-summaries")
