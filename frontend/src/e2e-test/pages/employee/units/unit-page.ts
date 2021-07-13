@@ -221,7 +221,7 @@ class AclTable {
       () => {
         const rows = Array.from(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((table() as any) as HTMLElement).querySelectorAll(
+          (table() as any as HTMLElement).querySelectorAll(
             '[data-qa="acl-row"]'
           )
         )

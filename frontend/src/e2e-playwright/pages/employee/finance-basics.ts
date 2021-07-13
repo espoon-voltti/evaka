@@ -54,17 +54,17 @@ export default class FinanceBasicsPage {
           await expectValueToBe('minFee', formatEuros(thresholds.minFee))
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+            const key = `minIncomeThreshold${n}`
             return expectValueToBe(key, formatEuros(thresholds[key]))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+            const key = `maxIncomeThreshold${n}`
             return expectValueToBe(key, formatEuros(thresholds[key]))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+            const key = `incomeMultiplier${n}`
             return expectValueToBe(key, formatPercents(thresholds[key]))
           }, Promise.resolve())
           await expectValueToBe(
@@ -134,31 +134,13 @@ export default class FinanceBasicsPage {
           await promise
           await this.feesSection.editor
             .minIncomeThreshold(n)
-            .fill(
-              formatCents(
-                feeThresholds[
-                  `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                ]
-              )
-            )
+            .fill(formatCents(feeThresholds[`minIncomeThreshold${n}`]))
           await this.feesSection.editor
             .incomeMultiplier(n)
-            .fill(
-              formatDecimal(
-                feeThresholds[
-                  `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                ]
-              )
-            )
+            .fill(formatDecimal(feeThresholds[`incomeMultiplier${n}`]))
           return this.feesSection.editor
             .maxIncomeThreshold(n)
-            .fill(
-              formatCents(
-                feeThresholds[
-                  `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                ]
-              )
-            )
+            .fill(formatCents(feeThresholds[`maxIncomeThreshold${n}`]))
         }, Promise.resolve())
         await this.feesSection.editor.incomeThresholdIncrease6Plus.fill(
           formatCents(feeThresholds.incomeThresholdIncrease6Plus)

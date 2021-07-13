@@ -34,10 +34,6 @@ export const translations: { [K in Lang]: Translations } = {
   fi: merge(fi, (customizations as EmployeeCustomizations).translations.fi)
 }
 
-export const applicationTypes: ApplicationType[] = ([
-  'DAYCARE',
-  'PRESCHOOL',
-  'CLUB'
-] as const).filter(
-  (type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL'
-)
+export const applicationTypes: ApplicationType[] = (
+  ['DAYCARE', 'PRESCHOOL', 'CLUB'] as const
+).filter((type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL')

@@ -80,23 +80,19 @@ export function useVasu(id: string): Vasu {
       }
     ]
   })
-  const [
-    vasuDiscussionContent,
-    setVasuDiscussionContent
-  ] = useState<VasuDiscussionContent>({
-    discussionDate: null,
-    participants: '',
-    guardianViewsAndCollaboration: ''
-  })
-  const [
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent
-  ] = useState<EvaluationDiscussionContent>({
-    discussionDate: null,
-    participants: '',
-    guardianViewsAndCollaboration: '',
-    evaluation: ''
-  })
+  const [vasuDiscussionContent, setVasuDiscussionContent] =
+    useState<VasuDiscussionContent>({
+      discussionDate: null,
+      participants: '',
+      guardianViewsAndCollaboration: ''
+    })
+  const [evaluationDiscussionContent, setEvaluationDiscussionContent] =
+    useState<EvaluationDiscussionContent>({
+      discussionDate: null,
+      participants: '',
+      guardianViewsAndCollaboration: '',
+      evaluation: ''
+    })
 
   useEffect(
     function loadVasuDocument() {

@@ -535,8 +535,7 @@ export const fi = {
     },
     dailyServiceTimes: {
       title: 'Päivittäinen varhaiskasvatusaika',
-      info:
-        'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
+      info: 'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
       info2:
         'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
       types: {
@@ -756,8 +755,7 @@ export const fi = {
       createPlacement: {
         btn: 'Luo uusi sijoitus',
         title: 'Uusi sijoitus',
-        text:
-          'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
+        text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
         unitMissing: 'Yksikkö puuttuu'
       },
@@ -805,8 +803,7 @@ export const fi = {
     },
     messaging: {
       title: 'Lapseen liittyvä viestintä (vastaanottajat)',
-      info:
-        'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
+      info: 'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
       name: 'Vastaanottajan nimi',
       role: 'Rooli',
       notBlocklisted: 'Saa Vastaanottaa',
@@ -1474,8 +1471,7 @@ export const fi = {
   },
   groupCaretakers: {
     title: 'Henkilökunnan tarve ryhmässä',
-    info:
-      'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
+    info: 'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
     create: 'Luo uusi henkilökunnan tarve',
     edit: 'Muokkaa tietoja',
     editActiveWarning:
@@ -2446,8 +2442,7 @@ export const fi = {
         'Voit kirjoittaa lisätietoja yksiköstä (ei näy kuntalaiselle)',
       phone: 'esim. +358 40 555 5555',
       email: 'etunimi.sukunimi@espoo.fi',
-      url:
-        'esim. https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/.../Suvelan_paivakoti',
+      url: 'esim. https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/.../Suvelan_paivakoti',
       streetAddress: 'Kadunnimi esim. Koivu-Mankkaan tie 22 B 24',
       postalCode: 'Postinumero',
       postOffice: 'Toimipaikka',
@@ -2628,15 +2623,13 @@ export const fi = {
       modals: {
         editRetroactive: {
           title: 'Haluatko varmasti muokata tietoja?',
-          text:
-            'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
+          text: 'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
           resolve: 'Muokkaa',
           reject: 'Älä muokkaa'
         },
         saveRetroactive: {
           title: 'Haluatko tallentaa maksuasetukset takautuvasti?',
-          text:
-            'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
+          text: 'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
           resolve: 'Tallenna',
           reject: 'Peruuta'
         }
@@ -2704,7 +2697,6 @@ export const fi = {
     }
   },
   welcomePage: {
-    text:
-      'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+    text: 'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
   }
 }

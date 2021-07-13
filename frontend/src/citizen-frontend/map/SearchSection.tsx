@@ -164,10 +164,9 @@ export default React.memo(function SearchSection({
             </FixedSpaceRow>
 
             <FixedSpaceRow spacing="s">
-              {([
-                'PRIVATE',
-                'PRIVATE_SERVICE_VOUCHER'
-              ] as ProviderTypeOption[]).map((type) => (
+              {(
+                ['PRIVATE', 'PRIVATE_SERVICE_VOUCHER'] as ProviderTypeOption[]
+              ).map((type) => (
                 <SelectionChip
                   key={type}
                   text={t.map.providerTypes[type]}

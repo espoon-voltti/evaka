@@ -475,8 +475,7 @@ const en: Translations = {
             title: 'Second guardian information',
             email: 'Email',
             tel: 'Phone number',
-            info:
-              'Second guardian information is automatically fetched from VTJ',
+            info: 'Second guardian information is automatically fetched from VTJ',
             agreed:
               'We have agreed with the other guardian about this application.',
             notAgreed:
@@ -663,12 +662,10 @@ const en: Translations = {
             'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
           message: {
             title: 'Evening and round-the-clock care',
-            text:
-              'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
+            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
           },
           attachmentsMessage: {
-            text:
-              'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
+            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
             subtitle:
               'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
           }
@@ -681,8 +678,7 @@ const en: Translations = {
         assistanceNeedInstructions: {
           DAYCARE:
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
-          CLUB:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
           PRESCHOOL:
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
         },
@@ -770,8 +766,7 @@ const en: Translations = {
               'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
             PRESCHOOL:
               'I primarily apply for a place in the same location attended by the child’s sibling.',
-            CLUB:
-              'I primarily apply for a place in the same club attended by the child’s sibling.'
+            CLUB: 'I primarily apply for a place in the same club attended by the child’s sibling.'
           },
           radioLabel: {
             DAYCARE: 'Choose the sibling',
@@ -868,8 +863,7 @@ const en: Translations = {
           preferences: {
             label: 'Application preferences you selected',
             noSelections: 'No selections',
-            info:
-              'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
+            info: 'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
             fi: 'finnish',
             sv: 'swedish',
             moveUp: 'Move up',
@@ -1052,20 +1046,17 @@ const en: Translations = {
       },
       draftPolicyInfo: {
         title: 'Your draft application was saved',
-        text:
-          'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
+        text: 'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
         ok: 'OK'
       },
       sentInfo: {
         title: 'Your application has been sent',
-        text:
-          'You can continue editing the application until processing starts',
+        text: 'You can continue editing the application until processing starts',
         ok: 'Ok!'
       },
       updateInfo: {
         title: 'Modifications saved',
-        text:
-          'If you wish, you can make further changes as long as the application has not been processed.',
+        text: 'If you wish, you can make further changes as long as the application has not been processed.',
         ok: 'Ok!'
       }
     }
@@ -1134,15 +1125,13 @@ const en: Translations = {
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'There is a decision without a response',
-          text:
-            'There is a decision without a response. Are you sure you want to return to the list without responding?',
+          text: 'There is a decision without a response. Are you sure you want to return to the list without responding?',
           resolveLabel: 'Return without responding',
           rejectLabel: 'Continue responding'
         },
         doubleRejectWarning: {
           title: 'Are you sure you want to reject the placement?',
-          text:
-            'You are rejecting an offer on pre-primary / preparatory education placement. The related early childhood education placement will also be rejected.',
+          text: 'You are rejecting an offer on pre-primary / preparatory education placement. The related early childhood education placement will also be rejected.',
           resolveLabel: 'Reject both',
           rejectLabel: 'Cancel'
         }

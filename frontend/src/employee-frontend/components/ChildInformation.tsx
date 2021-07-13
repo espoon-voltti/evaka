@@ -163,12 +163,8 @@ const ChildInformation = React.memo(function ChildInformation({
   const { id } = match.params
 
   const { roles } = useContext(UserContext)
-  const {
-    person,
-    setPerson,
-    parentships,
-    setParentships
-  } = useContext<ChildState>(ChildContext)
+  const { person, setPerson, parentships, setParentships } =
+    useContext<ChildState>(ChildContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {

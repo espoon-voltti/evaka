@@ -136,9 +136,8 @@ function AssistanceNeedForm(props: Props) {
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
-  const [formErrors, setFormErrors] = useState<AssistanceNeedFormErrors>(
-    noErrors
-  )
+  const [formErrors, setFormErrors] =
+    useState<AssistanceNeedFormErrors>(noErrors)
 
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 

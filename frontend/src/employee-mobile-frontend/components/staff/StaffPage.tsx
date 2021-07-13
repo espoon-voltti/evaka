@@ -39,9 +39,8 @@ export default function StaffPage({ onNavigate }: Props) {
     groupId: string
   }>()
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
   const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
     Result<UnitStaffAttendance>
   >(Loading.of())

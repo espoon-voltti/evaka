@@ -68,10 +68,8 @@ export const AbsencesContextProvider = React.memo(
     const [selectedAbsenceType, setSelectedAbsenceType] = useState(
       defaultState.selectedAbsenceType
     )
-    const [
-      selectedCareTypeCategories,
-      setSelectedCareTypeCategories
-    ] = useState(defaultState.selectedCareTypeCategories)
+    const [selectedCareTypeCategories, setSelectedCareTypeCategories] =
+      useState(defaultState.selectedCareTypeCategories)
     const [modalVisible, setModalVisible] = useState(defaultState.modalVisible)
 
     const updateSelectedCells = ({ id, parts }: Cell) =>

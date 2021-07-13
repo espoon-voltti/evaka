@@ -18,10 +18,8 @@ export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const user = useUser()
 
-  const {
-    unreadMessagesCount,
-    refreshUnreadMessagesCount
-  } = useContext<MessagePageState>(MessageContext)
+  const { unreadMessagesCount, refreshUnreadMessagesCount } =
+    useContext<MessagePageState>(MessageContext)
 
   useEffect(() => {
     if (user) refreshUnreadMessagesCount()

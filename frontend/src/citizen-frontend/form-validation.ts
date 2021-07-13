@@ -86,10 +86,10 @@ export const validDate = (
   err: ErrorKey = 'validDate'
 ): ErrorKey | undefined => (!LocalDate.parseFiOrNull(val) ? err : undefined)
 
-export const emailVerificationCheck = (
-  verification: string
-): StandardValidator => (val, err: ErrorKey = 'emailsDoNotMatch') =>
-  val === verification ? undefined : err
+export const emailVerificationCheck =
+  (verification: string): StandardValidator =>
+  (val, err: ErrorKey = 'emailsDoNotMatch') =>
+    val === verification ? undefined : err
 
 type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
 export const validate = (

@@ -105,12 +105,8 @@ export function SingleThreadView({
   thread: { id: threadId, messages, title, type }
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    getReplyContent,
-    sendReply,
-    replyState,
-    setReplyContent
-  } = useContext(MessageContext)
+  const { getReplyContent, sendReply, replyState, setReplyContent } =
+    useContext(MessageContext)
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(

@@ -155,10 +155,8 @@ const Decision = memo(function Decision({
   const { id: applicationId } = match.params
   const { i18n } = useTranslation()
   const history = useHistory()
-  const {
-    decisionDraftGroup,
-    setDecisionDraftGroup
-  } = useContext<DecisionDraftState>(DecisionDraftContext)
+  const { decisionDraftGroup, setDecisionDraftGroup } =
+    useContext<DecisionDraftState>(DecisionDraftContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
   const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()

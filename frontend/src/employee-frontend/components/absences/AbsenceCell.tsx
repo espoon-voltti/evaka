@@ -143,9 +143,8 @@ function AbsenceCellWrapper({
   absences,
   backupCare
 }: AbsenceCellProps) {
-  const { selectedCells, toggleCellSelection } = useContext<AbsencesState>(
-    AbsencesContext
-  )
+  const { selectedCells, toggleCellSelection } =
+    useContext<AbsencesState>(AbsencesContext)
   const { i18n } = useTranslation()
 
   const id = getCellId(childId, date)

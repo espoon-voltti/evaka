@@ -104,20 +104,19 @@ export const isValidDecisionStartDate = (
   )
 }
 
-const preferredStartDateValidator = (
-  originalPreferredStartDate: LocalDate | null,
-  type: ApplicationType,
-  terms?: Term[]
-) => (
-  val: string,
-  err: ErrorKey = 'preferredStartDate'
-): ErrorKey | undefined => {
-  const date = LocalDate.parseFiOrNull(val)
-  return date &&
-    isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
-    ? undefined
-    : err
-}
+const preferredStartDateValidator =
+  (
+    originalPreferredStartDate: LocalDate | null,
+    type: ApplicationType,
+    terms?: Term[]
+  ) =>
+  (val: string, err: ErrorKey = 'preferredStartDate'): ErrorKey | undefined => {
+    const date = LocalDate.parseFiOrNull(val)
+    return date &&
+      isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
+      ? undefined
+      : err
+  }
 
 export const validateApplication = (
   apiData: ApplicationDetails,

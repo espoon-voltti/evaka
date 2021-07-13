@@ -50,9 +50,8 @@ export default React.memo(function MarkDeparted() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
 
   const [time, setTime] = useState<string>(getCurrentTime())
   const [timeError, setTimeError] = useState<boolean>(false)

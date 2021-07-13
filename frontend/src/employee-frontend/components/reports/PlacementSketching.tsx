@@ -49,9 +49,8 @@ function PlacementSketching() {
     earliestPreferredStartDate: LocalDate.of(LocalDate.today().year, 8, 1)
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: PlacementSketchingRow): boolean => {
     return !(
       displayFilters.careArea && row.areaName !== displayFilters.careArea

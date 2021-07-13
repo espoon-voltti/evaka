@@ -38,10 +38,10 @@ describe('Employees page', () => {
   })
 
   test('users can be searched by name', async () => {
-    await waitUntilEqual(() => employeesPage.visibleUsers, [
-      'Sorsa Seppo',
-      'Testaaja Teppo'
-    ])
+    await waitUntilEqual(
+      () => employeesPage.visibleUsers,
+      ['Sorsa Seppo', 'Testaaja Teppo']
+    )
     await employeesPage.nameInput.type('Test')
     await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
   })

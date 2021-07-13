@@ -142,9 +142,8 @@ export default React.memo(function AttendanceChildPage() {
 
   const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
   const [group, setGroup] = useState<Group | undefined>(undefined)
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
   const [uiMode, setUiMode] = useState<
     'default' | 'img-modal' | 'img-crop' | 'img-delete'
   >('default')

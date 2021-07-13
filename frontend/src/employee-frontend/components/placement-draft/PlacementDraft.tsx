@@ -113,10 +113,8 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   const [additionalUnits, setAdditionalUnits] = useState<Unit[]>([])
-  const [
-    selectedUnitIsGhostUnit,
-    setSelectedUnitIsGhostUnit
-  ] = useState<boolean>(false)
+  const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
+    useState<boolean>(false)
 
   useEffect(() => {
     units.isSuccess &&
@@ -231,24 +229,26 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     return null
   }
 
-  const updatePlacementDate = (
-    periodType: 'period' | 'preschoolDaycarePeriod',
-    dateType: 'start' | 'end'
-  ) => (date: LocalDate) => {
-    const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
-    setPlacement({
-      ...placement,
-      [periodType]: fixedPeriod
-    })
-    if (placementDraft.isSuccess) {
-      const updatedPlacementDraft = placementDraft.map((draft) => ({
-        ...draft,
+  const updatePlacementDate =
+    (
+      periodType: 'period' | 'preschoolDaycarePeriod',
+      dateType: 'start' | 'end'
+    ) =>
+    (date: LocalDate) => {
+      const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
+      setPlacement({
+        ...placement,
         [periodType]: fixedPeriod
-      }))
-      setPlacementDraft(updatedPlacementDraft)
-      calculateOverLaps(updatedPlacementDraft)
+      })
+      if (placementDraft.isSuccess) {
+        const updatedPlacementDraft = placementDraft.map((draft) => ({
+          ...draft,
+          [periodType]: fixedPeriod
+        }))
+        setPlacementDraft(updatedPlacementDraft)
+        calculateOverLaps(updatedPlacementDraft)
+      }
     }
-  }
 
   function redirectToMainPage() {
     history.push('/applications')

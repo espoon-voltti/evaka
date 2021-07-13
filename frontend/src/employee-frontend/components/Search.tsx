@@ -59,9 +59,8 @@ function Search() {
     sortDirection,
     sortToggle
   } = useContext(CustomersContext)
-  const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] = useState(
-    false
-  )
+  const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] =
+    useState(false)
   const [showCreatePersonModal, setShowCreatePersonModal] = useState(false)
 
   useCustomerSearch()

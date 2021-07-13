@@ -42,16 +42,13 @@ function AssistanceNeedsAndActions() {
   const [rows, setRows] = useState<
     Result<AssistanceNeedsAndActionsReportRow[]>
   >(Loading.of())
-  const [
-    filters,
-    setFilters
-  ] = useState<AssistanceNeedsAndActionsReportFilters>({
-    date: LocalDate.today()
-  })
+  const [filters, setFilters] =
+    useState<AssistanceNeedsAndActionsReportFilters>({
+      date: LocalDate.today()
+    })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

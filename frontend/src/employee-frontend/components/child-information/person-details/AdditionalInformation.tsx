@@ -53,9 +53,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   id
 }: Props) {
   const { i18n } = useTranslation()
-  const { additionalInformation, setAdditionalInformation } = useContext(
-    ChildContext
-  )
+  const { additionalInformation, setAdditionalInformation } =
+    useContext(ChildContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const [toggled, setToggled] = useState(true)
   const [form, setForm] = useState<AdditionalInformation>({

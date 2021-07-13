@@ -47,12 +47,10 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { partnerships, setPartnerships, reloadFamily } = useContext(
-    PersonContext
-  )
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { partnerships, setPartnerships, reloadFamily } =
+    useContext(PersonContext)
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
 
   const loadData = () => {

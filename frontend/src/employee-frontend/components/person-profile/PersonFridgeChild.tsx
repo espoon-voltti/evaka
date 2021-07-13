@@ -39,12 +39,10 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { parentships, setParentships, reloadFamily } = useContext(
-    PersonContext
-  )
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { parentships, setParentships, reloadFamily } =
+    useContext(PersonContext)
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
   const loadData = () => {

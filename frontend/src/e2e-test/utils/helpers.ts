@@ -42,7 +42,7 @@ export class Checkbox {
 
   get checked(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this._input.checked as unknown) as Promise<boolean>
+    return this._input.checked as unknown as Promise<boolean>
   }
 
   get disabled(): Promise<boolean> {
@@ -68,7 +68,7 @@ export class SelectionChip {
 
   get selected(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this._input.checked as unknown) as Promise<boolean>
+    return this._input.checked as unknown as Promise<boolean>
   }
 
   get exists(): Promise<boolean> {

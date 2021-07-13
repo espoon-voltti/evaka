@@ -462,8 +462,7 @@ const sv: Translations = {
             title: 'Uppgifter om den andra vårdnadshavaren',
             email: 'E-postadress',
             tel: 'Telefonnummer',
-            info:
-              'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
+            info: 'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
             agreed: 'Vi har tillsammans kommit överens att fylla i ansökan.',
             notAgreed: 'Vi har inte kunnat komma överens om ansökan.',
             rightToGetNotified:
@@ -624,12 +623,10 @@ const sv: Translations = {
             'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftvård, beskriv behovet i fältet för tilläggsuppgifter.',
           message: {
             title: 'Kvälls- och skiftvård',
-            text:
-              'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
+            text: 'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
           },
           attachmentsMessage: {
-            text:
-              'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
+            text: 'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
             subtitle:
               'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
           }
@@ -642,8 +639,7 @@ const sv: Translations = {
         assistanceNeedInstructions: {
           DAYCARE:
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
-          CLUB:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+          CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
           PRESCHOOL:
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
         },
@@ -736,8 +732,7 @@ const sv: Translations = {
               'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
             PRESCHOOL:
               'Jag ansöker om plats i en annan förskola än närförskolan med syskonprincipen',
-            CLUB:
-              'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
+            CLUB: 'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
           },
           radioLabel: {
             DAYCARE: 'Välj syskonet',
@@ -824,8 +819,7 @@ const sv: Translations = {
           preferences: {
             label: 'Enheter som du har valt',
             noSelections: 'Inga val',
-            info:
-              'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
+            info: 'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
             fi: 'Finskspråkig',
             sv: 'Svenskspråkig',
             moveUp: 'Flytta uppåt',
@@ -1005,20 +999,17 @@ const sv: Translations = {
       },
       draftPolicyInfo: {
         title: 'Utkastet till ansökan har sparats',
-        text:
-          'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
+        text: 'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
         ok: 'Klart'
       },
       sentInfo: {
         title: 'Ansökan har lämnats in',
-        text:
-          'Om du vill kan du göra ytterligare ändringar i ansökan så länge ansökan inte tagits till behandling.',
+        text: 'Om du vill kan du göra ytterligare ändringar i ansökan så länge ansökan inte tagits till behandling.',
         ok: 'Klart!'
       },
       updateInfo: {
         title: 'Ändringar i ansökan har sparats.',
-        text:
-          'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
+        text: 'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
         ok: 'Klart!'
       }
     }
@@ -1083,15 +1074,13 @@ const sv: Translations = {
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'Ett annat beslut väntar på ditt godkännande',
-          text:
-            'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
+          text: 'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
           resolveLabel: 'Gå tillbaka utan att svara',
           rejectLabel: 'Fortsätt att svara'
         },
         doubleRejectWarning: {
           title: 'Vill du avvisa platsen?',
-          text:
-            'Du tänker avvisa erbjuden förskoleplats. Den kompletterande småbarnspedagogiken markeras samtidigt annulerad.',
+          text: 'Du tänker avvisa erbjuden förskoleplats. Den kompletterande småbarnspedagogiken markeras samtidigt annulerad.',
           resolveLabel: 'Avvisa båda',
           rejectLabel: 'Gå tillbaka'
         }

@@ -329,9 +329,10 @@ export async function createOrUpdateDaycareDailyNoteForChild(
   daycareDailyNote: DailyNote
 ): Promise<Result<void>> {
   const url = `/daycare-daily-note/child/${childId}`
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
@@ -351,9 +352,10 @@ export async function upsertGroupDaycareDailyNote(
   daycareDailyNote: DailyNote
 ): Promise<Result<void>> {
   const url = `/daycare-daily-note/group/${groupId}`
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))

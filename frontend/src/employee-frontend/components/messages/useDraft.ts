@@ -22,9 +22,7 @@ const draftToSaveParams = ({ accountId, ...content }: Draft, id: string) => ({
   draftId: id
 })
 
-export function useDraft(
-  initialId: UUID | undefined
-): {
+export function useDraft(initialId: UUID | undefined): {
   draftId: string | undefined
   saveDraft: () => void
   wasModified: boolean

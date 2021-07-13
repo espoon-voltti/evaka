@@ -98,9 +98,11 @@ export function DynamicSections({
                     questionNumber={questionNumber}
                     question={question}
                     selectedValue={
-                      (sections[sectionIndex].questions[
-                        questionIndex
-                      ] as RadioGroupQuestion).value
+                      (
+                        sections[sectionIndex].questions[
+                          questionIndex
+                        ] as RadioGroupQuestion
+                      ).value
                     }
                     onChange={
                       setContent
@@ -120,9 +122,11 @@ export function DynamicSections({
                     question={question}
                     questionNumber={questionNumber}
                     selectedValues={
-                      (sections[sectionIndex].questions[
-                        questionIndex
-                      ] as MultiSelectQuestion).value
+                      (
+                        sections[sectionIndex].questions[
+                          questionIndex
+                        ] as MultiSelectQuestion
+                      ).value
                     }
                     onChange={
                       setContent

@@ -92,12 +92,8 @@ export default React.memo(function ThreadView({
   thread: { id: threadId, messages, title, type }
 }: Props) {
   const i18n = useTranslation()
-  const {
-    sendReply,
-    replyState,
-    setReplyContent,
-    getReplyContent
-  } = useContext(MessageContext)
+  const { sendReply, replyState, setReplyContent, getReplyContent } =
+    useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
 

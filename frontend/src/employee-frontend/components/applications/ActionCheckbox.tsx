@@ -12,9 +12,8 @@ type Props = {
 }
 
 export default React.memo(function ActionCheckbox({ applicationId }: Props) {
-  const { checkedIds, setCheckedIds, showCheckboxes } = useContext(
-    ApplicationUIContext
-  )
+  const { checkedIds, setCheckedIds, showCheckboxes } =
+    useContext(ApplicationUIContext)
   const updateCheckedIds = (applicationId: string, checked: boolean) => {
     if (checked) {
       setCheckedIds(checkedIds.concat(applicationId))
