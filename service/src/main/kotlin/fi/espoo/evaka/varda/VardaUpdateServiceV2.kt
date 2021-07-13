@@ -9,7 +9,9 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
@@ -403,8 +405,40 @@ fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServic
 }
 
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
-    val feeResponseIds = feeDataByServiceNeed.feeDecisionIds.mapNotNull { createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, it) }
-    val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.mapNotNull { createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, it) }
+    val feeResponseIds = feeDataByServiceNeed.feeDecisionIds.map { feeId ->
+        try {
+            logger.info { "VardaUpdate: trying to send fee data $feeId" }
+            val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
+            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
+            sendFeeDecisionToVarda(
+                client = vardaClient,
+                decision = decision,
+                vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                guardians = guardians
+            ) ?: error("VardaUpdate: client failed fee request for $feeId - see logs for details")
+        } catch (e: Exception) {
+            error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+        }
+    }
+
+    val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.map { feeId ->
+        try {
+            logger.info { "VardaUpdate: trying to send voucher data $feeId" }
+            val decision = db.read { it.getVoucherValueDecision(feeId) }!!
+            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
+            sendVoucherDecisionToVarda(
+                client = vardaClient,
+                decision = decision,
+                vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                guardians = guardians
+            ) ?: error("VardaUpdate: client failed voucher request for $feeId - see logs for details")
+        } catch (e: Exception) {
+            error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+        }
+    }
+
     return feeResponseIds + voucherResponseIds
 }
 
@@ -454,23 +488,15 @@ fun getFeeReceiverGuardians(db: Database.Connection, childId: UUID, headOfFamily
     return guardians
 }
 
-fun createFeeDataToVardaFromFeeDecision(
-    db: Database.Connection,
+fun sendFeeDecisionToVarda(
     client: VardaClient,
+    decision: FeeDecision,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decisionId: FeeDecisionId
+    guardians: List<VardaGuardianWithId>
 ): Long? {
-    val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
         ?: error("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
-
-    val guardians = try {
-        getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
-    } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: no paying guardian found for child ${evakaServiceNeedInfoForVarda.childId}" }
-        return null
-    }
 
     val requestPayload = VardaFeeData(
         huoltajat = guardians.map { it.toVardaGuardian() },
@@ -484,34 +510,17 @@ fun createFeeDataToVardaFromFeeDecision(
         lahdejarjestelma = client.sourceSystem
     )
 
-    val res: VardaFeeDataResponse = try {
-        client.createFeeData(requestPayload)
-            ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))
-            ?: error("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
-    return res.id
+    return client.createFeeData(requestPayload)?.id
+        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
-fun createFeeDataToVardaFromVoucherValueDecision(
-    db: Database.Connection,
+fun sendVoucherDecisionToVarda(
     client: VardaClient,
+    decision: VoucherValueDecisionDetailed,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decisionId: VoucherValueDecisionId
+    guardians: List<VardaGuardianWithId>
 ): Long? {
-    val decision = db.read { it.getVoucherValueDecision(decisionId) }
-        ?: error("VardaUpdate: cannot create voucher fee data: voucher $decisionId not found")
-
-    val guardians = try {
-        getFeeReceiverGuardians(db, evakaServiceNeedInfoForVarda.childId, decision.headOfFamily.id)
-    } catch (e: Exception) {
-        logger.info { "VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: no paying guardian found for child ${evakaServiceNeedInfoForVarda.childId}" }
-        return null
-    }
-
     val requestPayload = VardaFeeData(
         huoltajat = guardians.map { guardian -> guardian.toVardaGuardian() },
         lapsi = client.getChildUrl(vardaChildId),
@@ -524,15 +533,8 @@ fun createFeeDataToVardaFromVoucherValueDecision(
         lahdejarjestelma = client.sourceSystem
     )
 
-    val res: VardaFeeDataResponse = try {
-        client.createFeeData(requestPayload)
-            ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))
-            ?: error("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null")
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
-    return res.id
+    return client.createFeeData(requestPayload)?.id
+        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
 private fun vardaFeeBasisByPlacementType(type: PlacementType): String {

@@ -509,10 +509,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
         updateChildData(db, vardaClient, since)
+        assertFailedVardaUpdates(1)
         assertVardaElementCounts(1, 1, 0)
         assertVardaServiceNeedIds(snId, 1, 1)
 
         updateChildData(db, vardaClient, since)
+        assertFailedVardaUpdates(0)
         assertVardaElementCounts(1, 1, 2)
         assertVardaServiceNeedIds(snId, 2, 2)
 
@@ -546,9 +548,11 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             ),
             mockEndpoint.feeData.values.elementAt(1)
         )
+    }
 
-        // There should be no failed uploads after the retry
-        assertEquals(0, db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }.size)
+    private fun assertFailedVardaUpdates(n: Int) {
+        val failures = db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }
+        assertEquals(n, failures.size)
     }
 
     private fun assertVardaServiceNeedIds(evakaServiceNeedId: ServiceNeedId, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
