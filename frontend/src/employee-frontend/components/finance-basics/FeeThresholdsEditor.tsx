@@ -191,10 +191,13 @@ export default React.memo(function FeeThresholdsEditor({
         </Thead>
         <Tbody>
           {familySizes.map((n) => {
+            // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
             const maxFeeError =
               'errors' in validationResult &&
               validationResult.errors[`maxFee${n}`]
-                ? validationResult.errors[`maxFee${n}`]
+                ? validationResult.errors[
+                    `maxFee${n}` as keyof ValidationErrors
+                  ]
                 : undefined
 
             const maxFeeErrorInputInfo = maxFeeError
@@ -207,7 +210,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={editorState[`minIncomeThreshold${n}`]}
+                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
+                    value={
+                      editorState[`minIncomeThreshold${n}` as keyof FormState]
+                    }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,
@@ -226,7 +232,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={editorState[`incomeMultiplier${n}`]}
+                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
+                    value={
+                      editorState[`incomeMultiplier${n}` as keyof FormState]
+                    }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,
@@ -245,7 +254,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={editorState[`maxIncomeThreshold${n}`]}
+                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
+                    value={
+                      editorState[`maxIncomeThreshold${n}` as keyof FormState]
+                    }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,

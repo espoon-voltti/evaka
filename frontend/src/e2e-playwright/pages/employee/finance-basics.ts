@@ -54,18 +54,22 @@ export default class FinanceBasicsPage {
           await expectValueToBe('minFee', formatEuros(thresholds.minFee))
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `minIncomeThreshold${n}`
-            return expectValueToBe(key, formatEuros(thresholds[key]))
+            // TODO: Drop all these casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
+            const key = `minIncomeThreshold${n}` as keyof FeeThresholds
+            return expectValueToBe(key, formatEuros(thresholds[key] as number))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `maxIncomeThreshold${n}`
-            return expectValueToBe(key, formatEuros(thresholds[key]))
+            const key = `maxIncomeThreshold${n}` as keyof FeeThresholds
+            return expectValueToBe(key, formatEuros(thresholds[key] as number))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `incomeMultiplier${n}`
-            return expectValueToBe(key, formatPercents(thresholds[key]))
+            const key = `incomeMultiplier${n}` as keyof FeeThresholds
+            return expectValueToBe(
+              key,
+              formatPercents(thresholds[key] as number)
+            )
           }, Promise.resolve())
           await expectValueToBe(
             'incomeThresholdIncrease6Plus',
@@ -132,15 +136,32 @@ export default class FinanceBasicsPage {
         )
         await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
           await promise
-          await this.feesSection.editor
-            .minIncomeThreshold(n)
-            .fill(formatCents(feeThresholds[`minIncomeThreshold${n}`]))
+          await this.feesSection.editor.minIncomeThreshold(n).fill(
+            formatCents(
+              // TODO: Drop all these casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
+              feeThresholds[
+                `minIncomeThreshold${n}` as keyof FeeThresholds
+              ] as number
+            )
+          )
           await this.feesSection.editor
             .incomeMultiplier(n)
-            .fill(formatDecimal(feeThresholds[`incomeMultiplier${n}`]))
+            .fill(
+              formatDecimal(
+                feeThresholds[
+                  `incomeMultiplier${n}` as keyof FeeThresholds
+                ] as number
+              )
+            )
           return this.feesSection.editor
             .maxIncomeThreshold(n)
-            .fill(formatCents(feeThresholds[`maxIncomeThreshold${n}`]))
+            .fill(
+              formatCents(
+                feeThresholds[
+                  `maxIncomeThreshold${n}` as keyof FeeThresholds
+                ] as number
+              )
+            )
         }, Promise.resolve())
         await this.feesSection.editor.incomeThresholdIncrease6Plus.fill(
           formatCents(feeThresholds.incomeThresholdIncrease6Plus)
