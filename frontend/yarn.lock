@@ -1727,19 +1727,19 @@ __metadata:
   languageName: node
   linkType: soft
 
-"@fortawesome/fontawesome-common-types@npm:^0.2.30":
+"@fortawesome/fontawesome-common-types@npm:^0.2.30, @fortawesome/fontawesome-common-types@npm:^0.2.35":
   version: 0.2.35
   resolution: "@fortawesome/fontawesome-common-types@npm:0.2.35"
   checksum: d8a25c567cb4949ea63fd63ad320ca1ccd95094ec2e011215af7e415fc6108afa64719cefa3f85b8cf65abf2d349b76fefdb368418ba3c27cc7ba23fcbf4d485
   languageName: node
   linkType: hard
 
-"@fortawesome/fontawesome-svg-core@npm:1.2.30":
-  version: 1.2.30
-  resolution: "@fortawesome/fontawesome-svg-core@npm:1.2.30"
+"@fortawesome/fontawesome-svg-core@npm:1.2.35":
+  version: 1.2.35
+  resolution: "@fortawesome/fontawesome-svg-core@npm:1.2.35"
   dependencies:
-    "@fortawesome/fontawesome-common-types": ^0.2.30
-  checksum: 56ab4184eca91b013a7d8d804e8efb3ce93969a8514f788ae61412f4040c9263fb72d7e3d5169c310020c44baca6001108f3350244a150e104c6c39fafe09c6f
+    "@fortawesome/fontawesome-common-types": ^0.2.35
+  checksum: 2457135c46ff06c32b8dd88cc3e1df96e8d9175657cb57cb74c3e26e7047cd3989a2c76c2d784a37d1edc724e1f3b9ac10e82bf7cc06d74a6a438370b4deac2b
   languageName: node
   linkType: hard
 
@@ -1761,15 +1761,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:0.1.11":
-  version: 0.1.11
-  resolution: "@fortawesome/react-fontawesome@npm:0.1.11"
+"@fortawesome/react-fontawesome@npm:0.1.14":
+  version: 0.1.14
+  resolution: "@fortawesome/react-fontawesome@npm:0.1.14"
   dependencies:
     prop-types: ^15.7.2
   peerDependencies:
-    "@fortawesome/fontawesome-svg-core": ^1.2.20
-    react: 16.x
-  checksum: ede137d0f7d205295d30caeaabb1651f2d60ee2adcefda14578e4259c2c80e8ca47a4f1f6c4a22cca98d6acb19e8cfa3357e3c5dd3897fcc48269a93b1104af6
+    "@fortawesome/fontawesome-svg-core": ^1.2.32
+    react: ">=16.x"
+  checksum: 8e9f2b94d360e82a3cafa5ff660461a012bead11279bd37dd12910bbf084bf0dd997db439c254a318106b69666ff6b3c749982f972ab7da0f7578a1d857d94cf
   languageName: node
   linkType: hard
 
@@ -8970,10 +8970,10 @@ __metadata:
     "@babel/core": ^7.14.3
     "@babel/preset-env": ^7.14.2
     "@evaka/eslint-plugin": "link:eslint-plugin"
-    "@fortawesome/fontawesome-svg-core": 1.2.30
+    "@fortawesome/fontawesome-svg-core": 1.2.35
     "@fortawesome/free-regular-svg-icons": 5.14.0
     "@fortawesome/free-solid-svg-icons": 5.14.0
-    "@fortawesome/react-fontawesome": 0.1.11
+    "@fortawesome/react-fontawesome": 0.1.14
     "@sentry/browser": ^6.9.0
     "@sentry/webpack-plugin": ^1.16.0
     "@storybook/addon-actions": ^6.1.21

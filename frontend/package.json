@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",
-    "@fortawesome/fontawesome-svg-core": "1.2.30",
+    "@fortawesome/fontawesome-svg-core": "1.2.35",
     "@fortawesome/free-regular-svg-icons": "5.14.0",
     "@fortawesome/free-solid-svg-icons": "5.14.0",
-    "@fortawesome/react-fontawesome": "0.1.11",
+    "@fortawesome/react-fontawesome": "0.1.14",
     "@sentry/browser": "^6.9.0",
     "@types/react-image-crop": "^8.1.2",
     "axios": "^0.21.1",
