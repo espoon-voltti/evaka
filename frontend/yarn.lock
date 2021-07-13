@@ -9052,7 +9052,7 @@ __metadata:
     react-spring: ^8.0.27
     react-tooltip: ^4.2.19
     sass: ^1.32.13
-    seamless-scroll-polyfill: 1.2.3
+    seamless-scroll-polyfill: 1.2.4
     style-loader: ^2.0.0
     styled-components: 5.3.0
     testcafe: ~1.13.0
@@ -17748,10 +17748,10 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"seamless-scroll-polyfill@npm:1.2.3":
-  version: 1.2.3
-  resolution: "seamless-scroll-polyfill@npm:1.2.3"
-  checksum: 1853f0b1ea0e102041cd82e11ef6c7f0fae00b6e768c586d8ea8e6288ffb90682a50670877c3485a9f04a306b49c6d83b0a5c571d370d59f34f167391d5c7e2f
+"seamless-scroll-polyfill@npm:1.2.4":
+  version: 1.2.4
+  resolution: "seamless-scroll-polyfill@npm:1.2.4"
+  checksum: 22e58530933939026c4f88b725a4c55b13ff39161d2d2c011c027c7ac7d0b3a1de6c01d58d17da207c887061b73a68cd6eea876424c564eea276d9975d5accd2
   languageName: node
   linkType: hard
 
