@@ -12,9 +12,9 @@ import customizations from '@evaka/customizations/common'
 import type { CommonCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { theme, fontCss }: CommonCustomizations = customizations
+const { theme }: CommonCustomizations = customizations
 
-export { theme, fontCss }
+export { theme }
 
 // mimic lib-components/colors api:
 

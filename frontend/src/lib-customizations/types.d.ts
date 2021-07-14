@@ -38,7 +38,6 @@ export type PlacementPlanRejectReason =
 
 export interface CommonCustomizations {
   theme: Theme
-  fontCss: string
 }
 
 export interface CitizenCustomizations {

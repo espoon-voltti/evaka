@@ -2,16 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import 'lib-common/assets/fonts/fonts.css'
 import 'core-js/stable'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import * as Sentry from '@sentry/browser'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import App from './App'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { fontCss } from 'lib-customizations/common'
 import './index.css'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { config } from './configs'
