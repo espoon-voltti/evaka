@@ -191,13 +191,10 @@ export default React.memo(function FeeThresholdsEditor({
         </Thead>
         <Tbody>
           {familySizes.map((n) => {
-            // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
             const maxFeeError =
               'errors' in validationResult &&
               validationResult.errors[`maxFee${n}`]
-                ? validationResult.errors[
-                    `maxFee${n}` as keyof ValidationErrors
-                  ]
+                ? validationResult.errors[`maxFee${n}` as `maxFee${typeof n}`]
                 : undefined
 
             const maxFeeErrorInputInfo = maxFeeError
@@ -210,9 +207,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
                     value={
-                      editorState[`minIncomeThreshold${n}` as keyof FormState]
+                      editorState[
+                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+                      ]
                     }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
@@ -222,8 +220,9 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'€'}
                     info={
-                      validationErrorInfo(`minIncomeThreshold${n}`) ??
-                      maxFeeErrorInputInfo
+                      validationErrorInfo(
+                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`min-income-threshold-${n}`}
@@ -232,9 +231,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
                     value={
-                      editorState[`incomeMultiplier${n}` as keyof FormState]
+                      editorState[
+                        `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+                      ]
                     }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
@@ -244,8 +244,9 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'%'}
                     info={
-                      validationErrorInfo(`incomeMultiplier${n}`) ??
-                      maxFeeErrorInputInfo
+                      validationErrorInfo(
+                        `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`income-multiplier-${n}`}
@@ -254,9 +255,10 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    // TODO: Drop casts when TS 4.4 is released with this fix: https://github.com/microsoft/TypeScript/pull/44512
                     value={
-                      editorState[`maxIncomeThreshold${n}` as keyof FormState]
+                      editorState[
+                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+                      ]
                     }
                     onChange={(value) =>
                       setEditorState((previousState) => ({
@@ -266,8 +268,9 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'€'}
                     info={
-                      validationErrorInfo(`maxIncomeThreshold${n}`) ??
-                      maxFeeErrorInputInfo
+                      validationErrorInfo(
+                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`max-income-threshold-${n}`}
