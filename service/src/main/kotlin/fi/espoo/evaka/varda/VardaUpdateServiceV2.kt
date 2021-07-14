@@ -388,14 +388,12 @@ fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNe
 }
 
 fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    val res: VardaPlacementResponse?
-    try {
-        res = client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
+    val res: VardaPlacementResponse = try {
+        client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
     } catch (e: Exception) {
         error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
+    } ?: error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
 
-    if (res == null) error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
     return res.vardaPlacementId
 }
 
