@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import 'lib-common/assets/fonts/fonts.css'
 import 'core-js/stable'
 import React from 'react'
 import ReactDOM from 'react-dom'
