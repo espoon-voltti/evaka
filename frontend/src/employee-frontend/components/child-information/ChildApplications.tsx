@@ -35,9 +35,8 @@ const ChildApplications = React.memo(function ChildApplications({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { applications, setApplications, person, guardians } = useContext(
-    ChildContext
-  )
+  const { applications, setApplications, person, guardians } =
+    useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)

@@ -89,9 +89,8 @@ export default React.memo(function ChildApplicationsBlock({
 }: ChildApplicationsBlockProps) {
   const history = useHistory()
   const t = useTranslation()
-  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
-    OverlayContext
-  )
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } =
+    useContext(OverlayContext)
 
   const onDeleteApplication = (
     applicationId: string,

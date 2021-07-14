@@ -520,9 +520,10 @@ function toFormData(unit: Unit | undefined): FormData {
 export default function UnitEditor(props: Props): JSX.Element {
   const { i18n } = useTranslation()
 
-  const initialData = useMemo<FormData>(() => toFormData(props.unit), [
-    props.unit
-  ])
+  const initialData = useMemo<FormData>(
+    () => toFormData(props.unit),
+    [props.unit]
+  )
   const [form, setForm] = useState<FormData>(initialData)
   const [formErrors, setFormErrors] = useState<string[]>([])
   const { careTypes, decisionCustomization, unitManager } = form
@@ -535,12 +536,11 @@ export default function UnitEditor(props: Props): JSX.Element {
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
     updateForm({ careTypes: { ...form.careTypes, ...updates } })
-  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> = (
-    updates
-  ) =>
-    updateForm({
-      decisionCustomization: { ...form.decisionCustomization, ...updates }
-    })
+  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> =
+    (updates) =>
+      updateForm({
+        decisionCustomization: { ...form.decisionCustomization, ...updates }
+      })
   const updateUnitManager: UpdateStateFn<UnitManager> = (updates) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
@@ -830,13 +830,15 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{showRequired(i18n.unitEditor.label.providerType)}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {([
-              'MUNICIPAL',
-              'PURCHASED',
-              'MUNICIPAL_SCHOOL',
-              'PRIVATE',
-              'PRIVATE_SERVICE_VOUCHER'
-            ] as const).map((value) => (
+            {(
+              [
+                'MUNICIPAL',
+                'PURCHASED',
+                'MUNICIPAL_SCHOOL',
+                'PRIVATE',
+                'PRIVATE_SERVICE_VOUCHER'
+              ] as const
+            ).map((value) => (
               <Radio
                 key={value}
                 label={i18n.common.providerType[value]}

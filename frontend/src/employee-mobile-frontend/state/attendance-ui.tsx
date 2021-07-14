@@ -70,9 +70,10 @@ function filterAttendanceResponse(
 ) {
   if (attendanceResponse.isSuccess) {
     if (groupIdOrAll !== 'all')
-      attendanceResponse.value.children = attendanceResponse.value.children.filter(
-        (child) => child.groupId === groupIdOrAll
-      )
+      attendanceResponse.value.children =
+        attendanceResponse.value.children.filter(
+          (child) => child.groupId === groupIdOrAll
+        )
   }
   return attendanceResponse
 }

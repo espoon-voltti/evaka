@@ -33,16 +33,18 @@ const TitleContainer = styled.div`
   align-items: baseline;
 `
 
-const updateInvoiceRow = (
-  update: (rows: InvoiceRowDetailed[]) => void,
-  invoiceRows: InvoiceRowDetailed[],
-  invoiceRow: InvoiceRowDetailed
-) => (value: Partial<InvoiceRowDetailed>) =>
-  update(
-    invoiceRows.map((row) =>
-      row === invoiceRow ? { ...invoiceRow, ...value } : row
+const updateInvoiceRow =
+  (
+    update: (rows: InvoiceRowDetailed[]) => void,
+    invoiceRows: InvoiceRowDetailed[],
+    invoiceRow: InvoiceRowDetailed
+  ) =>
+  (value: Partial<InvoiceRowDetailed>) =>
+    update(
+      invoiceRows.map((row) =>
+        row === invoiceRow ? { ...invoiceRow, ...value } : row
+      )
     )
-  )
 
 const emptyInvoiceRow = (
   invoiceRow: InvoiceRowDetailed

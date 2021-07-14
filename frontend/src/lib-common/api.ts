@@ -29,16 +29,16 @@ export class Loading<T> {
   }
 
   chain<A>(_f: (v: T) => Result<A>): Result<A> {
-    return (this as unknown) as Result<A>
+    return this as unknown as Result<A>
   }
 
   apply<A>(f: Result<(v: T) => A>): Result<A> {
-    if (f.isFailure) return (f as unknown) as Result<A>
-    return (this as unknown) as Result<A>
+    if (f.isFailure) return f as unknown as Result<A>
+    return this as unknown as Result<A>
   }
 
   map<A>(_f: (v: T) => A): Result<A> {
-    return (this as unknown) as Result<A>
+    return this as unknown as Result<A>
   }
 
   mapAll<A>(fs: {
@@ -92,15 +92,15 @@ export class Failure<T> {
   }
 
   chain<A>(_f: (v: T) => Result<A>): Result<A> {
-    return (this as unknown) as Result<A>
+    return this as unknown as Result<A>
   }
 
   apply<A>(_f: Result<(v: T) => A>): Result<A> {
-    return (this as unknown) as Result<A>
+    return this as unknown as Result<A>
   }
 
   map<A>(_f: (v: T) => A): Result<A> {
-    return (this as unknown) as Result<A>
+    return this as unknown as Result<A>
   }
 
   mapAll<A>(fs: {
@@ -142,7 +142,7 @@ export class Success<T> {
     if (f.isSuccess) {
       return Success.of(f.value(this.value))
     }
-    return (f as unknown) as Result<A>
+    return f as unknown as Result<A>
   }
 
   map<A>(f: (v: T) => A): Result<A> {

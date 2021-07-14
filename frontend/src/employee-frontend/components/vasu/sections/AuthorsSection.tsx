@@ -62,20 +62,19 @@ export function EditableAuthorsSection({
       }
     }))
 
-  const onChangeOtherAuthor = (key: keyof AuthorInfo, i: number) => (
-    value: string
-  ) =>
-    setContent((prev) => ({
-      ...prev,
-      otherAuthors: [
-        ...prev.otherAuthors.slice(0, i),
-        {
-          ...prev.otherAuthors[i],
-          [key]: value
-        },
-        ...prev.otherAuthors.slice(i + 1)
-      ]
-    }))
+  const onChangeOtherAuthor =
+    (key: keyof AuthorInfo, i: number) => (value: string) =>
+      setContent((prev) => ({
+        ...prev,
+        otherAuthors: [
+          ...prev.otherAuthors.slice(0, i),
+          {
+            ...prev.otherAuthors[i],
+            [key]: value
+          },
+          ...prev.otherAuthors.slice(i + 1)
+        ]
+      }))
 
   return (
     <ContentArea opaque>

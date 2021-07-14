@@ -32,9 +32,10 @@ export default React.memo(function MobileNav({
   const user = useUser()
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
-  const toggleMenu = useCallback(() => setShowMenu((show) => !show), [
-    setShowMenu
-  ])
+  const toggleMenu = useCallback(
+    () => setShowMenu((show) => !show),
+    [setShowMenu]
+  )
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
 
   return (

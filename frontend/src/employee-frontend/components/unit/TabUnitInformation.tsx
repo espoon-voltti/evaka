@@ -26,9 +26,8 @@ import { Gap } from 'lib-components/white-space'
 function TabUnitInformation() {
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const { unitInformation, unitData, filters, setFilters } = useContext(
-    UnitContext
-  )
+  const { unitInformation, unitData, filters, setFilters } =
+    useContext(UnitContext)
 
   const groups = useMemo(
     () =>

@@ -102,22 +102,20 @@ const defaultState: MessagesState = {
 
 export const MessageContext = createContext<MessagesState>(defaultState)
 
-const appendMessageAndMoveThreadToTopOfList = (
-  threadId: UUID,
-  message: Message
-) => (state: Result<MessageThread[]>) =>
-  state.map((threads) => {
-    const thread = threads.find((t) => t.id === threadId)
-    if (!thread) return threads
-    const otherThreads = threads.filter((t) => t.id !== threadId)
-    return [
-      {
-        ...thread,
-        messages: [...thread.messages, message]
-      },
-      ...otherThreads
-    ]
-  })
+const appendMessageAndMoveThreadToTopOfList =
+  (threadId: UUID, message: Message) => (state: Result<MessageThread[]>) =>
+    state.map((threads) => {
+      const thread = threads.find((t) => t.id === threadId)
+      if (!thread) return threads
+      const otherThreads = threads.filter((t) => t.id !== threadId)
+      return [
+        {
+          ...thread,
+          messages: [...thread.messages, message]
+        },
+        ...otherThreads
+      ]
+    })
 
 const isPilotUnitAccount = (acc: MessageAccount) =>
   isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)

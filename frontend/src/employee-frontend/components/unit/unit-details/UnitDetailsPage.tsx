@@ -28,10 +28,8 @@ export default function UnitDetailsPage(): JSX.Element {
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
-  const [
-    financeDecisionHandlerOptions,
-    setFinanceDecisionHandlerOptions
-  ] = useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
+  const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
+    useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, setEditable] = useState(false)
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(
     undefined

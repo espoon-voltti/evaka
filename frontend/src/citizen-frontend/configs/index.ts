@@ -11,8 +11,7 @@ type AppConfig = DeepReadonly<BaseAppConfig>
 const configs: Record<string, AppConfig> = {}
 configs._default = {
   sentry: {
-    dsn:
-      'https://040a66e1905f432b9bd3a13a22d1d16e@o318158.ingest.sentry.io/5578235',
+    dsn: 'https://040a66e1905f432b9bd3a13a22d1d16e@o318158.ingest.sentry.io/5578235',
     enabled: false
   }
 }

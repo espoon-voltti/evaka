@@ -141,28 +141,26 @@ export default React.memo(function ApplicationFilters() {
       : setPreschoolType([...preschoolType, type])
   }
 
-  const toggleAllStatuses = (
-    status: ApplicationSummaryStatusAllOptions
-  ) => () => {
-    setApplicationsResult(Loading.of())
-    allStatuses.includes(status)
-      ? setAllStatuses(allStatuses.filter((v) => v !== status))
-      : setAllStatuses([...allStatuses, status])
-  }
+  const toggleAllStatuses =
+    (status: ApplicationSummaryStatusAllOptions) => () => {
+      setApplicationsResult(Loading.of())
+      allStatuses.includes(status)
+        ? setAllStatuses(allStatuses.filter((v) => v !== status))
+        : setAllStatuses([...allStatuses, status])
+    }
 
   const changeUnits = (selectedUnits: string[]) => {
     setApplicationsResult(Loading.of())
     setUnits(selectedUnits.map((selectedUnit) => selectedUnit))
   }
 
-  const toggleApplicationDistinctions = (
-    distinction: ApplicationDistinctions
-  ) => () => {
-    setApplicationsResult(Loading.of())
-    distinctions.includes(distinction)
-      ? setDistinctions(distinctions.filter((v) => v !== distinction))
-      : setDistinctions([...distinctions, distinction])
-  }
+  const toggleApplicationDistinctions =
+    (distinction: ApplicationDistinctions) => () => {
+      setApplicationsResult(Loading.of())
+      distinctions.includes(distinction)
+        ? setDistinctions(distinctions.filter((v) => v !== distinction))
+        : setDistinctions([...distinctions, distinction])
+    }
 
   return (
     <Filters

@@ -292,26 +292,13 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
                 <Tr key={n}>
                   <Td>{n}</Td>
                   <Td data-qa={`minIncomeThreshold${n}`}>
-                    {formatCents(
-                      feeThresholds[
-                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                      ]
-                    )}{' '}
-                    €
+                    {formatCents(feeThresholds[`minIncomeThreshold${n}`])} €
                   </Td>
                   <Td data-qa={`incomeMultiplier${n}`}>
-                    {feeThresholds[
-                      `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                    ] * 100}{' '}
-                    %
+                    {feeThresholds[`incomeMultiplier${n}`] * 100} %
                   </Td>
                   <Td data-qa={`maxIncomeThreshold${n}`}>
-                    {formatCents(
-                      feeThresholds[
-                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                      ]
-                    )}{' '}
-                    €
+                    {formatCents(feeThresholds[`maxIncomeThreshold${n}`])} €
                   </Td>
                 </Tr>
               )

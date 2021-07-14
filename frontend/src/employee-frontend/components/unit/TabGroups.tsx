@@ -25,13 +25,8 @@ interface Props {
 
 function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
   const { roles } = useContext(UserContext)
-  const {
-    unitInformation,
-    unitData,
-    filters,
-    setFilters,
-    savePosition
-  } = useContext(UnitContext)
+  const { unitInformation, unitData, filters, setFilters, savePosition } =
+    useContext(UnitContext)
 
   const isUnitSupervisor = requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
 

@@ -29,11 +29,8 @@ interface Props {
 
 const Placements = React.memo(function Placements({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const {
-    placements,
-    setPlacements,
-    setServiceNeedOptions
-  } = useContext<ChildState>(ChildContext)
+  const { placements, setPlacements, setServiceNeedOptions } =
+    useContext<ChildState>(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)

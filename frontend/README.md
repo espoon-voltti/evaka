@@ -23,7 +23,7 @@ There are also some internal subprojects:
 - `lib-components` - Common React components usable in all frontends
 - `lib-customizations` - Customizable code and assets for eVaka forks, e.g. localizations
 - `lib-icons` - Icon set, switchable between free and pro Font Awesome
-- `maintenance-page` - Static website to be shown during maintenance instead of the other frontends
+- `maintenance-page-frontend` - Static website to be shown during maintenance instead of the other frontends
 
 **NOTE:** This project is currently under very active development.
 At this point, it is not yet adviced to start developing or running your custom
@@ -55,7 +55,6 @@ src/
   |- *-frontend/
   |- lib-*/
   |- e2e-test
-  |- maintenance-page
 ```
 
 ## Font Awesome icon library

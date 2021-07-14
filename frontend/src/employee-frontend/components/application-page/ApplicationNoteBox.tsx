@@ -111,9 +111,10 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
     setSubmitting(true)
 
-    void (isEdit(props)
-      ? updateNote(props.note.id, text)
-      : createNote(props.applicationId, text)
+    void (
+      isEdit(props)
+        ? updateNote(props.note.id, text)
+        : createNote(props.applicationId, text)
     )
       .then(() => props.onSave())
       .catch(() =>

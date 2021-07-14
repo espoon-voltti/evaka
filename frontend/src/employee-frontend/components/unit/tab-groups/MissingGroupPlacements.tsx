@@ -107,10 +107,8 @@ export default React.memo(function MissingGroupPlacements({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
-  const [
-    activeMissingPlacement,
-    setActiveMissingPlacement
-  ] = useState<MissingGroupPlacement | null>(null)
+  const [activeMissingPlacement, setActiveMissingPlacement] =
+    useState<MissingGroupPlacement | null>(null)
 
   const addPlacementToGroup = (missingPlacement: MissingGroupPlacement) => {
     setActiveMissingPlacement(missingPlacement)

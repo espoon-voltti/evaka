@@ -87,9 +87,8 @@ const StartingPlacements = React.memo(function StartingPlacements() {
     month: today.month
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: StartingPlacementsRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

@@ -39,9 +39,8 @@ const FeeAlteration = React.memo(function FeeAlteration({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const { feeAlterations, setFeeAlterations } = useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)

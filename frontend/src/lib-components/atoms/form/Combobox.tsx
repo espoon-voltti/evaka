@@ -215,10 +215,10 @@ export default function Combobox<T>(props: ComboboxProps<T>) {
     [getMenuItemLabel, getItemDataQa]
   )
 
-  const filterItems = useMemo(() => props.filterItems ?? defaultFilterItems, [
-    props.filterItems,
-    defaultFilterItems
-  ])
+  const filterItems = useMemo(
+    () => props.filterItems ?? defaultFilterItems,
+    [props.filterItems, defaultFilterItems]
+  )
   const renderMenuItem = useMemo(
     () => children?.menuItem ?? defaultRenderMenuItem,
     [children?.menuItem, defaultRenderMenuItem]
@@ -235,11 +235,10 @@ export default function Combobox<T>(props: ComboboxProps<T>) {
     [getItemLabel]
   )
   const [currentFilter, setCurrentFilter] = useState('')
-  const filteredItems = useMemo(() => filterItems(currentFilter, items), [
-    filterItems,
-    items,
-    currentFilter
-  ])
+  const filteredItems = useMemo(
+    () => filterItems(currentFilter, items),
+    [filterItems, items, currentFilter]
+  )
 
   const menuRef = useRef<HTMLElement>()
 

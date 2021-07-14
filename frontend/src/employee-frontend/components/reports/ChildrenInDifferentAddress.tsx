@@ -38,9 +38,8 @@ function ChildrenInDifferentAddress() {
     Result<ChildrenInDifferentAddressReportRow[]>
   >(Loading.of())
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: ChildrenInDifferentAddressReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

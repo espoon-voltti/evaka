@@ -76,12 +76,10 @@ describe('Staff page', () => {
     await waitUntilEqual(() => staffPage.staffOtherCount, '0')
     await waitUntilEqual(() => staffPage.updated, 'Tietoja ei ole päivitetty')
 
-    await waitUntilEqual(() => staffPage.incDecButtonsVisible(), [
-      false,
-      false,
-      false,
-      false
-    ])
+    await waitUntilEqual(
+      () => staffPage.incDecButtonsVisible(),
+      [false, false, false, false]
+    )
   })
 
   test('Set group staff', async () => {

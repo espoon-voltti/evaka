@@ -134,9 +134,8 @@ const ApplicationsList = React.memo(function Applications({
   const { data: applications, pages, total } = applicationsResult
 
   const { i18n } = useTranslation()
-  const { showCheckboxes, checkedIds, setCheckedIds, status } = useContext(
-    ApplicationUIContext
-  )
+  const { showCheckboxes, checkedIds, setCheckedIds, status } =
+    useContext(ApplicationUIContext)
 
   const { roles } = useContext(UserContext)
   const enableApplicationActions =

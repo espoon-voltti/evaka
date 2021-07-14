@@ -116,10 +116,8 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   )
   const [formData, setFormData] = useState<FormData | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [
-    validationResult,
-    setValidationResult
-  ] = useState<ValidationResult | null>(null)
+  const [validationResult, setValidationResult] =
+    useState<ValidationResult | null>(null)
 
   const loadData = useRestApi(getChildDailyServiceTimes, setApiData)
   useEffect(() => loadData(id), [id, loadData])

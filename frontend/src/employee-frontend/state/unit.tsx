@@ -50,9 +50,10 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   const [filters, setFilters] = useState(defaultState.filters)
   const [unitData, setUnitData] = useState<Result<UnitData>>(Loading.of())
   const [position, setPosition] = useState<number>(-1)
-  const savePosition = useCallback(() => setPosition(window.scrollY), [
-    setPosition
-  ])
+  const savePosition = useCallback(
+    () => setPosition(window.scrollY),
+    [setPosition]
+  )
   const scrollToPosition = useCallback(() => {
     if (position > -1) {
       window.scrollTo(0, position)

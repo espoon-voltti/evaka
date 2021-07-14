@@ -107,12 +107,14 @@ export default React.memo(function MessageEditor({
       ? createReceiverTree(availableReceivers, draftContent.recipientIds)
       : availableReceivers
   )
-  const selectedReceivers = useMemo(() => getSelected(receiverTree), [
-    receiverTree
-  ])
-  const receiverOptions = useMemo(() => getReceiverOptions(receiverTree), [
-    receiverTree
-  ])
+  const selectedReceivers = useMemo(
+    () => getSelected(receiverTree),
+    [receiverTree]
+  )
+  const receiverOptions = useMemo(
+    () => getReceiverOptions(receiverTree),
+    [receiverTree]
+  )
 
   const [message, setMessage] = useState<Message>(
     getInitialMessage(draftContent, defaultSender)

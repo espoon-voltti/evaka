@@ -183,9 +183,8 @@ export async function getUnitData(
       groupOccupancies:
         response.data.groupOccupancies &&
         mapGroupOccupancyJson(response.data.groupOccupancies),
-      placementProposals: response.data.placementProposals?.map(
-        mapPlacementPlanJson
-      ),
+      placementProposals:
+        response.data.placementProposals?.map(mapPlacementPlanJson),
       placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson),
       applications: response.data.applications
         ?.map(mapApplicationsJson)
@@ -713,15 +712,17 @@ export async function upsertChildDaycareDailyNote(
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/child/${childId}`
   if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
-      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-        Number(daycareDailyNote.sleepingHours) * 60
-      : 0
+    daycareDailyNote.sleepingMinutes = (
+      daycareDailyNote.sleepingMinutes
+        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+          Number(daycareDailyNote.sleepingHours) * 60
+        : 0
     ).toString()
   }
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then(({ data }) => Success.of(convertUnitJson(data)))
     .catch((e) => Failure.fromError(e))
@@ -733,15 +734,17 @@ export async function upsertGroupDaycareDailyNote(
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/group/${groupId}`
   if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
-      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-        Number(daycareDailyNote.sleepingHours) * 60
-      : 0
+    daycareDailyNote.sleepingMinutes = (
+      daycareDailyNote.sleepingMinutes
+        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+          Number(daycareDailyNote.sleepingHours) * 60
+        : 0
     ).toString()
   }
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then(({ data }) => Success.of(convertUnitJson(data)))
     .catch((e) => Failure.fromError(e))

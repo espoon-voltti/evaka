@@ -438,7 +438,8 @@ export async function getPlacementSketchingReport(
   return client
     .get<JsonOf<PlacementSketchingRow[]>>(`/reports/placement-sketching`, {
       params: {
-        earliestPreferredStartDate: filters.earliestPreferredStartDate.formatIso(),
+        earliestPreferredStartDate:
+          filters.earliestPreferredStartDate.formatIso(),
         placementStartDate: filters.placementStartDate.formatIso()
       }
     })

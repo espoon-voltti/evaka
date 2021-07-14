@@ -143,31 +143,35 @@ export default React.memo(function ApplicationEditView({
   const formatAddress = (a: ApplicationAddress) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
-  const onUploadAttachment = (type: AttachmentType) => (
-    file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
-  ): Promise<Result<UUID>> =>
-    saveAttachment(application.id, file, type, onUploadProgress).then((res) => {
-      res.isSuccess &&
-        setApplication(
-          (prev) =>
-            prev && {
-              ...prev,
-              attachments: [
-                ...prev.attachments,
-                {
-                  contentType: file.type,
-                  id: res.value,
-                  name: file.name,
-                  type,
-                  updated: new Date(),
-                  receivedAt: new Date()
+  const onUploadAttachment =
+    (type: AttachmentType) =>
+    (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ): Promise<Result<UUID>> =>
+      saveAttachment(application.id, file, type, onUploadProgress).then(
+        (res) => {
+          res.isSuccess &&
+            setApplication(
+              (prev) =>
+                prev && {
+                  ...prev,
+                  attachments: [
+                    ...prev.attachments,
+                    {
+                      contentType: file.type,
+                      id: res.value,
+                      name: file.name,
+                      type,
+                      updated: new Date(),
+                      receivedAt: new Date()
+                    }
+                  ]
                 }
-              ]
-            }
-        )
-      return res
-    })
+            )
+          return res
+        }
+      )
 
   const onDeleteAttachment = (id: UUID) =>
     deleteAttachment(id).then((res) => {
@@ -862,12 +866,14 @@ export default React.memo(function ApplicationEditView({
                       {i18n.application.person.agreementStatus}
                     </Label>
                     <div>
-                      {([
-                        'AGREED',
-                        'NOT_AGREED',
-                        'RIGHT_TO_GET_NOTIFIED',
-                        null
-                      ] as const).map((id, index) => (
+                      {(
+                        [
+                          'AGREED',
+                          'NOT_AGREED',
+                          'RIGHT_TO_GET_NOTIFIED',
+                          null
+                        ] as const
+                      ).map((id, index) => (
                         <React.Fragment key={id ?? 'NOT_SET'}>
                           {index !== 0 ? <Gap size="xxs" /> : null}
                           <Radio

@@ -38,9 +38,8 @@ function PartnersInDifferentAddress() {
     Result<PartnersInDifferentAddressReportRow[]>
   >(Loading.of())
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: PartnersInDifferentAddressReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

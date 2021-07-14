@@ -46,9 +46,8 @@ import { BackButtonInline } from '../components'
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
 
   const [selectedStaff, setSelectedStaff] = useState<{
     name: string

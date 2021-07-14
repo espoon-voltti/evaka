@@ -50,9 +50,8 @@ function MissingHeadOfFamily() {
     endDate: LocalDate.today().addMonths(2).lastDayOfMonth()
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: MissingHeadOfFamilyReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

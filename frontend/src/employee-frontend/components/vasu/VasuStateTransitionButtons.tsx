@@ -49,10 +49,8 @@ export function VasuStateTransitionButtons({
   const update = (eventType: VasuDocumentEventType) =>
     updateState({ documentId, eventType })
 
-  const [
-    selectedEventType,
-    setSelectedEventType
-  ] = useState<VasuDocumentEventType>()
+  const [selectedEventType, setSelectedEventType] =
+    useState<VasuDocumentEventType>()
 
   const getStateTransitionButton = (
     eventType: VasuDocumentEventType,

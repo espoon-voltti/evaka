@@ -89,12 +89,8 @@ interface AccountsParams {
 
 function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
-  const {
-    setSelectedAccount,
-    selectedAccount,
-    selectedUnit,
-    setSelectedUnit
-  } = useContext(MessageContext)
+  const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
+    useContext(MessageContext)
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
     const personalAccount = accounts.find(isPersonalMessageAccount)
@@ -198,9 +194,8 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { accounts, selectedAccount, setSelectedAccount } = useContext(
-    MessageContext
-  )
+  const { accounts, selectedAccount, setSelectedAccount } =
+    useContext(MessageContext)
 
   const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (

@@ -146,16 +146,14 @@ function Group({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [
-    selectedDaycareDailyNote,
-    setSelectedDaycareDailyNote
-  ] = useState<DaycareDailyNoteAndChildInfo>({
-    daycareDailyNote: null,
-    childId: null,
-    groupId: null,
-    childFirstName: '',
-    childLastName: ''
-  })
+  const [selectedDaycareDailyNote, setSelectedDaycareDailyNote] =
+    useState<DaycareDailyNoteAndChildInfo>({
+      daycareDailyNote: null,
+      childId: null,
+      groupId: null,
+      childFirstName: '',
+      childLastName: ''
+    })
   const [groupDaycareDailyNotes, setGroupDaycareDailyNotes] = useState<
     Result<DaycareDailyNote[]>
   >(Loading.of())
