@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -143,6 +144,10 @@ class VasuTemplateController {
         Audit.VasuTemplateUpdate.log(id)
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        db.transaction { tx -> tx.updateVasuTemplateContent(id, content) }
+        db.transaction { tx ->
+            val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
+            if (template.documentCount > 0) throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
+            tx.updateVasuTemplateContent(id, content)
+        }
     }
 }
