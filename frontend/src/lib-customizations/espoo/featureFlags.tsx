@@ -25,7 +25,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     vasu: true,
     voucher: {
-      serviceProviders: true,
       valueDecisionsPage: true
     },
     experimental: {
@@ -46,7 +45,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     vasu: false,
     voucher: {
-      serviceProviders: true,
       valueDecisionsPage: true
     },
     experimental: {
@@ -67,7 +65,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     vasu: false,
     voucher: {
-      serviceProviders: false,
       valueDecisionsPage: false
     },
     experimental: {

@@ -96,11 +96,6 @@ interface BaseFeatureFlags {
   urgencyAttachmentsEnabled: boolean
   vasu: boolean
   voucher: {
-    /**
-     * TODO: is this actually needed anywhere?
-     * @deprecated
-     */
-    serviceProviders: boolean
     valueDecisionsPage: boolean
   }
 
