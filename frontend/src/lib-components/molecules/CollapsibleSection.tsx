@@ -111,7 +111,7 @@ function CollapsibleSection({
           data-qa="collapsible-trigger"
         >
           <FontAwesomeIcon
-            icon={collapsed ? faAngleUp : faAngleDown}
+            icon={collapsed ? faAngleDown : faAngleUp}
             color={colors.main.primary}
           />
         </ToggleWrapper>
