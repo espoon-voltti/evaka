@@ -144,8 +144,8 @@ server {
   add_header X-DNS-Prefetch-Control off;
   add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"https://$host/api/csp"}]}';
 
-  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://maps.gstatic.com https://maps.googleapis.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
-  add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' https://maps.googleapis.com; frame-ancestors 'none'; form-action 'self';";
+  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+  add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self'; frame-ancestors 'none'; form-action 'self';";
 
   # Tracing
   # Return the request ID to the client to make tracing of test requests very easy
