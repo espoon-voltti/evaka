@@ -64,8 +64,9 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { isNotProduction, isPilotUnit } from '../../../../constants'
+import { isPilotUnit } from '../../../../constants'
 import { RequireRole } from 'employee-frontend/utils/roles'
+import { featureFlags } from 'lib-customizations/employee'
 
 interface Props {
   unit: Unit
@@ -256,13 +257,16 @@ function Group({
     return (
       <>
         {groupDaycareDailyNotes.isLoading &&
-          (isNotProduction() || isPilotUnit(unit.id)) && <SpinnerSegment />}
+          (featureFlags.experimental?.mobileDailyNotes ||
+            isPilotUnit(unit.id)) && <SpinnerSegment />}
         {groupDaycareDailyNotes.isFailure &&
-          (isNotProduction() || isPilotUnit(unit.id)) && (
+          (featureFlags.experimental?.mobileDailyNotes ||
+            isPilotUnit(unit.id)) && (
             <ErrorSegment title={i18n.common.loadingFailed} compact />
           )}
         {groupDaycareDailyNotes.isSuccess &&
-          (isNotProduction() || isPilotUnit(unit.id)) && (
+          (featureFlags.experimental?.mobileDailyNotes ||
+            isPilotUnit(unit.id)) && (
             <Tooltip
               data-qa={`daycare-daily-note-hover-${placement.child.id}`}
               up
@@ -498,7 +502,8 @@ function Group({
               <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
-                    {(isNotProduction() || isPilotUnit(unit.id)) && (
+                    {(featureFlags.experimental?.mobileDailyNotes ||
+                      isPilotUnit(unit.id)) && (
                       <RequireRole
                         oneOf={[
                           'ADMIN',
@@ -549,7 +554,8 @@ function Group({
                         className={'group-placement-row'}
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
-                        {(isNotProduction() || isPilotUnit(unit.id)) && (
+                        {(featureFlags.experimental?.mobileDailyNotes ||
+                          isPilotUnit(unit.id)) && (
                           <RequireRole
                             oneOf={[
                               'ADMIN',
@@ -657,7 +663,8 @@ function Group({
                   })}
                 </Tbody>
               </Table>
-              {(isNotProduction() || isPilotUnit(unit.id)) && (
+              {(featureFlags.experimental?.mobileDailyNotes ||
+                isPilotUnit(unit.id)) && (
                 <RequireRole
                   oneOf={[
                     'ADMIN',

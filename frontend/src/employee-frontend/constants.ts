@@ -24,14 +24,6 @@ export function getMobileUrlPrefix(): string {
   return isLocalMultiPortEnv ? 'http://localhost:9095' : ''
 }
 
-export function isNotProduction(): boolean {
-  return (
-    window.location.host.includes(':9093') ||
-    window.location.host.includes('localhost') ||
-    window.location.host.includes('staging')
-  )
-}
-
 export function isPilotUnit(unitId: UUID): boolean {
   // Tuomarilan pk, Kartanonpuiston pk, Ruusulinnan pk, Säterin kerho, Kartanonvintin rppk, Storängens daghem och förskola, Järvenperän pk, Luhtaniityn pk, Suvituuli rppk, Kesäheinä rppk, Sunakatti pk
   // The ones starting with letters are all different "groups" of Säterin kerho

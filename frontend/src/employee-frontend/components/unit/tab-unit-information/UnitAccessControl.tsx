@@ -52,12 +52,13 @@ import { Gap } from 'lib-components/white-space'
 import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
-import { isNotProduction, isPilotUnit } from '../../../constants'
+import { isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { featureFlags } from 'lib-customizations/employee'
 
 type Props = {
   unitId: string
@@ -729,7 +730,8 @@ function UnitAccessControl({ unitId, groups }: Props) {
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
         </ContentArea>
-        {(isNotProduction() || isPilotUnit(unitId)) && (
+        {(featureFlags.experimental?.mobileDailyNotes ||
+          isPilotUnit(unitId)) && (
           <ContentArea opaque data-qa="daycare-mobile-devices">
             <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
             {loading && <Loader />}

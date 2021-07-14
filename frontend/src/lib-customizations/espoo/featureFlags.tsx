@@ -29,7 +29,8 @@ const features: Features = {
       valueDecisionsPage: true
     },
     experimental: {
-      ai: true
+      ai: true,
+      mobileDailyNotes: true
     }
   },
   staging: {
@@ -49,7 +50,8 @@ const features: Features = {
       valueDecisionsPage: true
     },
     experimental: {
-      ai: true
+      ai: true,
+      mobileDailyNotes: false
     }
   },
   prod: {
@@ -69,7 +71,8 @@ const features: Features = {
       valueDecisionsPage: false
     },
     experimental: {
-      ai: false
+      ai: false,
+      mobileDailyNotes: false
     }
   }
 }
