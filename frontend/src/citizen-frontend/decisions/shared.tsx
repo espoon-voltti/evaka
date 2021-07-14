@@ -37,7 +37,7 @@ export const decisionStatusIcon = {
   },
   REJECTED: {
     icon: faTimes,
-    color: greyscale.lighter
+    color: accentColors.red
   }
 }
 
@@ -58,11 +58,11 @@ export const applicationStatusIcon: {
   },
   REJECTED: {
     icon: faTimes,
-    color: greyscale.lighter
+    color: accentColors.red
   },
   CREATED: {
     icon: faFile,
-    color: greyscale.lighter
+    color: greyscale.dark
   },
   SENT: {
     icon: faEnvelope,

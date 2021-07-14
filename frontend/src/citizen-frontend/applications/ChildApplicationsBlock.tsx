@@ -50,7 +50,10 @@ const TitleContainer = styled.div`
   flex-flow: row wrap;
 `
 
-const StatusContainer = styled.div``
+const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+`
 
 const ConfirmationContainer = styled.div`
   display: flex;
@@ -240,7 +243,7 @@ export default React.memo(function ChildApplicationsBlock({
                         applicationStatusToIcon(applicationStatus)
                       ].color
                     }
-                    size="s"
+                    size="m"
                   />
 
                   <Gap size={'xs'} horizontal={true} />
