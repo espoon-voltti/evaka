@@ -85,26 +85,20 @@ data class VasuDocumentChild(
 data class VasuContent(
     val sections: List<VasuSection>
 ) {
-    fun matchesStructurally(content: VasuContent): Boolean {
-        if (this.sections.size != content.sections.size) return false
-        for ((index, section) in this.sections.withIndex()) {
-            if (!section.matchesStructurally(content.sections.getOrNull(index))) return false
+    fun matchesStructurally(content: VasuContent): Boolean =
+        this.sections.size == content.sections.size && this.sections.withIndex().all { (index, section) ->
+            section.matchesStructurally(content.sections.getOrNull(index))
         }
-        return true
-    }
 }
 
 data class VasuSection(
     val name: String,
     val questions: List<VasuQuestion>
 ) {
-    fun matchesStructurally(section: VasuSection?): Boolean {
-        if (section == null || section.name != this.name || section.questions.size != this.questions.size) return false
-        for ((index, question) in this.questions.withIndex()) {
-            if (!question.equalsIgnoringValue(section.questions.getOrNull(index))) return false
-        }
-        return true
-    }
+    fun matchesStructurally(section: VasuSection?): Boolean =
+        section != null && section.name == this.name && section.questions.size == this.questions.size &&
+            this.questions.withIndex()
+                .all { (index, question) -> question.equalsIgnoringValue(section.questions.getOrNull(index)) }
 }
 
 @JsonTypeInfo(
