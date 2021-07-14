@@ -13,7 +13,9 @@ import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import java.lang.IllegalStateException
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -81,5 +83,61 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
         assertNotNull(sentChild.henkilo)
         assertTrue(sentChild.henkilo!!.contains("mock-integration/varda/api/v1/henkilot/1/"))
         assertEquals("1.2.246.562.24.1", sentChild.henkilo_oid)
+    }
+
+    @Test
+    fun `getOrCreateVardaChildByOrganizer won't create person if she doesn't have ssn nor oid`() {
+        db.transaction {
+            it.createUpdate(
+                """
+                UPDATE person SET social_security_number = null, oph_person_oid = null
+                WHERE id = :id
+                """.trimIndent()
+            )
+                .bind("id", testChild_1.id)
+                .execute()
+        }
+        assertThrows<IllegalStateException> { getOrCreateVardaChildByOrganizer(db, vardaClient, testChild_1.id, "otherOrganizerOid", "") }
+
+        assertEquals(0, mockEndpoint.people.values.size)
+        assertEquals(0, mockEndpoint.children.values.size)
+    }
+
+    @Test
+    fun `getOrCreateVardaChildByOrganizer creates person if she does have oid but no ssn`() {
+        db.transaction {
+            it.createUpdate(
+                """
+                UPDATE person SET social_security_number = null, oph_person_oid = '1.2.3.4.5'
+                WHERE id = :id
+                """.trimIndent()
+            )
+                .bind("id", testChild_1.id)
+                .execute()
+        }
+
+        getOrCreateVardaChildByOrganizer(db, vardaClient, testChild_1.id, "otherOrganizerOid", "")
+
+        assertEquals(1, mockEndpoint.people.values.size)
+        assertEquals(1, mockEndpoint.children.values.size)
+    }
+
+    @Test
+    fun `getOrCreateVardaChildByOrganizer creates person if she does have ssn but no oid`() {
+        db.transaction {
+            it.createUpdate(
+                """
+                UPDATE person SET social_security_number = '111121-1234', oph_person_oid = null
+                WHERE id = :id
+                """.trimIndent()
+            )
+                .bind("id", testChild_1.id)
+                .execute()
+        }
+
+        getOrCreateVardaChildByOrganizer(db, vardaClient, testChild_1.id, "otherOrganizerOid", "")
+
+        assertEquals(1, mockEndpoint.people.values.size)
+        assertEquals(1, mockEndpoint.children.values.size)
     }
 }

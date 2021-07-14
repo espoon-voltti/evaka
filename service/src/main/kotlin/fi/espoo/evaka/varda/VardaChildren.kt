@@ -207,7 +207,7 @@ data class VardaPersonRequest(
     @JsonProperty("kutsumanimi")
     val nickName: String,
     @JsonProperty("henkilotunnus")
-    val ssn: String,
+    val ssn: String? = null,
     @JsonProperty("henkilo_oid")
     val personOid: String? = null
 )

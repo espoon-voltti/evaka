@@ -352,11 +352,6 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     val errors = mutableListOf<String>()
 
     try {
-        val personHasSsnOrOid = !db.read { it.getPersonSsnOrOid(evakaServiceNeed.childId) }.isNullOrBlank()
-        check(personHasSsnOrOid) {
-            "VardaUpdate: child ${evakaServiceNeed.childId} has no ssn or oid"
-        }
-
         val serviceNeedDaycareHasOid = !evakaServiceNeed.ophOrganizerOid.isNullOrBlank()
         check(serviceNeedDaycareHasOid) {
             "VardaUpdate: service need daycare oph_organizer_oid is null or empty"
@@ -929,17 +924,6 @@ WHERE update_failed = true"""
     )
         .mapTo<UnsuccessfullyUploadedServiceNeed>()
         .list()
-
-fun Database.Read.getPersonSsnOrOid(id: UUID): String? = createQuery(
-    """
-        SELECT COALESCE(social_security_number, oph_person_oid)
-        FROM person 
-        WHERE id = :id
-    """
-)
-    .bind("id", id)
-    .mapTo<String>()
-    .first()
 
 fun Database.Read.getVardaChildrenToReset(): List<UUID> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")
