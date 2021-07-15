@@ -79,7 +79,13 @@ private fun createVardaPersonAndChild(
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
-    val vardaPerson = client.createPerson(personPayload, tryFetchOnFail = true) ?: error("VardaUpdate: Couldn't create or fetch Varda person $personPayload")
+    check(!personPayload.ssn.isNullOrBlank() || !personPayload.personOid.isNullOrBlank()) {
+        "VardaUpdate: no ssn or oid for person $evakaPersonId"
+    }
+
+    val vardaPerson = client.createPerson(personPayload)
+        ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
+        ?: error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
 
     return createVardaChildWhenPersonExists(
         tx = tx,
@@ -174,6 +180,7 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
                 p.first_name,
                 p.last_name,
                 p.social_security_number         AS ssn,
+                p.oph_person_oid                 AS person_oid,
                 split_part(p.first_name, ' ', 1) AS nick_name,
                 :organizerOid
             FROM person p

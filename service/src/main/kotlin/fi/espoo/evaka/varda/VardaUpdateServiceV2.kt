@@ -7,12 +7,12 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -210,6 +210,8 @@ fun updateAllVardaData(
  */
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
     val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client).toMutableSet()
+    logger.info { "VardaUpdate: successfully processed ${processedServiceNeedIds.size} unsuccessful service needs" }
+
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
     val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }.groupBy { it.serviceNeedId }
 
@@ -276,7 +278,7 @@ fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
 
 fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId) {
     try {
-        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) } ?: throw Exception("VardaUpdate: cannot update service need $evakaServiceNeedId: varda service need missing")
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) } ?: error("VardaUpdate: cannot update service need $evakaServiceNeedId: varda service need missing")
         val deleteErrors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
         if (deleteErrors.isNotEmpty()) {
             logger.error(deleteErrors.joinToString(","))
@@ -326,8 +328,9 @@ fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClien
                 handleUpdatedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
             else
                 handleDeletedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
+            logger.info("VardaUpdate: successfully processed unsuccessful service need ${it.evakaServiceNeedId}")
         } catch (e: Exception) {
-            logger.error("VardaUpdate: got an error while trying to redo a failed service need varda update: ${e.localizedMessage}")
+            logger.error("VardaUpdate: got an error while processing an unsuccessful service need: ${e.localizedMessage}")
         }
         it.evakaServiceNeedId
     }
@@ -349,12 +352,13 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     val errors = mutableListOf<String>()
 
     try {
+        check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
+            "VardaUpdate: service need daycare oph_organizer_oid is null or empty"
+        }
+
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_organizer_oid is null or empty")
-            if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) throw Exception("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
-
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
@@ -370,65 +374,122 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 }
 
 fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    if (vardaChildId == null) throw Exception("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
+    if (vardaChildId == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
     val res: VardaDecisionResponse?
     try {
         res = client.createDecision(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
     } catch (e: Exception) {
-        throw Exception("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
+        error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
-    if (res == null) throw Exception("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: create varda decision response is null")
+    if (res == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: create varda decision response is null")
     return res.vardaDecisionId
 }
 
 fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    val res: VardaPlacementResponse?
-    try {
-        res = client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
+    val res: VardaPlacementResponse = try {
+        client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
     } catch (e: Exception) {
-        throw Exception("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
+        error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
+    } ?: error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
 
-    if (res == null) throw Exception("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
     return res.vardaPlacementId
 }
 
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
-    return feeDataByServiceNeed.feeDecisionIds.filter { fdId ->
-        val feeDecision = db.read { it.getFeeDecision(fdId) } ?: throw Exception("VardaUpdate: could not find fee decision $fdId for service need ${evakaServiceNeed.id}")
-        feeDecision.status == FeeDecisionStatus.SENT
-    }.mapNotNull { fdId ->
-        createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, fdId)
-    }.plus(
-        feeDataByServiceNeed.voucherValueDecisionIds.filter { vvdID ->
-            val vvDecision = db.read { it.getVoucherValueDecision(vvdID) ?: throw Exception("VardaUpdate: could not find voucher value decision $vvdID for service need ${evakaServiceNeed.id}") }
-            vvDecision.status == VoucherValueDecisionStatus.SENT
-        }.map { vvdId ->
-            createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, vvdId)
+    val feeResponseIds = feeDataByServiceNeed.feeDecisionIds.map { feeId ->
+        try {
+            logger.info { "VardaUpdate: trying to send fee data $feeId" }
+            val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
+            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
+            sendFeeDecisionToVarda(
+                client = vardaClient,
+                decision = decision,
+                vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                guardians = guardians
+            ) ?: error("VardaUpdate: client failed fee request for $feeId - see logs for details")
+        } catch (e: Exception) {
+            error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
         }
+    }
+
+    val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.map { feeId ->
+        try {
+            logger.info { "VardaUpdate: trying to send voucher data $feeId" }
+            val decision = db.read { it.getVoucherValueDecision(feeId) }!!
+            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
+            sendVoucherDecisionToVarda(
+                client = vardaClient,
+                decision = decision,
+                vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                guardians = guardians
+            ) ?: error("VardaUpdate: client failed voucher request for $feeId - see logs for details")
+        } catch (e: Exception) {
+            error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+        }
+    }
+
+    return feeResponseIds + voucherResponseIds
+}
+
+data class VardaGuardianWithId(
+    val id: UUID,
+    val henkilotunnus: String?,
+    val henkilo_oid: String?,
+    val etunimet: String,
+    val sukunimi: String
+) {
+    fun toVardaGuardian(): VardaGuardian = VardaGuardian(
+        henkilotunnus = henkilotunnus,
+        henkilo_oid = henkilo_oid,
+        etunimet = etunimet,
+        sukunimi = sukunimi
     )
 }
 
-fun createFeeDataToVardaFromFeeDecision(
-    db: Database.Connection,
-    client: VardaClient,
-    vardaChildId: Long,
-    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decisionId: FeeDecisionId
-): Long? {
-    val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
-    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
-        ?: throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
+fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
+    return db.read {
+        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+            .bind("id", childId)
+            .mapTo<VardaGuardianWithId>()
+            .list()
+    }
+}
 
-    val guardians = getChildVardaGuardians(db, evakaServiceNeedInfoForVarda.childId)
-    if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
+fun getGuardianFromVarda(client: VardaClient, ssn: String?, oid: String?): VardaGuardian {
+    val person = client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(ssn, oid))
+        ?: error("VardaUpdate: couldn't fetch guardian from Varda")
+    return VardaGuardian(
+        henkilotunnus = ssn,
+        henkilo_oid = person.personOid,
+        etunimet = person.firstName,
+        sukunimi = person.lastName
+    )
+}
+
+fun getFeeReceiverGuardians(db: Database.Connection, childId: UUID, headOfFamilyId: UUID): List<VardaGuardianWithId> {
+    val guardians = getChildVardaGuardians(db, childId)
+    if (guardians.isEmpty()) error("VardaUpdate: could not create fee data: child has no guardians")
 
     // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
-    if (guardians.none { it.id == decision.headOfFamily.id }) {
-        logger.info("VardaUpdate: will not send fee data for service need ${evakaServiceNeedInfoForVarda.id} child ${evakaServiceNeedInfoForVarda.childId}: head of family is not a guardian")
-        return null
+    if (guardians.none { it.id == headOfFamilyId }) {
+        error("VardaUpdate: could not create fee data: head of family is not a guardian")
     }
+
+    return guardians
+}
+
+fun sendFeeDecisionToVarda(
+    client: VardaClient,
+    decision: FeeDecision,
+    vardaChildId: Long,
+    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
+    guardians: List<VardaGuardianWithId>
+): Long? {
+    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
+        ?: error("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
 
     val requestPayload = VardaFeeData(
         huoltajat = guardians.map { it.toVardaGuardian() },
@@ -442,81 +503,31 @@ fun createFeeDataToVardaFromFeeDecision(
         lahdejarjestelma = client.sourceSystem
     )
 
-    val res: VardaFeeDataResponse = try {
-        client.createFeeData(requestPayload)
-            ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getVardaGuardian(client, it.henkilotunnus) }))
-    } catch (e: Exception) {
-        throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    } ?: throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
-
-    return res.id
+    return client.createFeeData(requestPayload)?.id
+        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
-fun getVardaGuardian(client: VardaClient, ssn: String): VardaGuardian {
-    val person = client.getPersonFromVardaBySSN(ssn) ?: error("VardaUpdate: Couldn't fetch guardian from Varda")
-    return VardaGuardian(
-        henkilotunnus = ssn,
-        etunimet = person.firstName,
-        sukunimi = person.lastName
-    )
-}
-
-data class VardaGuardianWithId(
-    val id: UUID,
-    val henkilotunnus: String,
-    val etunimet: String,
-    val sukunimi: String
-) {
-    fun toVardaGuardian(): VardaGuardian = VardaGuardian(
-        henkilotunnus = henkilotunnus,
-        etunimet = etunimet,
-        sukunimi = sukunimi
-    )
-}
-
-fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
-    return db.read {
-        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
-            .bind("id", childId)
-            .mapTo<VardaGuardianWithId>()
-            .list()
-    }
-}
-
-fun createFeeDataToVardaFromVoucherValueDecision(
-    db: Database.Connection,
+fun sendVoucherDecisionToVarda(
     client: VardaClient,
+    decision: VoucherValueDecisionDetailed,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    id: VoucherValueDecisionId
-): Long {
-    val decision = db.read { it.getVoucherValueDecision(id) }
-        ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $id not found")
+    guardians: List<VardaGuardianWithId>
+): Long? {
+    val requestPayload = VardaFeeData(
+        huoltajat = guardians.map { guardian -> guardian.toVardaGuardian() },
+        lapsi = client.getChildUrl(vardaChildId),
+        maksun_peruste_koodi = vardaFeeBasisByPlacementType(decision.placement.type),
+        asiakasmaksu = decision.finalCoPayment.div(100.0),
+        palveluseteli_arvo = decision.voucherValue.div(100.0),
+        perheen_koko = decision.familySize,
+        alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
+        paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
+        lahdejarjestelma = client.sourceSystem
+    )
 
-    val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
-    if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
-
-    val res: VardaFeeDataResponse?
-    try {
-        res = client.createFeeData(
-            VardaFeeData(
-                huoltajat = guardians.map { guardian -> VardaGuardian(guardian.identity.toString(), guardian.firstName ?: "", guardian.lastName ?: "") },
-                lapsi = client.getChildUrl(vardaChildId),
-                maksun_peruste_koodi = vardaFeeBasisByPlacementType(decision.placement.type),
-                asiakasmaksu = decision.finalCoPayment.div(100.0),
-                palveluseteli_arvo = decision.voucherValue.div(100.0),
-                perheen_koko = decision.familySize,
-                alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
-                paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
-                lahdejarjestelma = client.sourceSystem
-            )
-        )
-    } catch (e: Exception) {
-        throw Exception("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
-    if (res == null) throw Exception("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null")
-    return res.id
+    return client.createFeeData(requestPayload)?.id
+        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
 private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
@@ -851,7 +862,7 @@ data class EvakaServiceNeedInfoForVarda(
 
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(
         decisionUrl = vardaDecisionUrl,
-        unitOid = this.ophUnitOid ?: throw Exception("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
+        unitOid = this.ophUnitOid ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
         startDate = this.startDate,
         endDate = this.endDate,
         sourceSystem = sourceSystem
@@ -875,7 +886,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             d.oph_unit_oid,
             sn.updated AS service_need_updated,
             sno.updated AS service_need_option_updated,
-            sno.id AS optionId
+            sno.id AS option_id
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
         JOIN employee e on e.id = sn.confirmed_by
@@ -911,11 +922,6 @@ WHERE update_failed = true"""
     )
         .mapTo<UnsuccessfullyUploadedServiceNeed>()
         .list()
-
-fun Database.Read.personHasSsn(id: UUID): Boolean = createQuery("SELECT CASE WHEN (social_security_number IS NOT NULL AND social_security_number <> '') THEN 'True' ELSE 'False' END FROM person WHERE id = :id")
-    .bind("id", id)
-    .mapTo<Boolean>()
-    .firstOrNull() ?: false
 
 fun Database.Read.getVardaChildrenToReset(): List<UUID> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")

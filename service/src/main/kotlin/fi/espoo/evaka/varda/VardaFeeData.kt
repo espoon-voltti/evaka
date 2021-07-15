@@ -331,7 +331,8 @@ enum class FeeBasisCode(val code: String) {
 }
 
 data class VardaGuardian(
-    val henkilotunnus: String,
+    val henkilotunnus: String?,
+    val henkilo_oid: String? = null,
     val etunimet: String,
     val sukunimi: String
 )
