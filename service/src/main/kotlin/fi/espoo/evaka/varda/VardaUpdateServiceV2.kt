@@ -352,15 +352,14 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     val errors = mutableListOf<String>()
 
     try {
-        val serviceNeedDaycareHasOid = !evakaServiceNeed.ophOrganizerOid.isNullOrBlank()
-        check(serviceNeedDaycareHasOid) {
+        check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
             "VardaUpdate: service need daycare oph_organizer_oid is null or empty"
         }
 
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid!!, vardaClient.sourceSystem)
+            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
             newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData)
