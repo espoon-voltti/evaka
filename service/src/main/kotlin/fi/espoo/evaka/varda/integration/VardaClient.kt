@@ -141,15 +141,18 @@ class VardaClient(
         }
     }
 
-    fun getPersonFromVardaBySsnOrOid(ssn: String?, oid: String?): VardaPersonResponse? {
-        check(ssn != null || oid != null) {
-            "Both params ssn and oid shouldn't be null"
+    data class VardaPersonSearchRequest(val henkilotunnus: String?, val henkilo_oid: String?) {
+        init {
+            check(henkilotunnus != null || henkilo_oid != null) {
+                "Both params ssn and oid shouldn't be null"
+            }
         }
+    }
 
+    fun getPersonFromVardaBySsnOrOid(body: VardaPersonSearchRequest): VardaPersonResponse? {
         logger.info { "Fetching person from Varda" }
-        data class PersonSearchRequest(val henkilotunnus: String?, val henkilo_oid: String?)
         val (request, _, result) = fuel.post(personSearchUrl)
-            .jsonBody(objectMapper.writeValueAsString(PersonSearchRequest(ssn, oid))).authenticatedResponseStringWithRetries()
+            .jsonBody(objectMapper.writeValueAsString(body)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {

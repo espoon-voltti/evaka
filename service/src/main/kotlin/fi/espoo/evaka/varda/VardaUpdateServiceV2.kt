@@ -459,7 +459,8 @@ fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGu
 }
 
 fun getGuardianFromVarda(client: VardaClient, ssn: String?, oid: String?): VardaGuardian {
-    val person = client.getPersonFromVardaBySsnOrOid(ssn, oid) ?: error("VardaUpdate: Couldn't fetch guardian from Varda")
+    val person = client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(ssn, oid))
+        ?: error("VardaUpdate: couldn't fetch guardian from Varda")
     return VardaGuardian(
         henkilotunnus = ssn,
         henkilo_oid = person.personOid,

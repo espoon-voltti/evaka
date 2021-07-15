@@ -84,7 +84,7 @@ private fun createVardaPersonAndChild(
     }
 
     val vardaPerson = client.createPerson(personPayload)
-        ?: client.getPersonFromVardaBySsnOrOid(personPayload.ssn, personPayload.personOid)
+        ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
         ?: error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
 
     return createVardaChildWhenPersonExists(
