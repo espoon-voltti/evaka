@@ -202,10 +202,12 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
+        val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
+
         return mapOf(
             "approvedAt" to instantFmt(decision.approvedAt),
             "decisionNumber" to decision.decisionNumber,
-            "isReliefDecision" to (decision.decisionType !== FeeDecisionType.NORMAL),
+            "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "hasPartner" to (decision.partner != null),
             "hasPoBox" to (sendAddress.poBox != null),
@@ -236,7 +238,10 @@ class PDFService(
                 .toDecimalString(),
             "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
             "familySize" to decision.familySize,
-            "showValidTo" to (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false),
+            "showValidTo" to (
+                (isReliefDecision && decision.validDuring.end != null) ||
+                    (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false)
+                ),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),
