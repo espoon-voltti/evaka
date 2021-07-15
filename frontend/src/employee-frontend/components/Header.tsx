@@ -9,7 +9,7 @@ import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { cityLogo } from 'lib-customizations/employee'
+import { cityLogo, featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
 import React, { useContext, useMemo, useState } from 'react'
 import {
@@ -20,8 +20,6 @@ import {
 } from 'react-router-dom'
 import styled from 'styled-components'
 import { logoutUrl } from '../api/auth'
-import { featureFlags } from '../config'
-import { isNotProduction } from '../constants'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { RequireRole } from '../utils/roles'
@@ -209,21 +207,23 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               </RequireRole>
 
-              {featureFlags.messaging && (isNotProduction() || hasPilotAccess) && (
-                <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
-                  <NavbarLink
-                    onClick={() => setPopupVisible(false)}
-                    className="navbar-item is-tab"
-                    to="/messages"
-                    data-qa="messages-nav"
-                  >
-                    {i18n.header.messages}
-                    {unreadCount > 0 && (
-                      <UnreadCount>{unreadCount}</UnreadCount>
-                    )}
-                  </NavbarLink>
-                </RequireRole>
-              )}
+              {featureFlags.messaging &&
+                (featureFlags.experimental?.mobileDailyNotes ||
+                  hasPilotAccess) && (
+                  <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
+                    <NavbarLink
+                      onClick={() => setPopupVisible(false)}
+                      className="navbar-item is-tab"
+                      to="/messages"
+                      data-qa="messages-nav"
+                    >
+                      {i18n.header.messages}
+                      {unreadCount > 0 && (
+                        <UnreadCount>{unreadCount}</UnreadCount>
+                      )}
+                    </NavbarLink>
+                  </RequireRole>
+                )}
             </NavbarStart>
           )}
 

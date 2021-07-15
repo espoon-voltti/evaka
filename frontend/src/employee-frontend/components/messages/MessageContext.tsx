@@ -15,6 +15,7 @@ import {
 } from 'lib-common/api-types/messaging/message'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { featureFlags } from 'lib-customizations/employee'
 import React, {
   createContext,
   useCallback,
@@ -23,7 +24,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { isNotProduction, isPilotUnit } from '../../constants'
+import { isPilotUnit } from '../../constants'
 import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
 import { requireRole } from '../../utils/roles'
@@ -141,7 +142,7 @@ export const MessageContextProvider = React.memo(
           res.map((val) =>
             val.filter(
               (acc) =>
-                isNotProduction() ||
+                featureFlags.experimental?.mobileDailyNotes ||
                 isPilotUnitAccount(acc) ||
                 isPersonalMessageAccount(acc)
             )

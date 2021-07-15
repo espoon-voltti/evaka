@@ -5,6 +5,7 @@
 import type { LatLngExpression } from 'leaflet'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { Theme } from 'lib-common/theme'
+import { DeepReadonly } from 'lib-common/types'
 import {
   Lang as LangCitizen,
   Translations as TranslationsCitizen
@@ -36,11 +37,19 @@ export type PlacementPlanRejectReason =
   | 'REASON_2'
   | 'REASON_3'
 
+export interface BaseAppConfig {
+  sentry?: {
+    dsn: string
+    enabled: boolean
+  }
+}
+
 export interface CommonCustomizations {
   theme: Theme
 }
 
 export interface CitizenCustomizations {
+  appConfig: BaseAppConfig
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: {
@@ -68,17 +77,50 @@ interface MapConfig {
   }
 }
 
-interface FeatureFlags {
+/**
+ * Frontend features to enable.
+ *
+ * See lib-customizations/espoo/featureFlags.tsx for an example of configuring
+ * feature flags separately per environment with shared defaults.
+ */
+interface BaseFeatureFlags {
+  assistanceActionOtherEnabled: boolean
   daycareApplication: {
     dailyTimesEnabled: boolean
     serviceNeedOptionsEnabled: boolean
   }
-  urgencyAttachmentsEnabled: boolean
+  evakaLogin: boolean
+  financeBasicsPage: boolean
+  messaging: boolean
   preschoolEnabled: boolean
-  assistanceActionOtherEnabled: boolean
+  urgencyAttachmentsEnabled: boolean
+  vasu: boolean
+  voucher: {
+    valueDecisionsPage: boolean
+  }
+
+  /**
+   * Experimental flags are features in development: features that aren't yet
+   * recommended/tested for production usage but can be enabled for testing
+   * in eVaka implementations. These flags will either be dropped when features
+   * are deemed ready or promoted to top-level flags.
+   */
+  experimental?: {
+    ai?: boolean
+    /**
+     * Enable access to mobile features.
+     *
+     * NOTE: In some places, this might require messaging to also be enabled
+     * AND might be short-circuited if pilot unit access is enabled..
+     */
+    mobileDailyNotes?: boolean
+  }
 }
 
+export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
+
 export interface EmployeeCustomizations {
+  appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
   cityLogo: {
     src: string
@@ -88,4 +130,8 @@ export interface EmployeeCustomizations {
   placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
+}
+
+export interface EmployeeMobileCustomizations {
+  appConfig: BaseAppConfig
 }
