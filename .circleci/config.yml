@@ -829,6 +829,7 @@ jobs:
           root: << pipeline.parameters.workspace_root >>
           paths:
             - frontend/storybook-build
+            - frontend/src/maintenance-page-frontend
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/frontend/test-results
       - notify_slack
