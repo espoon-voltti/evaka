@@ -143,7 +143,7 @@ class VardaClient(
 
     fun getPersonFromVardaBySsnOrOid(ssn: String?, oid: String?): VardaPersonResponse? {
         check(ssn != null || oid != null) {
-            "Both params ssn and oid shouln't be null"
+            "Both params ssn and oid shouldn't be null"
         }
 
         logger.info { "Fetching person from Varda" }
