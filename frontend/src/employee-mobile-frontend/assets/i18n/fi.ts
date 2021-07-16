@@ -56,7 +56,7 @@ export const fi = {
     starts: 'Alkaa',
     ends: 'Päättyy',
     information: 'Tiedot',
-    dailyNotes: 'Merkinnät',
+    dailyNotes: 'Muistiinpanot',
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
     minuteShort: 'min',
