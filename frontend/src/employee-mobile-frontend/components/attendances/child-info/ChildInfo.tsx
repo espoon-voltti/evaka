@@ -52,7 +52,7 @@ const RoundImage = styled.img`
 `
 
 const CustomTitle = styled.h2`
-  font-family: Montserrat, 'Open Sans', 'Arial', sans-serif;
+  font-family: Montserrat, 'Arial', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
