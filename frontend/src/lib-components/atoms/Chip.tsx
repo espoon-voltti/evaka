@@ -16,8 +16,8 @@ import { useUniqueId } from 'lib-common/utils/useUniqueId'
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  font-size: 16px;
-  line-height: 20px;
+  font-size: ${defaultMargins.s};
+  line-height: ${defaultMargins.s};
   user-select: none;
   border: 1px solid ${(p) => p.color};
   border-radius: 1000px;
