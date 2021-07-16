@@ -113,7 +113,7 @@ export const fi = {
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäoleviin',
-      markAbsentBeforehand: 'Merkitse tuleva poissaolo'
+      markAbsentBeforehand: 'Tulevat poissaolot'
     },
     timeLabel: 'Merkintä',
     departureTime: 'Lähtöaika',
