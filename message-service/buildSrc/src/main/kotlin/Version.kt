@@ -11,7 +11,7 @@ object Version {
         const val kotlin = "1.5.10"
         const val kotlinter = "3.4.5"
         const val owasp = "6.2.2"
-        const val springBoot = "2.5.1"
+        const val springBoot = "2.5.2"
         const val versions = "0.39.0"
     }
 }
