@@ -122,7 +122,7 @@ class VardaClient(
         }
     }
 
-    fun createPerson(newPerson: VardaPersonRequest, tryFetchOnFail: Boolean = false): VardaPersonResponse? {
+    fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
         logger.info { "Creating a new person ${newPerson.id} to Varda" }
         val (request, _, result) = fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
@@ -136,17 +136,23 @@ class VardaClient(
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                if (tryFetchOnFail) getPersonFromVardaBySSN(newPerson.ssn)
-                else null
+                null
             }
         }
     }
 
-    fun getPersonFromVardaBySSN(ssn: String): VardaPersonResponse? {
+    data class VardaPersonSearchRequest(val henkilotunnus: String?, val henkilo_oid: String?) {
+        init {
+            check(henkilotunnus != null || henkilo_oid != null) {
+                "Both params ssn and oid shouldn't be null"
+            }
+        }
+    }
+
+    fun getPersonFromVardaBySsnOrOid(body: VardaPersonSearchRequest): VardaPersonResponse? {
         logger.info { "Fetching person from Varda" }
-        data class PersonSearchRequest(val henkilotunnus: String)
         val (request, _, result) = fuel.post(personSearchUrl)
-            .jsonBody(objectMapper.writeValueAsString(PersonSearchRequest(ssn))).authenticatedResponseStringWithRetries()
+            .jsonBody(objectMapper.writeValueAsString(body)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {

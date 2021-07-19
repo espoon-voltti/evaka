@@ -88,7 +88,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     private val testPeriod = FiniteDateRange(start = LocalDate.now().minusMonths(1), end = LocalDate.now())
 
     private val guardiansTestChild1 = listOf(testAdult_1, testAdult_2)
-        .map { VardaGuardian(it.ssn!!, it.firstName, it.lastName) }
+        .map { VardaGuardian(henkilotunnus = it.ssn!!, etunimet = it.firstName, sukunimi = it.lastName) }
 
     @Test
     fun `fee data is sent when a decision is sent to varda`() {
