@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.format.annotation.DateTimeFormat
@@ -344,6 +345,10 @@ class ApplicationControllerV2(
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
+
+            if (application.status !== ApplicationStatus.WAITING_DECISION) {
+                throw Conflict("Cannot get decision drafts for application with status ${application.status}")
+            }
 
             val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
