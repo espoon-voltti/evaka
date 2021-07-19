@@ -392,34 +392,36 @@ export default function App() {
               component={ensureAuthenticated(WelcomePage)}
               title={i18n.titles.welcomePage}
             />
-            {featureFlags.vasu && (
-              <>
-                <RouteWithTitle
-                  exact
-                  path="/vasu/:id"
-                  component={ensureAuthenticated(VasuPage)}
-                  title={i18n.titles.vasuPage}
-                />
-                <RouteWithTitle
-                  exact
-                  path="/vasu/:id/edit"
-                  component={ensureAuthenticated(VasuEditPage)}
-                  title={i18n.titles.vasuPage}
-                />
-                <RouteWithTitle
-                  exact
-                  path="/vasu-templates"
-                  component={ensureAuthenticated(VasuTemplatesPage)}
-                  title={i18n.titles.vasuTemplates}
-                />
-                <RouteWithTitle
-                  exact
-                  path="/vasu-templates/:id"
-                  component={ensureAuthenticated(VasuTemplateEditor)}
-                  title={i18n.titles.vasuTemplates}
-                />
-              </>
-            )}
+            {featureFlags.vasu && [
+              <RouteWithTitle
+                key="/vasu/:id"
+                exact
+                path="/vasu/:id"
+                component={ensureAuthenticated(VasuPage)}
+                title={i18n.titles.vasuPage}
+              />,
+              <RouteWithTitle
+                key="/vasu/:id/edit"
+                exact
+                path="/vasu/:id/edit"
+                component={ensureAuthenticated(VasuEditPage)}
+                title={i18n.titles.vasuPage}
+              />,
+              <RouteWithTitle
+                key="/vasu-templates"
+                exact
+                path="/vasu-templates"
+                component={ensureAuthenticated(VasuTemplatesPage)}
+                title={i18n.titles.vasuTemplates}
+              />,
+              <RouteWithTitle
+                key="/vasu-templates/:id"
+                exact
+                path="/vasu-templates/:id"
+                component={ensureAuthenticated(VasuTemplateEditor)}
+                title={i18n.titles.vasuTemplates}
+              />
+            ]}
             {redirectRoutes([
               {
                 from: '/fee-decisions',
