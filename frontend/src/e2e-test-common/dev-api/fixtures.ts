@@ -517,6 +517,12 @@ const applicationForm = (
     // => Sep
     startDate = setMonth(startDate, 8)
   }
+
+  // Move daycare application start date to August if current date is in July
+  if (type === 'DAYCARE' && 6 === getMonth(startDate)) {
+    startDate = setMonth(startDate, 7)
+  }
+
   return {
     type,
     additionalDetails: {
