@@ -56,7 +56,7 @@ export const fi = {
     starts: 'Alkaa',
     ends: 'Päättyy',
     information: 'Tiedot',
-    dailyNotes: 'Merkinnät',
+    dailyNotes: 'Muistiinpanot',
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
     minuteShort: 'min',
@@ -113,7 +113,7 @@ export const fi = {
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäoleviin',
-      markAbsentBeforehand: 'Merkitse tuleva poissaolo'
+      markAbsentBeforehand: 'Tulevat poissaolot'
     },
     timeLabel: 'Merkintä',
     departureTime: 'Lähtöaika',

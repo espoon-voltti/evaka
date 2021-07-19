@@ -51,7 +51,8 @@ const RoundImage = styled.img`
   height: 128px;
 `
 
-const CustomTitle = styled.h1`
+const CustomTitle = styled.h2`
+  font-family: Montserrat, 'Arial', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
@@ -70,6 +71,7 @@ const GroupName = styled.div`
   line-height: 22px;
   text-transform: uppercase;
   color: ${colors.blues.dark};
+  letter-spacing: 0.05rem;
 `
 
 const Zindex = styled.div`
@@ -229,6 +231,12 @@ export default React.memo(function AttendanceChildPage() {
                     <CustomTitle data-qa={'child-name'}>
                       {child.firstName} {child.lastName}
                     </CustomTitle>
+
+                    {child.preferredName && (
+                      <CustomTitle data-qa={'child-preferred-name'}>
+                        ({child.preferredName})
+                      </CustomTitle>
+                    )}
 
                     <GroupName>{group.name}</GroupName>
 

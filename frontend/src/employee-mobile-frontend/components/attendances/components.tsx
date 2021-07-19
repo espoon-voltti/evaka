@@ -137,6 +137,7 @@ export const CustomHorizontalLine = styled(HorizontalLine)`
 `
 
 export const ServiceTime = styled.div`
+  margin-bottom: calc(${defaultMargins.s} - ${defaultMargins.xxs});
   padding: ${defaultMargins.xxs};
   color: ${colors.greyscale.dark};
   text-align: center;
