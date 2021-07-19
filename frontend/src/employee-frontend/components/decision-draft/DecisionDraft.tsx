@@ -162,6 +162,11 @@ const Decision = memo(function Decision({
   const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()
   const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
 
+  function redirectToMainPage() {
+    history.push('/applications')
+    return null
+  }
+
   useEffect(() => {
     setDecisionDraftGroup(Loading.of())
     void getDecisionDrafts(applicationId).then((result) => {
@@ -169,6 +174,11 @@ const Decision = memo(function Decision({
       if (result.isSuccess) {
         setDecisions(result.value.decisions)
         setSelectedUnit(result.value.unit)
+      }
+
+      // Application has already changed its status
+      if (result.isFailure && result.statusCode === 409) {
+        redirectToMainPage()
       }
     })
   }, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -209,11 +219,6 @@ const Decision = memo(function Decision({
     },
     [decisionDraftGroup, units, setSelectedUnit]
   )
-
-  function redirectToMainPage() {
-    history.push('/applications')
-    return null
-  }
 
   function updateState(type: DecisionType, values: Partial<DecisionDraft>) {
     setDecisions(

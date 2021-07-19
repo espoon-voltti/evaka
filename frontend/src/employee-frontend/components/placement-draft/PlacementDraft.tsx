@@ -168,6 +168,11 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     }))
   }
 
+  function redirectToMainPage() {
+    history.push('/applications')
+    return null
+  }
+
   useEffect(() => {
     setPlacementDraft(Loading.of())
     void getPlacementDraft(id).then((placementDraft) => {
@@ -181,6 +186,11 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
             withoutOldPlacements.value.preschoolDaycarePeriod
         })
         calculateOverLaps(withoutOldPlacements)
+      }
+
+      // Application has already changed its status
+      if (placementDraft.isFailure && placementDraft.statusCode === 409) {
+        redirectToMainPage()
       }
     })
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -249,11 +259,6 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         calculateOverLaps(updatedPlacementDraft)
       }
     }
-
-  function redirectToMainPage() {
-    history.push('/applications')
-    return null
-  }
 
   function addUnit(unitId: UUID) {
     return (

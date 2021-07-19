@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.core.env.Environment
@@ -33,6 +35,10 @@ class PlacementPlanService(
     fun getPlacementPlanDraft(tx: Database.Read, applicationId: ApplicationId): PlacementPlanDraft {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
+
+        if (application.status !== ApplicationStatus.WAITING_PLACEMENT) {
+            throw Conflict("Cannot get placement plan drafts for application with status ${application.status}")
+        }
 
         val type = derivePlacementType(application)
         val form = application.form
