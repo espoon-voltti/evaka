@@ -116,7 +116,7 @@ test('Supervisor accepts decision on behalf of the enduser and forwards start da
   await applicationReadView.openApplicationByLink(applicationId)
   await applicationReadView.setDecisionStartDate(
     'DAYCARE',
-    format(addWeeks(new Date(), 2), 'dd.MM.yyyy')
+    format(addWeeks(new Date(fixture.form.preferredStartDate), 2), 'dd.MM.yyyy')
   )
 
   await applicationReadView.acceptDecision('DAYCARE')
