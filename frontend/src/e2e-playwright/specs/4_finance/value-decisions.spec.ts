@@ -75,13 +75,13 @@ describe('Value decisions', () => {
       decision1DateFrom.subDays(1),
       decision2DateTo.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
+    await waitUntilEqual(() => invoicingPage.getValueDecisionCount(), 2)
 
     await invoicingPage.setDates(
       decision1DateTo.addDays(1),
       decision2DateTo.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 1)
+    await waitUntilEqual(() => invoicingPage.getValueDecisionCount(), 1)
   })
   test('With two decisions any date filter overlap will show the decision', async () => {
     await invoicingPage.selectTab('value-decisions')
@@ -89,7 +89,7 @@ describe('Value decisions', () => {
       decision1DateTo.subDays(1),
       decision2DateFrom.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
+    await waitUntilEqual(() => invoicingPage.getValueDecisionCount(), 2)
   })
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
     await invoicingPage.selectTab('value-decisions')
@@ -97,8 +97,8 @@ describe('Value decisions', () => {
       decision1DateTo.subDays(1),
       decision2DateFrom.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
+    await waitUntilEqual(() => invoicingPage.getValueDecisionCount(), 2)
     await invoicingPage.startDateWithinrange()
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 1)
+    await waitUntilEqual(() => invoicingPage.getValueDecisionCount(), 1)
   })
 })

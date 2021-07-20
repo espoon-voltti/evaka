@@ -27,7 +27,7 @@ export default class InvoicingPage {
     await elem.click()
   }
 
-  async getVoucherDecisionCount() {
+  async getValueDecisionCount() {
     return this.page.$$eval(
       '[data-qa="table-value-decision-row"]',
       (rows) => rows.length
