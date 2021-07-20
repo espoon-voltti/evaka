@@ -22,21 +22,21 @@ import {
   daycareGroupFixture,
   createDaycarePlacementFixture,
   uuidv4,
-  createDaycareGroupPlacementFixture,
-  enduserGuardianFixture
+  createDaycareGroupPlacementFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
 import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
+import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 let page: Page
 let childId: UUID
 let fixtures: AreaAndPersonFixtures
 
-beforeAll(async () => {
+beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
@@ -73,13 +73,12 @@ beforeAll(async () => {
   await insertParentshipFixtures([
     {
       childId: childId,
-      headOfChildId: enduserGuardianFixture.id,
+      headOfChildId: fixtures.enduserGuardianFixture.id,
       startDate: '2021-01-01',
       endDate: '2028-01-01'
     }
   ])
-})
-beforeEach(async () => {
+
   page = await (await newBrowserContext()).newPage()
 })
 afterEach(async () => {
@@ -100,10 +99,71 @@ describe('Sending and receiving messages', () => {
     await enduserLogin(page)
     await page.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(page)
+    await citizenMessagesPage.assertThreadContent(title, content)
     await citizenMessagesPage.replyToFirstThread(reply)
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
     await page.goto(`${config.employeeUrl}/messages`)
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.assertMessageContent(1, reply)
+  })
+
+  test('Admin sends a message and blocked guardian does not get it', async () => {
+    const title = 'Kielletty viesti'
+    const content = 'Tämän ei pitäisi mennä perille'
+
+    // Add child's guardian to block list
+    await employeeLogin(page, 'ADMIN')
+    await page.goto(`${config.employeeUrl}/child-information/${childId}`)
+    const childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.addParentToBlockList(
+      fixtures.enduserGuardianFixture.id
+    )
+
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.sendNewMessage(title, content)
+
+    await enduserLogin(page)
+    await page.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(page)
+    await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 0)
+  })
+
+  test('A draft is saved correctly', async () => {
+    const title = 'Luonnos'
+    const content = 'Tässä luonnostellaan'
+
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.draftNewMessage(title, content)
+    await messagesPage.closeMessageEditor()
+    await messagesPage.assertDraftContent(title, content)
+  })
+
+  test('A draft is not saved when a message is sent', async () => {
+    const title = 'Luonnos'
+    const content = 'Tässä luonnostellaan'
+
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.draftNewMessage(title, content)
+    await messagesPage.sendEditedMessage()
+    await messagesPage.assertNoDrafts()
+  })
+
+  test('A draft is not saved when its discarded', async () => {
+    const title = 'Luonnos'
+    const content = 'Tässä luonnostellaan'
+
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.draftNewMessage(title, content)
+    await messagesPage.discardMessage()
+    await messagesPage.assertNoDrafts()
   })
 })
