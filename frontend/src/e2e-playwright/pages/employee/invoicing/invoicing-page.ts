@@ -17,10 +17,87 @@ import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 export class InvoicingPage {
   constructor(private readonly page: Page) {}
 
+  async selectFeeDecisionsTab() {
+    const elem = new RawElement(this.page, `[data-qa="fee-decisions-tab"]`)
+    await elem.click()
+    return new FeeDecisionsPage(this.page)
+  }
+
   async selectValueDecisionsTab() {
     const elem = new RawElement(this.page, `[data-qa="value-decisions-tab"]`)
     await elem.click()
     return new ValueDecisionsPage(this.page)
+  }
+}
+
+export class FeeDecisionsPage {
+  constructor(private readonly page: Page) {}
+
+  #feeDecisionListPage = new RawElement(
+    this.page,
+    '[data-qa="fee-decisions-page"]'
+  )
+  #feeDecisionDetailsPage = new RawElement(
+    this.page,
+    '[data-qa="fee-decision-details-page"]'
+  )
+  #feeDecisionRow = new RawElement(
+    this.page,
+    '[data-qa="table-fee-decision-row"]'
+  )
+  #navigateBackButton = new RawElement(this.page, '[data-qa="navigate-back"]')
+  #statusFilter = {
+    sent: new Radio(this.page, '[data-qa="fee-decision-status-filter-SENT"]')
+  }
+  #allFeeDecisionsToggle = new Checkbox(
+    this.page,
+    '[data-qa="toggle-all-decisions"]'
+  )
+  #sendFeeDecisionsButton = new AsyncButton(
+    this.page,
+    '[data-qa="confirm-decisions"]'
+  )
+
+  async getFeeDecisionCount() {
+    return this.page.$$eval(
+      '[data-qa="table-fee-decision-row"]',
+      (rows) => rows.length
+    )
+  }
+
+  async openFirstFeeDecision() {
+    await this.#feeDecisionRow.click()
+    await waitUntilTrue(() => this.#feeDecisionDetailsPage.visible)
+  }
+
+  async navigateBackFromDetails() {
+    await this.#navigateBackButton.click()
+    await waitUntilTrue(() => this.#feeDecisionListPage.visible)
+  }
+
+  async toggleAllFeeDecisions(toggledOn: boolean) {
+    await waitUntilEqual(() => this.#allFeeDecisionsToggle.checked, !toggledOn)
+    await this.#allFeeDecisionsToggle.click()
+    await waitUntilEqual(() => this.#allFeeDecisionsToggle.checked, toggledOn)
+  }
+
+  async sendFeeDecisions() {
+    await this.#sendFeeDecisionsButton.click()
+    await waitUntilEqual(() => this.#sendFeeDecisionsButton.status(), 'success')
+    await runPendingAsyncJobs()
+  }
+
+  async assertSentDecisionsCount(count: number) {
+    await this.#statusFilter.sent.click()
+    await waitUntilTrue(() => this.#statusFilter.sent.checked)
+    await waitUntilEqual(
+      () =>
+        this.page.$$eval(
+          '[data-qa="table-fee-decision-row"]',
+          (rows) => rows.length
+        ),
+      count
+    )
   }
 }
 
