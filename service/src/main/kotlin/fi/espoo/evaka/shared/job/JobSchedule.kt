@@ -68,6 +68,10 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
                 enabled = false,
                 schedule = JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
             )
+            ScheduledJob.InactivePeopleCleanup -> ScheduledJobSettings(
+                enabled = true,
+                schedule = JobSchedule.daily(LocalTime.of(3, 30))
+            )
         }
     }
 }
