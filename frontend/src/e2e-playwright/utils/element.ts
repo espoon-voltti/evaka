@@ -95,6 +95,7 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
     }
   }
 
+export class Checkbox extends WithChecked(RawElement, descendantInput) {}
 export class Radio extends WithChecked(RawElement, descendantInput) {}
 
 export class RawTextInput extends WithTextInput(RawElement) {}
@@ -118,5 +119,11 @@ export class Collapsible extends RawElement {
   async open() {
     if (await this.isOpen()) return
     await this.#trigger.click()
+  }
+}
+
+export class AsyncButton extends RawElement {
+  async status() {
+    return this.getAttribute('data-status')
   }
 }
