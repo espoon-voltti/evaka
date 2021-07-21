@@ -18,7 +18,7 @@ import {
   waitUntilTrue
 } from 'e2e-playwright/utils'
 
-export class InvoicingPage {
+export class FinancePage {
   constructor(private readonly page: Page) {}
 
   async selectFeeDecisionsTab() {

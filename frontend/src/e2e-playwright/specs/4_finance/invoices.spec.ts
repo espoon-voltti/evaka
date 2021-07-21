@@ -28,8 +28,8 @@ import { newBrowserContext } from 'e2e-playwright/browser'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import {
   InvoicesPage,
-  InvoicingPage
-} from 'e2e-playwright/pages/employee/invoicing/invoicing-page'
+  FinancePage
+} from 'e2e-playwright/pages/employee/finance/finance-page'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { FeeDecision } from 'e2e-test-common/dev-api/types'
 
@@ -84,7 +84,7 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
   await nav.openTab('finance')
-  invoicesPage = await new InvoicingPage(page).selectInvoicesTab()
+  invoicesPage = await new FinancePage(page).selectInvoicesTab()
 })
 afterEach(async () => {
   await page.close()

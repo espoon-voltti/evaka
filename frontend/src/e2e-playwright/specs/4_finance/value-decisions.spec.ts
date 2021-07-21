@@ -19,9 +19,9 @@ import { Page } from 'playwright'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import {
-  InvoicingPage,
+  FinancePage,
   ValueDecisionsPage
-} from 'e2e-playwright/pages/employee/invoicing/invoicing-page'
+} from 'e2e-playwright/pages/employee/finance/finance-page'
 import LocalDate from 'lib-common/local-date'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
@@ -75,7 +75,7 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
   await nav.openTab('finance')
-  valueDecisionsPage = await new InvoicingPage(page).selectValueDecisionsTab()
+  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 })
 afterEach(async () => {
   await page.close()
