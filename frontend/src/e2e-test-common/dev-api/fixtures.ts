@@ -744,7 +744,7 @@ export const invoiceFixture = (
   periodStart = '2019-01-01',
   periodEnd = '2019-01-01'
 ): Invoice => ({
-  id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+  id: uuidv4(),
   status,
   headOfFamily: { id: adultId },
   agreementType: 200,
@@ -752,7 +752,7 @@ export const invoiceFixture = (
   periodEnd,
   rows: [
     {
-      id: '592ddd9b-a99a-44f7-bd84-adaa68891df4',
+      id: uuidv4(),
       child: { id: childId, dateOfBirth: '2017-06-30' },
       placementUnit: { id: daycareId },
       amount: 1,
@@ -760,8 +760,8 @@ export const invoiceFixture = (
       periodStart: periodStart,
       periodEnd: periodEnd,
       product: 'DAYCARE',
-      costCenter: 'cost center',
-      subCostCenter: 'sub cost center',
+      costCenter: '20000',
+      subCostCenter: '00',
       modifiers: []
     }
   ]
