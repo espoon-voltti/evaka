@@ -2,49 +2,49 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElement } from 'e2e-playwright/utils/element'
+import { Collapsible, RawElement } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly feeAlterationsCollapsible = new RawElement(
+  readonly feeAlterationsCollapsible = new Collapsible(
     this.page,
     '[data-qa="fee-alteration-collapsible"]'
   )
-  readonly guardiansCollapsible = new RawElement(
+  readonly guardiansCollapsible = new Collapsible(
     this.page,
     '[data-qa="person-guardians-collapsible"]'
   )
-  readonly fridgeParentsCollapsible = new RawElement(
+  readonly fridgeParentsCollapsible = new Collapsible(
     this.page,
     '[data-qa="fridge-parents-collapsible"]'
   )
-  readonly placementsCollapsible = new RawElement(
+  readonly placementsCollapsible = new Collapsible(
     this.page,
     '[data-qa="child-placements-collapsible"]'
   )
-  readonly assistanceCollapsible = new RawElement(
+  readonly assistanceCollapsible = new Collapsible(
     this.page,
     '[data-qa="assistance-collapsible"]'
   )
-  readonly backupCareCollapsible = new RawElement(
+  readonly backupCareCollapsible = new Collapsible(
     this.page,
     '[data-qa="backup-cares-collapsible"]'
   )
-  readonly familyContactsCollapsible = new RawElement(
+  readonly familyContactsCollapsible = new Collapsible(
     this.page,
     '[data-qa="family-contacts-collapsible"]'
   )
-  readonly childApplicationsCollapsible = new RawElement(
+  readonly childApplicationsCollapsible = new Collapsible(
     this.page,
     '[data-qa="applications-collapsible"]'
   )
-  readonly messageBlocklistCollapsible = new RawElement(
+  readonly messageBlocklistCollapsible = new Collapsible(
     this.page,
     '[data-qa="child-message-blocklist-collapsible"]'
   )
-  readonly backupPickupCollapsible = new RawElement(
+  readonly backupPickupCollapsible = new Collapsible(
     this.page,
     '[data-qa="backup-pickups-collapsible"]'
   )
@@ -83,5 +83,12 @@ export default class ChildInformationPage {
       params.messageBlocklist
     )
     expect(await this.backupPickupCollapsible.visible).toBe(params.backupPickup)
+  }
+
+  async addParentToBlockList(parentId: string) {
+    await this.messageBlocklistCollapsible.open()
+    await this.messageBlocklistCollapsible
+      .find(`[data-qa="recipient-${parentId}"] [data-qa="blocklist-checkbox"]`)
+      .click()
   }
 }

@@ -107,3 +107,16 @@ export class Combobox extends WithTextInput(RawElement, descendantInput) {
     return this.find(`[data-qa="item"]:has-text(${toCssString(label)})`)
   }
 }
+
+export class Collapsible extends RawElement {
+  #trigger = this.find('[data-qa="collapsible-trigger"]')
+
+  async isOpen() {
+    return (await this.getAttribute('data-status')) !== 'closed'
+  }
+
+  async open() {
+    if (await this.isOpen()) return
+    await this.#trigger.click()
+  }
+}

@@ -61,11 +61,13 @@ const MessageContent = styled.div`
 function Message({
   title,
   type,
-  message
+  message,
+  index
 }: {
   message: Message
   type?: MessageType
   title?: string
+  index: number
 }) {
   return (
     <MessageContainer>
@@ -79,7 +81,9 @@ function Message({
         <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
       </TitleRow>
       <span>{message.recipients.map((r) => r.name).join(', ')}</span>
-      <MessageContent>{message.content}</MessageContent>
+      <MessageContent data-qa="message-content" data-index={index}>
+        {message.content}
+      </MessageContent>
     </MessageContainer>
   )
 }
@@ -154,6 +158,7 @@ export function SingleThreadView({
             message={message}
             title={idx === 0 ? title : undefined}
             type={idx === 0 ? type : undefined}
+            index={idx}
           />
         ))}
         {canReply && (

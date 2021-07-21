@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -11,6 +11,14 @@ export default class MessagesPage {
 
   #newMessageButton = new RawElement(this.page, '[data-qa="new-message-btn"]')
   #sendMessageButton = new RawElement(this.page, '[data-qa="send-message-btn"]')
+  #closeMessageEditorButton = new RawElement(
+    this.page,
+    '[data-qa="close-message-editor-btn"]'
+  )
+  #discardMessageButton = new RawElement(
+    this.page,
+    '[data-qa="discard-draft-btn"]'
+  )
   #receiverSelection = new RawElement(this.page, '[data-qa="select-receiver"]')
   #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
   #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
@@ -18,6 +26,20 @@ export default class MessagesPage {
     this.page,
     '[data-qa="message-box-row-SENT"]'
   )
+  #draftMessagesBoxRow = new RawTextInput(
+    this.page,
+    '[data-qa="message-box-row-DRAFTS"]'
+  )
+  #receivedMessage = new RawElement(
+    this.page,
+    '[data-qa="received-message-row"]'
+  )
+  #draftMessage = new RawElement(this.page, '[data-qa="draft-message-row"]')
+  #messageContent = (index = 0) =>
+    new RawElement(
+      this.page,
+      `[data-qa="message-content"][data-index="${index}"]`
+    )
 
   async getReceivedMessageCount() {
     return this.page.$$eval(
@@ -52,5 +74,58 @@ export default class MessagesPage {
 
     await this.#sentMessagesBoxRow.click()
     await waitUntilEqual(() => this.existsSentMessage(), true)
+  }
+
+  async getEditorState() {
+    return new RawElement(this.page, '[data-qa="message-editor"]').getAttribute(
+      'data-status'
+    )
+  }
+
+  async draftNewMessage(title: string, content: string) {
+    await this.#newMessageButton.click()
+    await waitUntilEqual(() => this.isEditorVisible(), true)
+    await this.#inputTitle.fill(title)
+    await this.#inputContent.fill(content)
+    await this.#receiverSelection.click()
+    await this.page.keyboard.press('Enter')
+    await waitUntilEqual(() => this.getEditorState(), 'clean')
+  }
+
+  async sendEditedMessage() {
+    await this.#sendMessageButton.click()
+    await waitUntilEqual(() => this.isEditorVisible(), false)
+  }
+
+  async closeMessageEditor() {
+    await this.#closeMessageEditorButton.click()
+    await waitUntilEqual(() => this.isEditorVisible(), false)
+  }
+
+  async discardMessage() {
+    await this.#discardMessageButton.click()
+    await waitUntilEqual(() => this.isEditorVisible(), false)
+  }
+
+  async assertMessageContent(index: number, content: string) {
+    await this.#receivedMessage.click()
+    await waitUntilEqual(() => this.#messageContent(index).innerText, content)
+  }
+
+  async assertDraftContent(title: string, content: string) {
+    await this.#draftMessagesBoxRow.click()
+    await waitUntilEqual(
+      () => this.#draftMessage.find('[data-qa="draft-title"]').innerText,
+      title
+    )
+    await waitUntilEqual(
+      () => this.#draftMessage.find('[data-qa="draft-content"]').innerText,
+      content
+    )
+  }
+
+  async assertNoDrafts() {
+    await this.#draftMessagesBoxRow.click()
+    await waitUntilFalse(() => this.#draftMessage.visible)
   }
 }

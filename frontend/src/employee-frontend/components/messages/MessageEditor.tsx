@@ -246,7 +246,7 @@ export default React.memo(function MessageEditor({
   )
 
   return (
-    <Container>
+    <Container data-qa="message-editor" data-status={draftState}>
       <TopBar>
         <Title>{title}</Title>
         <IconButton
