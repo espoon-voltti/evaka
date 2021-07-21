@@ -76,6 +76,12 @@ export default class MessagesPage {
     await waitUntilEqual(() => this.existsSentMessage(), true)
   }
 
+  async getEditorState() {
+    return new RawElement(this.page, '[data-qa="message-editor"]').getAttribute(
+      'data-status'
+    )
+  }
+
   async draftNewMessage(title: string, content: string) {
     await this.#newMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), true)
@@ -83,8 +89,7 @@ export default class MessagesPage {
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
     await this.page.keyboard.press('Enter')
-    // Draft is not saved immediately so we wait for a bit.
-    await this.page.waitForTimeout(500)
+    await waitUntilEqual(() => this.getEditorState(), 'clean')
   }
 
   async sendEditedMessage() {
