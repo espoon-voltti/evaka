@@ -96,6 +96,7 @@ export default function createAdStrategy(
   if (devLoginEnabled) {
     const getter = async (userId: string) =>
       verifyProfile({
+        nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: [],
         [AD_GIVEN_NAME_KEY]: '',
@@ -119,6 +120,7 @@ export default function createAdStrategy(
         roles: roles as UserRole[]
       })
       return verifyProfile({
+        nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: roles,
         [AD_GIVEN_NAME_KEY]: firstName,
