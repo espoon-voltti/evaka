@@ -76,7 +76,7 @@ export async function employeeLogin(page: Page, role: UserRole) {
         params.append('preset', 'custom')
         params.append('firstName', 'Seppo')
         params.append('lastName', 'Sorsa')
-        params.append('email', 'seppo.sorsa@espoo.fi')
+        params.append('email', 'seppo.sorsa@evaka.test')
         params.append('aad', user.aad)
         user.roles.forEach((role) => params.append('roles', role))
       }

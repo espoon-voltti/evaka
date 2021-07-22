@@ -4,8 +4,15 @@
 
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
-import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { supervisor, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  invoiceFixture,
+  supervisor,
+  uuidv4
+} from 'e2e-test-common/dev-api/fixtures'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -24,6 +31,7 @@ import {
   insertDaycarePlacementFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
+  insertInvoiceFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
@@ -33,6 +41,7 @@ const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const guardianPage = new GuardianPage()
 
+let fixtures: AreaAndPersonFixtures
 let daycarePlacementFixture: DaycarePlacement
 let supervisorId: string
 
@@ -40,7 +49,7 @@ fixture('Employee - Guardian Information')
   .meta({ type: 'regression', subType: 'guardianinformation' })
   .beforeEach(async () => {
     await resetDatabase()
-    const fixtures = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     supervisorId = await insertEmployeeFixture(supervisor)
 
@@ -87,4 +96,29 @@ test('guardian information is shown', async () => {
     daycareFixture.name,
     'Odottaa vastausta'
   )
+})
+
+test('Invoices are listed on the admin UI guardian page', async (t) => {
+  await insertInvoiceFixtures([
+    invoiceFixture(
+      fixtures.enduserGuardianFixture.id,
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.daycareFixture.id,
+      'DRAFT',
+      '2020-01-01',
+      '2020-02-01'
+    )
+  ])
+
+  const employeeHome = new EmployeeHome()
+
+  await employeeHome.navigateToPersonSearch()
+  await employeeHome.personSearch.filterByName(
+    fixtures.enduserGuardianFixture.firstName
+  )
+  await t.expect(employeeHome.personSearch.searchResults.count).gte(1)
+  await employeeHome.personSearch.navigateToNthPerson(0)
+
+  const guardianPage = new GuardianPage()
+  await guardianPage.containsInvoice('01.01.2020', '01.02.2020', 'Luonnos')
 })

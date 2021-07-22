@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { BoundingBox, toCssString } from '.'
+import { BoundingBox, toCssString, waitUntilEqual } from '.'
 
 export class RawElement {
   constructor(public page: Page, public selector: string) {}
@@ -95,6 +95,7 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
     }
   }
 
+export class Checkbox extends WithChecked(RawElement, descendantInput) {}
 export class Radio extends WithChecked(RawElement, descendantInput) {}
 
 export class RawTextInput extends WithTextInput(RawElement) {}
@@ -118,5 +119,15 @@ export class Collapsible extends RawElement {
   async open() {
     if (await this.isOpen()) return
     await this.#trigger.click()
+  }
+}
+
+export class AsyncButton extends RawElement {
+  async status() {
+    return this.getAttribute('data-status')
+  }
+
+  async waitUntilSuccessful() {
+    await waitUntilEqual(() => this.status(), 'success')
   }
 }

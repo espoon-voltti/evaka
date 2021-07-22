@@ -29,7 +29,7 @@ const employeeExternalIds = [
 let employeeUuids: UUID[] = []
 
 const expectedAclRows = {
-  seppo: { name: 'Seppo Sorsa', email: 'seppo.sorsa@espoo.fi' },
+  seppo: { name: 'Seppo Sorsa', email: 'seppo.sorsa@evaka.test' },
   pete: { name: 'Pete Päiväkoti', email: 'pete@example.com' },
   yrjo: { name: 'Yrjö Yksikkö', email: 'yy@example.com' }
 }
@@ -46,7 +46,7 @@ fixture('Employee - Unit ACL')
       externalId: config.supervisorExternalId,
       firstName: 'Seppo',
       lastName: 'Sorsa',
-      email: 'seppo.sorsa@espoo.fi',
+      email: 'seppo.sorsa@evaka.test',
       roles: []
     })
     await setAclForDaycares(

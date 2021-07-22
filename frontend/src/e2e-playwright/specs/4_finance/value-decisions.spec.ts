@@ -9,6 +9,7 @@ import {
   voucherValueDecisionsFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import {
+  insertEmployeeFixture,
   insertVoucherValueDecisionFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -17,16 +18,19 @@ import config from 'e2e-test-common/config'
 import { Page } from 'playwright'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
-import InvoicingPage from 'e2e-playwright/pages/employee/invoicing/invoicing-page'
+import {
+  FinancePage,
+  ValueDecisionsPage
+} from 'e2e-playwright/pages/employee/finance/finance-page'
 import LocalDate from 'lib-common/local-date'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
-let invoicingPage: InvoicingPage
-const decision1DateFrom = LocalDate.today().addWeeks(1)
+let valueDecisionsPage: ValueDecisionsPage
+const decision1DateFrom = LocalDate.today().subWeeks(1)
 const decision1DateTo = LocalDate.today().addWeeks(2)
-const decision2DateFrom = LocalDate.today().addWeeks(4)
+const decision2DateFrom = LocalDate.today()
 const decision2DateTo = LocalDate.today().addWeeks(5)
 
 beforeEach(async () => {
@@ -57,12 +61,21 @@ beforeEach(async () => {
   ])
 
   page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
-  await employeeLogin(page, 'ADMIN')
+
+  await insertEmployeeFixture({
+    id: config.financeAdminAad,
+    externalId: `espoo-ad:${config.financeAdminAad}`,
+    email: 'lasse.laskuttaja@evaka.test',
+    firstName: 'Lasse',
+    lastName: 'Laskuttaja',
+    roles: ['FINANCE_ADMIN']
+  })
+  await employeeLogin(page, 'FINANCE_ADMIN')
+
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
   await nav.openTab('finance')
-
-  invoicingPage = new InvoicingPage(page)
+  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 })
 afterEach(async () => {
   await page.close()
@@ -70,35 +83,45 @@ afterEach(async () => {
 
 describe('Value decisions', () => {
   test('Date filter filters out decisions', async () => {
-    await invoicingPage.selectTab('value-decisions')
-    await invoicingPage.setDates(
+    await valueDecisionsPage.setDates(
       decision1DateFrom.subDays(1),
       decision2DateTo.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
 
-    await invoicingPage.setDates(
+    await valueDecisionsPage.setDates(
       decision1DateTo.addDays(1),
       decision2DateTo.addDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 1)
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
   })
+
   test('With two decisions any date filter overlap will show the decision', async () => {
-    await invoicingPage.selectTab('value-decisions')
-    await invoicingPage.setDates(
+    await valueDecisionsPage.setDates(
       decision1DateTo.subDays(1),
-      decision2DateFrom.addDays(1)
+      decision2DateTo.subDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
   })
+
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
-    await invoicingPage.selectTab('value-decisions')
-    await invoicingPage.setDates(
-      decision1DateTo.subDays(1),
-      decision2DateFrom.addDays(1)
+    await valueDecisionsPage.setDates(
+      decision2DateFrom.subDays(1),
+      decision2DateTo.subDays(1)
     )
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 2)
-    await invoicingPage.startDateWithinrange()
-    await waitUntilEqual(() => invoicingPage.getVoucherDecisionCount(), 1)
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
+    await valueDecisionsPage.startDateWithinrange()
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
+  })
+
+  test('Navigate to and from decision details page', async () => {
+    await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionsPage.navigateBackFromDetails()
+  })
+
+  test('Voucher value decisions are toggled and sent', async () => {
+    await valueDecisionsPage.toggleAllValueDecisions(true)
+    await valueDecisionsPage.sendValueDecisions()
+    await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 })

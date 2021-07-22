@@ -29,7 +29,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.serviceWorkerAad,
     externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@espoo.fi',
+    email: 'paula.palveluohjaaja@evaka.test',
     firstName: 'Paula',
     lastName: 'Palveluohjaaja',
     roles: ['SERVICE_WORKER']
@@ -37,7 +37,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.financeAdminAad,
     externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@espoo.fi',
+    email: 'lasse.laskuttaja@evaka.test',
     firstName: 'Lasse',
     lastName: 'Laskuttaja',
     roles: ['FINANCE_ADMIN']
@@ -45,7 +45,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.directorAad,
     externalId: `espoo-ad:${config.directorAad}`,
-    email: 'raisa.raportoija@espoo.fi',
+    email: 'raisa.raportoija@evaka.test',
     firstName: 'Raisa',
     lastName: 'Raportoija',
     roles: ['DIRECTOR']
@@ -53,7 +53,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.unitSupervisorAad,
     externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'essi.esimies@espoo.fi',
+    email: 'essi.esimies@evaka.test',
     firstName: 'Essi',
     lastName: 'Esimies',
     roles: []
@@ -65,7 +65,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.staffAad,
     externalId: `espoo-ad:${config.staffAad}`,
-    email: 'kaisa.kasvattaja@espoo.fi',
+    email: 'kaisa.kasvattaja@evaka.test',
     firstName: 'Kaisa',
     lastName: 'Kasvattaja',
     roles: []
@@ -78,7 +78,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.specialEducationTeacher,
     externalId: `espoo-ad:${config.specialEducationTeacher}`,
-    email: 'erkki.erityisopettaja@espoo.fi',
+    email: 'erkki.erityisopettaja@evaka.test',
     firstName: 'Erkki',
     lastName: 'Erityisopettaja',
     roles: []

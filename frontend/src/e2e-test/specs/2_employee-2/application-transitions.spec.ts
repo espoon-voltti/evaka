@@ -41,7 +41,7 @@ const supervisor: EmployeeDetail = {
   externalId: config.supervisorExternalId,
   firstName: 'Eeva',
   lastName: 'Esimies',
-  email: 'eeva.esimies@espoo.fi',
+  email: 'eeva.esimies@evaka.test',
   roles: ['SERVICE_WORKER', 'ADMIN']
 }
 
@@ -59,7 +59,7 @@ fixture('Application-transitions')
 
     const uniqueSupervisor = {
       ...supervisor,
-      email: `${Math.random().toString(36).substring(7)}@espoo.fi`
+      email: `${Math.random().toString(36).substring(7)}@evaka.test`
     }
     supervisorId = await insertEmployeeFixture(uniqueSupervisor)
     await setAclForDaycare(
