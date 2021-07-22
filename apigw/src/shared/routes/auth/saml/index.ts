@@ -7,7 +7,7 @@ import _ from 'lodash'
 import passport from 'passport'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
-import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
+import { adMock, gatewayRole, nodeEnv } from '../../../config'
 import { getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logAuditEvent, logDebug } from '../../../logging'
@@ -205,7 +205,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
     loginHandler
   )
 
-  if (devLoginEnabled) {
+  if (adMock) {
     configureDevLogin(router)
   }
 

@@ -146,15 +146,18 @@ const certificateNames = Object.keys(
   certificates
 ) as ReadonlyArray<TrustedCertificates>
 
-export const devLoginEnabled =
-  env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+export const adMock =
+  env('AD_MOCK', parseBoolean) ??
+  env('DEV_LOGIN', parseBoolean) ??
+  ifNodeEnv(['local', 'test'], true) ??
+  false
 
 const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
 const adEntryPointUrl = process.env.AD_SAML_ENTRYPOINT_URL
 const adLogoutUrl = process.env.AD_SAML_LOGOUT_URL
 
 export const adConfig: EvakaSamlConfig | undefined =
-  adCallbackUrl && !devLoginEnabled
+  adCallbackUrl && !adMock
     ? {
         callbackUrl: required(adCallbackUrl),
         entryPoint: required(adEntryPointUrl),
