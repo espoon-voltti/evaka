@@ -155,7 +155,7 @@ export const P = styled.p<ParagraphProps>`
 
   a {
     color: ${({ theme: { colors } }) => colors.main.primary};
-    text-decoration: none;
+    text-decoration: underline;
   }
 
   a:hover {
