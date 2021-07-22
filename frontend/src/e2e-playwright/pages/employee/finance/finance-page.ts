@@ -234,7 +234,10 @@ export class InvoicesPage {
     this.page,
     '[data-qa="send-invoices-dialog"]'
   )
-  #sendInvoicesButton = this.#sendInvoicesDialog.find('[data-qa="modal-okBtn"]')
+  #sendInvoicesButton = new AsyncButton(
+    this.page,
+    '[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]'
+  )
   #navigateBack = new RawElement(this.page, '[data-qa="navigate-back"]')
   #invoiceDetailsHeadOfFamily = new RawElement(
     this.page,
@@ -296,7 +299,7 @@ export class InvoicesPage {
     await this.#openSendInvoicesDialogButton.click()
     await this.#sendInvoicesDialog.waitUntilVisible()
     await this.#sendInvoicesButton.click()
-    await waitUntilFalse(() => this.#sendInvoicesDialog.visible)
+    await this.#sendInvoicesButton.waitUntilSuccessful()
   }
 
   async showSentInvoices() {
