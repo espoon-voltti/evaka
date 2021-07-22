@@ -34,6 +34,8 @@ WITH people_with_no_archive_data AS (
         SELECT 1 FROM vasu_document
         WHERE vasu_document.child_id = person.id
     )
+    AND NOT EXISTS (SELECT 1 FROM absence WHERE absence.child_id = person.id)
+    AND NOT EXISTS (SELECT 1 FROM child_attendance WHERE child_attendance.child_id = person.id)
 )
 SELECT id FROM people_with_no_archive_data p
 -- guardianship
