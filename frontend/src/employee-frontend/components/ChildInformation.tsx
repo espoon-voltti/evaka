@@ -20,7 +20,6 @@ import { getParentshipsByChild } from '../api/parentships'
 import { getPersonDetails } from '../api/person'
 import Assistance from '../components/child-information/Assistance'
 import BackupCare from '../components/child-information/BackupCare'
-import BackupPickup from '../components/child-information/BackupPickup'
 import ChildApplications from '../components/child-information/ChildApplications'
 import ChildDetails from '../components/child-information/ChildDetails'
 import FamilyContacts from '../components/child-information/FamilyContacts'
@@ -80,14 +79,12 @@ const components = {
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
   applications: ChildApplications,
-  'message-blocklist': MessageBlocklist,
-  'backup-pickup': BackupPickup
+  'message-blocklist': MessageBlocklist
 }
 
 const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
     { component: 'message-blocklist', open: false },
@@ -128,14 +125,12 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
     ...(featureFlags.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : [])
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
-    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },

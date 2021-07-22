@@ -485,7 +485,8 @@ export const fi = {
       familyLink: 'Perheen tiedot'
     },
     familyContacts: {
-      title: 'Perheen yhteystiedot',
+      title: 'Perheen yhteystiedot ja varahakijat',
+      contacts: 'Yhteystiedot',
       name: 'Nimi',
       role: 'Rooli',
       roles: {
