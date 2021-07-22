@@ -37,7 +37,7 @@ fixture('Mobile pairing')
       externalId: config.supervisorExternalId,
       firstName: 'Seppo',
       lastName: 'Sorsa',
-      email: 'seppo.sorsa@espoo.fi',
+      email: 'seppo.sorsa@evaka.test',
       roles: []
     })
     await setAclForDaycares(

@@ -46,7 +46,7 @@ export const supervisor: EmployeeDetail = {
   externalId: config.supervisorExternalId,
   firstName: 'Eva',
   lastName: 'Esihenkilo',
-  email: 'eva.esihenkilo@espoo.fi',
+  email: 'eva.esihenkilo@evaka.test',
   roles: ['SERVICE_WORKER', 'ADMIN']
 }
 
@@ -155,7 +155,7 @@ export const enduserGuardianFixture: PersonDetail = {
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
   lastName: 'Karhula',
-  email: 'johannes.karhula@test.com',
+  email: 'johannes.karhula@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1944-07-07',
@@ -240,7 +240,7 @@ const twoGuardiansGuardian1 = {
   ssn: '220281-9456',
   firstName: 'Mikael Ilmari Juhani Johannes',
   lastName: 'Högfors',
-  email: 'mikael.hogfors@test.com',
+  email: 'mikael.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1981-02-22',
@@ -257,7 +257,7 @@ const twoGuardiansGuardian2 = {
   ssn: '170590-9540',
   firstName: 'Kaarina Marjatta Anna Liisa',
   lastName: 'Högfors',
-  email: 'kaarina.hogfors@test.com',
+  email: 'kaarina.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1990-05-17',
@@ -905,7 +905,7 @@ export class Fixture {
       id: uuidv4(),
       dateOfBirth: '2020-05-05',
       ssn: '050520A999M',
-      email: `email_${id}@test.com`,
+      email: `email_${id}@evaka.test`,
       firstName: `firstName_${id}`,
       lastName: `lastName_${id}`,
       language: `fi`,
@@ -924,7 +924,7 @@ export class Fixture {
     const id = uniqueLabel()
     return new EmployeeBuilder({
       id: uuidv4(),
-      email: `email_${id}@espoo.fi`,
+      email: `email_${id}@evaka.test`,
       externalId: `e2etest:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,

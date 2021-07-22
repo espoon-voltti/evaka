@@ -65,7 +65,7 @@ beforeEach(async () => {
   await insertEmployeeFixture({
     id: config.financeAdminAad,
     externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@espoo.fi',
+    email: 'lasse.laskuttaja@evaka.test',
     firstName: 'Lasse',
     lastName: 'Laskuttaja',
     roles: ['FINANCE_ADMIN']

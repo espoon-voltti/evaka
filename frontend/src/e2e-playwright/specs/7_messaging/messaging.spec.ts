@@ -44,7 +44,7 @@ beforeEach(async () => {
   await insertEmployeeFixture({
     id: config.unitSupervisorAad,
     externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'essi.esimies@espoo.fi',
+    email: 'essi.esimies@evaka.test',
     firstName: 'Essi',
     lastName: 'Esimies',
     roles: []

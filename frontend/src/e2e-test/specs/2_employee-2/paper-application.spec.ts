@@ -97,7 +97,7 @@ test('Paper application can be created with new guardian person', async () => {
     '02200',
     'Espoo',
     '123456789',
-    'testi.testinen@test.com'
+    'testi.testinen@evaka.test'
   )
   await childInforationPage.clickCreateApplicationModalCreateApplicationButton()
   await applicationEditPage.assertApplicationGuardian(
@@ -115,7 +115,7 @@ test('Service worker fills paper application with minimal info and saves it', as
   await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
   await applicationEditPage.fillApplicantPhoneAndEmail(
     '123456',
-    'email@test.com'
+    'email@evaka.test'
   )
   await applicationEditPage.saveApplication()
   await t.expect(applicationEditPage.readView.exists).ok()
@@ -129,11 +129,11 @@ test('Service worker fills paper application with second guardian contact info a
   await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
   await applicationEditPage.fillApplicantPhoneAndEmail(
     '123456',
-    'email@test.com'
+    'email@evaka.test'
   )
   await applicationEditPage.fillSecondGuardianContactInfo(
     '654321',
-    'second-email@test.com'
+    'second-email@evaka.test'
   )
   await applicationEditPage.setGuardianAgreementStatus('AGREED')
   await applicationEditPage.saveApplication()
