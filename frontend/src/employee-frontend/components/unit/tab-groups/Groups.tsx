@@ -8,7 +8,8 @@ import { faAngleDown, faAngleUp } from 'lib-icons'
 import _ from 'lodash'
 import { useTranslation } from '../../../state/i18n'
 import { Gap } from 'lib-components/white-space'
-import { H2 } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import {
@@ -31,7 +32,6 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Link } from 'react-router-dom'
 import { requireRole } from '../../../utils/roles'
 import { UserContext } from '../../../state/user'
-import { DataList } from '../../common/DataList'
 import UnitDataFilters from '../../../components/unit/UnitDataFilters'
 
 function renderGroups(
@@ -183,24 +183,20 @@ export default React.memo(function Groups({
         ) : null}
       </TitleBar>
       <Gap size="s" />
-      <DataList>
-        <div>
-          <label>{i18n.unit.filters.title}</label>
-          <div>
-            <UnitDataFilters
-              canEdit={requireRole(
-                roles,
-                'ADMIN',
-                'SERVICE_WORKER',
-                'UNIT_SUPERVISOR',
-                'FINANCE_ADMIN'
-              )}
-              filters={filters}
-              setFilters={setFilters}
-            />
-          </div>
-        </div>
-      </DataList>
+      <FixedSpaceRow alignItems="center">
+        <Label>{i18n.unit.filters.title}</Label>
+        <UnitDataFilters
+          canEdit={requireRole(
+            roles,
+            'ADMIN',
+            'SERVICE_WORKER',
+            'UNIT_SUPERVISOR',
+            'FINANCE_ADMIN'
+          )}
+          filters={filters}
+          setFilters={setFilters}
+        />
+      </FixedSpaceRow>
       <Gap size="s" />
       {uiMode === 'create-new-daycare-group' && (
         <GroupModal unitId={unit.id} reload={reloadUnitData} />

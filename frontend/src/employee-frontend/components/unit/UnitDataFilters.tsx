@@ -4,10 +4,10 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import LocalDate from 'lib-common/local-date'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
-import Chip, { Chips } from '../../components/common/Chip'
 import { UnitFilters } from '../../utils/UnitFilters'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
@@ -56,32 +56,40 @@ export default React.memo(function UnitDataFilters({
         <div>{endDate.format()}</div>
       </DatePickersContainer>
 
-      <Chips>
-        <Chip
+      <FixedSpaceRow spacing="xs">
+        <SelectionChip
           text={i18n.unit.filters.periods.day}
-          active={period === '1 day'}
-          onClick={() => setFilters(filters.withPeriod('1 day'))}
+          selected={period === '1 day'}
+          onChange={(selected) =>
+            selected ? setFilters(filters.withPeriod('1 day')) : undefined
+          }
           data-qa="unit-filter-period-1-day"
         />
-        <Chip
+        <SelectionChip
           text={i18n.unit.filters.periods.threeMonths}
-          active={period === '3 months'}
-          onClick={() => setFilters(filters.withPeriod('3 months'))}
+          selected={period === '3 months'}
+          onChange={(selected) =>
+            selected ? setFilters(filters.withPeriod('3 months')) : undefined
+          }
           data-qa="unit-filter-period-3-months"
         />
-        <Chip
+        <SelectionChip
           text={i18n.unit.filters.periods.sixMonths}
-          active={period === '6 months'}
-          onClick={() => setFilters(filters.withPeriod('6 months'))}
+          selected={period === '6 months'}
+          onChange={(selected) =>
+            selected ? setFilters(filters.withPeriod('6 months')) : undefined
+          }
           data-qa="unit-filter-period-6-months"
         />
-        <Chip
+        <SelectionChip
           text={i18n.unit.filters.periods.year}
-          active={period === '1 year'}
-          onClick={() => setFilters(filters.withPeriod('1 year'))}
+          selected={period === '1 year'}
+          onChange={(selected) =>
+            selected ? setFilters(filters.withPeriod('1 year')) : undefined
+          }
           data-qa="unit-filter-period-1-year"
         />
-      </Chips>
+      </FixedSpaceRow>
     </FixedSpaceRow>
   )
 })
