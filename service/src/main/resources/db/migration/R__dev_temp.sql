@@ -23,7 +23,7 @@ CREATE TABLE vasu_document(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
-    child_id uuid NOT NULL REFERENCES child(id),
+    child_id uuid NOT NULL REFERENCES child(id) ON DELETE RESTRICT,
     template_id uuid NOT NULL REFERENCES vasu_template(id),
     modified_at timestamp with time zone NOT NULL
 );
