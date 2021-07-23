@@ -733,7 +733,8 @@ export const fi = {
       }
     },
     placements: {
-      title: 'Sijoitukset',
+      title: 'Sijoitukset ja palveluntarpeet',
+      placements: 'Sijoitukset',
       restrictedName: '(Yksikön nimi piilotettu)',
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
