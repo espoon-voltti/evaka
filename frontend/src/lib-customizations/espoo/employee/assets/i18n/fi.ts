@@ -475,7 +475,7 @@ export const fi = {
     title: 'Lapsen tiedot',
     restrictedDetails: 'Turvakielto',
     personDetails: {
-      title: 'Henkilö- ja yhteystiedot',
+      title: 'Henkilö-, yhteys- ja terveystiedot',
       name: 'Lapsen nimi',
       email: 'Sähköposti',
       socialSecurityNumber: 'Henkilötunnus',
@@ -485,7 +485,8 @@ export const fi = {
       familyLink: 'Perheen tiedot'
     },
     familyContacts: {
-      title: 'Perheen yhteystiedot',
+      title: 'Perheen yhteystiedot ja varahakijat',
+      contacts: 'Yhteystiedot',
       name: 'Nimi',
       role: 'Rooli',
       roles: {
@@ -732,7 +733,8 @@ export const fi = {
       }
     },
     placements: {
-      title: 'Sijoitukset',
+      title: 'Sijoitukset ja palveluntarpeet',
+      placements: 'Sijoitukset',
       restrictedName: '(Yksikön nimi piilotettu)',
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
@@ -1006,6 +1008,7 @@ export const fi = {
     },
     invoices: 'Päämiehen laskut',
     dependants: 'Päämiehen huollettavat',
+    guardiansAndParents: 'Huoltajat ja päämiehet',
     guardians: 'Huoltajat',
     name: 'Nimi',
     ssn: 'Hetu',

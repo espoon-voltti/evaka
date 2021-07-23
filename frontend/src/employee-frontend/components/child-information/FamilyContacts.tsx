@@ -12,6 +12,7 @@ import {
 } from '../../api/family-overview'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { FamilyContact } from '../../types/family-overview'
+import { Gap } from 'lib-components/white-space'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { useTranslation } from '../../state/i18n'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -23,11 +24,12 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { H2, H3 } from '../../../lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { patchPersonDetails } from 'employee-frontend/api/person'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { UserContext } from 'employee-frontend/state/user'
+import BackupPickup from './BackupPickup'
 
 interface FamilyContactsProps {
   id: UUID
@@ -110,150 +112,160 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
       {result.isLoading && <SpinnerSegment />}
       {result.isFailure && <ErrorSegment />}
       {result.isSuccess && (
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{i18n.childInformation.familyContacts.name}</Th>
-              <Th>{i18n.childInformation.familyContacts.role}</Th>
-              <Th>{i18n.childInformation.familyContacts.contact}</Th>
-              <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
-              <Th>{i18n.childInformation.familyContacts.address}</Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {result.value.map((row) => (
-              <Tr
-                key={`${row.role}:${row.lastName || ''}:${row.firstName || ''}`}
-              >
-                <Td>{formatName(row.firstName, row.lastName, i18n, true)}</Td>
-                <Td>{i18n.childInformation.familyContacts.roles[row.role]}</Td>
-                <Td>
-                  {editableContacts ? (
-                    <FixedSpaceColumn spacing="xs">
-                      {row.email && (
-                        <span>
-                          <InputField
-                            value={row.email}
-                            onChange={(value) => {
-                              setDirty(true)
-                              setResult((prev) => {
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.email = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />
-                        </span>
-                      )}
-                      {row.phone && (
-                        <span>
-                          <InputField
-                            value={row.phone}
-                            onChange={(value) => {
-                              setDirty(true)
-                              setResult((prev) => {
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.phone = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />
-                        </span>
-                      )}
-                      {row.backupPhone && (
-                        <span>
-                          <InputField
-                            value={row.backupPhone}
-                            onChange={(value) => {
-                              setResult((prev) => {
-                                setDirty(true)
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.backupPhone = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />{' '}
-                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                        </span>
-                      )}
-                    </FixedSpaceColumn>
-                  ) : (
-                    <FixedSpaceColumn spacing="xs">
-                      {row.email && <span>{row.email}</span>}
-                      {row.phone && <span>{row.phone}</span>}
-                      {row.backupPhone && (
-                        <span>
-                          {row.backupPhone}{' '}
-                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                        </span>
-                      )}
-                    </FixedSpaceColumn>
-                  )}
-                </Td>
-                <Td>
-                  {row.role !== 'LOCAL_SIBLING' ? (
-                    <SimpleSelect
-                      value={String(row.priority)}
-                      options={contactPriorityOptions}
-                      onChange={(event) => {
-                        void updateFamilyContacts({
-                          childId: id,
-                          contactPersonId: row.id,
-                          priority: event.target.value
-                            ? Number(event.target.value)
-                            : undefined
-                        }).then(() => {
-                          loadContacts(id)
-                        })
-                      }}
-                      placeholder="-"
-                    />
-                  ) : null}
-                </Td>
-                <Td>{`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}</Td>
-                <Td>
-                  <FixedSpaceRow justifyContent="flex-end" spacing="m">
-                    {dirty && (
-                      <InlineButton
-                        onClick={onCancel}
-                        text={i18n.common.cancel}
-                        disabled={submitting}
-                      />
-                    )}
-                    <InlineButton
-                      onClick={() => onSubmit(row.id)}
-                      text={i18n.common.save}
-                      disabled={submitting || !dirty}
-                    />
-                  </FixedSpaceRow>
-                </Td>
+        <>
+          <Gap size="m" />
+          <H3 noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>{i18n.childInformation.familyContacts.name}</Th>
+                <Th>{i18n.childInformation.familyContacts.role}</Th>
+                <Th>{i18n.childInformation.familyContacts.contact}</Th>
+                <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
+                <Th>{i18n.childInformation.familyContacts.address}</Th>
+                <Th></Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
+            </Thead>
+            <Tbody>
+              {result.value.map((row) => (
+                <Tr
+                  key={`${row.role}:${row.lastName || ''}:${
+                    row.firstName || ''
+                  }`}
+                >
+                  <Td>{formatName(row.firstName, row.lastName, i18n, true)}</Td>
+                  <Td>
+                    {i18n.childInformation.familyContacts.roles[row.role]}
+                  </Td>
+                  <Td>
+                    {editableContacts ? (
+                      <FixedSpaceColumn spacing="xs">
+                        {row.email && (
+                          <span>
+                            <InputField
+                              value={row.email}
+                              onChange={(value) => {
+                                setDirty(true)
+                                setResult((prev) => {
+                                  return prev.map((prevData) => {
+                                    const clone = cloneDeep(prevData)
+                                    clone.map((cloneRow) => {
+                                      if (cloneRow.id === row.id) {
+                                        cloneRow.email = value
+                                      }
+                                      return cloneRow
+                                    })
+                                    return clone
+                                  })
+                                })
+                              }}
+                            />
+                          </span>
+                        )}
+                        {row.phone && (
+                          <span>
+                            <InputField
+                              value={row.phone}
+                              onChange={(value) => {
+                                setDirty(true)
+                                setResult((prev) => {
+                                  return prev.map((prevData) => {
+                                    const clone = cloneDeep(prevData)
+                                    clone.map((cloneRow) => {
+                                      if (cloneRow.id === row.id) {
+                                        cloneRow.phone = value
+                                      }
+                                      return cloneRow
+                                    })
+                                    return clone
+                                  })
+                                })
+                              }}
+                            />
+                          </span>
+                        )}
+                        {row.backupPhone && (
+                          <span>
+                            <InputField
+                              value={row.backupPhone}
+                              onChange={(value) => {
+                                setResult((prev) => {
+                                  setDirty(true)
+                                  return prev.map((prevData) => {
+                                    const clone = cloneDeep(prevData)
+                                    clone.map((cloneRow) => {
+                                      if (cloneRow.id === row.id) {
+                                        cloneRow.backupPhone = value
+                                      }
+                                      return cloneRow
+                                    })
+                                    return clone
+                                  })
+                                })
+                              }}
+                            />{' '}
+                            {`(${i18n.childInformation.familyContacts.backupPhone})`}
+                          </span>
+                        )}
+                      </FixedSpaceColumn>
+                    ) : (
+                      <FixedSpaceColumn spacing="xs">
+                        {row.email && <span>{row.email}</span>}
+                        {row.phone && <span>{row.phone}</span>}
+                        {row.backupPhone && (
+                          <span>
+                            {row.backupPhone}{' '}
+                            {`(${i18n.childInformation.familyContacts.backupPhone})`}
+                          </span>
+                        )}
+                      </FixedSpaceColumn>
+                    )}
+                  </Td>
+                  <Td>
+                    {row.role !== 'LOCAL_SIBLING' ? (
+                      <SimpleSelect
+                        value={String(row.priority)}
+                        options={contactPriorityOptions}
+                        onChange={(event) => {
+                          void updateFamilyContacts({
+                            childId: id,
+                            contactPersonId: row.id,
+                            priority: event.target.value
+                              ? Number(event.target.value)
+                              : undefined
+                          }).then(() => {
+                            loadContacts(id)
+                          })
+                        }}
+                        placeholder="-"
+                      />
+                    ) : null}
+                  </Td>
+                  <Td>{`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}</Td>
+                  <Td>
+                    <FixedSpaceRow justifyContent="flex-end" spacing="m">
+                      {dirty && (
+                        <InlineButton
+                          onClick={onCancel}
+                          text={i18n.common.cancel}
+                          disabled={submitting}
+                        />
+                      )}
+                      <InlineButton
+                        onClick={() => onSubmit(row.id)}
+                        text={i18n.common.save}
+                        disabled={submitting || !dirty}
+                      />
+                    </FixedSpaceRow>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </>
       )}
+      <Gap size="XL" />
+      <BackupPickup id={id} />
     </CollapsibleContentArea>
   )
 }

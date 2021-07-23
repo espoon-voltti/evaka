@@ -78,6 +78,7 @@ function Search() {
               onChange={(value) => {
                 setSearchTerm(value)
               }}
+              width="L"
               data-qa="search-input"
               icon={faSearch}
             />

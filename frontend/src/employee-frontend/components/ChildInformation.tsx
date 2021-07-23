@@ -20,13 +20,11 @@ import { getParentshipsByChild } from '../api/parentships'
 import { getPersonDetails } from '../api/person'
 import Assistance from '../components/child-information/Assistance'
 import BackupCare from '../components/child-information/BackupCare'
-import BackupPickup from '../components/child-information/BackupPickup'
 import ChildApplications from '../components/child-information/ChildApplications'
 import ChildDetails from '../components/child-information/ChildDetails'
 import FamilyContacts from '../components/child-information/FamilyContacts'
 import FeeAlteration from '../components/child-information/FeeAlteration'
-import FridgeParents from '../components/child-information/FridgeParents'
-import Guardians from '../components/child-information/Guardians'
+import GuardiansAndParents from './child-information/GuardiansAndParents'
 import Placements from '../components/child-information/Placements'
 import WarningLabel from '../components/common/WarningLabel'
 import { ChildContext, ChildState } from '../state/child'
@@ -71,8 +69,7 @@ const HeadOfFamilyLink = styled(Link)`
 
 const components = {
   'fee-alterations': FeeAlteration,
-  guardians: Guardians,
-  parents: FridgeParents,
+  guardiansAndParents: GuardiansAndParents,
   placements: Placements,
   'daily-service-times': DailyServiceTimesSection,
   vasuAndLeops: VasuAndLeops,
@@ -80,16 +77,13 @@ const components = {
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
   applications: ChildApplications,
-  'message-blocklist': MessageBlocklist,
-  'backup-pickup': BackupPickup
+  'message-blocklist': MessageBlocklist
 }
 
 const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
@@ -102,8 +96,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'fee-alterations', open: false }
   ],
   ['SERVICE_WORKER']: [
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -113,29 +106,25 @@ const layouts: Layouts<typeof components> = {
   ],
   ['FINANCE_ADMIN']: [
     { component: 'fee-alterations', open: true },
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
     ...(featureFlags.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : [])
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
-    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },

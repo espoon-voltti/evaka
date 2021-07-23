@@ -82,7 +82,7 @@ test('guardian information is shown', async () => {
 test('backup pickups can be added and deleted', async () => {
   const name = 'Mikko Mallikas'
   const phone = '123456'
-  await childInformation.openBackupPickupsCollapsible()
+  await childInformation.openFamilyContactsCollapsible()
   await t.expect(childInformation.backupPickupRows(name).exists).notOk()
   await childInformation.addBackupPickup(name, phone)
   await t.expect(childInformation.backupPickupRows(name).visible).ok()

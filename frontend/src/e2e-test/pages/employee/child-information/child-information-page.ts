@@ -15,8 +15,8 @@ export default class ChildInformationPage {
     '[data-qa="applications-collapsible"]'
   )
 
-  readonly backupPickupsCollapsible = Selector(
-    '[data-qa="backup-pickups-collapsible"]'
+  readonly familyContactsCollapsible = Selector(
+    '[data-qa="family-contacts-collapsible"]'
   )
 
   backupPickupRows(name: string): Selector {
@@ -126,8 +126,8 @@ export default class ChildInformationPage {
     await this.openCollapsible(this.messageBlocklistCollapsible)
   }
 
-  async openBackupPickupsCollapsible() {
-    await this.openCollapsible(this.backupPickupsCollapsible)
+  async openFamilyContactsCollapsible() {
+    await this.openCollapsible(this.familyContactsCollapsible)
   }
 
   async openCollapsible(collapsibleSelector: Selector) {
