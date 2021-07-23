@@ -186,15 +186,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: true,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: true,
-      messageBlocklist: true,
-      backupPickup: true
+      messageBlocklist: true
     })
   })
 
@@ -205,15 +203,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: true,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 
@@ -224,15 +220,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: true,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: false,
       backupCare: true,
       familyContacts: false,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 
@@ -243,15 +237,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: false,
-      fridgeParents: false,
+      guardiansAndParents: false,
       placements: true,
       assistance: false,
       backupCare: true,
       familyContacts: true,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: true
+      messageBlocklist: false
     })
   })
 
@@ -262,15 +254,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: true,
-      messageBlocklist: false,
-      backupPickup: true
+      messageBlocklist: false
     })
   })
 
@@ -281,15 +271,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: false,
-      fridgeParents: false,
+      guardiansAndParents: false,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 })

@@ -16,10 +16,6 @@ export default class ChildInformationPage {
     this.page,
     '[data-qa="person-guardians-collapsible"]'
   )
-  readonly fridgeParentsCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="fridge-parents-collapsible"]'
-  )
   readonly placementsCollapsible = new Collapsible(
     this.page,
     '[data-qa="child-placements-collapsible"]'
@@ -44,31 +40,24 @@ export default class ChildInformationPage {
     this.page,
     '[data-qa="child-message-blocklist-collapsible"]'
   )
-  readonly backupPickupCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="backup-pickups-collapsible"]'
-  )
   readonly pageWrapper = new RawElement(this.page, '.child-information-wrapper')
 
   async childCollapsiblesVisible(params: {
     feeAlterations: boolean
-    guardians: boolean
-    fridgeParents: boolean
+    guardiansAndParents: boolean
     placements: boolean
     assistance: boolean
     backupCare: boolean
     familyContacts: boolean
     childApplications: boolean
     messageBlocklist: boolean
-    backupPickup: boolean
   }) {
     await this.pageWrapper.waitUntilVisible()
     expect(await this.feeAlterationsCollapsible.visible).toBe(
       params.feeAlterations
     )
-    expect(await this.guardiansCollapsible.visible).toBe(params.guardians)
-    expect(await this.fridgeParentsCollapsible.visible).toBe(
-      params.fridgeParents
+    expect(await this.guardiansCollapsible.visible).toBe(
+      params.guardiansAndParents
     )
     expect(await this.placementsCollapsible.visible).toBe(params.placements)
     expect(await this.assistanceCollapsible.visible).toBe(params.assistance)
@@ -82,7 +71,6 @@ export default class ChildInformationPage {
     expect(await this.messageBlocklistCollapsible.visible).toBe(
       params.messageBlocklist
     )
-    expect(await this.backupPickupCollapsible.visible).toBe(params.backupPickup)
   }
 
   async addParentToBlockList(parentId: string) {
