@@ -100,6 +100,7 @@ export interface IconSet {
   fasArrowDown: IconDefinition
   fasArrowUp: IconDefinition
   farUser: IconDefinition
+  farUsers: IconDefinition
   faTruck: IconDefinition
   faPhone: IconDefinition
   faCalendarTimes: IconDefinition
@@ -202,6 +203,7 @@ export const fasMapMarkerAlt = iconSet.fasMapMarkerAlt
 export const fasArrowDown = iconSet.fasArrowDown
 export const fasArrowUp = iconSet.fasArrowUp
 export const farUser = iconSet.farUser
+export const farUsers = iconSet.farUsers
 export const faTruck = iconSet.faTruck
 export const faPhone = iconSet.faPhone
 export const faCalendarTimes = iconSet.faCalendarTimes
