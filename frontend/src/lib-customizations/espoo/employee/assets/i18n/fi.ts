@@ -1007,6 +1007,7 @@ export const fi = {
     },
     invoices: 'Päämiehen laskut',
     dependants: 'Päämiehen huollettavat',
+    guardiansAndParents: 'Huoltajat ja päämiehet',
     guardians: 'Huoltajat',
     name: 'Nimi',
     ssn: 'Hetu',

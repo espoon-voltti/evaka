@@ -18,15 +18,20 @@ import { NameTd } from '../PersonProfile'
 import { ChildContext } from '../../state'
 import { getPersonGuardians } from '../../api/person'
 import { getAge } from 'lib-common/utils/local-date'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2, H3 } from 'lib-components/typography'
+import FridgeParents from './FridgeParents'
+import { Gap } from 'lib-components/white-space'
 
 interface Props {
   id: UUID
   startOpen: boolean
 }
 
-const Guardians = React.memo(function Guardians({ id, startOpen }: Props) {
+const GuardiansAndParents = React.memo(function Guardians({
+  id,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { guardians, setGuardians } = useContext(ChildContext)
 
@@ -73,13 +78,15 @@ const Guardians = React.memo(function Guardians({ id, startOpen }: Props) {
   return (
     <div>
       <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.personProfile.guardians}</H2>}
+        title={<H2 noMargin>{i18n.personProfile.guardiansAndParents}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
         opaque
         paddingVertical="L"
         data-qa="person-guardians-collapsible"
       >
+        <Gap size="m" />
+        <H3 noMargin>{i18n.personProfile.guardians}</H3>
         <Table data-qa="table-of-guardians">
           <Thead>
             <Tr>
@@ -93,9 +100,11 @@ const Guardians = React.memo(function Guardians({ id, startOpen }: Props) {
         </Table>
         {guardians.isLoading && <Loader />}
         {guardians.isFailure && <div>{i18n.common.loadingFailed}</div>}
+        <Gap size="XL" />
+        <FridgeParents />
       </CollapsibleContentArea>
     </div>
   )
 })
 
-export default Guardians
+export default GuardiansAndParents
