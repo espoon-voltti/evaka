@@ -184,6 +184,7 @@ const icons: IconSet = {
   fasArrowDown: faArrowDown,
   fasArrowUp: faArrowUp,
   farUser,
+  farUsers: faUsers,
   faComments,
   faTruck,
   faPhone,

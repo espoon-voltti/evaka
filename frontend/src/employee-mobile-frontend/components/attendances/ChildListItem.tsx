@@ -13,13 +13,13 @@ import {
 } from '../../api/attendances'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { farStickyNote, farUser } from 'lib-icons'
+import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { Link } from 'react-router-dom'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -36,9 +36,16 @@ const AttendanceLinkBox = styled(Link)`
   width: 100%;
 `
 
+const imageHeight = '56px'
+
 const ChildBoxInfo = styled.div`
   margin-left: 24px;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: ${imageHeight};
 `
 
 const Bold = styled.div`
@@ -85,23 +92,25 @@ const DetailsRow = styled.div`
   justify-content: space-between;
   align-items: center;
   color: ${colors.greyscale.dark};
-  font-size: 14px;
+  font-size: 0.875em;
+  width: 100%;
 `
 
-const Time = styled.span`
-  margin-left: ${defaultMargins.xs};
-`
-
-const ToolsColumn = styled.div`
-  display: flex;
-  flex-direction: column;
+const StatusDetails = styled.span`
+  margin: 0 ${defaultMargins.xs};
 `
 
 const RoundImage = styled.img`
   border-radius: 9000px;
-  width: 56px;
-  height: 56px;
+  width: ${imageHeight};
+  height: ${imageHeight};
   display: block;
+`
+
+const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)<{
+  spacing: SpacingSize
+}>`
+  margin-left: ${({ spacing }) => defaultMargins[spacing]};
 `
 
 interface ChildListItemProps {
@@ -153,20 +162,20 @@ export default React.memo(function ChildListItem({
           <DetailsRow>
             <div data-qa={'child-status'}>
               {i18n.attendances.status[attendanceChild.status]}
-              {attendanceResponse.isSuccess &&
-                attendanceChild.status === 'COMING' && (
-                  <span>
-                    {' '}
-                    (
-                    {attendanceResponse.value.unit.groups
-                      .find(
-                        (elem: Group) => elem.id === attendanceChild.groupId
+              <StatusDetails>
+                {attendanceResponse.isSuccess &&
+                  attendanceChild.status === 'COMING' && (
+                    <span>
+                      {' '}
+                      (
+                      {attendanceResponse.value.unit.groups
+                        .find(
+                          (elem: Group) => elem.id === attendanceChild.groupId
+                        )
+                        ?.name.toUpperCase()}
                       )
-                      ?.name.toUpperCase()}
-                    )
-                  </span>
-                )}
-              <Time>
+                    </span>
+                  )}
                 {attendanceChild.status === 'PRESENT' &&
                   formatDate(
                     attendanceChild.attendance?.arrived,
@@ -177,42 +186,40 @@ export default React.memo(function ChildListItem({
                     attendanceChild.attendance?.departed,
                     DATE_FORMAT_TIME_ONLY
                   )}
-              </Time>
+              </StatusDetails>
+              {attendanceChild.backup && (
+                <RoundIcon content="V" size="m" color={colors.blues.primary} />
+              )}
             </div>
-            {attendanceChild.backup && (
-              <RoundIcon content="V" size="m" color={colors.blues.primary} />
-            )}
+            <FixedSpaceRowWithLeftMargin spacing="m">
+              {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
+                <Link
+                  to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+                  data-qa={'link-child-daycare-daily-note'}
+                >
+                  <RoundIcon
+                    content={farStickyNote}
+                    color={colors.accents.petrol}
+                    size="m"
+                  />
+                </Link>
+              )}
+              {groupNote && attendanceResponse.isSuccess && (
+                <Link
+                  to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+                  data-qa={'link-child-daycare-daily-note'}
+                >
+                  <RoundIcon
+                    content={farUsers}
+                    color={colors.blues.light}
+                    size="m"
+                  />
+                </Link>
+              )}
+            </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
       </AttendanceLinkBox>
-      <ToolsColumn>
-        <FixedSpaceColumn spacing={'xxs'}>
-          {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
-            <Link
-              to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
-              data-qa={'link-child-daycare-daily-note'}
-            >
-              <RoundIcon
-                content={farStickyNote}
-                color={colors.accents.petrol}
-                size={'m'}
-              />
-            </Link>
-          )}
-          {groupNote && attendanceResponse.isSuccess && (
-            <Link
-              to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
-              data-qa={'link-child-daycare-daily-note'}
-            >
-              <RoundIcon
-                content={farStickyNote}
-                color={colors.blues.light}
-                size={'m'}
-              />
-            </Link>
-          )}
-        </FixedSpaceColumn>
-      </ToolsColumn>
     </ChildBox>
   )
 })
