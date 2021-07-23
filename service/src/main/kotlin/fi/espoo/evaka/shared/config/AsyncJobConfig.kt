@@ -10,12 +10,15 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
+import org.springframework.core.env.Environment
+import org.springframework.core.env.getProperty
 import java.time.Duration
 
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi) = AsyncJobRunner(jdbi)
+    fun asyncJobRunner(jdbi: Jdbi, env: Environment) =
+        AsyncJobRunner(jdbi, disableRunner = env.getProperty<Boolean>("evaka.async_job_runner.disable_runner") ?: false)
 
     @Bean
     fun asyncJobRunnerSchedule(asyncJobRunner: AsyncJobRunner) = object {
