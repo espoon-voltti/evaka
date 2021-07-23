@@ -643,14 +643,26 @@ commands:
             - *ci_evaka_fingerprint
       - attach_root_workspace
       - run:
-          name: Deploy ECS services to << parameters.env >>
+          name: Initialize Terraform workspace
+          working_directory: evaka-infra/terraform/evaka-ecs
           command: |
-            cd evaka-infra/terraform/evaka-ecs
-
             . replace-credentials
 
             terraform init
             terraform workspace select << parameters.env >>
+      - run:
+          name: Log current ECS service versions
+          working_directory: evaka-infra/terraform/evaka-ecs
+          command: |
+            . replace-credentials
+
+            terraform output | grep _version
+      - run:
+          name: Deploy ECS services to << parameters.env >>
+          working_directory: evaka-infra/terraform/evaka-ecs
+          command: |
+            . replace-credentials
+
             terraform apply -auto-approve -lock-timeout=300s \
               -var enduser-api-gw_version="${CIRCLE_SHA1}" \
               -var internal-api-gw_version="${CIRCLE_SHA1}" \
@@ -658,6 +670,26 @@ commands:
               -var message-srv_version="${CIRCLE_SHA1}" \
               -var proxy_version="${CIRCLE_SHA1}" \
               -var ses-notification-processor_version="${CIRCLE_SHA1}"
+      - run:
+          name: Wait for ECS deploy to finish
+          environment:
+            AWS_PROFILE: voltti-<< parameters.env >>
+          command: |
+            . replace-credentials
+
+            aws ecs wait services-stable \
+              --cluster voltti-ecs-cluster-<< parameters.env >> \
+              --services \
+                  evaka-enduser-gw \
+                  evaka-internal-gw \
+                  evaka-srv \
+                  evaka-message-srv \
+                  evaka-proxy || {
+              echo 'ERROR: Deployment failed! At least one of the ECS tasks failed to stabilize in 10 minutes with the new versions.' &&
+              echo 'INFO: See output above for previous versions' &&
+              echo "WARN: Generally rollbacks aren't recommended as they can cause issues with DB migrations" &&
+              exit 1
+            }
 
   # Must be the last step in a job
   notify_slack:
