@@ -475,7 +475,7 @@ export const fi = {
     title: 'Lapsen tiedot',
     restrictedDetails: 'Turvakielto',
     personDetails: {
-      title: 'Henkilö- ja yhteystiedot',
+      title: 'Henkilö-, yhteys- ja terveystiedot',
       name: 'Lapsen nimi',
       email: 'Sähköposti',
       socialSecurityNumber: 'Henkilötunnus',
