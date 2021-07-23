@@ -188,7 +188,7 @@ export default React.memo(function ChildListItem({
                   )}
               </StatusDetails>
               {attendanceChild.backup && (
-                <RoundIcon content="V" size="m" color={colors.blues.primary} />
+                <RoundIcon content="V" size="m" color={colors.accents.green} />
               )}
             </div>
             <FixedSpaceRowWithLeftMargin spacing="m">
