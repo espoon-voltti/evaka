@@ -41,6 +41,10 @@ interface FileObject extends Attachment {
    * Marker to separate transfer and processing readiness
    */
   uploaded: boolean
+  /**
+   * Marker to indicate delete processing
+   */
+  deleteInProgress: boolean
 }
 
 interface FileUploadI18n {
@@ -211,7 +215,8 @@ const attachmentToFile = (attachment: Attachment): FileObject => {
     contentType: attachment.contentType,
     progress: 100,
     error: undefined,
-    uploaded: true
+    uploaded: true,
+    deleteInProgress: false
   }
 }
 
@@ -275,16 +280,27 @@ export default React.memo(function FileUpload({
   }
 
   const deleteFile = async (file: FileObject) => {
+    setUploadedFiles((old) =>
+      old.map((item) =>
+        item.id === file.id ? { ...item, deleteInProgress: true } : item
+      )
+    )
     try {
       const { isSuccess } = file.error
         ? Success.of(true)
         : await onDelete(file.id)
-      isSuccess &&
-        setUploadedFiles((old: FileObject[]) => {
+      if (isSuccess) {
+        setUploadedFiles((old) => {
           return old.filter((item) => item.id !== file.id)
         })
+      }
     } catch (e) {
       console.error(e)
+      setUploadedFiles((old) =>
+        old.map((item) =>
+          item.id === file.id ? { ...item, deleteInProgress: false } : item
+        )
+      )
     }
   }
 
@@ -314,6 +330,7 @@ export default React.memo(function FileUpload({
       contentType: file.type,
       progress: 0,
       uploaded: false,
+      deleteInProgress: false,
       error
     }
 
@@ -390,7 +407,7 @@ export default React.memo(function FileUpload({
             <FileIcon icon={fileIcon(file)} />
             <FileDetails>
               <FileHeader>
-                {!inProgress(file) && !file.error ? (
+                {!inProgress(file) && !file.error && !file.deleteInProgress ? (
                   <FileDownloadButton
                     file={file}
                     fileFetchFn={onDownloadFile}
@@ -404,6 +421,7 @@ export default React.memo(function FileUpload({
                 )}
                 <FileDeleteButton
                   icon={faTimes}
+                  disabled={file.deleteInProgress}
                   onClick={() => deleteFile(file)}
                   altText={`${i18n.upload.deleteFile} ${file.name}`}
                   data-qa={`file-delete-button-${file.name}`}
