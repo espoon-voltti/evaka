@@ -37,7 +37,7 @@ const Root = styled.div`
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   &.active {
     border-color: transparent;
   }
@@ -61,7 +61,7 @@ const Menu = styled.div`
   &.closed {
     display: none;
   }
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   border-radius: ${borderRadius};
   background-color: white;
   max-height: 300px;
