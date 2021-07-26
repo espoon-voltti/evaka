@@ -86,7 +86,7 @@ const MenuItem = styled.div`
 
 const Input = styled.input`
   background: none;
-  padding: 5px 0 5px 10px;
+  padding: 8px 0 8px 12px;
   flex: 1 1 auto;
   border: 0;
   outline: 0;
@@ -99,7 +99,6 @@ const Separator = styled.div`
   width: 1px;
   margin: 5px 0 5px;
   border-left: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
-  cursor: pointer;
 `
 
 const Button = styled.button`
@@ -322,11 +321,16 @@ export default function Combobox<T>(props: ComboboxProps<T>) {
           })}
         />
         {clearable && selectedItem && (
-          <Button data-qa="clear" onClick={enabled ? onClickClear : undefined}>
-            <FontAwesomeIcon icon={faTimes} />
-          </Button>
+          <>
+            <Button
+              data-qa="clear"
+              onClick={enabled ? onClickClear : undefined}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </Button>
+            <Separator>&nbsp;</Separator>
+          </>
         )}
-        <Separator>&nbsp;</Separator>
         <Button
           data-qa="toggle"
           type="button"
