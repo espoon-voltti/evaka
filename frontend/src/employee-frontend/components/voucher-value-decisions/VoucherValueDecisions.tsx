@@ -178,6 +178,7 @@ export default React.memo(function VoucherValueDecisions({
                   hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
+                  disabled={decisions?.isSuccess !== true}
                   data-qa="toggle-all-decisions"
                 />
               </Td>
