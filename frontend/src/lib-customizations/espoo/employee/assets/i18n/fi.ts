@@ -177,7 +177,8 @@ export const fi = {
     ssn: 'Henkilötunnus on väärässä muodossa',
     time: 'Aika on väärässä muodossa',
     cents: 'Euromäärä on väärässä muodossa',
-    decimal: 'Desimaaliluku on väärässä muodossa'
+    decimal: 'Desimaaliluku on väärässä muodossa',
+    startDateNotOnTerm: 'Aloituspäivän pitää kohdistua jollekin kaudelle'
   },
   login: {
     title: 'Varhaiskasvatus',

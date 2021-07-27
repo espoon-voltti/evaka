@@ -11,7 +11,11 @@ import { ApplicationResponse } from '../types/application'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
 import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
-import { getApplication } from '../api/applications'
+import {
+  getApplication,
+  getClubTerms,
+  getPreschoolTerms
+} from '../api/applications'
 import { getApplicationUnits } from '../api/daycare'
 import { renderResult } from './async-rendering'
 import { TitleContext, TitleState } from '../state/title'
@@ -89,6 +93,30 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     editedApplication?.form.preferences.preparatory
   ])
 
+  const [terms, setTerms] = useState<Term[]>()
+  useEffect(() => {
+    switch (
+      application.map(({ application: { type } }) => type).getOrElse(undefined)
+    ) {
+      case 'PRESCHOOL':
+        void getPreschoolTerms().then((res) =>
+          setTerms(
+            res
+              .map((terms) => terms.map((term) => term.extendedTerm))
+              .getOrElse([])
+          )
+        )
+        break
+      case 'CLUB':
+        void getClubTerms().then((res) =>
+          setTerms(
+            res.map((terms) => terms.map(({ term }) => term)).getOrElse([])
+          )
+        )
+        break
+    }
+  }, [application, setTerms])
+
   // this is used because text inputs become too sluggish without it
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
 
@@ -117,7 +145,12 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   useEffect(() => {
     if (debouncedEditedApplication && units.isSuccess) {
       setValidationErrors(
-        validateApplication(debouncedEditedApplication, units.value, i18n)
+        validateApplication(
+          debouncedEditedApplication,
+          units.value,
+          terms,
+          i18n
+        )
       )
     }
   }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -215,9 +248,15 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   )
 }
 
+interface Term {
+  start: LocalDate
+  end: LocalDate
+}
+
 function validateApplication(
   application: ApplicationDetails,
   units: PublicUnit[],
+  terms: Term[] | undefined,
   i18n: Translations
 ): Record<string, string> {
   const errors = {}
@@ -226,9 +265,19 @@ function validateApplication(
     form: { child, preferences, otherPartner, otherChildren }
   } = application
 
-  if (!preferences.preferredStartDate) {
+  const preferredStartDate = preferences.preferredStartDate
+  if (!preferredStartDate) {
     errors['form.preferences.preferredStartDate'] =
       i18n.validationError.mandatoryField
+  }
+
+  if (
+    terms &&
+    preferredStartDate &&
+    !terms.some((term) => preferredStartDate.isBetween(term.start, term.end))
+  ) {
+    errors['form.preferences.preferredStartDate'] =
+      i18n.validationError.startDateNotOnTerm
   }
 
   if (preferences.preferredUnits.length === 0) {
