@@ -23,6 +23,12 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import {
+  ClubTerm,
+  deserializeClubTerm,
+  deserializePreschoolTerm,
+  PreschoolTerm
+} from 'lib-common/api-types/units/terms'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 export async function getApplication(
@@ -346,4 +352,24 @@ export async function getAttachmentBlob(
   })
     .then((result) => Success.of(result.data))
     .catch((e) => Failure.fromError(e))
+}
+
+export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
+    return Success.of(result.data.map(deserializeClubTerm))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<PreschoolTerm[]>>(
+      `/public/preschool-terms`
+    )
+    return Success.of(result.data.map(deserializePreschoolTerm))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }
