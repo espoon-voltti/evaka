@@ -9,7 +9,6 @@ import {
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationGuardianAgreementStatus } from 'lib-common/api-types/application/enums'
-import { User } from '../../auth/state'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 
@@ -106,9 +105,17 @@ export type ApplicationFormData = {
   additionalDetails: AdditionalDetailsFormData
 }
 
+type PersonWithChildren = {
+  children: Array<{
+    firstName: string
+    lastName: string
+    socialSecurityNumber: string
+  }>
+}
+
 export function apiDataToFormData(
   application: ApplicationDetails,
-  user: User | undefined
+  user: PersonWithChildren | undefined
 ): ApplicationFormData {
   const vtjSiblings: VtjSibling[] = user
     ? user.children

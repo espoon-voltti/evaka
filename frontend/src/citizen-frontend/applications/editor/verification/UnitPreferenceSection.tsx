@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UnitPreferenceFormData } from '../../../applications/editor/ApplicationFormData'
+import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
 import { H2, H3, Label } from 'lib-components/typography'

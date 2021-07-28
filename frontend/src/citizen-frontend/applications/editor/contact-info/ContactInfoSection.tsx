@@ -5,7 +5,7 @@
 import { UpdateStateFn } from 'lib-common/form-state'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { ContactInfoFormData } from '../ApplicationFormData'
+import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import EditorSection from '../../../applications/editor/EditorSection'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ApplicationFormDataErrors } from '../validations'

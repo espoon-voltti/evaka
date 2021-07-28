@@ -4,7 +4,7 @@
 
 import React from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { H1, P } from 'lib-components/typography'
 import { useTranslation } from '../../../localization'
 import BasicsSection from '../../../applications/editor/verification/BasicsSection'

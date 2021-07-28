@@ -11,7 +11,7 @@ import {
   ApplicationGuardianAgreementStatus,
   ApplicationType
 } from 'lib-common/api-types/application/enums'
-import { ContactInfoFormData } from '../ApplicationFormData'
+import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from '../validations'
 import Radio from 'lib-components/atoms/form/Radio'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'

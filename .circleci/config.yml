@@ -456,6 +456,9 @@ commands:
       - run:
           name: Run e2e tests against compose
           working_directory: *workspace_frontend
+          environment:
+            # Use LANG env variable to set browser locale to fi-FI because Playwright's locale override does not affect time inputs
+            LANG: fi-FI
           command: |
             nvm use
 
