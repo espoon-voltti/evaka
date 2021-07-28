@@ -47,7 +47,7 @@ const StyledInput = styled.input<StyledInputProps>`
 
   border-style: none none solid none;
   border-width: 1px;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   border-radius: 2px;
   outline: none;
   box-sizing: border-box;
@@ -112,10 +112,10 @@ const InputIcon = styled.div`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   }
 `
 

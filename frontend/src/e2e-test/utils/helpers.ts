@@ -90,7 +90,7 @@ export const selectFirstComboboxOption = async (
   container: Selector,
   searchString?: string
 ) => {
-  await t.click(container)
+  await scrollThenClick(t, container)
   const input = container.find('input')
   if (searchString) {
     await t.typeText(input, searchString)

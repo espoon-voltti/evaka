@@ -200,6 +200,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
                   hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
+                  disabled={decisions?.isSuccess !== true}
                   data-qa="toggle-all-decisions"
                 />
               </Td>
