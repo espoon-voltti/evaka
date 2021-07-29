@@ -7,9 +7,12 @@
 
 version: 2.1
 
+setup: true
+
 orbs:
   slack: circleci/slack@4.4.2
   owasp: entur/owasp@0.0.15
+  path-filtering: circleci/path-filtering@0.0.2
 
 parameters:
   workspace_root:
@@ -1140,6 +1143,11 @@ workflows:
   version: 2
   build_test_and_deploy:
     jobs:
+      - path-filtering/filter:
+          mapping: |
+            .*\.(sh|bash) run-shellcheck true
+          base-revision: origin/master
+          config-path: .circleci/continue-config.yml
       - checkout_repo:
           <<: *default_contexts
           filters:

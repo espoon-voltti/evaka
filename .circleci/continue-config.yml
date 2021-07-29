@@ -1,0 +1,40 @@
+version: 2.1
+
+parameters:
+  workspace_root:
+    type: string
+    default: /home/circleci/repo
+  run-shellcheck:
+    type: boolean
+    default: false
+
+aliases:
+  - &shellcheck_image_version v0.7.2
+
+executors:
+  shellcheck:
+    parameters:
+      shellcheck_image_version:
+        type: string
+        default: *shellcheck_image_version
+    docker:
+      - image: koalaman/shellcheck-alpine:<< parameters.shellcheck_image_version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    working_directory: << pipeline.parameters.workspace_root >>
+
+jobs:
+  testing:
+    executor: shellcheck
+    steps:
+      - run:
+          name: Test job
+          command: |
+            echo "shellcheck test"
+
+workflows:
+  shellcheck:
+    when: << pipeline.parameters.run-shellcheck >>
+    jobs:
+      - testing
