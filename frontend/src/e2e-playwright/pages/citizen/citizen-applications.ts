@@ -52,7 +52,7 @@ export default class CitizenApplicationsPage {
       type === 'DAYCARE'
         ? 'Varhaiskasvatus- ja palvelusetelihakemus'
         : type === 'PRESCHOOL'
-        ? 'Esiopetushakemus'
+        ? 'Ilmoittautuminen esiopetukseen'
         : type === 'CLUB'
         ? 'Kerhohakemus'
         : ''
