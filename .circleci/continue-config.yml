@@ -21,6 +21,9 @@ parameters:
   run-shellcheck:
     type: boolean
     default: false
+  service-changed:
+    type: boolean
+    default: false
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -995,30 +998,33 @@ jobs:
   service_test:
     executor: service_executor
     steps:
-      - restore_repo
-      - restore_service_gradle
-      - restore_service_build_cache
-      - run:
-          name: gradle test
-          working_directory: *workspace_service
-          command: ./gradlew test
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/service/build/test-results/test/
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/service-lib/build/test-results/test/
-      - store_artifacts:
-          path: << pipeline.parameters.workspace_root >>/service/build/reports/
-      - store_artifacts:
-          path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
-      - run:
-          working_directory: *workspace_service
-          name: gradle custom-ktlint-rules test
-          command: |
-            cd custom-ktlint-rules
-            ./gradlew test
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/service/custom-ktlint-rules/build/test-results/test/
-      - notify_slack
+      - when:
+          condition: << pipeline.parameters.service-changed >>
+          steps:
+            - restore_repo
+            - restore_service_gradle
+            - restore_service_build_cache
+            - run:
+                name: gradle test
+                working_directory: *workspace_service
+                command: ./gradlew test
+            - store_test_results:
+                path: << pipeline.parameters.workspace_root >>/service/build/test-results/test/
+            - store_test_results:
+                path: << pipeline.parameters.workspace_root >>/service-lib/build/test-results/test/
+            - store_artifacts:
+                path: << pipeline.parameters.workspace_root >>/service/build/reports/
+            - store_artifacts:
+                path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
+            - run:
+                working_directory: *workspace_service
+                name: gradle custom-ktlint-rules test
+                command: |
+                  cd custom-ktlint-rules
+                  ./gradlew test
+            - store_test_results:
+                path: << pipeline.parameters.workspace_root >>/service/custom-ktlint-rules/build/test-results/test/
+            - notify_slack
 
   service_integration_test:
     executor: service_test_executor
@@ -1169,10 +1175,7 @@ workflows:
           <<: *aws_contexts
           requires:
             - checkout_repo
-      - lint_scripts:
-          <<: *default_contexts
-          requires:
-            - checkout_repo
+
       - build_base_image:
           <<: *default_contexts
           requires:

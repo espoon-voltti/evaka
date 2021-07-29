@@ -14,5 +14,6 @@ workflows:
       - path-filtering/filter:
           mapping: |
             .*\.(sh|bash) run-shellcheck true
+            service/.* service-changed true
           base-revision: origin/master
           config-path: .circleci/continue-config.yml
