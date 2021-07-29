@@ -22,7 +22,7 @@ export default class CitizenApplicationsPage {
 
   #newApplicationButton = (childId: string) =>
     new RawElement(this.page, `[data-qa="new-application-${childId}"]`)
-  #applicationTypeRadio = (type: 'DAYCARE' | 'PRESCHOOL') =>
+  #applicationTypeRadio = (type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB') =>
     new Radio(this.page, `[data-qa="type-radio-${type}"]`)
   #createNewApplicationButton = new RawElement(this.page, '[data-qa="submit"]')
   #transferApplicationNotification = new RawElement(
@@ -40,13 +40,22 @@ export default class CitizenApplicationsPage {
   #openApplicationButton = (id: string) =>
     new RawElement(this.page, `[data-qa="button-open-application-${id}"]`)
 
-  async createApplication(childId: string, type: 'DAYCARE' | 'PRESCHOOL') {
+  async createApplication(
+    childId: string,
+    type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB'
+  ) {
     await this.#newApplicationButton(childId).click()
     await this.#applicationTypeRadio(type).click()
     await this.#createNewApplicationButton.click()
 
     const title =
-      type === 'DAYCARE' ? 'Varhaiskasvatus- ja palvelusetelihakemus' : ''
+      type === 'DAYCARE'
+        ? 'Varhaiskasvatus- ja palvelusetelihakemus'
+        : type === 'PRESCHOOL'
+        ? 'Esiopetushakemus'
+        : type === 'CLUB'
+        ? 'Kerhohakemus'
+        : ''
     await waitUntilEqual(() => this.#applicationTitle.innerText, title)
 
     return new CitizenApplicationEditor(this.page)
