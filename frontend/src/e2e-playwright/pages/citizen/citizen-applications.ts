@@ -39,6 +39,21 @@ export default class CitizenApplicationsPage {
   )
   #openApplicationButton = (id: string) =>
     new RawElement(this.page, `[data-qa="button-open-application-${id}"]`)
+  #cancelApplicationButton = (id: string) =>
+    new RawElement(this.page, `[data-qa="button-remove-application-${id}"]`)
+  #childTitle = (childId: string) =>
+    new RawElement(
+      this.page,
+      `[data-qa="title-applications-child-name-${childId}"]`
+    )
+  #applicationType = (id: string) =>
+    new RawElement(this.page, `[data-qa="title-application-type-${id}"]`)
+  #applicationUnit = (id: string) =>
+    new RawElement(this.page, `[data-qa="application-unit-${id}"]`)
+  #applicationPreferredStartDate = (id: string) =>
+    new RawElement(this.page, `[data-qa="application-period-${id}"]`)
+  #applicationStatus = (id: string) =>
+    new RawElement(this.page, `[data-qa="application-status-${id}"]`)
 
   async createApplication(
     childId: string,
@@ -83,6 +98,39 @@ export default class CitizenApplicationsPage {
     await this.#openApplicationButton(applicationId).click()
 
     return new CitizenApplicationEditor(this.page)
+  }
+
+  async assertChildIsShown(childId: string, childName: string) {
+    await waitUntilEqual(() => this.#childTitle(childId).innerText, childName)
+  }
+
+  async assertApplicationIsListed(
+    id: string,
+    title: string,
+    unitName: string,
+    preferredStartDate: string,
+    status: string
+  ) {
+    await waitUntilEqual(() => this.#applicationType(id).innerText, title)
+    await waitUntilEqual(() => this.#applicationUnit(id).innerText, unitName)
+    await waitUntilEqual(
+      () => this.#applicationPreferredStartDate(id).innerText,
+      preferredStartDate
+    )
+    await waitUntilTrue(async () =>
+      (await this.#applicationStatus(id).innerText)
+        .toLowerCase()
+        .includes(status.toLowerCase())
+    )
+  }
+
+  async cancelApplication(id: string) {
+    await this.#cancelApplicationButton(id).click()
+    await new RawElement(this.page, '[data-qa="modal-okBtn"]').click()
+  }
+
+  async assertApplicationDoesNotExist(id: string) {
+    await waitUntilFalse(() => this.#applicationType(id).visible)
   }
 }
 
