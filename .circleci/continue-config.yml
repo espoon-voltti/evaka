@@ -1147,21 +1147,6 @@ jobs:
 
 workflows:
   version: 2
-  shellcheck:
-    when: << pipeline.parameters.run-shellcheck >>    
-    jobs:
-      - checkout_repo:
-          <<: *default_contexts
-          filters:
-            branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              # Currently ALL jobs require secrets -> stop already at checkout for forks
-              ignore: /pull\/[0-9]+/
-      - lint_scripts:
-          <<: *default_contexts
-          requires:
-            - checkout_repo
-
   build_test_and_deploy:
     jobs:
       - checkout_repo:
@@ -1173,6 +1158,10 @@ workflows:
               ignore: /pull\/[0-9]+/
       - fetch_private_dependencies:
           <<: *aws_contexts
+          requires:
+            - checkout_repo
+      - lint_scripts:
+          <<: *default_contexts
           requires:
             - checkout_repo
 
