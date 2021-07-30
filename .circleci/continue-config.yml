@@ -1025,6 +1025,13 @@ jobs:
             - store_test_results:
                 path: << pipeline.parameters.workspace_root >>/service/custom-ktlint-rules/build/test-results/test/
             - notify_slack
+      - unless:
+          condition: << pipeline.parameters.service-changed >>
+          steps:
+            - run:
+                name: Tests Skipped
+                working_directory: *workspace_service
+                command: echo "Tests Skipped"
 
   service_integration_test:
     executor: service_test_executor
