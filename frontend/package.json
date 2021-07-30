@@ -22,7 +22,6 @@
     "e2e-headless": "testcafe 'chrome:headless' src/e2e-test/**/*.spec.ts",
     "e2e-ff": "testcafe 'firefox:headless:emulation:width=1920;height=1080 --start-fullscreen' src/e2e-test/**/*.spec.ts --page-load-timeout 60000 --assertion-timeout 20000 --selector-timeout 20000 -S -s screenshots",
     "e2e-accessibility": "testcafe 'chrome --start-fullscreen' src/e2e-test/**/*.spec.ts --fixture-meta subType=accessibility",
-    "e2e-citizen": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/0_citizen/*.spec.ts",
     "e2e-employee": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/5_employee/*.spec.ts",
     "e2e-employee-2": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/2_employee-2/*.spec.ts",
     "e2e-mobile": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/6_mobile/*.spec.ts",

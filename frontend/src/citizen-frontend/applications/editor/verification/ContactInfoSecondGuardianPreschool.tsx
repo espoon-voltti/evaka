@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { ContactInfoFormData } from '../ApplicationFormData'
+import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationDataGridLabelWidth } from './const'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'

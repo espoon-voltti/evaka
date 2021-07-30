@@ -12,7 +12,7 @@ import SiblingBasisSubSection from '../../../applications/editor/unit-preference
 import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
 import { getErrorCount } from '../../../form-validation'
 import { useTranslation } from '../../../localization'
-import { UnitPreferenceFormData } from '../ApplicationFormData'
+import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from '../validations'
 
 export type UnitPreferenceSectionCommonProps = {

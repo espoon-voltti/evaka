@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format, getMonth, setMonth } from 'date-fns'
+import { format } from 'date-fns'
 import config from '../config'
 import {
   Application,
@@ -508,19 +508,19 @@ const applicationForm = (
   connectedDaycare = false
 ): ApplicationForm => {
   // Try to make sure there's an active preschool term for the preferred start date
-  let startDate = new Date()
+  let startDate = LocalDate.today()
   if (
     type === 'PRESCHOOL' &&
     // May-Aug
-    [4, 5, 6, 7].includes(getMonth(startDate))
+    [5, 6, 7, 8].includes(startDate.month)
   ) {
     // => Sep
-    startDate = setMonth(startDate, 8)
+    startDate = startDate.withMonth(9)
   }
 
   // Move daycare application start date to August if current date is in July
-  if (type === 'DAYCARE' && 6 === getMonth(startDate)) {
-    startDate = setMonth(startDate, 7)
+  if (type === 'DAYCARE' && 7 === startDate.month) {
+    startDate = startDate.withMonth(8)
   }
 
   return {
@@ -587,7 +587,7 @@ const applicationForm = (
     otherAdults: [],
     otherChildren: [],
     partTime: false,
-    preferredStartDate: startDate.toISOString(),
+    preferredStartDate: startDate.formatIso(),
     serviceEnd: '08:00',
     serviceStart: '16:00',
     urgent: false,

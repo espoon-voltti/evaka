@@ -2,49 +2,51 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'citizen-frontend/applications/editor/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
 
 function assertEquals<T>(expected: T, actual: T) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual !== expected) throw Error(`expected ${expected}, got ${actual}`)
+  if (actual !== expected)
+    throw Error(`expected ${String(expected)}, got ${String(actual)}`)
 }
 
 function assertBlank(actual: string | undefined) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual !== '') throw Error(`expected empty string, got ${actual}`)
+  if (actual !== '') throw Error(`expected empty string, got ${String(actual)}`)
 }
 
 function assertEmpty<T>(actual: T[]) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual.length !== 0) throw Error(`expected empty array, got ${actual}`)
+  if (actual.length !== 0)
+    throw Error(`expected empty array, got ${String(actual)}`)
 }
 
 function assertTrue(actual: boolean | undefined) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual !== true) throw Error(`expected true, got ${actual}`)
+  if (actual !== true) throw Error(`expected true, got ${String(actual)}`)
 }
 
 function assertFalse(actual: boolean | undefined) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual !== false) throw Error(`expected false, got ${actual}`)
+  if (actual !== false) throw Error(`expected false, got ${String(actual)}`)
 }
 
-function assertNull<T>(actual: T | undefined) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  if (actual !== null) throw Error(`expected null, got ${actual}`)
+function assertNull<T>(actual: T) {
+  if (actual !== null) throw Error(`expected null, got ${String(actual)}`)
 }
 
-type WithOptionalFields<T> = {
-  [key in keyof T]?: T[key]
-}
+export const sections = [
+  'serviceNeed',
+  'unitPreference',
+  'contactInfo',
+  'fee',
+  'additionalDetails'
+] as const
 
-export type FormInput = {
-  [section in keyof ApplicationFormData]?: WithOptionalFields<
-    ApplicationFormData[section]
-  >
-}
+export type Section = typeof sections[number]
+
+export type FormInput = Partial<
+  {
+    [K in Section]: Partial<ApplicationFormData[K]>
+  }
+>
 
 export const minimalDaycareForm: {
   form: FormInput
@@ -52,7 +54,7 @@ export const minimalDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: '13.08.2021',
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -116,7 +118,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: '13.08.2021',
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -243,7 +245,7 @@ export const minimalClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021'
+      preferredStartDate: '13.08.2021'
     },
     unitPreference: {
       preferredUnits: [
@@ -303,7 +305,7 @@ export const fullClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: '13.08.2021',
       wasOnClubCare: true,
       wasOnDaycare: true,
       assistanceNeeded: true,
@@ -395,7 +397,7 @@ export const minimalPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021'
+      preferredStartDate: '13.08.2021'
     },
     unitPreference: {
       preferredUnits: [
@@ -457,7 +459,7 @@ export const fullPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: '13.08.2021',
       connectedDaycare: true,
       startTime: '09:00',
       endTime: '17:00',

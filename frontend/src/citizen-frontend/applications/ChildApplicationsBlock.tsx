@@ -52,7 +52,9 @@ const TitleContainer = styled.div`
 
 const StatusContainer = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 `
 
 const ConfirmationContainer = styled.div`
@@ -231,25 +233,25 @@ export default React.memo(function ChildApplicationsBlock({
                 <StatusContainer
                   data-qa={`application-status-${applicationId}`}
                 >
-                  <RoundIcon
-                    content={
-                      applicationStatusIcon[
-                        applicationStatusToIcon(applicationStatus)
-                      ].icon
-                    }
-                    color={
-                      applicationStatusIcon[
-                        applicationStatusToIcon(applicationStatus)
-                      ].color
-                    }
-                    size="m"
-                  />
-
-                  <Gap size={'xs'} horizontal={true} />
-
-                  <Status data-qa={`application-status-${applicationId}`}>
-                    {t.applicationsList.status[applicationStatus]}
-                  </Status>
+                  <div>
+                    <RoundIcon
+                      content={
+                        applicationStatusIcon[
+                          applicationStatusToIcon(applicationStatus)
+                        ].icon
+                      }
+                      color={
+                        applicationStatusIcon[
+                          applicationStatusToIcon(applicationStatus)
+                        ].color
+                      }
+                      size="m"
+                    />
+                    <Gap size={'xs'} horizontal={true} />
+                    <Status data-qa={`application-status-${applicationId}`}>
+                      {t.applicationsList.status[applicationStatus]}
+                    </Status>
+                  </div>
 
                   {applicationStatus === 'WAITING_CONFIRMATION' && (
                     <ConfirmationContainer>

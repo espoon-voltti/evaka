@@ -25,7 +25,7 @@ import {
   apiDataToFormData,
   ApplicationFormData,
   formDataToApiData
-} from '../../applications/editor/ApplicationFormData'
+} from 'lib-common/api-types/application/ApplicationFormData'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,

@@ -17,7 +17,7 @@ import {
   validate,
   validDate
 } from '../../form-validation'
-import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'

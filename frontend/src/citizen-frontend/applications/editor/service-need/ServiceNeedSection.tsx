@@ -18,7 +18,7 @@ import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-n
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import { getErrorCount } from '../../../form-validation'
 import { useTranslation } from '../../../localization'
-import { ServiceNeedFormData } from '../ApplicationFormData'
+import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors, Term } from '../validations'
 
 export type ServiceNeedSectionProps = {

@@ -9,7 +9,7 @@ import React from 'react'
 import EditorSection from '../../applications/editor/EditorSection'
 import { getErrorCount } from '../../form-validation'
 import { useTranslation } from '../../localization'
-import { FeeFormData } from './ApplicationFormData'
+import { FeeFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from './validations'
 
 type Props = {

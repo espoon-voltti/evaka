@@ -14,7 +14,7 @@ import styled from 'styled-components'
 import EditorSection from '../../applications/editor/EditorSection'
 import { getErrorCount } from '../../form-validation'
 import { useTranslation } from '../../localization'
-import { AdditionalDetailsFormData } from './ApplicationFormData'
+import { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from './validations'
 
 type Props = {
