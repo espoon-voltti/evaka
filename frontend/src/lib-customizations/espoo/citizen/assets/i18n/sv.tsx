@@ -13,6 +13,7 @@ const sv: Translations = {
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     ok: 'Ok',
+    save: 'Spar',
     add: 'Lägg till',
     unit: {
       providerTypes: {
@@ -1192,6 +1193,86 @@ const sv: Translations = {
     timeFormat: 'Ange i format hh:mm',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika'
+  },
+  income: {
+    title: 'Tulotietojen ilmoitus',
+    description: (
+      <>
+        <p>
+          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+          korkeimpaan maksuun.
+        </p>
+        <p>
+          Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+          alkamispäivästä lähtien.
+        </p>
+        <p>
+          Tulojen, menojen ja perhekoon muutoksista on ilmoitettava
+          asiakasmaksuyksikköön
+        </p>
+      </>
+    ),
+    incomeInfo: 'Tulotiedot',
+    incomeType: {
+      startDate: 'Voimassa alkaen',
+      title: 'Asiakasmaksun perusteet',
+      agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
+      highestFeeInfo:
+        'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
+      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
+      entrepreneurIncome: 'Yrittäjän tulotiedot'
+    },
+    grossIncome: {
+      title: 'Bruttotulotietojen täyttäminen',
+      description:
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+      consentIncomesRegister:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
+      provideAttachments:
+        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      otherIncomeInfo:
+        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä.',
+      otherIncome: 'Minulla on muita tuloja. Valitse mitä.',
+      choosePlaceholder: 'Valitse',
+      otherIncomeTypes: {
+        SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
+        PERKS: 'Luontaisedut',
+        SECONDARY_INCOME: 'Sivutulo',
+        PENSION: 'Eläkkeet',
+        UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
+        SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
+        ALIMONY: 'Elatusapu/-tuki',
+        OTHER_INCOME: 'Muu tulo (korko, vuokra, osinko jne.)'
+      }
+    },
+    entrepreneurIncome: {
+      title: 'Yrittäjän tulotietojen täyttäminen',
+      selfEmployed: 'Toiminimi',
+      limitedCompany: 'Osakeyhtiö',
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö'
+    },
+    selfEmployed: {
+      attachments:
+        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+      estimation: 'Täytän arvion keskimääräisistä kuukausitulostani.',
+      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+      timeRange: 'Aikavälillä'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
+          Valitse sopiva tapa muiden tietojen toimittamiseen.
+        </>
+      ),
+      incomesRegister:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
+      attachments:
+        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    }
   },
   login: {
     failedModal: {

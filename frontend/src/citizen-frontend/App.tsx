@@ -18,6 +18,7 @@ import requireAuth from './auth/requireAuth'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
+import IncomeStatementForm from './income-statements/IncomeStatementForm'
 import { Localization } from './localization'
 import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
@@ -53,6 +54,11 @@ export default function App() {
                       exact
                       path="/applications/:applicationId"
                       component={requireAuth(ApplicationReadView)}
+                    />
+                    <Route
+                      exact
+                      path="/income"
+                      component={requireAuth(IncomeStatementForm)}
                     />
                     <Route
                       exact
