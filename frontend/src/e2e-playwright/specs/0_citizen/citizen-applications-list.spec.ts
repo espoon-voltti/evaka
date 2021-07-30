@@ -32,6 +32,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.enduserUrl)
+  await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -52,7 +53,6 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
 
     const child = fixtures.enduserChildFixtureJari
@@ -87,7 +87,6 @@ describe('Citizen applications list', () => {
     ])
     await runPendingAsyncJobs()
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
     await applicationsPage.assertApplicationIsListed(
       application.id,
@@ -111,7 +110,6 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
@@ -130,7 +128,6 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)

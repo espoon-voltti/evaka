@@ -20,6 +20,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.enduserUrl)
+  await enduserLogin(page)
   header = new CitizenHeader(page)
 })
 afterEach(async () => {
@@ -28,7 +29,6 @@ afterEach(async () => {
 
 describe('Citizen page', () => {
   test('UI language can be changed', async () => {
-    await enduserLogin(page)
     await header.selectLanguage('fi')
     await waitUntilEqual(
       async () => (await header.applicationsTab.innerText).toLowerCase(),
