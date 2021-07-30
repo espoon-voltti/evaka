@@ -59,13 +59,17 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
   await page.click('[data-qa="login-btn"]')
+  await page.waitForSelector('[data-qa="logout-btn"]', { state: 'visible' })
 }
 
 export async function employeeLogin(page: Page, role: UserRole) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const user = getLoginUser(role)
 
-  await page.goto(config.employeeLoginUrl)
+  if (!page.url().startsWith(config.employeeUrl)) {
+    // We must be in the correct domain to be able to fetch()
+    await page.goto(config.employeeLoginUrl)
+  }
 
   await page.evaluate(
     ({ user, authUrl }: { user: DevLoginUser | string; authUrl: string }) => {

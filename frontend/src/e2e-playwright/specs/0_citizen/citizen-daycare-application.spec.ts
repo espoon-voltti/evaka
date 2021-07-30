@@ -41,6 +41,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.enduserUrl)
+  await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -50,7 +51,6 @@ afterEach(async () => {
 
 describe('Citizen daycare applications', () => {
   test('Sending incomplete daycare application gives validation error', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -61,7 +61,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Minimal valid daycare application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -78,7 +77,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Full valid daycare application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -110,7 +108,6 @@ describe('Citizen daycare applications', () => {
     ])
     await runPendingAsyncJobs()
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
     await applicationsPage.assertDuplicateWarningIsShown(
       fixtures.enduserChildFixtureJari.id,
@@ -130,7 +127,6 @@ describe('Citizen daycare applications', () => {
       }
     ])
 
-    await enduserLogin(page)
     await header.applicationsTab.click()
     await applicationsPage.assertTransferNotificationIsShown(
       fixtures.enduserChildFixtureJari.id,
@@ -139,7 +135,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('A warning is shown if preferred start date is very soon', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -152,7 +147,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('A validation error message is shown if preferred start date is not valid', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -173,7 +167,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Citizen cannot move preferred start date before a previously selected date', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -197,7 +190,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Application can be made for restricted child', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixturePorriHatterRestricted.id,
@@ -209,7 +201,6 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Urgent application attachment can be uploaded and downloaded by citizen', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixturePorriHatterRestricted.id,

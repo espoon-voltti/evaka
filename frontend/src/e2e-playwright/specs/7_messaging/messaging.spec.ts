@@ -32,7 +32,9 @@ import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
-let page: Page
+let adminPage: Page
+let unitSupervisorPage: Page
+let citizenPage: Page
 let childId: UUID
 let fixtures: AreaAndPersonFixtures
 
@@ -79,10 +81,17 @@ beforeEach(async () => {
     }
   ])
 
-  page = await (await newBrowserContext()).newPage()
+  adminPage = await (await newBrowserContext()).newPage()
+  await employeeLogin(adminPage, 'ADMIN')
+  unitSupervisorPage = await (await newBrowserContext()).newPage()
+  await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+  citizenPage = await (await newBrowserContext()).newPage()
+  await enduserLogin(citizenPage)
 })
 afterEach(async () => {
-  await page.close()
+  await adminPage.close()
+  await unitSupervisorPage.close()
+  await citizenPage.close()
 })
 
 describe('Sending and receiving messages', () => {
@@ -91,19 +100,17 @@ describe('Sending and receiving messages', () => {
     const content = 'Testiviestin sisältö'
     const reply = 'Testivastaus testiviestiin'
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    await page.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(page)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.sendNewMessage(title, content)
 
-    await enduserLogin(page)
-    await page.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(page)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(title, content)
     await citizenMessagesPage.replyToFirstThread(reply)
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
-    await page.goto(`${config.employeeUrl}/messages`)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     await messagesPage.assertMessageContent(1, reply)
   })
@@ -113,21 +120,18 @@ describe('Sending and receiving messages', () => {
     const content = 'Tämän ei pitäisi mennä perille'
 
     // Add child's guardian to block list
-    await employeeLogin(page, 'ADMIN')
-    await page.goto(`${config.employeeUrl}/child-information/${childId}`)
-    const childInformationPage = new ChildInformationPage(page)
+    await adminPage.goto(`${config.employeeUrl}/child-information/${childId}`)
+    const childInformationPage = new ChildInformationPage(adminPage)
     await childInformationPage.addParentToBlockList(
       fixtures.enduserGuardianFixture.id
     )
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    await page.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(page)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.sendNewMessage(title, content)
 
-    await enduserLogin(page)
-    await page.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(page)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 0)
   })
 
@@ -135,9 +139,8 @@ describe('Sending and receiving messages', () => {
     const title = 'Luonnos'
     const content = 'Tässä luonnostellaan'
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    await page.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(page)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.draftNewMessage(title, content)
     await messagesPage.closeMessageEditor()
     await messagesPage.assertDraftContent(title, content)
@@ -147,9 +150,8 @@ describe('Sending and receiving messages', () => {
     const title = 'Luonnos'
     const content = 'Tässä luonnostellaan'
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    await page.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(page)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.draftNewMessage(title, content)
     await messagesPage.sendEditedMessage()
     await messagesPage.assertNoDrafts()
@@ -159,9 +161,8 @@ describe('Sending and receiving messages', () => {
     const title = 'Luonnos'
     const content = 'Tässä luonnostellaan'
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    await page.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(page)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.draftNewMessage(title, content)
     await messagesPage.discardMessage()
     await messagesPage.assertNoDrafts()

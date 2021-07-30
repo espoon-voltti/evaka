@@ -29,6 +29,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.enduserUrl)
+  await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -38,7 +39,6 @@ afterEach(async () => {
 
 describe('Citizen club applications', () => {
   test('Sending incomplete club application gives validation error', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -49,7 +49,6 @@ describe('Citizen club applications', () => {
   })
 
   test('Minimal valid club application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -65,7 +64,6 @@ describe('Citizen club applications', () => {
   })
 
   test('Full valid club application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,

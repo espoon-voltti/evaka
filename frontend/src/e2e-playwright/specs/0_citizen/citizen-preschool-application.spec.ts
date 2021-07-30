@@ -29,6 +29,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.enduserUrl)
+  await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -38,7 +39,6 @@ afterEach(async () => {
 
 describe('Citizen preschool applications', () => {
   test('Sending incomplete preschool application gives validation error', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -49,7 +49,6 @@ describe('Citizen preschool applications', () => {
   })
 
   test('Minimal valid preschool application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -65,7 +64,6 @@ describe('Citizen preschool applications', () => {
   })
 
   test('Full valid preschool application can be sent', async () => {
-    await enduserLogin(page)
     await header.applicationsTab.click()
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
