@@ -22,3 +22,9 @@ export const stringToNumber = (str: string): number | undefined => {
   if (!/^\d+(\.\d+)?$/.test(normalized)) return undefined
   return parseFloat(normalized)
 }
+
+export const stringToInt = (str: string): number | undefined => {
+  const value = stringToNumber(str)
+  if (value !== undefined && value === round(value)) return value
+  return undefined
+}
