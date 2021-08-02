@@ -17,81 +17,22 @@ import { formatDate } from '../../lib-common/date'
 import Checkbox from '../../lib-components/atoms/form/Checkbox'
 import MultiSelect from '../../lib-components/atoms/form/MultiSelect'
 import InputField from '../../lib-components/atoms/form/InputField'
+import { otherIncome } from './types/common'
+import * as Form from './types/form'
+import { errorToInputInfo, validDate, validInt } from '../form-validation'
+import { createIncomeStatement } from './api'
+import AsyncButton from '../../lib-components/atoms/buttons/AsyncButton'
 
-const otherGrossIncome = [
-  'SHIFT_WORK_ADD_ON',
-  'PERKS',
-  'SECONDARY_INCOME',
-  'PENSION',
-  'UNEMPLOYMENT_BENEFITS',
-  'SICKNESS_ALLOWANCE',
-  'PARENTAL_ALLOWANCE',
-  'HOME_CARE_ALLOWANCE',
-  'ALIMONY',
-  'OTHER_INCOME'
-] as const
-
-type OtherGrossIncome = typeof otherGrossIncome[number]
-
-type IncomeSource = 'INCOMES_REGISTER' | 'ATTACHMENTS'
-
-interface IncomeStatementBase {
-  startDate: string
-}
-
-interface IncomeStatementEmpty extends IncomeStatementBase {
-  incomeType: null
-}
-
-interface IncomeStatementHighestFee extends IncomeStatementBase {
-  incomeType: 'HIGHEST_FEE'
-}
-
-interface IncomeStatementGross extends IncomeStatementBase {
-  incomeType: 'GROSS'
-  incomeSource: IncomeSource | null
-  otherIncome: OtherGrossIncome[] | null
-}
-
-interface IncomeStatementEntrepreneur extends IncomeStatementBase {
-  incomeType:
-    | 'ENTREPRENEUR_EMPTY'
-    | 'ENTREPRENEUR_SELF_EMPLOYED_EMPTY'
-    | 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-    | 'ENTREPRENEUR_SELF_EMPLOYED_ATTACHMENTS'
-    | 'ENTREPRENEUR_LIMITED_COMPANY'
-    | 'ENTREPRENEUR_PARTNERSHIP'
-  estimatedMonthlyIncome: string
-  incomeStartDate: string
-  incomeEndDate: string
-  incomeSource: IncomeSource | null
-}
-
-function isEntrepreneur(
-  formData: FormData
-): formData is IncomeStatementEntrepreneur {
-  return (
-    formData.incomeType !== null &&
-    formData.incomeType.startsWith('ENTREPRENEUR_')
-  )
-}
-
-type FormData =
-  | IncomeStatementEmpty
-  | IncomeStatementHighestFee
-  | IncomeStatementGross
-  | IncomeStatementEntrepreneur
-
-const initialFormData: FormData = {
+const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
   incomeType: null
 }
 
-function highestFeeIncome(startDate: string): IncomeStatementHighestFee {
+function highestFeeIncome(startDate: string): Form.HighestFee {
   return { startDate, incomeType: 'HIGHEST_FEE' }
 }
 
-function grossIncome(startDate: string): IncomeStatementGross {
+function grossIncome(startDate: string): Form.Gross {
   return {
     startDate,
     incomeType: 'GROSS',
@@ -100,7 +41,7 @@ function grossIncome(startDate: string): IncomeStatementGross {
   }
 }
 
-function entrepreneurIncome(startDate: string): IncomeStatementEntrepreneur {
+function entrepreneurIncome(startDate: string): Form.Entrepreneur {
   return {
     startDate,
     incomeType: 'ENTREPRENEUR_EMPTY',
@@ -114,6 +55,13 @@ function entrepreneurIncome(startDate: string): IncomeStatementEntrepreneur {
 export default function IncomeStatementForm() {
   const t = useTranslation()
   const [formData, setFormData] = React.useState(initialFormData)
+
+  const validatedData = Form.toIncomeStatementBody(formData)
+  const isValid = validatedData !== null
+
+  const save = () =>
+    validatedData ? createIncomeStatement(validatedData) : Promise.resolve()
+
   return (
     <>
       <Container>
@@ -136,7 +84,7 @@ export default function IncomeStatementForm() {
                 />
               </>
             )}
-            {isEntrepreneur(formData) && (
+            {Form.isEntrepreneur(formData) && (
               <>
                 <HorizontalLine slim />
                 <EntrepreneurIncomeSelection
@@ -148,7 +96,13 @@ export default function IncomeStatementForm() {
             <Gap size="L" />
             <FixedSpaceRow>
               <Button text={t.common.cancel} />
-              <Button text={t.common.save} primary />
+              <AsyncButton
+                text={t.common.save}
+                primary
+                onClick={save}
+                disabled={!isValid}
+                onSuccess={() => undefined}
+              />
             </FixedSpaceRow>
           </FixedSpaceColumn>
         </ContentArea>
@@ -162,11 +116,12 @@ function IncomeTypeSelection({
   formData,
   onChange
 }: {
-  formData: FormData
-  onChange: (value: FormData) => void
+  formData: Form.IncomeStatementForm
+  onChange: (value: Form.IncomeStatementForm) => void
 }) {
   const t = useTranslation()
   const [lang] = useLang()
+
   return (
     <>
       <Label htmlFor="start-date">{t.income.incomeType.startDate}</Label>
@@ -174,6 +129,11 @@ function IncomeTypeSelection({
         id="start-date"
         date={formData.startDate}
         onChange={(value) => onChange({ ...formData, startDate: value })}
+        info={errorToInputInfo(
+          validDate(formData.startDate),
+          t.validationErrors
+        )}
+        hideErrorsBeforeTouched
         locale={lang}
       />
       <H3>{t.income.incomeType.title}</H3>
@@ -192,7 +152,7 @@ function IncomeTypeSelection({
       />
       <Radio
         label={t.income.incomeType.entrepreneurIncome}
-        checked={isEntrepreneur(formData)}
+        checked={Form.isEntrepreneur(formData)}
         onChange={() => onChange(entrepreneurIncome(formData.startDate))}
       />
     </>
@@ -203,8 +163,8 @@ function GrossIncomeSelection({
   formData,
   onChange
 }: {
-  formData: IncomeStatementGross
-  onChange: (value: IncomeStatementGross) => void
+  formData: Form.Gross
+  onChange: (value: Form.Gross) => void
 }) {
   const t = useTranslation()
   return (
@@ -238,7 +198,7 @@ function GrossIncomeSelection({
       <OtherIncomeWrapper>
         <MultiSelect
           value={formData.otherIncome ?? []}
-          options={otherGrossIncome}
+          options={otherIncome}
           getOptionId={(option) => option}
           getOptionLabel={(option) =>
             t.income.grossIncome.otherIncomeTypes[option]
@@ -252,8 +212,8 @@ function GrossIncomeSelection({
 }
 
 function adjustEntrepreneurFormRadioButtons(
-  formData: IncomeStatementEntrepreneur
-): IncomeStatementEntrepreneur {
+  formData: Form.Entrepreneur
+): Form.Entrepreneur {
   if (formData.incomeType.startsWith('ENTREPRENEUR_SELF_EMPLOYED_')) {
     return { ...formData, incomeSource: null }
   }
@@ -267,11 +227,11 @@ function EntrepreneurIncomeSelection({
   formData,
   onChange
 }: {
-  formData: IncomeStatementEntrepreneur
-  onChange: (value: IncomeStatementEntrepreneur) => void
+  formData: Form.Entrepreneur
+  onChange: (value: Form.Entrepreneur) => void
 }) {
   const t = useTranslation()
-  const handleChange = (value: IncomeStatementEntrepreneur) => {
+  const handleChange = (value: Form.Entrepreneur) => {
     onChange(adjustEntrepreneurFormRadioButtons(value))
   }
   return (
@@ -320,8 +280,8 @@ function SelfEmployedIncomeSelection({
   formData,
   onChange
 }: {
-  formData: IncomeStatementEntrepreneur
-  onChange: (value: IncomeStatementEntrepreneur) => void
+  formData: Form.Entrepreneur
+  onChange: (value: Form.Entrepreneur) => void
 }) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -370,6 +330,11 @@ function SelfEmployedIncomeSelection({
                 onChange={(value) =>
                   onChange({ ...formData, estimatedMonthlyIncome: value })
                 }
+                hideErrorsBeforeTouched
+                info={errorToInputInfo(
+                  validInt(formData.estimatedMonthlyIncome),
+                  t.validationErrors
+                )}
               />
             </FixedSpaceColumn>
             <FixedSpaceColumn>
@@ -390,6 +355,11 @@ function SelfEmployedIncomeSelection({
                     onChange({ ...formData, incomeStartDate: value })
                   }
                   locale={lang}
+                  hideErrorsBeforeTouched
+                  info={errorToInputInfo(
+                    validDate(formData.incomeStartDate),
+                    t.validationErrors
+                  )}
                 />
                 <span>{' - '}</span>
                 <DatePicker
@@ -404,6 +374,15 @@ function SelfEmployedIncomeSelection({
                     onChange({ ...formData, incomeEndDate: value })
                   }
                   locale={lang}
+                  hideErrorsBeforeTouched
+                  info={
+                    formData.incomeEndDate
+                      ? errorToInputInfo(
+                          validDate(formData.incomeStartDate),
+                          t.validationErrors
+                        )
+                      : undefined
+                  }
                 />
               </FixedSpaceRow>
             </FixedSpaceColumn>
@@ -418,8 +397,8 @@ function LimitedCompanyIncomeSelection({
   formData,
   onChange
 }: {
-  formData: IncomeStatementEntrepreneur
-  onChange: (value: IncomeStatementEntrepreneur) => void
+  formData: Form.Entrepreneur
+  onChange: (value: Form.Entrepreneur) => void
 }) {
   const t = useTranslation()
   return (

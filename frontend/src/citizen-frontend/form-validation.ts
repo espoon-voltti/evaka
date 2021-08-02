@@ -81,6 +81,9 @@ export const email = (
 ): ErrorKey | undefined =>
   val.length > 0 && !EMAIL_REGEXP.test(val) ? err : undefined
 
+export const validInt = (val: string, err: ErrorKey = 'format') =>
+  regexp(val, /^[0-9]+$/, err)
+
 export const validDate = (
   val: string,
   err: ErrorKey = 'validDate'
