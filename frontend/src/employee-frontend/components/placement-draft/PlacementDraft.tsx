@@ -13,7 +13,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import Loader from 'lib-components/atoms/Loader'
-import Combobox from '../../../lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 import {
   PlacementDraftState,

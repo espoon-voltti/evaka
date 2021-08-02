@@ -20,7 +20,7 @@ import { RequireRole } from '../../../utils/roles'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
 import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
-import FiniteDateRange from '../../../../lib-common/finite-date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 interface Props {
   placement: Placement

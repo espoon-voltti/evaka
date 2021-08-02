@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Dimmed } from '../../../../lib-components/typography'
+import { Dimmed } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 
 const PreFormattedText = styled.div`

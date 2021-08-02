@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCallback, useEffect, useState } from 'react'
-import { Result } from '../../../lib-common/api'
-import { UUID } from '../../../lib-common/types'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import * as api from './api'
 import { SaveDraftParams } from './api'
-import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
+import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { UpsertableDraftContent } from './types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 

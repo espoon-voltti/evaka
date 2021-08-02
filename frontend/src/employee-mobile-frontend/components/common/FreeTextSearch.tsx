@@ -9,7 +9,7 @@ import { faArrowLeft, faTimes } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { AttendanceChild } from '../../api/attendances'
-import { defaultMargins } from '../../../lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 
 const SearchInputContainer = styled.div`
   height: 60px;

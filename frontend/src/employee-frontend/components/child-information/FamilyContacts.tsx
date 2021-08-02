@@ -23,8 +23,8 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2, H3 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2, H3 } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { patchPersonDetails } from 'employee-frontend/api/person'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

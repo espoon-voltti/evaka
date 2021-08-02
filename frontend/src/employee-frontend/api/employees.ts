@@ -7,7 +7,7 @@ import { JsonOf } from 'lib-common/json'
 import { client } from './client'
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
-import { UUID } from '../../lib-common/types'
+import { UUID } from 'lib-common/types'
 import { GlobalRole } from '../types'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {

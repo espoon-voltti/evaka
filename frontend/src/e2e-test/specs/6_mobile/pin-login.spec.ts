@@ -38,7 +38,7 @@ import {
   FamilyContact,
   PersonDetail
 } from 'e2e-test-common/dev-api/types'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { mobileLogin } from '../../config/users'
 import { selectFirstComboboxOption } from '../../utils/helpers'
 

@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { ContentArea } from '../../../../lib-components/layout/Container'
-import { H1, H2 } from '../../../../lib-components/typography'
-import { defaultMargins } from '../../../../lib-components/white-space'
+import { ContentArea } from 'lib-components/layout/Container'
+import { H1, H2 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'

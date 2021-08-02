@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../lib-common/types'
-import { UnitStaffAttendance } from '../../lib-common/api-types/staffAttendances'
+import { UUID } from 'lib-common/types'
+import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
 
 export interface AttendanceValues {
   count: number

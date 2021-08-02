@@ -19,15 +19,15 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ContentArea } from 'lib-components/layout/Container'
-import { Result } from '../../../../lib-common/api'
+import { Result } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import Combobox from '../../../../lib-components/atoms/form/Combobox'
-import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
 
 import { TallContentArea } from '../../mobile/components'
 

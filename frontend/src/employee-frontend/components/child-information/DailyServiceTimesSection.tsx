@@ -42,7 +42,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
 const weekdays = [
   'monday',

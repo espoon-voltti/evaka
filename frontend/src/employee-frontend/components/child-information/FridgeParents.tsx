@@ -13,7 +13,7 @@ import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
-import { H3 } from '../../../lib-components/typography'
+import { H3 } from 'lib-components/typography'
 
 const FridgeParents = React.memo(function FridgeParents() {
   const { i18n } = useTranslation()

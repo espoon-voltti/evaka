@@ -16,8 +16,8 @@ import { Gap } from 'lib-components/white-space'
 import { faLockAlt } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import { Prompt } from 'react-router-dom'
-import { Result } from '../../../lib-common/api'
-import { AlertBox } from '../../../lib-components/molecules/MessageBoxes'
+import { Result } from 'lib-common/api'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 
 export default React.memo(function EmployeePinCodePage() {

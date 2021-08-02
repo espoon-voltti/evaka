@@ -9,8 +9,8 @@ import { UUID } from '../../types'
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 interface Props {
   id: UUID

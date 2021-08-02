@@ -5,18 +5,18 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
-import { Result } from '../../../lib-common/api'
-import { UUID } from '../../../lib-common/types'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
-import Button from '../../../lib-components/atoms/buttons/Button'
-import RoundIcon from '../../../lib-components/atoms/RoundIcon'
-import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '../../../lib-components/atoms/state/Spinner'
-import ButtonContainer from '../../../lib-components/layout/ButtonContainer'
-import InfoModal from '../../../lib-components/molecules/modals/InfoModal'
-import { defaultMargins } from '../../../lib-components/white-space'
-import colors from '../../../lib-customizations/common'
-import { faCheck, faQuestion } from '../../../lib-icons'
+import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faCheck, faQuestion } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { RequireRole } from '../../utils/roles'
 import {
@@ -24,7 +24,7 @@ import {
   VasuDocumentEventType,
   VasuDocumentState
 } from './api'
-import { FixedSpaceRow } from '../../../lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;

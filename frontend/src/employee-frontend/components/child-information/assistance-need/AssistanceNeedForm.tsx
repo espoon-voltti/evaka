@@ -5,13 +5,13 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from '../../../../lib-common/form-state'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import TextArea from '../../../../lib-components/atoms/form/TextArea'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -35,7 +35,7 @@ import {
   createAssistanceNeed,
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
-import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
