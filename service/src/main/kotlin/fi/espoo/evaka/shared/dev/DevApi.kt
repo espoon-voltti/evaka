@@ -94,6 +94,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -949,7 +950,8 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
-    val roles: Set<UserRole> = setOf()
+    val roles: Set<UserRole> = setOf(),
+    val lastLogin: Instant? = Instant.now()
 )
 
 data class DevMobileDevice(
