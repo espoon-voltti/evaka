@@ -208,7 +208,7 @@ fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (da
     else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
 }
 
-fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
+fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: VoucherValue): BigDecimal {
     val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
     val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
 
@@ -217,11 +217,11 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
     }
 
     return when {
-        period.start < thirdBirthdayPeriodStart -> BigDecimal("1.55")
+        period.start < thirdBirthdayPeriodStart -> voucherValues.ageUnderThreeCoefficient
         else -> BigDecimal("1.00")
     }
 }
 
-fun calculateVoucherValue(baseValue: Int, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
-    return (BigDecimal(baseValue) * ageCoefficient * serviceCoefficient).toInt()
+fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
+    return (BigDecimal(voucherValues.baseValue) * ageCoefficient * serviceCoefficient).toInt()
 }
