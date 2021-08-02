@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
+import DateRange from 'lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
 import {
   insertDaycarePlacementFixtures,
@@ -56,7 +58,11 @@ beforeEach(async () => {
     'SENT',
     fixtures.enduserGuardianFixture,
     fixtures.enduserChildFixtureKaarina,
-    fixtures.daycareFixture.id
+    fixtures.daycareFixture.id,
+    new DateRange(
+      LocalDate.today().subMonths(1).withDate(1),
+      LocalDate.today().withDate(1).subDays(1)
+    )
   )
   await insertFeeDecisionFixtures([feeDecisionFixture])
   await insertDaycarePlacementFixtures([
