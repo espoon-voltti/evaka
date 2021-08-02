@@ -105,16 +105,13 @@ export const validate = (
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number]
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type ErrorsOfArray<T extends object[]> = {
+type ErrorsOfArray<T extends unknown[]> = {
   arrayErrors: ErrorKey | undefined
   itemErrors: ErrorsOf<ArrayElement<T>>[]
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type ErrorsOf<T extends object> = {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  [key in keyof T]?: T[key] extends object[]
+export type ErrorsOf<T> = {
+  [key in keyof T]?: T[key] extends unknown[]
     ? ErrorsOfArray<T[key]>
     : ErrorKey | undefined
 }
@@ -131,15 +128,13 @@ export function errorToInputInfo(
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-function isArrayErrors<T extends object[]>(
+function isArrayErrors<T extends unknown[]>(
   e: ErrorKey | undefined | ErrorsOfArray<T>
 ): e is ErrorsOfArray<T> {
   return e !== undefined && typeof e !== 'string'
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-function getArrayErrorCount<T extends object[]>(
+function getArrayErrorCount<T extends unknown[]>(
   errors: ErrorsOfArray<T>
 ): number {
   const arrayErrors = errors.arrayErrors ? 1 : 0
@@ -150,8 +145,7 @@ function getArrayErrorCount<T extends object[]>(
   return arrayErrors + itemErrors
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function getErrorCount<T extends object>(errors: ErrorsOf<T>): number {
+export function getErrorCount<T>(errors: ErrorsOf<T>): number {
   return Object.keys(errors).reduce<number>((acc, key) => {
     const isArr = isArrayErrors(errors[key])
     return acc + (isArr ? getArrayErrorCount(errors[key]) : errors[key] ? 1 : 0)
