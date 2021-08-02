@@ -14,8 +14,7 @@ import java.util.UUID
 val logger = KotlinLogging.logger {}
 
 fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<UUID> {
-    // The list of data that needs to be archived is not final
-    val peopleToCleanUp = tx.createQuery(
+    val deletedPeople = tx.createUpdate(
         """
 WITH people_with_no_archive_data AS (
     SELECT id FROM person
@@ -37,9 +36,10 @@ WITH people_with_no_archive_data AS (
     AND NOT EXISTS (SELECT 1 FROM absence WHERE absence.child_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM child_attendance WHERE child_attendance.child_id = person.id)
 )
-SELECT id FROM people_with_no_archive_data p
+DELETE FROM person p
+WHERE id IN (SELECT id FROM people_with_no_archive_data)
 -- guardianship
-WHERE NOT EXISTS (
+AND NOT EXISTS (
     SELECT child_id FROM guardian WHERE guardian_id = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
     UNION ALL
     SELECT guardian_id FROM guardian WHERE child_id = p.id AND NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
@@ -98,15 +98,17 @@ AND NOT EXISTS (
     SELECT family_contact.child_id FROM family_contact
     WHERE contact_person_id = p.id AND NOT family_contact.child_id IN (SELECT id FROM people_with_no_archive_data)
 )
+RETURNING id
 """
     )
         .bind("twoWeeksAgo", queryDate.minusDays(14))
+        .executeAndReturnGeneratedKeys()
         .mapTo<UUID>()
         .toSet()
 
-    logger.info(mapOf("somePersonIds" to peopleToCleanUp.take(10))) {
-        "Count of inactive people with no data to archive: ${peopleToCleanUp.size}"
+    logger.info(mapOf("deletedPeople" to deletedPeople)) {
+        "Inactive people clean up complete, deleted people count: ${deletedPeople.size}"
     }
 
-    return peopleToCleanUp
+    return deletedPeople
 }
