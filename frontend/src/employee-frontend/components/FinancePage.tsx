@@ -4,7 +4,6 @@
 
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
@@ -23,15 +22,11 @@ export default React.memo(function FinancePage() {
         link: '/finance/fee-decisions',
         label: i18n.header.feeDecisions
       },
-      ...(featureFlags.voucher.valueDecisionsPage
-        ? [
-            {
-              id: 'value-decisions',
-              link: '/finance/value-decisions',
-              label: i18n.header.valueDecisions
-            }
-          ]
-        : []),
+      {
+        id: 'value-decisions',
+        link: '/finance/value-decisions',
+        label: i18n.header.valueDecisions
+      },
       {
         id: 'invoices',
         link: '/finance/invoices',
@@ -53,14 +48,12 @@ export default React.memo(function FinancePage() {
           component={FeeDecisionsPage}
           title={i18n.titles.feeDecisions}
         />
-        {featureFlags.voucher.valueDecisionsPage ? (
-          <RouteWithTitle
-            exact
-            path="/finance/value-decisions"
-            component={VoucherValueDecisionsPage}
-            title={i18n.titles.valueDecisions}
-          />
-        ) : null}
+        <RouteWithTitle
+          exact
+          path="/finance/value-decisions"
+          component={VoucherValueDecisionsPage}
+          title={i18n.titles.valueDecisions}
+        />
         <RouteWithTitle
           exact
           path="/finance/invoices"

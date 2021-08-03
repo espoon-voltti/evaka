@@ -95,9 +95,6 @@ interface BaseFeatureFlags {
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
   vasu: boolean
-  voucher: {
-    valueDecisionsPage: boolean
-  }
 
   /**
    * Experimental flags are features in development: features that aren't yet
