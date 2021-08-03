@@ -663,15 +663,16 @@ export const feeDecisionsFixture = (
   status: FeeDecisionStatus,
   adult: PersonDetail,
   child: PersonDetail,
-  daycareId: UUID
+  daycareId: UUID,
+  validDuring: DateRange = new DateRange(
+    LocalDate.today().subYears(1),
+    LocalDate.today().addYears(1)
+  )
 ): FeeDecision => ({
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
   status,
   decisionType: 'NORMAL',
-  validDuring: new DateRange(
-    LocalDate.today().subYears(1),
-    LocalDate.today().addYears(1)
-  ),
+  validDuring,
   headOfFamily: { id: adult.id },
   familySize: 2,
   feeThresholds: feeThresholds,

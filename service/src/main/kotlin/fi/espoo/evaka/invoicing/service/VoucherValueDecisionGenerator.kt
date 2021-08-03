@@ -100,7 +100,7 @@ private fun generateNewValueDecisions(
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
     prices: List<FeeThresholds>,
-    voucherValues: List<Pair<DateRange, Int>>,
+    voucherValues: List<VoucherValue>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<DaycareId>
@@ -120,7 +120,7 @@ private fun generateNewValueDecisions(
             val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
-            val baseValue = voucherValues.find { it.first.contains(period) }?.second
+            val voucherValue = voucherValues.find { it.validity.contains(period) }
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
@@ -167,8 +167,8 @@ private fun generateNewValueDecisions(
                         toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
                     val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
-                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth)
-                    val value = calculateVoucherValue(baseValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
+                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
+                    val value = calculateVoucherValue(voucherValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
 
                     period to VoucherValueDecision(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
@@ -196,7 +196,7 @@ private fun generateNewValueDecisions(
                         coPayment = coPaymentBeforeAlterations,
                         feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
                         finalCoPayment = finalCoPayment,
-                        baseValue = baseValue,
+                        baseValue = voucherValue.baseValue,
                         ageCoefficient = ageCoefficient,
                         voucherValue = value
                     )
@@ -213,13 +213,12 @@ private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
         .toList()
 }
 
-private fun Database.Read.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
+private fun Database.Read.getVoucherValues(from: LocalDate): List<VoucherValue> {
     // language=sql
     val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
 
     return createQuery(sql)
         .bind("from", from)
         .mapTo<VoucherValue>()
-        .map { it.validity to it.voucherValue }
         .toList()
 }

@@ -590,7 +590,7 @@ RETURNING id
 
 fun Database.Transaction.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
     voucherValue,
-    "INSERT INTO voucher_value (id, validity, voucher_value) VALUES (:id, :validity, :voucherValue)"
+    "INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES (:id, :validity, :baseValue, :ageUnderThreeCoefficient)"
 )
 
 fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(

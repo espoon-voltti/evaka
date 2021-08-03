@@ -120,3 +120,4 @@ V119__daycare_group_start_before_end.sql
 V120__varda_reset_child.sql
 V121__add_person_oid.sql
 V122__person_foreign_key_cascades.sql
+V123__voucher_value_age_coefficient.sql

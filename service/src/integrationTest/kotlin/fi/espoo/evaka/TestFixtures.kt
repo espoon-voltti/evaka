@@ -549,7 +549,12 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     )
 
     insertTestVoucherValue(
-        VoucherValue(id = UUID.randomUUID(), validity = DateRange(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
+        VoucherValue(
+            id = UUID.randomUUID(),
+            validity = DateRange(LocalDate.of(2000, 1, 1), null),
+            baseValue = 87000,
+            ageUnderThreeCoefficient = BigDecimal("1.55")
+        )
     )
 
     insertPreschoolTerms()
