@@ -19,6 +19,7 @@ import java.util.Locale
 data class EvakaEnv(
     val koskiEnabled: Boolean,
     val messageEnabled: Boolean,
+    val vtjEnabled: Boolean,
     val awsRegion: Region,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -33,6 +34,7 @@ data class EvakaEnv(
             return EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false,
                 messageEnabled = env.lookup("evaka.integration.message.enabled", "fi.espoo.evaka.message.enabled") ?: true,
+                vtjEnabled = env.lookup("evaka.integration.vtj.enabled", "fi.espoo.voltti.vtj.enabled") ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled = env.lookup("evaka.async_job_runner.disable_runner") ?: false,
                 frontendBaseUrlFi = env.lookup("evaka.frontend.base_url.fi", "application.frontend.baseurl"),
@@ -253,6 +255,94 @@ data class DvvModificationsEnv(
         )
     }
 }
+
+data class VtjEnv(
+    val username: String,
+    val password: Sensitive<String>?,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = VtjEnv(
+            username = env.lookup(
+                "evaka.integration.vtj.username",
+                "fi.espoo.voltti.vtj.client.username"
+            ),
+            password = env.lookup<String?>(
+                "evaka.integration.vtj.password",
+                "fi.espoo.voltti.vtj.client.password"
+            )?.let(::Sensitive)
+        )
+    }
+}
+
+data class VtjXroadEnv(
+    val trustStore: KeystoreEnv,
+    val keyStore: KeystoreEnv,
+    val address: String,
+    val client: VtjXroadClientEnv,
+    val service: VtjXroadServiceEnv,
+    val protocolVersion: String,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = VtjXroadEnv(
+            trustStore = KeystoreEnv(
+                type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
+                location = env.lookup("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location"),
+                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
+            ),
+            keyStore = KeystoreEnv(
+                type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
+                location = env.lookup("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location"),
+                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.key_store.password", "fi.espoo.voltti.vtj.xroad.keyStore.password") ?: "")
+            ),
+            address = env.lookup("evaka.integration.vtj.xroad.address", "fi.espoo.voltti.vtj.xroad.address") ?: "",
+            client = VtjXroadClientEnv.fromEnvironment(env),
+            service = VtjXroadServiceEnv.fromEnvironment(env),
+            protocolVersion = env.lookup("evaka.integration.vtj.xroad.protocol_version", "fi.espoo.voltti.vtj.xroad.protocolVersion") ?: "4.0"
+        )
+    }
+}
+
+data class VtjXroadClientEnv(
+    val instance: String,
+    val memberClass: String,
+    val memberCode: String,
+    val subsystemCode: String,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = VtjXroadClientEnv(
+            instance = env.lookup("evaka.integration.vtj.xroad.client.instance", "fi.espoo.voltti.vtj.xroad.client.instance") ?: "",
+            memberClass = env.lookup("evaka.integration.vtj.xroad.client.member_class", "fi.espoo.voltti.vtj.xroad.client.memberClass") ?: "",
+            memberCode = env.lookup("evaka.integration.vtj.xroad.client.member_code", "fi.espoo.voltti.vtj.xroad.client.memberCode") ?: "",
+            subsystemCode = env.lookup("evaka.integration.vtj.xroad.client.subsystem_code", "fi.espoo.voltti.vtj.xroad.client.subsystemCode") ?: "",
+        )
+    }
+}
+
+data class VtjXroadServiceEnv(
+    val instance: String,
+    val memberClass: String,
+    val memberCode: String,
+    val subsystemCode: String,
+    val serviceCode: String,
+    val serviceVersion: String?
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = VtjXroadServiceEnv(
+            instance = env.lookup("evaka.integration.vtj.xroad.service.instance", "fi.espoo.voltti.vtj.xroad.service.instance") ?: "",
+            memberClass = env.lookup("evaka.integration.vtj.xroad.service.member_class", "fi.espoo.voltti.vtj.xroad.service.memberClass") ?: "",
+            memberCode = env.lookup("evaka.integration.vtj.xroad.service.member_code", "fi.espoo.voltti.vtj.xroad.service.memberCode") ?: "",
+            subsystemCode = env.lookup("evaka.integration.vtj.xroad.service.subsystem_code", "fi.espoo.voltti.vtj.xroad.service.subsystemCode") ?: "",
+            serviceCode = env.lookup("evaka.integration.vtj.xroad.service.service_code", "fi.espoo.voltti.vtj.xroad.service.serviceCode") ?: "",
+            serviceVersion = env.lookup("evaka.integration.vtj.xroad.service.service_version", "fi.espoo.voltti.vtj.xroad.service.serviceVersion"),
+        )
+    }
+}
+
+data class KeystoreEnv(
+    val type: String,
+    val location: String?,
+    val password: Sensitive<String>,
+)
 
 data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
     companion object {

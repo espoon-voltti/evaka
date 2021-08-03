@@ -15,6 +15,8 @@ import fi.espoo.evaka.MessageEnv
 import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.VtjEnv
+import fi.espoo.evaka.VtjXroadEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -61,4 +63,10 @@ class EnvConfig {
 
     @Bean
     fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)
+
+    @Bean
+    fun vtjEnv(evakaEnv: EvakaEnv, env: Environment): VtjEnv = VtjEnv.fromEnvironment(env)
+
+    @Bean
+    fun vtjXroadEnv(evakaEnv: EvakaEnv, env: Environment): VtjXroadEnv = VtjXroadEnv.fromEnvironment(env)
 }

@@ -15,12 +15,13 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
 import fi.espoo.evaka.vtjclient.mapper.IVTJResponseMapper
-import fi.espoo.evaka.vtjclient.properties.VtjClientProperties
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
@@ -64,7 +65,7 @@ class VtjClientServiceTest {
     lateinit var mockWSTemplate: WebServiceTemplate
 
     @Mock
-    lateinit var mockVtjProps: VtjClientProperties
+    lateinit var mockVtjProps: VtjEnv
 
     @Mock
     lateinit var mockRequestAdapter: SoapRequestAdapter
@@ -260,7 +261,7 @@ class VtjClientServiceTest {
         whenever(mockVtjProps.username).thenReturn(userName)
 
         val password = "*/89+74563876t5123v bg12"
-        whenever(mockVtjProps.password).thenReturn(password)
+        whenever(mockVtjProps.password).thenReturn(Sensitive(password))
 
         service.query(query)
 

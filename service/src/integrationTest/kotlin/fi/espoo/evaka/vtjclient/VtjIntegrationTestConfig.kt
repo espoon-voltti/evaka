@@ -6,7 +6,6 @@ package fi.espoo.evaka.vtjclient
 
 import fi.espoo.evaka.vtjclient.config.TrustManagerConfig
 import fi.espoo.evaka.vtjclient.config.XroadSoapClientConfig
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.springframework.boot.test.context.TestConfiguration
@@ -16,7 +15,7 @@ import org.springframework.context.annotation.Profile
 
 @TestConfiguration
 @Profile("integration-test")
-@Import(XRoadProperties::class, XroadSoapClientConfig::class, TrustManagerConfig::class)
+@Import(XroadSoapClientConfig::class, TrustManagerConfig::class)
 class VtjIntegrationTestConfig {
     @Bean
     fun personDetailsService(): IPersonDetailsService = MockPersonDetailsService()

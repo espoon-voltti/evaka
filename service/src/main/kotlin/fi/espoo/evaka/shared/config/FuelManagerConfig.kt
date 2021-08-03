@@ -6,11 +6,11 @@ package fi.espoo.evaka.shared.config
 
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
+import fi.espoo.evaka.VtjXroadEnv
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.io.File
+import org.springframework.core.io.ResourceLoader
 import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
@@ -25,26 +25,26 @@ import javax.net.ssl.X509TrustManager
 class FuelManagerConfig {
     @Bean
     @ConditionalOnMissingBean
-    fun fuel(env: EvakaEnv, xRoadProperties: XRoadProperties): FuelManager {
+    fun fuel(env: EvakaEnv, vtjXroadEnv: VtjXroadEnv, resourceLoader: ResourceLoader): FuelManager {
         return when (env.httpClientCertificateCheck) {
-            true -> certCheckFuelManager(xRoadProperties)
+            true -> certCheckFuelManager(vtjXroadEnv, resourceLoader)
             false -> noCertCheckFuelManager()
         }
     }
 
-    fun certCheckFuelManager(xRoadProperties: XRoadProperties): FuelManager = FuelManager().apply {
+    fun certCheckFuelManager(xroadEnv: VtjXroadEnv, resourceLoader: ResourceLoader): FuelManager = FuelManager().apply {
         var keyManagers = arrayOf<KeyManager>()
-        if (xRoadProperties.keyStore.location != null) {
+        if (xroadEnv.keyStore.location != null) {
             val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            keystore = KeyStore.getInstance(File(xRoadProperties.keyStore.location), xRoadProperties.keyStore.password?.toCharArray())
-            keyManagerFactory.init(keystore, xRoadProperties.keyStore.password?.toCharArray())
+            keystore = KeyStore.getInstance(resourceLoader.getResource(xroadEnv.keyStore.location).file, xroadEnv.keyStore.password.value.toCharArray())
+            keyManagerFactory.init(keystore, xroadEnv.keyStore.password.value.toCharArray())
             keyManagers = keyManagerFactory.keyManagers
         }
 
         var trustManagers = arrayOf<TrustManager>()
-        if (xRoadProperties.trustStore.location != null) {
+        if (xroadEnv.trustStore.location != null) {
             val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            val trustKeyStore = KeyStore.getInstance(File(xRoadProperties.trustStore.location), xRoadProperties.trustStore.password?.toCharArray())
+            val trustKeyStore = KeyStore.getInstance(resourceLoader.getResource(xroadEnv.trustStore.location).file, xroadEnv.trustStore.password.value.toCharArray())
             trustManagerFactory.init(trustKeyStore)
             trustManagers = trustManagerFactory.trustManagers
         }

@@ -7,7 +7,7 @@ package fi.espoo.evaka.vtjclient.config
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
+import fi.espoo.evaka.VtjXroadEnv
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.core.env.Environment
 import org.springframework.oxm.jaxb.Jaxb2Marshaller
 import org.springframework.ws.client.core.WebServiceTemplate
 import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
@@ -152,6 +153,6 @@ class XroadSoapClientConfigTest {
             }
 
         @Bean
-        fun xroadProperties() = XRoadProperties()
+        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env)
     }
 }

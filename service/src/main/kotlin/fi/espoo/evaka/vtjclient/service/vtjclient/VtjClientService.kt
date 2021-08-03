@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.vtjclient.service.vtjclient
 
+import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
 import fi.espoo.evaka.vtjclient.mapper.IVTJResponseMapper
-import fi.espoo.evaka.vtjclient.properties.VtjClientProperties
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.QueryStatus.CREATING_REQUEST
 import fi.espoo.evaka.vtjclient.service.vtjclient.QueryStatus.ERROR_DURING_REQUEST
@@ -30,7 +30,7 @@ import javax.xml.bind.JAXBElement
 class VtjClientService(
     private val vtjObjectFactory: ObjectFactory,
     private val wsTemplate: WebServiceTemplate,
-    private val vtjProperties: VtjClientProperties,
+    private val vtjEnv: VtjEnv,
     private val requestAdapter: SoapRequestAdapter,
     private val responseMapper: IVTJResponseMapper
 ) : IVtjClientService {
@@ -108,8 +108,8 @@ class VtjClientService(
         val requestContent = HenkiloTunnusKyselyReqBodyTiedot()
             .also {
                 it.soSoNimi = type.queryName
-                it.kayttajatunnus = vtjProperties.username
-                it.salasana = vtjProperties.password
+                it.kayttajatunnus = vtjEnv.username
+                it.salasana = vtjEnv.password?.value
                 it.loppukayttaja = "voltti-id: $requestingUserId"
                 it.henkilotunnus = ssn
             }

@@ -4,16 +4,16 @@
 
 package fi.espoo.evaka.vtjclient.mapper
 
+import fi.espoo.evaka.VtjXroadClientEnv
+import fi.espoo.evaka.VtjXroadServiceEnv
 import fi.espoo.evaka.vtjclient.mapper.XroadMapper.Companion.factory
-import fi.espoo.evaka.vtjclient.properties.XroadClient
-import fi.espoo.evaka.vtjclient.properties.XroadService
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.XRoadClientIdentifierType
 import fi.espoo.evaka.vtjclient.soap.XRoadObjectType
 import fi.espoo.evaka.vtjclient.soap.XRoadServiceIdentifierType
 import javax.xml.bind.JAXBElement
 
-fun XroadClient.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? = XRoadClientIdentifierType()
+fun VtjXroadClientEnv.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? = XRoadClientIdentifierType()
     .also {
         it.objectType = XRoadObjectType.SUBSYSTEM
         it.xRoadInstance = instance
@@ -22,7 +22,7 @@ fun XroadClient.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? = XRoa
         it.subsystemCode = subsystemCode
     }.let { factory.createClient(it) }
 
-fun XroadService.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType> = XRoadServiceIdentifierType()
+fun VtjXroadServiceEnv.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType> = XRoadServiceIdentifierType()
     .also {
         it.objectType = XRoadObjectType.SERVICE
         it.xRoadInstance = instance
