@@ -160,6 +160,7 @@ export default React.memo(function PinLogin() {
                     ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
                     : i18n.common.back
                 }
+                data-qa="go-back"
               />
               {childResult && (
                 <IconButton
