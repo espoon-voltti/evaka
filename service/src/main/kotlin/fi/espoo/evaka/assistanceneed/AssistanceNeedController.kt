@@ -85,4 +85,10 @@ class AssistanceNeedController(
         assistanceNeedService.deleteAssistanceNeed(db, assistanceNeedId)
         return noContent()
     }
+
+    @GetMapping("/assistance-basis-options")
+    fun getAssistanceBasisOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceBasisOption> {
+        user.requireAnyEmployee()
+        return assistanceNeedService.getAssistanceBasisOptions(db)
+    }
 }

@@ -12,7 +12,7 @@ import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
+import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { textAreaRows } from '../../utils'
@@ -24,7 +24,6 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { ASSISTANCE_BASIS_LIST } from '../../../constants'
 import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
@@ -36,6 +35,7 @@ import {
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { featureFlags } from 'lib-customizations/employee'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -65,7 +65,8 @@ interface FormState {
   endDate: LocalDate
   capacityFactor: string
   description: string
-  bases: Set<AssistanceBasis>
+  bases: Set<string>
+  otherSelected: boolean
   otherBasis: string
 }
 
@@ -73,6 +74,7 @@ const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
   onReload: () => undefined | void
+  assistanceBasisOptions: AssistanceBasisOption[]
 }
 
 interface CreateProps extends CommonProps {
@@ -128,11 +130,13 @@ function AssistanceNeedForm(props: Props) {
           capacityFactor: '1',
           description: '',
           bases: new Set(),
+          otherSelected: false,
           otherBasis: ''
         }
       : {
           ...props.assistanceNeed,
-          capacityFactor: formatDecimal(props.assistanceNeed.capacityFactor)
+          capacityFactor: formatDecimal(props.assistanceNeed.capacityFactor),
+          otherSelected: props.assistanceNeed.otherBasis !== ''
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
@@ -196,7 +200,7 @@ function AssistanceNeedForm(props: Props) {
       ...form,
       capacityFactor: Number(form.capacityFactor.replace(',', '.')),
       bases: [...form.bases],
-      otherBasis: form.bases.has('OTHER') ? form.otherBasis : ''
+      otherBasis: form.otherSelected ? form.otherBasis : ''
     }
 
     const apiCall = isCreate(props)
@@ -326,55 +330,60 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.bases,
             value: (
               <div>
-                {ASSISTANCE_BASIS_LIST.map((basis) =>
-                  i18n.childInformation.assistanceNeed.fields.basisTypes[
-                    `${basis}_INFO`
-                  ] ? (
+                {props.assistanceBasisOptions.map((basis) =>
+                  basis.descriptionFi ? (
                     <ExpandingInfo
-                      key={basis}
-                      info={String(
-                        i18n.childInformation.assistanceNeed.fields.basisTypes[
-                          `${basis}_INFO`
-                        ]
-                      )}
+                      key={basis.value}
+                      info={basis.descriptionFi}
                       ariaLabel={''}
                       fullWidth={true}
                     >
-                      <CheckboxRow key={basis}>
+                      <CheckboxRow key={basis.value}>
                         <Checkbox
-                          label={
-                            i18n.childInformation.assistanceNeed.fields
-                              .basisTypes[basis]
-                          }
-                          checked={form.bases.has(basis)}
+                          label={basis.nameFi}
+                          checked={form.bases.has(basis.value)}
                           onChange={(value) => {
                             const bases = new Set([...form.bases])
-                            if (value) bases.add(basis)
-                            else bases.delete(basis)
+                            if (value) bases.add(basis.value)
+                            else bases.delete(basis.value)
                             updateFormState({ bases: bases })
                           }}
                         />
                       </CheckboxRow>
                     </ExpandingInfo>
                   ) : (
-                    <CheckboxRow key={basis}>
+                    <CheckboxRow key={basis.value}>
                       <Checkbox
-                        label={
-                          i18n.childInformation.assistanceNeed.fields
-                            .basisTypes[basis]
-                        }
-                        checked={form.bases.has(basis)}
+                        label={basis.nameFi}
+                        checked={form.bases.has(basis.value)}
                         onChange={(value) => {
                           const bases = new Set([...form.bases])
-                          if (value) bases.add(basis)
-                          else bases.delete(basis)
+                          if (value) bases.add(basis.value)
+                          else bases.delete(basis.value)
                           updateFormState({ bases: bases })
                         }}
                       />
                     </CheckboxRow>
                   )
                 )}
-                {form.bases.has('OTHER') && (
+                {featureFlags.assistanceBasisOtherEnabled ? (
+                  <CheckboxRow>
+                    <Checkbox
+                      label={
+                        i18n.childInformation.assistanceNeed.fields.basisTypes
+                          .OTHER
+                      }
+                      checked={form.otherSelected}
+                      onChange={(value) =>
+                        updateFormState({
+                          otherSelected: value,
+                          otherBasis: ''
+                        })
+                      }
+                    ></Checkbox>
+                  </CheckboxRow>
+                ) : null}
+                {form.otherSelected && (
                   <div style={{ width: '100%' }}>
                     <InputField
                       value={form.otherBasis}

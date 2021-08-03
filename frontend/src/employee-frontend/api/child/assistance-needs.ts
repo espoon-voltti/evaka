@@ -4,7 +4,7 @@
 
 import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
-import { AssistanceBasis, AssistanceNeed } from '../../types/child'
+import { AssistanceBasisOption, AssistanceNeed } from '../../types/child'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -14,7 +14,7 @@ export interface AssistanceNeedRequest {
   endDate: LocalDate
   capacityFactor: number
   description: string
-  bases: AssistanceBasis[]
+  bases: string[]
   otherBasis: string
 }
 
@@ -83,5 +83,14 @@ export async function removeAssistanceNeed(
   return client
     .delete(`/assistance-needs/${assistanceNeedId}`)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceBasisOptions(): Promise<
+  Result<AssistanceBasisOption[]>
+> {
+  return client
+    .get<JsonOf<AssistanceBasisOption[]>>('/assistance-basis-options')
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

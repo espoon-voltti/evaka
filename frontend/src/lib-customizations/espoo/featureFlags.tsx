@@ -14,6 +14,7 @@ type Features = {
 const features: Features = {
   default: {
     assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
     daycareApplication: {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false
@@ -31,6 +32,7 @@ const features: Features = {
   },
   staging: {
     assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
     daycareApplication: {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false
@@ -48,6 +50,7 @@ const features: Features = {
   },
   prod: {
     assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
     daycareApplication: {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false

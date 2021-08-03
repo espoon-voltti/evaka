@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Loading } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { ChildContext } from '../../state'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -15,7 +15,12 @@ import { UIContext } from '../../state/ui'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import styled from 'styled-components'
 import { scrollToRef } from '../../utils'
-import { getAssistanceNeeds } from '../../api/child/assistance-needs'
+import {
+  getAssistanceBasisOptions,
+  getAssistanceNeeds
+} from '../../api/child/assistance-needs'
+import { AssistanceBasisOption } from 'employee-frontend/types/child'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 
 const TitleRow = styled.div`
   display: flex;
@@ -45,10 +50,21 @@ function AssistanceNeed({ id }: Props) {
 
   useEffect(loadData, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [assistanceBasisOptions, setAssistanceBasisOptions] = useState<
+    Result<AssistanceBasisOption[]>
+  >(Success.of([]))
+  const loadAssistanceBasisOptions = useRestApi(
+    getAssistanceBasisOptions,
+    setAssistanceBasisOptions
+  )
+  useEffect(() => {
+    loadAssistanceBasisOptions()
+  }, [loadAssistanceBasisOptions])
+
   function renderAssistanceNeeds() {
-    if (assistanceNeeds.isLoading) {
+    if (assistanceNeeds.isLoading || assistanceBasisOptions.isLoading) {
       return <Loader />
-    } else if (assistanceNeeds.isFailure) {
+    } else if (assistanceNeeds.isFailure || assistanceBasisOptions.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     } else {
       return assistanceNeeds.value.map((assistanceNeed) => (
@@ -56,6 +72,7 @@ function AssistanceNeed({ id }: Props) {
           key={assistanceNeed.id}
           assistanceNeed={assistanceNeed}
           onReload={loadData}
+          assistanceBasisOptions={assistanceBasisOptions.value}
           refSectionTop={refSectionTop}
         />
       ))
@@ -68,6 +85,13 @@ function AssistanceNeed({ id }: Props) {
     assistanceNeeds
       .map((needs) => needs.find((an) => an.id == uiMode.split('_').pop()))
       .getOrElse(undefined)
+
+  if (assistanceBasisOptions.isLoading) {
+    return <Loader />
+  }
+  if (assistanceBasisOptions.isFailure) {
+    return <div>{i18n.common.loadingFailed}</div>
+  }
 
   return (
     <div ref={refSectionTop}>
@@ -86,7 +110,11 @@ function AssistanceNeed({ id }: Props) {
       </TitleRow>
       {uiMode === 'create-new-assistance-need' && (
         <>
-          <AssistanceNeedForm childId={id} onReload={loadData} />
+          <AssistanceNeedForm
+            childId={id}
+            onReload={loadData}
+            assistanceBasisOptions={assistanceBasisOptions.value}
+          />
           <div className="separator" />
         </>
       )}
@@ -96,6 +124,7 @@ function AssistanceNeed({ id }: Props) {
             childId={id}
             assistanceNeed={duplicate}
             onReload={loadData}
+            assistanceBasisOptions={assistanceBasisOptions.value}
           />
           <div className="separator" />
         </>

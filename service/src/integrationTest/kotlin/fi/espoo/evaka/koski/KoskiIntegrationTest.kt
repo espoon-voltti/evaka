@@ -6,7 +6,6 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
-import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
@@ -329,12 +328,12 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `assistance needs are converted to Koski extra information`() {
         data class TestCase(
             val period: FiniteDateRange,
-            val basis: AssistanceBasis
+            val basis: String
         )
         insertPlacement(testChild_1)
         val testCases = listOf(
-            TestCase(testPeriod(0L to 1L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_1),
-            TestCase(testPeriod(2L to 3L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_2)
+            TestCase(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
+            TestCase(testPeriod(2L to 3L), "DEVELOPMENTAL_DISABILITY_2")
         )
         db.transaction { tx ->
             testCases.forEach {
