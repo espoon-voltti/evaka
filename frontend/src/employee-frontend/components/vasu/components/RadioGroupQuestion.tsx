@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Radio from '../../../../lib-components/atoms/form/Radio'
-import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers'
-import { Label } from '../../../../lib-components/typography'
-import { Gap } from '../../../../lib-components/white-space'
+import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { QuestionOption, RadioGroupQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 

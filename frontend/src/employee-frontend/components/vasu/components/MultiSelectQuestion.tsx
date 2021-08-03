@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
-import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers'
-import { Label } from '../../../../lib-components/typography'
-import { Gap } from '../../../../lib-components/white-space'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { MultiSelectQuestion, QuestionOption } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'

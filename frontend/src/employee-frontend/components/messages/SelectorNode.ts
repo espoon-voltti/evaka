@@ -4,7 +4,7 @@
 
 import { ReceiverGroup } from 'employee-frontend/components/messages/types'
 import { UUID } from 'employee-frontend/types'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 /*
     SelectorNode is a recursive type for storing a selectorId, the corresponding selected

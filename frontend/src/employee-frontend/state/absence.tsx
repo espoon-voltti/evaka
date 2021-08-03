@@ -15,7 +15,7 @@ import {
   CareTypeCategory
 } from '../types/absence'
 import { UUID } from '../types'
-import { AbsenceType } from '../../lib-common/api-types/child/Absences'
+import { AbsenceType } from 'lib-common/api-types/child/Absences'
 
 export interface AbsencesState {
   absences: Result<Group>

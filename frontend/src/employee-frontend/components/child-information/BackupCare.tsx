@@ -15,8 +15,8 @@ import BackupCareForm from '../../components/child-information/backup-care/Backu
 import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { RequireRole } from '../../utils/roles'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 export interface Props {
   id: UUID

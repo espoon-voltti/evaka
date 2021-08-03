@@ -8,7 +8,7 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { getDocumentState } from './vasu-events'
 import { VasuContent } from './vasu-content'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
 export type VasuDocumentEventType =

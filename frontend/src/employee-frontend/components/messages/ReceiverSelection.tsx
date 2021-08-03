@@ -23,7 +23,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faAngleUp, faAngleDown } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { ContentArea } from '../../../lib-components/layout/Container'
+import { ContentArea } from 'lib-components/layout/Container'
 
 const Container = styled(ContentArea)`
   overflow-y: auto;

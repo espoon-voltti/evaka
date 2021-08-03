@@ -4,9 +4,9 @@
 
 import { cloneDeep } from 'lodash'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
-import { ContentArea } from '../../../../lib-components/layout/Container'
-import { H2 } from '../../../../lib-components/typography'
-import { Gap } from '../../../../lib-components/white-space'
+import { ContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'

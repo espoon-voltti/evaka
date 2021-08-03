@@ -5,7 +5,7 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from '../../../../lib-common/form-state'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
@@ -36,7 +36,7 @@ import {
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;

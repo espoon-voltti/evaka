@@ -5,7 +5,7 @@
 import { UUID } from 'employee-frontend/types'
 import { Result, Success, Failure } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import FiniteDateRange from '../../../../lib-common/finite-date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { client } from '../../../api/client'
 import { VasuContent } from '../vasu-content'
 

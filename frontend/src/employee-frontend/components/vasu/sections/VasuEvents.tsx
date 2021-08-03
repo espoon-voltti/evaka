@@ -4,16 +4,16 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import HorizontalLine from '../../../../lib-components/atoms/HorizontalLine'
-import { ContentArea } from '../../../../lib-components/layout/Container'
-import ListGrid from '../../../../lib-components/layout/ListGrid'
-import { Dimmed, H2, Label } from '../../../../lib-components/typography'
-import { defaultMargins } from '../../../../lib-components/white-space'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { Dimmed, H2, Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'
 import { getLastPublished } from '../vasu-events'
-import LocalDate from '../../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 const labelWidth = '320px'
 

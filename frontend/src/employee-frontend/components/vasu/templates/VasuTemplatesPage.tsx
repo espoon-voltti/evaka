@@ -7,25 +7,16 @@ import { H1 } from 'lib-components/typography'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
-import { Loading, Result } from '../../../../lib-common/api'
-import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
-import Container, {
-  ContentArea
-} from '../../../../lib-components/layout/Container'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '../../../../lib-components/layout/Table'
-import { Gap } from '../../../../lib-components/white-space'
-import { faCopy, faPen, faTrash } from '../../../../lib-icons'
+import { Loading, Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Gap } from 'lib-components/white-space'
+import { faCopy, faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import {
   deleteVasuTemplate,

@@ -11,11 +11,11 @@ import ReactFocusLock from 'react-focus-lock'
 import {
   BackgroundOverlay,
   DimmedModal
-} from '../../../lib-components/molecules/modals/FormModal'
+} from 'lib-components/molecules/modals/FormModal'
 import styled from 'styled-components'
-import colors from '../../../lib-customizations/common'
+import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '../../../lib-icons'
+import { faTimes } from 'lib-icons'
 
 const MenuBackground = styled.div`
   z-index: 100;

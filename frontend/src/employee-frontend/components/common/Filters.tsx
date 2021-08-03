@@ -44,7 +44,7 @@ import { Label, LabelText } from './styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { applicationTypes } from 'lib-customizations/employee'
-import Combobox from '../../../lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 interface Props {
   freeText: string

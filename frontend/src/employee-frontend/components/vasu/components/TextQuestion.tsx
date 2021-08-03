@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import InputField from '../../../../lib-components/atoms/form/InputField'
-import TextArea from '../../../../lib-components/atoms/form/TextArea'
-import { Label } from '../../../../lib-components/typography'
+import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { Label } from 'lib-components/typography'
 import { TextQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
