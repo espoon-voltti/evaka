@@ -14,7 +14,6 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
-import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
@@ -862,7 +861,7 @@ data class DevAssistanceNeed(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
-    val bases: Set<AssistanceBasis> = emptySet(),
+    val bases: Set<String> = emptySet(),
     val otherBasis: String = "",
     val description: String = ""
 )

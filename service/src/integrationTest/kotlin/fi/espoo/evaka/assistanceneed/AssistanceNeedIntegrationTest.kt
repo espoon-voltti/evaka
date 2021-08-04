@@ -63,20 +63,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post first assistance need, with bases`() {
-        val allBases = setOf(
-            AssistanceBasis.AUTISM,
-            AssistanceBasis.DEVELOPMENTAL_DISABILITY_1,
-            AssistanceBasis.DEVELOPMENTAL_DISABILITY_2,
-            AssistanceBasis.FOCUS_CHALLENGE,
-            AssistanceBasis.LINGUISTIC_CHALLENGE,
-            AssistanceBasis.DEVELOPMENT_MONITORING,
-            AssistanceBasis.DEVELOPMENT_MONITORING_PENDING,
-            AssistanceBasis.MULTI_DISABILITY,
-            AssistanceBasis.LONG_TERM_CONDITION,
-            AssistanceBasis.REGULATION_SKILL_CHALLENGE,
-            AssistanceBasis.DISABILITY,
-            AssistanceBasis.OTHER
-        )
+        val allBases = db.transaction { it.getAssistanceBasisOptions() }.map { it.value }.toSet()
 
         val assistanceNeed = whenPostAssistanceNeedThenExpectSuccess(
             AssistanceNeedRequest(

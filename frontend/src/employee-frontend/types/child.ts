@@ -12,20 +12,6 @@ import {
   PlacementType
 } from 'lib-common/api-types/serviceNeed/common'
 
-export type AssistanceBasis =
-  | 'AUTISM'
-  | 'DEVELOPMENTAL_DISABILITY_1'
-  | 'DEVELOPMENTAL_DISABILITY_2'
-  | 'FOCUS_CHALLENGE'
-  | 'LINGUISTIC_CHALLENGE'
-  | 'DEVELOPMENT_MONITORING'
-  | 'DEVELOPMENT_MONITORING_PENDING'
-  | 'MULTI_DISABILITY'
-  | 'LONG_TERM_CONDITION'
-  | 'REGULATION_SKILL_CHALLENGE'
-  | 'DISABILITY'
-  | 'OTHER'
-
 export interface AssistanceNeed {
   id: UUID
   childId: UUID
@@ -33,7 +19,7 @@ export interface AssistanceNeed {
   endDate: LocalDate
   capacityFactor: number
   description: string
-  bases: Set<AssistanceBasis>
+  bases: Set<string>
   otherBasis: string
 }
 
@@ -52,6 +38,12 @@ export interface AssistanceAction {
 export interface AssistanceActionOption {
   value: string
   nameFi: string
+}
+
+export interface AssistanceBasisOption {
+  value: string
+  nameFi: string
+  descriptionFi: string | null
 }
 
 export interface AdditionalInformation {
