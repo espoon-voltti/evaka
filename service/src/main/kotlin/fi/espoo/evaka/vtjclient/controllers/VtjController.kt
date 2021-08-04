@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
@@ -37,8 +36,9 @@ class VtjController(
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
+        val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
-            throw Forbidden("Query not allowed")
+            notFound()
         }
 
         return db.read { it.getPersonById(personId) }?.let { person ->
@@ -48,7 +48,7 @@ class VtjController(
                     ?.let { db.transaction { tx -> personStorageService.upsertVtjGuardianAndChildren(tx, it) } }
                     ?.let { CitizenUserDetails.from(it) }
             }
-        } ?: throw NotFound("Person not found")
+        } ?: notFound()
     }
 
     internal data class Child(
