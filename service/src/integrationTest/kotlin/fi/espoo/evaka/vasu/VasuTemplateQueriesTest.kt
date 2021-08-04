@@ -38,7 +38,8 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                     "foo",
                     dateRangeNow,
                     VasuLanguage.FI,
-                    VasuContent(sections = listOf())
+                    VasuContent(sections = listOf()),
+                    0
                 ),
                 tx.getVasuTemplate(templateId)
             )
@@ -59,7 +60,8 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                     "bar",
                     modifiedDateRange,
                     VasuLanguage.SV,
-                    VasuContent(sections = listOf())
+                    VasuContent(sections = listOf()),
+                    0
                 ),
                 tx.getVasuTemplate(templateId)
             )
