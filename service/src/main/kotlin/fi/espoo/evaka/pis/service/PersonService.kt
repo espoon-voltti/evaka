@@ -7,6 +7,8 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
+import fi.espoo.evaka.pis.getDependantGuardians
+import fi.espoo.evaka.pis.getGuardianDependants
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.updatePersonContactInfo
@@ -74,19 +76,47 @@ class PersonService(
             person1.postalCode == person2.postalCode
     }
 
-    // Does a request to VTJ if SSN is present
-    fun getUpToDatePersonWithChildren(
+    // Does a request to VTJ if SSN is present and the person hasn't had their dependants initialized
+    fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID
+        id: UUID,
+        forceRefresh: Boolean = false
     ): PersonWithChildrenDTO? {
         val guardian = tx.getPersonById(id) ?: return null
 
         return when (guardian.identity) {
             is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
-            is ExternalIdentifier.SSN -> getPersonWithDependants(user, guardian.identity)
-                ?.let { personStorageService.upsertVtjGuardianAndChildren(tx, it) }
-                ?.let { toPersonWithChildrenDTO(it) }
+            is ExternalIdentifier.SSN -> {
+                if (forceRefresh || guardian.vtjDependantsQueried == null) {
+                    getPersonWithDependants(user, guardian.identity)
+                        ?.let { personStorageService.upsertVtjChildren(tx, it) }
+                        ?.let { toPersonWithChildrenDTO(it) }
+                } else {
+                    val children = tx.getGuardianDependants(id)
+                        .map { toPersonWithChildrenDTO(it) }
+                    toPersonWithChildrenDTO(guardian).copy(children = children)
+                }
+            }
+        }
+    }
+
+    // Does a request to VTJ if SSN is present
+    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
+        val child = tx.getPersonById(id) ?: return emptyList()
+
+        return when (child.identity) {
+            is ExternalIdentifier.NoID -> emptyList()
+            is ExternalIdentifier.SSN -> {
+                if (child.vtjGuardiansQueried == null) {
+                    getPersonWithGuardians(user, child.identity)
+                        ?.let { personStorageService.upsertVtjGuardians(tx, it) }
+                        ?.guardians?.map(::toPersonDTO)
+                        ?: emptyList()
+                } else {
+                    tx.getDependantGuardians(id)
+                }
+            }
         }
     }
 
@@ -98,44 +128,6 @@ class PersonService(
         otherGuardianId: UUID,
         childId: UUID
     ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
-
-    // Does a request to VTJ if SSN is present
-    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
-        val child = tx.getPersonById(id) ?: return emptyList()
-
-        return when (child.identity) {
-            is ExternalIdentifier.NoID -> emptyList()
-            is ExternalIdentifier.SSN -> getPersonWithGuardians(user, child.identity)
-                ?.let { personStorageService.upsertVtjChildAndGuardians(tx, it) }
-                ?.guardians?.map(::toPersonDTO)
-                ?: emptyList()
-        }
-    }
-
-    val SECONDS_IN_30_DAYS: Long = 60 * 60 * 24 * 30
-
-    // If 1 or more evaka guardians is found, return those, otherwise get from VTJ
-    fun getEvakaOrVtjGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
-        val child = tx.getPersonById(id) ?: return emptyList()
-
-        return when (child.identity) {
-            is ExternalIdentifier.NoID -> emptyList()
-            is ExternalIdentifier.SSN -> {
-                val evakaGuardians = tx.getChildGuardians(id).mapNotNull { guardianId -> tx.getPersonById(guardianId) }
-
-                if (evakaGuardians.size > 1 && evakaGuardians.all { guardian ->
-                    if (guardian.updatedFromVtj != null) guardian.updatedFromVtj.isAfter(Instant.now().minusSeconds(SECONDS_IN_30_DAYS)) else false
-                }
-                )
-                    evakaGuardians
-                else
-                    getPersonWithGuardians(user, child.identity)
-                        ?.let { personStorageService.upsertVtjChildAndGuardians(tx, it) }
-                        ?.guardians?.map(::toPersonDTO)
-                        ?: emptyList()
-            }
-        }
-    }
 
     // Does a request to VTJ if person is not found in database
     fun getOrCreatePerson(
@@ -329,6 +321,8 @@ data class PersonDTO(
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
     val updatedFromVtj: Instant? = null,
+    val vtjGuardiansQueried: Instant? = null,
+    val vtjDependantsQueried: Instant? = null,
     val invoiceRecipientName: String = "",
     val invoicingStreetAddress: String = "",
     val invoicingPostalCode: String = "",

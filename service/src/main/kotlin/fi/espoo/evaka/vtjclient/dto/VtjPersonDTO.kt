@@ -28,8 +28,8 @@ data class VtjPersonDTO(
     val city: String = "",
     val residenceCode: String? = "",
 
-    val children: MutableList<VtjPersonDTO> = mutableListOf(),
-    val guardians: MutableList<VtjPersonDTO> = mutableListOf(),
+    val children: List<VtjPersonDTO> = listOf(),
+    val guardians: List<VtjPersonDTO> = listOf(),
 
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,

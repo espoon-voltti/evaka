@@ -89,6 +89,8 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
             post_office,
             residence_code,
             updated_from_vtj,
+            vtj_guardians_queried,
+            vtj_dependants_queried,
             invoice_recipient_name,
             invoicing_street_address,
             invoicing_postal_code,
@@ -347,6 +349,8 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
         postOffice = rs.getString("post_office"),
         residenceCode = rs.getString("residence_code"),
         updatedFromVtj = rs.getTimestamp("updated_from_vtj")?.toInstant(),
+        vtjGuardiansQueried = rs.getTimestamp("vtj_guardians_queried")?.toInstant(),
+        vtjDependantsQueried = rs.getTimestamp("vtj_dependants_queried")?.toInstant(),
         invoiceRecipientName = rs.getString("invoice_recipient_name"),
         invoicingStreetAddress = rs.getString("invoicing_street_address"),
         invoicingPostalCode = rs.getString("invoicing_postal_code"),
@@ -385,3 +389,15 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
     """.trimIndent()
     return createQuery(sql).mapTo<PersonReference>().list()
 }
+
+fun Database.Read.getGuardianDependants(personId: UUID) =
+    createQuery("SELECT * FROM person WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)")
+        .bind("personId", personId)
+        .map(toPersonDTO)
+        .toList()
+
+fun Database.Read.getDependantGuardians(personId: UUID) =
+    createQuery("SELECT * FROM person WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)")
+        .bind("personId", personId)
+        .map(toPersonDTO)
+        .toList()

@@ -14,45 +14,43 @@ import fi.espoo.evaka.pis.lockPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.deleteChildGuardianRelationships
 import fi.espoo.evaka.pis.service.deleteGuardianChildRelationShips
-import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.pis.service.insertChildGuardians
+import fi.espoo.evaka.pis.service.insertGuardianChildren
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.UUID
 
 @Service
 class PersonStorageService {
-    fun upsertVtjChildAndGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
-        val child = map(upsertVtjPerson(tx, vtjPersonDTO), vtjPersonDTO.source)
-        child.guardians.addAll(
-            vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }
-                .map { map(upsertVtjPerson(tx, it), it.source) }
-        )
+    fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+        val child = upsertVtjPerson(tx, vtjPersonDTO)
+        val guardians = vtjPersonDTO.guardians.map { upsertVtjPerson(tx, it) }
         createOrReplaceChildRelationships(
             tx,
             childId = child.id,
-            guardianIds = child.guardians.map { guardian -> guardian.id }
+            guardianIds = guardians.map { it.id }
         )
         initChildIfNotExists(tx, listOf(child.id))
-        return child
+        return map(child, vtjPersonDTO.source)
+            .copy(guardians = guardians.map { map(it, vtjPersonDTO.source) })
     }
 
-    fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
-        val guardian = map(upsertVtjPerson(tx, vtjPersonDTO), vtjPersonDTO.source)
-        guardian.children.addAll(
-            vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }
-                .map { map(upsertVtjPerson(tx, it), it.source) }
-        )
+    fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+        val guardian = upsertVtjPerson(tx, vtjPersonDTO)
+        val children = vtjPersonDTO.children.map { upsertVtjPerson(tx, it) }
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
-            childIds = guardian.children.map { child -> child.id }
+            childIds = children.map { it.id }
         )
-        initChildIfNotExists(tx, guardian.children.map { child -> child.id })
-        return guardian
+        initChildIfNotExists(tx, children.map { it.id })
+        return map(guardian, vtjPersonDTO.source)
+            .copy(children = children.map { map(it, vtjPersonDTO.source) })
     }
 
     private fun initChildIfNotExists(tx: Database.Transaction, childIds: List<UUID>) {
@@ -64,12 +62,14 @@ class PersonStorageService {
 
     private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
         tx.deleteGuardianChildRelationShips(guardianId)
-        childIds.forEach { childId -> tx.insertGuardian(guardianId, childId) }
+        tx.insertGuardianChildren(guardianId, childIds)
+        tx.updateVtjDependantsQueriedTimestamp(guardianId)
     }
 
     private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: UUID, guardianIds: List<UUID>) {
         tx.deleteChildGuardianRelationships(childId)
-        guardianIds.forEach { guardianId -> tx.insertGuardian(guardianId, childId) }
+        tx.insertChildGuardians(childId, guardianIds)
+        tx.updateVtjGuardiansQueriedTimestamp(childId)
     }
 
     fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
@@ -179,3 +179,15 @@ class PersonStorageService {
         private const val PLACEHOLDER = 0L
     }
 }
+
+private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: UUID) =
+    createUpdate("UPDATE person SET vtj_dependants_queried = :now WHERE id = :personId")
+        .bind("personId", personId)
+        .bind("now", Instant.now())
+        .execute()
+
+private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: UUID) =
+    createUpdate("UPDATE person SET vtj_guardians_queried = :now WHERE id = :personId")
+        .bind("personId", personId)
+        .bind("now", Instant.now())
+        .execute()

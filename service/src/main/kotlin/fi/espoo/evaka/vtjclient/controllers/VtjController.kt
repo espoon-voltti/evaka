@@ -46,7 +46,7 @@ class VtjController(
             when (person.identity) {
                 is ExternalIdentifier.NoID -> CitizenUserDetails.from(person)
                 is ExternalIdentifier.SSN -> db.transaction {
-                    personService.getUpToDatePersonWithChildren(it, user, personId)
+                    personService.getPersonWithChildren(it, user, personId)
                 }
                     ?.let { CitizenUserDetails.from(it) }
             }

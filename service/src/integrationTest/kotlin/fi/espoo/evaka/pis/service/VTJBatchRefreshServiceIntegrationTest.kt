@@ -87,7 +87,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto = getDto(testAdult_1).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
@@ -113,7 +113,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
@@ -147,8 +147,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto2 = getDto(testAdult_2).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
@@ -191,8 +191,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto2 = getDto(testAdult_2).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)

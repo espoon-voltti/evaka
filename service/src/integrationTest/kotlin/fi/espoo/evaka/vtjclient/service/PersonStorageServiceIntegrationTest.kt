@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vtjclient.service
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.resetDatabase
@@ -31,11 +32,10 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `upsert new person with no children creates new person`() {
+    fun `upsert new person creates new person`() {
         val testGuardian = generatePerson(ssn = "130535-531K")
         val createdPerson = db.transaction { service.upsertVtjPerson(it, testGuardian) }
-        assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
-        assertEquals(0, createdPerson.children.size)
+        assertEquals(testGuardian.socialSecurityNumber, (createdPerson.identity as ExternalIdentifier.SSN).ssn)
     }
 
     @Test
@@ -54,7 +54,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(testChild))
 
         val createdPerson =
-            db.transaction { service.upsertVtjGuardianAndChildren(it, testGuardian) }
+            db.transaction { service.upsertVtjChildren(it, testGuardian) }
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
@@ -68,11 +68,11 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     fun `upsert person with children updates guardian relationships`() {
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(generatePerson("020319A123K")))
 
-        db.transaction { service.upsertVtjGuardianAndChildren(it, testGuardian) }
+        db.transaction { service.upsertVtjChildren(it, testGuardian) }
 
         val testChild2 = generatePerson("241220A321N")
         val createdPerson = db.transaction {
-            service.upsertVtjGuardianAndChildren(
+            service.upsertVtjChildren(
                 it,
                 testGuardian.copy(children = mutableListOf(testChild2))
             )

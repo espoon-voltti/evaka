@@ -107,17 +107,18 @@ class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsServic
         }
     }
 
-    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): PersonDTO? {
+    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, readonly: Boolean): PersonDTO? {
         recordSsnUpdate(ssn)
-        return super.getOrCreatePerson(tx, user, ssn)
+        return super.getOrCreatePerson(tx, user, ssn, readonly)
     }
 
-    override fun getUpToDatePersonWithChildren(
+    override fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID
+        id: UUID,
+        forceRefresh: Boolean
     ): PersonWithChildrenDTO? {
-        return super.getUpToDatePersonWithChildren(tx, user, id)?.let {
+        return super.getPersonWithChildren(tx, user, id, forceRefresh)?.let {
             val ssn = it.socialSecurityNumber
             if (ssn != null)
                 recordSsnCustodianUpdate(ExternalIdentifier.SSN.getInstance(ssn))
