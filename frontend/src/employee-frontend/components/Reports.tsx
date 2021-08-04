@@ -7,7 +7,6 @@ import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import {
   faChild,
   faClock,
@@ -358,30 +357,28 @@ function Reports() {
               <Description>{i18n.reports.presence.description}</Description>
             </ReportItem>
           </RequireRole>
-          {featureFlags.voucher.valueDecisionsPage && (
-            <RequireRole
-              oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}
-            >
-              <ReportItem>
-                <TitleRow>
-                  <RoundIcon
-                    size="L"
-                    color={colors.primary}
-                    content={faMoneyBillWave}
-                  />
-                  <LinkTitle
-                    data-qa={'report-voucher-service-providers'}
-                    to="/reports/voucher-service-providers"
-                  >
-                    {i18n.reports.voucherServiceProviders.title}
-                  </LinkTitle>
-                </TitleRow>
-                <Description>
-                  {i18n.reports.voucherServiceProviders.description}
-                </Description>
-              </ReportItem>
-            </RequireRole>
-          )}
+          <RequireRole
+            oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+          >
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={colors.primary}
+                  content={faMoneyBillWave}
+                />
+                <LinkTitle
+                  data-qa={'report-voucher-service-providers'}
+                  to="/reports/voucher-service-providers"
+                >
+                  {i18n.reports.voucherServiceProviders.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.voucherServiceProviders.description}
+              </Description>
+            </ReportItem>
+          </RequireRole>
           <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
             <ReportItem>
               <TitleRow>

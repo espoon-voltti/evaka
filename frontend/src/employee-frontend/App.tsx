@@ -332,22 +332,18 @@ export default function App() {
               component={ensureAuthenticated(ReportServiceNeeds)}
               title={i18n.titles.reports}
             />
-            {featureFlags.voucher.valueDecisionsPage && (
-              <RouteWithTitle
-                exact
-                path="/reports/voucher-service-providers"
-                component={ensureAuthenticated(VoucherServiceProviders)}
-                title={i18n.titles.reports}
-              />
-            )}
-            {featureFlags.voucher.valueDecisionsPage && (
-              <RouteWithTitle
-                exact
-                path="/reports/voucher-service-providers/:unitId"
-                component={ensureAuthenticated(VoucherServiceProviderUnit)}
-                title={i18n.titles.reports}
-              />
-            )}
+            <RouteWithTitle
+              exact
+              path="/reports/voucher-service-providers"
+              component={ensureAuthenticated(VoucherServiceProviders)}
+              title={i18n.titles.reports}
+            />
+            <RouteWithTitle
+              exact
+              path="/reports/voucher-service-providers/:unitId"
+              component={ensureAuthenticated(VoucherServiceProviderUnit)}
+              title={i18n.titles.reports}
+            />
             {featureFlags.messaging && (
               <RouteWithTitle
                 exact

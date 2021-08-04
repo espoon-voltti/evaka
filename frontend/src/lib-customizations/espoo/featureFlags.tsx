@@ -24,9 +24,6 @@ const features: Features = {
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     vasu: true,
-    voucher: {
-      valueDecisionsPage: true
-    },
     experimental: {
       ai: true,
       mobileDailyNotes: true
@@ -44,9 +41,6 @@ const features: Features = {
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     vasu: false,
-    voucher: {
-      valueDecisionsPage: true
-    },
     experimental: {
       ai: true,
       mobileDailyNotes: false
@@ -64,9 +58,6 @@ const features: Features = {
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     vasu: false,
-    voucher: {
-      valueDecisionsPage: false
-    },
     experimental: {
       ai: false,
       mobileDailyNotes: false
