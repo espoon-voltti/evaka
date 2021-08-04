@@ -137,11 +137,12 @@ class PersonService(
         }
     }
 
-    // Does a request to VTJ if data is stale
+    // Does a request to VTJ if person is not found in database
     fun getOrCreatePerson(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,
+        readonly: Boolean = false
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
         return if (person == null) {
@@ -149,6 +150,8 @@ class PersonService(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
             if (personDetails is PersonDetails.Result) {
+                if (readonly) return personDetails.vtjPerson.mapToDto().let { toPersonDTO(it) }
+
                 personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
                 tx.getPersonBySSN(ssn.ssn)
             } else {
@@ -157,16 +160,6 @@ class PersonService(
         } else {
             person
         }
-    }
-
-    // Expensive VTJ request
-    fun getPersonFromVTJ(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): PersonDTO? {
-        val personDetails = personDetailsService.getBasicDetailsFor(
-            IPersonDetailsService.DetailsQuery(user, ssn)
-        )
-        return if (personDetails is PersonDetails.Result) {
-            personDetails.vtjPerson.mapToDto().let { toPersonDTO(it) }
-        } else null
     }
 
     fun patchUserDetails(tx: Database.Transaction, id: UUID, data: PersonPatch): PersonDTO {

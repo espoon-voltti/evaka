@@ -197,16 +197,13 @@ class PersonController(
 
         if (!isValidSSN(ssn)) throw BadRequest("Invalid SSN")
 
-        val person = if (readonly) {
-            personService.getPersonFromVTJ(user, ExternalIdentifier.SSN.getInstance(ssn))
-        } else {
-            db.transaction {
-                personService.getOrCreatePerson(
-                    it,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(ssn)
-                )
-            }
+        val person = db.transaction {
+            personService.getOrCreatePerson(
+                it,
+                user,
+                ExternalIdentifier.SSN.getInstance(ssn),
+                readonly
+            )
         }
 
         return person
