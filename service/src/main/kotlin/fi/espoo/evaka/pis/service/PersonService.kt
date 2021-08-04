@@ -200,7 +200,7 @@ class PersonService(
     }
 
     // Does a request to VTJ
-    fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
+    private fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
         return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn))
             .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
     }

@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -44,8 +45,9 @@ class VtjController(
         return db.read { it.getPersonById(personId) }?.let { person ->
             when (person.identity) {
                 is ExternalIdentifier.NoID -> CitizenUserDetails.from(person)
-                is ExternalIdentifier.SSN -> personService.getPersonWithDependants(user, person.identity)
-                    ?.let { db.transaction { tx -> personStorageService.upsertVtjGuardianAndChildren(tx, it) } }
+                is ExternalIdentifier.SSN -> db.transaction {
+                    personService.getUpToDatePersonWithChildren(it, user, personId)
+                }
                     ?.let { CitizenUserDetails.from(it) }
             }
         } ?: notFound()
@@ -63,6 +65,13 @@ class VtjController(
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber,
+            )
+
+            fun from(person: PersonWithChildrenDTO) = Child(
+                id = person.id,
+                firstName = person.firstName,
+                lastName = person.lastName,
+                socialSecurityNumber = person.socialSecurityNumber!!
             )
         }
     }
@@ -82,11 +91,20 @@ class VtjController(
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                 children = emptyList()
             )
+
             fun from(person: VtjPersonDTO): CitizenUserDetails = CitizenUserDetails(
                 id = person.id,
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber,
+                children = person.children.map { Child.from(it) }
+            )
+
+            fun from(person: PersonWithChildrenDTO) = CitizenUserDetails(
+                id = person.id,
+                firstName = person.firstName,
+                lastName = person.lastName,
+                socialSecurityNumber = person.socialSecurityNumber!!,
                 children = person.children.map { Child.from(it) }
             )
         }
