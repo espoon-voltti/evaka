@@ -18,7 +18,7 @@ class AssistanceNeedService {
     fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction {
-                validateBases(data, it.getAssistanceBasisOptions().map { it.value } )
+                validateBases(data, it.getAssistanceBasisOptions().map { it.value })
                 it.shortenOverlappingAssistanceNeed(user, childId, data.startDate, data.endDate)
                 it.insertAssistanceNeed(user, childId, data)
             }
