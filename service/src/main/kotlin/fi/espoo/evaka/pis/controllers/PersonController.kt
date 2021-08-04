@@ -10,6 +10,7 @@ import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getDeceasedPeople
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.MergeService
@@ -61,9 +62,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        return db.transaction {
-            personService.getUpToDatePerson(it, user, personId)
-        }
+        return db.transaction { it.getPersonById(personId) }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
     }
@@ -182,7 +181,7 @@ class PersonController(
         db.transaction {
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
-        val person = db.transaction { personService.getUpToDatePerson(it, user, personId)!! }
+        val person = db.transaction { personService.getUpToDatePersonFromVtj(it, user, personId)!! }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 

@@ -26,8 +26,11 @@ import java.util.UUID
 @Service
 class PersonStorageService {
     fun upsertVtjChildAndGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
-        val child = upsertVtjPerson(tx, vtjPersonDTO)
-        child.guardians.addAll(vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }.map { upsertVtjPerson(tx, it) })
+        val child = map(upsertVtjPerson(tx, vtjPersonDTO), vtjPersonDTO.source)
+        child.guardians.addAll(
+            vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }
+                .map { map(upsertVtjPerson(tx, it), it.source) }
+        )
         createOrReplaceChildRelationships(
             tx,
             childId = child.id,
@@ -38,8 +41,11 @@ class PersonStorageService {
     }
 
     fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
-        val guardian = upsertVtjPerson(tx, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }.map { upsertVtjPerson(tx, it) })
+        val guardian = map(upsertVtjPerson(tx, vtjPersonDTO), vtjPersonDTO.source)
+        guardian.children.addAll(
+            vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }
+                .map { map(upsertVtjPerson(tx, it), it.source) }
+        )
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
@@ -66,19 +72,19 @@ class PersonStorageService {
         guardianIds.forEach { guardianId -> tx.insertGuardian(guardianId, childId) }
     }
 
-    fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
+    fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
         if (inputPerson.source != PersonDataSource.VTJ) {
-            return inputPerson
+            error("Cannot upsert VTJ person when data source is ${inputPerson.source}")
         }
 
         val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
-            map(createPersonFromVtj(tx, newPerson), inputPerson.source)
+            createPersonFromVtj(tx, newPerson)
         } else {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-            map(tx.updatePersonFromVtj(updatedPerson), inputPerson.source)
+            tx.updatePersonFromVtj(updatedPerson)
         }
     }
 

@@ -240,7 +240,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
-        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+        val guardian = tx.getPersonById(application.guardianId)
             ?: throw NotFound("Guardian not found")
         val secondDecisionTo = personService
             .getGuardians(tx, user, application.childId)
@@ -672,8 +672,8 @@ class ApplicationStateService(
 
     private fun canSendDecisionsBySfi(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails): Boolean {
         val hasSsn = (
-            personService.getUpToDatePerson(tx, user, application.guardianId)!!
-                .identity is ExternalIdentifier.SSN && personService.getUpToDatePerson(tx, user, application.childId)!!
+            tx.getPersonById(application.guardianId)!!
+                .identity is ExternalIdentifier.SSN && tx.getPersonById(application.childId)!!
                 .identity is ExternalIdentifier.SSN
             )
         val guardianIsVtjGuardian = personService.getGuardians(tx, user, application.childId)

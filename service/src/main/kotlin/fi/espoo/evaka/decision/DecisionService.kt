@@ -73,9 +73,9 @@ class DecisionService(
         val decisionLanguage = determineDecisionLanguage(decision, tx)
         val application = tx.fetchApplicationDetails(decision.applicationId)
             ?: throw NotFound("Application ${decision.applicationId} was not found")
-        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+        val guardian = tx.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
-        val child = personService.getUpToDatePerson(tx, user, application.childId)
+        val child = tx.getPersonById(application.childId)
             ?: error("Child not found with id: ${application.childId}")
         val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
@@ -88,7 +88,7 @@ class DecisionService(
         if (application.otherGuardianId != null &&
             isDecisionForSecondGuardianRequired(decision, application, tx)
         ) {
-            val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
+            val otherGuardian = tx.getPersonById(application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
             val otherGuardianDecisionLocation = createAndUploadDecision(

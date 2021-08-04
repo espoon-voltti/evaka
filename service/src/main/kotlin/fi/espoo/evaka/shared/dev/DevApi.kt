@@ -509,7 +509,7 @@ RETURNING id
             uuid?.let {
                 // Refresh Pis data by forcing refresh from VTJ
                 val dummyUser = AuthenticatedUser.Employee(it, setOf(UserRole.SERVICE_WORKER))
-                personService.getUpToDatePerson(tx, dummyUser, it)
+                personService.getUpToDatePersonFromVtj(tx, dummyUser, it)
             }
         }
         return ResponseEntity.noContent().build()

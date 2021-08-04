@@ -107,9 +107,9 @@ class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsServic
         }
     }
 
-    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, updateStale: Boolean): PersonDTO? {
+    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): PersonDTO? {
         recordSsnUpdate(ssn)
-        return super.getOrCreatePerson(tx, user, ssn, updateStale)
+        return super.getOrCreatePerson(tx, user, ssn)
     }
 
     override fun getUpToDatePersonWithChildren(

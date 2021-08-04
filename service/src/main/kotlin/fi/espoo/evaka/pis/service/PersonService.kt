@@ -33,19 +33,16 @@ class PersonService(
     private val personDetailsService: IPersonDetailsService,
     private val personStorageService: PersonStorageService
 ) {
-    private val forceRefreshIntervalSeconds = 1 * 24 * 60 * 60 // 1 day
-
-    // Does a request to VTJ if data is stale
-    fun getUpToDatePerson(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): PersonDTO? {
+    // Does a request to VTJ if the person has a SSN and updates person data
+    fun getUpToDatePersonFromVtj(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): PersonDTO? {
         val person = tx.getPersonById(id) ?: return null
-        return if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
+        return if (person.identity is ExternalIdentifier.SSN) {
             val personDetails =
                 personDetailsService.getBasicDetailsFor(
                     IPersonDetailsService.DetailsQuery(user, person.identity)
                 )
             if (personDetails is PersonDetails.Result) {
                 personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-                tx.getPersonById(id)
             } else {
                 hideNonDisclosureInfo(person)
             }
@@ -145,10 +142,9 @@ class PersonService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,
-        updateStale: Boolean = true
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
-        return if (person == null || (updateStale && vtjDataIsStale(person))) {
+        return if (person == null) {
             val personDetails = personDetailsService.getBasicDetailsFor(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
@@ -156,7 +152,7 @@ class PersonService(
                 personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
                 tx.getPersonBySSN(ssn.ssn)
             } else {
-                hideNonDisclosureInfo(person)
+                null
             }
         } else {
             person
@@ -210,11 +206,6 @@ class PersonService(
         }.exhaust()
     }
 
-    private fun vtjDataIsStale(person: PersonDTO): Boolean {
-        return person.updatedFromVtj
-            ?.let { it < Instant.now().minusSeconds(forceRefreshIntervalSeconds.toLong()) } ?: true
-    }
-
     // Does a request to VTJ
     fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
         return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn))
@@ -227,8 +218,8 @@ class PersonService(
             .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
     }
 
-    private fun hideNonDisclosureInfo(person: PersonDTO?): PersonDTO? {
-        return person?.copy(
+    private fun hideNonDisclosureInfo(person: PersonDTO): PersonDTO {
+        return person.copy(
             streetAddress = "",
             postalCode = "",
             postOffice = ""
