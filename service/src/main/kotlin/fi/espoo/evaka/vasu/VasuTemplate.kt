@@ -16,7 +16,8 @@ data class VasuTemplate(
     val valid: FiniteDateRange,
     val language: VasuLanguage,
     @Json
-    val content: VasuContent
+    val content: VasuContent,
+    val documentCount: Int
 )
 
 data class VasuTemplateSummary(
