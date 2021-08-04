@@ -2,13 +2,78 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 ---
-debug: true
-
-spring:
-  datasource:
+evaka:
+  aws:
+    region: eu-west-1
+  bucket:
+    attachments: evaka-attachments-dev
+    data: evaka-data-dev
+    decisions: evaka-daycaredecisions-dev
+    fee_decisions: evaka-paymentdecisions-dev
+    voucher_value_decisions: evaka-vouchervaluedecisions-dev
+  database:
     password: app
     url: jdbc:postgresql://localhost:5432/evaka_local
     username: evaka_application_local
+    flyway:
+      password: flyway
+      username: evaka_migration_local
+  email:
+    enabled: false
+  frontend:
+    base_url:
+      fi: http://localhost:9099
+      sv: http://localhost:9099
+  integration:
+    dvv_modifications:
+      password: ""
+      product_code: ""
+      url: ""
+      user_id: ""
+      xroad_client_id: ""
+    message:
+      enabled: false
+    varda:
+      basic_auth: ""
+      organizer: Espoo
+      source_system: 31
+      url: http://localhost:8888/mock-integration/varda/api
+    vtj:
+      # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).
+      # get-deployment-local.sh should fill the trustStore location, but you need to fill vtj user/pass with details from AWS Parameter Store
+      password: ""
+      username: ""
+      xroad:
+        address: https://fake.test
+        client:
+          instance: FI-TEST
+          member_class: MUN
+          member_code: 0101263-6
+          subsystem_code: evaka-test
+        service:
+          instance: FI-TEST
+          member_class: GOV
+          member_code: 0245437-2
+          service_code: HenkilonTunnusKysely
+          service_version: v1
+          subsystem_code: VTJkysely
+        trust_store:
+          password: password
+          type: JKS
+  jwt:
+    public_keys_url: classpath:local-development/jwks.json
+  redis:
+    password: ""
+    use_ssl: false
+    url: localhost
+espoo:
+  integration:
+    invoice:
+      enabled: false
+
+debug: true
+
+spring:
   devtools:
     livereload:
       enabled: false
@@ -34,80 +99,3 @@ logging:
       springframework:
         boot:
           autoconfigure: INFO
-
-application:
-  frontend:
-    baseurl: http://localhost:9099
-    baseurl.sv: http://localhost:9099
-  email:
-    enabled: false
-
-aws:
-  region: eu-west-1
-
-fi:
-  espoo:
-    evaka:
-      message:
-        enabled: false
-    integration:
-      dvv-modifications-service:
-        password: ""
-        productCode: ""
-        url: ""
-        userId: ""
-        xRoadClientId: ""
-      invoice:
-        enabled: false
-      varda:
-        basic_auth: ""
-        url: http://localhost:8888/mock-integration/varda/api
-        source_system: 31
-    varda:
-      force:
-        sync: true
-      organizer: Espoo
-    voltti:
-      auth:
-        jwks:
-          default:
-            url: classpath:local-development/jwks.json
-      document:
-        bucket:
-          attachments: evaka-attachments-dev
-          daycaredecision: evaka-daycaredecisions-dev
-          paymentdecision: evaka-paymentdecisions-dev
-          vouchervaluedecision: evaka-vouchervaluedecisions-dev
-          data: evaka-data-dev
-      vtj:
-        client:
-          # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).
-          # get-deployment-local.sh should fill the trustStore location, but you need to fill vtj user/pass with details from AWS Parameter Store
-          password: ""
-          username: ""
-        xroad:
-          address: https://fake.test
-          client:
-            instance: FI-TEST
-            memberClass: MUN
-            memberCode: 0101263-6
-            subSystemCode: evaka-test
-          service:
-            instance: FI-TEST
-            memberClass: GOV
-            memberCode: 0245437-2
-            serviceCode: HenkilonTunnusKysely
-            serviceVersion: v1
-            subSystemCode: VTJkysely
-          trustStore:
-            password: password
-            type: JKS
-
-flyway:
-  password: flyway
-  username: evaka_migration_local
-
-redis:
-  password: ""
-  ssl: false
-  url: localhost

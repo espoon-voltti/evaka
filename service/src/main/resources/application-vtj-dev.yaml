@@ -2,8 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 ---
-fi:
-  espoo:
-    voltti:
-      vtj:
-        enabled: true
+evaka:
+  integration:
+    vtj:
+      enabled: true
