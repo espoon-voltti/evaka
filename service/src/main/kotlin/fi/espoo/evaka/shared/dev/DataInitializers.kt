@@ -224,8 +224,8 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, n
 fun Database.Transaction.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles, last_login)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
 RETURNING id
 """
 )

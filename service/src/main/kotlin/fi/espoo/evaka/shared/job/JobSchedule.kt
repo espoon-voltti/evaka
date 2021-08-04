@@ -72,6 +72,10 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
                 enabled = true,
                 schedule = JobSchedule.daily(LocalTime.of(3, 30))
             )
+            ScheduledJob.InactiveEmployeesRoleReset -> ScheduledJobSettings(
+                enabled = true,
+                schedule = JobSchedule.daily(LocalTime.of(3, 15))
+            )
         }
     }
 }

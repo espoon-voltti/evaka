@@ -98,7 +98,8 @@ class SystemIdentityController {
         val lastName: String,
         val email: String?
     ) {
-        fun toNewEmployee(): NewEmployee = NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
+        fun toNewEmployee(): NewEmployee =
+            NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
     }
 
     data class PersonIdentityRequest(
