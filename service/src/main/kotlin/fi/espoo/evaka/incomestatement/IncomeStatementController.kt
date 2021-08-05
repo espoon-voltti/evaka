@@ -1,10 +1,13 @@
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.attachment.associateAttachments
+import fi.espoo.evaka.attachment.dissociateAllAttachments
 import fi.espoo.evaka.daycare.controllers.utils.notFound
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -35,8 +38,13 @@ class IncomeStatementController {
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(UserRole.END_USER)
-        db.transaction { tx ->
-            tx.createIncomeStatement(user.id, body)
+        try {
+            db.transaction { tx ->
+                val incomeStatementId = tx.createIncomeStatement(user.id, body)
+                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+            }
+        } catch (e: RuntimeException) {
+            throw BadRequest(e.message ?: "")
         }
         return ResponseEntity.noContent().build()
     }
@@ -50,7 +58,16 @@ class IncomeStatementController {
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.transaction { tx ->
-            tx.updateIncomeStatement(user.id, incomeStatementId, body)
+            tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
+                if (success) {
+                    try {
+                        tx.dissociateAllAttachments(user.id, incomeStatementId)
+                        tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                    } catch (e: RuntimeException) {
+                        throw BadRequest(e.message ?: "")
+                    }
+                }
+            }
         }.let { success ->
             if (success) ResponseEntity.noContent().build()
             else notFound()

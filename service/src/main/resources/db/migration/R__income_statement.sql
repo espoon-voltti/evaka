@@ -1,3 +1,8 @@
+ALTER TABLE attachment
+    DROP CONSTRAINT IF EXISTS attachment_income_statement_id_fkey,
+    DROP CONSTRAINT IF EXISTS created_for_fk,
+    DROP COLUMN IF EXISTS income_statement_id;
+
 DROP TABLE IF EXISTS income_statement;
 DROP TYPE IF EXISTS income_statement_type;
 DROP TYPE IF EXISTS income_source;
@@ -51,3 +56,8 @@ CREATE TABLE income_statement (
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON income_statement FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+
+ALTER TABLE attachment
+    ADD COLUMN income_statement_id UUID,
+    ADD CONSTRAINT attachment_income_statement_id_fkey FOREIGN KEY (income_statement_id) REFERENCES income_statement (id),
+    ADD CONSTRAINT created_for_fk CHECK (num_nonnulls(application_id, income_statement_id) <= 1);

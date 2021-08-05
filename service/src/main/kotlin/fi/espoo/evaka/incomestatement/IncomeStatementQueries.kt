@@ -4,8 +4,9 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapNullableColumn
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.SqlStatement
 import java.time.LocalDate
 import java.util.UUID
@@ -32,19 +33,30 @@ SELECT
     other_income,
     self_employed_estimated_monthly_income,
     self_employed_income_start_date,
-    self_employed_income_end_date
-FROM income_statement
+    self_employed_income_end_date,
+    (SELECT coalesce(jsonb_agg(json_build_object(
+        'id', id, 
+        'name', name,
+        'contentType', content_type
+      )), '[]'::jsonb) FROM (
+        SELECT id, name, content_type FROM attachment a
+        WHERE a.income_statement_id = ist.id 
+        ORDER BY a.created
+    ) s) AS attachments
+FROM income_statement ist
 WHERE person_id = :personId
 ORDER BY start_date DESC
         """.trimIndent()
     ).bind("personId", personId).map { row ->
         val id = row.mapColumn<IncomeStatementId>("id")
         val startDate = row.mapColumn<LocalDate>("start_date")
+        val attachments = row.mapJsonColumn<List<Attachment>>("attachments")
         when (row.mapColumn<IncomeType>("type")) {
             IncomeType.HIGHEST_FEE ->
                 IncomeStatement.HighestFee(
                     id = id,
-                    startDate = startDate
+                    startDate = startDate,
+                    attachments = attachments,
                 )
 
             IncomeType.GROSS ->
@@ -53,16 +65,18 @@ ORDER BY start_date DESC
                     startDate = startDate,
                     incomeSource = row.mapColumn("income_source"),
                     otherIncome = row.mapColumn<Array<OtherGrossIncome>>("other_income").toSet(),
+                    attachments = attachments,
                 )
 
             IncomeType.ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION -> {
                 val incomeStartDate = row.mapColumn<LocalDate>("self_employed_income_start_date")
-                val incomeEndDate = row.mapNullableColumn<LocalDate>("self_employed_income_end_date")
+                val incomeEndDate = row.mapColumn<LocalDate?>("self_employed_income_end_date")
                 IncomeStatement.EntrepreneurSelfEmployedEstimation(
                     id = id,
                     startDate = startDate,
                     estimatedMonthlyIncome = row.mapColumn("self_employed_estimated_monthly_income"),
                     incomeDateRange = DateRange(incomeStartDate, incomeEndDate),
+                    attachments = attachments,
                 )
             }
 
@@ -70,19 +84,22 @@ ORDER BY start_date DESC
                 IncomeStatement.EntrepreneurSelfEmployedAttachments(
                     id = id,
                     startDate = startDate,
+                    attachments = attachments,
                 )
 
             IncomeType.ENTREPRENEUR_LIMITED_COMPANY ->
                 IncomeStatement.EntrepreneurLimitedCompany(
                     id = id,
                     startDate = startDate,
-                    incomeSource = row.mapColumn("income_source")
+                    incomeSource = row.mapColumn("income_source"),
+                    attachments = attachments,
                 )
 
             IncomeType.ENTREPRENEUR_PARTNERSHIP ->
                 IncomeStatement.EntrepreneurPartnership(
                     id = id,
                     startDate = startDate,
+                    attachments = attachments,
                 )
         }
     }.list()
@@ -117,8 +134,8 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
             }
         }
 
-fun Database.Transaction.createIncomeStatement(personId: UUID, body: IncomeStatementBody) {
-    createUpdate(
+fun Database.Transaction.createIncomeStatement(personId: UUID, body: IncomeStatementBody): IncomeStatementId {
+    return createQuery(
         """
 INSERT INTO income_statement (
     person_id,
@@ -139,11 +156,13 @@ INSERT INTO income_statement (
     :incomeStartDate,
     :incomeEndDate
 )
+RETURNING id
         """.trimIndent()
     )
         .bind("personId", personId)
         .bindIncomeStatementBody(body)
-        .execute()
+        .mapTo<IncomeStatementId>()
+        .one()
 }
 
 fun Database.Transaction.updateIncomeStatement(
