@@ -247,11 +247,7 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
           )
       ),
       issuer: required(
-        process.env.EVAKA_SAML_ISSUER ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka'
-          )
+        process.env.EVAKA_SAML_ISSUER ?? ifNodeEnv(['local', 'test'], 'evaka')
       ),
       publicCert: required(
         process.env.EVAKA_SAML_PUBLIC_CERT ??
@@ -285,10 +281,7 @@ export const evakaCustomerSamlConfig:
       ),
       issuer: required(
         process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka-customer'
-          )
+          ifNodeEnv(['local', 'test'], 'evaka-customer')
       ),
       publicCert: required(
         process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
