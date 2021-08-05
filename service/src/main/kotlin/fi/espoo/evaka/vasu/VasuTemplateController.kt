@@ -11,6 +11,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -24,7 +26,9 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/vasu/templates")
-class VasuTemplateController {
+class VasuTemplateController(
+    private val accessControl: AccessControl
+) {
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
@@ -38,7 +42,7 @@ class VasuTemplateController {
         @RequestBody body: CreateTemplateRequest
     ): UUID {
         Audit.VasuTemplateCreate.log()
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_VASU_TEMPLATE)
 
         return db.transaction {
             it.insertVasuTemplate(

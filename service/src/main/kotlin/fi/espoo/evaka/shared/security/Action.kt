@@ -13,6 +13,13 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import java.util.EnumSet
 
 sealed interface Action {
+    enum class Global(private val roles: EnumSet<UserRole>) : Action {
+        CREATE_VASU_TEMPLATE();
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class Application(private val roles: EnumSet<UserRole>) : Action {
         ;
 

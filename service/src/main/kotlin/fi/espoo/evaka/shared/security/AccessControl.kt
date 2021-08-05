@@ -24,6 +24,10 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
 class AccessControl(private val permittedRoleActions: PermittedRoleActions, private val acl: AccessControlList) {
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
+        assertPermission(user.roles, action, permittedRoleActions::globalActions)
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
         val roles = acl.getRolesForApplication(user, id).roles
         assertPermission(roles, action, permittedRoleActions::applicationActions)

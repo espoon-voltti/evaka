@@ -12,6 +12,7 @@ import java.util.EnumSet
  * Role → action mapping
  */
 interface PermittedRoleActions {
+    fun globalActions(role: UserRole): Set<Action.Global>
     fun applicationActions(role: UserRole): Set<Action.Application>
     fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
     fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed>
@@ -35,6 +36,7 @@ interface PermittedRoleActions {
  * Uses system defaults, unless some mappings are overridden using constructor parameters
  */
 class StaticPermittedRoleActions(
+    val global: ActionsByRole<Action.Global> = getDefaults(),
     val application: ActionsByRole<Action.Application> = getDefaults(),
     val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
     val assistanceNeed: ActionsByRole<Action.AssistanceNeed> = getDefaults(),
@@ -51,6 +53,7 @@ class StaticPermittedRoleActions(
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
     val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
 ) : PermittedRoleActions {
+    override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
     override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
     override fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed> = assistanceNeed[role] ?: emptySet()
