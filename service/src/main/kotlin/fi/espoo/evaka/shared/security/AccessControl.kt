@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -41,6 +42,11 @@ class AccessControl(private val permittedRoleActions: PermittedRoleActions, priv
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupCare, id: BackupCareId) {
         val roles = acl.getRolesForBackupCare(user, id).roles
         assertPermission(roles, action, permittedRoleActions::backupCareActions)
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
+        val roles = acl.getRolesForBackupPickup(user, id).roles
+        assertPermission(roles, action, permittedRoleActions::backupPickupActions)
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {

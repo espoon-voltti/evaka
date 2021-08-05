@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -186,6 +187,20 @@ JOIN backup_care bc ON acl.child_id = bc.child_id
 WHERE bc.id = :backupCareId AND acl.employee_id = :userId
                 """.trimIndent()
             ).bind("backupCareId", backupCareId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForBackupPickup(user: AuthenticatedUser, backupPickupId: BackupPickupId): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN backup_pickup bp ON acl.child_id = bp.child_id
+WHERE bp.id = :backupPickupId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("backupPickupId", backupPickupId).bind("userId", user.id).mapTo<UserRole>().toSet()
         }
     )
 
