@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -72,7 +71,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
 }
 
 @Service
-class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService, personStorageService: PersonStorageService) : PersonService(personDetailsService, personStorageService) {
+class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService) : PersonService(personDetailsService) {
     companion object {
         private val ssnUpdateCounts = mutableMapOf<String, Int>()
         private val ssnCustodianUpdateCounts = mutableMapOf<String, Int>()

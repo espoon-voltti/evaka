@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,10 +24,7 @@ import java.util.UUID
 @Deprecated("Use PersonController instead")
 @RestController
 @RequestMapping("/persondetails")
-class VtjController(
-    private val personStorageService: PersonStorageService,
-    private val personService: PersonService
-) {
+class VtjController(private val personService: PersonService) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
         db: Database.Connection,
