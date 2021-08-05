@@ -5,10 +5,10 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,7 +20,7 @@ import java.util.UUID
 
 @RestController
 class DailyServiceTimesController(
-    private val acl: AccessControlList
+    private val accessControl: AccessControl
 ) {
 
     data class DailyServiceTimesResponse(
@@ -34,9 +34,7 @@ class DailyServiceTimesController(
         @PathVariable childId: UUID
     ): ResponseEntity<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
-        )
+        accessControl.requirePermissionFor(user, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
 
         return db.read { it.getChildDailyServiceTimes(childId) }.let {
             ResponseEntity.ok(
@@ -53,9 +51,7 @@ class DailyServiceTimesController(
         @RequestBody body: DailyServiceTimes
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR
-        )
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_DAILY_SERVICE_TIMES, childId)
 
         db.transaction { it.upsertChildDailyServiceTimes(childId, body) }
 
@@ -69,9 +65,7 @@ class DailyServiceTimesController(
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesDelete.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR
-        )
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_DAILY_SERVICE_TIMES, childId)
 
         db.transaction { it.deleteChildDailyServiceTimes(childId) }
 
