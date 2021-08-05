@@ -9,10 +9,10 @@ import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.AssistanceNeedId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,7 +27,7 @@ import java.util.UUID
 @RestController
 class AssistanceNeedController(
     private val assistanceNeedService: AssistanceNeedService,
-    private val acl: AccessControlList
+    private val accessControl: AccessControl
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
@@ -37,7 +37,7 @@ class AssistanceNeedController(
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED, childId)
         return assistanceNeedService.createAssistanceNeed(
             db,
             user = user,
@@ -53,7 +53,7 @@ class AssistanceNeedController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceNeed>> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).let(::ok)
     }
 
@@ -65,7 +65,7 @@ class AssistanceNeedController(
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
-        acl.getRolesForAssistanceNeed(user, assistanceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeed.UPDATE, assistanceNeedId)
         return assistanceNeedService.updateAssistanceNeed(
             db,
             user = user,
@@ -81,7 +81,7 @@ class AssistanceNeedController(
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
-        acl.getRolesForAssistanceNeed(user, assistanceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeed.DELETE, assistanceNeedId)
         assistanceNeedService.deleteAssistanceNeed(db, assistanceNeedId)
         return noContent()
     }
