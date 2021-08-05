@@ -278,7 +278,7 @@ const twoGuardiansChildren = [
     email: '',
     phone: '',
     language: 'fi',
-    dateOfBirth: '2014-07-07',
+    dateOfBirth: '2013-10-07',
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
     postOffice: 'Espoo',
