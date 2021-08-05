@@ -17,6 +17,8 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -98,9 +100,14 @@ class AccessControl(private val permittedRoleActions: PermittedRoleActions, priv
         assertPermission(roles, action, permittedRoleActions::unitActions)
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: UUID) {
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
         val roles = acl.getRolesForVasuDocument(user, id).roles
         assertPermission(roles, action, permittedRoleActions::vasuDocumentActions)
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuTemplate, @Suppress("UNUSED_PARAMETER") id: VasuTemplateId) {
+        // VasuTemplate actions in Espoo are global so the id parameter is ignored
+        assertPermission(user.roles, action, permittedRoleActions::vasuTemplateActions)
     }
 
     private inline fun <reified A> assertPermission(

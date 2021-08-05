@@ -5,14 +5,17 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_CLOSED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
@@ -29,23 +32,21 @@ import java.util.UUID
 
 @RestController
 class VasuController(
-    private val acl: AccessControlList
+    private val accessControl: AccessControl
 ) {
 
     data class CreateDocumentRequest(
-        val childId: UUID,
-        val templateId: UUID
+        val templateId: VasuTemplateId
     )
-    @PostMapping("/vasu")
+    @PostMapping("/children/{childId}/vasu")
     fun createDocument(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable childId: UUID,
         @RequestBody body: CreateDocumentRequest
-    ): UUID {
-        Audit.VasuDocumentCreate.log(body.childId)
-        acl.getRolesForChild(user, body.childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
-        )
+    ): VasuDocumentId {
+        Audit.VasuDocumentCreate.log(childId)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
         return db.transaction { tx ->
             tx.getVasuTemplate(body.templateId)?.let { template ->
@@ -54,20 +55,34 @@ class VasuController(
                 }
             } ?: throw NotFound("template ${body.templateId} not found")
 
-            tx.insertVasuDocument(body.childId, body.templateId)
+            tx.insertVasuDocument(childId, body.templateId)
         }
     }
+
+    @GetMapping("/children/{childId}/vasu-summaries")
+    fun getVasuSummariesByChild(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ): List<VasuDocumentSummary> {
+        Audit.ChildVasuDocumentsRead.log(childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_VASU_DOCUMENT, childId)
+
+        return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
+    }
+
+    data class ChangeDocumentStateRequest(
+        val eventType: VasuDocumentEventType
+    )
 
     @GetMapping("/vasu/{id}")
     fun getDocument(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: VasuDocumentId
     ): VasuDocument {
         Audit.VasuDocumentRead.log(id)
-        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
-        )
+        accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
 
         return db.read { tx ->
             tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
@@ -84,13 +99,11 @@ class VasuController(
     fun putDocument(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
     ) {
         Audit.VasuDocumentUpdate.log(id)
-        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
-        )
+        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE, id)
 
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
@@ -110,35 +123,14 @@ class VasuController(
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
     }
 
-    @GetMapping("/children/{childId}/vasu-summaries")
-    fun getVasuSummariesByChild(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable childId: UUID
-    ): List<VasuDocumentSummary> {
-        Audit.ChildVasuDocumentsRead.log(childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
-        )
-
-        return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
-    }
-
-    data class ChangeDocumentStateRequest(
-        val eventType: VasuDocumentEventType
-    )
-
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
         Audit.VasuDocumentEventCreate.log(id)
-        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
-        )
 
         val events = if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
             listOf(PUBLISHED, body.eventType)
@@ -146,9 +138,20 @@ class VasuController(
             listOf(body.eventType)
         }
 
+        events.forEach { eventType ->
+            when (eventType) {
+                PUBLISHED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_PUBLISHED, id)
+                MOVED_TO_READY -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_READY, id)
+                RETURNED_TO_READY -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_RETURNED_TO_READY, id)
+                MOVED_TO_REVIEWED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_REVIEWED, id)
+                RETURNED_TO_REVIEWED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED, id)
+                MOVED_TO_CLOSED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_CLOSED, id)
+            }.exhaust()
+        }
+
         db.transaction { tx ->
             val currentState = tx.getVasuDocumentMaster(id)?.getState() ?: throw NotFound("Vasu was not found")
-            validateStateTransition(eventType = body.eventType, currentState = currentState, user = user)
+            validateStateTransition(eventType = body.eventType, currentState = currentState)
 
             if (events.contains(PUBLISHED)) {
                 tx.publishVasuDocument(id)
@@ -164,14 +167,16 @@ class VasuController(
         }
     }
 
-    private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState, user: AuthenticatedUser) {
+    private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState) {
         when (eventType) {
             PUBLISHED -> currentState !== VasuDocumentState.CLOSED
             MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
-            RETURNED_TO_READY -> user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+            RETURNED_TO_READY -> currentState === VasuDocumentState.REVIEWED
             MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
-            RETURNED_TO_REVIEWED -> user.hasOneOfRoles(UserRole.ADMIN)
-            MOVED_TO_CLOSED -> user.hasOneOfRoles(UserRole.ADMIN)
-        }.let { valid -> if (!valid) throw Conflict("Invalid or unauthorized state transition") }
+            RETURNED_TO_REVIEWED -> currentState === VasuDocumentState.CLOSED
+            MOVED_TO_CLOSED -> true
+        }
+            .exhaust()
+            .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
     }
 }

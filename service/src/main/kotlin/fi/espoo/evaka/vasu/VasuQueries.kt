@@ -4,13 +4,15 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UUID {
+fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTemplateId): VasuDocumentId {
     // language=sql
     val insertDocumentSql = """
         INSERT INTO vasu_document (child_id, template_id, modified_at) 
@@ -21,7 +23,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
     val documentId = createQuery(insertDocumentSql)
         .bind("childId", childId)
         .bind("templateId", templateId)
-        .mapTo<UUID>()
+        .mapTo<VasuDocumentId>()
         .one()
 
     // language=sql
@@ -41,7 +43,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
     return documentId
 }
 
-fun Database.Read.getVasuDocumentMaster(id: UUID): VasuDocument? {
+fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
     // language=sql
     val sql = """
         SELECT
@@ -76,7 +78,7 @@ fun Database.Read.getVasuDocumentMaster(id: UUID): VasuDocument? {
         .firstOrNull()
 }
 
-fun Database.Read.getLatestPublishedVasuDocument(id: UUID): VasuDocument? {
+fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocument? {
     // language=sql
     val sql = """
         SELECT
@@ -118,7 +120,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: UUID): VasuDocument? {
 }
 
 fun Database.Transaction.updateVasuDocumentMaster(
-    id: UUID,
+    id: VasuDocumentId,
     content: VasuContent,
     authorsContent: AuthorsContent,
     vasuDiscussionContent: VasuDiscussionContent,
@@ -148,7 +150,7 @@ fun Database.Transaction.updateVasuDocumentMaster(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.publishVasuDocument(id: UUID) {
+fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
     // language=sql
     val insertContentSql = """
         INSERT INTO vasu_content (document_id, published_at, content, authors_content, vasu_discussion_content, evaluation_discussion_content)
@@ -167,7 +169,7 @@ fun Database.Transaction.publishVasuDocument(id: UUID) {
 }
 
 data class SummaryResultRow(
-    val id: UUID,
+    val id: VasuDocumentId,
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val eventId: UUID? = null,
@@ -213,7 +215,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
         }
 }
 
-fun Database.Transaction.insertVasuDocumentEvent(documentId: UUID, eventType: VasuDocumentEventType, employeeId: UUID): VasuDocumentEvent {
+fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eventType: VasuDocumentEventType, employeeId: UUID): VasuDocumentEvent {
     val sql = """
         INSERT INTO vasu_document_event (vasu_document_id, employee_id, event_type)
         VALUES (:documentId, :employeeId, :eventType)

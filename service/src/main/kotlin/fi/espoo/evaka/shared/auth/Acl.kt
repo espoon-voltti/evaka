@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.Jdbi
@@ -272,7 +273,7 @@ WHERE dn.id = :noteId
         }
     )
 
-    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: VasuDocumentId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL

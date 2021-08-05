@@ -41,6 +41,8 @@ sealed interface DatabaseTable {
     sealed class ServiceNeedOption : DatabaseTable
     sealed class VardaDecision : DatabaseTable
     sealed class VardaPlacement : DatabaseTable
+    sealed class VasuDocument : DatabaseTable
+    sealed class VasuTemplate : DatabaseTable
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -74,6 +76,8 @@ typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
 typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>
+typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
+typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
 @JsonSerialize(converter = Id.ToJson::class)

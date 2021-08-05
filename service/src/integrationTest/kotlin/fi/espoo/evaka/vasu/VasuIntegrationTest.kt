@@ -9,6 +9,8 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -33,7 +35,7 @@ import kotlin.test.assertNull
 class VasuIntegrationTest : FullApplicationTest() {
     private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
-    lateinit var templateId: UUID
+    lateinit var templateId: VasuTemplateId
     lateinit var template: VasuTemplate
 
     @BeforeEach
@@ -58,8 +60,8 @@ class VasuIntegrationTest : FullApplicationTest() {
     @Test
     fun `creating new document`() {
         val documentId = postVasuDocument(
+            testChild_1.id,
             VasuController.CreateDocumentRequest(
-                childId = testChild_1.id,
                 templateId = templateId
             )
         )
@@ -103,8 +105,8 @@ class VasuIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating document content and authors`() {
         val documentId = postVasuDocument(
+            testChild_1.id,
             VasuController.CreateDocumentRequest(
-                childId = testChild_1.id,
                 templateId = templateId
             )
         )
@@ -147,8 +149,8 @@ class VasuIntegrationTest : FullApplicationTest() {
     @Test
     fun `publishing and state transitions`() {
         val documentId = postVasuDocument(
+            testChild_1.id,
             VasuController.CreateDocumentRequest(
-                childId = testChild_1.id,
                 templateId = templateId
             )
         )
@@ -293,11 +295,11 @@ class VasuIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun postVasuDocument(request: VasuController.CreateDocumentRequest): UUID {
-        val (_, res, result) = http.post("/vasu")
+    private fun postVasuDocument(childId: UUID, request: VasuController.CreateDocumentRequest): VasuDocumentId {
+        val (_, res, result) = http.post("/children/$childId/vasu")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
-            .responseObject<UUID>(objectMapper)
+            .responseObject<VasuDocumentId>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -312,7 +314,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getVasuDocument(id: UUID): VasuDocument {
+    private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
         val (_, res, result) = http.get("/vasu/$id")
             .asUser(adminUser)
             .responseObject<VasuDocument>(objectMapper)
@@ -321,7 +323,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun putVasuDocument(id: UUID, request: VasuController.UpdateDocumentRequest) {
+    private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {
         val (_, res, _) = http.put("/vasu/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
@@ -330,7 +332,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
-    private fun postVasuDocumentState(id: UUID, request: VasuController.ChangeDocumentStateRequest) {
+    private fun postVasuDocumentState(id: VasuDocumentId, request: VasuController.ChangeDocumentStateRequest) {
         val (_, res, _) = http.post("/vasu/$id/update-state")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
@@ -357,7 +359,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getVasuTemplate(id: UUID): VasuTemplate {
+    private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
         val (_, res, result) = http.get("/vasu/templates/$id")
             .asUser(adminUser)
             .responseObject<VasuTemplate>(objectMapper)
@@ -366,7 +368,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun deleteVasuTemplate(id: UUID, expectedStatus: Int = 200) {
+    private fun deleteVasuTemplate(id: VasuTemplateId, expectedStatus: Int = 200) {
         val (_, res, _) = http.delete("/vasu/templates/$id")
             .asUser(adminUser)
             .response()

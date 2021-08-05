@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -40,14 +41,14 @@ enum class VasuLanguage {
 }
 
 data class VasuDocumentSummary(
-    val id: UUID,
+    val id: VasuDocumentId,
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
 )
 
 data class VasuDocument(
-    val id: UUID,
+    val id: VasuDocumentId,
     val modifiedAt: HelsinkiDateTime,
     @Json
     val events: List<VasuDocumentEvent> = listOf(),

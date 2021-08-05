@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -17,7 +18,7 @@ class VasuTemplateTest {
     private fun currentlyValidTemplate(): VasuTemplateSummary {
         val today = HelsinkiDateTime.now().toLocalDate()
         return VasuTemplateSummary(
-            id = UUID.randomUUID(),
+            id = VasuTemplateId(UUID.randomUUID()),
             name = "foo",
             valid = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
             language = VasuLanguage.FI,

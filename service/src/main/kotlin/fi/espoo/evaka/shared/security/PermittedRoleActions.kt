@@ -28,6 +28,7 @@ interface PermittedRoleActions {
     fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed>
     fun unitActions(role: UserRole): Set<Action.Unit>
     fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument>
+    fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate>
 }
 
 /**
@@ -52,6 +53,7 @@ class StaticPermittedRoleActions(
     val serviceNeed: ActionsByRole<Action.ServiceNeed> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
     val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
+    val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
 ) : PermittedRoleActions {
     override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
@@ -69,6 +71,7 @@ class StaticPermittedRoleActions(
     override fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed> = serviceNeed[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()
     override fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument> = vasuDocument[role] ?: emptySet()
+    override fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate> = vasuTemplate[role] ?: emptySet()
 }
 
 typealias ActionsByRole<A> = Map<UserRole, Set<A>>

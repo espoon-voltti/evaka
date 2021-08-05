@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -137,7 +138,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getVasuTemplate(id: UUID): VasuTemplate {
+    private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
         val (_, res, result) = http.get("/vasu/templates/$id")
             .asUser(adminUser)
             .responseObject<VasuTemplate>(objectMapper)
@@ -146,7 +147,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun putVasuTemplateContent(id: UUID, request: VasuContent) {
+    private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
         val (_, res, _) = http.put("/vasu/templates/$id/content")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
@@ -155,7 +156,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
-    private fun deleteVasuTemplate(id: UUID) {
+    private fun deleteVasuTemplate(id: VasuTemplateId) {
         val (_, res, _) = http.delete("/vasu/templates/$id")
             .asUser(adminUser)
             .response()
