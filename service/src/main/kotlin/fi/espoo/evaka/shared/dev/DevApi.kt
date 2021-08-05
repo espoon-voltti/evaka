@@ -912,7 +912,6 @@ data class DevPerson(
 ) {
     fun toPersonDTO() = PersonDTO(
         id = this.id,
-        customerId = 0, // not used
         identity = this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) } ?: ExternalIdentifier.NoID(),
         firstName = this.firstName,
         lastName = this.lastName,

@@ -63,7 +63,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
 
         assertNotNull(fetchedPerson)
         assertNotNull(fetchedPerson.id)
-        assertNotNull(fetchedPerson.customerId)
         assertEquals(validSSN, (fetchedPerson.identity as ExternalIdentifier.SSN).ssn)
         assertEquals(LocalDate.of(2012, 5, 8), fetchedPerson.dateOfBirth)
         assertEquals("fi", fetchedPerson.language)
@@ -72,7 +71,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `createPersonFromVtj creates person with correct data`() {
         val tempId = UUID.randomUUID()
-        val tempCustomerId = 0L
         val validSSN = "010199-8137"
 
         val inputPerson = testPerson(validSSN)
@@ -80,7 +78,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val created = db.transaction { it.createPersonFromVtj(inputPerson) }
 
         assertNotEquals(tempId, created.id)
-        assertNotEquals(tempCustomerId, created.customerId)
 
         assertEquals(validSSN, created.identity.toString())
         assertEquals(inputPerson.dateOfBirth, created.dateOfBirth)
@@ -124,7 +121,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val actual = db.transaction { it.updatePersonFromVtj(updated) }
 
         assertEquals(updated.id, actual.id)
-        assertEquals(updated.customerId, actual.customerId)
 
         assertEquals(updated.identity.toString(), actual.identity.toString())
         assertEquals(updated.dateOfBirth, actual.dateOfBirth)
@@ -332,7 +328,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     private fun testPerson(validSSN: String): PersonDTO {
         return PersonDTO(
             id = UUID.randomUUID(),
-            customerId = 0L,
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",

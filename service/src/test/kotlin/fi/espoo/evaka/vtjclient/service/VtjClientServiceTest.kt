@@ -278,7 +278,6 @@ class VtjClientServiceTest {
 
     private fun createPerson(
         id: UUID = UUID.randomUUID(),
-        customerId: Long = 100123,
         externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",
         lastName: String = "Testing",
@@ -292,7 +291,6 @@ class VtjClientServiceTest {
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27)
     ) = PersonDTO(
         id = id,
-        customerId = customerId,
         identity = externalId,
         firstName = firstName,
         lastName = lastName,

@@ -104,7 +104,6 @@ class PersonStorageService {
         nationalities = inputPerson.nationalities.map { it.countryCode },
         language = inputPerson.nativeLanguage?.code ?: "",
 
-        customerId = PLACEHOLDER,
         dateOfBirth = inputPerson.dateOfBirth,
         dateOfDeath = inputPerson.dateOfDeath,
         email = null,
@@ -173,10 +172,6 @@ class PersonStorageService {
             "sv" -> vtjPerson.citySe
             else -> vtjPerson.city
         }
-    }
-
-    companion object {
-        private const val PLACEHOLDER = 0L
     }
 }
 

@@ -71,7 +71,6 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
     val sql = """
         SELECT DISTINCT
             id,
-            customer_id,
             social_security_number,
             first_name,
             last_name,
@@ -330,7 +329,6 @@ fun Database.Read.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
 private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
     PersonDTO(
         id = rs.getUUID("id"),
-        customerId = rs.getLong("customer_id"),
         identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
             ?: ExternalIdentifier.NoID(),
         firstName = rs.getString("first_name"),

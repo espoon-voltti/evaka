@@ -264,14 +264,12 @@ class PersonController(
 
     data class PersonIdentityResponseJSON(
         val id: UUID,
-        val socialSecurityNumber: String?,
-        val customerId: Long?
+        val socialSecurityNumber: String?
     ) {
         companion object {
             fun from(person: PersonDTO): PersonIdentityResponseJSON = PersonIdentityResponseJSON(
                 id = person.id,
-                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn,
-                customerId = person.customerId
+                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn
             )
         }
     }

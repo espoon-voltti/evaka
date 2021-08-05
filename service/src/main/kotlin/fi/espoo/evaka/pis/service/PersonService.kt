@@ -215,7 +215,6 @@ class PersonService(
         PersonDTO(
             id = person.id,
             identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
-            customerId = null,
             firstName = person.firstName,
             lastName = person.lastName,
             email = null,
@@ -304,7 +303,6 @@ class PersonService(
 data class PersonDTO(
     val id: UUID,
     val identity: ExternalIdentifier,
-    val customerId: Long?,
     val firstName: String?,
     val lastName: String?,
     val email: String?,
@@ -332,7 +330,6 @@ data class PersonDTO(
 
 data class PersonJSON(
     val id: UUID,
-    val customerId: Long? = null,
     val socialSecurityNumber: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
@@ -356,7 +353,6 @@ data class PersonJSON(
     companion object {
         fun from(p: PersonDTO): PersonJSON = PersonJSON(
             id = p.id,
-            customerId = p.customerId,
             socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
             firstName = p.firstName,
             lastName = p.lastName,

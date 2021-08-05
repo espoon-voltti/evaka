@@ -9,7 +9,6 @@ import LocalDate from 'lib-common/local-date'
 export interface PersonIdentity {
   id: UUID
   socialSecurityNumber: string | null
-  customerId: number | null
 }
 
 export interface PersonDetails {

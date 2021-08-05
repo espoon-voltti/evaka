@@ -141,7 +141,6 @@ internal val aliasedPersonColumns: (String) -> String = { table ->
 
 private val personColumns = listOf(
     "id",
-    "customer_id",
     "social_security_number",
     "first_name",
     "last_name",
@@ -180,7 +179,6 @@ private val toParentship: (String, String) -> (ResultSet, StatementContext) -> P
 internal val toPersonJSON: (String, ResultSet) -> PersonJSON = { table, rs ->
     PersonJSON(
         id = rs.getUUID("${table}_id"),
-        customerId = rs.getLong("${table}_customer_id"),
         socialSecurityNumber = rs.getString("${table}_social_security_number"),
         firstName = rs.getString("${table}_first_name"),
         lastName = rs.getString("${table}_last_name"),
