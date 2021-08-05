@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,8 +77,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         children = emptyList(),
         nationalities = emptySet(),
         nativeLanguage = null,
-        restrictedDetails = RestrictedDetails(enabled = false),
-        source = PersonDataSource.VTJ
+        restrictedDetails = RestrictedDetails(enabled = false)
     )
 
     @Test

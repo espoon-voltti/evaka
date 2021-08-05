@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
-import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
@@ -264,8 +263,7 @@ class PersonService(
                 emptySet()
             },
             residenceCode = person.residenceCode,
-            children = person.children.map(::toPersonWithChildrenDTO),
-            source = person.source
+            children = person.children.map(::toPersonWithChildrenDTO)
         )
 
     private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
@@ -291,8 +289,7 @@ class PersonService(
                 )
             ),
             residenceCode = person.residenceCode,
-            children = emptyList(),
-            source = PersonDataSource.DATABASE
+            children = emptyList()
         )
 
     private fun hasRestriction(person: VtjPersonDTO) = person.restrictedDetailsEnabled
@@ -331,7 +328,27 @@ data class PersonDTO(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false
-)
+) {
+    fun toVtjPersonDTO() = VtjPersonDTO(
+        id = this.id,
+        firstName = this.firstName ?: "",
+        lastName = this.lastName ?: "",
+        dateOfBirth = this.dateOfBirth,
+        dateOfDeath = this.dateOfDeath,
+        socialSecurityNumber = this.identity.toString(),
+        restrictedDetailsEndDate = this.restrictedDetailsEndDate,
+        restrictedDetailsEnabled = this.restrictedDetailsEnabled,
+        nativeLanguage = NativeLanguage(
+            code = this.language ?: ""
+        ),
+        streetAddress = this.streetAddress ?: "",
+        postalCode = this.postalCode ?: "",
+        city = this.postOffice ?: "",
+        streetAddressSe = "",
+        citySe = "",
+        residenceCode = this.residenceCode
+    )
+}
 
 data class PersonJSON(
     val id: UUID,
@@ -429,8 +446,7 @@ data class PersonWithChildrenDTO(
     val children: List<PersonWithChildrenDTO>,
     val nationalities: Set<Nationality>,
     val nativeLanguage: NativeLanguage?,
-    val restrictedDetails: RestrictedDetails,
-    val source: PersonDataSource
+    val restrictedDetails: RestrictedDetails
 )
 
 data class PersonAddressDTO(
@@ -456,8 +472,7 @@ private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPerson
         guardianIds = guardians.map { it.id }
     )
     initChildIfNotExists(tx, listOf(child.id))
-    return map(child, vtjPersonDTO.source)
-        .copy(guardians = guardians.map { map(it, vtjPersonDTO.source) })
+    return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
 private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
@@ -469,15 +484,10 @@ private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonD
         childIds = children.map { it.id }
     )
     initChildIfNotExists(tx, children.map { it.id })
-    return map(guardian, vtjPersonDTO.source)
-        .copy(children = children.map { map(it, vtjPersonDTO.source) })
+    return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
 }
 
 private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
-    if (inputPerson.source != PersonDataSource.VTJ) {
-        error("Cannot upsert VTJ person when data source is ${inputPerson.source}")
-    }
-
     val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 
     return if (existingPerson == null) {
@@ -548,29 +558,6 @@ private fun getPersonWithUpdatedProperties(sourcePerson: VtjPersonDTO, existingP
         nationalities = sourcePerson.nationalities.map { it.countryCode },
         language = sourcePerson.nativeLanguage?.code ?: ""
     )
-
-private fun map(source: PersonDTO, dataSource: PersonDataSource): VtjPersonDTO {
-    return VtjPersonDTO(
-        id = source.id,
-        firstName = source.firstName ?: "",
-        lastName = source.lastName ?: "",
-        dateOfBirth = source.dateOfBirth,
-        dateOfDeath = source.dateOfDeath,
-        socialSecurityNumber = source.identity.toString(),
-        source = dataSource,
-        restrictedDetailsEndDate = source.restrictedDetailsEndDate,
-        restrictedDetailsEnabled = source.restrictedDetailsEnabled,
-        nativeLanguage = NativeLanguage(
-            code = source.language ?: ""
-        ),
-        streetAddress = source.streetAddress ?: "",
-        postalCode = source.postalCode ?: "",
-        city = source.postOffice ?: "",
-        streetAddressSe = "",
-        citySe = "",
-        residenceCode = source.residenceCode
-    )
-}
 
 private fun getStreetAddressByLanguage(vtjPerson: VtjPersonDTO): String {
     if (vtjPerson.nativeLanguage == null || vtjPerson.streetAddressSe == "") {

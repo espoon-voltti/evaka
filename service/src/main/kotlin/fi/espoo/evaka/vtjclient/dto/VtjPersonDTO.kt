@@ -33,13 +33,7 @@ data class VtjPersonDTO(
 
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
-    val source: PersonDataSource,
 
     val streetAddressSe: String = "",
     val citySe: String = ""
 )
-
-enum class PersonDataSource {
-    VTJ,
-    DATABASE
-}
