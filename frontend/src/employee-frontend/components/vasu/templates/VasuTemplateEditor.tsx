@@ -421,59 +421,62 @@ export default React.memo(function VasuTemplateEditor() {
                               questionIndex
                             )}
                           </QuestionContainer>
-                          <AddNewContainer
-                            showOnHover={
-                              questionIndex < section.questions.length - 1
-                            }
-                          >
-                            <InlineButton
-                              onClick={() =>
-                                setAddingQuestion([
-                                  sectionIndex,
-                                  questionIndex + 1
-                                ])
+                          {!readonly && (
+                            <AddNewContainer
+                              showOnHover={
+                                questionIndex < section.questions.length - 1
                               }
-                              text={i18n.vasuTemplates.addNewQuestion}
-                              icon={faPlus}
-                              disabled={readonly}
-                            />
-                          </AddNewContainer>
+                            >
+                              <InlineButton
+                                onClick={() =>
+                                  setAddingQuestion([
+                                    sectionIndex,
+                                    questionIndex + 1
+                                  ])
+                                }
+                                text={i18n.vasuTemplates.addNewQuestion}
+                                icon={faPlus}
+                                disabled={readonly}
+                              />
+                            </AddNewContainer>
+                          )}
                         </Fragment>
                       ))}
                     </FixedSpaceColumn>
-                    {section.questions.length === 0 && (
+                    {section.questions.length === 0 && !readonly && (
                       <AddNewContainer showOnHover={false}>
                         <InlineButton
                           onClick={() => setAddingQuestion([sectionIndex, 0])}
                           text={i18n.vasuTemplates.addNewQuestion}
                           icon={faPlus}
-                          disabled={readonly}
                         />
                       </AddNewContainer>
                     )}
                   </SectionContainer>
-                  <AddNewContainer
-                    showOnHover={
-                      sectionIndex < template.value.content.sections.length - 1
-                    }
-                  >
-                    <InlineButton
-                      onClick={() => addSection(sectionIndex + 1)}
-                      text={i18n.vasuTemplates.addNewSection}
-                      icon={faPlus}
-                      disabled={readonly}
-                    />
-                  </AddNewContainer>
+                  {!readonly && (
+                    <AddNewContainer
+                      showOnHover={
+                        sectionIndex <
+                        template.value.content.sections.length - 1
+                      }
+                    >
+                      <InlineButton
+                        onClick={() => addSection(sectionIndex + 1)}
+                        text={i18n.vasuTemplates.addNewSection}
+                        icon={faPlus}
+                        disabled={readonly}
+                      />
+                    </AddNewContainer>
+                  )}
                 </Fragment>
               ))}
             </FixedSpaceColumn>
-            {template.value.content.sections.length === 0 && (
+            {template.value.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
                 <InlineButton
                   onClick={() => addSection(0)}
                   text={i18n.vasuTemplates.addNewSection}
                   icon={faPlus}
-                  disabled={readonly}
                 />
               </AddNewContainer>
             )}
