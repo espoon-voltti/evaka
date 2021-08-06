@@ -29,7 +29,6 @@ dependencies {
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
-        api("com.nhaarman:mockito-kotlin:1.6.0")
         api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
         api("com.zaxxer:HikariCP:4.0.3")
         api("io.github.microutils:kotlin-logging-jvm:2.0.8")
