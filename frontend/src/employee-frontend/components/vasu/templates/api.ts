@@ -23,6 +23,7 @@ export interface VasuTemplate {
   valid: FiniteDateRange
   language: VasuLanguage
   content: VasuContent
+  documentCount: number
 }
 
 export const vasuLanguages = ['FI', 'SV'] as const

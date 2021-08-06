@@ -35,9 +35,9 @@ fun Database.Transaction.insertVasuTemplate(
 fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
     // language=sql
     val sql = """
-        SELECT *
-        FROM vasu_template
-        WHERE id = :id
+        SELECT vt.*, (SELECT count(*) FROM vasu_document vd WHERE vt.id = vd.template_id) AS document_count
+        FROM vasu_template vt
+        WHERE vt.id = :id
     """.trimIndent()
 
     return createQuery(sql)

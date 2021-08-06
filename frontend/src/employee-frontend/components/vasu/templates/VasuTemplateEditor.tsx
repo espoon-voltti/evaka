@@ -62,6 +62,8 @@ export default React.memo(function VasuTemplateEditor() {
   useEffect(() => loadTemplate(id), [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
 
+  const readonly = !(template.isSuccess && template.value.documentCount === 0)
+
   function moveSection(index: number, dir: 'up' | 'down') {
     setDirty(true)
     setTemplate((res) =>
@@ -328,38 +330,45 @@ export default React.memo(function VasuTemplateEditor() {
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') setSectionNameEdit(null)
                         }}
+                        readonly={readonly}
                       />
                     ) : (
                       <H2
                         noMargin
-                        onClick={() => setSectionNameEdit(sectionIndex)}
+                        onClick={
+                          readonly
+                            ? undefined
+                            : () => setSectionNameEdit(sectionIndex)
+                        }
                         style={{ cursor: 'pointer' }}
                       >
                         {`${sectionIndex + 1}. ${section.name}`}
                       </H2>
                     )}
-                    <div className="hover-toolbar">
-                      <FixedSpaceRow spacing="xs" className="hover-toolbar">
-                        <IconButton
-                          icon={faArrowUp}
-                          onClick={() => moveSection(sectionIndex, 'up')}
-                          disabled={sectionIndex === 0}
-                        />
-                        <IconButton
-                          icon={faArrowDown}
-                          onClick={() => moveSection(sectionIndex, 'down')}
-                          disabled={
-                            sectionIndex ===
-                            template.value.content.sections.length - 1
-                          }
-                        />
-                        <IconButton
-                          icon={faTrash}
-                          onClick={() => removeSection(sectionIndex)}
-                          disabled={section.questions.length > 0}
-                        />
-                      </FixedSpaceRow>
-                    </div>
+                    {!readonly && (
+                      <div className="hover-toolbar">
+                        <FixedSpaceRow spacing="xs" className="hover-toolbar">
+                          <IconButton
+                            icon={faArrowUp}
+                            onClick={() => moveSection(sectionIndex, 'up')}
+                            disabled={sectionIndex === 0}
+                          />
+                          <IconButton
+                            icon={faArrowDown}
+                            onClick={() => moveSection(sectionIndex, 'down')}
+                            disabled={
+                              sectionIndex ===
+                              template.value.content.sections.length - 1
+                            }
+                          />
+                          <IconButton
+                            icon={faTrash}
+                            onClick={() => removeSection(sectionIndex)}
+                            disabled={section.questions.length > 0}
+                          />
+                        </FixedSpaceRow>
+                      </div>
+                    )}
                     <Gap />
                     <FixedSpaceColumn>
                       {section.questions.map((question, questionIndex) => (
@@ -367,68 +376,74 @@ export default React.memo(function VasuTemplateEditor() {
                           key={`question-${sectionIndex}-${questionIndex}`}
                         >
                           <QuestionContainer>
-                            <FixedSpaceRow
-                              spacing="xs"
-                              className="hover-toolbar"
-                            >
-                              <IconButton
-                                icon={faArrowUp}
-                                onClick={() =>
-                                  moveQuestion(
-                                    sectionIndex,
-                                    questionIndex,
-                                    'up'
-                                  )
-                                }
-                                disabled={questionIndex === 0}
-                              />
-                              <IconButton
-                                icon={faArrowDown}
-                                onClick={() =>
-                                  moveQuestion(
-                                    sectionIndex,
-                                    questionIndex,
-                                    'down'
-                                  )
-                                }
-                                disabled={
-                                  questionIndex === section.questions.length - 1
-                                }
-                              />
-                              <IconButton
-                                icon={faTrash}
-                                disabled={question.ophKey !== null}
-                                onClick={() =>
-                                  removeQuestion(sectionIndex, questionIndex)
-                                }
-                              />
-                            </FixedSpaceRow>
+                            {!readonly && (
+                              <FixedSpaceRow
+                                spacing="xs"
+                                className="hover-toolbar"
+                              >
+                                <IconButton
+                                  icon={faArrowUp}
+                                  onClick={() =>
+                                    moveQuestion(
+                                      sectionIndex,
+                                      questionIndex,
+                                      'up'
+                                    )
+                                  }
+                                  disabled={questionIndex === 0}
+                                />
+                                <IconButton
+                                  icon={faArrowDown}
+                                  onClick={() =>
+                                    moveQuestion(
+                                      sectionIndex,
+                                      questionIndex,
+                                      'down'
+                                    )
+                                  }
+                                  disabled={
+                                    questionIndex ===
+                                    section.questions.length - 1
+                                  }
+                                />
+                                <IconButton
+                                  icon={faTrash}
+                                  disabled={question.ophKey !== null}
+                                  onClick={() =>
+                                    removeQuestion(sectionIndex, questionIndex)
+                                  }
+                                />
+                              </FixedSpaceRow>
+                            )}
                             {renderQuestion(
                               question,
                               sectionIndex,
                               questionIndex
                             )}
                           </QuestionContainer>
-                          <AddNewContainer
-                            showOnHover={
-                              questionIndex < section.questions.length - 1
-                            }
-                          >
-                            <InlineButton
-                              onClick={() =>
-                                setAddingQuestion([
-                                  sectionIndex,
-                                  questionIndex + 1
-                                ])
+                          {!readonly && (
+                            <AddNewContainer
+                              showOnHover={
+                                questionIndex < section.questions.length - 1
                               }
-                              text={i18n.vasuTemplates.addNewQuestion}
-                              icon={faPlus}
-                            />
-                          </AddNewContainer>
+                            >
+                              <InlineButton
+                                onClick={() =>
+                                  setAddingQuestion([
+                                    sectionIndex,
+                                    questionIndex + 1
+                                  ])
+                                }
+                                text={i18n.vasuTemplates.addNewQuestion}
+                                icon={faPlus}
+                                disabled={readonly}
+                              />
+                            </AddNewContainer>
+                          )}
                         </Fragment>
                       ))}
                     </FixedSpaceColumn>
-                    {section.questions.length === 0 && (
+                    {section.questions.length === 0 && !readonly && (
                       <AddNewContainer showOnHover={false}>
                         <InlineButton
                           onClick={() => setAddingQuestion([sectionIndex, 0])}
@@ -438,21 +453,25 @@ export default React.memo(function VasuTemplateEditor() {
                       </AddNewContainer>
                     )}
                   </SectionContainer>
-                  <AddNewContainer
-                    showOnHover={
-                      sectionIndex < template.value.content.sections.length - 1
-                    }
-                  >
-                    <InlineButton
-                      onClick={() => addSection(sectionIndex + 1)}
-                      text={i18n.vasuTemplates.addNewSection}
-                      icon={faPlus}
-                    />
-                  </AddNewContainer>
+                  {!readonly && (
+                    <AddNewContainer
+                      showOnHover={
+                        sectionIndex <
+                        template.value.content.sections.length - 1
+                      }
+                    >
+                      <InlineButton
+                        onClick={() => addSection(sectionIndex + 1)}
+                        text={i18n.vasuTemplates.addNewSection}
+                        icon={faPlus}
+                        disabled={readonly}
+                      />
+                    </AddNewContainer>
+                  )}
                 </Fragment>
               ))}
             </FixedSpaceColumn>
-            {template.value.content.sections.length === 0 && (
+            {template.value.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
                 <InlineButton
                   onClick={() => addSection(0)}
@@ -478,9 +497,10 @@ export default React.memo(function VasuTemplateEditor() {
                   }
                 })
               }}
+              disabled={readonly}
             />
 
-            {addingQuestion !== null && (
+            {addingQuestion !== null && !readonly && (
               <CreateQuestionModal
                 onSave={(question) => {
                   if (addingQuestion === null) return
