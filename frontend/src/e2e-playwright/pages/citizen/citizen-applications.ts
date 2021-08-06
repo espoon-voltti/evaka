@@ -2,6 +2,7 @@ import { Page } from 'playwright'
 import {
   waitUntilEqual,
   waitUntilFalse,
+  waitUntilDefined,
   waitUntilTrue
 } from 'e2e-playwright/utils'
 import {
@@ -191,7 +192,10 @@ class CitizenApplicationEditor {
   }
 
   async openSection(section: string) {
-    if ((await this.#section(section).getAttribute('data-status')) !== 'open') {
+    const status = await waitUntilDefined(() =>
+      this.#section(section).getAttribute('data-status')
+    )
+    if (status !== 'open') {
       await this.#sectionHeader(section).click()
     }
   }
@@ -315,7 +319,8 @@ class CitizenApplicationEditor {
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
     if (infoText === undefined) {
-      return await waitUntilFalse(() => this.#preferredStartDateInfo.visible)
+      await waitUntilFalse(() => this.#preferredStartDateInfo.visible)
+      return
     }
     await waitUntilEqual(() => this.#preferredStartDateInfo.innerText, infoText)
   }
