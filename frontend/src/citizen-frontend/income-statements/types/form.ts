@@ -1,10 +1,12 @@
 import { IncomeSource, OtherIncome } from './common'
 import { IncomeStatementBody } from './income-statement'
-import LocalDate from '../../../lib-common/local-date'
-import { stringToInt } from '../../../lib-common/utils/number'
+import LocalDate from 'lib-common/local-date'
+import { stringToInt } from 'lib-common/utils/number'
+import { Attachment } from 'lib-common/api-types/attachment'
 
 interface Base {
   startDate: string
+  attachments: Attachment[]
 }
 
 export interface Empty extends Base {
@@ -52,17 +54,22 @@ export function toIncomeStatementBody(
   const startDate = LocalDate.parseFiOrNull(formData.startDate)
   if (!startDate) return null
 
+  const base = {
+    startDate,
+    attachmentIds: formData.attachments.map((a) => a.id)
+  }
+
   switch (formData.incomeType) {
     case 'HIGHEST_FEE':
       return {
-        incomeType: 'HIGHEST_FEE',
-        startDate
+        ...base,
+        incomeType: 'HIGHEST_FEE'
       }
     case 'GROSS':
       if (!formData.incomeSource) return null
       return {
+        ...base,
         incomeType: 'GROSS',
-        startDate,
         incomeSource: formData.incomeSource,
         otherIncome: formData.otherIncome === null ? [] : formData.otherIncome
       }
@@ -85,8 +92,8 @@ export function toIncomeStatementBody(
       }
 
       return {
+        ...base,
         incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION',
-        startDate,
         estimatedMonthlyIncome,
         incomeStartDate,
         incomeEndDate: incomeEndDate === '' ? null : incomeEndDate
@@ -95,11 +102,14 @@ export function toIncomeStatementBody(
     case 'ENTREPRENEUR_LIMITED_COMPANY': {
       if (!formData.incomeSource) return null
       return {
+        ...base,
         incomeType: 'ENTREPRENEUR_LIMITED_COMPANY',
-        startDate,
         incomeSource: formData.incomeSource
       }
     }
+    case 'ENTREPRENEUR_SELF_EMPLOYED_ATTACHMENTS':
+    case 'ENTREPRENEUR_PARTNERSHIP':
+      return { ...base, incomeType: formData.incomeType }
     default:
       return null
   }

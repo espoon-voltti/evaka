@@ -1,10 +1,12 @@
 import { IncomeSource, OtherIncome } from './common'
 import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
+import { Attachment } from 'lib-common/api-types/attachment'
 
 interface Base {
   id: UUID
   startDate: LocalDate
+  attachments: Attachment[]
 }
 
 export interface HighestFee extends Base {
@@ -45,10 +47,12 @@ export type IncomeStatement =
   | EntrepreneurLimitedCompany
   | EntrepreneurPartnership
 
+type ToBody<T> = Omit<T, 'id' | 'attachments'> & { attachmentIds: UUID[] }
+
 export type IncomeStatementBody =
-  | Omit<HighestFee, 'id'>
-  | Omit<Gross, 'id'>
-  | Omit<EntrepreneurSelfEmployedEstimation, 'id'>
-  | Omit<EntrepreneurSelfEmployedAttachments, 'id'>
-  | Omit<EntrepreneurLimitedCompany, 'id'>
-  | Omit<EntrepreneurPartnership, 'id'>
+  | ToBody<HighestFee>
+  | ToBody<Gross>
+  | ToBody<EntrepreneurSelfEmployedEstimation>
+  | ToBody<EntrepreneurSelfEmployedAttachments>
+  | ToBody<EntrepreneurLimitedCompany>
+  | ToBody<EntrepreneurPartnership>

@@ -1181,19 +1181,6 @@ const sv: Translations = {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
   },
-  validationErrors: {
-    required: 'Värde saknas',
-    requiredSelection: 'Val saknas',
-    format: 'Ange rätt format',
-    ssn: 'Ogiltigt personbeteckning',
-    phone: 'Ogiltigt telefonnummer',
-    email: 'Ogiltig e-postadress',
-    validDate: 'Ange i format dd.mm.åååå',
-    preferredStartDate: 'Ogiltigt datum',
-    timeFormat: 'Ange i format hh:mm',
-    unitNotSelected: 'Välj minst en enhet',
-    emailsDoNotMatch: 'E-postadresserna är olika'
-  },
   income: {
     title: 'Tulotietojen ilmoitus',
     description: (
@@ -1213,6 +1200,7 @@ const sv: Translations = {
         </p>
       </>
     ),
+    addNew: 'Luo uusi tulotieto',
     incomeInfo: 'Tulotiedot',
     incomeType: {
       startDate: 'Voimassa alkaen',
@@ -1272,7 +1260,28 @@ const sv: Translations = {
         'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
       attachments:
         'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    attachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      description:
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      required: {
+        title: 'Tarvittavat liitteet'
+      }
     }
+  },
+  validationErrors: {
+    required: 'Värde saknas',
+    requiredSelection: 'Val saknas',
+    format: 'Ange rätt format',
+    ssn: 'Ogiltigt personbeteckning',
+    phone: 'Ogiltigt telefonnummer',
+    email: 'Ogiltig e-postadress',
+    validDate: 'Ange i format dd.mm.åååå',
+    preferredStartDate: 'Ogiltigt datum',
+    timeFormat: 'Ange i format hh:mm',
+    unitNotSelected: 'Välj minst en enhet',
+    emailsDoNotMatch: 'E-postadresserna är olika'
   },
   login: {
     failedModal: {

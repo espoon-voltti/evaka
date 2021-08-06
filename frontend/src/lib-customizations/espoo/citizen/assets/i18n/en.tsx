@@ -1254,6 +1254,7 @@ const en: Translations = {
         </p>
       </>
     ),
+    addNew: 'Luo uusi tulotieto',
     incomeInfo: 'Tulotiedot',
     incomeType: {
       startDate: 'Voimassa alkaen',
@@ -1313,6 +1314,14 @@ const en: Translations = {
         'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
       attachments:
         'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    attachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      description:
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      required: {
+        title: 'Tarvittavat liitteet'
+      }
     }
   },
   validationErrors: {

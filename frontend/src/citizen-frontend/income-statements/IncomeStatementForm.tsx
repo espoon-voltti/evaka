@@ -1,10 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import Container, { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { H1, H2, H3, Label } from 'lib-components/typography'
+import { H1, H2, H3, H4, Label } from 'lib-components/typography'
 import { useLang, useTranslation } from '../localization'
-import Footer from '../Footer'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
@@ -12,24 +10,36 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import Button from 'lib-components/atoms/buttons/Button'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import DatePicker from '../../lib-components/molecules/date-picker/DatePicker'
-import { formatDate } from '../../lib-common/date'
-import Checkbox from '../../lib-components/atoms/form/Checkbox'
-import MultiSelect from '../../lib-components/atoms/form/MultiSelect'
-import InputField from '../../lib-components/atoms/form/InputField'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { formatDate } from 'lib-common/date'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import InputField from 'lib-components/atoms/form/InputField'
 import { otherIncome } from './types/common'
 import * as Form from './types/form'
 import { errorToInputInfo, validDate, validInt } from '../form-validation'
 import { createIncomeStatement } from './api'
-import AsyncButton from '../../lib-components/atoms/buttons/AsyncButton'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import Footer from '../Footer'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { UUID } from 'lib-common/types'
+import { IncomeStatementForm } from './types/form'
+import {
+  saveAttachment,
+  deleteAttachment,
+  getAttachmentBlob
+} from '../attachments'
 
 const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
-  incomeType: null
+  incomeType: null,
+  attachments: []
 }
 
 function highestFeeIncome(startDate: string): Form.HighestFee {
-  return { startDate, incomeType: 'HIGHEST_FEE' }
+  return { startDate, incomeType: 'HIGHEST_FEE', attachments: [] }
 }
 
 function grossIncome(startDate: string): Form.Gross {
@@ -37,7 +47,8 @@ function grossIncome(startDate: string): Form.Gross {
     startDate,
     incomeType: 'GROSS',
     incomeSource: null,
-    otherIncome: null
+    otherIncome: null,
+    attachments: []
   }
 }
 
@@ -48,19 +59,43 @@ function entrepreneurIncome(startDate: string): Form.Entrepreneur {
     estimatedMonthlyIncome: '',
     incomeStartDate: '',
     incomeEndDate: '',
-    incomeSource: null
+    incomeSource: null,
+    attachments: []
   }
 }
 
 export default function IncomeStatementForm() {
   const t = useTranslation()
-  const [formData, setFormData] = React.useState(initialFormData)
+  const [formData, setFormData] =
+    React.useState<IncomeStatementForm>(initialFormData)
 
   const validatedData = Form.toIncomeStatementBody(formData)
   const isValid = validatedData !== null
+  const showAttachments = formData.incomeType !== null
 
-  const save = () =>
-    validatedData ? createIncomeStatement(validatedData) : Promise.resolve()
+  const save = React.useCallback(
+    () =>
+      validatedData ? createIncomeStatement(validatedData) : Promise.resolve(),
+    [validatedData, createIncomeStatement]
+  )
+
+  const handleAttachmentUploaded = React.useCallback(
+    (attachment: Attachment) =>
+      setFormData((prev) => ({
+        ...prev,
+        attachments: [...prev.attachments, attachment]
+      })),
+    []
+  )
+
+  const handleAttachmentDeleted = React.useCallback(
+    (id: UUID) =>
+      setFormData((prev) => ({
+        ...prev,
+        attachments: prev.attachments.filter((a) => a.id !== id)
+      })),
+    []
+  )
 
   return (
     <>
@@ -71,7 +106,7 @@ export default function IncomeStatementForm() {
           {t.income.description}
         </ContentArea>
         <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
+        <ContentArea opaque>
           <FixedSpaceColumn>
             <H2>{t.income.incomeInfo}</H2>
             <IncomeTypeSelection formData={formData} onChange={setFormData} />
@@ -90,6 +125,16 @@ export default function IncomeStatementForm() {
                 <EntrepreneurIncomeSelection
                   formData={formData}
                   onChange={setFormData}
+                />
+              </>
+            )}
+            {showAttachments && (
+              <>
+                <HorizontalLine slim />
+                <Attachments
+                  attachments={formData.attachments}
+                  onUploaded={handleAttachmentUploaded}
+                  onDeleted={handleAttachmentDeleted}
                 />
               </>
             )}
@@ -429,6 +474,60 @@ function LimitedCompanyIncomeSelection({
         />
       </FixedSpaceColumn>
     </Indent>
+  )
+}
+
+function Attachments({
+  attachments,
+  onUploaded,
+  onDeleted
+}: {
+  attachments: Attachment[]
+  onUploaded: (attachment: Attachment) => void
+  onDeleted: (attachmentId: UUID) => void
+}) {
+  const t = useTranslation()
+
+  const handleUpload = React.useCallback(
+    async (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ) => {
+      return (await saveAttachment(file, onUploadProgress)).map((id) => {
+        onUploaded({
+          id,
+          name: file.name,
+          contentType: file.type
+        })
+        return id
+      })
+    },
+    [onUploaded]
+  )
+
+  const handleDelete = React.useCallback(
+    async (id: UUID) => {
+      return (await deleteAttachment(id)).map(() => {
+        onDeleted(id)
+      })
+    },
+    [onDeleted]
+  )
+
+  return (
+    <>
+      <H3>{t.income.attachments.title}</H3>
+      <p>{t.income.attachments.description}</p>
+      <H4>{t.income.attachments.required.title}</H4>
+      <ul></ul>
+      <FileUpload
+        files={attachments}
+        onUpload={handleUpload}
+        onDelete={handleDelete}
+        onDownloadFile={getAttachmentBlob}
+        i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+      />
+    </>
   )
 }
 
