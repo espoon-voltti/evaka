@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { BoundingBox, toCssString, waitUntilEqual, waitUntilDefined } from '.'
+import {
+  BoundingBox,
+  toCssString,
+  waitUntilEqual,
+  waitUntilDefined,
+  waitUntilTrue
+} from '.'
 
 export class RawElement {
   constructor(public page: Page, public selector: string) {}
@@ -120,8 +126,12 @@ export class Collapsible extends RawElement {
   }
 
   async open() {
-    if (await this.isOpen()) return
-    await this.#trigger.click()
+    await waitUntilTrue(async () => {
+      if (!(await this.isOpen())) {
+        await this.#trigger.click()
+      }
+      return this.isOpen()
+    })
   }
 }
 
