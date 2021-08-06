@@ -13,8 +13,8 @@ import { Gap } from 'lib-components/white-space'
 import { faFile, faInfo } from 'lib-icons'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useTranslation } from '../../../localization'
-import { getAttachmentBlob } from '../../../applications/api'
 import { featureFlags } from 'lib-customizations/citizen'
+import { getAttachmentBlob } from '../../../attachments'
 
 type Props = {
   formData: ApplicationFormData

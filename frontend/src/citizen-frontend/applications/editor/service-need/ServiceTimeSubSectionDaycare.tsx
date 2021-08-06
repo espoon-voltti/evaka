@@ -14,7 +14,6 @@ import { H3, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
 import FileUpload from 'lib-components/molecules/FileUpload'
-import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useParams } from 'react-router-dom'
@@ -24,6 +23,11 @@ import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/citizen'
 import { defaultMargins } from 'lib-components/white-space'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveApplicationAttachment
+} from '../../../attachments'
 
 const Hyphenbox = styled.div`
   display: flex;
@@ -83,25 +87,28 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
-    saveAttachment(applicationId, file, 'EXTENDED_CARE', onUploadProgress).then(
-      (result) => {
-        result.isSuccess &&
-          updateFormData({
-            shiftCareAttachments: [
-              ...formData.shiftCareAttachments,
-              {
-                id: result.value,
-                name: file.name,
-                contentType: file.type,
-                updated: new Date(),
-                receivedAt: new Date(),
-                type: 'EXTENDED_CARE'
-              }
-            ]
-          })
-        return result
-      }
-    )
+    saveApplicationAttachment(
+      applicationId,
+      file,
+      'EXTENDED_CARE',
+      onUploadProgress
+    ).then((result) => {
+      result.isSuccess &&
+        updateFormData({
+          shiftCareAttachments: [
+            ...formData.shiftCareAttachments,
+            {
+              id: result.value,
+              name: file.name,
+              contentType: file.type,
+              updated: new Date(),
+              receivedAt: new Date(),
+              type: 'EXTENDED_CARE'
+            }
+          ]
+        })
+      return result
+    })
 
   const deleteExtendedCareAttachment = (id: UUID) =>
     deleteAttachment(id).then((result) => {

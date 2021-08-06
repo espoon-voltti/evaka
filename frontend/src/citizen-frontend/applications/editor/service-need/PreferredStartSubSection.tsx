@@ -17,11 +17,15 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { errorToInputInfo } from '../../../form-validation'
 import { useLang, useTranslation } from '../../../localization'
-import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
 import { isValidPreferredStartDate } from '../validations'
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveApplicationAttachment
+} from '../../../attachments'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
@@ -41,25 +45,28 @@ export default React.memo(function PreferredStartSubSection({
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
-    saveAttachment(applicationId, file, 'URGENCY', onUploadProgress).then(
-      (result) => {
-        result.isSuccess &&
-          updateFormData({
-            urgencyAttachments: [
-              ...formData.urgencyAttachments,
-              {
-                id: result.value,
-                name: file.name,
-                contentType: file.type,
-                updated: new Date(),
-                receivedAt: new Date(),
-                type: 'URGENCY'
-              }
-            ]
-          })
-        return result
-      }
-    )
+    saveApplicationAttachment(
+      applicationId,
+      file,
+      'URGENCY',
+      onUploadProgress
+    ).then((result) => {
+      result.isSuccess &&
+        updateFormData({
+          urgencyAttachments: [
+            ...formData.urgencyAttachments,
+            {
+              id: result.value,
+              name: file.name,
+              contentType: file.type,
+              updated: new Date(),
+              receivedAt: new Date(),
+              type: 'URGENCY'
+            }
+          ]
+        })
+      return result
+    })
 
   const deleteUrgencyAttachment = (id: UUID) =>
     deleteAttachment(id).then((result) => {
