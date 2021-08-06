@@ -64,7 +64,6 @@ import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -72,6 +71,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -83,6 +84,7 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ApplicationStateService(
     private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
@@ -111,7 +113,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+            accessControl.requirePermissionFor(user, Action.Application.SEND, applicationId)
         }
 
         verifyStatus(application, CREATED)
@@ -165,7 +167,7 @@ class ApplicationStateService(
 
     fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationVerify.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.MOVE_TO_WAITING_PLACEMENT, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
@@ -200,7 +202,7 @@ class ApplicationStateService(
 
     fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.RETURN_TO_SENT, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -209,7 +211,7 @@ class ApplicationStateService(
 
     fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationCancel.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CANCEL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
@@ -218,7 +220,7 @@ class ApplicationStateService(
 
     fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -227,7 +229,7 @@ class ApplicationStateService(
 
     fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -255,7 +257,7 @@ class ApplicationStateService(
 
     fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CANCEL_PLACEMENT_PLAN, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -266,7 +268,7 @@ class ApplicationStateService(
 
     fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.SEND_DECISIONS_WITHOUT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -275,7 +277,7 @@ class ApplicationStateService(
 
     fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.PlacementProposalCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.SEND_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -284,7 +286,7 @@ class ApplicationStateService(
 
     fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.WITHDRAW_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
@@ -300,7 +302,7 @@ class ApplicationStateService(
         rejectOtherReason: String? = null
     ) {
         Audit.PlacementPlanRespond.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Application.RESPOND_TO_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
@@ -319,8 +321,7 @@ class ApplicationStateService(
 
     fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: DaycareId) {
         Audit.PlacementProposalAccept.log(targetId = unitId)
-        if (!acl.getAuthorizedUnits(user).isAuthorized(unitId))
-            throw Forbidden("Not authorized to accept placement proposal for unit $unitId")
+        accessControl.requirePermissionFor(user, Action.Unit.ACCEPT_PLACEMENT_PROPOSAL, unitId)
 
         // language=sql
         val sql =
@@ -350,7 +351,7 @@ class ApplicationStateService(
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionConfirmMailed.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CONFIRM_DECISIONS_MAILED, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
@@ -365,7 +366,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            accessControl.requirePermissionFor(user, Action.Application.ACCEPT_DECISION, applicationId)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
@@ -422,7 +423,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            accessControl.requirePermissionFor(user, Action.Application.REJECT_DECISION, applicationId)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))

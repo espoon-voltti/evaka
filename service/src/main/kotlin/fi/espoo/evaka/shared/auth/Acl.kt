@@ -89,6 +89,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 """.trimIndent()
             ).bind("userId", user.id).bind("applicationId", applicationId)
                 .mapTo<UserRole>()
+                // todo: this may be unexpected behavior with the action based authorization model
                 .filter { it != UserRole.SPECIAL_EDUCATION_TEACHER || assistanceNeeded }
                 .toSet()
         }
