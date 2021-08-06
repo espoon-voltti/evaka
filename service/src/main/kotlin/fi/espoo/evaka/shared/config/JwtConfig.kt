@@ -7,29 +7,23 @@ package fi.espoo.evaka.shared.config
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.JWTVerifier
+import fi.espoo.evaka.JwtEnv
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPrivateKey
 import fi.espoo.voltti.auth.loadPublicKeys
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
-import org.springframework.core.env.get
-import java.net.URI
 
 @Configuration
 class JwtConfig {
     @Profile("production")
     @Bean
-    fun rsaJwtAlgorithm(env: Environment): Algorithm {
-        // FIXME: Hack to support two different ways of formatting the property name. Should be renamed when possible.
-        val privateKeyFile = env["fi.espoo.voltti.auth.jwt.provider.private.key.file"]
-            ?: env["fi.espoo.voltti.auth.jwt.provider.privateKeyFile"]
-            ?: error("Missing JWT private key file configuration")
+    fun rsaJwtAlgorithm(env: JwtEnv): Algorithm {
         @Suppress("deprecation")
-        val privateKey = loadPrivateKey(URI(privateKeyFile))
+        val privateKey = loadPrivateKey(env.privateKeyUrl)
         @Suppress("deprecation")
-        val publicKeys = loadPublicKeys(URI(env.getRequiredProperty("fi.espoo.voltti.auth.jwks.default.url")))
+        val publicKeys = loadPublicKeys(env.publicKeysUrl)
         return Algorithm.RSA256(JwtKeys("evaka-service", privateKey, publicKeys))
     }
 

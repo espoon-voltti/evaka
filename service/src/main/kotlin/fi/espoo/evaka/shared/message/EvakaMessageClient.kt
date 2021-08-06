@@ -9,10 +9,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
+import fi.espoo.evaka.MessageEnv
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.encodeSignedJwtToken
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 
 interface IEvakaMessageClient {
     fun send(msg: SuomiFiMessage)
@@ -54,11 +54,11 @@ class MockEvakaMessageClient : IEvakaMessageClient {
 }
 
 class EvakaMessageClient(
-    env: Environment,
     private val algorithm: Algorithm,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    env: MessageEnv
 ) : IEvakaMessageClient {
-    private val evakaMessageServiceUrl = env.getRequiredProperty("fi.espoo.evaka.message.url")
+    private val evakaMessageServiceUrl = env.url
 
     override fun send(msg: SuomiFiMessage) {
         logger.info("Sending suomi.fi message ${msg.documentId}")

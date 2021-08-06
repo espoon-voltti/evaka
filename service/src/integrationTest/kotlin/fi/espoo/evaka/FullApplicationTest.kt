@@ -55,6 +55,8 @@ abstract class FullApplicationTest {
 
     @Autowired
     protected lateinit var env: Environment
+    @Autowired
+    protected lateinit var evakaEnv: EvakaEnv
 
     protected lateinit var feeDecisionMinDate: LocalDate
     protected lateinit var vardaOrganizerName: String
@@ -72,11 +74,12 @@ abstract class FullApplicationTest {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connect()
         db.transaction { it.resetDatabase() }
-        feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
+        feeDecisionMinDate = evakaEnv.feeDecisionMinDate
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
-        vardaTokenProvider = VardaTempTokenProvider(http, env, objectMapper, vardaBaseUrl)
-        vardaClient = VardaClient(vardaTokenProvider, http, env, objectMapper, vardaBaseUrl)
-        vardaOrganizerName = env.getProperty("fi.espoo.varda.organizer", "Espoo")
+        val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
+        vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
+        vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv)
+        vardaOrganizerName = vardaEnv.organizer
     }
 
     @AfterAll

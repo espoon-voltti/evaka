@@ -2,6 +2,79 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 ---
+evaka:
+  aws:
+    region: eu-west-1
+  bucket:
+    attachments: evaka-attachments-it
+    data: evaka-data-it
+    decisions: evaka-daycaredecisions-it
+    fee_decisions: evaka-paymentdecisions-it
+    voucher_value_decisions: evaka-vouchervaluedecisions-it
+  email:
+    application_received:
+      sender_address:
+        fi: testemail_fi@test.com
+        sv: testemail_sv@test.com
+      sender_name:
+        fi: Test email sender fi
+        sv: Test email sender sv
+  fee_decision:
+    min_date: "2015-01-01"
+  frontend:
+    base_url:
+      fi: https://foo.espoonvarhaiskasvatus.fi
+      sv: https://esbosmabarnspedagogik.fi
+  integration:
+    dvv_modifications:
+      password: ""
+      product_code: ""
+      url: ""
+      user_id: ""
+      xroad_client_id: ""
+    koski:
+      secret: ""
+      source_system: TestSystemCode
+      url: ""
+      user: ""
+    message:
+      enabled: false
+    varda:
+      basic_auth: ""
+      organizer: Espoo
+      source_system: SourceSystemVarda
+      url: ""
+    vtj:
+      password: ""
+      username: ""
+      test:
+        use_actual_vtj: false
+      xroad:
+        address: https://fake.test
+        client:
+          instance: FI-TEST
+          member_class: MUN
+          member_code: 0101263-6
+          subsystem_code: evaka-test
+        service:
+          instance: FI-TEST
+          member_class: GOV
+          member_code: 0245437-2
+          service_code: HenkilonTunnusKysely
+          service_version: v1
+          subsystem_code: VTJkysely
+        trust_store:
+          location: classpath:xroad/trustStore.jks
+          password: password
+          type: JKS
+  jwt:
+    public_keys_url: classpath:evaka-integration-test/jwks.json
+  max_attachments_per_user: 2
+espoo:
+  integration:
+    invoice:
+      enabled: false
+
 debug: true
 
 spring:
@@ -32,85 +105,3 @@ logging:
             MessageTracing:
               received: TRACE
               sent: DEBUG
-
-aws:
-  region: eu-west-1
-
-fee_decision_min_date: "2015-01-01"
-
-fi:
-  espoo:
-    evaka:
-      maxAttachmentsPerUser: 2
-      message:
-        enabled: false
-    integration:
-      dvv-modifications-service:
-        password: ""
-        productCode: ""
-        url: ""
-        userId: ""
-        xRoadClientId: ""
-      invoice:
-        enabled: false
-      koski:
-        secret: ""
-        source_system: TestSystemCode
-        url: ""
-        user: ""
-      varda:
-        basic_auth: ""
-        url: ""
-        source_system: SourceSystemVarda
-    varda:
-      force:
-        sync: true
-      organizer: Espoo
-    voltti:
-      auth:
-        jwks:
-          default:
-            url: classpath:evaka-integration-test/jwks.json
-      document:
-        bucket:
-          attachments: evaka-attachments-it
-          daycaredecision: evaka-daycaredecisions-it
-          paymentdecision: evaka-paymentdecisions-it
-          vouchervaluedecision: evaka-vouchervaluedecisions-it
-          data: evaka-data-it
-      vtj:
-        client:
-          password: ""
-          username: ""
-        test:
-          use_actual_vtj: false
-        xroad:
-          address: https://fake.test
-          client:
-            instance: FI-TEST
-            memberClass: MUN
-            memberCode: 0101263-6
-            subSystemCode: evaka-test
-          service:
-            instance: FI-TEST
-            memberClass: GOV
-            memberCode: 0245437-2
-            serviceCode: HenkilonTunnusKysely
-            serviceVersion: v1
-            subSystemCode: VTJkysely
-          trustStore:
-            location: classpath:xroad/trustStore.jks
-            password: password
-            type: JKS
-application:
-  frontend:
-    baseurl: https://foo.espoonvarhaiskasvatus.fi
-    baseurl.sv: https://esbosmabarnspedagogik.fi
-  email:
-    address:
-      fi: testemail_fi@test.com
-      sv: testemail_sv@test.com
-    name:
-      fi: Test email sender fi
-      sv: Test email sender sv
-

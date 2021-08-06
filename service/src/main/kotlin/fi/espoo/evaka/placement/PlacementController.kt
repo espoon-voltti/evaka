@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.controllers.utils.noContent
@@ -25,7 +26,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.core.env.Environment
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -46,9 +46,9 @@ import java.util.UUID
 class PlacementController(
     private val acl: AccessControlList,
     private val asyncJobRunner: AsyncJobRunner,
-    env: Environment
+    env: EvakaEnv
 ) {
-    private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
+    private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
 
     @GetMapping
     fun getPlacements(

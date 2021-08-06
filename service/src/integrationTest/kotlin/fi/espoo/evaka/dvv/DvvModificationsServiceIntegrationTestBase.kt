@@ -6,6 +6,7 @@ package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
 import com.nhaarman.mockito_kotlin.mock
+import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.FridgeFamilyService
@@ -51,7 +52,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
         fridgeFamilyService = FridgeFamilyService(personService, parentshipService, asyncJobRunner)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv"
         requestCustomizerMock = mock()
-        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), env, mockDvvBaseUrl)
+        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl))
         dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, personService, fridgeFamilyService, asyncJobRunner)
     }
 

@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -11,7 +13,6 @@ import fi.espoo.evaka.shared.async.SendMessageNotificationEmail
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -19,17 +20,18 @@ import java.util.UUID
 class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner,
     private val emailClient: IEmailClient,
-    env: Environment
+    env: EvakaEnv,
+    emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.sendMessageNotificationEmail = ::sendMessageNotification
     }
 
-    val baseUrl: String = env.getRequiredProperty("application.frontend.baseurl")
-    val baseUrlSv: String = env.getRequiredProperty("application.frontend.baseurl.sv")
-    val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
-    val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
-    val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
+    val baseUrl: String = env.frontendBaseUrlFi
+    val baseUrlSv: String = env.frontendBaseUrlSv
+    val senderAddress: String = emailEnv.senderAddress
+    val senderNameFi: String = emailEnv.senderNameFi
+    val senderNameSv: String = emailEnv.senderNameSv
 
     fun getFromAddress(language: Language) = when (language) {
         Language.sv -> "$senderNameSv <$senderAddress>"

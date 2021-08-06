@@ -4,7 +4,8 @@
 
 package fi.espoo.evaka.shared.config
 
-import org.springframework.beans.factory.annotation.Value
+import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EvakaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -17,7 +18,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.ses.SesClient
-import java.net.URI
 
 @Configuration
 class AwsConfig {
@@ -27,24 +27,17 @@ class AwsConfig {
 
     @Bean
     @Profile("local")
-    fun amazonS3Local(
-        @Value("\${fi.espoo.voltti.s3mock.url}") s3MockUrl: String,
-        @Value("\${fi.espoo.voltti.document.bucket.paymentdecision}") feeDecisionBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.vouchervaluedecision}") voucherValueDecisionBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}") daycareDecisionBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.attachments}") attachmentsBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.data}") dataBucket: String
-    ): S3Client {
+    fun amazonS3Local(env: BucketEnv): S3Client {
         val client = S3Client.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(URI.create(s3MockUrl))
+            .endpointOverride(env.s3MockUrl)
             .credentialsProvider(
                 StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
             )
             .build()
 
-        for (bucket in listOf(daycareDecisionBucket, feeDecisionBucket, voucherValueDecisionBucket, attachmentsBucket, dataBucket)) {
+        for (bucket in env.allBuckets()) {
             val request = CreateBucketRequest.builder().bucket(bucket).build()
             client.createBucket(request)
         }
@@ -54,20 +47,14 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun amazonS3Prod(
-        @Value("\${aws.region}") region: String,
-        credentialsProvider: AwsCredentialsProvider
-    ): S3Client = S3Client.builder()
-        .region(Region.of(region))
+    fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client = S3Client.builder()
+        .region(env.awsRegion)
         .credentialsProvider(credentialsProvider)
         .build()
 
     @Bean
-    fun amazonSES(
-        @Value("\${aws.region}") region: String,
-        awsCredentialsProvider: AwsCredentialsProvider?
-    ): SesClient = SesClient.builder()
+    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient = SesClient.builder()
         .credentialsProvider(awsCredentialsProvider)
-        .region(Region.of(region))
+        .region(env.awsRegion)
         .build()
 }
