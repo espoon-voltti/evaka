@@ -26,15 +26,15 @@ class EspooConfig {
     fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
 
     @Bean
-    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceEnv>, objectMapper: ObjectMapper): InvoiceIntegrationClient =
-        when (env.invoiceEnabled) {
+    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, objectMapper: ObjectMapper): InvoiceIntegrationClient =
+        when (env.invoiceIntegrationEnabled) {
             true -> InvoiceIntegrationClient.Client(invoiceEnv.getObject(), objectMapper)
             false -> InvoiceIntegrationClient.MockClient(objectMapper)
         }
 
     @Bean
     @Lazy
-    fun espooInvoiceEnv(env: Environment) = EspooInvoiceEnv.fromEnvironment(env)
+    fun espooInvoiceIntegrationEnv(env: Environment) = EspooInvoiceIntegrationEnv.fromEnvironment(env)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
@@ -46,21 +46,21 @@ class EspooConfig {
     fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
 }
 
-data class EspooEnv(val invoiceEnabled: Boolean) {
+data class EspooEnv(val invoiceIntegrationEnabled: Boolean) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv = EspooEnv(
-            invoiceEnabled = env.lookup("espoo.integration.invoice.enabled", "fi.espoo.integration.invoice.enabled") ?: true
+            invoiceIntegrationEnabled = env.lookup("espoo.integration.invoice.enabled", "fi.espoo.integration.invoice.enabled") ?: true
         )
     }
 }
 
-data class EspooInvoiceEnv(
+data class EspooInvoiceIntegrationEnv(
     val url: String,
     val username: String,
     val password: Sensitive<String>
 ) {
     companion object {
-        fun fromEnvironment(env: Environment) = EspooInvoiceEnv(
+        fun fromEnvironment(env: Environment) = EspooInvoiceIntegrationEnv(
             url = env.lookup("espoo.integration.invoice.url", "fi.espoo.integration.invoice.url"),
             username = env.lookup("espoo.integration.invoice.username", "fi.espoo.integration.invoice.username"),
             password = Sensitive(env.lookup("espoo.integration.invoice.password", "fi.espoo.integration.invoice.password"))

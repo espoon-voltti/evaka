@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
-import fi.espoo.evaka.EspooInvoiceEnv
+import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
@@ -32,7 +32,7 @@ interface InvoiceIntegrationClient {
     }
 
     class Client(
-        private val env: EspooInvoiceEnv,
+        private val env: EspooInvoiceIntegrationEnv,
         private val objectMapper: ObjectMapper
     ) : InvoiceIntegrationClient {
         override fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
