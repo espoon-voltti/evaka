@@ -54,7 +54,7 @@ val preparatoryEnd: LocalTime = LocalTime.of(14, 0)
 val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
-val fiveYearOldFreeLimit: Duration = Duration.ofMinutes(4 * 60 + 15)
+val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15)
 
 private val logger = KotlinLogging.logger {}
 

@@ -47,6 +47,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -623,12 +624,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val feeDecisions = objectMapper.readValue<Wrapper<List<FeeDecision>>>(result.get()).data
         assertEquals(2, feeDecisions.size)
         feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }.let { draft ->
-            assertEquals(testAdult_1.id, draft?.headOfFamily?.id)
-            assertEquals(28900 + 14500, draft?.totalFee())
+            assertNotNull(draft)
+            assertEquals(testAdult_1.id, draft.headOfFamily.id)
+            assertEquals(28900 + 14500, draft.totalFee())
         }
         feeDecisions.find { it.status == FeeDecisionStatus.SENT }.let { sent ->
-            assertEquals(testAdult_1.id, sent?.headOfFamily?.id)
-            assertEquals(28900, sent?.totalFee())
+            assertNotNull(sent)
+            assertEquals(testAdult_1.id, sent.headOfFamily.id)
+            assertEquals(28900, sent.totalFee())
         }
     }
 

@@ -557,8 +557,9 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
     private fun assertVardaServiceNeedIds(evakaServiceNeedId: ServiceNeedId, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
-        assertEquals(expectedVardaDecisionId, vardaServiceNeed!!.vardaDecisionId)
-        assertEquals(expectedVardaPlacementId, vardaServiceNeed!!.vardaPlacementId)
+        assertNotNull(vardaServiceNeed)
+        assertEquals(expectedVardaDecisionId, vardaServiceNeed.vardaDecisionId)
+        assertEquals(expectedVardaPlacementId, vardaServiceNeed.vardaPlacementId)
     }
 
     private fun createServiceNeedAndFeeData(
@@ -611,11 +612,9 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
     private fun assertServiceNeedDiffSizes(diff: VardaChildCalculatedServiceNeedChanges?, expectedAdditions: Int, expectedUpdates: Int, expectedDeletes: Int) {
         assertNotNull(diff)
-        if (diff != null) {
-            assertEquals(expectedAdditions, diff.additions.size)
-            assertEquals(expectedUpdates, diff.updates.size)
-            assertEquals(expectedDeletes, diff.deletes.size)
-        }
+        assertEquals(expectedAdditions, diff.additions.size)
+        assertEquals(expectedUpdates, diff.updates.size)
+        assertEquals(expectedDeletes, diff.deletes.size)
     }
 
     private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate()): ServiceNeedId {

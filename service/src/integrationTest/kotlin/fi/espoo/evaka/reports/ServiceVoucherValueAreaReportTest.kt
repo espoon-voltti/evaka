@@ -117,7 +117,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: DaycareId, sum: Int) {
         val row = this.find { it.unit.id == unitId }
         assertNotNull(row)
-        assertEquals(sum, row!!.monthlyPaymentSum)
+        assertEquals(sum, row.monthlyPaymentSum)
     }
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))

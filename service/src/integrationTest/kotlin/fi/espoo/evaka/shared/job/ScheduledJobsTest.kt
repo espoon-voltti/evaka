@@ -41,6 +41,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -321,7 +322,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Test
     fun removeDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
+        val twelveHoursAgo = now - Duration.ofHours(12)
         val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
         val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {
@@ -379,7 +380,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Test
     fun removeOldBackupCareDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
+        val twelveHoursAgo = now - Duration.ofHours(12)
         val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
         val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {

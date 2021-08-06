@@ -150,8 +150,8 @@ class ChildImageTest : FullApplicationTest() {
             oldImageId
         )
 
-        assertEquals(file.inputStream.readAllBytes().asList(), response.body.inputStream.readAllBytes().asList())
-        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType)
+        assertEquals(file.inputStream.readAllBytes().asList(), response.body!!.inputStream.readAllBytes().asList())
+        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType!!)
 
         verify(documentService).stream(
             bucketName = "evaka-data-it",
