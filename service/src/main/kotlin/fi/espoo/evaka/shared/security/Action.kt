@@ -149,14 +149,15 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Placement(private val roles: EnumSet<UserRole>) : Action {
-        ;
+        CREATE_SERVICE_NEED(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ServiceNeed(private val roles: EnumSet<UserRole>) : Action {
-        ;
+        UPDATE(UNIT_SUPERVISOR),
+        DELETE(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
