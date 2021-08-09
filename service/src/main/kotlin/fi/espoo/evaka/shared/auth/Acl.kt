@@ -66,18 +66,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
     )
 
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: ApplicationId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read { it ->
-            val assistanceNeeded = it.createQuery(
-                // language=SQL
-                """
-SELECT (document -> 'careDetails' ->> 'assistanceNeeded')
-FROM application_form
-WHERE application_id = :applicationId AND latest IS TRUE;
-                """.trimIndent()
-            ).bind("applicationId", applicationId)
-                .mapTo<Boolean>()
-                .contains(true)
-
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -89,8 +78,6 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 """.trimIndent()
             ).bind("userId", user.id).bind("applicationId", applicationId)
                 .mapTo<UserRole>()
-                // todo: this may be unexpected behavior with the action based authorization model
-                .filter { it != UserRole.SPECIAL_EDUCATION_TEACHER || assistanceNeeded }
                 .toSet()
         }
     )

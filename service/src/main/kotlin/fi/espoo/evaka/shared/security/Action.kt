@@ -26,7 +26,7 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Application(private val roles: EnumSet<UserRole>) : Action {
-        READ(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        READ(SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE(SERVICE_WORKER),
 
         SEND(SERVICE_WORKER),

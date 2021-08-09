@@ -22,21 +22,44 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-class AccessControl(private val permittedRoleActions: PermittedRoleActions, private val acl: AccessControlList) {
+class AccessControl(
+    private val permittedRoleActions: PermittedRoleActions,
+    private val acl: AccessControlList,
+    private val jdbi: Jdbi
+) {
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
         assertGlobalPermission(user, action, permittedRoleActions::globalActions)
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
+        // special education teacher has extra read permission to applications with assistance need
+        val mapping = when (action) {
+            Action.Application.READ -> {
+                when (hasAssistanceNeed(id)) {
+                    false -> permittedRoleActions::applicationActions
+                    true -> { role: UserRole ->
+                        if (role == UserRole.SPECIAL_EDUCATION_TEACHER)
+                            permittedRoleActions.applicationActions(UserRole.SPECIAL_EDUCATION_TEACHER) + Action.Application.READ
+                        else
+                            permittedRoleActions.applicationActions(role)
+                    }
+                }
+            }
+            else -> permittedRoleActions::applicationActions
+        }
+
         assertPermission(
             user = user,
             getAclRoles = { acl.getRolesForApplication(user, id).roles },
             action = action,
-            mapping = permittedRoleActions::applicationActions
+            mapping = mapping
         )
     }
 
@@ -199,6 +222,20 @@ class AccessControl(private val permittedRoleActions: PermittedRoleActions, priv
             }
 
             throw Forbidden("Permission denied")
+        }
+    }
+
+    private fun hasAssistanceNeed(applicationId: ApplicationId): Boolean {
+        return Database(jdbi).read {
+            it.createQuery(
+                """
+SELECT (document -> 'careDetails' ->> 'assistanceNeeded')
+FROM application_form
+WHERE application_id = :applicationId AND latest IS TRUE;
+"""
+            ).bind("applicationId", applicationId)
+                .mapTo<Boolean>()
+                .contains(true)
         }
     }
 }

@@ -21,6 +21,6 @@ class SecurityConfig {
     fun permittedRoleActions(): PermittedRoleActions = StaticPermittedRoleActions()
 
     @Bean
-    fun accessControl(permittedRoleActions: PermittedRoleActions, acl: AccessControlList): AccessControl =
-        AccessControl(permittedRoleActions, acl)
+    fun accessControl(permittedRoleActions: PermittedRoleActions, acl: AccessControlList, jdbi: Jdbi): AccessControl =
+        AccessControl(permittedRoleActions, acl, jdbi)
 }
