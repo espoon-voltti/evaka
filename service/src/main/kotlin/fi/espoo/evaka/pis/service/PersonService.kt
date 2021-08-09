@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
@@ -31,7 +32,6 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import org.springframework.stereotype.Service
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -320,9 +320,9 @@ data class PersonDTO(
     val nationalities: List<String> = emptyList(),
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
-    val updatedFromVtj: Instant? = null,
-    val vtjGuardiansQueried: Instant? = null,
-    val vtjDependantsQueried: Instant? = null,
+    val updatedFromVtj: HelsinkiDateTime? = null,
+    val vtjGuardiansQueried: HelsinkiDateTime? = null,
+    val vtjDependantsQueried: HelsinkiDateTime? = null,
     val invoiceRecipientName: String = "",
     val invoicingStreetAddress: String = "",
     val invoicingPostalCode: String = "",
@@ -584,11 +584,11 @@ private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
 private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: UUID) =
     createUpdate("UPDATE person SET vtj_dependants_queried = :now WHERE id = :personId")
         .bind("personId", personId)
-        .bind("now", Instant.now())
+        .bind("now", HelsinkiDateTime.now())
         .execute()
 
 private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: UUID) =
     createUpdate("UPDATE person SET vtj_guardians_queried = :now WHERE id = :personId")
         .bind("personId", personId)
-        .bind("now", Instant.now())
+        .bind("now", HelsinkiDateTime.now())
         .execute()
