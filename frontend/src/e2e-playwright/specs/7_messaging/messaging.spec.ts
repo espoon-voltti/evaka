@@ -172,7 +172,6 @@ describe('Sending and receiving messages', () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
     const receivers = ['Esimies Essi']
-    await enduserLogin(citizenPage)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.sendNewMessage(title, content, receivers)
@@ -189,7 +188,6 @@ describe('Sending and receiving messages', () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
     const receivers = ['Esimies Essi', 'Kosmiset vakiot']
-    await enduserLogin(citizenPage)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.sendNewMessage(title, content, receivers)

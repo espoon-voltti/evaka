@@ -28,6 +28,10 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -367,31 +371,31 @@ class MessageQueriesTest : PureJdbiTest() {
                 )
             )
             tx.insertDaycareAclRow(daycareId = testDaycare.id, employeeId = employee1Id, role = UserRole.UNIT_SUPERVISOR)
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = group1Id, daycareId = testDaycare.id, name = "Testiläiset"))
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = group2Id, daycareId = testDaycare.id, name = "Testiläiset 2"))
-            listOf(group1Id, group2Id).map { tx.createDaycareGroupMessageAccount(it) }
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group1Id), daycareId = testDaycare.id, name = "Testiläiset"))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group2Id), daycareId = testDaycare.id, name = "Testiläiset 2"))
+            listOf(group1Id, group2Id).map { tx.createDaycareGroupMessageAccount(GroupId(it)) }
 
             // and person1 has a child who is placed into a group
             tx.insertTestPerson(DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"))
             tx.insertTestChild(DevChild(id = testChild_1.id))
-            tx.insertTestParentship(id = UUID.randomUUID(), childId = testChild_1.id, headOfChild = person1Id, startDate = startDate, endDate = endDate)
+            tx.insertTestParentship(id = ParentshipId(UUID.randomUUID()), childId = testChild_1.id, headOfChild = person1Id, startDate = startDate, endDate = endDate)
             tx.insertGuardian(guardianId = person1Id, childId = testChild_1.id)
             tx.insertTestPlacement(
-                id = placementId,
+                id = PlacementId(placementId),
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE,
                 startDate = startDate,
                 endDate = endDate
             )
-            tx.insertTestDaycareGroupPlacement(id = UUID.randomUUID(), daycarePlacementId = placementId, groupId = group1Id, startDate = startDate, endDate = endDate)
+            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
         }
 
         val (person1Account, group1Account, group2Account) = db.read {
             listOf(
                 it.getCitizenMessageAccount(person1Id),
-                it.getDaycareGroupMessageAccount(group1Id),
-                it.getDaycareGroupMessageAccount(group2Id)
+                it.getDaycareGroupMessageAccount(GroupId(group1Id)),
+                it.getDaycareGroupMessageAccount(GroupId(group2Id))
             )
         }
         val supervisorPersonalAccount = db.read {
