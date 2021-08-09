@@ -92,8 +92,7 @@ class MessageControllerCitizen(
         user: AuthenticatedUser,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getCitizenReceivers(accountId) }
+        return db.read { it.getCitizenReceivers(user.id) }
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)

@@ -273,9 +273,9 @@ fun Database.Read.getMessage(id: UUID): Message {
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(accountId: UUID): List<MessageAccount> {
+fun Database.Read.getCitizenReceivers(guardianId: UUID): List<MessageAccount> {
     val params = mapOf(
-        "accountId" to accountId,
+        "guardianId" to guardianId,
     )
 
     // language=SQL
@@ -285,11 +285,7 @@ WITH placement_ids AS (
     FROM guardian g
     JOIN placement pl
     ON g.child_id = pl.child_id
-    WHERE guardian_id = (
-        SELECT person_id AS id
-        FROM message_account
-        WHERE id = :accountId
-    )
+    WHERE guardian_id = :guardianId
     AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
 ),
 supervisors AS (

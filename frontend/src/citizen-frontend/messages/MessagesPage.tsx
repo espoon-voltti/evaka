@@ -38,9 +38,8 @@ const StyledFlex = styled(AdaptiveFlex)`
 `
 
 export default React.memo(function MessagesPage() {
-  const { accountId, loadAccount, selectedThread, refreshThreads } = useContext(
-    MessageContext
-  )
+  const { accountId, loadAccount, selectedThread, refreshThreads } =
+    useContext(MessageContext)
   useEffect(() => {
     if (!accountId.isSuccess) {
       loadAccount()

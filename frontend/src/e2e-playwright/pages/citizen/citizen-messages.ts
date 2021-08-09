@@ -44,7 +44,8 @@ export default class CitizenMessagesPage {
     return this.page.$$eval(
       '[data-qa="thread-list-item"]',
       (messages) => messages.length
-    )}
+    )
+  }
 
   async replyToFirstThread(content: string) {
     await this.#threadListItem.click()
