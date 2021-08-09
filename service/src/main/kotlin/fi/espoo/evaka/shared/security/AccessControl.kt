@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -16,6 +17,8 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,6 +26,10 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
 class AccessControl(private val permittedRoleActions: PermittedRoleActions, private val acl: AccessControlList) {
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
+        assertPermission(user.roles, action, permittedRoleActions::globalActions)
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
         val roles = acl.getRolesForApplication(user, id).roles
         assertPermission(roles, action, permittedRoleActions::applicationActions)
@@ -41,6 +48,11 @@ class AccessControl(private val permittedRoleActions: PermittedRoleActions, priv
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupCare, id: BackupCareId) {
         val roles = acl.getRolesForBackupCare(user, id).roles
         assertPermission(roles, action, permittedRoleActions::backupCareActions)
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
+        val roles = acl.getRolesForBackupPickup(user, id).roles
+        assertPermission(roles, action, permittedRoleActions::backupPickupActions)
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {
@@ -88,9 +100,14 @@ class AccessControl(private val permittedRoleActions: PermittedRoleActions, priv
         assertPermission(roles, action, permittedRoleActions::unitActions)
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: UUID) {
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
         val roles = acl.getRolesForVasuDocument(user, id).roles
         assertPermission(roles, action, permittedRoleActions::vasuDocumentActions)
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuTemplate, @Suppress("UNUSED_PARAMETER") id: VasuTemplateId) {
+        // VasuTemplate actions in Espoo are global so the id parameter is ignored
+        assertPermission(user.roles, action, permittedRoleActions::vasuTemplateActions)
     }
 
     private inline fun <reified A> assertPermission(

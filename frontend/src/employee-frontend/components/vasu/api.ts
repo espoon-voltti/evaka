@@ -112,7 +112,7 @@ export async function createVasuDocument(
   templateId: UUID
 ): Promise<Result<UUID>> {
   return client
-    .post<UUID>(`/vasu`, { childId, templateId })
+    .post<UUID>(`/children/${childId}/vasu`, { templateId })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

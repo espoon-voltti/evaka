@@ -5,11 +5,14 @@
 package fi.espoo.evaka.backuppickup
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.db.updateExactlyOne
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,7 +25,26 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class BackupPickupController(private val acl: AccessControlList) {
+class BackupPickupController(
+    private val accessControl: AccessControl,
+    private val acl: AccessControlList
+) {
+    @PostMapping("/children/{childId}/backup-pickups")
+    fun createForChild(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("childId") childId: UUID,
+        @RequestBody body: ChildBackupPickupContent
+    ): ResponseEntity<ChildBackupPickupCreateResponse> {
+        Audit.ChildBackupPickupCreate.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_PICKUP, childId)
+        return db.transaction { tx ->
+            tx.createBackupPickup(childId, body)
+        }.let {
+            ResponseEntity.ok(ChildBackupPickupCreateResponse(it))
+        }
+    }
+
     @GetMapping("/children/{childId}/backup-pickups")
     fun getForChild(
         db: Database.Connection,
@@ -30,33 +52,47 @@ class BackupPickupController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<List<ChildBackupPickup>> {
         Audit.ChildBackupPickupRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_PICKUP, childId)
 
         return db.transaction { tx ->
             tx.getBackupPickupsForChild(childId)
         }.let { ResponseEntity.ok(it) }
     }
 
-    @PostMapping("/children/{childId}/backup-pickups")
-    fun createForChild(
+    @PutMapping("/backup-pickups/{id}")
+    fun update(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID,
-        @RequestBody body: NewChildBackupPickup
-    ): ResponseEntity<ChildBackupPickupCreateResponse> {
-        Audit.ChildBackupPickupCreate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        @PathVariable("id") id: BackupPickupId,
+        @RequestBody body: ChildBackupPickupContent
+    ): ResponseEntity<Unit> {
+        Audit.ChildBackupPickupUpdate.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.BackupPickup.UPDATE, id)
         return db.transaction { tx ->
-            tx.createBackupPickup(
-                body
-            )
+            tx.updateBackupPickup(id, body)
         }.let {
-            ResponseEntity.ok(ChildBackupPickupCreateResponse(it))
+            ResponseEntity.noContent().build()
         }
     }
 
+    @DeleteMapping("/backup-pickups/{id}")
+    fun delete(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("id") id: BackupPickupId
+    ): ResponseEntity<Unit> {
+        Audit.ChildBackupPickupDelete.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.BackupPickup.DELETE, id)
+        db.transaction { tx ->
+            tx.deleteBackupPickup(id)
+        }
+        return ResponseEntity.noContent().build()
+    }
+
+    // TODO: Delete these after deployment
+
     @PutMapping("/children/{childId}/backup-pickups")
-    fun updateForChild(
+    fun updateForChildV0(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
@@ -66,7 +102,11 @@ class BackupPickupController(private val acl: AccessControlList) {
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         return db.transaction { tx ->
             tx.updateBackupPickup(
-                body
+                body.id,
+                ChildBackupPickupContent(
+                    name = body.name,
+                    phone = body.name
+                )
             )
         }.let {
             ResponseEntity.noContent().build()
@@ -74,10 +114,10 @@ class BackupPickupController(private val acl: AccessControlList) {
     }
 
     @DeleteMapping("/children/{childId}/backup-pickups/{id}")
-    fun delete(
+    fun deleteV0(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") id: UUID,
+        @PathVariable("id") id: BackupPickupId,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildBackupPickupDelete.log(targetId = childId)
@@ -89,69 +129,68 @@ class BackupPickupController(private val acl: AccessControlList) {
     }
 }
 
-fun Database.Transaction.deleteBackupPickup(
-    id: UUID
-) {
-    val deleted = this.createUpdate("DELETE FROM backup_pickup WHERE id = :id")
-        .bind("id", id)
-        .execute()
-
-    if (deleted == 0) throw NotFound("No backup pickup $id found")
-}
-
-fun Database.Read.getBackupPickupsForChild(childId: UUID): List<ChildBackupPickup> {
-    return createQuery("SELECT * FROM backup_pickup WHERE child_Id = :id")
-        .bind("id", childId)
-        .mapTo<ChildBackupPickup>()
-        .list()
-}
-
 fun Database.Transaction.createBackupPickup(
-    backupPickup: NewChildBackupPickup
-): UUID {
+    childId: UUID,
+    data: ChildBackupPickupContent
+): BackupPickupId {
     // language=sql
     val sql = """
         INSERT INTO backup_pickup (child_id, name, phone)
         VALUES (:childId, :name, :phone)
         RETURNING id
     """.trimIndent()
+
     return this.createQuery(sql)
-        .bind("childId", backupPickup.childId)
-        .bind("name", backupPickup.name)
-        .bind("phone", backupPickup.phone)
-        .mapTo<UUID>()
-        .first()
+        .bind("childId", childId)
+        .bind("name", data.name)
+        .bind("phone", data.phone)
+        .mapTo<BackupPickupId>()
+        .one()
+}
+
+fun Database.Read.getBackupPickupsForChild(childId: UUID): List<ChildBackupPickup> {
+    return createQuery("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = :id")
+        .bind("id", childId)
+        .mapTo<ChildBackupPickup>()
+        .list()
 }
 
 fun Database.Transaction.updateBackupPickup(
-    backupPickup: ChildBackupPickup
+    id: BackupPickupId,
+    data: ChildBackupPickupContent
 ) {
     // language=sql
     val sql = """
         UPDATE backup_pickup
-        SET
-            name = :name,
-            phone = :phone
+        SET name = :name, phone = :phone
         WHERE id  = :id
     """.trimIndent()
-    val updated = this.createUpdate(sql)
-        .bind("id", backupPickup.id)
-        .bind("name", backupPickup.name)
-        .bind("phone", backupPickup.phone)
-        .execute()
 
-    if (updated == 0) throw NotFound("No backup pickup ${backupPickup.id} found")
+    this.createUpdate(sql)
+        .bind("id", id)
+        .bind("name", data.name)
+        .bind("phone", data.phone)
+        .updateExactlyOne()
 }
 
-data class NewChildBackupPickup(
-    val childId: UUID,
+fun Database.Transaction.deleteBackupPickup(
+    id: BackupPickupId
+) {
+    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id")
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
+data class ChildBackupPickupContent(
     val name: String,
     val phone: String
 )
+
 data class ChildBackupPickup(
-    val id: UUID,
+    val id: BackupPickupId,
     val childId: UUID,
     val name: String,
     val phone: String
 )
-data class ChildBackupPickupCreateResponse(val id: UUID)
+
+data class ChildBackupPickupCreateResponse(val id: BackupPickupId)

@@ -12,10 +12,12 @@ import java.util.EnumSet
  * Role → action mapping
  */
 interface PermittedRoleActions {
+    fun globalActions(role: UserRole): Set<Action.Global>
     fun applicationActions(role: UserRole): Set<Action.Application>
     fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
     fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed>
     fun backupCareActions(role: UserRole): Set<Action.BackupCare>
+    fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
     fun childActions(role: UserRole): Set<Action.Child>
     fun dailyNoteActions(role: UserRole): Set<Action.DailyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
@@ -26,6 +28,7 @@ interface PermittedRoleActions {
     fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed>
     fun unitActions(role: UserRole): Set<Action.Unit>
     fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument>
+    fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate>
 }
 
 /**
@@ -34,10 +37,12 @@ interface PermittedRoleActions {
  * Uses system defaults, unless some mappings are overridden using constructor parameters
  */
 class StaticPermittedRoleActions(
+    val global: ActionsByRole<Action.Global> = getDefaults(),
     val application: ActionsByRole<Action.Application> = getDefaults(),
     val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
     val assistanceNeed: ActionsByRole<Action.AssistanceNeed> = getDefaults(),
     val backupCare: ActionsByRole<Action.BackupCare> = getDefaults(),
+    val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
     val child: ActionsByRole<Action.Child> = getDefaults(),
     val dailyNote: ActionsByRole<Action.DailyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
@@ -48,11 +53,14 @@ class StaticPermittedRoleActions(
     val serviceNeed: ActionsByRole<Action.ServiceNeed> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
     val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
+    val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
 ) : PermittedRoleActions {
+    override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
     override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
     override fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed> = assistanceNeed[role] ?: emptySet()
     override fun backupCareActions(role: UserRole): Set<Action.BackupCare> = backupCare[role] ?: emptySet()
+    override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
     override fun childActions(role: UserRole): Set<Action.Child> = child[role] ?: emptySet()
     override fun dailyNoteActions(role: UserRole): Set<Action.DailyNote> = dailyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
@@ -63,6 +71,7 @@ class StaticPermittedRoleActions(
     override fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed> = serviceNeed[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()
     override fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument> = vasuDocument[role] ?: emptySet()
+    override fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate> = vasuTemplate[role] ?: emptySet()
 }
 
 typealias ActionsByRole<A> = Map<UserRole, Set<A>>

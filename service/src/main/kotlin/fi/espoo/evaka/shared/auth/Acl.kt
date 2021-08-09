@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.Jdbi
@@ -189,6 +191,20 @@ WHERE bc.id = :backupCareId AND acl.employee_id = :userId
         }
     )
 
+    fun getRolesForBackupPickup(user: AuthenticatedUser, backupPickupId: BackupPickupId): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN backup_pickup bp ON acl.child_id = bp.child_id
+WHERE bp.id = :backupPickupId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("backupPickupId", backupPickupId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
     fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: ServiceNeedId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
@@ -257,7 +273,7 @@ WHERE dn.id = :noteId
         }
     )
 
-    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: VasuDocumentId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL

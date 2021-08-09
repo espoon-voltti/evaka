@@ -4,18 +4,18 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
 fun Database.Transaction.insertVasuTemplate(
     name: String,
     valid: FiniteDateRange,
     language: VasuLanguage,
     content: VasuContent
-): UUID {
+): VasuTemplateId {
     // language=sql
     val sql = """
         INSERT INTO vasu_template (valid, language, name, content) 
@@ -28,11 +28,11 @@ fun Database.Transaction.insertVasuTemplate(
         .bind("valid", valid)
         .bind("language", language)
         .bind("content", content)
-        .mapTo<UUID>()
+        .mapTo<VasuTemplateId>()
         .one()
 }
 
-fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
+fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
     // language=sql
     val sql = """
         SELECT vt.*, (SELECT count(*) FROM vasu_document vd WHERE vt.id = vd.template_id) AS document_count
@@ -63,7 +63,7 @@ fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary
         .list()
 }
 
-fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuContent) {
+fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {
     // language=sql
     val sql = """
         UPDATE vasu_template
@@ -77,7 +77,7 @@ fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuConten
         .updateExactlyOne()
 }
 
-fun Database.Read.getVasuTemplateForUpdate(id: UUID): VasuTemplateSummary? {
+fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSummary? {
     // language=sql
     val sql = """
         SELECT *,
@@ -94,7 +94,7 @@ fun Database.Read.getVasuTemplateForUpdate(id: UUID): VasuTemplateSummary? {
 }
 
 fun Database.Transaction.updateVasuTemplate(
-    id: UUID,
+    id: VasuTemplateId,
     params: VasuTemplateUpdate
 ) {
     // language=sql
@@ -112,7 +112,7 @@ fun Database.Transaction.updateVasuTemplate(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.deleteUnusedVasuTemplate(id: UUID) {
+fun Database.Transaction.deleteUnusedVasuTemplate(id: VasuTemplateId) {
     // language=sql
     val sql = """
         DELETE FROM vasu_template vt

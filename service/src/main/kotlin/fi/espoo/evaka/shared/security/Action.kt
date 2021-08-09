@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
+import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
@@ -13,6 +14,14 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import java.util.EnumSet
 
 sealed interface Action {
+    enum class Global(private val roles: EnumSet<UserRole>) : Action {
+        CREATE_VASU_TEMPLATE(),
+        READ_VASU_TEMPLATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class Application(private val roles: EnumSet<UserRole>) : Action {
         ;
 
@@ -21,14 +30,16 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class AssistanceAction(private val roles: EnumSet<UserRole>) : Action {
-        ;
+        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : Action {
-        ;
+        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -42,9 +53,28 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class BackupPickup(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE(UNIT_SUPERVISOR, STAFF),
+        DELETE(UNIT_SUPERVISOR, STAFF);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class Child(private val roles: EnumSet<UserRole>) : Action {
+        CREATE_ASSISTANCE_ACTION(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        READ_ASSISTANCE_ACTION(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        CREATE_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        READ_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         CREATE_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER);
+        READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER),
+        CREATE_BACKUP_PICKUP(UNIT_SUPERVISOR, STAFF),
+        READ_BACKUP_PICKUP(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_DAILY_SERVICE_TIMES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+        UPDATE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
+        DELETE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
+        CREATE_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        READ_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -107,7 +137,26 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class VasuDocument(private val roles: EnumSet<UserRole>) : Action {
+        READ(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        EVENT_PUBLISHED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        EVENT_MOVED_TO_READY(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        EVENT_RETURNED_TO_READY(UNIT_SUPERVISOR),
+        EVENT_MOVED_TO_REVIEWED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        EVENT_RETURNED_TO_REVIEWED(),
+        EVENT_MOVED_TO_CLOSED(),
         ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+
+    enum class VasuTemplate(private val roles: EnumSet<UserRole>) : Action {
+        READ(),
+        COPY(),
+        UPDATE(),
+        DELETE();
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

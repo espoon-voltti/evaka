@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,10 +9,10 @@ import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.AssistanceActionId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,7 +27,7 @@ import java.util.UUID
 @RestController
 class AssistanceActionController(
     private val assistanceActionService: AssistanceActionService,
-    private val acl: AccessControlList
+    private val accessControl: AccessControl
 ) {
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(
@@ -37,7 +37,7 @@ class AssistanceActionController(
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionCreate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_ACTION, childId)
         return assistanceActionService.createAssistanceAction(
             db,
             user = user,
@@ -53,7 +53,7 @@ class AssistanceActionController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceAction>> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
         return assistanceActionService.getAssistanceActionsByChildId(db, childId).let(::ok)
     }
 
@@ -65,7 +65,7 @@ class AssistanceActionController(
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionUpdate.log(targetId = assistanceActionId)
-        acl.getRolesForAssistanceAction(user, assistanceActionId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.AssistanceAction.UPDATE, assistanceActionId)
         return assistanceActionService.updateAssistanceAction(
             db,
             user = user,
@@ -81,7 +81,7 @@ class AssistanceActionController(
         @PathVariable("id") assistanceActionId: AssistanceActionId
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceActionDelete.log(targetId = assistanceActionId)
-        acl.getRolesForAssistanceAction(user, assistanceActionId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.AssistanceAction.DELETE, assistanceActionId)
         assistanceActionService.deleteAssistanceAction(db, assistanceActionId)
         return noContent()
     }

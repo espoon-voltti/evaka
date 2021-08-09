@@ -4,14 +4,14 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
-import java.util.UUID
 
 data class VasuTemplate(
-    val id: UUID,
+    val id: VasuTemplateId,
     val name: String,
     val valid: FiniteDateRange,
     val language: VasuLanguage,
@@ -21,7 +21,7 @@ data class VasuTemplate(
 )
 
 data class VasuTemplateSummary(
-    val id: UUID,
+    val id: VasuTemplateId,
     val name: String,
     val valid: FiniteDateRange,
     val language: VasuLanguage,

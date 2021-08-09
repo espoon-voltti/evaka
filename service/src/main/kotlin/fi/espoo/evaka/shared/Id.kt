@@ -21,6 +21,7 @@ sealed interface DatabaseTable {
     sealed class Attachment : DatabaseTable
     sealed class Attendance : DatabaseTable
     sealed class BackupCare : DatabaseTable
+    sealed class BackupPickup : DatabaseTable
     sealed class Daycare : DatabaseTable
     sealed class DaycareDailyNote : DatabaseTable
     sealed class Decision : DatabaseTable
@@ -40,6 +41,8 @@ sealed interface DatabaseTable {
     sealed class ServiceNeedOption : DatabaseTable
     sealed class VardaDecision : DatabaseTable
     sealed class VardaPlacement : DatabaseTable
+    sealed class VasuDocument : DatabaseTable
+    sealed class VasuTemplate : DatabaseTable
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -52,6 +55,7 @@ typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 typealias AttachmentId = Id<DatabaseTable.Attachment>
 typealias AttendanceId = Id<DatabaseTable.Attendance>
 typealias BackupCareId = Id<DatabaseTable.BackupCare>
+typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias DaycareDailyNoteId = Id<DatabaseTable.DaycareDailyNote>
@@ -72,6 +76,8 @@ typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
 typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>
+typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
+typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
 @JsonSerialize(converter = Id.ToJson::class)
