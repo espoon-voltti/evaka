@@ -30,7 +30,7 @@ import {
 } from 'lib-icons'
 import {
   deleteGroup,
-  deletePlacement,
+  deleteGroupPlacement,
   getGroupDaycareDailyNotes,
   OccupancyResponse
 } from '../../../../api/unit'
@@ -179,7 +179,7 @@ function Group({
   ) => {
     if ('type' in row) {
       if (!row.id) throw Error('deleting placement without id')
-      void deletePlacement(row.daycarePlacementId, row.id).then(reload)
+      void deleteGroupPlacement(row.id).then(reload)
     } else {
       const { id, period } = row
       void updateBackupCare(id, { period, groupId: undefined }).then(reload)

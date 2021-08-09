@@ -680,7 +680,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     fun `transferring splits the group placement`() {
         val transferDate = placementStart.plusDays(5)
         db.transaction {
-            it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate)
+            it.transferGroup(groupPlacementId, groupId2, transferDate)
         }
 
         val groupPlacements = db.read {
@@ -707,7 +707,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `transferring deletes old group placement if start dates match`() {
         val transferDate = placementStart
-        db.transaction { it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate) }
+        db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
         val groupPlacements = db.read {
             it.getDetailedDaycarePlacements(

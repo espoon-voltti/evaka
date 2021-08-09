@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
@@ -106,6 +107,21 @@ JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId AND placement.id = :placementId
                 """.trimIndent()
             ).bind("userId", user.id).bind("placementId", placementId).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForGroupPlacement(user: AuthenticatedUser, groupPlacementId: GroupPlacementId): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM placement
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
+WHERE employee_id = :userId AND daycare_group_placement.id = :groupPlacementId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("groupPlacementId", groupPlacementId).mapTo<UserRole>().toSet()
         }
     )
 

@@ -106,6 +106,8 @@ sealed interface Action {
         UPDATE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
         DELETE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
 
+        READ_PLACEMENT(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+
         CREATE_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         READ_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF);
 
@@ -134,6 +136,14 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class GroupPlacement(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE(UNIT_SUPERVISOR),
+        DELETE(UNIT_SUPERVISOR);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class MobileDevice(private val roles: EnumSet<UserRole>) : Action {
         ;
 
@@ -149,6 +159,11 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Placement(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR),
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
+
+        CREATE_GROUP_PLACEMENT(UNIT_SUPERVISOR),
+
         CREATE_SERVICE_NEED(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -165,6 +180,12 @@ sealed interface Action {
     }
     enum class Unit(private val roles: EnumSet<UserRole>) : Action {
         READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF),
+
+        CREATE_PLACEMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
+        READ_PLACEMENT(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+
+        READ_PLACEMENT_PLAN(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR),
+
         ACCEPT_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

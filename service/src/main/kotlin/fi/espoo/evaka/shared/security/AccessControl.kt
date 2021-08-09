@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
@@ -132,6 +133,15 @@ class AccessControl(
             getAclRoles = { acl.getRolesForUnitGroup(user, id).roles },
             action = action,
             mapping = permittedRoleActions::groupActions
+        )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.GroupPlacement, id: GroupPlacementId) {
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForGroupPlacement(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::groupPlacementActions
         )
     }
 

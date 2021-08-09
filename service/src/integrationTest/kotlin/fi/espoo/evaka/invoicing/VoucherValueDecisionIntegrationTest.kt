@@ -261,7 +261,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .objectBody(body, mapper = objectMapper)
             .response()
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
 
         val (_, _, data) = http.get("/placements", listOf("childId" to testChild_1.id))
@@ -284,7 +284,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .objectBody(body, mapper = objectMapper)
             .responseObject<Placement>(objectMapper)
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
 
         asyncJobRunner.runPendingJobsSync()

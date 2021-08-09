@@ -310,7 +310,7 @@ function mapApplicationsJson(
   }
 }
 
-export async function createPlacement(
+export async function createGroupPlacement(
   daycarePlacementId: UUID,
   groupId: UUID,
   startDate: LocalDate,
@@ -329,18 +329,27 @@ export async function createPlacement(
 }
 
 export async function transferGroup(
-  daycarePlacementId: UUID,
   groupPlacementId: UUID,
   groupId: UUID,
   startDate: LocalDate
 ): Promise<Result<null>> {
-  const url = `/placements/${daycarePlacementId}/group-placements/${groupPlacementId}/transfer`
+  const url = `/group-placements/${groupPlacementId}/transfer`
   const data = {
     groupId,
     startDate: startDate.formatIso()
   }
   return client
     .post(url, data)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteGroupPlacement(
+  groupPlacementId: UUID
+): Promise<Result<null>> {
+  const url = `/group-placements/${groupPlacementId}`
+  return client
+    .delete(url)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
@@ -372,17 +381,6 @@ export async function editGroup(
 export async function deleteGroup(daycareId: UUID, groupId: UUID) {
   const url = `/daycares/${daycareId}/groups/${groupId}`
   await client.delete(url)
-}
-
-export async function deletePlacement(
-  daycarePlacementId: UUID,
-  groupPlacementId: UUID
-): Promise<Result<null>> {
-  const url = `/placements/${daycarePlacementId}/group-placements/${groupPlacementId}`
-  return client
-    .delete(url)
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
 }
 
 export type OccupancyResponse = {
