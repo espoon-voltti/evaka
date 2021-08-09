@@ -8125,9 +8125,9 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xmldom@github:xmldom/xmldom#0.7.0":
+"xmldom@file:./xmldom-0.7.0.tgz::locator=evaka-api-gateways%40workspace%3A.":
   version: 0.7.0
-  resolution: "xmldom@https://github.com/xmldom/xmldom.git#commit=c568938641cc1f121cef5b4df80fcfda1e489b6e"
+  resolution: "xmldom@file:./xmldom-0.7.0.tgz::locator=evaka-api-gateways%40workspace%3A."
   checksum: c70718f88cc796368e04fc9074a491d5bda77ddbae9c9f958bd708ec61ca3be13ec26c8a01f6995e06a6e80f3afc5b6cc3b5b8ec3aad596ec6bb308b861c47b5
   languageName: node
   linkType: hard
