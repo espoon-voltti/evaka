@@ -152,17 +152,17 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val paosChild = children.firstOrNull { it.ophOrganizerOid == defaultPurchasedOrganizerOid }
         assertNotNull(paosChild)
 
-        val paosDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${paosChild!!.vardaChildId}") }
+        val paosDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${paosChild.vardaChildId}") }
         assertNotNull(paosDecision)
 
         val municipalChild = children.firstOrNull { it.ophOrganizerOid == defaultMunicipalOrganizerOid }
         assertNotNull(municipalChild)
 
-        val municipalDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${municipalChild!!.vardaChildId}/") }
+        val municipalDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${municipalChild.vardaChildId}/") }
         assertNotNull(municipalDecision)
 
-        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision!!.providerTypeCode)
-        assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, municipalDecision!!.providerTypeCode)
+        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision.providerTypeCode)
+        assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, municipalDecision.providerTypeCode)
     }
 
     @Test

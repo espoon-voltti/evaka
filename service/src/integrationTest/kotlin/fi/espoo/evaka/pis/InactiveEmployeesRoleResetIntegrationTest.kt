@@ -58,7 +58,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest() {
         val employeeId = db.transaction {
             it.insertTestEmployee(
                 DevEmployee(
-                    lastLogin = firstOfAugust2021.minus(31 + 30 + 31 + 1, ChronoUnit.DAYS),
+                    lastLogin = firstOfAugust2021.minus(31L + 30 + 31 + 1, ChronoUnit.DAYS),
                     roles = setOf(UserRole.ADMIN)
                 )
             )
@@ -118,7 +118,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest() {
     fun `scoped roles are reset when last_login is over 3 months ago`() {
         val employeeId = db.transaction {
             val employeeId = it.insertTestEmployee(
-                DevEmployee(lastLogin = firstOfAugust2021.minus(31 + 30 + 31 + 1, ChronoUnit.DAYS))
+                DevEmployee(lastLogin = firstOfAugust2021.minus(31L + 30 + 31 + 1, ChronoUnit.DAYS))
             )
             val areaId = it.insertTestCareArea(DevCareArea())
             val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))

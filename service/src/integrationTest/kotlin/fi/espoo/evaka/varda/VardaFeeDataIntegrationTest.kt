@@ -441,7 +441,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(2, newSentData.size)
         val originalData = newSentData[originalSentData.keys.first()]
         assertNotNull(originalData)
-        originalData!!.let { data ->
+        originalData.let { data ->
             assertEquals(originalFeeDecision.familySize, data.perheen_koko)
             assertEquals(testPeriod.start, data.alkamis_pvm)
             assertEquals(periodEndHalf.start.minusDays(1), data.paattymis_pvm)

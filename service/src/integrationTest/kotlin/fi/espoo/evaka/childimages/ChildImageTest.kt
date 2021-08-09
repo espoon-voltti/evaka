@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.childimages
 
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
@@ -150,8 +150,8 @@ class ChildImageTest : FullApplicationTest() {
             oldImageId
         )
 
-        assertEquals(file.inputStream.readAllBytes().asList(), response.body.inputStream.readAllBytes().asList())
-        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType)
+        assertEquals(file.inputStream.readAllBytes().asList(), response.body!!.inputStream.readAllBytes().asList())
+        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType!!)
 
         verify(documentService).stream(
             bucketName = "evaka-data-it",

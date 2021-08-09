@@ -681,7 +681,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `holidays longer than 7 days are included in preparatory study rights`() {
-        val holiday = FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1 + 8))
+        val holiday = FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1L + 8))
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
         insertAbsences(testChild_1.id, AbsenceType.PLANNED_ABSENCE, holiday)
 

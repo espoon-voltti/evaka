@@ -5,7 +5,7 @@
 package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockitokotlin2.mock
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalIdentifier

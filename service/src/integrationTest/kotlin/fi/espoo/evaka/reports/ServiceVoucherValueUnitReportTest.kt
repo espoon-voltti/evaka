@@ -268,11 +268,9 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
             it.type == type && it.realizedPeriod.start == periodStart && it.realizedPeriod.end == periodEnd
         }
         assertNotNull(row)
-        row!!.let {
-            assertEquals(value, row.serviceVoucherValue)
-            assertEquals(coPayment, row.serviceVoucherCoPayment)
-            assertEquals(realizedValue, row.realizedAmount)
-        }
+        assertEquals(value, row.serviceVoucherValue)
+        assertEquals(coPayment, row.serviceVoucherCoPayment)
+        assertEquals(realizedValue, row.realizedAmount)
     }
 
     private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
