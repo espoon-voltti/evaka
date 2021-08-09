@@ -133,7 +133,7 @@ class PersonService(
         childId: UUID
     ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
-    // Does a request to VTJ if person is not found in database
+    // Does a request to VTJ if person is not found in database or person data has not been initialized from VTJ
     fun getOrCreatePerson(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -141,7 +141,7 @@ class PersonService(
         readonly: Boolean = false
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
-        return if (person == null) {
+        return if (person?.updatedFromVtj == null) {
             val personDetails = personDetailsService.getBasicDetailsFor(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
