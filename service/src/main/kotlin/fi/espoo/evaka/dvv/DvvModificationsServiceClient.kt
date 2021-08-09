@@ -38,8 +38,8 @@ class DvvModificationsServiceClient(
 
     // Fetch the first modification token of the given date
     fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
-        logger.info { "Fetching the first modification token of $date from DVV modification service from $serviceUrl/api/v1/kirjausavain/$date" }
-        val (_, _, result) = fuel.get("$serviceUrl/api/v1/kirjausavain/$date")
+        logger.info { "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date" }
+        val (_, _, result) = fuel.get("$serviceUrl/kirjausavain/$date")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword.value)
@@ -64,8 +64,8 @@ class DvvModificationsServiceClient(
     }
 
     fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse {
-        logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/api/v1/muutokset" }
-        val (_, _, result) = fuel.post("$serviceUrl/api/v1/muutokset")
+        logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/muutokset" }
+        val (_, _, result) = fuel.post("$serviceUrl/muutokset")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword.value)
