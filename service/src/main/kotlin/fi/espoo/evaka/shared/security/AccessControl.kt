@@ -23,10 +23,8 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 class AccessControl(
@@ -39,28 +37,19 @@ class AccessControl(
         assertGlobalPermission(user, action, permittedRoleActions::globalActions)
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
-        // special education teacher has extra read permission to applications with assistance need
-        val mapping = when (action) {
-            Action.Application.READ -> {
-                when (hasAssistanceNeed(id)) {
-                    false -> permittedRoleActions::applicationActions
-                    true -> { role: UserRole ->
-                        if (role == UserRole.SPECIAL_EDUCATION_TEACHER)
-                            permittedRoleActions.applicationActions(UserRole.SPECIAL_EDUCATION_TEACHER) + Action.Application.READ
-                        else
-                            permittedRoleActions.applicationActions(role)
-                    }
-                }
-            }
-            else -> permittedRoleActions::applicationActions
-        }
+    fun getPermittedRoles(action: Action.Global): Set<UserRole> {
+        return UserRole.values()
+            .filter { permittedRoleActions.globalActions(it).contains(action) }
+            .toSet()
+            .plus(UserRole.ADMIN)
+    }
 
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
         assertPermission(
             user = user,
             getAclRoles = { acl.getRolesForApplication(user, id).roles },
             action = action,
-            mapping = mapping
+            mapping = permittedRoleActions::applicationActions
         )
     }
 
@@ -190,6 +179,15 @@ class AccessControl(
         )
     }
 
+    fun hasPermissionFor(user: AuthenticatedUser, action: Action.Unit, id: DaycareId): Boolean {
+        return hasPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForUnit(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::unitActions
+        )
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
         assertPermission(
             user = user,
@@ -204,17 +202,33 @@ class AccessControl(
         assertGlobalPermission(user, action, permittedRoleActions::vasuTemplateActions)
     }
 
+    private inline fun <reified A> hasGlobalPermission(
+        user: AuthenticatedUser,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> {
+        val globalRoles = user.roles - UserRole.SCOPED_ROLES
+        return (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
+    }
+
     private inline fun <reified A> assertGlobalPermission(
         user: AuthenticatedUser,
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        val globalRoles = user.roles - UserRole.SCOPED_ROLES
-        if (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
-            return
-        }
+        if (!hasGlobalPermission(user, action, mapping))
+            throw Forbidden("Permission denied")
+    }
 
-        throw Forbidden("Permission denied")
+    private inline fun <reified A> hasPermission(
+        user: AuthenticatedUser,
+        getAclRoles: () -> Set<UserRole>,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> {
+        if (hasGlobalPermission(user, action, mapping)) return true
+
+        return (getAclRoles().any { it == UserRole.ADMIN || mapping(it).contains(action) })
     }
 
     private inline fun <reified A> assertPermission(
@@ -223,29 +237,7 @@ class AccessControl(
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        try {
-            assertGlobalPermission(user, action, mapping)
-        } catch (e: Forbidden) {
-            val roles = getAclRoles()
-            if (roles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
-                return
-            }
-
+        if (!hasPermission(user, getAclRoles, action, mapping))
             throw Forbidden("Permission denied")
-        }
-    }
-
-    private fun hasAssistanceNeed(applicationId: ApplicationId): Boolean {
-        return Database(jdbi).read {
-            it.createQuery(
-                """
-SELECT (document -> 'careDetails' ->> 'assistanceNeeded')
-FROM application_form
-WHERE application_id = :applicationId AND latest IS TRUE;
-"""
-            ).bind("applicationId", applicationId)
-                .mapTo<Boolean>()
-                .contains(true)
-        }
     }
 }

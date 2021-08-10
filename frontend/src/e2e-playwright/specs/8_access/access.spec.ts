@@ -247,7 +247,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts, backup pickups sections', async () => {
+  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance and family contacts, backup pickups sections', async () => {
     await employeeLogin(page, 'UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -259,7 +259,7 @@ describe('Child information page sections', () => {
       assistance: true,
       backupCare: true,
       familyContacts: true,
-      childApplications: true,
+      childApplications: false,
       messageBlocklist: false
     })
   })

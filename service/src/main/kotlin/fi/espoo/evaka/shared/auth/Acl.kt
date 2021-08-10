@@ -38,6 +38,10 @@ sealed class AclAuthorization {
     data class Subset(override val ids: Set<DaycareId>) : AclAuthorization() {
         override fun isAuthorized(id: DaycareId): Boolean = ids.contains(id)
     }
+
+    fun isEmpty(): Boolean {
+        return this is Subset && this.ids.isEmpty()
+    }
 }
 
 class AccessControlList(private val jdbi: Jdbi) {
@@ -292,11 +296,14 @@ WHERE employee_id = :userId AND vasu_document.id = :documentId
     )
 }
 
-private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> =
-    createQuery(
+private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> {
+    if (roles?.isEmpty() == true) return emptySet()
+
+    return createQuery(
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
         .bind("userId", user.id)
         .bindNullable("roles", roles?.toTypedArray())
         .mapTo<DaycareId>()
         .toSet()
+}

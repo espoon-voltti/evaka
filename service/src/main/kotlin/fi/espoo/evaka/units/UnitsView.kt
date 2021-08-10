@@ -34,6 +34,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -48,7 +50,10 @@ val detailedDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRol
 
 @Controller
 @RequestMapping("/views/units")
-class UnitsView(private val acl: AccessControlList) {
+class UnitsView(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/{unitId}")
     fun getUnitViewData(
         db: Database,
@@ -61,8 +66,7 @@ class UnitsView(private val acl: AccessControlList) {
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<UnitDataResponse> {
         Audit.UnitView.log(targetId = unitId)
-        val currentUserRoles = acl.getRolesForUnit(user, unitId)
-        currentUserRoles.requireOneOfRoles(*basicDataRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_BASIC, unitId)
 
         val period = FiniteDateRange(from, to)
         val unitData = db.read {
@@ -83,7 +87,7 @@ class UnitsView(private val acl: AccessControlList) {
                 caretakers = caretakers
             )
 
-            if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
+            if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
                 val unitOccupancies = getUnitOccupancies(it, unitId, period)
                 val groupOccupancies = getGroupOccupancies(it, unitId, period)
                 val placementProposals = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
