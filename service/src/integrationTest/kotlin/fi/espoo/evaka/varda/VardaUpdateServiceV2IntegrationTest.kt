@@ -444,6 +444,68 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `updateChildData sends child service need fee data to varda with both guardians if they live in the same address`() {
+        db.transaction {
+            it.createUpdate("INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)")
+                .bind("guardianId", testAdult_2.id)
+                .bind("childId", testChild_1.id)
+                .execute()
+
+            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id IN ( <ids> )")
+                .bindList("ids", listOf(testAdult_1.id, testAdult_2.id))
+                .execute()
+        }
+
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 1)
+
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertEquals(2, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+    }
+
+    @Test
+    fun `updateChildData sends child service need fee data to varda with one guardian only if guardians live in different address`() {
+        db.transaction {
+            it.createUpdate("INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)")
+                .bind("guardianId", testAdult_2.id)
+                .bind("childId", testChild_1.id)
+                .execute()
+
+            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id IN ( <ids> )")
+                .bindList("ids", listOf(testAdult_1.id))
+                .execute()
+        }
+
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 1)
+
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertEquals(1, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+    }
+
+    @Test
     fun `updateChildData sends child service need to varda without the fee data if head of family is not a guardian`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()

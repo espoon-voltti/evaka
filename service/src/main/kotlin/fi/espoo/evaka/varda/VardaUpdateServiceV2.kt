@@ -397,6 +397,12 @@ fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServic
     return res.vardaPlacementId
 }
 
+private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Boolean {
+    val validResidenceCodes = guardians.map { g -> g.asuinpaikantunnus }
+        .filterNotNull().filter { asuinpaikantunnus -> asuinpaikantunnus.length > 0 }
+    return validResidenceCodes.size == guardians.size && validResidenceCodes.toSet().size == 1
+}
+
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
     val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
     check(guardians.isNotEmpty()) { error("VardaUpdate: could not create fee data for ${evakaServiceNeed.id}: child has no guardians") }
@@ -415,7 +421,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardians
+                guardians = if (guardiansLiveInSameAddress(guardians)) guardians else guardians.filter { guardian -> guardian.id == decision.headOfFamily.id }
             ) ?: error("VardaUpdate: client failed fee request for $feeId - see logs for details")
         } catch (e: Exception) {
             error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
@@ -450,7 +456,8 @@ data class VardaGuardianWithId(
     val henkilotunnus: String?,
     val henkilo_oid: String?,
     val etunimet: String,
-    val sukunimi: String
+    val sukunimi: String,
+    val asuinpaikantunnus: String?
 ) {
     fun toVardaGuardian(): VardaGuardian = VardaGuardian(
         henkilotunnus = henkilotunnus,
@@ -462,7 +469,7 @@ data class VardaGuardianWithId(
 
 fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
     return db.read {
-        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid, residence_code AS asuinpaikantunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
             .bind("id", childId)
             .mapTo<VardaGuardianWithId>()
             .list()
