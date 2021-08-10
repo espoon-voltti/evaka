@@ -5,11 +5,9 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -110,26 +108,6 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
         .toList()
 }
 
-fun Database.Transaction.createPerson(person: PersonIdentityRequest): PersonDTO {
-    // language=SQL
-    val sql =
-        """
-        INSERT INTO person (first_name, last_name, date_of_birth, social_security_number, language, email)
-        VALUES (:firstName, :lastName, :dateOfBirth, :ssn, :language, :email)
-        RETURNING *
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("firstName", person.firstName)
-        .bind("lastName", person.lastName)
-        .bind("dateOfBirth", getDobFromSsn(person.identity.ssn))
-        .bind("ssn", person.identity.ssn)
-        .bind("language", person.language)
-        .bind("email", person.email)
-        .map(toPersonDTO)
-        .first()
-}
-
 fun Database.Transaction.createPerson(person: CreatePersonBody): UUID {
     // language=SQL
     val sql =
@@ -214,6 +192,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         UPDATE person SET
             first_name = :firstName,
             last_name = :lastName,
+            social_security_number = :ssn,
             date_of_birth = :dateOfBirth,
             date_of_death = :dateOfDeath,
             language = :language,
@@ -231,6 +210,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
 
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
+        .bind("ssn", person.identity)
         .map(toPersonDTO)
         .first()
 }

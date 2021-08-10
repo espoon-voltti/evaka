@@ -10,7 +10,6 @@ import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.getGuardianDependants
@@ -181,16 +180,26 @@ class PersonService(
         return tx.getPersonById(id)!!
     }
 
-    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN) {
-        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
+    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN): PersonDTO {
+        val person = tx.getPersonById(id)?.copy(identity = ssn) ?: throw NotFound("Person $id not found")
 
-        when (person.identity) {
+        return when (person.identity) {
             is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
             is ExternalIdentifier.NoID -> {
                 if (tx.getPersonBySSN(ssn.ssn) != null) {
                     throw Conflict("User with same ssn already exists")
                 }
-                tx.addSSNToPerson(id, ssn.toString())
+
+                val personDetails =
+                    personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
+
+                if (personDetails is PersonDetails.Result) {
+                    val updatedPerson = getPersonWithUpdatedProperties(personDetails.vtjPerson.mapToDto(), person)
+                    tx.updatePersonFromVtj(updatedPerson)
+                    upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
+                } else {
+                    error("Failed to fetch person data from VTJ")
+                }
             }
         }.exhaust()
     }
@@ -397,14 +406,6 @@ data class PersonJSON(
         )
     }
 }
-
-data class PersonIdentityRequest(
-    val identity: ExternalIdentifier.SSN,
-    val firstName: String?,
-    val lastName: String?,
-    val email: String?,
-    val language: String?
-)
 
 data class ContactInfo(
     val email: String,

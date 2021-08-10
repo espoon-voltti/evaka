@@ -8,13 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.createEmptyPerson
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.resetDatabase
@@ -27,7 +25,6 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PersonQueriesIntegrationTest : PureJdbiTest() {
@@ -44,28 +41,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     fun `creating an empty person sets their date of birth to current date`() = db.transaction { tx ->
         val identity: PersonDTO = tx.createEmptyPerson()
         assertEquals(identity.dateOfBirth, LocalDate.now())
-    }
-
-    @Test
-    fun `create person`() {
-        val validSSN = "080512A918W"
-        val fetchedPerson = db.transaction { tx ->
-            tx.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(validSSN),
-                    firstName = "Matti",
-                    lastName = "Meikäläinen",
-                    email = "matti.meikalainen@example.com",
-                    language = "fi"
-                )
-            )
-        }
-
-        assertNotNull(fetchedPerson)
-        assertNotNull(fetchedPerson.id)
-        assertEquals(validSSN, (fetchedPerson.identity as ExternalIdentifier.SSN).ssn)
-        assertEquals(LocalDate.of(2012, 5, 8), fetchedPerson.dateOfBirth)
-        assertEquals("fi", fetchedPerson.language)
     }
 
     @Test

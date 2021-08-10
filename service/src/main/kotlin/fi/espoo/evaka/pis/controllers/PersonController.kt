@@ -178,10 +178,9 @@ class PersonController(
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
-        db.transaction {
+        val person = db.transaction {
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
-        val person = db.transaction { personService.getUpToDatePersonFromVtj(it, user, personId)!! }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 

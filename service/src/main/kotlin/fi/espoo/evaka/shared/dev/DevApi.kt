@@ -75,6 +75,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
@@ -908,7 +909,8 @@ data class DevPerson(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val dependants: List<DevPerson> = emptyList(),
-    val guardians: List<DevPerson> = emptyList()
+    val guardians: List<DevPerson> = emptyList(),
+    val updatedFromVtj: HelsinkiDateTime? = null
 ) {
     fun toPersonDTO() = PersonDTO(
         id = this.id,
