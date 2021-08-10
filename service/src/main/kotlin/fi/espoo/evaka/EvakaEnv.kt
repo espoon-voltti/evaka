@@ -230,10 +230,8 @@ data class DvvModificationsEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = DvvModificationsEnv(
-            url = env.lookup(
-                "evaka.integration.dvv_modifications.url",
-                "fi.espoo.integration.dvv-modifications-service.url"
-            ),
+            url = env.lookup("evaka.integration.dvv_modifications.url")
+                ?: env.lookup("fi.espoo.integration.dvv-modifications-service.url"),
             userId = env.lookup(
                 "evaka.integration.dvv_modifications.user_id",
                 "fi.espoo.integration.dvv-modifications-service.userId"
