@@ -11,6 +11,7 @@ import {
   PlacementPlanRejectReason,
   UnitProviderType
 } from 'lib-customizations/types'
+import { ServiceNeed } from './child'
 
 export interface CareArea {
   id: UUID
@@ -119,6 +120,7 @@ export interface DaycarePlacement {
   groupPlacements: DaycareGroupPlacement[]
   type: PlacementType
   missingServiceNeedDays: number
+  serviceNeeds: ServiceNeed[]
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -164,6 +166,7 @@ export interface DaycareGroupPlacementDetailed extends DaycareGroupPlacement {
   daycarePlacementEndDate: LocalDate
   daycarePlacementMissingServiceNeedDays: number
   child: ChildBasics
+  serviceNeeds: ServiceNeed[]
 }
 
 export const flatMapGroupPlacements = (
@@ -174,6 +177,7 @@ export const flatMapGroupPlacements = (
       .map<DaycareGroupPlacementDetailed>((groupPlacement) => ({
         ...groupPlacement,
         child: daycarePlacement.child,
+        serviceNeeds: daycarePlacement.serviceNeeds,
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,

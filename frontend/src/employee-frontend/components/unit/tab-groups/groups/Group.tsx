@@ -592,7 +592,19 @@ function Group({
                                   ? 'half'
                                   : 'full'
                               }
-                              label={i18n.placement.type[placement.type]}
+                              label={
+                                featureFlags.daycareApplication
+                                  .serviceNeedOptionsEnabled
+                                  ? placement.serviceNeeds
+                                      .filter(
+                                        (sn) =>
+                                          sn.startDate <= placement.endDate &&
+                                          sn.endDate >= placement.startDate
+                                      )
+                                      .map((sn) => sn.option.name)
+                                      .join(' / ')
+                                  : i18n.placement.type[placement.type]
+                              }
                             />
                           ) : null}
                         </Td>

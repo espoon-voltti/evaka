@@ -13,7 +13,7 @@ import { useTranslation } from '../../../state/i18n'
 import { DaycareGroup } from '../../../types/unit'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { UIContext } from '../../../state/ui'
-import { Translations } from 'lib-customizations/employee'
+import { featureFlags, Translations } from 'lib-customizations/employee'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
@@ -38,6 +38,7 @@ function renderMissingGroupPlacementRow(
     dateOfBirth,
     placementPeriod,
     gap,
+    serviceNeeds,
     placementType
   } = missingPlacement
 
@@ -63,7 +64,16 @@ function renderMissingGroupPlacementRow(
         {placementType && (
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
-            label={i18n.placement.type[placementType]}
+            label={
+              featureFlags.daycareApplication.serviceNeedOptionsEnabled
+                ? serviceNeeds
+                    .filter(
+                      (sn) => sn.startDate <= gap.end && sn.endDate >= gap.start
+                    )
+                    .map((sn) => sn.option.name)
+                    .join(' / ')
+                : i18n.placement.type[placementType]
+            }
           />
         )}
       </Td>
