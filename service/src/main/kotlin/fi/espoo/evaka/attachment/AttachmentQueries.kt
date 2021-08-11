@@ -44,15 +44,18 @@ fun Database.Transaction.insertAttachment(
         .bind("contentType", contentType)
         .let {
             when (attachTo) {
-                is AttachToApplication -> it
-                    .bind("applicationId", attachTo.applicationId)
-                    .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                is AttachToIncomeStatement -> it
-                    .bindNullable("applicationId", null as ApplicationId?)
-                    .bind("incomeStatementId", attachTo.incomeStatementId)
-                is AttachToNothing -> it
-                    .bindNullable("applicationId", null as ApplicationId?)
-                    .bindNullable("incomeStatementId", null as IncomeStatementId?)
+                is AttachToApplication ->
+                    it
+                        .bind("applicationId", attachTo.applicationId)
+                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
+                is AttachToIncomeStatement ->
+                    it
+                        .bindNullable("applicationId", null as ApplicationId?)
+                        .bind("incomeStatementId", attachTo.incomeStatementId)
+                is AttachToNothing ->
+                    it
+                        .bindNullable("applicationId", null as ApplicationId?)
+                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
             }
         }
         .bind("uploadedByEnduser", uploadedByEnduser)
@@ -140,7 +143,7 @@ fun Database.Transaction.associateAttachments(
         WHERE id = ANY(:attachmentIds)
           AND income_statement_id IS NULL and application_id IS NULL
           AND uploaded_by_person = :personId
-    """.trimIndent()
+        """.trimIndent()
     )
         .bind("incomeStatementId", incomeStatementId)
         .bind("attachmentIds", attachmentIds.toTypedArray())
@@ -161,7 +164,7 @@ fun Database.Transaction.dissociateAllAttachments(
         UPDATE attachment SET income_statement_id = NULL
         WHERE income_statement_id = :incomeStatementId
           AND uploaded_by_person = :personId
-    """.trimIndent()
+        """.trimIndent()
     )
         .bind("incomeStatementId", incomeStatementId)
         .bind("personId", personId)
