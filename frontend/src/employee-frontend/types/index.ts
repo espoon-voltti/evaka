@@ -12,6 +12,7 @@ export type CareTypeLabel =
   | 'preparatory'
   | 'backup-care'
   | 'temporary'
+  | 'school-shift-care'
 
 export interface User {
   id: UUID

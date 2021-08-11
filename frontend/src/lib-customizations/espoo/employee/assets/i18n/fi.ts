@@ -63,7 +63,8 @@ export const fi = {
       daycare5yo: 'Varhaiskasvatus',
       preparatory: 'Valmistava',
       'backup-care': 'Varasijoitus',
-      temporary: 'Tilapäinen'
+      temporary: 'Tilapäinen',
+      'school-shift-care': 'Koululaisten vuorohoito'
     },
     providerType: {
       MUNICIPAL: 'Kunnallinen',
