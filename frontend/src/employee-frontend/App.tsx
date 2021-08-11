@@ -388,7 +388,7 @@ export default function App() {
               component={ensureAuthenticated(WelcomePage)}
               title={i18n.titles.welcomePage}
             />
-            {featureFlags.vasu && [
+            {featureFlags.experimental?.vasu && [
               <RouteWithTitle
                 key="/vasu/:id"
                 exact

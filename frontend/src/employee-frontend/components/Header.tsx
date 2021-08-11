@@ -263,7 +263,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     </Link>
                   </RequireRole>
                 )}
-                {featureFlags.vasu && (
+                {featureFlags.experimental?.vasu && (
                   <RequireRole oneOf={['ADMIN']}>
                     <Link
                       to="/vasu-templates"

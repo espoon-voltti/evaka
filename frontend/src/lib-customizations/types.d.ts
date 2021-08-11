@@ -95,7 +95,6 @@ interface BaseFeatureFlags {
   messaging: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
-  vasu: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet
@@ -112,6 +111,7 @@ interface BaseFeatureFlags {
      * AND might be short-circuited if pilot unit access is enabled..
      */
     mobileDailyNotes?: boolean
+    vasu?: boolean
   }
 }
 

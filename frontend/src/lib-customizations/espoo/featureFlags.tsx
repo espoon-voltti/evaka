@@ -24,10 +24,10 @@ const features: Features = {
     messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
-    vasu: true,
     experimental: {
       ai: true,
-      mobileDailyNotes: true
+      mobileDailyNotes: true,
+      vasu: true
     }
   },
   staging: {
@@ -42,10 +42,10 @@ const features: Features = {
     messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
-    vasu: false,
     experimental: {
       ai: true,
-      mobileDailyNotes: false
+      mobileDailyNotes: false,
+      vasu: true
     }
   },
   prod: {
@@ -60,10 +60,10 @@ const features: Features = {
     messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
-    vasu: false,
     experimental: {
       ai: false,
-      mobileDailyNotes: false
+      mobileDailyNotes: false,
+      vasu: false
     }
   }
 }
