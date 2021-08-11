@@ -6,53 +6,47 @@ import { Attachment } from 'lib-common/api-types/attachment'
 interface Base {
   id: UUID
   startDate: LocalDate
-  attachments: Attachment[]
 }
 
 export interface HighestFee extends Base {
-  incomeType: 'HIGHEST_FEE'
+  type: 'HIGHEST_FEE'
 }
 
-export interface Gross extends Base {
-  incomeType: 'GROSS'
+export interface Income extends Base {
+  type: 'INCOME'
+  gross: Gross | null
+  entrepreneur: Entrepreneur | null
+  otherInfo: string
+  attachments: Attachment[]
+}
+
+export interface Gross {
   incomeSource: IncomeSource
   otherIncome: OtherIncome[]
 }
 
-export interface EntrepreneurSelfEmployedEstimation extends Base {
-  incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
+export interface Entrepreneur {
+  selfEmployed: SelfEmployedAttachments | SelfEmployedEstimation | null
+  limitedCompany: LimitedCompany | null
+  partnership: boolean
+  startupGrant: boolean
+}
+
+export interface SelfEmployedAttachments {
+  type: 'ATTACHMENTS'
+}
+
+export interface SelfEmployedEstimation {
+  type: 'ESTIMATION'
   estimatedMonthlyIncome: number
   incomeStartDate: LocalDate
   incomeEndDate: LocalDate | null
 }
 
-export interface EntrepreneurSelfEmployedAttachments extends Base {
-  incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ATTACHMENTS'
-}
+export type SelfEmployed = SelfEmployedAttachments | SelfEmployedEstimation
 
-export interface EntrepreneurLimitedCompany extends Base {
-  incomeType: 'ENTREPRENEUR_LIMITED_COMPANY'
+export interface LimitedCompany {
   incomeSource: IncomeSource
 }
 
-export interface EntrepreneurPartnership extends Base {
-  incomeType: 'ENTREPRENEUR_PARTNERSHIP'
-}
-
-export type IncomeStatement =
-  | HighestFee
-  | Gross
-  | EntrepreneurSelfEmployedEstimation
-  | EntrepreneurSelfEmployedAttachments
-  | EntrepreneurLimitedCompany
-  | EntrepreneurPartnership
-
-type ToBody<T> = Omit<T, 'id' | 'attachments'> & { attachmentIds: UUID[] }
-
-export type IncomeStatementBody =
-  | ToBody<HighestFee>
-  | ToBody<Gross>
-  | ToBody<EntrepreneurSelfEmployedEstimation>
-  | ToBody<EntrepreneurSelfEmployedAttachments>
-  | ToBody<EntrepreneurLimitedCompany>
-  | ToBody<EntrepreneurPartnership>
+export type IncomeStatement = HighestFee | Income

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -147,7 +148,7 @@ fun Database.Transaction.associateAttachments(
         .execute()
 
     if (numRows != attachmentIds.size) {
-        throw RuntimeException("Cannot associate all requested attachments")
+        throw BadRequest("Cannot associate all requested attachments")
     }
 }
 

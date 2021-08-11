@@ -1189,6 +1189,8 @@ export default {
     ),
     addNew: 'Luo uusi tulotieto',
     incomeInfo: 'Tulotiedot',
+    incomesRegisterConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
     incomeType: {
       startDate: 'Voimassa alkaen',
       title: 'Asiakasmaksun perusteet',
@@ -1202,8 +1204,6 @@ export default {
       title: 'Bruttotulotietojen täyttäminen',
       description:
         'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
-      consentIncomesRegister:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
       provideAttachments:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
       otherIncomeInfo:
@@ -1227,14 +1227,17 @@ export default {
       title: 'Yrittäjän tulotietojen täyttäminen',
       selfEmployed: 'Toiminimi',
       limitedCompany: 'Osakeyhtiö',
-      partnership: 'Avoin yhtiö tai kommandiittiyhtiö'
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      startupGrant: 'Yritykseni on saanut starttirahaa'
     },
     selfEmployed: {
       attachments:
         'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
       estimation: 'Täytän arvion keskimääräisistä kuukausitulostani.',
       estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
-      timeRange: 'Aikavälillä'
+      timeRange: 'Aikavälillä',
+      kelaConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta'
     },
     limitedCompany: {
       info: (
@@ -1243,10 +1246,12 @@ export default {
           Valitse sopiva tapa muiden tietojen toimittamiseen.
         </>
       ),
-      incomesRegister:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
       attachments:
         'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    moreInfo: {
+      title: 'Lisätietoja',
+      description: 'Tähän voit kirjoittaa lisätietoja tuloistasi.'
     },
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',

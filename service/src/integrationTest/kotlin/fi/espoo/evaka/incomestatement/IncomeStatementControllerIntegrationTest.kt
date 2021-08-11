@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import org.junit.jupiter.api.BeforeEach
@@ -37,7 +36,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                attachmentIds = listOf()
             )
         )
 
@@ -47,7 +45,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 IncomeStatement.HighestFee(
                     incomeStatements[0].id,
                     LocalDate.of(2021, 4, 3),
-                    attachments = listOf(),
                 )
             ),
             incomeStatements,
@@ -55,39 +52,23 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `create a gross income statement`() {
+    fun `create an income statement`() {
         createIncomeStatement(
-            IncomeStatementBody.Gross(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
-                incomeSource = IncomeSource.INCOMES_REGISTER,
-                otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
-                attachmentIds = listOf()
-            )
-        )
-
-        val incomeStatements = getIncomeStatements()
-        assertEquals(
-            listOf(
-                IncomeStatement.Gross(
-                    id = incomeStatements[0].id,
-                    startDate = LocalDate.of(2021, 4, 3),
+                gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
-                    attachments = listOf(),
-                )
-            ),
-            incomeStatements,
-        )
-    }
-
-    @Test
-    fun `create a self-employed income statement`() {
-        createIncomeStatement(
-            IncomeStatementBody.EntrepreneurSelfEmployedEstimation(
-                startDate = LocalDate.of(2021, 4, 3),
-                estimatedMonthlyIncome = 1234,
-                incomeStartDate = LocalDate.of(2020, 1, 1),
-                incomeEndDate = null,
+                ),
+                entrepreneur = Entrepreneur(
+                    selfEmployed = SelfEmployed.Attachments,
+                    limitedCompany = LimitedCompany(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                    ),
+                    partnership = false,
+                    startupGrant = true,
+                ),
+                otherInfo = "foo bar",
                 attachmentIds = listOf()
             )
         )
@@ -95,58 +76,23 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         val incomeStatements = getIncomeStatements()
         assertEquals(
             listOf(
-                IncomeStatement.EntrepreneurSelfEmployedEstimation(
+                IncomeStatement.Income(
                     id = incomeStatements[0].id,
                     startDate = LocalDate.of(2021, 4, 3),
-                    estimatedMonthlyIncome = 1234,
-                    incomeDateRange = DateRange(LocalDate.of(2020, 1, 1), null),
-                    attachments = listOf(),
-                )
-            ),
-            incomeStatements,
-        )
-    }
-
-    @Test
-    fun `create a limited company income statement`() {
-        createIncomeStatement(
-            IncomeStatementBody.EntrepreneurLimitedCompany(
-                startDate = LocalDate.of(2021, 4, 3),
-                incomeSource = IncomeSource.INCOMES_REGISTER,
-                attachmentIds = listOf()
-            )
-        )
-
-        val incomeStatements = getIncomeStatements()
-        assertEquals(
-            listOf(
-                IncomeStatement.EntrepreneurLimitedCompany(
-                    id = incomeStatements[0].id,
-                    startDate = LocalDate.of(2021, 4, 3),
-                    incomeSource = IncomeSource.INCOMES_REGISTER,
-                    attachments = listOf(),
-                )
-            ),
-            incomeStatements,
-        )
-    }
-
-    @Test
-    fun `create a partnership income statement`() {
-        createIncomeStatement(
-            IncomeStatementBody.EntrepreneurPartnership(
-                startDate = LocalDate.of(2021, 4, 3),
-                attachmentIds = listOf()
-            )
-        )
-
-        val incomeStatements = getIncomeStatements()
-        assertEquals(
-            listOf(
-                IncomeStatement.EntrepreneurPartnership(
-                    id = incomeStatements[0].id,
-                    startDate = LocalDate.of(2021, 4, 3),
-                    attachments = listOf(),
+                    gross = Gross(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
+                    ),
+                    entrepreneur = Entrepreneur(
+                        selfEmployed = SelfEmployed.Attachments,
+                        limitedCompany = LimitedCompany(
+                            incomeSource = IncomeSource.INCOMES_REGISTER,
+                        ),
+                        partnership = false,
+                        startupGrant = true,
+                    ),
+                    otherInfo = "foo bar",
+                    attachments = listOf()
                 )
             ),
             incomeStatements,
@@ -158,8 +104,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         val attachmentId = uploadAttachment()
 
         createIncomeStatement(
-            IncomeStatementBody.EntrepreneurPartnership(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
+                gross = Gross(
+                    incomeSource = IncomeSource.ATTACHMENTS,
+                    otherIncome = setOf(),
+                ),
+                entrepreneur = null,
+                otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId)
             )
         )
@@ -167,9 +119,15 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         val incomeStatements = getIncomeStatements()
         assertEquals(
             listOf(
-                IncomeStatement.EntrepreneurPartnership(
+                IncomeStatement.Income(
                     id = incomeStatements[0].id,
                     startDate = LocalDate.of(2021, 4, 3),
+                    gross = Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        otherIncome = setOf(),
+                    ),
+                    entrepreneur = null,
+                    otherInfo = "foo bar",
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -179,12 +137,18 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `create an income statement with an attachment that does not exist`() {
-        val attachmentId = AttachmentId(UUID.randomUUID())
+        val nonExistingAttachmentId = AttachmentId(UUID.randomUUID())
 
         createIncomeStatement(
-            IncomeStatementBody.EntrepreneurPartnership(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
-                attachmentIds = listOf(attachmentId)
+                gross = Gross(
+                    incomeSource = IncomeSource.ATTACHMENTS,
+                    otherIncome = setOf(),
+                ),
+                entrepreneur = null,
+                otherInfo = "foo bar",
+                attachmentIds = listOf(nonExistingAttachmentId)
             ),
             400
         )
@@ -196,8 +160,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         val attachmentId = uploadAttachment(someoneElse)
 
         createIncomeStatement(
-            IncomeStatementBody.EntrepreneurPartnership(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
+                gross = Gross(
+                    incomeSource = IncomeSource.ATTACHMENTS,
+                    otherIncome = setOf(),
+                ),
+                entrepreneur = null,
+                otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId)
             ),
             400
@@ -211,28 +181,56 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         val attachment3 = uploadAttachment()
 
         createIncomeStatement(
-            IncomeStatementBody.EntrepreneurLimitedCompany(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
-                incomeSource = IncomeSource.INCOMES_REGISTER,
+                gross = Gross(
+                    incomeSource = IncomeSource.INCOMES_REGISTER,
+                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
+                ),
+                entrepreneur = Entrepreneur(
+                    selfEmployed = SelfEmployed.Attachments,
+                    limitedCompany = LimitedCompany(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                    ),
+                    partnership = false,
+                    startupGrant = true,
+                ),
+                otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1)
-            )
+            ),
         )
 
         val incomeStatementId = getIncomeStatements()[0].id
 
         updateIncomeStatement(
             incomeStatementId,
-            IncomeStatementBody.HighestFee(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
+                gross = null,
+                entrepreneur = Entrepreneur(
+                    selfEmployed = null,
+                    limitedCompany = null,
+                    partnership = true,
+                    startupGrant = false,
+                ),
+                otherInfo = "",
                 attachmentIds = listOf(attachment2, attachment3)
             )
         )
 
         assertEquals(
             listOf(
-                IncomeStatement.HighestFee(
+                IncomeStatement.Income(
                     id = incomeStatementId,
                     startDate = LocalDate.of(2021, 6, 11),
+                    gross = null,
+                    entrepreneur = Entrepreneur(
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = true,
+                        startupGrant = false,
+                    ),
+                    otherInfo = "",
                     attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
                 ),
             ),
@@ -242,6 +240,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
 
     private fun getIncomeStatements(): List<IncomeStatement> =
         http.get("/citizen/income-statements")
+            .timeout(1000000)
+            .timeoutRead(1000000)
             .asUser(citizen)
             .responseObject<List<IncomeStatement>>(objectMapper)
             .let { (_, _, body) -> body.get() }

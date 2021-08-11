@@ -38,13 +38,14 @@ class IncomeStatementController {
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(UserRole.END_USER)
-        try {
-            db.transaction { tx ->
-                val incomeStatementId = tx.createIncomeStatement(user.id, body)
-                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+        db.transaction { tx ->
+            val incomeStatementId = tx.createIncomeStatement(user.id, body)
+            when (body) {
+                is IncomeStatementBody.Income ->
+                    tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                else ->
+                    Unit
             }
-        } catch (e: RuntimeException) {
-            throw BadRequest(e.message ?: "")
         }
         return ResponseEntity.noContent().build()
     }
@@ -60,11 +61,12 @@ class IncomeStatementController {
         return db.transaction { tx ->
             tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
                 if (success) {
-                    try {
-                        tx.dissociateAllAttachments(user.id, incomeStatementId)
-                        tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                    } catch (e: RuntimeException) {
-                        throw BadRequest(e.message ?: "")
+                    tx.dissociateAllAttachments(user.id, incomeStatementId)
+                    when (body) {
+                        is IncomeStatementBody.Income ->
+                            tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                        else ->
+                            Unit
                     }
                 }
             }

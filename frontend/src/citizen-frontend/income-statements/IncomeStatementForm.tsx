@@ -18,14 +18,15 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InputField from 'lib-components/atoms/form/InputField'
 import { otherIncome } from './types/common'
 import * as Form from './types/form'
+import { validateIncomeStatementBody } from './types/body'
 import { errorToInputInfo, validDate, validInt } from '../form-validation'
 import { createIncomeStatement } from './api'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import { Attachment } from 'lib-common/api-types/attachment'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { UUID } from 'lib-common/types'
-import { IncomeStatementForm } from './types/form'
 import {
   saveAttachment,
   deleteAttachment,
@@ -34,49 +35,50 @@ import {
 
 const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
-  incomeType: null,
+  highestFee: false,
+  gross: {
+    selected: false,
+    incomeSource: null,
+    otherIncome: null
+  },
+  entrepreneur: {
+    selected: false,
+    selfEmployed: {
+      selected: false,
+      estimation: null,
+      estimatedMonthlyIncome: '',
+      incomeStartDate: '',
+      incomeEndDate: '',
+      kelaConsent: false
+    },
+    limitedCompany: {
+      selected: false,
+      incomeSource: null
+    },
+    partnership: {
+      selected: false,
+      lookupConsent: false
+    },
+    startupGrant: false
+  },
+  otherInfo: '',
   attachments: []
-}
-
-function highestFeeIncome(startDate: string): Form.HighestFee {
-  return { startDate, incomeType: 'HIGHEST_FEE', attachments: [] }
-}
-
-function grossIncome(startDate: string): Form.Gross {
-  return {
-    startDate,
-    incomeType: 'GROSS',
-    incomeSource: null,
-    otherIncome: null,
-    attachments: []
-  }
-}
-
-function entrepreneurIncome(startDate: string): Form.Entrepreneur {
-  return {
-    startDate,
-    incomeType: 'ENTREPRENEUR_EMPTY',
-    estimatedMonthlyIncome: '',
-    incomeStartDate: '',
-    incomeEndDate: '',
-    incomeSource: null,
-    attachments: []
-  }
 }
 
 export default function IncomeStatementForm() {
   const t = useTranslation()
   const [formData, setFormData] =
-    React.useState<IncomeStatementForm>(initialFormData)
+    React.useState<Form.IncomeStatementForm>(initialFormData)
 
-  const validatedData = Form.toIncomeStatementBody(formData)
+  const validatedData = validateIncomeStatementBody(formData)
   const isValid = validatedData !== null
-  const showAttachments = formData.incomeType !== null
+  const showOtherInfo =
+    formData.gross.selected || formData.entrepreneur.selected
 
   const save = React.useCallback(
     () =>
       validatedData ? createIncomeStatement(validatedData) : Promise.resolve(),
-    [validatedData, createIncomeStatement]
+    [validatedData]
   )
 
   const handleAttachmentUploaded = React.useCallback(
@@ -110,27 +112,42 @@ export default function IncomeStatementForm() {
           <FixedSpaceColumn>
             <H2>{t.income.incomeInfo}</H2>
             <IncomeTypeSelection formData={formData} onChange={setFormData} />
-            {formData.incomeType === 'GROSS' && (
+            {formData.gross.selected && (
               <>
                 <HorizontalLine slim />
                 <GrossIncomeSelection
-                  formData={formData}
-                  onChange={setFormData}
+                  formData={formData.gross}
+                  onChange={(value) =>
+                    setFormData({ ...formData, gross: value })
+                  }
                 />
               </>
             )}
-            {Form.isEntrepreneur(formData) && (
+            {formData.entrepreneur.selected && (
               <>
                 <HorizontalLine slim />
                 <EntrepreneurIncomeSelection
-                  formData={formData}
-                  onChange={setFormData}
+                  formData={formData.entrepreneur}
+                  onChange={(value) =>
+                    setFormData({ ...formData, entrepreneur: value })
+                  }
                 />
               </>
             )}
-            {showAttachments && (
+            {showOtherInfo && (
               <>
                 <HorizontalLine slim />
+                <H2>{t.income.moreInfo.title}</H2>
+                <label htmlFor="more-info">
+                  <strong>{t.income.moreInfo.description}</strong>
+                </label>
+                <TextArea
+                  id="more-info"
+                  value={formData.otherInfo}
+                  onChange={(e) =>
+                    setFormData({ ...formData, otherInfo: e.target.value })
+                  }
+                />
                 <Attachments
                   attachments={formData.attachments}
                   onUploaded={handleAttachmentUploaded}
@@ -182,23 +199,42 @@ function IncomeTypeSelection({
         locale={lang}
       />
       <H3>{t.income.incomeType.title}</H3>
-      <Radio
+      <Checkbox
         label={t.income.incomeType.agreeToHighestFee}
-        checked={formData.incomeType === 'HIGHEST_FEE'}
-        onChange={() => onChange(highestFeeIncome(formData.startDate))}
+        checked={formData.highestFee}
+        onChange={(value) =>
+          onChange({
+            ...formData,
+            highestFee: value,
+            gross: { ...formData.gross, selected: false },
+            entrepreneur: { ...formData.entrepreneur, selected: false }
+          })
+        }
       />
-      {formData.incomeType === 'HIGHEST_FEE' && (
+      {formData.highestFee && (
         <HighestFeeInfo>{t.income.incomeType.highestFeeInfo}</HighestFeeInfo>
       )}
-      <Radio
+      <Checkbox
         label={t.income.incomeType.grossIncome}
-        checked={formData.incomeType === 'GROSS'}
-        onChange={() => onChange(grossIncome(formData.startDate))}
+        checked={formData.gross.selected}
+        disabled={formData.highestFee}
+        onChange={(value) =>
+          onChange({
+            ...formData,
+            gross: { ...formData.gross, selected: value }
+          })
+        }
       />
-      <Radio
+      <Checkbox
         label={t.income.incomeType.entrepreneurIncome}
-        checked={Form.isEntrepreneur(formData)}
-        onChange={() => onChange(entrepreneurIncome(formData.startDate))}
+        checked={formData.entrepreneur.selected}
+        disabled={formData.highestFee}
+        onChange={(value) =>
+          onChange({
+            ...formData,
+            entrepreneur: { ...formData.entrepreneur, selected: value }
+          })
+        }
       />
     </>
   )
@@ -217,7 +253,7 @@ function GrossIncomeSelection({
       <H3>{t.income.grossIncome.title}</H3>
       <p>{t.income.grossIncome.description}</p>
       <Radio
-        label={t.income.grossIncome.consentIncomesRegister}
+        label={t.income.incomesRegisterConsent}
         checked={formData.incomeSource === 'INCOMES_REGISTER'}
         onChange={() =>
           onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
@@ -228,7 +264,6 @@ function GrossIncomeSelection({
         checked={formData.incomeSource === 'ATTACHMENTS'}
         onChange={() => onChange({ ...formData, incomeSource: 'ATTACHMENTS' })}
       />
-      <Gap size="L" />
       <p>{t.income.grossIncome.otherIncomeInfo}</p>
       <Checkbox
         label={t.income.grossIncome.otherIncome}
@@ -259,12 +294,12 @@ function GrossIncomeSelection({
 function adjustEntrepreneurFormRadioButtons(
   formData: Form.Entrepreneur
 ): Form.Entrepreneur {
-  if (formData.incomeType.startsWith('ENTREPRENEUR_SELF_EMPLOYED_')) {
-    return { ...formData, incomeSource: null }
-  }
-  if (formData.incomeType === 'ENTREPRENEUR_PARTNERSHIP') {
-    return { ...formData, incomeSource: null }
-  }
+  // if (formData.incomeType.startsWith('ENTREPRENEUR_SELF_EMPLOYED_')) {
+  //   return { ...formData, incomeSource: null }
+  // }
+  // if (formData.incomeType === 'ENTREPRENEUR_PARTNERSHIP') {
+  //   return { ...formData, incomeSource: null }
+  // }
   return formData
 }
 
@@ -282,39 +317,87 @@ function EntrepreneurIncomeSelection({
   return (
     <>
       <H3>{t.income.entrepreneurIncome.title}</H3>
-      <Radio
+      <Checkbox
         label={t.income.entrepreneurIncome.selfEmployed}
-        checked={formData.incomeType.startsWith('ENTREPRENEUR_SELF_EMPLOYED_')}
-        onChange={() =>
+        checked={formData.selfEmployed.selected}
+        onChange={(value) =>
           handleChange({
             ...formData,
-            incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_EMPTY'
+            selfEmployed: {
+              ...formData.selfEmployed,
+              selected: value,
+              ...(value ? {} : { estimation: null })
+            }
           })
         }
       />
       <SelfEmployedIncomeSelection
-        formData={formData}
-        onChange={handleChange}
-      />
-      <Radio
-        label={t.income.entrepreneurIncome.limitedCompany}
-        checked={formData.incomeType === 'ENTREPRENEUR_LIMITED_COMPANY'}
-        onChange={() =>
+        formData={formData.selfEmployed}
+        onChange={(value) =>
           handleChange({
             ...formData,
-            incomeType: 'ENTREPRENEUR_LIMITED_COMPANY'
+            selfEmployed: { ...value, selected: true }
+          })
+        }
+      />
+      <Checkbox
+        label={t.income.entrepreneurIncome.limitedCompany}
+        checked={formData.limitedCompany.selected}
+        onChange={(value) =>
+          handleChange({
+            ...formData,
+            limitedCompany: {
+              ...formData.limitedCompany,
+              selected: value,
+              ...(value ? {} : { incomeSource: null })
+            }
           })
         }
       />
       <LimitedCompanyIncomeSelection
-        formData={formData}
-        onChange={handleChange}
+        formData={formData.limitedCompany}
+        onChange={(value) =>
+          handleChange({
+            ...formData,
+            limitedCompany: { ...value, selected: true }
+          })
+        }
       />
-      <Radio
+      <Checkbox
         label={t.income.entrepreneurIncome.partnership}
-        checked={formData.incomeType === 'ENTREPRENEUR_PARTNERSHIP'}
-        onChange={() =>
-          handleChange({ ...formData, incomeType: 'ENTREPRENEUR_PARTNERSHIP' })
+        checked={formData.partnership.selected}
+        onChange={(value) =>
+          handleChange({
+            ...formData,
+            partnership: {
+              ...formData.partnership,
+              selected: value,
+              ...(value ? {} : { incomeSource: null })
+            }
+          })
+        }
+      />
+      <PartnershipIncomeSelection
+        formData={formData.partnership}
+        onChange={(value) =>
+          handleChange({
+            ...formData,
+            partnership: {
+              ...value,
+              selected: true,
+              ...(value ? {} : { lookupConsent: false })
+            }
+          })
+        }
+      />
+      <Checkbox
+        label={t.income.entrepreneurIncome.startupGrant}
+        checked={formData.startupGrant}
+        onChange={(value) =>
+          handleChange({
+            ...formData,
+            startupGrant: value
+          })
         }
       />
     </>
@@ -325,8 +408,8 @@ function SelfEmployedIncomeSelection({
   formData,
   onChange
 }: {
-  formData: Form.Entrepreneur
-  onChange: (value: Form.Entrepreneur) => void
+  formData: Form.SelfEmployed
+  onChange: (value: Form.SelfEmployed) => void
 }) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -335,27 +418,13 @@ function SelfEmployedIncomeSelection({
       <FixedSpaceColumn>
         <Radio
           label={t.income.selfEmployed.attachments}
-          checked={
-            formData.incomeType === 'ENTREPRENEUR_SELF_EMPLOYED_ATTACHMENTS'
-          }
-          onChange={() =>
-            onChange({
-              ...formData,
-              incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ATTACHMENTS'
-            })
-          }
+          checked={formData.estimation === false}
+          onChange={() => onChange({ ...formData, estimation: false })}
         />
         <Radio
           label={t.income.selfEmployed.estimation}
-          checked={
-            formData.incomeType === 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-          }
-          onChange={() =>
-            onChange({
-              ...formData,
-              incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-            })
-          }
+          checked={formData.estimation === true}
+          onChange={() => onChange({ ...formData, estimation: true })}
         />
         <Indent>
           <FixedSpaceRow spacing="XL">
@@ -366,12 +435,7 @@ function SelfEmployedIncomeSelection({
               <InputField
                 id="estimated-monthly-income"
                 value={formData.estimatedMonthlyIncome}
-                onFocus={() =>
-                  onChange({
-                    ...formData,
-                    incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-                  })
-                }
+                onFocus={() => onChange({ ...formData, estimation: true })}
                 onChange={(value) =>
                   onChange({ ...formData, estimatedMonthlyIncome: value })
                 }
@@ -390,12 +454,7 @@ function SelfEmployedIncomeSelection({
                 <DatePicker
                   id="income-start-date"
                   date={formData.incomeStartDate}
-                  onFocus={() =>
-                    onChange({
-                      ...formData,
-                      incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-                    })
-                  }
+                  onFocus={() => onChange({ ...formData, estimation: true })}
                   onChange={(value) =>
                     onChange({ ...formData, incomeStartDate: value })
                   }
@@ -409,12 +468,7 @@ function SelfEmployedIncomeSelection({
                 <span>{' - '}</span>
                 <DatePicker
                   date={formData.incomeEndDate}
-                  onFocus={() =>
-                    onChange({
-                      ...formData,
-                      incomeType: 'ENTREPRENEUR_SELF_EMPLOYED_ESTIMATION'
-                    })
-                  }
+                  onFocus={() => onChange({ ...formData, estimation: true })}
                   onChange={(value) =>
                     onChange({ ...formData, incomeEndDate: value })
                   }
@@ -433,6 +487,11 @@ function SelfEmployedIncomeSelection({
             </FixedSpaceColumn>
           </FixedSpaceRow>
         </Indent>
+        <Checkbox
+          label={`${t.income.selfEmployed.kelaConsent} *`}
+          checked={formData.kelaConsent}
+          onChange={(value) => onChange({ ...formData, kelaConsent: value })}
+        />
       </FixedSpaceColumn>
     </Indent>
   )
@@ -442,8 +501,8 @@ function LimitedCompanyIncomeSelection({
   formData,
   onChange
 }: {
-  formData: Form.Entrepreneur
-  onChange: (value: Form.Entrepreneur) => void
+  formData: Form.LimitedCompany
+  onChange: (value: Form.LimitedCompany) => void
 }) {
   const t = useTranslation()
   return (
@@ -451,26 +510,39 @@ function LimitedCompanyIncomeSelection({
       <FixedSpaceColumn>
         <div>{t.income.limitedCompany.info}</div>
         <Radio
-          label={t.income.limitedCompany.incomesRegister}
+          label={t.income.incomesRegisterConsent}
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
           onChange={() =>
-            onChange({
-              ...formData,
-              incomeType: 'ENTREPRENEUR_LIMITED_COMPANY',
-              incomeSource: 'INCOMES_REGISTER'
-            })
+            onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
           }
         />
         <Radio
           label={t.income.limitedCompany.attachments}
           checked={formData.incomeSource === 'ATTACHMENTS'}
           onChange={() =>
-            onChange({
-              ...formData,
-              incomeType: 'ENTREPRENEUR_LIMITED_COMPANY',
-              incomeSource: 'ATTACHMENTS'
-            })
+            onChange({ ...formData, incomeSource: 'ATTACHMENTS' })
           }
+        />
+      </FixedSpaceColumn>
+    </Indent>
+  )
+}
+
+function PartnershipIncomeSelection({
+  formData,
+  onChange
+}: {
+  formData: Form.Partnership
+  onChange: (value: Form.Partnership) => void
+}) {
+  const t = useTranslation()
+  return (
+    <Indent>
+      <FixedSpaceColumn>
+        <Checkbox
+          label={`${t.income.incomesRegisterConsent} *`}
+          checked={formData.lookupConsent}
+          onChange={(value) => onChange({ ...formData, lookupConsent: value })}
         />
       </FixedSpaceColumn>
     </Indent>
