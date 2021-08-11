@@ -6,8 +6,7 @@ package fi.espoo.evaka.vasu
 
 enum class OphQuestionKey {
     PEDAGOGIC_ACTIVITY_GOALS,
-    SKILL_IMPROVEMENT_GOALS,
-    PEDAGOGIC_GOALS_DESCRIPTION,
+    PEDAGOGIC_GOALS_DESCRIPTION
 }
 
 data class OphQuestion(
@@ -24,8 +23,8 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Tavoitteet henkilöstön pedagogiselle toiminnalle"
-                VasuLanguage.SV -> "Mål för personalens pedagogiska aktiviteter"
+                VasuLanguage.FI -> "Tavoitteet pedagogiselle toiminnalle ja toimenpiteet tavoitteiden saavuttamiseksi"
+                VasuLanguage.SV -> "Mål för pedagogisk verksamhet och åtgärder för att uppnå målen"
             },
             questions = listOf(
                 VasuQuestion.MultiSelectQuestion(
@@ -40,6 +39,12 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                     minSelections = 1,
                     maxSelections = null,
                     value = emptyList()
+                ),
+                VasuQuestion.TextQuestion(
+                    ophKey = OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION,
+                    name = ophQuestionMap[OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION]!!.name[lang]!!,
+                    value = "",
+                    multiline = true
                 )
             )
         )
@@ -54,13 +59,34 @@ private val ophQuestionMap = mapOf(
         ),
         options = listOf(
             OphQuestionOption(
-                key = "foo",
+                key = "goal1",
                 name = mapOf(
-                    VasuLanguage.FI to "tavoite",
-                    VasuLanguage.SV to "mål"
+                    VasuLanguage.FI to "Joku tavoite",
+                    VasuLanguage.SV to "mål 1"
+                )
+            ),
+            OphQuestionOption(
+                key = "goal2",
+                name = mapOf(
+                    VasuLanguage.FI to "Toinen tavoite",
+                    VasuLanguage.SV to "mål 2"
+                )
+            ),
+            OphQuestionOption(
+                key = "goal3",
+                name = mapOf(
+                    VasuLanguage.FI to "Kolmas vaihtoehto",
+                    VasuLanguage.SV to "mål 3"
                 )
             )
         )
+    ),
+    OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION to OphQuestion(
+        name = mapOf(
+            VasuLanguage.FI to "Kuvaile tavoitteita tarkemmin",
+            VasuLanguage.SV to "Beskriv målen mer i detalj"
+        ),
+        options = emptyList()
     )
 )
 
