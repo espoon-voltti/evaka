@@ -114,6 +114,8 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
 
     val group = getDaycareGroup(groupId)
         ?: throw NotFound("Group $groupId does not exist")
+    if (group.daycareId != daycarePlacement.daycare.id)
+        throw BadRequest("Group is in wrong unit")
     if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
         throw BadRequest("Group is not active for the full duration")
 
@@ -143,9 +145,12 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     }
 }
 
-fun Database.Transaction.transferGroup(daycarePlacementId: PlacementId, groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
+fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
     val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
+
+    if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId)
+        throw BadRequest("Cannot transfer to a group in different unit")
 
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
@@ -169,7 +174,7 @@ fun Database.Transaction.transferGroup(daycarePlacementId: PlacementId, groupPla
         }
     }
 
-    createGroupPlacement(daycarePlacementId, groupId, startDate, groupPlacement.endDate)
+    createGroupPlacement(groupPlacement.daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
 private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {

@@ -35,7 +35,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -111,6 +114,7 @@ enum class VoucherApplicationFilter {
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
     private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
@@ -123,7 +127,7 @@ class ApplicationControllerV2(
         @RequestBody body: PaperApplicationCreateRequest
     ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
         val id = db.transaction { tx ->
             val child = personService.getUpToDatePerson(tx, user, body.childId)
@@ -193,9 +197,21 @@ class ApplicationControllerV2(
         @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
     ): ResponseEntity<Paged<ApplicationSummary>> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
+
+        val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
+            user = user,
+            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITH_ASSISTANCE_NEED)
+        )
+        val authorizedUnitsForApplicationsWithoutAssistanceNeed = acl.getAuthorizedUnits(
+            user = user,
+            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED)
+        )
+
+        if (authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() && authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()) {
+            throw Forbidden("application search not allowed for any unit")
+        }
 
         return db.read { tx ->
             tx.fetchApplicationSummaries(
@@ -218,8 +234,8 @@ class ApplicationControllerV2(
                 searchTerms = searchTerms ?: "",
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
                 voucherApplications = voucherApplications,
-                authorizedUnits = acl.getAuthorizedUnits(user),
-                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+                authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
+                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -231,7 +247,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
 
         return db.read { it.fetchApplicationSummariesForGuardian(guardianId) }
             .let { ResponseEntity.ok().body(it) }
@@ -244,8 +260,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "childId") childId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
 
         return db.read { it.fetchApplicationSummariesForChild(childId) }
             .let { ResponseEntity.ok().body(it) }
@@ -259,16 +274,23 @@ class ApplicationControllerV2(
     ): ResponseEntity<ApplicationResponse> {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
-        val roles = acl.getRolesForApplication(user, applicationId)
-        roles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
+
+            accessControl.requirePermissionFor(
+                user = user,
+                action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHHOUT_ASSISTANCE_NEED,
+                id = applicationId
+            )
+
             val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
             val guardians =
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
+            // todo: can this be refactored under Action model?
+            val roles = acl.getRolesForApplication(user, applicationId)
             val attachments: List<Attachment> = when {
                 roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
                     tx.getApplicationAttachments(applicationId)
@@ -296,7 +318,7 @@ class ApplicationControllerV2(
         @RequestBody application: ApplicationUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.UPDATE, applicationId)
 
         db.transaction {
             applicationStateService.updateApplicationContentsServiceWorker(
@@ -328,7 +350,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
         return db.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
@@ -340,7 +362,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.READ_DECISION_DRAFT, applicationId)
 
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
@@ -402,7 +424,7 @@ class ApplicationControllerV2(
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ): ResponseEntity<Unit> {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
         return ResponseEntity.noContent().build()
@@ -451,7 +473,7 @@ class ApplicationControllerV2(
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
         db.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
         return ResponseEntity.noContent().build()

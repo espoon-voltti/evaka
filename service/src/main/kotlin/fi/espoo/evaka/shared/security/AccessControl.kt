@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
@@ -23,100 +24,220 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.Jdbi
 import java.util.UUID
 
-class AccessControl(private val permittedRoleActions: PermittedRoleActions, private val acl: AccessControlList) {
+class AccessControl(
+    private val permittedRoleActions: PermittedRoleActions,
+    private val acl: AccessControlList,
+    private val jdbi: Jdbi
+) {
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
-        assertPermission(user.roles, action, permittedRoleActions::globalActions)
+        assertGlobalPermission(user, action, permittedRoleActions::globalActions)
+    }
+
+    fun getPermittedRoles(action: Action.Global): Set<UserRole> {
+        return UserRole.values()
+            .filter { permittedRoleActions.globalActions(it).contains(action) }
+            .toSet()
+            .plus(UserRole.ADMIN)
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
-        val roles = acl.getRolesForApplication(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::applicationActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForApplication(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::applicationActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
-        val roles = acl.getRolesForAssistanceAction(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::assistanceActionActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForAssistanceAction(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::assistanceActionActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceNeed, id: AssistanceNeedId) {
-        val roles = acl.getRolesForAssistanceNeed(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::assistanceNeedActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForAssistanceNeed(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::assistanceNeedActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupCare, id: BackupCareId) {
-        val roles = acl.getRolesForBackupCare(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::backupCareActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForBackupCare(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::backupCareActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
-        val roles = acl.getRolesForBackupPickup(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::backupPickupActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForBackupPickup(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::backupPickupActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {
-        val roles = acl.getRolesForChild(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::childActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForChild(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::childActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.DailyNote, id: DaycareDailyNoteId) {
-        val roles = acl.getRolesForDailyNote(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::dailyNoteActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForDailyNote(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::dailyNoteActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Decision, id: DecisionId) {
-        val roles = acl.getRolesForDecision(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::decisionActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForDecision(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::decisionActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Group, id: GroupId) {
-        val roles = acl.getRolesForUnitGroup(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::groupActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForUnitGroup(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::groupActions
+        )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.GroupPlacement, id: GroupPlacementId) {
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForGroupPlacement(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::groupPlacementActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
-        val roles = acl.getRolesForMobileDevice(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::mobileDeviceActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForMobileDevice(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::mobileDeviceActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Pairing, id: PairingId) {
-        val roles = acl.getRolesForPairing(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::pairingActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForPairing(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::pairingActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Placement, id: PlacementId) {
-        val roles = acl.getRolesForPlacement(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::placementActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForPlacement(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::placementActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.ServiceNeed, id: ServiceNeedId) {
-        val roles = acl.getRolesForServiceNeed(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::serviceNeedActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForServiceNeed(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::serviceNeedActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Unit, id: DaycareId) {
-        val roles = acl.getRolesForUnit(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::unitActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForUnit(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::unitActions
+        )
+    }
+
+    fun hasPermissionFor(user: AuthenticatedUser, action: Action.Unit, id: DaycareId): Boolean {
+        return hasPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForUnit(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::unitActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
-        val roles = acl.getRolesForVasuDocument(user, id).roles
-        assertPermission(roles, action, permittedRoleActions::vasuDocumentActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForVasuDocument(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::vasuDocumentActions
+        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuTemplate, @Suppress("UNUSED_PARAMETER") id: VasuTemplateId) {
         // VasuTemplate actions in Espoo are global so the id parameter is ignored
-        assertPermission(user.roles, action, permittedRoleActions::vasuTemplateActions)
+        assertGlobalPermission(user, action, permittedRoleActions::vasuTemplateActions)
     }
 
-    private inline fun <reified A> assertPermission(
-        roles: Set<UserRole>,
+    private inline fun <reified A> hasGlobalPermission(
+        user: AuthenticatedUser,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> {
+        val globalRoles = user.roles - UserRole.SCOPED_ROLES
+        return (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
+    }
+
+    private inline fun <reified A> assertGlobalPermission(
+        user: AuthenticatedUser,
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        if (!roles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
+        if (!hasGlobalPermission(user, action, mapping))
             throw Forbidden("Permission denied")
-        }
+    }
+
+    private inline fun <reified A> hasPermission(
+        user: AuthenticatedUser,
+        getAclRoles: () -> Set<UserRole>,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> {
+        if (hasGlobalPermission(user, action, mapping)) return true
+
+        return (getAclRoles().any { it == UserRole.ADMIN || mapping(it).contains(action) })
+    }
+
+    private inline fun <reified A> assertPermission(
+        user: AuthenticatedUser,
+        getAclRoles: () -> Set<UserRole>,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ) where A : Action, A : Enum<A> {
+        if (!hasPermission(user, getAclRoles, action, mapping))
+            throw Forbidden("Permission denied")
     }
 }

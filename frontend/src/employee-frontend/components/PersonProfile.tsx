@@ -100,7 +100,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
-    { component: 'applications', open: false },
     { component: 'decisions', open: false }
   ]
 }

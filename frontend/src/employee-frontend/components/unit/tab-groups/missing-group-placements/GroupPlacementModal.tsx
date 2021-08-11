@@ -13,7 +13,10 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Result } from 'lib-common/api'
 import { faChild } from 'lib-icons'
-import { createPlacement, MissingGroupPlacement } from '../../../../api/unit'
+import {
+  createGroupPlacement,
+  MissingGroupPlacement
+} from '../../../../api/unit'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { UUID } from '../../../../types'
 import Select from '../../../../components/common/Select'
@@ -105,7 +108,7 @@ export default React.memo(function GroupPlacementModal({
   const submitGroupPlacement = () => {
     if (form.groupId == null) return
 
-    void createPlacement(
+    void createGroupPlacement(
       placementId,
       form.groupId,
       form.startDate,

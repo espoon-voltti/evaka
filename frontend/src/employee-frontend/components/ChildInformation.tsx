@@ -117,7 +117,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
-    { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
     ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]

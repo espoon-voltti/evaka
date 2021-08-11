@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
@@ -36,6 +37,10 @@ sealed class AclAuthorization {
 
     data class Subset(override val ids: Set<DaycareId>) : AclAuthorization() {
         override fun isAuthorized(id: DaycareId): Boolean = ids.contains(id)
+    }
+
+    fun isEmpty(): Boolean {
+        return this is Subset && this.ids.isEmpty()
     }
 }
 
@@ -66,18 +71,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
     )
 
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: ApplicationId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read { it ->
-            val assistanceNeeded = it.createQuery(
-                // language=SQL
-                """
-SELECT (document -> 'careDetails' ->> 'assistanceNeeded')
-FROM application_form
-WHERE application_id = :applicationId AND latest IS TRUE;
-                """.trimIndent()
-            ).bind("applicationId", applicationId)
-                .mapTo<Boolean>()
-                .contains(true)
-
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -89,7 +83,6 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 """.trimIndent()
             ).bind("userId", user.id).bind("applicationId", applicationId)
                 .mapTo<UserRole>()
-                .filter { it != UserRole.SPECIAL_EDUCATION_TEACHER || assistanceNeeded }
                 .toSet()
         }
     )
@@ -118,6 +111,21 @@ JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId AND placement.id = :placementId
                 """.trimIndent()
             ).bind("userId", user.id).bind("placementId", placementId).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForGroupPlacement(user: AuthenticatedUser, groupPlacementId: GroupPlacementId): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM placement
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
+WHERE employee_id = :userId AND daycare_group_placement.id = :groupPlacementId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("groupPlacementId", groupPlacementId).mapTo<UserRole>().toSet()
         }
     )
 
@@ -288,11 +296,14 @@ WHERE employee_id = :userId AND vasu_document.id = :documentId
     )
 }
 
-private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> =
-    createQuery(
+private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> {
+    if (roles?.isEmpty() == true) return emptySet()
+
+    return createQuery(
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
         .bind("userId", user.id)
         .bindNullable("roles", roles?.toTypedArray())
         .mapTo<DaycareId>()
         .toSet()
+}

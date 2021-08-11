@@ -38,7 +38,6 @@ export default React.memo(function GroupTransferModal({
   reload
 }: Props) {
   const {
-    daycarePlacementId,
     id: groupPlacementId,
     child,
     startDate: minDate,
@@ -96,7 +95,6 @@ export default React.memo(function GroupTransferModal({
     if (!form.group) return
 
     void transferGroup(
-      daycarePlacementId,
       groupPlacementId || '',
       form.group.value,
       form.startDate
