@@ -403,6 +403,10 @@ private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Bo
     return validResidenceCodes.size == guardians.size && validResidenceCodes.toSet().size == 1
 }
 
+private fun guardiansResponsibleForFeeData(decisionHeadOfFamilyId: UUID, allGuardians: List<VardaGuardianWithId>): List<VardaGuardianWithId> {
+    return if (guardiansLiveInSameAddress(allGuardians)) allGuardians else allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
+}
+
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
     val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
 
@@ -425,7 +429,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = if (guardiansLiveInSameAddress(guardians)) guardians else guardians.filter { guardian -> guardian.id == decision.headOfFamily.id }
+                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             ) ?: error("VardaUpdate: client failed fee request for $feeId - see logs for details")
         } catch (e: Exception) {
             error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
@@ -445,7 +449,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardians
+                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             ) ?: error("VardaUpdate: client failed voucher request for $feeId - see logs for details")
         } catch (e: Exception) {
             error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }

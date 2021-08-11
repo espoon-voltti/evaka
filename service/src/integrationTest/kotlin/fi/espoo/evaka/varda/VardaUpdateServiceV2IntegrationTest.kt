@@ -513,8 +513,10 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), feeDecisionPeriod.end!!.plusDays(10))
+
         createFeeDecision(db, testChild_1, testAdult_2.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+        createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, testAdult_2.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
 
         updateChildData(db, vardaClient, since)
 
