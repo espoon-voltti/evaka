@@ -358,6 +358,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }.firstOrNull()
+
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
@@ -396,35 +397,59 @@ fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServic
     return res.vardaPlacementId
 }
 
+private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Boolean {
+    val validResidenceCodes = guardians.map { g -> g.asuinpaikantunnus }
+        .filterNot { it.isNullOrBlank() }
+    return validResidenceCodes.size == guardians.size && validResidenceCodes.toSet().size == 1
+}
+
+private fun guardiansResponsibleForFeeData(decisionHeadOfFamilyId: UUID, allGuardians: List<VardaGuardianWithId>): List<VardaGuardianWithId> {
+    return if (guardiansLiveInSameAddress(allGuardians)) allGuardians else allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
+}
+
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
-    val feeResponseIds = feeDataByServiceNeed.feeDecisionIds.map { feeId ->
+    val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
+
+    if (guardians.isEmpty()) {
+        logger.info("VardaUpdate: will not create fee data for service need ${evakaServiceNeed.id}: child has no guardians")
+        return emptyList()
+    }
+
+    val feeResponseIds: List<Long> = feeDataByServiceNeed.feeDecisionIds.mapNotNull { feeId ->
         try {
             logger.info { "VardaUpdate: trying to send fee data $feeId" }
             val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
-            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
-            sendFeeDecisionToVarda(
+
+            // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
+            if (guardians.none { it.id == decision.headOfFamily.id }) {
+                logger.info { "VardaUpdate: won't send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}" }
+                null
+            } else sendFeeDecisionToVarda(
                 client = vardaClient,
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardians
+                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             ) ?: error("VardaUpdate: client failed fee request for $feeId - see logs for details")
         } catch (e: Exception) {
             error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
         }
     }
 
-    val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.map { feeId ->
+    val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.mapNotNull { feeId ->
         try {
             logger.info { "VardaUpdate: trying to send voucher data $feeId" }
             val decision = db.read { it.getVoucherValueDecision(feeId) }!!
-            val guardians = getFeeReceiverGuardians(db, evakaServiceNeed.childId, decision.headOfFamily.id)
-            sendVoucherDecisionToVarda(
+
+            if (guardians.none { it.id == decision.headOfFamily.id }) {
+                logger.info { "VardaUpdate: won't send fee data for voucher decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}" }
+                null
+            } else sendVoucherDecisionToVarda(
                 client = vardaClient,
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardians
+                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             ) ?: error("VardaUpdate: client failed voucher request for $feeId - see logs for details")
         } catch (e: Exception) {
             error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
@@ -439,7 +464,8 @@ data class VardaGuardianWithId(
     val henkilotunnus: String?,
     val henkilo_oid: String?,
     val etunimet: String,
-    val sukunimi: String
+    val sukunimi: String,
+    val asuinpaikantunnus: String?
 ) {
     fun toVardaGuardian(): VardaGuardian = VardaGuardian(
         henkilotunnus = henkilotunnus,
@@ -451,7 +477,7 @@ data class VardaGuardianWithId(
 
 fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
     return db.read {
-        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid, residence_code AS asuinpaikantunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
             .bind("id", childId)
             .mapTo<VardaGuardianWithId>()
             .list()
@@ -467,18 +493,6 @@ fun getGuardianFromVarda(client: VardaClient, ssn: String?, oid: String?): Varda
         etunimet = person.firstName,
         sukunimi = person.lastName
     )
-}
-
-fun getFeeReceiverGuardians(db: Database.Connection, childId: UUID, headOfFamilyId: UUID): List<VardaGuardianWithId> {
-    val guardians = getChildVardaGuardians(db, childId)
-    if (guardians.isEmpty()) error("VardaUpdate: could not create fee data: child has no guardians")
-
-    // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
-    if (guardians.none { it.id == headOfFamilyId }) {
-        error("VardaUpdate: could not create fee data: head of family is not a guardian")
-    }
-
-    return guardians
 }
 
 fun sendFeeDecisionToVarda(
