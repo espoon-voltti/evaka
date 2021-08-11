@@ -399,13 +399,17 @@ fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServic
 
 private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Boolean {
     val validResidenceCodes = guardians.map { g -> g.asuinpaikantunnus }
-        .filterNotNull().filter { asuinpaikantunnus -> asuinpaikantunnus.length > 0 }
+        .filterNot { it.isNullOrBlank() }
     return validResidenceCodes.size == guardians.size && validResidenceCodes.toSet().size == 1
 }
 
 fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
     val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
-    check(guardians.isNotEmpty()) { error("VardaUpdate: could not create fee data for ${evakaServiceNeed.id}: child has no guardians") }
+
+    if (guardians.isEmpty()) {
+        logger.info("VardaUpdate: will not create fee data for service need ${evakaServiceNeed.id}: child has no guardians")
+        return emptyList()
+    }
 
     val feeResponseIds: List<Long> = feeDataByServiceNeed.feeDecisionIds.mapNotNull { feeId ->
         try {
