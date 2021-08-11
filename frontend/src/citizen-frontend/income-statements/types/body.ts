@@ -55,11 +55,19 @@ function validateGross(formData: Form.Gross) {
 
 function validateEntrepreneur(formData: Form.Entrepreneur) {
   if (!formData.selected) return null
+
+  const { fullTime, spouseWorksInCompany, startupGrant } = formData
+  const startOfEntrepreneurship =
+    LocalDate.parseFiOrNull(formData.startOfEntrepreneurship) ?? invalid
+
   const selfEmployed = validateSelfEmployed(formData.selfEmployed)
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
   const partnership = validatePartnership(formData.partnership)
 
   if (
+    fullTime === null ||
+    startOfEntrepreneurship === invalid ||
+    spouseWorksInCompany === null ||
     selfEmployed === invalid ||
     limitedCompany === invalid ||
     partnership === invalid
@@ -68,10 +76,13 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
   }
 
   return {
+    fullTime,
+    startOfEntrepreneurship,
+    spouseWorksInCompany,
+    startupGrant,
     selfEmployed,
     limitedCompany,
-    partnership,
-    startupGrant: formData.startupGrant
+    partnership
   }
 }
 

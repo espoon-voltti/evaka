@@ -50,6 +50,9 @@ function deserializeEntrepreneur(
   if (!entrepreneur) return null
   return {
     ...entrepreneur,
+    startOfEntrepreneurship: LocalDate.parseIso(
+      entrepreneur.startOfEntrepreneurship
+    ),
     selfEmployed: deserializeSelfEmployed(entrepreneur.selfEmployed)
   }
 }

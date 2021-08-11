@@ -34,7 +34,8 @@ data class Gross(
 sealed interface SelfEmployed {
     @JsonTypeName("ATTACHMENTS")
     object Attachments : SelfEmployed {
-        @JvmStatic @JsonCreator
+        @JvmStatic
+        @JsonCreator
         fun deserialize() = Attachments
     }
 
@@ -51,10 +52,13 @@ data class LimitedCompany(
 )
 
 data class Entrepreneur(
+    val fullTime: Boolean,
+    val startOfEntrepreneurship: LocalDate,
+    val spouseWorksInCompany: Boolean,
+    val startupGrant: Boolean,
     val selfEmployed: SelfEmployed?,
     val limitedCompany: LimitedCompany?,
     val partnership: Boolean,
-    val startupGrant: Boolean
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")

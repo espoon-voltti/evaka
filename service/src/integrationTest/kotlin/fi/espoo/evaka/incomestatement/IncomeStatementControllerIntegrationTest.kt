@@ -61,12 +61,15 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
                 ),
                 entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                    spouseWorksInCompany = false,
+                    startupGrant = true,
                     selfEmployed = SelfEmployed.Attachments,
                     limitedCompany = LimitedCompany(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                     ),
                     partnership = false,
-                    startupGrant = true,
                 ),
                 otherInfo = "foo bar",
                 attachmentIds = listOf()
@@ -84,12 +87,15 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
                     ),
                     entrepreneur = Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        spouseWorksInCompany = false,
+                        startupGrant = true,
                         selfEmployed = SelfEmployed.Attachments,
                         limitedCompany = LimitedCompany(
                             incomeSource = IncomeSource.INCOMES_REGISTER,
                         ),
                         partnership = false,
-                        startupGrant = true,
                     ),
                     otherInfo = "foo bar",
                     attachments = listOf()
@@ -188,12 +194,15 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
                 ),
                 entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                    spouseWorksInCompany = false,
+                    startupGrant = true,
                     selfEmployed = SelfEmployed.Attachments,
                     limitedCompany = LimitedCompany(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                     ),
                     partnership = false,
-                    startupGrant = true,
                 ),
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1)
@@ -208,10 +217,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.of(2021, 6, 11),
                 gross = null,
                 entrepreneur = Entrepreneur(
+                    fullTime = false,
+                    startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                    spouseWorksInCompany = true,
+                    startupGrant = false,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = true,
-                    startupGrant = false,
                 ),
                 otherInfo = "",
                 attachmentIds = listOf(attachment2, attachment3)
@@ -225,10 +237,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     startDate = LocalDate.of(2021, 6, 11),
                     gross = null,
                     entrepreneur = Entrepreneur(
+                        fullTime = false,
+                        startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = false,
                         selfEmployed = null,
                         limitedCompany = null,
                         partnership = true,
-                        startupGrant = false,
                     ),
                     otherInfo = "",
                     attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),

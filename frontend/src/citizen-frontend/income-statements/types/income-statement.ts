@@ -26,10 +26,13 @@ export interface Gross {
 }
 
 export interface Entrepreneur {
+  fullTime: boolean
+  startOfEntrepreneurship: LocalDate
+  spouseWorksInCompany: boolean
+  startupGrant: boolean
   selfEmployed: SelfEmployedAttachments | SelfEmployedEstimation | null
   limitedCompany: LimitedCompany | null
   partnership: boolean
-  startupGrant: boolean
 }
 
 export interface SelfEmployedAttachments {

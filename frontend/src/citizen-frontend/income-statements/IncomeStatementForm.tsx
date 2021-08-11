@@ -9,7 +9,6 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import Button from 'lib-components/atoms/buttons/Button'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { formatDate } from 'lib-common/date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,9 +27,9 @@ import { Attachment } from 'lib-common/api-types/attachment'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { UUID } from 'lib-common/types'
 import {
-  saveAttachment,
   deleteAttachment,
-  getAttachmentBlob
+  getAttachmentBlob,
+  saveAttachment
 } from '../attachments'
 
 const initialFormData: Form.IncomeStatementForm = {
@@ -43,6 +42,9 @@ const initialFormData: Form.IncomeStatementForm = {
   },
   entrepreneur: {
     selected: false,
+    fullTime: null,
+    startOfEntrepreneurship: '',
+    spouseWorksInCompany: null,
     selfEmployed: {
       selected: false,
       estimation: null,
@@ -104,39 +106,38 @@ export default function IncomeStatementForm() {
       <Container>
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.income.title}</H1>
-          {t.income.description}
+          <FixedSpaceColumn>
+            <H1 noMargin>{t.income.title}</H1>
+            {t.income.description}
+          </FixedSpaceColumn>
         </ContentArea>
         <Gap size="s" />
-        <ContentArea opaque>
-          <FixedSpaceColumn>
-            <H2>{t.income.incomeInfo}</H2>
-            <IncomeTypeSelection formData={formData} onChange={setFormData} />
-            {formData.gross.selected && (
-              <>
-                <HorizontalLine slim />
-                <GrossIncomeSelection
-                  formData={formData.gross}
-                  onChange={(value) =>
-                    setFormData({ ...formData, gross: value })
-                  }
-                />
-              </>
-            )}
-            {formData.entrepreneur.selected && (
-              <>
-                <HorizontalLine slim />
-                <EntrepreneurIncomeSelection
-                  formData={formData.entrepreneur}
-                  onChange={(value) =>
-                    setFormData({ ...formData, entrepreneur: value })
-                  }
-                />
-              </>
-            )}
-            {showOtherInfo && (
-              <>
-                <HorizontalLine slim />
+        <IncomeTypeSelection formData={formData} onChange={setFormData} />
+        {formData.gross.selected && (
+          <>
+            <Gap size="L" />
+            <GrossIncomeSelection
+              formData={formData.gross}
+              onChange={(value) => setFormData({ ...formData, gross: value })}
+            />
+          </>
+        )}
+        {formData.entrepreneur.selected && (
+          <>
+            <Gap size="L" />
+            <EntrepreneurIncomeSelection
+              formData={formData.entrepreneur}
+              onChange={(value) =>
+                setFormData({ ...formData, entrepreneur: value })
+              }
+            />
+          </>
+        )}
+        {showOtherInfo && (
+          <>
+            <Gap size="L" />
+            <ContentArea opaque>
+              <FixedSpaceColumn>
                 <H2>{t.income.moreInfo.title}</H2>
                 <label htmlFor="more-info">
                   <strong>{t.income.moreInfo.description}</strong>
@@ -148,26 +149,27 @@ export default function IncomeStatementForm() {
                     setFormData({ ...formData, otherInfo: e.target.value })
                   }
                 />
-                <Attachments
-                  attachments={formData.attachments}
-                  onUploaded={handleAttachmentUploaded}
-                  onDeleted={handleAttachmentDeleted}
-                />
-              </>
-            )}
+              </FixedSpaceColumn>
+            </ContentArea>
             <Gap size="L" />
-            <FixedSpaceRow>
-              <Button text={t.common.cancel} />
-              <AsyncButton
-                text={t.common.save}
-                primary
-                onClick={save}
-                disabled={!isValid}
-                onSuccess={() => undefined}
-              />
-            </FixedSpaceRow>
-          </FixedSpaceColumn>
-        </ContentArea>
+            <Attachments
+              attachments={formData.attachments}
+              onUploaded={handleAttachmentUploaded}
+              onDeleted={handleAttachmentDeleted}
+            />
+          </>
+        )}
+        <Gap size="L" />
+        <FixedSpaceRow>
+          <Button text={t.common.cancel} />
+          <AsyncButton
+            text={t.common.save}
+            primary
+            onClick={save}
+            disabled={!isValid}
+            onSuccess={() => undefined}
+          />
+        </FixedSpaceRow>
       </Container>
       <Footer />
     </>
@@ -185,58 +187,62 @@ function IncomeTypeSelection({
   const [lang] = useLang()
 
   return (
-    <>
-      <Label htmlFor="start-date">{t.income.incomeType.startDate}</Label>
-      <DatePicker
-        id="start-date"
-        date={formData.startDate}
-        onChange={(value) => onChange({ ...formData, startDate: value })}
-        info={errorToInputInfo(
-          validDate(formData.startDate),
-          t.validationErrors
+    <ContentArea opaque>
+      <FixedSpaceColumn>
+        <H2>{t.income.incomeInfo}</H2>
+        <Label htmlFor="start-date">{t.income.incomeType.startDate}</Label>
+        <DatePicker
+          id="start-date"
+          date={formData.startDate}
+          onChange={(value) => onChange({ ...formData, startDate: value })}
+          info={errorToInputInfo(
+            validDate(formData.startDate),
+            t.validationErrors
+          )}
+          hideErrorsBeforeTouched
+          locale={lang}
+        />
+        <H3>{t.income.incomeType.title}</H3>
+        <Checkbox
+          label={t.income.incomeType.agreeToHighestFee}
+          checked={formData.highestFee}
+          onChange={(value) =>
+            onChange({
+              ...formData,
+              highestFee: value,
+              gross: { ...formData.gross, selected: false },
+              entrepreneur: { ...formData.entrepreneur, selected: false }
+            })
+          }
+        />
+        {formData.highestFee && (
+          <HighestFeeInfo>{t.income.incomeType.highestFeeInfo}</HighestFeeInfo>
         )}
-        hideErrorsBeforeTouched
-        locale={lang}
-      />
-      <H3>{t.income.incomeType.title}</H3>
-      <Checkbox
-        label={t.income.incomeType.agreeToHighestFee}
-        checked={formData.highestFee}
-        onChange={(value) =>
-          onChange({
-            ...formData,
-            highestFee: value,
-            gross: { ...formData.gross, selected: false },
-            entrepreneur: { ...formData.entrepreneur, selected: false }
-          })
-        }
-      />
-      {formData.highestFee && (
-        <HighestFeeInfo>{t.income.incomeType.highestFeeInfo}</HighestFeeInfo>
-      )}
-      <Checkbox
-        label={t.income.incomeType.grossIncome}
-        checked={formData.gross.selected}
-        disabled={formData.highestFee}
-        onChange={(value) =>
-          onChange({
-            ...formData,
-            gross: { ...formData.gross, selected: value }
-          })
-        }
-      />
-      <Checkbox
-        label={t.income.incomeType.entrepreneurIncome}
-        checked={formData.entrepreneur.selected}
-        disabled={formData.highestFee}
-        onChange={(value) =>
-          onChange({
-            ...formData,
-            entrepreneur: { ...formData.entrepreneur, selected: value }
-          })
-        }
-      />
-    </>
+        <Checkbox
+          label={t.income.incomeType.grossIncome}
+          checked={formData.gross.selected}
+          disabled={formData.highestFee}
+          onChange={(value) =>
+            onChange({
+              ...formData,
+              gross: { ...formData.gross, selected: value }
+            })
+          }
+        />
+        <Checkbox
+          label={t.income.incomeType.entrepreneurIncome}
+          checked={formData.entrepreneur.selected}
+          disabled={formData.highestFee}
+          onChange={(value) =>
+            onChange({
+              ...formData,
+              entrepreneur: { ...formData.entrepreneur, selected: value }
+            })
+          }
+        />
+        <Gap size="s" />
+      </FixedSpaceColumn>
+    </ContentArea>
   )
 }
 
@@ -249,45 +255,50 @@ function GrossIncomeSelection({
 }) {
   const t = useTranslation()
   return (
-    <>
-      <H3>{t.income.grossIncome.title}</H3>
-      <p>{t.income.grossIncome.description}</p>
-      <Radio
-        label={t.income.incomesRegisterConsent}
-        checked={formData.incomeSource === 'INCOMES_REGISTER'}
-        onChange={() =>
-          onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
-        }
-      />
-      <Radio
-        label={t.income.grossIncome.provideAttachments}
-        checked={formData.incomeSource === 'ATTACHMENTS'}
-        onChange={() => onChange({ ...formData, incomeSource: 'ATTACHMENTS' })}
-      />
-      <p>{t.income.grossIncome.otherIncomeInfo}</p>
-      <Checkbox
-        label={t.income.grossIncome.otherIncome}
-        checked={formData.otherIncome !== null}
-        onChange={(checked) =>
-          onChange({
-            ...formData,
-            otherIncome: checked ? [] : null
-          })
-        }
-      />
-      <OtherIncomeWrapper>
-        <MultiSelect
-          value={formData.otherIncome ?? []}
-          options={otherIncome}
-          getOptionId={(option) => option}
-          getOptionLabel={(option) =>
-            t.income.grossIncome.otherIncomeTypes[option]
+    <ContentArea opaque>
+      <FixedSpaceColumn>
+        <H3>{t.income.grossIncome.title}</H3>
+        <p>{t.income.grossIncome.description}</p>
+        <Radio
+          label={t.income.incomesRegisterConsent}
+          checked={formData.incomeSource === 'INCOMES_REGISTER'}
+          onChange={() =>
+            onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
           }
-          onChange={(value) => onChange({ ...formData, otherIncome: value })}
-          placeholder={t.income.grossIncome.choosePlaceholder}
         />
-      </OtherIncomeWrapper>
-    </>
+        <Radio
+          label={t.income.grossIncome.provideAttachments}
+          checked={formData.incomeSource === 'ATTACHMENTS'}
+          onChange={() =>
+            onChange({ ...formData, incomeSource: 'ATTACHMENTS' })
+          }
+        />
+        <p>{t.income.grossIncome.otherIncomeInfo}</p>
+        <Checkbox
+          label={t.income.grossIncome.otherIncome}
+          checked={formData.otherIncome !== null}
+          onChange={(checked) =>
+            onChange({
+              ...formData,
+              otherIncome: checked ? [] : null
+            })
+          }
+        />
+        <OtherIncomeWrapper>
+          <MultiSelect
+            value={formData.otherIncome ?? []}
+            options={otherIncome}
+            getOptionId={(option) => option}
+            getOptionLabel={(option) =>
+              t.income.grossIncome.otherIncomeTypes[option]
+            }
+            onChange={(value) => onChange({ ...formData, otherIncome: value })}
+            placeholder={t.income.grossIncome.choosePlaceholder}
+          />
+        </OtherIncomeWrapper>
+        <Gap size="s" />
+      </FixedSpaceColumn>
+    </ContentArea>
   )
 }
 
@@ -311,96 +322,157 @@ function EntrepreneurIncomeSelection({
   onChange: (value: Form.Entrepreneur) => void
 }) {
   const t = useTranslation()
+  const [lang] = useLang()
+
   const handleChange = (value: Form.Entrepreneur) => {
     onChange(adjustEntrepreneurFormRadioButtons(value))
   }
+
   return (
-    <>
-      <H3>{t.income.entrepreneurIncome.title}</H3>
-      <Checkbox
-        label={t.income.entrepreneurIncome.selfEmployed}
-        checked={formData.selfEmployed.selected}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            selfEmployed: {
-              ...formData.selfEmployed,
-              selected: value,
-              ...(value ? {} : { estimation: null })
-            }
-          })
-        }
-      />
-      <SelfEmployedIncomeSelection
-        formData={formData.selfEmployed}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            selfEmployed: { ...value, selected: true }
-          })
-        }
-      />
-      <Checkbox
-        label={t.income.entrepreneurIncome.limitedCompany}
-        checked={formData.limitedCompany.selected}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            limitedCompany: {
-              ...formData.limitedCompany,
-              selected: value,
-              ...(value ? {} : { incomeSource: null })
-            }
-          })
-        }
-      />
-      <LimitedCompanyIncomeSelection
-        formData={formData.limitedCompany}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            limitedCompany: { ...value, selected: true }
-          })
-        }
-      />
-      <Checkbox
-        label={t.income.entrepreneurIncome.partnership}
-        checked={formData.partnership.selected}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            partnership: {
-              ...formData.partnership,
-              selected: value,
-              ...(value ? {} : { incomeSource: null })
-            }
-          })
-        }
-      />
-      <PartnershipIncomeSelection
-        formData={formData.partnership}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            partnership: {
-              ...value,
-              selected: true,
-              ...(value ? {} : { lookupConsent: false })
-            }
-          })
-        }
-      />
-      <Checkbox
-        label={t.income.entrepreneurIncome.startupGrant}
-        checked={formData.startupGrant}
-        onChange={(value) =>
-          handleChange({
-            ...formData,
-            startupGrant: value
-          })
-        }
-      />
-    </>
+    <ContentArea opaque>
+      <FixedSpaceColumn>
+        <H3>{t.income.entrepreneurIncome.title}</H3>
+        <p>
+          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
+          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
+          tarkemmat yrityskohtaiset tiedot liitteinä.
+          <br />
+          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
+          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
+        </p>
+        <Gap size="s" />
+        <Label>Onko yritystoiminta päätoimista vai sivutoimista?</Label>
+        <Radio
+          label="Päätoimista"
+          checked={formData.fullTime === true}
+          onChange={() => handleChange({ ...formData, fullTime: true })}
+        />
+        <Radio
+          label="Sivutoimista"
+          checked={formData.fullTime === false}
+          onChange={() => handleChange({ ...formData, fullTime: false })}
+        />
+        <Gap size="s" />
+        <Label htmlFor="entrepreneur-start-date">Yrittäjyys alkanut</Label>
+        <DatePicker
+          date={formData.startOfEntrepreneurship}
+          onChange={(value) =>
+            handleChange({ ...formData, startOfEntrepreneurship: value })
+          }
+          locale={lang}
+          info={errorToInputInfo(
+            validDate(formData.startOfEntrepreneurship),
+            t.validationErrors
+          )}
+          hideErrorsBeforeTouched
+        />
+        <Gap size="s" />
+        <Label>Työskenteleekö puoliso yrityksessä?</Label>
+        <Radio
+          label="Kyllä"
+          checked={formData.spouseWorksInCompany === true}
+          onChange={() =>
+            handleChange({ ...formData, spouseWorksInCompany: true })
+          }
+        />
+        <Radio
+          label="Sivutoimista"
+          checked={formData.spouseWorksInCompany === false}
+          onChange={() =>
+            handleChange({ ...formData, spouseWorksInCompany: false })
+          }
+        />
+        <Gap size="s" />
+        <Checkbox
+          label={t.income.entrepreneurIncome.startupGrant}
+          checked={formData.startupGrant}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              startupGrant: value
+            })
+          }
+        />
+        <Gap size="xs" />
+        <H3>Yritysmuoto</H3>
+        <Checkbox
+          label={t.income.entrepreneurIncome.selfEmployed}
+          checked={formData.selfEmployed.selected}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              selfEmployed: {
+                ...formData.selfEmployed,
+                selected: value,
+                ...(value ? {} : { estimation: null })
+              }
+            })
+          }
+        />
+        <SelfEmployedIncomeSelection
+          formData={formData.selfEmployed}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              selfEmployed: { ...value, selected: true }
+            })
+          }
+        />
+        <Gap size="s" />
+        <Checkbox
+          label={t.income.entrepreneurIncome.limitedCompany}
+          checked={formData.limitedCompany.selected}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              limitedCompany: {
+                ...formData.limitedCompany,
+                selected: value,
+                ...(value ? {} : { incomeSource: null })
+              }
+            })
+          }
+        />
+        <LimitedCompanyIncomeSelection
+          formData={formData.limitedCompany}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              limitedCompany: { ...value, selected: true }
+            })
+          }
+        />
+        <Gap size="s" />
+        <Checkbox
+          label={t.income.entrepreneurIncome.partnership}
+          checked={formData.partnership.selected}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              partnership: {
+                ...formData.partnership,
+                selected: value,
+                ...(value ? {} : { incomeSource: null })
+              }
+            })
+          }
+        />
+        <PartnershipIncomeSelection
+          formData={formData.partnership}
+          onChange={(value) =>
+            handleChange({
+              ...formData,
+              partnership: {
+                ...value,
+                selected: true,
+                ...(value ? {} : { lookupConsent: false })
+              }
+            })
+          }
+        />
+        <Gap size="s" />
+      </FixedSpaceColumn>
+    </ContentArea>
   )
 }
 
@@ -587,19 +659,22 @@ function Attachments({
   )
 
   return (
-    <>
-      <H3>{t.income.attachments.title}</H3>
-      <p>{t.income.attachments.description}</p>
-      <H4>{t.income.attachments.required.title}</H4>
-      <ul></ul>
-      <FileUpload
-        files={attachments}
-        onUpload={handleUpload}
-        onDelete={handleDelete}
-        onDownloadFile={getAttachmentBlob}
-        i18n={{ upload: t.fileUpload, download: t.fileDownload }}
-      />
-    </>
+    <ContentArea opaque>
+      <FixedSpaceColumn>
+        <H3>{t.income.attachments.title}</H3>
+        <p>{t.income.attachments.description}</p>
+        <H4>{t.income.attachments.required.title}</H4>
+        <ul></ul>
+        <FileUpload
+          files={attachments}
+          onUpload={handleUpload}
+          onDelete={handleDelete}
+          onDownloadFile={getAttachmentBlob}
+          i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+        />
+        <Gap size="s" />
+      </FixedSpaceColumn>
+    </ContentArea>
   )
 }
 

@@ -31,6 +31,9 @@ SELECT
     type,
     gross_income_source,
     gross_other_income,
+    entrepreneur_full_time,
+    start_of_entrepreneurship,
+    spouse_works_in_company,
     self_employed_type,
     self_employed_estimated_monthly_income,
     self_employed_income_start_date,
@@ -87,14 +90,17 @@ ORDER BY start_date DESC
                 val limitedCompany =
                     if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource) else null
 
-                val partnership = row.mapColumn<Boolean?>("partnership")
-                val startupGrant = row.mapColumn<Boolean?>("startup_grant")
-
-                val entrepreneur =
-                    if (partnership != null && startupGrant != null)
-                        Entrepreneur(selfEmployed, limitedCompany, partnership, startupGrant)
-                    else
-                        null
+                // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has been filled
+                val fullTime = row.mapColumn<Boolean?>("entrepreneur_full_time")
+                val entrepreneur = if (fullTime != null) Entrepreneur(
+                    fullTime = fullTime,
+                    startOfEntrepreneurship = row.mapColumn<LocalDate>("start_of_entrepreneurship"),
+                    spouseWorksInCompany = row.mapColumn<Boolean>("spouse_works_in_company"),
+                    startupGrant = row.mapColumn<Boolean>("startup_grant"),
+                    selfEmployed = selfEmployed,
+                    limitedCompany = limitedCompany,
+                    partnership = row.mapColumn<Boolean>("partnership"),
+                ) else null
 
                 IncomeStatement.Income(
                     id = id,
@@ -112,13 +118,16 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
     bind("startDate", body.startDate)
         .bindNullable("grossIncomeSource", null as IncomeSource?)
         .bindNullable("grossOtherIncome", null as Array<OtherGrossIncome>?)
+        .bindNullable("fullTime", null as Boolean?)
+        .bindNullable("startOfEntrepreneurship", null as LocalDate?)
+        .bindNullable("spouseWorksInCompany", null as Boolean?)
+        .bindNullable("startupGrant", null as Boolean?)
         .bindNullable("selfEmployedType", null as SelfEmployedType?)
         .bindNullable("selfEmployedEstimatedMonthlyIncome", null as Int?)
         .bindNullable("selfEmployedIncomeStartDate", null as LocalDate?)
         .bindNullable("selfEmployedIncomeEndDate", null as LocalDate?)
         .bindNullable("limitedCompanyIncomeSource", null as IncomeSource?)
         .bindNullable("partnership", null as Boolean?)
-        .bindNullable("startupGrant", null as Boolean?)
         .bindNullable("otherInfo", null as String?)
         .run {
             when (body) {
@@ -140,8 +149,11 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gros
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
     this.run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
         .run { if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany) else this }
-        .bind("partnership", entrepreneur.partnership)
+        .bind("fullTime", entrepreneur.fullTime)
+        .bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
+        .bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
         .bind("startupGrant", entrepreneur.startupGrant)
+        .bind("partnership", entrepreneur.partnership)
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindSelfEmployed(selfEmployed: SelfEmployed): This =
     when (selfEmployed) {
@@ -170,13 +182,16 @@ INSERT INTO income_statement (
     type, 
     gross_income_source, 
     gross_other_income, 
+    entrepreneur_full_time,
+    start_of_entrepreneurship,
+    spouse_works_in_company,
+    startup_grant,
     self_employed_type,
     self_employed_estimated_monthly_income,
     self_employed_income_start_date, 
     self_employed_income_end_date,
     limited_company_income_source,
     partnership,
-    startup_grant,
     other_info
 ) VALUES (
     :personId,
@@ -184,13 +199,16 @@ INSERT INTO income_statement (
     :type,
     :grossIncomeSource,
     :grossOtherIncome :: other_income_type[],
+    :fullTime,
+    :startOfEntrepreneurship,
+    :spouseWorksInCompany,
+    :startupGrant,
     :selfEmployedType,
     :selfEmployedEstimatedMonthlyIncome,
     :selfEmployedIncomeStartDate,
     :selfEmployedIncomeEndDate,
     :limitedCompanyIncomeSource,
     :partnership,
-    :startupGrant,
     :otherInfo
 )
 RETURNING id
@@ -214,13 +232,16 @@ UPDATE income_statement SET
     type = :type,
     gross_income_source = :grossIncomeSource,
     gross_other_income = :grossOtherIncome :: other_income_type[],
+    entrepreneur_full_time = :fullTime,
+    start_of_entrepreneurship = :startOfEntrepreneurship,
+    spouse_works_in_company = :spouseWorksInCompany,
+    startup_grant = :startupGrant,
     self_employed_type = :selfEmployedType,
     self_employed_estimated_monthly_income = :selfEmployedEstimatedMonthlyIncome,
     self_employed_income_start_date = :selfEmployedIncomeStartDate,
     self_employed_income_end_date = :selfEmployedIncomeEndDate,
     limited_company_income_source = :limitedCompanyIncomeSource,
     partnership = :partnership,
-    startup_grant = :startupGrant,
     other_info = :otherInfo
 WHERE id = :id
   AND person_id = :personId

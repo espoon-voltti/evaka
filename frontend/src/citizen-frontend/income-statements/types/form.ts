@@ -18,10 +18,13 @@ export interface Gross {
 
 export interface Entrepreneur {
   selected: boolean
+  fullTime: boolean | null
+  startOfEntrepreneurship: string
+  spouseWorksInCompany: boolean | null
+  startupGrant: boolean
   selfEmployed: SelfEmployed
   limitedCompany: LimitedCompany
   partnership: Partnership
-  startupGrant: boolean
 }
 
 export interface SelfEmployed {
