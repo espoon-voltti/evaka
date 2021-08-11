@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -153,6 +155,9 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean
+    fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
 
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
