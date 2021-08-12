@@ -50,6 +50,8 @@ CREATE TABLE income_statement (
   type income_statement_type NOT NULL,
   gross_income_source income_source,
   gross_other_income other_income_type[],
+  student bool,
+  alimony bool,
   entrepreneur_full_time bool,
   start_of_entrepreneurship date,
   spouse_works_in_company bool,

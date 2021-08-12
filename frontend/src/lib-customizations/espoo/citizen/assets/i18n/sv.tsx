@@ -1219,9 +1219,9 @@ const sv: Translations = {
         'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
       provideAttachments:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
-      otherIncomeInfo:
-        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä.',
       otherIncome: 'Minulla on muita tuloja. Valitse mitä.',
+      otherIncomeInfo:
+        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
       choosePlaceholder: 'Valitse',
       otherIncomeTypes: {
         SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
@@ -1234,7 +1234,13 @@ const sv: Translations = {
         HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
         ALIMONY: 'Elatusapu/-tuki',
         OTHER_INCOME: 'Muu tulo (korko, vuokra, osinko jne.)'
-      }
+      },
+      student: 'Olen opiskelija.',
+      studentInfo:
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+      deductions: 'Vähennykset',
+      alimony:
+        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.'
     },
     entrepreneurIncome: {
       title: 'Yrittäjän tulotietojen täyttäminen',

@@ -14,6 +14,8 @@ export interface Gross {
   selected: boolean
   incomeSource: IncomeSource | null
   otherIncome: OtherIncome[] | null
+  student: boolean
+  alimony: boolean
 }
 
 export interface Entrepreneur {

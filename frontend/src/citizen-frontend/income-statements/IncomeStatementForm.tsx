@@ -38,7 +38,9 @@ const initialFormData: Form.IncomeStatementForm = {
   gross: {
     selected: false,
     incomeSource: null,
-    otherIncome: null
+    otherIncome: null,
+    student: false,
+    alimony: false
   },
   entrepreneur: {
     selected: false,
@@ -273,7 +275,7 @@ function GrossIncomeSelection({
             onChange({ ...formData, incomeSource: 'ATTACHMENTS' })
           }
         />
-        <p>{t.income.grossIncome.otherIncomeInfo}</p>
+        <Gap size="s" />
         <Checkbox
           label={t.income.grossIncome.otherIncome}
           checked={formData.otherIncome !== null}
@@ -284,6 +286,7 @@ function GrossIncomeSelection({
             })
           }
         />
+        <Indent>{t.income.grossIncome.otherIncomeInfo}</Indent>
         <OtherIncomeWrapper>
           <MultiSelect
             value={formData.otherIncome ?? []}
@@ -296,6 +299,19 @@ function GrossIncomeSelection({
             placeholder={t.income.grossIncome.choosePlaceholder}
           />
         </OtherIncomeWrapper>
+        <Gap size="s" />
+        <Checkbox
+          label={t.income.grossIncome.student}
+          checked={formData.student}
+          onChange={(value) => onChange({ ...formData, student: value })}
+        />
+        <Indent>{t.income.grossIncome.studentInfo}</Indent>
+        <H3>{t.income.grossIncome.deductions}</H3>
+        <Checkbox
+          label={t.income.grossIncome.alimony}
+          checked={formData.alimony}
+          onChange={(value) => onChange({ ...formData, alimony: value })}
+        />
         <Gap size="s" />
       </FixedSpaceColumn>
     </ContentArea>

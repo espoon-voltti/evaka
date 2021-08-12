@@ -31,6 +31,8 @@ SELECT
     type,
     gross_income_source,
     gross_other_income,
+    student,
+    alimony,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -67,10 +69,11 @@ ORDER BY start_date DESC
 
             IncomeStatementType.INCOME -> {
                 val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
-                val grossOtherIncome = row.mapColumn<Array<OtherGrossIncome>?>("gross_other_income")?.toSet()
-                val gross = if (grossIncomeSource != null && grossOtherIncome != null) Gross(
-                    grossIncomeSource,
-                    grossOtherIncome
+                val gross = if (grossIncomeSource != null) Gross(
+                    incomeSource = grossIncomeSource,
+                    otherIncome = row.mapColumn<Array<OtherGrossIncome>>("gross_other_income").toSet(),
+                    student = row.mapColumn("student"),
+                    alimony = row.mapColumn("alimony"),
                 ) else null
 
                 val selfEmployed =
@@ -118,6 +121,8 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
     bind("startDate", body.startDate)
         .bindNullable("grossIncomeSource", null as IncomeSource?)
         .bindNullable("grossOtherIncome", null as Array<OtherGrossIncome>?)
+        .bindNullable("student", null as Boolean?)
+        .bindNullable("alimony", null as Boolean?)
         .bindNullable("fullTime", null as Boolean?)
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
         .bindNullable("spouseWorksInCompany", null as Boolean?)
@@ -145,6 +150,8 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gross): This =
     bind("grossIncomeSource", gross.incomeSource)
         .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
+        .bind("student", gross.student)
+        .bind("alimony", gross.alimony)
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
     this.run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
@@ -182,6 +189,8 @@ INSERT INTO income_statement (
     type, 
     gross_income_source, 
     gross_other_income, 
+    student,
+    alimony,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -199,6 +208,8 @@ INSERT INTO income_statement (
     :type,
     :grossIncomeSource,
     :grossOtherIncome :: other_income_type[],
+    :student,
+    :alimony,
     :fullTime,
     :startOfEntrepreneurship,
     :spouseWorksInCompany,
@@ -232,6 +243,8 @@ UPDATE income_statement SET
     type = :type,
     gross_income_source = :grossIncomeSource,
     gross_other_income = :grossOtherIncome :: other_income_type[],
+    student = :student,
+    alimony = :alimony,
     entrepreneur_full_time = :fullTime,
     start_of_entrepreneurship = :startOfEntrepreneurship,
     spouse_works_in_company = :spouseWorksInCompany,

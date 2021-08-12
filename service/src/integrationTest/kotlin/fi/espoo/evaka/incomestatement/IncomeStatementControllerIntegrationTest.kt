@@ -59,6 +59,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
+                    student = false,
+                    alimony = true,
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -85,6 +87,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     gross = Gross(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
+                        student = false,
+                        alimony = true,
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -149,6 +153,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
+                    student = false,
+                    alimony = true,
                 ),
                 entrepreneur = null,
                 otherInfo = "foo bar",
@@ -165,6 +171,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
                         otherIncome = setOf(),
+                        student = false,
+                        alimony = true,
                     ),
                     entrepreneur = null,
                     otherInfo = "foo bar",
@@ -185,6 +193,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
+                    student = false,
+                    alimony = true,
                 ),
                 entrepreneur = null,
                 otherInfo = "foo bar",
@@ -205,6 +215,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
+                    student = false,
+                    alimony = true,
                 ),
                 entrepreneur = null,
                 otherInfo = "foo bar",
@@ -226,6 +238,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
+                    student = false,
+                    alimony = true,
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,

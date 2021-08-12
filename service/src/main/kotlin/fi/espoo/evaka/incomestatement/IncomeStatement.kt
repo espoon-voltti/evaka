@@ -8,10 +8,10 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import java.time.LocalDate
 
 enum class OtherGrossIncome {
+    PENSION,
     SHIFT_WORK_ADD_ON,
     PERKS,
     SECONDARY_INCOME,
-    PENSION,
     UNEMPLOYMENT_BENEFITS,
     SICKNESS_ALLOWANCE,
     PARENTAL_ALLOWANCE,
@@ -28,6 +28,8 @@ enum class IncomeSource {
 data class Gross(
     val incomeSource: IncomeSource,
     val otherIncome: Set<OtherGrossIncome>,
+    val student: Boolean,
+    val alimony: Boolean,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
