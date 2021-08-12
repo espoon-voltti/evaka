@@ -6,9 +6,11 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
@@ -50,11 +52,12 @@ data class VasuDocumentSummary(
 data class VasuDocument(
     val id: VasuDocumentId,
     val modifiedAt: HelsinkiDateTime,
+    val templateName: String,
+    val templateRange: FiniteDateRange,
     @Json
     val events: List<VasuDocumentEvent> = listOf(),
-    @Nested("child")
-    val child: VasuDocumentChild,
-    val templateName: String,
+    @Json
+    val basics: VasuBasics,
     @Json
     val content: VasuContent,
     @Json
@@ -76,10 +79,35 @@ data class VasuDocument(
     }
 }
 
-data class VasuDocumentChild(
+@Json
+data class VasuBasics(
+    val child: VasuChild,
+    val guardians: List<VasuGuardian>,
+    val placements: List<VasuPlacement>?
+)
+
+@Json
+data class VasuChild(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate
+)
+
+@Json
+data class VasuGuardian(
     val id: UUID,
     val firstName: String,
     val lastName: String
+)
+
+@Json
+data class VasuPlacement(
+    val unitId: DaycareId,
+    val unitName: String,
+    val groupId: GroupId,
+    val groupName: String,
+    val range: FiniteDateRange
 )
 
 @Json

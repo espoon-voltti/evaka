@@ -41,6 +41,7 @@ CREATE TABLE vasu_content(
     published_at timestamp with time zone DEFAULT NULL,
     master bool GENERATED ALWAYS AS (published_at IS NULL) STORED,
     content jsonb NOT NULL,
+    basics jsonb NOT NULL,
     authors_content jsonb NOT NULL,
     vasu_discussion_content jsonb NOT NULL,
     evaluation_discussion_content jsonb NOT NULL

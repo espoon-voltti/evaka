@@ -217,7 +217,7 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
-  const dynamicOffset = 1
+  const dynamicOffset = 2
 
   function renderTextQuestion(
     question: TextQuestion,
@@ -345,7 +345,11 @@ export default React.memo(function VasuTemplateEditor() {
 
             <FixedSpaceColumn>
               <SectionContainer>
-                <H2>1. {i18n.vasu.staticSections.authors.title}</H2>
+                <H2>1. {i18n.vasu.staticSections.basics.title}</H2>
+              </SectionContainer>
+
+              <SectionContainer>
+                <H2>2. {i18n.vasu.staticSections.authors.title}</H2>
               </SectionContainer>
 
               {template.value.content.sections.map((section, sectionIndex) => (
@@ -500,19 +504,6 @@ export default React.memo(function VasuTemplateEditor() {
                   )}
                 </Fragment>
               ))}
-              <SectionContainer>
-                <H2>
-                  {dynamicOffset + template.value.content.sections.length + 1}.{' '}
-                  {i18n.vasu.staticSections.vasuDiscussion.title}
-                </H2>
-              </SectionContainer>
-
-              <SectionContainer>
-                <H2>
-                  {dynamicOffset + template.value.content.sections.length + 2}.{' '}
-                  {i18n.vasu.staticSections.evaluationDiscussion.title}
-                </H2>
-              </SectionContainer>
             </FixedSpaceColumn>
             {template.value.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
@@ -523,6 +514,20 @@ export default React.memo(function VasuTemplateEditor() {
                 />
               </AddNewContainer>
             )}
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 1}.{' '}
+                {i18n.vasu.staticSections.vasuDiscussion.title}
+              </H2>
+            </SectionContainer>
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 2}.{' '}
+                {i18n.vasu.staticSections.evaluationDiscussion.title}
+              </H2>
+            </SectionContainer>
 
             <Gap />
 

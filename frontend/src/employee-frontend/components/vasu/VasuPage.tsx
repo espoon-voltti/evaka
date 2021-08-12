@@ -18,6 +18,7 @@ import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
 import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
+import { BasicsSection } from './sections/BasicsSection'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -39,7 +40,7 @@ export default React.memo(function VasuPage({
     evaluationDiscussionContent
   } = useVasu(id)
 
-  const dynamicSectionsOffset = 1
+  const dynamicSectionsOffset = 2
 
   return (
     <Container>
@@ -47,7 +48,12 @@ export default React.memo(function VasuPage({
       {vasu && (
         <>
           <VasuHeader document={vasu} />
-          <AuthorsSection sectionIndex={0} content={authorsContent} />
+          <BasicsSection
+            sectionIndex={0}
+            content={vasu.basics}
+            templateRange={vasu.templateRange}
+          />
+          <AuthorsSection sectionIndex={1} content={authorsContent} />
           <DynamicSections
             sections={content.sections}
             sectionIndex={dynamicSectionsOffset}
@@ -75,7 +81,7 @@ export default React.memo(function VasuPage({
         <FooterContainer>
           {vasu && (
             <VasuStateTransitionButtons
-              childId={vasu.child.id}
+              childId={vasu.basics.child.id}
               documentId={vasu.id}
               state={vasu.documentState}
             />

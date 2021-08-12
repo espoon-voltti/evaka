@@ -91,12 +91,13 @@ class VasuIntegrationTest : FullApplicationTest() {
         getVasuDocument(documentId).let { doc ->
             assertEquals("vasu", doc.templateName)
             assertEquals(
-                VasuDocumentChild(
+                VasuChild(
                     id = testChild_1.id,
                     firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName
+                    lastName = testChild_1.lastName,
+                    dateOfBirth = testChild_1.dateOfBirth
                 ),
-                doc.child
+                doc.basics.child
             )
             assertEquals(0, doc.events.size)
             assertEquals(template.content, doc.content)
