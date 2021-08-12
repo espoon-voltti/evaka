@@ -7,6 +7,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,6 +38,7 @@ class IncomeStatementController {
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(UserRole.END_USER)
+        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
         db.transaction { tx ->
             val incomeStatementId = tx.createIncomeStatement(user.id, body)
             when (body) {
@@ -57,6 +59,7 @@ class IncomeStatementController {
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(UserRole.END_USER)
+        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->
             tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
                 if (success) {

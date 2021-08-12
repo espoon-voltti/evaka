@@ -28,7 +28,11 @@ export function validateIncomeStatementBody(
   const gross = validateGross(formData.gross)
   const entrepreneur = validateEntrepreneur(formData.entrepreneur)
 
-  if (gross === invalid || entrepreneur == invalid) {
+  if (
+    gross === invalid ||
+    entrepreneur == invalid ||
+    (!gross && !entrepreneur)
+  ) {
     return null
   }
 
@@ -70,7 +74,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     spouseWorksInCompany === null ||
     selfEmployed === invalid ||
     limitedCompany === invalid ||
-    partnership === invalid
+    partnership === invalid ||
+    (!selfEmployed && !limitedCompany && !partnership)
   ) {
     return invalid
   }
@@ -88,6 +93,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
 
 function validateSelfEmployed(formData: Form.SelfEmployed) {
   if (!formData.selected) return null
+  if (!formData.kelaConsent) return invalid
   if (formData.estimation === null) return invalid
   if (formData.estimation === false) return { type: 'ATTACHMENTS' as const }
 

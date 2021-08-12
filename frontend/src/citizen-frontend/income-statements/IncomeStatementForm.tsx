@@ -376,7 +376,7 @@ function EntrepreneurIncomeSelection({
           }
         />
         <Radio
-          label="Sivutoimista"
+          label="Ei"
           checked={formData.spouseWorksInCompany === false}
           onChange={() =>
             handleChange({ ...formData, spouseWorksInCompany: false })

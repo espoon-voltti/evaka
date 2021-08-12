@@ -106,6 +106,40 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `create an invalid income statement`() {
+        createIncomeStatement(
+            // Either gross or entrepreneur is needed
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                gross = null,
+                entrepreneur = null,
+                otherInfo = "foo bar",
+                attachmentIds = listOf()
+            ),
+            400
+        )
+        createIncomeStatement(
+            // Either gross or entrepreneur is needed
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                gross = null,
+                entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                    spouseWorksInCompany = true,
+                    startupGrant = true,
+                    selfEmployed = null,
+                    limitedCompany = null,
+                    partnership = false
+                ),
+                otherInfo = "foo bar",
+                attachmentIds = listOf()
+            ),
+            400
+        )
+    }
+
+    @Test
     fun `create an income statement with an attachment`() {
         val attachmentId = uploadAttachment()
 

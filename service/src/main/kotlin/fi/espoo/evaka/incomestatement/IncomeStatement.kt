@@ -78,6 +78,19 @@ sealed class IncomeStatementBody(
     ) : IncomeStatementBody(startDate)
 }
 
+fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
+    when (body) {
+        is IncomeStatementBody.HighestFee -> true
+        is IncomeStatementBody.Income ->
+            if (body.gross == null && body.entrepreneur == null) false
+            else !(
+                body.entrepreneur != null &&
+                    body.entrepreneur.selfEmployed == null &&
+                    body.entrepreneur.limitedCompany == null &&
+                    !body.entrepreneur.partnership
+                )
+    }
+
 data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
