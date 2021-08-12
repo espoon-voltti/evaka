@@ -9,6 +9,8 @@ import { Label } from 'lib-components/typography'
 import { TextQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { useTranslation } from '../../../state/i18n'
 
 interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
   onChange?: (value: string) => void
@@ -16,9 +18,11 @@ interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
 
 export function TextQuestion({
   onChange,
-  question: { name, value, multiline },
+  question: { name, value, multiline, info },
   questionNumber
 }: TextQuestionQuestionProps) {
+  const { i18n } = useTranslation()
+
   const getEditorOrStaticText = () => {
     if (!onChange) {
       return <ValueOrNoRecord text={value} />
@@ -34,9 +38,14 @@ export function TextQuestion({
 
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <ExpandingInfo
+        info={info.length ? <div>{info}</div> : null}
+        ariaLabel={i18n.common.openExpandingInfo}
+      >
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </ExpandingInfo>
       {getEditorOrStaticText()}
     </>
   )

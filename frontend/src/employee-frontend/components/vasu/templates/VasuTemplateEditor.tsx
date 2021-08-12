@@ -46,6 +46,7 @@ import {
   VasuTemplate
 } from './api'
 import CreateQuestionModal from './CreateQuestionModal'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
@@ -222,17 +223,22 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number
   ) {
     return (
-      <>
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+      <React.Fragment>
+        <ExpandingInfo
+          info={question.info.length ? <div>{question.info}</div> : null}
+          ariaLabel={i18n.common.openExpandingInfo}
+        >
+          <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
+            question.name
+          }`}</H3>
+        </ExpandingInfo>
 
         {question.multiline ? (
           <TextArea value={question.value} />
         ) : (
           <InputField value={question.value} width={'L'} />
         )}
-      </>
+      </React.Fragment>
     )
   }
 
@@ -242,10 +248,15 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number
   ) {
     return (
-      <Checkbox
-        checked={question.value}
-        label={`${sectionIndex + 1}.${questionIndex + 1}. ${question.name}`}
-      />
+      <ExpandingInfo
+        info={question.info.length ? <div>{question.info}</div> : null}
+        ariaLabel={i18n.common.openExpandingInfo}
+      >
+        <Checkbox
+          checked={question.value}
+          label={`${sectionIndex + 1}.${questionIndex + 1}. ${question.name}`}
+        />
+      </ExpandingInfo>
     )
   }
 
@@ -256,9 +267,14 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <ExpandingInfo
+          info={question.info.length ? <div>{question.info}</div> : null}
+          ariaLabel={i18n.common.openExpandingInfo}
+        >
+          <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
+            question.name
+          }`}</H3>
+        </ExpandingInfo>
         {question.options.map((opt) => (
           <Radio checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -273,9 +289,14 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <ExpandingInfo
+          info={question.info.length ? <div>{question.info}</div> : null}
+          ariaLabel={i18n.common.openExpandingInfo}
+        >
+          <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
+            question.name
+          }`}</H3>
+        </ExpandingInfo>
         {question.options.map((opt) => (
           <Checkbox checked={false} label={opt.name} key={opt.key} />
         ))}

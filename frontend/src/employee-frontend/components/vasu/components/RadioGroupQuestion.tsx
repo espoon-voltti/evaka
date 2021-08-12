@@ -9,6 +9,8 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { QuestionOption, RadioGroupQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
+import { useTranslation } from '../../../state/i18n'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 interface Props {
   questionNumber: string
@@ -19,15 +21,23 @@ interface Props {
 
 export function RadioGroupQuestion({
   onChange,
-  question: { name, options },
+  question: { name, options, info },
   questionNumber,
   selectedValue
 }: Props) {
+  const { i18n } = useTranslation()
+
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <ExpandingInfo
+        info={info.length ? <div>{info}</div> : null}
+        ariaLabel={i18n.common.openExpandingInfo}
+      >
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </ExpandingInfo>
+
       {onChange ? (
         <>
           <Gap size={'m'} />

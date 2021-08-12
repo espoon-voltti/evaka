@@ -10,6 +10,8 @@ import { Gap } from 'lib-components/white-space'
 import { MultiSelectQuestion, QuestionOption } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]
@@ -18,15 +20,22 @@ interface Props extends QuestionProps<MultiSelectQuestion> {
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options },
+  question: { name, options, info },
   questionNumber,
   selectedValues
 }: Props) {
+  const { i18n } = useTranslation()
+
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <ExpandingInfo
+        info={info.length ? <div>{info}</div> : null}
+        ariaLabel={i18n.common.openExpandingInfo}
+      >
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </ExpandingInfo>
       {onChange ? (
         <>
           <Gap size={'m'} />

@@ -118,11 +118,13 @@ sealed class VasuQuestion(
 ) {
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
+    abstract val info: String
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
     data class TextQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val multiline: Boolean,
         val value: String
     ) : VasuQuestion(VasuQuestionType.TEXT) {
@@ -134,6 +136,7 @@ sealed class VasuQuestion(
     data class CheckboxQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val value: Boolean
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
@@ -144,6 +147,7 @@ sealed class VasuQuestion(
     data class RadioGroupQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val options: List<QuestionOption>,
         val value: String?
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
@@ -155,6 +159,7 @@ sealed class VasuQuestion(
     data class MultiSelectQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val options: List<QuestionOption>,
         val minSelections: Int,
         val maxSelections: Int?,

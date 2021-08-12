@@ -2665,6 +2665,7 @@ export const fi = {
       title: 'Uusi kysymys',
       type: 'Kysymyksen tyyppi',
       name: 'Kysymysteksti',
+      info: 'Ohjeteksti',
       options: 'Vaihtoehdot',
       addNewOption: 'Lisää vaihtoehto',
       multiline: 'Monirivinen',

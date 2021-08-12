@@ -55,7 +55,7 @@ const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
 `
 type ExpandingInfoProps = {
   children: React.ReactNode
-  info: ReactNode
+  info: ReactNode | null
   ariaLabel: string
   margin?: SpacingSize
   fullWidth?: boolean
@@ -70,6 +70,8 @@ export default function ExpandingInfo({
 }: ExpandingInfoProps) {
   const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
+
+  if (info === null) return <div>{children}</div>
 
   return (
     <span aria-live="polite">
