@@ -125,44 +125,44 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
     val successfulDeletes: List<Boolean> = vardaChildIds.map { vardaChildId ->
         try {
             val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
-            logger.info { "VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $vardaChildId" }
+            logger.info { "VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
-            logger.info { "VardaUpdate: found ${placementIds.size} placements to be deleted for child $vardaChildId" }
+            logger.info { "VardaUpdate: found ${placementIds.size} placements to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             val feeIds = placementIds.flatMap { vardaClient.getFeeDataByChild(it) }
-            logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $vardaChildId" }
+            logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             feeIds.forEach { feeId ->
                 if (vardaClient.deleteFeeDataV2(feeId)) {
-                    logger.info { "VardaUpdate: Deleting fee data from db by id $feeId" }
+                    logger.info { "VardaUpdate: Deleting fee data from db for child $evakaChildId (varda id $vardaChildId) by id $feeId" }
                     db.transaction { deleteVardaFeeData(it, feeId) }
                 }
             }
 
             placementIds.forEach { placementId ->
                 if (vardaClient.deletePlacementV2(placementId)) {
-                    logger.info { "VardaUpdate: Deleting placement data from db by id $placementId" }
+                    logger.info { "VardaUpdate: Deleting placement data from db for child $evakaChildId (varda id $vardaChildId) by id $placementId" }
                     db.transaction { deletePlacement(it, placementId) }
                 }
             }
 
             decisionIds.forEach { decisionId ->
                 if (vardaClient.deleteDecisionV2(decisionId)) {
-                    logger.info { "VardaUpdate: Deleting decision data from db by id $decisionId" }
+                    logger.info { "VardaUpdate: Deleting decision data from db for child $evakaChildId (varda id $vardaChildId) by id $decisionId" }
                     db.transaction { deleteDecision(it, decisionId) }
                 }
             }
 
-            logger.info { "VardaUpdate: Deleting from varda_service_need by child $vardaChildId" }
+            logger.info { "VardaUpdate: Deleting from varda_service_need for child $evakaChildId (varda id $vardaChildId)" }
             db.transaction {
                 it.deleteVardaServiceNeedByVardaChildId(vardaChildId)
             }
 
-            logger.info { "VardaUpdate: successfully deleted data of child $vardaChildId" }
+            logger.info { "VardaUpdate: successfully deleted data for child $evakaChildId (varda id $vardaChildId)" }
             return true
         } catch (e: Exception) {
-            logger.info("VardaUpdate: couldn't reset varda child $vardaChildId: ${e.localizedMessage}")
+            logger.info("VardaUpdate: couldn't reset varda child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}")
             return false
         }
     }
