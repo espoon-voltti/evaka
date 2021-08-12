@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { H1, H2, H3, H4, Label } from 'lib-components/typography'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { useLang, useTranslation } from '../localization'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
@@ -15,7 +16,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InputField from 'lib-components/atoms/form/InputField'
-import { otherIncome } from './types/common'
+import { AttachmentType, otherIncome } from './types/common'
 import * as Form from './types/form'
 import { validateIncomeStatementBody } from './types/body'
 import { errorToInputInfo, validDate, validInt } from '../form-validation'
@@ -78,6 +79,8 @@ export default function IncomeStatementForm() {
   const isValid = validatedData !== null
   const showOtherInfo =
     formData.gross.selected || formData.entrepreneur.selected
+
+  const requiredAttachments = computeRequiredAttachments(formData)
 
   const save = React.useCallback(
     () =>
@@ -155,6 +158,7 @@ export default function IncomeStatementForm() {
             </ContentArea>
             <Gap size="L" />
             <Attachments
+              requiredAttachments={requiredAttachments}
               attachments={formData.attachments}
               onUploaded={handleAttachmentUploaded}
               onDeleted={handleAttachmentDeleted}
@@ -633,10 +637,12 @@ function PartnershipIncomeSelection({
 }
 
 function Attachments({
+  requiredAttachments,
   attachments,
   onUploaded,
   onDeleted
 }: {
+  requiredAttachments: AttachmentType[]
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
   onDeleted: (attachmentId: UUID) => void
@@ -674,8 +680,19 @@ function Attachments({
       <FixedSpaceColumn>
         <H3>{t.income.attachments.title}</H3>
         <p>{t.income.attachments.description}</p>
-        <H4>{t.income.attachments.required.title}</H4>
-        <ul></ul>
+        {requiredAttachments.length > 0 && (
+          <>
+            <H4>{t.income.attachments.required.title}</H4>
+            <UnorderedList>
+              {requiredAttachments.map((attachmentType) => (
+                <li key={attachmentType}>
+                  {t.income.attachments.attachmentNames[attachmentType]}
+                </li>
+              ))}
+            </UnorderedList>
+            <Gap size="L" />
+          </>
+        )}
         <FileUpload
           files={attachments}
           onUpload={handleUpload}
@@ -687,6 +704,38 @@ function Attachments({
       </FixedSpaceColumn>
     </ContentArea>
   )
+}
+
+export function computeRequiredAttachments(
+  formData: Form.IncomeStatementForm
+): AttachmentType[] {
+  const { gross, entrepreneur } = formData
+
+  const result: AttachmentType[] = []
+  if (gross.selected) {
+    if (gross.incomeSource === 'ATTACHMENTS') result.push('PAYSLIP')
+    if (gross.otherIncome) result.push(...gross.otherIncome)
+    if (gross.alimony) result.push('ALIMONY_PAYOUT')
+  }
+  if (entrepreneur.selected) {
+    if (entrepreneur.startupGrant) result.push('STARTUP_GRANT')
+    if (
+      entrepreneur.selfEmployed.selected &&
+      !entrepreneur.selfEmployed.estimation
+    ) {
+      result.push('PROFIT_AND_LOSS_STATEMENT')
+    }
+    if (
+      entrepreneur.limitedCompany.selected &&
+      entrepreneur.limitedCompany.incomeSource === 'ATTACHMENTS'
+    ) {
+      result.push('PAYSLIP', 'ACCOUNTANT_REPORT')
+    }
+    if (entrepreneur.partnership.selected) {
+      result.push('PROFIT_AND_LOSS_STATEMENT', 'ACCOUNTANT_REPORT')
+    }
+  }
+  return result
 }
 
 const HighestFeeInfo = styled.div`

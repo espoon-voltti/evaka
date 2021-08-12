@@ -1278,16 +1278,16 @@ const en: Translations = {
         'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
       choosePlaceholder: 'Valitse',
       otherIncomeTypes: {
-        SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
-        PERKS: 'Luontaisedut',
-        SECONDARY_INCOME: 'Sivutulo',
-        PENSION: 'Eläkkeet',
-        UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
+        PENSION: 'Eläke',
+        ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
         SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-        HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
-        ALIMONY: 'Elatusapu/-tuki',
-        OTHER_INCOME: 'Muu tulo (korko, vuokra, osinko jne.)'
+        PARENTAL_ALLOWANCE: 'Vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Lastenhoidontuki',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Joustava tai osittainen hoitoraha',
+        ALIMONY: 'Elatusapu',
+        INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+        RENTAL_INCOME: 'Vuokratulot'
       },
       student: 'Olen opiskelija.',
       studentInfo:
@@ -1350,6 +1350,23 @@ const en: Translations = {
         'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
       required: {
         title: 'Tarvittavat liitteet'
+      },
+      attachmentNames: {
+        PENSION: 'Päätös eläkkeestä',
+        ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
+        SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
+        PARENTAL_ALLOWANCE: 'Päätös vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Päätös lastenhoidontuesta',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
+        ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+        ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
+        INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
+        RENTAL_INCOME: 'Tositteet vuokratuloista',
+        PAYSLIP: 'Viimeisin palkkakuitti',
+        STARTUP_GRANT: 'Starttirahapäätös',
+        ACCOUNTANT_REPORT:
+          'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase'
       }
     }
   },
