@@ -67,7 +67,8 @@ const initialFormData: Form.IncomeStatementForm = {
     startupGrant: false
   },
   otherInfo: '',
-  attachments: []
+  attachments: [],
+  assure: false
 }
 
 export default function IncomeStatementForm() {
@@ -166,7 +167,16 @@ export default function IncomeStatementForm() {
           </>
         )}
         <Gap size="L" />
-        <FixedSpaceRow>
+        <FixedSpaceRow
+          alignItems="center"
+          justifyContent="flex-end"
+          spacing="L"
+        >
+          <Checkbox
+            label={t.income.assure}
+            checked={formData.assure}
+            onChange={(value) => setFormData({ ...formData, assure: value })}
+          />
           <Button text={t.common.cancel} />
           <AsyncButton
             text={t.common.save}

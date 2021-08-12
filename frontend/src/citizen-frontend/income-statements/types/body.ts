@@ -15,6 +15,8 @@ export type IncomeStatementBody = HighestFeeBody | IncomeBody
 export function validateIncomeStatementBody(
   formData: Form.IncomeStatementForm
 ): IncomeStatementBody | null {
+  if (!formData.assure) return null
+
   const startDate = LocalDate.parseFiOrNull(formData.startDate)
   if (!startDate) return null
 

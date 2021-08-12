@@ -1314,7 +1314,8 @@ const sv: Translations = {
           'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
         PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase'
       }
-    }
+    },
+    assure: 'Vakuutan antamani tiedot oikeiksi.'
   },
   validationErrors: {
     required: 'Värde saknas',

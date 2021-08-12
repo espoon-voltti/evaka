@@ -8,6 +8,7 @@ export interface IncomeStatementForm {
   entrepreneur: Entrepreneur
   otherInfo: string
   attachments: Attachment[]
+  assure: boolean
 }
 
 export interface Gross {
