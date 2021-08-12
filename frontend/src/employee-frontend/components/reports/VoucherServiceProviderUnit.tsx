@@ -407,7 +407,7 @@ function VoucherServiceProviderUnit() {
                       <Td>{row.childGroupName}</Td>
                       <Td>
                         <Tooltip
-                          up
+                          position="top"
                           tooltip={
                             <div>
                               {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}

@@ -5,9 +5,13 @@
 import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCaretDown, fasCaretUp } from 'lib-icons'
+import {
+  fasCaretDown,
+  fasCaretLeft,
+  fasCaretRight,
+  fasCaretUp
+} from 'lib-icons'
 import { defaultMargins } from '../white-space'
-import classNames from 'classnames'
 import { BaseProps } from '../utils'
 
 const TooltipWrapper = styled.div`
@@ -19,20 +23,74 @@ const TooltipWrapper = styled.div`
     }
   }
 `
-const TooltipPositioner = styled.div`
+
+const tooltipPositions = (position: Position) => {
+  const top = (() => {
+    switch (position) {
+      case 'top':
+        return 'auto'
+      case 'bottom':
+        return `calc(100% + ${defaultMargins.xs})`
+      case 'left':
+      case 'right':
+        return '-70px'
+    }
+  })()
+
+  const bottom = () => {
+    switch (position) {
+      case 'top':
+        return `calc(100% + ${defaultMargins.xs})`
+      case 'bottom':
+        return 'auto'
+      case 'left':
+      case 'right':
+        return '-70px'
+    }
+  }
+
+  const left = () => {
+    switch (position) {
+      case 'top':
+      case 'bottom':
+        return '-70px'
+      case 'left':
+        return 'auto'
+      case 'right':
+        return `calc(100% + ${defaultMargins.xs})`
+    }
+  }
+
+  const right = () => {
+    switch (position) {
+      case 'top':
+      case 'bottom':
+        return '-70px'
+      case 'left':
+        return `calc(100% + ${defaultMargins.xs})`
+      case 'right':
+        return 'auto'
+    }
+  }
+
+  return { top, bottom, left, right }
+}
+
+const TooltipPositioner = styled.div<{ position: Position }>`
   position: absolute;
-  top: calc(100% + ${defaultMargins.xs});
-  left: -70px;
-  right: -70px;
   z-index: 99999;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  &.up {
-    top: auto;
-    bottom: calc(100% + ${defaultMargins.xs});
-  }
+  top: calc(100% + ${defaultMargins.xs});
+  left: -70px;
+  right: -70px;
+
+  top: ${({ position }) => tooltipPositions(position).top};
+  bottom: ${({ position }) => tooltipPositions(position).bottom};
+  left: ${({ position }) => tooltipPositions(position).left};
+  right: ${({ position }) => tooltipPositions(position).right};
 `
 
 const TooltipDiv = styled.div`
@@ -50,45 +108,110 @@ const TooltipDiv = styled.div`
   }
 `
 
-const Beak = styled.div`
+const beakPositions = (position: Position) => {
+  const top = (() => {
+    switch (position) {
+      case 'top':
+        return 'auto'
+      case 'bottom':
+        return '-24px'
+      case 'left':
+      case 'right':
+        return '0'
+    }
+  })()
+
+  const bottom = () => {
+    switch (position) {
+      case 'top':
+        return '-24px'
+      case 'bottom':
+        return 'auto'
+      case 'left':
+      case 'right':
+        return '0'
+    }
+  }
+
+  const left = () => {
+    switch (position) {
+      case 'top':
+      case 'bottom':
+        return '0'
+      case 'left':
+        return 'auto'
+      case 'right':
+        return '-10px'
+    }
+  }
+
+  const right = () => {
+    switch (position) {
+      case 'top':
+      case 'bottom':
+        return '0'
+      case 'left':
+        return '-10px'
+      case 'right':
+        return 'auto'
+    }
+  }
+
+  return { top, bottom, left, right }
+}
+
+const Beak = styled.div<{ position: Position }>`
   pointer-events: none;
   position: absolute;
-  top: -24px;
-  left: 0;
-  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
-  &.up {
-    top: auto;
-    bottom: -24px;
-  }
+  top: ${({ position }) => beakPositions(position).top};
+  bottom: ${({ position }) => beakPositions(position).bottom};
+  left: ${({ position }) => beakPositions(position).left};
+  right: ${({ position }) => beakPositions(position).right};
 `
+
+type Position = 'top' | 'bottom' | 'right' | 'left'
 
 type TooltipProps = BaseProps & {
   children: React.ReactNode
   tooltip: JSX.Element
-  up?: boolean
+  position?: Position
 }
 
 export default function Tooltip({
   children,
   tooltip,
-  up,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  ...props
 }: TooltipProps) {
+  const position = props.position ?? 'bottom'
+  const icon = (() => {
+    switch (position) {
+      case 'top':
+        return fasCaretDown
+      case 'bottom':
+        return fasCaretUp
+      case 'left':
+        return fasCaretRight
+      case 'right':
+        return fasCaretLeft
+    }
+  })()
+
   return (
     <TooltipWrapper>
       <div>{children}</div>
 
-      <TooltipPositioner className={classNames('tooltip', { up })}>
+      <TooltipPositioner className="tooltip" position={position}>
         <TooltipDiv data-qa={dataQa}>
-          <Beak className={classNames({ up })}>
+          <Beak position={position}>
             <FontAwesomeIcon
-              icon={up ? fasCaretDown : fasCaretUp}
-              size={'3x'}
+              icon={icon}
+              size={['top', 'bottom'].includes(position) ? '3x' : '2x'}
             />
           </Beak>
           <div>{tooltip}</div>

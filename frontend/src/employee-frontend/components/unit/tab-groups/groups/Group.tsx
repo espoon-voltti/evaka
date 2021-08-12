@@ -269,7 +269,7 @@ function Group({
             isPilotUnit(unit.id)) && (
             <Tooltip
               data-qa={`daycare-daily-note-hover-${placement.child.id}`}
-              up
+              position="top"
               tooltip={
                 childNote ? (
                   <div>
@@ -515,7 +515,7 @@ function Group({
                         <Th>
                           <IconContainer>
                             <Tooltip
-                              up
+                              position="top"
                               tooltip={
                                 <span>
                                   {i18n.unit.groups.daycareDailyNote.header}
