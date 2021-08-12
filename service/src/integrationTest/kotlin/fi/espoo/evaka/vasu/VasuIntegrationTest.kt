@@ -45,7 +45,7 @@ class VasuIntegrationTest : FullApplicationTest() {
             tx.insertGeneralTestFixtures()
         }
 
-        postVasuTemplate(
+        templateId = postVasuTemplate(
             VasuTemplateController.CreateTemplateRequest(
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
@@ -53,7 +53,20 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
         )
 
-        templateId = getVasuTemplates().first().id
+        putVasuTemplateContent(
+            templateId,
+            VasuContent(
+                listOf(
+                    VasuSection(
+                        "foo",
+                        listOf(
+                            VasuQuestion.TextQuestion("bar", multiline = false, value = "")
+                        )
+                    )
+                )
+            )
+        )
+
         template = getVasuTemplate(templateId)
     }
 
@@ -115,9 +128,9 @@ class VasuIntegrationTest : FullApplicationTest() {
         val updatedContent = content.copy(
             sections = content.sections.dropLast(1) + content.sections.last().copy(
                 questions = content.sections.last().questions.map { q ->
-                    if (q is VasuQuestion.MultiSelectQuestion) {
+                    if (q is VasuQuestion.TextQuestion) {
                         q.copy(
-                            value = q.options.map { it.key }
+                            value = "hello"
                         )
                     } else q
                 }
@@ -341,8 +354,18 @@ class VasuIntegrationTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
-    private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest) {
-        val (_, res, _) = http.post("/vasu/templates")
+    private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest): VasuTemplateId {
+        val (_, res, result) = http.post("/vasu/templates")
+            .jsonBody(objectMapper.writeValueAsString(request))
+            .asUser(adminUser)
+            .responseObject<VasuTemplateId>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        return result.get()
+    }
+
+    private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
+        val (_, res, _) = http.put("/vasu/templates/$id/content")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()

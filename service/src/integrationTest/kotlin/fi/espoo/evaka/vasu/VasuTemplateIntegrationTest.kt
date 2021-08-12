@@ -54,7 +54,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
         val templateId = summaries.first().id
         val template = getVasuTemplate(templateId)
         assertTrue(
-            template.content.sections.isNotEmpty() && template.content.sections.all { section ->
+            template.content.sections.all { section ->
                 section.questions.isNotEmpty() && section.questions.all { it.ophKey != null }
             }
         )

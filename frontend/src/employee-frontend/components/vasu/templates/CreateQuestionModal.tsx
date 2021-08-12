@@ -99,6 +99,7 @@ export default React.memo(function CreateQuestionModal({
         action: onCancel,
         label: i18n.common.cancel
       }}
+      size={'lg'}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
@@ -115,7 +116,7 @@ export default React.memo(function CreateQuestionModal({
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
-          <InputField value={name} onChange={setName} />
+          <InputField value={name} onChange={setName} width={'L'} />
         </FixedSpaceColumn>
 
         {type === 'TEXT' && (
@@ -173,13 +174,14 @@ export default React.memo(function CreateQuestionModal({
               type="number"
               step={1}
               min={0}
+              width={'s'}
             />
           </FixedSpaceColumn>
         )}
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.info}</Label>
-          <InputField value={info} onChange={setInfo} />
+          <InputField value={info} onChange={setInfo} width={'L'} />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>
