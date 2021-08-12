@@ -312,6 +312,8 @@ WITH placement_ids AS (
         WHERE id = :accountId
     )
     AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND Daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    AND fg.conflict = false
     AND NOT (
         SELECT EXISTS (
             SELECT 1
@@ -320,6 +322,7 @@ WITH placement_ids AS (
             AND blocked_recipient = head_of_child
             )
         )
+
 ),
 supervisors AS (
     SELECT DISTINCT e.id AS id

@@ -127,7 +127,7 @@ class MessageControllerCitizen(
         Audit.MessagingCitizenSendMessage.log()
         val accountId = requireMessageAccountAccess(db, user)
         val validReceivers = db.read { it.getCitizenReceivers(accountId) }
-        val allReceiversValid = !body.recipients.map { validReceivers.contains(it) }.contains(false)
+        val allReceiversValid = body.recipients.all { validReceivers.contains(it) }
         if (allReceiversValid) {
             return db.transaction { tx ->
                 val contentId = tx.insertMessageContent(body.content, accountId)
