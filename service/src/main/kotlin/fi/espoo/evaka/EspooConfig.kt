@@ -5,6 +5,8 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -38,6 +40,9 @@ class EspooConfig {
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean
+    fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
 
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
