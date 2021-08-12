@@ -40,8 +40,7 @@ data class VtjPerson(
         restrictedDetailsEndDate = restrictedDetails?.endDate,
         restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
         dateOfBirth = getDobFromSsn(socialSecurityNumber),
-        dateOfDeath = dateOfDeath,
-        source = PersonDataSource.VTJ
+        dateOfDeath = dateOfDeath
     )
 
     companion object {

@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
@@ -33,15 +33,21 @@ class PersonIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `creating a person creates a message account`() {
-        val validSSN = "080512A918W"
-        val req = PersonIdentityRequest(
-            identity = ExternalIdentifier.SSN.getInstance(validSSN),
-            firstName = "Matti",
-            lastName = "Meikäläinen",
-            email = "matti.meikalainen@example.com",
-            language = "fi"
-        )
-        val person = db.transaction { createPerson(it, req) }
+        val person = db.transaction {
+            createPersonFromVtj(
+                it,
+                PersonDTO(
+                    id = UUID.randomUUID(),
+                    identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
+                    dateOfBirth = LocalDate.of(2012, 5, 8),
+                    firstName = "Matti",
+                    lastName = "Meikäläinen",
+                    email = "matti.meikalainen@example.com",
+                    phone = "1234567890",
+                    language = "fi"
+                )
+            )
+        }
 
         assertTrue(personHasMessageAccount(person.id))
     }

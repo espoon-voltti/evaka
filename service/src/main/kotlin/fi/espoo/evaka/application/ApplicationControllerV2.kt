@@ -17,6 +17,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -130,7 +131,7 @@ class ApplicationControllerV2(
         accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
         val id = db.transaction { tx ->
-            val child = personService.getUpToDatePerson(tx, user, body.childId)
+            val child = tx.getPersonById(body.childId)
                 ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
             val guardianId =
@@ -146,7 +147,7 @@ class ApplicationControllerV2(
                     else
                         throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 
-            val guardian = personService.getUpToDatePerson(tx, user, guardianId)
+            val guardian = tx.getPersonById(guardianId)
                 ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
             val id = tx.insertApplication(
@@ -377,14 +378,14 @@ class ApplicationControllerV2(
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
-            val applicationGuardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+            val applicationGuardian = tx.getPersonById(application.guardianId)
                 ?: throw NotFound("Guardian ${application.guardianId} not found")
-            val child = personService.getUpToDatePerson(tx, user, application.childId)
+            val child = tx.getPersonById(application.childId)
                 ?: throw NotFound("Child ${application.childId} not found")
             val vtjGuardians = personService.getGuardians(tx, user, child.id)
 
             val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
-            val otherGuardian = application.otherGuardianId?.let { personService.getUpToDatePerson(tx, user, it) }
+            val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
             ok(
                 DecisionDraftJSON(

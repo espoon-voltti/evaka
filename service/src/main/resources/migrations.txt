@@ -123,3 +123,6 @@ V122__person_foreign_key_cascades.sql
 V123__voucher_value_age_coefficient.sql
 V124__assistance_basis_option.sql
 V125__fee_thresholds_primary_key.sql
+V126__person_guardian_and_dependants_timestamps.sql
+V127__drop_person_customer_id.sql
+V128__person_ssn_vtj_update_constraint.sql

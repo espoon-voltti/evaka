@@ -4,16 +4,17 @@
 
 package fi.espoo.evaka.pis.controller
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Test
@@ -222,15 +223,18 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
-        tx.createPerson(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
+        tx.insertTestPerson(
+            DevPerson(
+                ssn = ssn,
+                dateOfBirth = getDobFromSsn(ssn),
                 firstName = firstName,
                 lastName = "Meikäläinen",
                 email = "",
                 language = "fi"
             )
-        ).let { PersonJSON.from(it) }
+        )
+            .let { tx.getPersonById(it)!! }
+            .let { PersonJSON.from(it) }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

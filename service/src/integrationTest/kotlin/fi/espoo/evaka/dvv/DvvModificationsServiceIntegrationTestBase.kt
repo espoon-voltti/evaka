@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -72,7 +71,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
 }
 
 @Service
-class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService, personStorageService: PersonStorageService) : PersonService(personDetailsService, personStorageService) {
+class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService) : PersonService(personDetailsService) {
     companion object {
         private val ssnUpdateCounts = mutableMapOf<String, Int>()
         private val ssnCustodianUpdateCounts = mutableMapOf<String, Int>()
@@ -107,17 +106,18 @@ class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsServic
         }
     }
 
-    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, updateStale: Boolean): PersonDTO? {
+    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, readonly: Boolean): PersonDTO? {
         recordSsnUpdate(ssn)
-        return super.getOrCreatePerson(tx, user, ssn, updateStale)
+        return super.getOrCreatePerson(tx, user, ssn, readonly)
     }
 
-    override fun getUpToDatePersonWithChildren(
+    override fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID
+        id: UUID,
+        forceRefresh: Boolean
     ): PersonWithChildrenDTO? {
-        return super.getUpToDatePersonWithChildren(tx, user, id)?.let {
+        return super.getPersonWithChildren(tx, user, id, forceRefresh)?.let {
             val ssn = it.socialSecurityNumber
             if (ssn != null)
                 recordSsnCustodianUpdate(ExternalIdentifier.SSN.getInstance(ssn))

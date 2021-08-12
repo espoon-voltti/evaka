@@ -71,7 +71,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
         logger.info { "Varda: Deleting ${outdatedFeeData.size} outdated fee data" }
         deleteFeeData(db, client, outdatedFeeData)
 
-        val guardians = db.transaction { personService.getEvakaOrVtjGuardians(it, AuthenticatedUser.SystemInternalUser, childId) }
+        val guardians = db.transaction { personService.getGuardians(it, AuthenticatedUser.SystemInternalUser, childId) }
             .filter { (it.firstName + it.lastName).isNotBlank() }
         if (guardians.isEmpty()) return@forEach
 

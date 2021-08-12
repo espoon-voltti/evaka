@@ -14,6 +14,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getDecisionsByGuardian
 import fi.espoo.evaka.decision.getOwnDecisions
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.ApplicationId
@@ -112,14 +113,14 @@ class ApplicationControllerCitizen(
                 throw BadRequest("Duplicate application")
             }
 
-            val guardian = personService.getUpToDatePerson(tx, user, user.id)
+            val guardian = tx.getPersonById(user.id)
                 ?: throw IllegalStateException("Guardian not found")
 
             if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
                 throw IllegalStateException("User is not child's guardian")
             }
 
-            val child = personService.getUpToDatePerson(tx, user, body.childId)
+            val child = tx.getPersonById(body.childId)
                 ?: throw IllegalStateException("Child not found")
 
             val applicationId = tx.insertApplication(

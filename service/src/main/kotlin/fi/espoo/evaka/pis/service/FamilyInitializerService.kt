@@ -108,8 +108,6 @@ class FamilyInitializerService(
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
-        val updateStale = false
-
         val headOfFamilyId = application.guardianId
 
         val otherGuardianId = application.otherGuardianId
@@ -124,7 +122,7 @@ class FamilyInitializerService(
 
         val fridgePartnerId = fridgePartnerSSN
             ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(tx, user, it, updateStale) }
+            ?.let { personService.getOrCreatePerson(tx, user, it) }
             ?.id
 
         val fridgeChildId = application.childId
@@ -132,7 +130,7 @@ class FamilyInitializerService(
         val fridgeSiblingIds = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(tx, user, it, updateStale)?.id }
+            .mapNotNull { personService.getOrCreatePerson(tx, user, it)?.id }
 
         return FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
     }

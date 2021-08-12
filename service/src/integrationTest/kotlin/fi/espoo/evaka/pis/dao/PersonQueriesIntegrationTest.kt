@@ -8,13 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.createEmptyPerson
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.resetDatabase
@@ -27,7 +25,6 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PersonQueriesIntegrationTest : PureJdbiTest() {
@@ -47,32 +44,8 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `create person`() {
-        val validSSN = "080512A918W"
-        val fetchedPerson = db.transaction { tx ->
-            tx.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(validSSN),
-                    firstName = "Matti",
-                    lastName = "Meikäläinen",
-                    email = "matti.meikalainen@example.com",
-                    language = "fi"
-                )
-            )
-        }
-
-        assertNotNull(fetchedPerson)
-        assertNotNull(fetchedPerson.id)
-        assertNotNull(fetchedPerson.customerId)
-        assertEquals(validSSN, (fetchedPerson.identity as ExternalIdentifier.SSN).ssn)
-        assertEquals(LocalDate.of(2012, 5, 8), fetchedPerson.dateOfBirth)
-        assertEquals("fi", fetchedPerson.language)
-    }
-
-    @Test
     fun `createPersonFromVtj creates person with correct data`() {
         val tempId = UUID.randomUUID()
-        val tempCustomerId = 0L
         val validSSN = "010199-8137"
 
         val inputPerson = testPerson(validSSN)
@@ -80,7 +53,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val created = db.transaction { it.createPersonFromVtj(inputPerson) }
 
         assertNotEquals(tempId, created.id)
-        assertNotEquals(tempCustomerId, created.customerId)
 
         assertEquals(validSSN, created.identity.toString())
         assertEquals(inputPerson.dateOfBirth, created.dateOfBirth)
@@ -124,7 +96,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val actual = db.transaction { it.updatePersonFromVtj(updated) }
 
         assertEquals(updated.id, actual.id)
-        assertEquals(updated.customerId, actual.customerId)
 
         assertEquals(updated.identity.toString(), actual.identity.toString())
         assertEquals(updated.dateOfBirth, actual.dateOfBirth)
@@ -332,7 +303,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     private fun testPerson(validSSN: String): PersonDTO {
         return PersonDTO(
             id = UUID.randomUUID(),
-            customerId = 0L,
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",

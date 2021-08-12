@@ -4,16 +4,16 @@
 
 package fi.espoo.evaka.pis.controller
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PersonController
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -158,17 +158,17 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
-        return db.transaction {
-            createPerson(
-                it,
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+        return db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = "Matti",
                     lastName = "Meikäläinen",
                     email = "",
                     language = "fi"
                 )
-            )
+            ).let { tx.getPersonById(it)!! }
         }
     }
 }

@@ -6,6 +6,7 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
@@ -94,17 +95,11 @@ class DecisionController(
             val application = tx.fetchApplicationDetails(decision.applicationId)
                 ?: error("Cannot find application for decision id '$decisionId'")
 
-            val child = personService.getUpToDatePerson(
-                tx,
-                user,
-                application.childId
-            ) ?: error("Cannot find user for child id '${application.childId}'")
+            val child = tx.getPersonById(application.childId)
+                ?: error("Cannot find user for child id '${application.childId}'")
 
-            val guardian = personService.getUpToDatePerson(
-                tx,
-                user,
-                application.guardianId
-            ) ?: error("Cannot find user for guardian id '${application.guardianId}'")
+            val guardian = tx.getPersonById(application.guardianId)
+                ?: error("Cannot find user for guardian id '${application.guardianId}'")
 
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")

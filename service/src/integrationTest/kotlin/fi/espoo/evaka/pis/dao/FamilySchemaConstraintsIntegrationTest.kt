@@ -4,13 +4,14 @@
 
 package fi.espoo.evaka.pis.dao
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -255,16 +256,18 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction {
-            it.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+        return db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
                     email = "${firstName.lowercase()}.meikalainen@example.com",
                     language = "fi"
                 )
             )
+                .let { tx.getPersonById(it)!! }
         }
     }
 

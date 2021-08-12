@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
-import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Conflict
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,16 +38,17 @@ class PartnershipServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction {
-            it.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+        return db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
                     email = "",
                     language = "fi"
                 )
-            )
+            ).let { tx.getPersonById(it)!! }
         }
     }
 

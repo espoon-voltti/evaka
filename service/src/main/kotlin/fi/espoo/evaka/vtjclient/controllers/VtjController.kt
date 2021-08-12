@@ -9,13 +9,12 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,10 +24,7 @@ import java.util.UUID
 @Deprecated("Use PersonController instead")
 @RestController
 @RequestMapping("/persondetails")
-class VtjController(
-    private val personStorageService: PersonStorageService,
-    private val personService: PersonService
-) {
+class VtjController(private val personService: PersonService) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
         db: Database.Connection,
@@ -37,18 +33,20 @@ class VtjController(
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
+        val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
-            throw Forbidden("Query not allowed")
+            notFound()
         }
 
         return db.read { it.getPersonById(personId) }?.let { person ->
             when (person.identity) {
                 is ExternalIdentifier.NoID -> CitizenUserDetails.from(person)
-                is ExternalIdentifier.SSN -> personService.getPersonWithDependants(user, person.identity)
-                    ?.let { db.transaction { tx -> personStorageService.upsertVtjGuardianAndChildren(tx, it) } }
+                is ExternalIdentifier.SSN -> db.transaction {
+                    personService.getPersonWithChildren(it, user, personId)
+                }
                     ?.let { CitizenUserDetails.from(it) }
             }
-        } ?: throw NotFound("Person not found")
+        } ?: notFound()
     }
 
     internal data class Child(
@@ -63,6 +61,13 @@ class VtjController(
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber,
+            )
+
+            fun from(person: PersonWithChildrenDTO) = Child(
+                id = person.id,
+                firstName = person.firstName,
+                lastName = person.lastName,
+                socialSecurityNumber = person.socialSecurityNumber!!
             )
         }
     }
@@ -82,11 +87,20 @@ class VtjController(
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                 children = emptyList()
             )
+
             fun from(person: VtjPersonDTO): CitizenUserDetails = CitizenUserDetails(
                 id = person.id,
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber,
+                children = person.children.map { Child.from(it) }
+            )
+
+            fun from(person: PersonWithChildrenDTO) = CitizenUserDetails(
+                id = person.id,
+                firstName = person.firstName,
+                lastName = person.lastName,
+                socialSecurityNumber = person.socialSecurityNumber!!,
                 children = person.children.map { Child.from(it) }
             )
         }

@@ -26,10 +26,11 @@ class FridgeFamilyService(
     fun doVTJRefresh(db: Database, msg: VTJRefresh) {
         logger.info("Refreshing ${msg.personId} from VTJ")
         val head = db.transaction {
-            personService.getUpToDatePersonWithChildren(
+            personService.getPersonWithChildren(
                 it,
                 user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
-                id = msg.personId
+                id = msg.personId,
+                forceRefresh = true
             )
         }
         if (head != null) {
@@ -39,10 +40,11 @@ class FridgeFamilyService(
                 ?.also { logger.info("Person has fridge partner $it") }
                 ?.let { partnerId ->
                     db.transaction {
-                        personService.getUpToDatePersonWithChildren(
+                        personService.getPersonWithChildren(
                             it,
                             user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
-                            id = partnerId
+                            id = partnerId,
+                            forceRefresh = true
                         )
                     }
                 }

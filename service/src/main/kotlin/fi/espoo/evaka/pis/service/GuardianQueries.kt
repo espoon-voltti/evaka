@@ -7,25 +7,23 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.shared.db.Database
 import java.util.UUID
 
-fun Database.Transaction.insertGuardian(guardianId: UUID, childId: UUID) {
-    //language=sql
-    val sql =
-        """
-      INSERT INTO guardian (
-        guardian_id,
-        child_id
-      )
-      VALUES (
-        :guardianId,
-        :childId
-      )
-      ON CONFLICT DO NOTHING
-        """.trimIndent()
+private data class GuardianChildPair(val guardianId: UUID, val childId: UUID)
 
-    createUpdate(sql)
-        .bind("guardianId", guardianId)
-        .bind("childId", childId)
-        .execute()
+fun Database.Transaction.insertGuardian(guardianId: UUID, childId: UUID) =
+    insertGuardians(listOf(GuardianChildPair(guardianId, childId)))
+
+fun Database.Transaction.insertGuardianChildren(guardianId: UUID, childIds: List<UUID>) =
+    insertGuardians(childIds.map { GuardianChildPair(guardianId, it) })
+
+fun Database.Transaction.insertChildGuardians(childId: UUID, guardianIds: List<UUID>) =
+    insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
+
+private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
+    val batch = prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
+    guardianIdChildIdPairs.forEach {
+        batch.bind("guardianId", it.guardianId).bind("childId", it.childId).add()
+    }
+    batch.execute()
 }
 
 fun Database.Read.getChildGuardians(childId: UUID): List<UUID> {

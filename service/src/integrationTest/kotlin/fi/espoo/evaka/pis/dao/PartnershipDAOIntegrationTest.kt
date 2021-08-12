@@ -4,13 +4,14 @@
 
 package fi.espoo.evaka.pis.dao
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -70,16 +71,17 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO =
-        db.transaction {
-            it.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+        db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
                     email = "${firstName.lowercase()}.meikalainen@example.com",
                     language = "fi"
                 )
-            )
+            ).let { tx.getPersonById(it)!! }
         }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

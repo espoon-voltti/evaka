@@ -205,7 +205,6 @@ class VTJPersonDetailsServiceTest {
 
     private fun VtjPerson.toPersonDTO() = PersonDTO(
         id = randomUUID(),
-        customerId = 100123,
         identity = SSN.getInstance(socialSecurityNumber),
         firstName = firstNames,
         lastName = lastName,
