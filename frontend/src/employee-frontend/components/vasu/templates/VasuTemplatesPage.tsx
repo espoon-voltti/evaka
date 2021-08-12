@@ -82,6 +82,7 @@ export default React.memo(function VasuTemplatesPage() {
                         <IconButton
                           icon={faCopy}
                           onClick={() => setTemplateToCopy(template)}
+                          disabled={true} /*needs fixing*/
                         />
                         <IconButton
                           icon={faPen}
