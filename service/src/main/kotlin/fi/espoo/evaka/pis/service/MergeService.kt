@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.mapTo
@@ -74,10 +75,15 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
             UPDATE message_recipients SET recipient_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_draft SET account_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             """.trimIndent()
-        tx.createUpdate(updateSQL)
-            .bind("id_master", master)
-            .bind("id_duplicate", duplicate)
-            .execute()
+
+        try {
+            tx.createUpdate(updateSQL)
+                .bind("id_master", master)
+                .bind("id_duplicate", duplicate)
+                .execute()
+        } catch (e: Exception) {
+            throw mapPSQLException(e)
+        }
 
         if (feeAffectingDateRange != null) {
             // language=sql
