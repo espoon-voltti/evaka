@@ -2319,6 +2319,7 @@ export const fi = {
         'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
+        allAreas: 'Kaikki alueet',
         unitPlaceholder: 'Hae yksikön nimellä'
       },
       locked: 'Raportti lukittu',

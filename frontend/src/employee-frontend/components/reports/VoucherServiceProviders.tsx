@@ -79,18 +79,28 @@ function VoucherServiceProviders() {
   const [report, setReport] = useState<Result<VoucherServiceProviderReport>>(
     Success.of({ locked: null, rows: [] })
   )
-  const [areas, setAreas] = useState<CareArea[]>([])
+  const allAreasOption = useMemo(
+    () => ({
+      id: 'all',
+      shortName: 'all',
+      name: i18n.reports.voucherServiceProviders.filters.allAreas
+    }),
+    [i18n]
+  )
+  const [areaOptions, setAreaOptions] = useState<CareArea[]>([allAreasOption])
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
     const { search } = location
     const queryParams = new URLSearchParams(search)
     const year = Number(queryParams.get('year'))
     const month = Number(queryParams.get('month'))
+    // intentionally converts empty string into undefined
+    const areaId = queryParams.get('areaId') || undefined
 
     return {
       year:
         year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
       month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1,
-      areaId: queryParams.get('areaId') ?? ''
+      areaId
     }
   })
   const [unitFilter, setUnitFilter] = useState<string>(() => {
@@ -112,21 +122,27 @@ function VoucherServiceProviders() {
   const query = new URLSearchParams(memoizedFilters).toString()
 
   useEffect(() => {
-    void getAreas().then((res) => res.isSuccess && setAreas(res.value))
-  }, [])
+    void getAreas().then((res) =>
+      setAreaOptions(
+        res
+          .map((areas) => [allAreasOption, ...areas])
+          .getOrElse([allAreasOption])
+      )
+    )
+  }, [allAreasOption])
 
   const allAreas = !roles.find((r) =>
     ['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR'].includes(r)
   )
   useEffect(() => {
-    if (!allAreas && filters.areaId == '') return
+    if (!allAreas && filters.areaId === undefined) return
 
     setReport(Loading.of())
-    void getVoucherServiceProvidersReport({
-      ...filters,
-      areaId: filters.areaId || undefined
-    }).then(setReport)
-  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
+    const { areaId, ...otherFilters } = filters
+    void getVoucherServiceProvidersReport(
+      allAreas || areaId === 'all' ? otherFilters : filters
+    ).then(setReport)
+  }, [filters, allAreas])
 
   const months = monthOptions
   const years = yearOptions
@@ -190,15 +206,15 @@ function VoucherServiceProviders() {
             </FilterWrapper>
           </FlexRow>
         </FilterRow>
-        {!allAreas && (
+        {!allAreas ? (
           <>
             <FilterRow>
               <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
               <FilterWrapper data-qa="select-area">
                 <Combobox
-                  items={areas}
+                  items={areaOptions}
                   selectedItem={
-                    areas.find(({ id }) => id === filters.areaId) ?? null
+                    areaOptions.find(({ id }) => id === filters.areaId) ?? null
                   }
                   onChange={(area) =>
                     setFilters({ ...filters, areaId: area?.id })
@@ -222,7 +238,7 @@ function VoucherServiceProviders() {
               </FilterWrapper>
             </FilterRow>
           </>
-        )}
+        ) : null}
 
         {report.isSuccess && report.value.locked && (
           <LockedDate spacing="xs" alignItems="center">
@@ -239,7 +255,7 @@ function VoucherServiceProviders() {
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {mappedData && (allAreas || filters.areaId) && (
+        {mappedData && (
           <>
             <ReportDownload
               data={mappedData}
@@ -258,7 +274,8 @@ function VoucherServiceProviders() {
               filename={getFilename(
                 filters.year,
                 filters.month,
-                areas.find((area) => area.id === filters.areaId)?.name ?? ''
+                areaOptions.find((area) => area.id === filters.areaId)?.name ??
+                  ''
               )}
               data-qa={'download-csv'}
             />
