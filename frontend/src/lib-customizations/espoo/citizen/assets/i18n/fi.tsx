@@ -127,8 +127,8 @@ export default {
     backToSearch: 'Takaisin hakuun'
   },
   messages: {
-    inboxTitle: 'Saapuneet viestit',
-    noMessages: 'Ei saapuneita viestejä',
+    inboxTitle: 'Viestit',
+    noMessages: 'Ei viestejä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
     sending: 'Lähetetään',
@@ -137,6 +137,17 @@ export default {
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
+    },
+    messageEditor: {
+      newMessage: 'Uusi viesti',
+      receivers: 'Vastaanottajat',
+      title: 'Otsikko',
+      message: 'Viesti',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä',
+      search: 'Haku',
+      noResults: 'Ei tuloksia',
+      messageSendError: 'Viestin lähetys epäonnistui'
     }
   },
   applications: {

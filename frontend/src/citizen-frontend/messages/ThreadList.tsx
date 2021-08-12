@@ -5,6 +5,7 @@
 import { MessageThread } from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -24,9 +25,15 @@ const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
 
 interface Props {
   accountId: UUID
+  setEditorVisible: (value: boolean) => void
+  newMessageButtonEnabled: boolean
 }
 
-export default React.memo(function ThreadList({ accountId }: Props) {
+export default React.memo(function ThreadList({
+  accountId,
+  setEditorVisible,
+  newMessageButtonEnabled
+}: Props) {
   const t = useTranslation()
   const {
     selectedThread,
@@ -50,6 +57,13 @@ export default React.memo(function ThreadList({ accountId }: Props) {
       <Container className={selectedThread ? 'desktop-only' : undefined}>
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
+          <Button
+            text={t.messages.messageEditor.newMessage}
+            onClick={() => setEditorVisible(true)}
+            primary
+            data-qa="new-message-btn"
+            disabled={!newMessageButtonEnabled}
+          />
           {threadLoadingResult.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
           )}

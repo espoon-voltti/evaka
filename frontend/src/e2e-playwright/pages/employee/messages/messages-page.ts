@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
+import { waitUntilTrue } from 'e2e-playwright/utils'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -22,7 +23,7 @@ export default class MessagesPage {
   #receiverSelection = new RawElement(this.page, '[data-qa="select-receiver"]')
   #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
   #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
-  #sentMessagesBoxRow = new RawTextInput(
+  #sentMessagesBoxRow = new RawElement(
     this.page,
     '[data-qa="message-box-row-SENT"]'
   )
@@ -40,6 +41,12 @@ export default class MessagesPage {
       this.page,
       `[data-qa="message-content"][data-index="${index}"]`
     )
+  #inboxes = this.page.$$('[data-qa="message-box-row-RECEIVED"]')
+
+  async inboxVisible() {
+    const inboxes = await this.#inboxes
+    return inboxes.length > 0
+  }
 
   async getReceivedMessageCount() {
     return this.page.$$eval(
@@ -62,9 +69,13 @@ export default class MessagesPage {
     )
   }
 
+  async openInbox(index: number) {
+    await this.page.click(`:nth-match(:text("Saapuneet"), ${index})`)
+  }
+
   async sendNewMessage(title: string, content: string) {
     await this.#newMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), true)
+    await waitUntilTrue(() => this.isEditorVisible())
     await this.#inputTitle.fill(title)
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
@@ -73,7 +84,7 @@ export default class MessagesPage {
     await waitUntilEqual(() => this.isEditorVisible(), false)
 
     await this.#sentMessagesBoxRow.click()
-    await waitUntilEqual(() => this.existsSentMessage(), true)
+    await waitUntilTrue(() => this.existsSentMessage())
   }
 
   async getEditorState() {
