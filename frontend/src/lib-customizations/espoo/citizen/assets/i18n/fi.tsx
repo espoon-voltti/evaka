@@ -127,8 +127,8 @@ export default {
     backToSearch: 'Takaisin hakuun'
   },
   messages: {
-    inboxTitle: 'Saapuneet viestit',
-    noMessages: 'Ei saapuneita viestejä',
+    inboxTitle: 'Viestit',
+    noMessages: 'Ei viestejä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
     sending: 'Lähetetään',

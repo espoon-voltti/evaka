@@ -130,7 +130,7 @@ data class ReceivedMessageResultItem(
     val recipientName: String,
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int, includeWhereSender: Boolean = false): Paged<MessageThread> {
+fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
     val params = mapOf(
         "accountId" to accountId,
         "offset" to (page - 1) * pageSize,
@@ -171,7 +171,7 @@ threads AS (
             SELECT 1
             FROM participated_messages rec
             WHERE rec.thread_id = t.id
-            AND (rec.recipient_id = :accountId OR ${if (includeWhereSender) "rec.sender_id = :accountId" else "false"}))
+            AND (rec.recipient_id = :accountId OR ${if (isCitizen) "rec.sender_id = :accountId" else "false"}))
     GROUP BY id, message_type, title, last_message
     ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
@@ -291,9 +291,38 @@ WITH placement_ids AS (
         WHERE id = :accountId
     )
     AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND NOT (
+        SELECT EXISTS (
+            SELECT 1
+            FROM messaging_blocklist
+            WHERE child_id = pl.child_id
+            AND blocked_recipient = guardian_id
+            )
+        )
+
+    UNION
+
+    SELECT pl.id AS id
+    FROM fridge_child fg
+    JOIN placement pl
+    ON fg.child_id = pl.child_id
+    WHERE head_of_child = (
+        SELECT person_id AS id
+        FROM message_account
+        WHERE id = :accountId
+    )
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND NOT (
+        SELECT EXISTS (
+            SELECT 1
+            FROM messaging_blocklist
+            WHERE child_id = pl.child_id
+            AND blocked_recipient = head_of_child
+            )
+        )
 ),
 supervisors AS (
-    SELECT e.id AS id
+    SELECT DISTINCT e.id AS id
     FROM placement_ids
     JOIN placement plt
     ON placement_ids.id = plt.id
@@ -306,7 +335,7 @@ supervisors AS (
     WHERE acl.role = 'UNIT_SUPERVISOR'
 ),
 groups AS (
-    SELECT gplt.daycare_group_id AS id
+    SELECT DISTINCT gplt.daycare_group_id AS id
     FROM placement_ids
     JOIN daycare_group_placement gplt
     ON placement_ids.id = gplt.daycare_placement_id

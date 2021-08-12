@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -125,22 +126,28 @@ class MessageControllerCitizen(
     ): List<UUID> {
         Audit.MessagingCitizenSendMessage.log()
         val accountId = requireMessageAccountAccess(db, user)
-        return db.transaction { tx ->
-            val contentId = tx.insertMessageContent(body.content, accountId)
-            val sentAt = HelsinkiDateTime.now()
-            val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
-            val messageId =
-                tx.insertMessage(
-                    contentId = contentId,
-                    threadId = threadId,
-                    sender = accountId,
-                    sentAt = sentAt,
-                    recipientNames = body.recipients.map { it.name }
-                )
-            body.recipients.map {
-                tx.insertRecipients(setOf(it.id), messageId)
-                threadId
+        val validReceivers = db.read { it.getCitizenReceivers(accountId) }
+        val allReceiversValid = !body.recipients.map { validReceivers.contains(it) }.contains(false)
+        if (allReceiversValid) {
+            return db.transaction { tx ->
+                val contentId = tx.insertMessageContent(body.content, accountId)
+                val sentAt = HelsinkiDateTime.now()
+                val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
+                val messageId =
+                    tx.insertMessage(
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = accountId,
+                        sentAt = sentAt,
+                        recipientNames = body.recipients.map { it.name }
+                    )
+                body.recipients.map {
+                    tx.insertRecipients(setOf(it.id), messageId)
+                    threadId
+                }
             }
+        } else {
+            throw Forbidden("Permission denied.")
         }
     }
 

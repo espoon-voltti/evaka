@@ -6,13 +6,12 @@ import { SendMessageParams } from 'citizen-frontend/messages/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faTimes, faTrash } from 'lib-icons'
+import { faTimes } from 'lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
@@ -30,14 +29,12 @@ interface Props {
   receiverOptions: MessageAccount[]
   onSend: (messageBody: SendMessageParams) => Promise<void>
   onClose: () => void
-  onDiscard: () => void
   displaySendError: boolean
 }
 
 export default React.memo(function MessageEditor({
   receiverOptions,
   onSend,
-  onDiscard,
   onClose,
   displaySendError
 }: Props) {
@@ -110,12 +107,7 @@ export default React.memo(function MessageEditor({
           </ErrorMessage>
         )}
         <BottomRow>
-          <InlineButton
-            onClick={() => onDiscard()}
-            text={i18n.messages.messageEditor.deleteDraft}
-            icon={faTrash}
-            data-qa="discard-draft-btn"
-          />
+          <span />
           <AsyncButton
             primary
             text={i18n.messages.messageEditor.send}

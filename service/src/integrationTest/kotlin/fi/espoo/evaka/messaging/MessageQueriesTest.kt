@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.ThreadWithParticipants
+import fi.espoo.evaka.messaging.message.addToBlocklist
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getAccountNames
@@ -409,7 +410,60 @@ class MessageQueriesTest : PureJdbiTest() {
 
         // the result consists of two instances of MessageAccount:
         // the personal account of employee 1 and the account of the group the persons child is in
-        assertEquals(receivers.map { it.id }.toSet(), setOf(supervisorPersonalAccount, group1Account))
+        assertEquals(setOf(supervisorPersonalAccount, group1Account), receivers.map { it.id }.toSet())
+    }
+
+    @Test
+    fun `query citizen receivers when the citizen is on a blocklist`() {
+        val placementId: UUID = UUID.randomUUID()
+        val group1Id: UUID = UUID.randomUUID()
+        val startDate = LocalDate.now().minusDays(30)
+        val endDate = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            // When there is a daycare with a group and employee1 as the supervisor
+            listOf(employee1Id, employee2Id).forEach { tx.upsertEmployeeMessageAccount(it) }
+            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestDaycare(
+                DevDaycare(
+                    areaId = testAreaId,
+                    id = testDaycare.id,
+                    name = testDaycare.name,
+                    language = Language.fi
+                )
+            )
+            tx.insertDaycareAclRow(daycareId = testDaycare.id, employeeId = employee1Id, role = UserRole.UNIT_SUPERVISOR)
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group1Id), daycareId = testDaycare.id, name = "Testiläiset"))
+            tx.createDaycareGroupMessageAccount(GroupId(group1Id))
+
+            // and person1 has a child who is placed into the group
+            tx.insertTestPerson(DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"))
+            tx.insertTestChild(DevChild(id = testChild_1.id))
+            tx.insertTestParentship(id = ParentshipId(UUID.randomUUID()), childId = testChild_1.id, headOfChild = person1Id, startDate = startDate, endDate = endDate)
+            tx.insertGuardian(guardianId = person1Id, childId = testChild_1.id)
+            tx.insertTestPlacement(
+                id = PlacementId(placementId),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = startDate,
+                endDate = endDate
+            )
+            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
+
+            // and person1 is a blocked receiver
+            addToBlocklist(tx, testChild_1.id, person1Id)
+        }
+
+        val person1Account = db.read {
+            it.getCitizenMessageAccount(person1Id)
+        }
+        // when we get the receivers for the citizen person1
+        val receivers = db.read {
+            it.getCitizenReceivers(person1Account)
+        }
+
+        // the result is empty
+        assertEquals(setOf(), receivers.map { it.id }.toSet())
     }
 
     @Test

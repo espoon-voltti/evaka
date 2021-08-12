@@ -72,6 +72,7 @@ export default React.memo(function MessagesPage() {
                 <ThreadList
                   accountId={id}
                   setEditorVisible={setEditorVisible}
+                  newMessageButtonEnabled={receivers.isSuccess}
                 />
                 {selectedThread && (
                   <ThreadView accountId={id} thread={selectedThread} />
@@ -94,7 +95,6 @@ export default React.memo(function MessagesPage() {
             })
           }
           onClose={() => setEditorVisible(false)}
-          onDiscard={() => setEditorVisible(false)}
           displaySendError={displaySendError}
         />
       )}

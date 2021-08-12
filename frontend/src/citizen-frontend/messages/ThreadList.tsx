@@ -26,11 +26,13 @@ const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
 interface Props {
   accountId: UUID
   setEditorVisible: (value: boolean) => void
+  newMessageButtonEnabled: boolean
 }
 
 export default React.memo(function ThreadList({
   accountId,
-  setEditorVisible
+  setEditorVisible,
+  newMessageButtonEnabled
 }: Props) {
   const t = useTranslation()
   const {
@@ -60,6 +62,7 @@ export default React.memo(function ThreadList({
             onClick={() => setEditorVisible(true)}
             primary
             data-qa="new-message-btn"
+            disabled={!newMessageButtonEnabled}
           />
           {threadLoadingResult.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
