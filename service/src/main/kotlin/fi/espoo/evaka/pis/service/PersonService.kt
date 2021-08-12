@@ -181,7 +181,7 @@ class PersonService(
     }
 
     fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN): PersonDTO {
-        val person = tx.getPersonById(id)?.copy(identity = ssn) ?: throw NotFound("Person $id not found")
+        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         return when (person.identity) {
             is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
@@ -194,7 +194,10 @@ class PersonService(
                     personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
 
                 if (personDetails is PersonDetails.Result) {
-                    val updatedPerson = getPersonWithUpdatedProperties(personDetails.vtjPerson.mapToDto(), person)
+                    val updatedPerson = getPersonWithUpdatedProperties(
+                        personDetails.vtjPerson.mapToDto(),
+                        person.copy(identity = ssn)
+                    )
                     tx.updatePersonFromVtj(updatedPerson)
                     upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
                 } else {
