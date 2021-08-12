@@ -19,8 +19,10 @@ data class OphQuestionOption(
     val name: Map<VasuLanguage, String>
 )
 
-fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
-    sections = listOf(
+fun getDefaultTemplateContent(@Suppress("UNUSED_PARAMETER") lang: VasuLanguage) = VasuContent(
+    sections = emptyList()
+
+/*    listOf(
         VasuSection(
             name = when (lang) {
                 VasuLanguage.FI -> "Tavoitteet pedagogiselle toiminnalle ja toimenpiteet tavoitteiden saavuttamiseksi"
@@ -48,7 +50,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                 )
             )
         )
-    )
+    )*/
 )
 
 private val ophQuestionMap = mapOf(
