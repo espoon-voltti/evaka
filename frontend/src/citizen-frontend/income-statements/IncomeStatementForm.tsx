@@ -332,28 +332,23 @@ function EntrepreneurIncomeSelection({
     <ContentArea opaque>
       <FixedSpaceColumn>
         <H3>{t.income.entrepreneurIncome.title}</H3>
-        <p>
-          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
-          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
-          tarkemmat yrityskohtaiset tiedot liitteinä.
-          <br />
-          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
-          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
-        </p>
+        {t.income.entrepreneurIncome.description}
         <Gap size="s" />
-        <Label>Onko yritystoiminta päätoimista vai sivutoimista?</Label>
+        <Label>{t.income.entrepreneurIncome.fullTimeLabel}</Label>
         <Radio
-          label="Päätoimista"
+          label={t.income.entrepreneurIncome.fullTime}
           checked={formData.fullTime === true}
           onChange={() => handleChange({ ...formData, fullTime: true })}
         />
         <Radio
-          label="Sivutoimista"
+          label={t.income.entrepreneurIncome.partTime}
           checked={formData.fullTime === false}
           onChange={() => handleChange({ ...formData, fullTime: false })}
         />
         <Gap size="s" />
-        <Label htmlFor="entrepreneur-start-date">Yrittäjyys alkanut</Label>
+        <Label htmlFor="entrepreneur-start-date">
+          {t.income.entrepreneurIncome.startOfEntrepreneurship}
+        </Label>
         <DatePicker
           date={formData.startOfEntrepreneurship}
           onChange={(value) =>
@@ -367,16 +362,16 @@ function EntrepreneurIncomeSelection({
           hideErrorsBeforeTouched
         />
         <Gap size="s" />
-        <Label>Työskenteleekö puoliso yrityksessä?</Label>
+        <Label>{t.income.entrepreneurIncome.spouseWorksInCompany}</Label>
         <Radio
-          label="Kyllä"
+          label={t.income.entrepreneurIncome.yes}
           checked={formData.spouseWorksInCompany === true}
           onChange={() =>
             handleChange({ ...formData, spouseWorksInCompany: true })
           }
         />
         <Radio
-          label="Ei"
+          label={t.income.entrepreneurIncome.no}
           checked={formData.spouseWorksInCompany === false}
           onChange={() =>
             handleChange({ ...formData, spouseWorksInCompany: false })

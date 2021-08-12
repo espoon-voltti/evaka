@@ -1292,10 +1292,28 @@ const en: Translations = {
     },
     entrepreneurIncome: {
       title: 'Yrittäjän tulotietojen täyttäminen',
+      description: (
+        <p>
+          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
+          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
+          tarkemmat yrityskohtaiset tiedot liitteinä.
+          <br />
+          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
+          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
+        </p>
+      ),
+      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
+      fullTime: 'Päätoimista',
+      partTime: 'Sivutoimista',
+      startOfEntrepreneurship: 'Yrittäjyys alkanut',
+      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
+      yes: 'Kyllä',
+      no: 'Ei',
       selfEmployed: 'Toiminimi',
       limitedCompany: 'Osakeyhtiö',
       partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
-      startupGrant: 'Yritykseni on saanut starttirahaa'
+      startupGrant:
+        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.'
     },
     selfEmployed: {
       attachments:
@@ -1318,7 +1336,7 @@ const en: Translations = {
     },
     moreInfo: {
       title: 'Lisätietoja',
-      description: 'Tähän voit kirjoittaa lisätietoja tuloistasi.'
+      description: 'Lisätietoja tulotietoihin liittyen'
     },
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
