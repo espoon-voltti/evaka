@@ -10,6 +10,7 @@ import { Gap } from 'lib-components/white-space'
 import { MultiSelectQuestion, QuestionOption } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
+import QuestionInfo from '../QuestionInfo'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]
@@ -18,15 +19,17 @@ interface Props extends QuestionProps<MultiSelectQuestion> {
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options },
+  question: { name, options, info },
   questionNumber,
   selectedValues
 }: Props) {
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <QuestionInfo info={info}>
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </QuestionInfo>
       {onChange ? (
         <>
           <Gap size={'m'} />

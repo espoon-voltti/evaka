@@ -16,7 +16,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
-import { faCopy, faPen, faTrash } from 'lib-icons'
+import { faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import {
   deleteVasuTemplate,
@@ -79,10 +79,6 @@ export default React.memo(function VasuTemplatesPage() {
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
-                        <IconButton
-                          icon={faCopy}
-                          onClick={() => setTemplateToCopy(template)}
-                        />
                         <IconButton
                           icon={faPen}
                           onClick={() => setTemplateToEdit(template)}

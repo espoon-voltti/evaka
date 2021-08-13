@@ -46,6 +46,7 @@ import {
   VasuTemplate
 } from './api'
 import CreateQuestionModal from './CreateQuestionModal'
+import QuestionInfo from '../QuestionInfo'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
@@ -216,23 +217,27 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  const dynamicOffset = 2
+
   function renderTextQuestion(
     question: TextQuestion,
     sectionIndex: number,
     questionIndex: number
   ) {
     return (
-      <>
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+      <React.Fragment>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
 
         {question.multiline ? (
           <TextArea value={question.value} />
         ) : (
           <InputField value={question.value} width={'L'} />
         )}
-      </>
+      </React.Fragment>
     )
   }
 
@@ -242,10 +247,14 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number
   ) {
     return (
-      <Checkbox
-        checked={question.value}
-        label={`${sectionIndex + 1}.${questionIndex + 1}. ${question.name}`}
-      />
+      <QuestionInfo info={question.info}>
+        <Checkbox
+          checked={question.value}
+          label={`${sectionIndex + dynamicOffset + 1}.${questionIndex + 1}. ${
+            question.name
+          }`}
+        />
+      </QuestionInfo>
     )
   }
 
@@ -256,9 +265,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Radio checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -273,9 +284,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Checkbox checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -319,6 +332,14 @@ export default React.memo(function VasuTemplateEditor() {
             <Gap />
 
             <FixedSpaceColumn>
+              <SectionContainer>
+                <H2>1. {i18n.vasu.staticSections.basics.title}</H2>
+              </SectionContainer>
+
+              <SectionContainer>
+                <H2>2. {i18n.vasu.staticSections.authors.title}</H2>
+              </SectionContainer>
+
               {template.value.content.sections.map((section, sectionIndex) => (
                 <Fragment key={`section-${sectionIndex}`}>
                   <SectionContainer>
@@ -331,6 +352,7 @@ export default React.memo(function VasuTemplateEditor() {
                           if (e.key === 'Enter') setSectionNameEdit(null)
                         }}
                         readonly={readonly}
+                        width={'L'}
                       />
                     ) : (
                       <H2
@@ -342,7 +364,7 @@ export default React.memo(function VasuTemplateEditor() {
                         }
                         style={{ cursor: 'pointer' }}
                       >
-                        {`${sectionIndex + 1}. ${section.name}`}
+                        {`${sectionIndex + dynamicOffset + 1}. ${section.name}`}
                       </H2>
                     )}
                     {!readonly && (
@@ -480,6 +502,20 @@ export default React.memo(function VasuTemplateEditor() {
                 />
               </AddNewContainer>
             )}
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 1}.{' '}
+                {i18n.vasu.staticSections.vasuDiscussion.title}
+              </H2>
+            </SectionContainer>
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 2}.{' '}
+                {i18n.vasu.staticSections.evaluationDiscussion.title}
+              </H2>
+            </SectionContainer>
 
             <Gap />
 

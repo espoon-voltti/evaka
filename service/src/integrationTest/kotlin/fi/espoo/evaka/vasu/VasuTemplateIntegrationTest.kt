@@ -33,7 +33,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `creating new template includes current oph questions`() {
+    fun `creating new template includes default questions`() {
         postVasuTemplate(
             VasuTemplateController.CreateTemplateRequest(
                 name = "vasu",
@@ -51,13 +51,11 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
             assertEquals(0, documentCount)
         }
 
+        val defaultQuestions = getDefaultTemplateContent(VasuLanguage.FI)
+
         val templateId = summaries.first().id
         val template = getVasuTemplate(templateId)
-        assertTrue(
-            template.content.sections.isNotEmpty() && template.content.sections.all { section ->
-                section.questions.isNotEmpty() && section.questions.all { it.ophKey != null }
-            }
-        )
+        assertEquals(defaultQuestions, template.content)
 
         // unused template may be deleted
         deleteVasuTemplate(templateId)

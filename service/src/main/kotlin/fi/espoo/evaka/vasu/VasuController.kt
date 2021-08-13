@@ -49,6 +49,10 @@ class VasuController(
         accessControl.requirePermissionFor(user, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
         return db.transaction { tx ->
+            if (tx.getVasuDocumentSummaries(childId).any { it.getState() != VasuDocumentState.CLOSED }) {
+                throw Conflict("Cannot open a new vasu document while another is still active")
+            }
+
             tx.getVasuTemplate(body.templateId)?.let { template ->
                 if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
                     throw BadRequest("Template is not currently valid")
@@ -119,6 +123,9 @@ class VasuController(
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
+        if (vasu.getState() == VasuDocumentState.CLOSED)
+            throw BadRequest("Closed vasu document cannot be edited", "CANNOT_EDIT_CLOSED_DOCUMENT")
+
         if (!vasu.content.matchesStructurally(body.content))
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
     }
@@ -155,6 +162,10 @@ class VasuController(
 
             if (events.contains(PUBLISHED)) {
                 tx.publishVasuDocument(id)
+            }
+
+            if (events.contains(MOVED_TO_CLOSED)) {
+                tx.freezeVasuPlacements(id)
             }
 
             events.forEach { eventType ->

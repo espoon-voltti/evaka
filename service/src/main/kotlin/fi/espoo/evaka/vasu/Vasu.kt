@@ -6,9 +6,11 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
@@ -35,36 +37,8 @@ data class VasuDocumentEvent(
     val eventType: VasuDocumentEventType
 )
 
-enum class VasuLanguage {
-    FI,
-    SV
-}
-
-data class VasuDocumentSummary(
-    val id: VasuDocumentId,
-    val name: String,
-    val modifiedAt: HelsinkiDateTime,
-    val events: List<VasuDocumentEvent> = listOf(),
-)
-
-data class VasuDocument(
-    val id: VasuDocumentId,
-    val modifiedAt: HelsinkiDateTime,
-    @Json
-    val events: List<VasuDocumentEvent> = listOf(),
-    @Nested("child")
-    val child: VasuDocumentChild,
-    val templateName: String,
-    @Json
-    val content: VasuContent,
-    @Json
-    val authorsContent: AuthorsContent,
-    @Json
-    val vasuDiscussionContent: VasuDiscussionContent,
-    @Json
-    val evaluationDiscussionContent: EvaluationDiscussionContent
-) {
-    fun getState(): VasuDocumentState = events.fold(VasuDocumentState.DRAFT) { acc, event ->
+private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
+    return events.fold(VasuDocumentState.DRAFT) { acc, event ->
         when (event.eventType) {
             VasuDocumentEventType.PUBLISHED -> acc
             VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentState.READY
@@ -76,10 +50,70 @@ data class VasuDocument(
     }
 }
 
-data class VasuDocumentChild(
+enum class VasuLanguage {
+    FI,
+    SV
+}
+
+data class VasuDocumentSummary(
+    val id: VasuDocumentId,
+    val name: String,
+    val modifiedAt: HelsinkiDateTime,
+    val events: List<VasuDocumentEvent> = listOf(),
+) {
+    fun getState(): VasuDocumentState = getStateFromEvents(events)
+}
+
+data class VasuDocument(
+    val id: VasuDocumentId,
+    val modifiedAt: HelsinkiDateTime,
+    val templateName: String,
+    val templateRange: FiniteDateRange,
+    @Json
+    val events: List<VasuDocumentEvent> = listOf(),
+    @Json
+    val basics: VasuBasics,
+    @Json
+    val content: VasuContent,
+    @Json
+    val authorsContent: AuthorsContent,
+    @Json
+    val vasuDiscussionContent: VasuDiscussionContent,
+    @Json
+    val evaluationDiscussionContent: EvaluationDiscussionContent
+) {
+    fun getState(): VasuDocumentState = getStateFromEvents(events)
+}
+
+@Json
+data class VasuBasics(
+    val child: VasuChild,
+    val guardians: List<VasuGuardian>,
+    val placements: List<VasuPlacement>?
+)
+
+@Json
+data class VasuChild(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate
+)
+
+@Json
+data class VasuGuardian(
     val id: UUID,
     val firstName: String,
     val lastName: String
+)
+
+@Json
+data class VasuPlacement(
+    val unitId: DaycareId,
+    val unitName: String,
+    val groupId: GroupId,
+    val groupName: String,
+    val range: FiniteDateRange
 )
 
 @Json
@@ -118,11 +152,13 @@ sealed class VasuQuestion(
 ) {
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
+    abstract val info: String
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
     data class TextQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val multiline: Boolean,
         val value: String
     ) : VasuQuestion(VasuQuestionType.TEXT) {
@@ -134,6 +170,7 @@ sealed class VasuQuestion(
     data class CheckboxQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val value: Boolean
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
@@ -144,6 +181,7 @@ sealed class VasuQuestion(
     data class RadioGroupQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val options: List<QuestionOption>,
         val value: String?
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
@@ -155,6 +193,7 @@ sealed class VasuQuestion(
     data class MultiSelectQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
         val options: List<QuestionOption>,
         val minSelections: Int,
         val maxSelections: Int?,

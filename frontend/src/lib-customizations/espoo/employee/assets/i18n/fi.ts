@@ -911,6 +911,13 @@ export const fi = {
       }
     },
     staticSections: {
+      basics: {
+        title: 'Perustiedot',
+        name: 'Lapsen nimi',
+        dateOfBirth: 'Lapsen syntymäaika',
+        guardians: 'Huoltaja(t) tai muu laillinen edustaja',
+        placements: 'Varhaiskasvatusyksikkö ja ryhmä'
+      },
       authors: {
         title: 'Lapsen varhaiskasvatussuunnitelman laatijat',
         primaryAuthor: 'Laatimisesta vastaava henkilö',
@@ -2665,6 +2672,7 @@ export const fi = {
       title: 'Uusi kysymys',
       type: 'Kysymyksen tyyppi',
       name: 'Kysymysteksti',
+      info: 'Ohjeteksti',
       options: 'Vaihtoehdot',
       addNewOption: 'Lisää vaihtoehto',
       multiline: 'Monirivinen',

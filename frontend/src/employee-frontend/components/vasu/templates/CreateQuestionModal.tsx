@@ -38,6 +38,7 @@ export default React.memo(function CreateQuestionModal({
   const [options, setOptions] = useState([''])
   const [multiline, setMultiline] = useState(false)
   const [minSelections, setMinSelections] = useState(0)
+  const [info, setInfo] = useState('')
 
   function createQuestion(): VasuQuestion {
     switch (type) {
@@ -46,6 +47,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'TEXT',
           ophKey: null,
           name: name,
+          info: info,
           multiline: multiline,
           value: ''
         }
@@ -54,6 +56,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'CHECKBOX',
           ophKey: null,
           name: name,
+          info: info,
           value: false
         }
       case 'RADIO_GROUP':
@@ -61,6 +64,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'RADIO_GROUP',
           ophKey: null,
           name: name,
+          info: info,
           options: options.map((opt) => ({
             key: opt,
             name: opt
@@ -72,6 +76,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'MULTISELECT',
           ophKey: null,
           name: name,
+          info: info,
           options: options.map((opt) => ({
             key: opt,
             name: opt
@@ -94,6 +99,7 @@ export default React.memo(function CreateQuestionModal({
         action: onCancel,
         label: i18n.common.cancel
       }}
+      size={'lg'}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
@@ -110,7 +116,7 @@ export default React.memo(function CreateQuestionModal({
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
-          <InputField value={name} onChange={setName} />
+          <InputField value={name} onChange={setName} width={'L'} />
         </FixedSpaceColumn>
 
         {type === 'TEXT' && (
@@ -168,9 +174,15 @@ export default React.memo(function CreateQuestionModal({
               type="number"
               step={1}
               min={0}
+              width={'s'}
             />
           </FixedSpaceColumn>
         )}
+
+        <FixedSpaceColumn spacing="xxs">
+          <Label>{t.info}</Label>
+          <InputField value={info} onChange={setInfo} width={'L'} />
+        </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>
   )

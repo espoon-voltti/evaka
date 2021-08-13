@@ -36,11 +36,13 @@ const Confidential = styled.div`
 `
 
 interface Props {
-  document: Pick<VasuDocument, 'child' | 'documentState' | 'templateName'>
+  document: Pick<VasuDocument, 'basics' | 'documentState' | 'templateName'>
 }
 export function VasuHeader({
   document: {
-    child: { firstName, lastName },
+    basics: {
+      child: { firstName, lastName }
+    },
     documentState,
     templateName
   }

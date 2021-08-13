@@ -7,32 +7,49 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTemplateId): VasuDocumentId {
-    // language=sql
-    val insertDocumentSql = """
-        INSERT INTO vasu_document (child_id, template_id, modified_at) 
-        VALUES (:childId, :templateId, now())
-        RETURNING id
-    """.trimIndent()
+    val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
+        .bind("id", childId)
+        .mapTo<VasuChild>()
+        .one()
 
-    val documentId = createQuery(insertDocumentSql)
+    val guardians = createQuery(
+        """
+        SELECT p.id, p.first_name, p.last_name
+        FROM guardian g
+        JOIN person p on p.id = g.guardian_id
+        WHERE g.child_id = :id
+        """.trimIndent()
+    )
+        .bind("id", childId)
+        .mapTo<VasuGuardian>()
+        .list()
+
+    val documentId = createQuery(
+        """
+        INSERT INTO vasu_document (child_id, basics, template_id, modified_at) 
+        VALUES (:childId, :basics, :templateId, now())
+        RETURNING id
+        """.trimIndent()
+    )
         .bind("childId", childId)
+        .bind("basics", VasuBasics(child = child, guardians = guardians, placements = null))
         .bind("templateId", templateId)
         .mapTo<VasuDocumentId>()
         .one()
 
-    // language=sql
-    val insertContentSql = """
+    createUpdate(
+        """
         INSERT INTO vasu_content (document_id, content, authors_content, vasu_discussion_content, evaluation_discussion_content) 
         SELECT :documentId, vt.content, :authors, :discussion, :evaluation FROM vasu_template vt WHERE vt.id = :templateId
-    """.trimIndent()
-
-    createUpdate(insertContentSql)
+        """.trimIndent()
+    )
         .bind("documentId", documentId)
         .bind("templateId", templateId)
         .bind("authors", AuthorsContent(primaryAuthor = AuthorInfo(), otherAuthors = listOf(AuthorInfo())))
@@ -50,9 +67,9 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             vd.id,
             vd.child_id,
             vd.modified_at,
-            p.first_name AS child_first_name,
-            p.last_name AS child_last_name,
+            vd.basics,
             vt.name AS template_name,
+            vt.valid AS template_range,
             vc.content,
             vc.authors_content,
             vc.vasu_discussion_content,
@@ -68,7 +85,6 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
         FROM vasu_document vd
         JOIN vasu_content vc ON vc.document_id = vd.id AND vc.master
         JOIN vasu_template vt ON vd.template_id = vt.id
-        JOIN person p ON p.id = vd.child_id
         WHERE vd.id =:id
     """.trimIndent()
 
@@ -76,6 +92,15 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
         .bind("id", id)
         .mapTo<VasuDocument>()
         .firstOrNull()
+        ?.let { document ->
+            if (document.basics.placements == null) {
+                document.copy(
+                    basics = document.basics.copy(
+                        placements = getVasuPlacements(id)
+                    )
+                )
+            } else document
+        }
 }
 
 fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocument? {
@@ -84,10 +109,10 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
         SELECT
             vd.id,
             vd.child_id,
+            vd.basics,
             vd.modified_at,
-            p.first_name AS child_first_name,
-            p.last_name AS child_last_name,
             vt.name AS template_name,
+            vt.valid AS template_range,
             vc.content,
             vc.authors_content,
             vc.vasu_discussion_content,
@@ -109,7 +134,6 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
             LIMIT 1
         ) vc ON TRUE
         JOIN vasu_template vt ON vd.template_id = vt.id
-        JOIN person p ON p.id = vd.child_id
         WHERE vd.id =:id
     """.trimIndent()
 
@@ -117,6 +141,15 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
         .bind("id", id)
         .mapTo<VasuDocument>()
         .firstOrNull()
+        ?.let { document ->
+            if (document.basics.placements == null) {
+                document.copy(
+                    basics = document.basics.copy(
+                        placements = getVasuPlacements(id)
+                    )
+                )
+            } else document
+        }
 }
 
 fun Database.Transaction.updateVasuDocumentMaster(
@@ -228,4 +261,46 @@ fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eve
         .bind("eventType", eventType)
         .mapTo<VasuDocumentEvent>()
         .one()
+}
+
+fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
+    createQuery("SELECT basics FROM vasu_document WHERE id = :id")
+        .bind("id", id)
+        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
+        .firstOrNull()
+        ?.let { basics ->
+            createUpdate("UPDATE vasu_document SET basics = :basics WHERE id = :id")
+                .bind("id", id)
+                .bind(
+                    "basics",
+                    basics.copy(
+                        placements = getVasuPlacements(id)
+                    )
+                )
+                .updateExactlyOne()
+        }
+}
+
+private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacement> {
+    return createQuery(
+        """
+        SELECT 
+            d.id AS unit_id,
+            d.name AS unit_name,
+            dg.id AS group_id,
+            dg.name AS group_name,
+            daterange(dgp.start_date, dgp.end_date, '[]') AS range
+        FROM vasu_document vd
+        JOIN vasu_template vt on vt.id = vd.template_id
+        JOIN placement p ON p.child_id = vd.child_id AND daterange(p.start_date, p.end_date, '[]') && vt.valid
+        JOIN daycare d ON d.id = p.unit_id
+        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') && vt.valid
+        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+        WHERE vd.id = :id
+        ORDER BY dgp.start_date
+        """.trimIndent()
+    )
+        .bind("id", id)
+        .mapTo<VasuPlacement>()
+        .list()
 }

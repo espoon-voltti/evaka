@@ -27,6 +27,7 @@ import { VasuStateChip } from '../common/VasuStateChip'
 import {
   createVasuDocument,
   getVasuDocumentSummaries,
+  updateDocumentState,
   VasuDocumentSummary
 } from '../vasu/api'
 import { getLastPublished } from '../vasu/vasu-events'
@@ -34,6 +35,7 @@ import {
   getVasuTemplateSummaries,
   VasuTemplateSummary
 } from '../vasu/templates/api'
+import { RequireRole } from '../../utils/roles'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -89,7 +91,13 @@ const InitializationContainer = styled.div`
 
 const getValidVasuTemplateSummaries = () => getVasuTemplateSummaries(true)
 
-function VasuInitialization({ childId }: { childId: UUID }) {
+function VasuInitialization({
+  childId,
+  allowCreation
+}: {
+  childId: UUID
+  allowCreation: boolean
+}) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const history = useHistory()
@@ -110,6 +118,7 @@ function VasuInitialization({ childId }: { childId: UUID }) {
             resolveLabel: i18n.common.ok
           })
           setInitializing(false)
+          setTemplates(undefined)
         },
         loading: () => setInitializing(true),
         success: (id) => history.push(`/vasu/${id}`)
@@ -131,7 +140,9 @@ function VasuInitialization({ childId }: { childId: UUID }) {
     <InitializationContainer>
       <AddButtonRow
         onClick={loadTemplates}
-        disabled={templates?.isSuccess || templates?.isLoading}
+        disabled={
+          !allowCreation || templates?.isSuccess || templates?.isLoading
+        }
         text={i18n.childInformation.vasu.createNew}
       />
       {templates?.mapAll({
@@ -213,15 +224,33 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
               />
             </StateCell>
             <Td>
-              <InlineButton
-                onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
-                text={i18n.common.edit}
-              />
+              {vasu.documentState === 'CLOSED' ? (
+                <RequireRole oneOf={['ADMIN']}>
+                  <InlineButton
+                    onClick={() =>
+                      void updateDocumentState({
+                        documentId: vasu.id,
+                        eventType: 'RETURNED_TO_REVIEWED'
+                      }).finally(() => loadVasus(childId))
+                    }
+                    text={i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText}
+                  />
+                </RequireRole>
+              ) : (
+                <InlineButton
+                  onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
+                  text={i18n.common.edit}
+                />
+              )}
             </Td>
           </Tr>
         ))
       )
       .getOrElse(null)
+
+  const allowCreation = vasus
+    .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
+    .getOrElse(false)
 
   return (
     <div>
@@ -232,7 +261,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
         opaque
         paddingVertical="L"
       >
-        <VasuInitialization childId={childId} />
+        <VasuInitialization childId={childId} allowCreation={allowCreation} />
         <Table>
           <Tbody>{renderSummaries()}</Tbody>
         </Table>

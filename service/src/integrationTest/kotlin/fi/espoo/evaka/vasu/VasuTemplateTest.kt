@@ -27,7 +27,7 @@ class VasuTemplateTest {
     }
 
     private fun templateUpdate(valid: FiniteDateRange): VasuTemplateUpdate =
-        VasuTemplateUpdate(name = "foo", language = VasuLanguage.FI, valid = valid)
+        VasuTemplateUpdate(name = "foo", valid = valid)
 
     private fun assertFailure(template: VasuTemplateSummary, templateUpdate: VasuTemplateUpdate) {
         assertFailsWith<BadRequest> { validateTemplateUpdate(template = template, body = templateUpdate) }
@@ -124,15 +124,6 @@ class VasuTemplateTest {
         assertFailure(
             template,
             templateUpdate(template.valid).copy(name = "bar")
-        )
-    }
-
-    @Test
-    fun `language of a used template cannot be changed`() {
-        val template = currentlyValidTemplate()
-        assertFailure(
-            template,
-            templateUpdate(template.valid).copy(language = VasuLanguage.SV)
         )
     }
 }

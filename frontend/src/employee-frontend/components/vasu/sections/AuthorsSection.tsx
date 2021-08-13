@@ -92,6 +92,7 @@ export function EditableAuthorsSection({
           <InputField
             value={content.primaryAuthor.name}
             onChange={onChangePrimaryAuthor('name')}
+            width={'m'}
           />
         </FixedSpaceColumn>
 
@@ -100,6 +101,7 @@ export function EditableAuthorsSection({
           <InputField
             value={content.primaryAuthor.title}
             onChange={onChangePrimaryAuthor('title')}
+            width={'m'}
           />
         </FixedSpaceColumn>
 
@@ -127,6 +129,7 @@ export function EditableAuthorsSection({
               <InputField
                 value={author.name}
                 onChange={onChangeOtherAuthor('name', i)}
+                width={'m'}
               />
             </FixedSpaceColumn>
 
@@ -135,6 +138,7 @@ export function EditableAuthorsSection({
               <InputField
                 value={author.title}
                 onChange={onChangeOtherAuthor('title', i)}
+                width={'m'}
               />
             </FixedSpaceColumn>
 

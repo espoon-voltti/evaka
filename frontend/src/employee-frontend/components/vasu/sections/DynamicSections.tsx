@@ -36,6 +36,7 @@ interface Props {
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
 }
+
 export function DynamicSections({
   sections,
   sectionIndex: sectionOffset,

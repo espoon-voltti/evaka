@@ -50,8 +50,7 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                 templateId,
                 VasuTemplateUpdate(
                     "bar",
-                    modifiedDateRange,
-                    VasuLanguage.SV
+                    modifiedDateRange
                 )
             )
             assertEquals(
@@ -59,7 +58,7 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                     templateId,
                     "bar",
                     modifiedDateRange,
-                    VasuLanguage.SV,
+                    VasuLanguage.FI,
                     VasuContent(sections = listOf()),
                     0
                 ),

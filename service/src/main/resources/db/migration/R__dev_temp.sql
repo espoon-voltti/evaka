@@ -24,6 +24,7 @@ CREATE TABLE vasu_document(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     child_id uuid NOT NULL REFERENCES child(id) ON DELETE RESTRICT,
+    basics jsonb NOT NULL,
     template_id uuid NOT NULL REFERENCES vasu_template(id),
     modified_at timestamp with time zone NOT NULL
 );

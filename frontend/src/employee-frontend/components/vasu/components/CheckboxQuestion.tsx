@@ -8,6 +8,7 @@ import { useTranslation } from '../../../state/i18n'
 import { CheckboxQuestion } from '../vasu-content'
 import { QuestionProps } from './question-props'
 import { ReadOnlyValue } from './ReadOnlyValue'
+import QuestionInfo from '../QuestionInfo'
 
 type Props = QuestionProps<CheckboxQuestion> & {
   onChange?: (checked: boolean) => void
@@ -16,16 +17,20 @@ type Props = QuestionProps<CheckboxQuestion> & {
 export function CheckboxQuestion(props: Props) {
   const { i18n } = useTranslation()
   const label = `${props.questionNumber} ${props.question.name}`
-  return props.onChange ? (
-    <Checkbox
-      checked={props.question.value}
-      label={label}
-      onChange={props.onChange}
-    />
-  ) : (
-    <ReadOnlyValue
-      label={label}
-      value={props.question.value ? i18n.common.yes : i18n.common.no}
-    />
+  return (
+    <QuestionInfo info={props.question.info}>
+      {props.onChange ? (
+        <Checkbox
+          checked={props.question.value}
+          label={label}
+          onChange={props.onChange}
+        />
+      ) : (
+        <ReadOnlyValue
+          label={label}
+          value={props.question.value ? i18n.common.yes : i18n.common.no}
+        />
+      )}
+    </QuestionInfo>
   )
 }

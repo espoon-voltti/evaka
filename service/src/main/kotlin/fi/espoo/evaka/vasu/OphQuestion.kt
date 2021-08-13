@@ -23,28 +23,189 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {
+                VasuLanguage.FI -> "Näkemyksien huomioiminen"
+                VasuLanguage.SV -> "Näkemyksien huomioiminen"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Miten lapsen näkökulma ja mielipiteet on otettu huomioon"
+                        VasuLanguage.SV -> "Miten lapsen näkökulma ja mielipiteet on otettu huomioon"
+                    },
+                    info = "Lorem ipsum",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Miten huoltajien näkemykset otetaan huomioon ja miten yhteistyö on järjestetty"
+                        VasuLanguage.SV -> "Miten huoltajien näkemykset otetaan huomioon ja miten yhteistyö on järjestetty"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Aiemman varhaiskasvatussuunnitelman tavoitteet ja toimenpiteet"
+                VasuLanguage.SV -> "Aiemman varhaiskasvatussuunnitelman tavoitteet ja toimenpiteet"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteiden toteutuminen"
+                        VasuLanguage.SV -> "Tavoitteiden toteutuminen"
+                    },
+                    info = "Lorem ipsum",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muut havainnot lapsen edellisestä vasusta"
+                        VasuLanguage.SV -> "Muut havainnot lapsen edellisestä vasusta"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
                 VasuLanguage.FI -> "Tavoitteet pedagogiselle toiminnalle ja toimenpiteet tavoitteiden saavuttamiseksi"
-                VasuLanguage.SV -> "Mål för pedagogisk verksamhet och åtgärder för att uppnå målen"
+                VasuLanguage.SV -> "Tavoitteet pedagogiselle toiminnalle ja toimenpiteet tavoitteiden saavuttamiseksi"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
+                        VasuLanguage.SV -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
+                    },
+                    info = "Lorem ipsum",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
+                        VasuLanguage.SV -> "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
+                    },
+                    info = "Lorem ipsum",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt"
+                        VasuLanguage.SV -> "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt"
+                    },
+                    info = "Lorem ipsum",
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lapsen hyvinvoinnin tukemiseen liittyvät muut huomioitavat asiat"
+                VasuLanguage.SV -> "Lapsen hyvinvoinnin tukemiseen liittyvät muut huomioitavat asiat"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Esimerkiksi päiväuniin, ruokailuun tai ulkoiluun liittyvät asiat"
+                        VasuLanguage.SV -> "Esimerkiksi päiväuniin, ruokailuun tai ulkoiluun liittyvät asiat"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Muut asiakirjat ja suunnitelmat"
+                VasuLanguage.SV -> "Muut asiakirjat ja suunnitelmat"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatussuunitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
+                        VasuLanguage.SV -> "Varhaiskasvatussuunitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Tiedonsaajatahot"
+                VasuLanguage.SV -> "Tiedonsaajatahot"
             },
             questions = listOf(
                 VasuQuestion.MultiSelectQuestion(
-                    ophKey = OphQuestionKey.PEDAGOGIC_ACTIVITY_GOALS,
-                    name = ophQuestionMap[OphQuestionKey.PEDAGOGIC_ACTIVITY_GOALS]!!.name[lang]!!,
-                    options = ophQuestionMap[OphQuestionKey.PEDAGOGIC_ACTIVITY_GOALS]!!.options.map {
-                        QuestionOption(
-                            key = it.key,
-                            name = it.name[lang]!!
-                        )
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:"
+                        VasuLanguage.SV -> "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:"
                     },
-                    minSelections = 1,
+                    options = listOf(
+                        QuestionOption(
+                            key = "Tulevaan esiopetusryhmään",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Tulevaan esiopetusryhmään"
+                                VasuLanguage.SV -> "Tulevaan esiopetusryhmään"
+                            }
+                        ),
+                        QuestionOption(
+                            key = "Neuvolaan",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Neuvolaan"
+                                VasuLanguage.SV -> "Neuvolaan"
+                            }
+                        ),
+                        QuestionOption(
+                            key = "Lasten terapiapalveluihin",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Lasten terapiapalveluihin"
+                                VasuLanguage.SV -> "Lasten terapiapalveluihin"
+                            }
+                        ),
+                        QuestionOption(
+                            key = "Erikoissairaanhoitoon",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Erikoissairaanhoitoon"
+                                VasuLanguage.SV -> "Erikoissairaanhoitoon"
+                            }
+                        )
+                    ),
+                    minSelections = 0,
                     maxSelections = null,
                     value = emptyList()
                 ),
                 VasuQuestion.TextQuestion(
-                    ophKey = OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION,
-                    name = ophQuestionMap[OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION]!!.name[lang]!!,
-                    value = "",
-                    multiline = true
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muualle, minne?"
+                        VasuLanguage.SV -> "Muualle, minne?"
+                    },
+                    multiline = false,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lisätietoja"
+                VasuLanguage.SV -> "Lisätietoja"
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Lisätietoja suunnitelmaan, sen laatimiseen tai keskusteluihin liittyen"
+                        VasuLanguage.SV -> "Lisätietoja suunnitelmaan, sen laatimiseen tai keskusteluihin liittyen"
+                    },
+                    multiline = true,
+                    value = ""
                 )
             )
         )
@@ -90,6 +251,7 @@ private val ophQuestionMap = mapOf(
     )
 )
 
+// TODO: this won't currently work
 fun copyTemplateContentWithCurrentlyValidOphSections(template: VasuTemplate): VasuContent {
     val copyableSections = template.content.sections.filter { section -> section.questions.all { question -> question.ophKey == null } }
     val defaultSections = getDefaultTemplateContent(template.language).sections

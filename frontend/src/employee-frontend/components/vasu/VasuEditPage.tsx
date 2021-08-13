@@ -22,6 +22,7 @@ import { EditableVasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
+import { BasicsSection } from './sections/BasicsSection'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -83,7 +84,7 @@ export default React.memo(function VasuEditPage({
   const textualVasuStatus = formatVasuStatus(status)
   const showSpinner = status.state === 'saving'
 
-  const dynamicSectionsOffset = 1
+  const dynamicSectionsOffset = 2
 
   return (
     <Container>
@@ -92,8 +93,14 @@ export default React.memo(function VasuEditPage({
         <>
           <VasuHeader document={vasu} />
           <Gap size={'L'} />
-          <EditableAuthorsSection
+          <BasicsSection
             sectionIndex={0}
+            content={vasu.basics}
+            templateRange={vasu.templateRange}
+          />
+          <Gap size={'L'} />
+          <EditableAuthorsSection
+            sectionIndex={1}
             content={authorsContent}
             setContent={setAuthorsContent}
           />

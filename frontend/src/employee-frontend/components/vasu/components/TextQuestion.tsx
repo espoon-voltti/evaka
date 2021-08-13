@@ -9,6 +9,7 @@ import { Label } from 'lib-components/typography'
 import { TextQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
+import QuestionInfo from '../QuestionInfo'
 
 interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
   onChange?: (value: string) => void
@@ -16,7 +17,7 @@ interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
 
 export function TextQuestion({
   onChange,
-  question: { name, value, multiline },
+  question: { name, value, multiline, info },
   questionNumber
 }: TextQuestionQuestionProps) {
   const getEditorOrStaticText = () => {
@@ -34,9 +35,11 @@ export function TextQuestion({
 
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <QuestionInfo info={info}>
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </QuestionInfo>
       {getEditorOrStaticText()}
     </>
   )

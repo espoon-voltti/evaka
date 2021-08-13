@@ -9,6 +9,7 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { QuestionOption, RadioGroupQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
+import QuestionInfo from '../QuestionInfo'
 
 interface Props {
   questionNumber: string
@@ -19,15 +20,18 @@ interface Props {
 
 export function RadioGroupQuestion({
   onChange,
-  question: { name, options },
+  question: { name, options, info },
   questionNumber,
   selectedValue
 }: Props) {
   return (
     <>
-      <Label>
-        {questionNumber} {name}
-      </Label>
+      <QuestionInfo info={info}>
+        <Label>
+          {questionNumber} {name}
+        </Label>
+      </QuestionInfo>
+
       {onChange ? (
         <>
           <Gap size={'m'} />
