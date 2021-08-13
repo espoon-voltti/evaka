@@ -15,6 +15,7 @@ import PersonIncome from '../components/person-profile/PersonIncome'
 import PersonApplications from '../components/person-profile/PersonApplications'
 import PersonDependants from '../components/person-profile/PersonDependants'
 import PersonDecisions from '../components/person-profile/PersonDecisions'
+import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
 import WarningLabel from '../components/common/WarningLabel'
 import { getLayout, Layouts } from './layouts'
 import { UserContext } from '../state/user'
@@ -61,6 +62,7 @@ const components = {
   income: PersonIncome,
   'fee-decisions': PersonFeeDecisions,
   invoices: PersonInvoices,
+  voucherValueDecisions: PersonVoucherValueDecisions,
   partners: PersonFridgePartner,
   'fridge-children': PersonFridgeChild,
   dependants: PersonDependants,
@@ -78,13 +80,15 @@ const layouts: Layouts<typeof components> = {
     { component: 'decisions', open: false },
     { component: 'income', open: true },
     { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false }
+    { component: 'invoices', open: false },
+    { component: 'voucherValueDecisions', open: false }
   ],
   ['FINANCE_ADMIN']: [
     { component: 'family-overview', open: true },
     { component: 'income', open: true },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },
+    { component: 'voucherValueDecisions', open: false },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false }

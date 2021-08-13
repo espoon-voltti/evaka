@@ -297,21 +297,38 @@ export async function getVoucherValueDecisions(
     )
     .then(({ data }) => ({
       ...data,
-      data: data.data.map((json) => ({
-        ...json,
-        validFrom: LocalDate.parseIso(json.validFrom),
-        validTo: LocalDate.parseNullableIso(json.validTo),
-        headOfFamily: deserializePersonBasic(json.headOfFamily),
-        child: {
-          ...json.child,
-          dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-        },
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-        created: new Date(json.created)
-      }))
+      data: data.data.map(parseVoucherValueDecisionSummaryJson)
     }))
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+const parseVoucherValueDecisionSummaryJson = (
+  json: JsonOf<VoucherValueDecisionSummary>
+) => ({
+  ...json,
+  validFrom: LocalDate.parseIso(json.validFrom),
+  validTo: LocalDate.parseNullableIso(json.validTo),
+  headOfFamily: deserializePersonBasic(json.headOfFamily),
+  child: {
+    ...json.child,
+    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
+  },
+  sentAt: json.sentAt ? new Date(json.sentAt) : null,
+  approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+  created: new Date(json.created)
+})
+
+export async function getPersonVoucherValueDecisions(
+  id: string
+): Promise<Result<VoucherValueDecisionSummary[]>> {
+  return client
+    .get<JsonOf<VoucherValueDecisionSummary[]>>(
+      `/value-decisions/head-of-family/${id}`
+    )
+    .then((res) =>
+      Success.of(res.data.map(parseVoucherValueDecisionSummaryJson))
+    )
     .catch((e) => Failure.fromError(e))
 }
 

@@ -1015,6 +1015,7 @@ export const fi = {
       modalTitle: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
+    voucherValueDecisions: 'Päämiehen arvopäätökset',
     dependants: 'Päämiehen huollettavat',
     guardiansAndParents: 'Huoltajat ja päämiehet',
     guardians: 'Huoltajat',
