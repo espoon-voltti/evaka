@@ -360,65 +360,80 @@ function VoucherServiceProviderUnit() {
               </Thead>
               <Tbody>
                 {sortedReport.value.rows.map(
-                  (row: VoucherServiceProviderUnitRow) => (
-                    <Tr
-                      key={`${
-                        row.serviceVoucherDecisionId
-                      }:${row.realizedPeriod.start.formatIso()}`}
-                    >
-                      <StyledTd
-                        type={
-                          row.isNew && row.type === 'ORIGINAL'
-                            ? 'NEW'
-                            : row.type
-                        }
+                  (row: VoucherServiceProviderUnitRow) => {
+                    const under3YearsOld =
+                      row.realizedPeriod.start.differenceInYears(
+                        row.childDateOfBirth
+                      ) < 3
+                    return (
+                      <Tr
+                        key={`${
+                          row.serviceVoucherDecisionId
+                        }:${row.realizedPeriod.start.formatIso()}`}
                       >
-                        <FixedSpaceColumn spacing="xs">
-                          <Link to={`/child-information/${row.childId}`}>
-                            {formatName(
-                              row.childFirstName,
-                              row.childLastName,
-                              i18n
-                            )}
-                          </Link>
-
-                          <FixedSpaceRow spacing="xs">
-                            <RoundIcon
-                              content={
-                                row.realizedPeriod.start.differenceInYears(
-                                  row.childDateOfBirth
-                                ) < 3
-                                  ? fasArrowDown
-                                  : fasArrowUp
-                              }
-                              color={
-                                row.realizedPeriod.start.differenceInYears(
-                                  row.childDateOfBirth
-                                ) < 3
-                                  ? colors.accents.green
-                                  : colors.blues.medium
-                              }
-                              size="s"
-                            />
-                            <span>{row.childDateOfBirth.format()}</span>
-                          </FixedSpaceRow>
-                        </FixedSpaceColumn>
-                      </StyledTd>
-                      <Td>{row.childGroupName}</Td>
-                      <Td>
-                        <Tooltip
-                          tooltip={<div>{row.numberOfDays}</div>}
-                          position="right"
-                        >
-                          {row.realizedPeriod.format()}
-                        </Tooltip>
-                      </Td>
-                      <Td>{row.serviceNeedDescription}</Td>
-                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
-                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
-                      <Td>{formatCents(row.realizedAmount, true)}</Td>
-                    </Tr>
-                  )
+                        <StyledTd
+                          type={
+                            row.isNew && row.type === 'ORIGINAL'
+                              ? 'NEW'
+                              : row.type
+                          }
+                        />
+                        <Td>
+                          <FixedSpaceColumn spacing="xs">
+                            <Link to={`/child-information/${row.childId}`}>
+                              {formatName(
+                                row.childFirstName,
+                                row.childLastName,
+                                i18n
+                              )}
+                            </Link>
+                            <FixedSpaceRow spacing="xs">
+                              <Tooltip
+                                tooltip={
+                                  <div>
+                                    {
+                                      i18n.reports.voucherServiceProviderUnit[
+                                        under3YearsOld ? 'under3' : 'atLeast3'
+                                      ]
+                                    }
+                                  </div>
+                                }
+                                position="right"
+                              >
+                                <RoundIcon
+                                  content={
+                                    under3YearsOld ? fasArrowDown : fasArrowUp
+                                  }
+                                  color={
+                                    under3YearsOld
+                                      ? colors.accents.green
+                                      : colors.blues.medium
+                                  }
+                                  size="s"
+                                />
+                              </Tooltip>
+                              <span>{row.childDateOfBirth.format()}</span>
+                            </FixedSpaceRow>
+                          </FixedSpaceColumn>
+                        </Td>
+                        <Td>{row.childGroupName}</Td>
+                        <Td>
+                          <Tooltip
+                            tooltip={<div>{row.numberOfDays}</div>}
+                            position="right"
+                          >
+                            {row.realizedPeriod.format()}
+                          </Tooltip>
+                        </Td>
+                        <Td>{row.serviceNeedDescription}</Td>
+                        <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
+                        <Td>
+                          {formatCents(row.serviceVoucherCoPayment, true)}
+                        </Td>
+                        <Td>{formatCents(row.realizedAmount, true)}</Td>
+                      </Tr>
+                    )
+                  }
                 )}
               </Tbody>
             </TableScrollable>

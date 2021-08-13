@@ -2343,7 +2343,9 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
-      partTime: 'Osa/Koko'
+      partTime: 'Osa/Koko',
+      under3: 'Alle 3-vuotias',
+      atLeast3: 'Vähintään 3-vuotias'
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',
