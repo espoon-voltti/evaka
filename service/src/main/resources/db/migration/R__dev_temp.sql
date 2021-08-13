@@ -24,6 +24,7 @@ CREATE TABLE vasu_document(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     child_id uuid NOT NULL REFERENCES child(id) ON DELETE RESTRICT,
+    basics jsonb NOT NULL,
     template_id uuid NOT NULL REFERENCES vasu_template(id),
     modified_at timestamp with time zone NOT NULL
 );
@@ -41,7 +42,6 @@ CREATE TABLE vasu_content(
     published_at timestamp with time zone DEFAULT NULL,
     master bool GENERATED ALWAYS AS (published_at IS NULL) STORED,
     content jsonb NOT NULL,
-    basics jsonb NOT NULL,
     authors_content jsonb NOT NULL,
     vasu_discussion_content jsonb NOT NULL,
     evaluation_discussion_content jsonb NOT NULL

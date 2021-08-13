@@ -164,6 +164,10 @@ class VasuController(
                 tx.publishVasuDocument(id)
             }
 
+            if (events.contains(MOVED_TO_CLOSED)) {
+                tx.freezeVasuPlacements(id)
+            }
+
             events.forEach { eventType ->
                 tx.insertVasuDocumentEvent(
                     documentId = id,

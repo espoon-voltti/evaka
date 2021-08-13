@@ -7,25 +7,13 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTemplateId): VasuDocumentId {
-    // language=sql
-    val insertDocumentSql = """
-        INSERT INTO vasu_document (child_id, template_id, modified_at) 
-        VALUES (:childId, :templateId, now())
-        RETURNING id
-    """.trimIndent()
-
-    val documentId = createQuery(insertDocumentSql)
-        .bind("childId", childId)
-        .bind("templateId", templateId)
-        .mapTo<VasuDocumentId>()
-        .one()
-
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
         .mapTo<VasuChild>()
@@ -43,16 +31,27 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
         .mapTo<VasuGuardian>()
         .list()
 
-    // language=sql
-    val insertContentSql = """
-        INSERT INTO vasu_content (document_id, content, basics, authors_content, vasu_discussion_content, evaluation_discussion_content) 
-        SELECT :documentId, vt.content, :basics, :authors, :discussion, :evaluation FROM vasu_template vt WHERE vt.id = :templateId
-    """.trimIndent()
+    val documentId = createQuery(
+        """
+        INSERT INTO vasu_document (child_id, basics, template_id, modified_at) 
+        VALUES (:childId, :basics, :templateId, now())
+        RETURNING id
+        """.trimIndent()
+    )
+        .bind("childId", childId)
+        .bind("basics", VasuBasics(child = child, guardians = guardians, placements = null))
+        .bind("templateId", templateId)
+        .mapTo<VasuDocumentId>()
+        .one()
 
-    createUpdate(insertContentSql)
+    createUpdate(
+        """
+        INSERT INTO vasu_content (document_id, content, authors_content, vasu_discussion_content, evaluation_discussion_content) 
+        SELECT :documentId, vt.content, :authors, :discussion, :evaluation FROM vasu_template vt WHERE vt.id = :templateId
+        """.trimIndent()
+    )
         .bind("documentId", documentId)
         .bind("templateId", templateId)
-        .bind("basics", VasuBasics(child = child, guardians = guardians, placements = null))
         .bind("authors", AuthorsContent(primaryAuthor = AuthorInfo(), otherAuthors = listOf(AuthorInfo())))
         .bind("discussion", VasuDiscussionContent())
         .bind("evaluation", EvaluationDiscussionContent())
@@ -68,10 +67,10 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             vd.id,
             vd.child_id,
             vd.modified_at,
+            vd.basics,
             vt.name AS template_name,
             vt.valid AS template_range,
             vc.content,
-            vc.basics,
             vc.authors_content,
             vc.vasu_discussion_content,
             vc.evaluation_discussion_content,
@@ -110,11 +109,11 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
         SELECT
             vd.id,
             vd.child_id,
+            vd.basics,
             vd.modified_at,
             vt.name AS template_name,
             vt.valid AS template_range,
             vc.content,
-            vc.basics,
             vc.authors_content,
             vc.vasu_discussion_content,
             vc.evaluation_discussion_content,
@@ -128,7 +127,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
            ) AS events
         FROM vasu_document vd
         JOIN LATERAL (
-            SELECT vc.content, vc.basics, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
+            SELECT vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
             FROM vasu_content vc
             WHERE vc.published_at IS NOT NULL AND vc.document_id = vd.id
             ORDER BY vc.published_at DESC
@@ -187,8 +186,8 @@ fun Database.Transaction.updateVasuDocumentMaster(
 fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
     // language=sql
     val insertContentSql = """
-        INSERT INTO vasu_content (document_id, published_at, content, basics, authors_content, vasu_discussion_content, evaluation_discussion_content)
-        SELECT vc.document_id, now(), vc.content, vc.basics, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
+        INSERT INTO vasu_content (document_id, published_at, content, authors_content, vasu_discussion_content, evaluation_discussion_content)
+        SELECT vc.document_id, now(), vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
         FROM vasu_content vc
         WHERE vc.document_id = :id AND master
     """.trimIndent()
@@ -262,6 +261,24 @@ fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eve
         .bind("eventType", eventType)
         .mapTo<VasuDocumentEvent>()
         .one()
+}
+
+fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
+    createQuery("SELECT basics FROM vasu_document WHERE id = :id")
+        .bind("id", id)
+        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
+        .firstOrNull()
+        ?.let { basics ->
+            createUpdate("UPDATE vasu_document SET basics = :basics WHERE id = :id")
+                .bind("id", id)
+                .bind(
+                    "basics",
+                    basics.copy(
+                        placements = getVasuPlacements(id)
+                    )
+                )
+                .updateExactlyOne()
+        }
 }
 
 private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacement> {
