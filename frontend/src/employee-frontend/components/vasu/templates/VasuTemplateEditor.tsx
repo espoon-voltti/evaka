@@ -46,7 +46,7 @@ import {
   VasuTemplate
 } from './api'
 import CreateQuestionModal from './CreateQuestionModal'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import QuestionInfo from '../QuestionInfo'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
@@ -226,14 +226,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <React.Fragment>
-        <ExpandingInfo
-          info={question.info.length ? <div>{question.info}</div> : null}
-          ariaLabel={i18n.common.openExpandingInfo}
-        >
+        <QuestionInfo info={question.info}>
           <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
             questionIndex + 1
           }. ${question.name}`}</H3>
-        </ExpandingInfo>
+        </QuestionInfo>
 
         {question.multiline ? (
           <TextArea value={question.value} />
@@ -250,17 +247,14 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number
   ) {
     return (
-      <ExpandingInfo
-        info={question.info.length ? <div>{question.info}</div> : null}
-        ariaLabel={i18n.common.openExpandingInfo}
-      >
+      <QuestionInfo info={question.info}>
         <Checkbox
           checked={question.value}
           label={`${sectionIndex + dynamicOffset + 1}.${questionIndex + 1}. ${
             question.name
           }`}
         />
-      </ExpandingInfo>
+      </QuestionInfo>
     )
   }
 
@@ -271,14 +265,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <ExpandingInfo
-          info={question.info.length ? <div>{question.info}</div> : null}
-          ariaLabel={i18n.common.openExpandingInfo}
-        >
+        <QuestionInfo info={question.info}>
           <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
             questionIndex + 1
           }. ${question.name}`}</H3>
-        </ExpandingInfo>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Radio checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -293,14 +284,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <ExpandingInfo
-          info={question.info.length ? <div>{question.info}</div> : null}
-          ariaLabel={i18n.common.openExpandingInfo}
-        >
+        <QuestionInfo info={question.info}>
           <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
             questionIndex + 1
           }. ${question.name}`}</H3>
-        </ExpandingInfo>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Checkbox checked={false} label={opt.name} key={opt.key} />
         ))}

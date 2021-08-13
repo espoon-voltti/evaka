@@ -248,9 +248,9 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
       )
       .getOrElse(null)
 
-  const allowCreation = vasus.isSuccess
-    ? vasus.value.find((doc) => doc.documentState !== 'CLOSED') === undefined
-    : false
+  const allowCreation = vasus
+    .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
+    .getOrElse(false)
 
   return (
     <div>

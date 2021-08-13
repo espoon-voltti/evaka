@@ -19,7 +19,7 @@ data class OphQuestionOption(
     val name: Map<VasuLanguage, String>
 )
 
-fun getDefaultTemplateContent(@Suppress("UNUSED_PARAMETER") lang: VasuLanguage) = VasuContent(
+fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {

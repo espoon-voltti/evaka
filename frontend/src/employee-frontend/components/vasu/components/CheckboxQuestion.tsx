@@ -8,7 +8,7 @@ import { useTranslation } from '../../../state/i18n'
 import { CheckboxQuestion } from '../vasu-content'
 import { QuestionProps } from './question-props'
 import { ReadOnlyValue } from './ReadOnlyValue'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import QuestionInfo from '../QuestionInfo'
 
 type Props = QuestionProps<CheckboxQuestion> & {
   onChange?: (checked: boolean) => void
@@ -18,12 +18,7 @@ export function CheckboxQuestion(props: Props) {
   const { i18n } = useTranslation()
   const label = `${props.questionNumber} ${props.question.name}`
   return (
-    <ExpandingInfo
-      info={
-        props.question.info.length ? <div>{props.question.info}</div> : null
-      }
-      ariaLabel={i18n.common.openExpandingInfo}
-    >
+    <QuestionInfo info={props.question.info}>
       {props.onChange ? (
         <Checkbox
           checked={props.question.value}
@@ -36,6 +31,6 @@ export function CheckboxQuestion(props: Props) {
           value={props.question.value ? i18n.common.yes : i18n.common.no}
         />
       )}
-    </ExpandingInfo>
+    </QuestionInfo>
   )
 }
