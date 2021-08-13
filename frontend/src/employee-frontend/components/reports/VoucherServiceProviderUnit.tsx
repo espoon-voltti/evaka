@@ -407,14 +407,10 @@ function VoucherServiceProviderUnit() {
                       <Td>{row.childGroupName}</Td>
                       <Td>
                         <Tooltip
-                          position="top"
-                          tooltip={
-                            <div>
-                              {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
-                            </div>
-                          }
+                          tooltip={<div>{row.numberOfDays}</div>}
+                          position="right"
                         >
-                          {row.numberOfDays}
+                          {row.realizedPeriod.format()}
                         </Tooltip>
                       </Td>
                       <Td>{row.serviceNeedDescription}</Td>
