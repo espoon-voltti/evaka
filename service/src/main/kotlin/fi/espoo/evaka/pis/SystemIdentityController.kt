@@ -11,7 +11,10 @@ import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.EmployeeFeatures
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class SystemIdentityController(private val personService: PersonService) {
+class SystemIdentityController(private val personService: PersonService, private val accessControl: AccessControl) {
     @PostMapping("/system/person-identity")
     fun personIdentity(
         db: Database.Connection,
@@ -72,10 +75,21 @@ class SystemIdentityController(private val personService: PersonService) {
         user: AuthenticatedUser,
         @PathVariable
         id: UUID
-    ): EmployeeUser? {
+    ): EmployeeUserResponse? {
         Audit.EmployeeGetOrCreate.log(targetId = id)
         user.assertSystemInternalUser()
-        return db.read { it.getEmployeeUser(id) }
+        return db.read { tx ->
+            tx.getEmployeeUser(id)?.let { employeeUser ->
+                EmployeeUserResponse(
+                    id = employeeUser.id,
+                    firstName = employeeUser.firstName,
+                    lastName = employeeUser.lastName,
+                    globalRoles = employeeUser.globalRoles,
+                    allScopedRoles = employeeUser.allScopedRoles,
+                    accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser))
+                )
+            }
+        }
     }
 
     @GetMapping("/system/mobile-identity/{token}")
@@ -104,5 +118,14 @@ class SystemIdentityController(private val personService: PersonService) {
         val socialSecurityNumber: String,
         val firstName: String,
         val lastName: String
+    )
+
+    data class EmployeeUserResponse(
+        val id: UUID,
+        val firstName: String,
+        val lastName: String,
+        val globalRoles: Set<UserRole> = setOf(),
+        val allScopedRoles: Set<UserRole> = setOf(),
+        val accessibleFeatures: EmployeeFeatures,
     )
 }
