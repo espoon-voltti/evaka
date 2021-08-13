@@ -178,16 +178,27 @@ type Position = 'top' | 'bottom' | 'right' | 'left'
 
 type TooltipProps = BaseProps & {
   children: React.ReactNode
-  tooltip: JSX.Element
+  tooltip: React.ReactNode
   position?: Position
 }
 
-export default function Tooltip({
+export default React.memo(function Tooltip({
   children,
+  ...props
+}: TooltipProps) {
+  return (
+    <TooltipWrapper>
+      {children}
+      <TooltipWithoutAnchor {...props} />
+    </TooltipWrapper>
+  )
+})
+
+export const TooltipWithoutAnchor = React.memo(function Tooltip({
   tooltip,
   'data-qa': dataQa,
   ...props
-}: TooltipProps) {
+}: Omit<TooltipProps, 'children'>) {
   const position = props.position ?? 'bottom'
   const icon = (() => {
     switch (position) {
@@ -203,20 +214,16 @@ export default function Tooltip({
   })()
 
   return (
-    <TooltipWrapper>
-      <div>{children}</div>
-
-      <TooltipPositioner className="tooltip" position={position}>
-        <TooltipDiv data-qa={dataQa}>
-          <Beak position={position}>
-            <FontAwesomeIcon
-              icon={icon}
-              size={['top', 'bottom'].includes(position) ? '3x' : '2x'}
-            />
-          </Beak>
-          <div>{tooltip}</div>
-        </TooltipDiv>
-      </TooltipPositioner>
-    </TooltipWrapper>
+    <TooltipPositioner className="tooltip" position={position}>
+      <TooltipDiv data-qa={dataQa}>
+        <Beak position={position}>
+          <FontAwesomeIcon
+            icon={icon}
+            size={['top', 'bottom'].includes(position) ? '3x' : '2x'}
+          />
+        </Beak>
+        <div>{tooltip}</div>
+      </TooltipDiv>
+    </TooltipPositioner>
   )
-}
+})

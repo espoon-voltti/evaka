@@ -2346,7 +2346,12 @@ export const fi = {
       serviceNeed: 'Palveluntarve',
       partTime: 'Osa/Koko',
       under3: 'Alle 3-vuotias',
-      atLeast3: 'Vähintään 3-vuotias'
+      atLeast3: 'Vähintään 3-vuotias',
+      type: {
+        NEW: 'Uusi päätös',
+        REFUND: 'Hyvitys',
+        CORRECTION: 'Korjaus'
+      }
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',

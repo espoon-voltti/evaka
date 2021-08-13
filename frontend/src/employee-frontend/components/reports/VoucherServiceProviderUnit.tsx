@@ -11,7 +11,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { H2, H3 } from 'lib-components/typography'
-import Tooltip from 'lib-components/atoms/Tooltip'
+import Tooltip, { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -68,19 +68,38 @@ const SumRow = styled.div`
   align-items: center;
 `
 
-const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
-  ${(p) => {
-    const color =
-      p.type === 'REFUND'
-        ? colors.accents.orange
-        : p.type === 'CORRECTION'
-        ? colors.accents.yellow
-        : p.type === 'NEW'
-        ? colors.blues.primary
-        : colors.greyscale.white
+const BlankTh = styled(Th)`
+  border-color: transparent;
+  padding: 0;
+`
 
-    return `border-left: 6px solid ${color};`
-  }}
+const BlankTd = styled(Td)`
+  border: 1px solid transparent;
+  padding: 0;
+  position: relative;
+  width: 6px;
+
+  &:not(:hover) {
+    .tooltip {
+      display: none;
+    }
+  }
+`
+
+const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
+  position: absolute;
+  top: -2px;
+  bottom: 1px;
+  left: -1px;
+  right: -1px;
+  background-color: ${(p) =>
+    p.type === 'REFUND'
+      ? colors.accents.orange
+      : p.type === 'CORRECTION'
+      ? colors.accents.yellow
+      : p.type === 'NEW'
+      ? colors.blues.primary
+      : colors.greyscale.white};
 `
 
 const StyledTh = styled(Th)`
@@ -329,6 +348,7 @@ function VoucherServiceProviderUnit() {
             <TableScrollable>
               <Thead>
                 <Tr>
+                  <BlankTh />
                   <SortableTh
                     sorted={sort === 'child' ? 'ASC' : undefined}
                     onClick={sortOnClick('child')}
@@ -372,19 +392,29 @@ function VoucherServiceProviderUnit() {
                       row.realizedPeriod.start.differenceInYears(
                         row.childDateOfBirth
                       ) < 3
+
+                    const rowType =
+                      row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
+
                     return (
                       <Tr
                         key={`${
                           row.serviceVoucherDecisionId
                         }:${row.realizedPeriod.start.formatIso()}`}
                       >
-                        <StyledTd
-                          type={
-                            row.isNew && row.type === 'ORIGINAL'
-                              ? 'NEW'
-                              : row.type
-                          }
-                        />
+                        <BlankTd>
+                          <TypeIndicator type={rowType} />
+                          {rowType !== 'ORIGINAL' ? (
+                            <TooltipWithoutAnchor
+                              tooltip={
+                                i18n.reports.voucherServiceProviderUnit.type[
+                                  rowType
+                                ]
+                              }
+                              position="right"
+                            />
+                          ) : null}
+                        </BlankTd>
                         <Td>
                           <FixedSpaceColumn spacing="xs">
                             <Link to={`/child-information/${row.childId}`}>
