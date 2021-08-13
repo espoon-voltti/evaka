@@ -58,9 +58,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.of(2021, 4, 3),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
-                    student = false,
-                    alimony = true,
+                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -73,6 +71,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     ),
                     partnership = false,
                 ),
+                student = false,
+                alimony = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf()
             )
@@ -86,9 +86,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     startDate = LocalDate.of(2021, 4, 3),
                     gross = Gross(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
-                        otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
-                        student = false,
-                        alimony = true,
+                        otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -101,6 +99,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         ),
                         partnership = false,
                     ),
+                    student = false,
+                    alimony = true,
                     otherInfo = "foo bar",
                     attachments = listOf()
                 )
@@ -117,6 +117,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.of(2021, 4, 3),
                 gross = null,
                 entrepreneur = null,
+                student = false,
+                alimony = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf()
             ),
@@ -136,6 +138,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     limitedCompany = null,
                     partnership = false
                 ),
+                student = false,
+                alimony = false,
                 otherInfo = "foo bar",
                 attachmentIds = listOf()
             ),
@@ -153,10 +157,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
-                    student = false,
-                    alimony = true,
                 ),
                 entrepreneur = null,
+                student = false,
+                alimony = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId)
             )
@@ -171,10 +175,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
                         otherIncome = setOf(),
-                        student = false,
-                        alimony = true,
                     ),
                     entrepreneur = null,
+                    student = false,
+                    alimony = true,
                     otherInfo = "foo bar",
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
@@ -193,10 +197,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
-                    student = false,
-                    alimony = true,
                 ),
                 entrepreneur = null,
+                student = false,
+                alimony = false,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(nonExistingAttachmentId)
             ),
@@ -215,10 +219,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
                     otherIncome = setOf(),
-                    student = false,
-                    alimony = true,
                 ),
                 entrepreneur = null,
+                student = false,
+                alimony = false,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId)
             ),
@@ -237,9 +241,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.of(2021, 4, 3),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.PERKS),
-                    student = false,
-                    alimony = true,
+                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -252,6 +254,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     ),
                     partnership = false,
                 ),
+                student = false,
+                alimony = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1)
             ),
@@ -273,6 +277,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     limitedCompany = null,
                     partnership = true,
                 ),
+                student = true,
+                alimony = false,
                 otherInfo = "",
                 attachmentIds = listOf(attachment2, attachment3)
             )
@@ -293,6 +299,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         limitedCompany = null,
                         partnership = true,
                     ),
+                    student = true,
+                    alimony = false,
                     otherInfo = "",
                     attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
                 ),

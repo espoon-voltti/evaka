@@ -1239,19 +1239,19 @@ const en: Translations = {
     title: 'Tulotietojen ilmoitus',
     description: (
       <>
-        <p>
+        <P>
           Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
           aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
           korkeimpaan maksuun.
-        </p>
-        <p>
+        </P>
+        <P>
           Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
           alkamispäivästä lähtien.
-        </p>
-        <p>
+          <br />
           Tulojen, menojen ja perhekoon muutoksista on ilmoitettava
           asiakasmaksuyksikköön
-        </p>
+        </P>
+        <P>* Tähdellä merkityt kentät ovat pakollisia.</P>
       </>
     ),
     addNew: 'Luo uusi tulotieto',
@@ -1259,6 +1259,13 @@ const en: Translations = {
     incomesRegisterConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
     incomeType: {
+      description: (
+        <P>
+          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
+          <strong>Yrittäjän tulotiedot</strong>, että{' '}
+          <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
+        </P>
+      ),
       startDate: 'Voimassa alkaen',
       title: 'Asiakasmaksun perusteet',
       agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
@@ -1271,6 +1278,7 @@ const en: Translations = {
       title: 'Bruttotulotietojen täyttäminen',
       description:
         'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+      incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
       otherIncome: 'Minulla on muita tuloja. Valitse mitä.',
@@ -1285,28 +1293,22 @@ const en: Translations = {
         HOME_CARE_ALLOWANCE: 'Lastenhoidontuki',
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
           'Joustava tai osittainen hoitoraha',
-        ALIMONY: 'Elatusapu',
+        ALIMONY: 'Elatusapu tai -tuki',
         INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
         RENTAL_INCOME: 'Vuokratulot'
-      },
-      student: 'Olen opiskelija.',
-      studentInfo:
-        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
-      deductions: 'Vähennykset',
-      alimony:
-        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.'
+      }
     },
     entrepreneurIncome: {
       title: 'Yrittäjän tulotietojen täyttäminen',
       description: (
-        <p>
+        <P>
           Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
           yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
           tarkemmat yrityskohtaiset tiedot liitteinä.
           <br />
           Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
           “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
-        </p>
+        </P>
       ),
       fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
       fullTime: 'Päätoimista',
@@ -1318,6 +1320,7 @@ const en: Translations = {
       selfEmployed: 'Toiminimi',
       limitedCompany: 'Osakeyhtiö',
       partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
       startupGrant:
         'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.'
     },
@@ -1341,8 +1344,15 @@ const en: Translations = {
         'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
     },
     moreInfo: {
-      title: 'Lisätietoja',
-      description: 'Lisätietoja tulotietoihin liittyen'
+      title: 'Muita maksuun liittyviä tietoja',
+      student: 'Olen opiskelija.',
+      studentInfo:
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+      deductions: 'Vähennykset',
+      alimony:
+        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
+      otherInfo: 'Lisätietoja',
+      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
     },
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
@@ -1366,7 +1376,9 @@ const en: Translations = {
         STARTUP_GRANT: 'Starttirahapäätös',
         ACCOUNTANT_REPORT:
           'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
-        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase'
+        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
+        PROOF_OF_STUDIES:
+          'Opiskelutodituks tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
       }
     },
     assure: 'Vakuutan antamani tiedot oikeiksi.'

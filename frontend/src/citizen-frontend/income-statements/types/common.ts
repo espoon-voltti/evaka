@@ -28,7 +28,8 @@ export const attachmentType = [
   'PAYSLIP',
   'STARTUP_GRANT',
   'ACCOUNTANT_REPORT',
-  'PROFIT_AND_LOSS_STATEMENT'
+  'PROFIT_AND_LOSS_STATEMENT',
+  'PROOF_OF_STUDIES'
 ] as const
 
 export type AttachmentType = typeof attachmentType[number]

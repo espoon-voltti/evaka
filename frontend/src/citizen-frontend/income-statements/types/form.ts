@@ -6,6 +6,8 @@ export interface IncomeStatementForm {
   highestFee: boolean
   gross: Gross
   entrepreneur: Entrepreneur
+  student: boolean
+  alimony: boolean
   otherInfo: string
   attachments: Attachment[]
   assure: boolean
@@ -15,8 +17,6 @@ export interface Gross {
   selected: boolean
   incomeSource: IncomeSource | null
   otherIncome: OtherIncome[] | null
-  student: boolean
-  alimony: boolean
 }
 
 export interface Entrepreneur {

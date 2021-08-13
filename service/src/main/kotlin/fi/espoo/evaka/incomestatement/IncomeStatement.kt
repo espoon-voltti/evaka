@@ -27,8 +27,6 @@ enum class IncomeSource {
 data class Gross(
     val incomeSource: IncomeSource,
     val otherIncome: Set<OtherGrossIncome>,
-    val student: Boolean,
-    val alimony: Boolean,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -74,6 +72,8 @@ sealed class IncomeStatementBody(
         override val startDate: LocalDate,
         val gross: Gross?,
         val entrepreneur: Entrepreneur?,
+        val student: Boolean,
+        val alimony: Boolean,
         val otherInfo: String,
         val attachmentIds: List<AttachmentId>
     ) : IncomeStatementBody(startDate)
@@ -111,6 +111,8 @@ sealed class IncomeStatement(
         override val startDate: LocalDate,
         val gross: Gross?,
         val entrepreneur: Entrepreneur?,
+        val student: Boolean,
+        val alimony: Boolean,
         val otherInfo: String,
         val attachments: List<Attachment>
     ) : IncomeStatement(id, startDate)
