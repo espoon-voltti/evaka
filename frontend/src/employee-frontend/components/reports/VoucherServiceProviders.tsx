@@ -9,7 +9,7 @@ import { range } from 'lodash'
 import { faLockAlt, faSearch } from 'lib-icons'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
+import { H2 } from 'lib-components/typography'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { SelectOption } from '../common/Select'
 import { useTranslation } from '../../state/i18n'
@@ -30,7 +30,7 @@ import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { FlexRow } from '../common/styled/containers'
 import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -167,7 +167,8 @@ function VoucherServiceProviders() {
     <Container>
       <ReturnButton label={i18n.common.goBack} data-qa={'return-button'} />
       <ContentArea opaque>
-        <Title size={1}>{i18n.reports.voucherServiceProviders.title}</Title>
+        <H2>{i18n.reports.voucherServiceProviders.title}</H2>
+        <Gap size="m" />
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>

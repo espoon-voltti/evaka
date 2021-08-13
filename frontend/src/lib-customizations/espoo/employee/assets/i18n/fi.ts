@@ -2314,7 +2314,7 @@ export const fi = {
       reportFileName: 'alkavat_sijoitukset'
     },
     voucherServiceProviders: {
-      title: 'Palveluseteli',
+      title: 'Palveluseteliyksiköt',
       description:
         'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
@@ -2330,6 +2330,7 @@ export const fi = {
     },
     voucherServiceProviderUnit: {
       title: 'Palvelusetelilapset yksikössä',
+      unitPageLink: 'Yksikön sivu',
       month: 'Kuukausi',
       total: 'Palvelusetelien summa valittuna kuukautena',
       child: 'Lapsen nimi / synt. aika',

@@ -10,7 +10,7 @@ import Combobox from 'lib-components/atoms/form/Combobox'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Title from 'lib-components/atoms/Title'
+import { H2, H3 } from 'lib-components/typography'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
@@ -25,9 +25,9 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
+import { faHomeAlt, faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
 import { range, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
@@ -159,8 +159,15 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {sortedReport.isSuccess && <Title size={1}>{unitName}</Title>}
-        <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
+        <TitleContainer>
+          <H2 fitted>{unitName}</H2>
+          <LinkInCaps to={`/units/${unitId}`}>
+            <FontAwesomeIcon icon={faHomeAlt} />{' '}
+            {i18n.reports.voucherServiceProviderUnit.unitPageLink}
+          </LinkInCaps>
+        </TitleContainer>
+        <H3 noMargin>{i18n.reports.voucherServiceProviderUnit.title}</H3>
+        <Gap size="L" />
         <FilterRow>
           <FilterLabel>
             {i18n.reports.voucherServiceProviderUnit.month}
@@ -443,5 +450,16 @@ function VoucherServiceProviderUnit() {
     </Container>
   )
 }
+
+const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+`
+
+const LinkInCaps = styled(Link)`
+  text-transform: uppercase;
+`
 
 export default VoucherServiceProviderUnit
