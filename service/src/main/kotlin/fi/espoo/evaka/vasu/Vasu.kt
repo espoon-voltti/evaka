@@ -37,6 +37,19 @@ data class VasuDocumentEvent(
     val eventType: VasuDocumentEventType
 )
 
+private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
+    return events.fold(VasuDocumentState.DRAFT) { acc, event ->
+        when (event.eventType) {
+            VasuDocumentEventType.PUBLISHED -> acc
+            VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentState.READY
+            VasuDocumentEventType.RETURNED_TO_READY -> VasuDocumentState.READY
+            VasuDocumentEventType.MOVED_TO_REVIEWED -> VasuDocumentState.REVIEWED
+            VasuDocumentEventType.RETURNED_TO_REVIEWED -> VasuDocumentState.REVIEWED
+            VasuDocumentEventType.MOVED_TO_CLOSED -> VasuDocumentState.CLOSED
+        }
+    }
+}
+
 enum class VasuLanguage {
     FI,
     SV
@@ -47,7 +60,9 @@ data class VasuDocumentSummary(
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
-)
+) {
+    fun getState(): VasuDocumentState = getStateFromEvents(events)
+}
 
 data class VasuDocument(
     val id: VasuDocumentId,
@@ -67,16 +82,7 @@ data class VasuDocument(
     @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
-    fun getState(): VasuDocumentState = events.fold(VasuDocumentState.DRAFT) { acc, event ->
-        when (event.eventType) {
-            VasuDocumentEventType.PUBLISHED -> acc
-            VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentState.READY
-            VasuDocumentEventType.RETURNED_TO_READY -> VasuDocumentState.READY
-            VasuDocumentEventType.MOVED_TO_REVIEWED -> VasuDocumentState.REVIEWED
-            VasuDocumentEventType.RETURNED_TO_REVIEWED -> VasuDocumentState.REVIEWED
-            VasuDocumentEventType.MOVED_TO_CLOSED -> VasuDocumentState.CLOSED
-        }
-    }
+    fun getState(): VasuDocumentState = getStateFromEvents(events)
 }
 
 @Json
