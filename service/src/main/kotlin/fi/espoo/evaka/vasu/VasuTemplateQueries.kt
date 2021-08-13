@@ -100,7 +100,7 @@ fun Database.Transaction.updateVasuTemplate(
     // language=sql
     val sql = """
         UPDATE vasu_template
-        SET name = :name, valid = :valid, language = :language
+        SET name = :name, valid = :valid
         WHERE id = :id
     """.trimIndent()
 
@@ -108,7 +108,6 @@ fun Database.Transaction.updateVasuTemplate(
         .bind("id", id)
         .bind("name", params.name)
         .bind("valid", params.valid)
-        .bind("language", params.language)
         .updateExactlyOne()
 }
 

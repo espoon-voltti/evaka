@@ -30,8 +30,7 @@ data class VasuTemplateSummary(
 
 data class VasuTemplateUpdate(
     val name: String,
-    val valid: FiniteDateRange,
-    val language: VasuLanguage
+    val valid: FiniteDateRange
 )
 
 fun validateTemplateUpdate(
@@ -43,15 +42,14 @@ fun validateTemplateUpdate(
     }
 
     if (body.name != template.name) throw BadRequest("Name of a used template cannot be changed", "TEMPLATE_NAME")
-    if (body.language != template.language) throw BadRequest("Language of a used template cannot be changed", "TEMPLATE_LANGUAGE")
 
     val now = HelsinkiDateTime.now().toLocalDate()
-    if (now.isAfter(template.valid.end)) {
+    if (now.isAfter(template.valid.end)) { // template is in past
         if (body.valid.start != template.valid.start) throw BadRequest("Start date of an expired valid template cannot be changed", "EXPIRED_START")
         if (body.valid.end.isBefore(template.valid.end)) throw BadRequest("End date of and expired template cannot be advanced", "EXPIRED_END")
-    } else if (now.isBefore(template.valid.start)) {
+    } else if (now.isBefore(template.valid.start)) { // template is in future
         if (body.valid.start.isBefore(now)) throw BadRequest("Start date of a template valid in the future cannot be changed to the past", "FUTURE_START")
-    } else {
+    } else { // template is active
         if (body.valid.start != template.valid.start) throw BadRequest("Start date of a currently valid template cannot be changed", "CURRENT_START")
         if (body.valid.end.isBefore(now.minusDays(1))) throw BadRequest("End date of a currently valid template cannot be before yesterday", "CURRENT_END")
     }
