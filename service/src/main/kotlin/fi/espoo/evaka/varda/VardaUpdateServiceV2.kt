@@ -363,16 +363,15 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
-        if (evakaServiceNeed.endDate.isBefore(feeDecisionMinDate) || (
-            serviceNeedFeeData.isNotEmpty() && (
-                (serviceNeedFeeData.first().feeDecisionIds.isNotEmpty() || serviceNeedFeeData.first().voucherValueDecisionIds.isNotEmpty())
-                )
-            )
-        ) {
+        val shouldHaveFeeData = !evakaServiceNeed.endDate.isBefore(feeDecisionMinDate)
+        val hasFeeData: Boolean = serviceNeedFeeData.firstOrNull().let { it != null && it.hasFeeData() }
+
+        if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
+        else {
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
-            newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData.first())
+            if (hasFeeData) newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData.first())
         }
     } catch (e: Exception) {
         errors.add("VardaUpdate: error creating a new varda decision for service need ${evakaServiceNeed.id}: ${e.message}")
@@ -836,7 +835,9 @@ data class FeeDataByServiceNeed(
     val serviceNeedId: ServiceNeedId,
     val feeDecisionIds: List<FeeDecisionId> = emptyList(),
     val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList()
-)
+) {
+    fun hasFeeData() = feeDecisionIds.isNotEmpty() || voucherValueDecisionIds.isNotEmpty()
+}
 
 private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: EvakaServiceNeedInfoForVarda): VardaServiceNeed =
     VardaServiceNeed(
