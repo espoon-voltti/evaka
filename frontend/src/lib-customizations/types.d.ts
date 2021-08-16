@@ -110,6 +110,7 @@ interface BaseFeatureFlags {
    */
   experimental?: {
     ai?: boolean
+    incomeStatements?: boolean
     vasu?: boolean
   }
 }

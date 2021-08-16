@@ -32,6 +32,7 @@ import {
   getAttachmentBlob,
   saveAttachment
 } from '../attachments'
+import { useHistory } from 'react-router-dom'
 
 const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
@@ -72,6 +73,7 @@ const initialFormData: Form.IncomeStatementForm = {
 }
 
 export default function IncomeStatementForm() {
+  const history = useHistory()
   const t = useTranslation()
   const [formData, setFormData] =
     React.useState<Form.IncomeStatementForm>(initialFormData)
@@ -106,6 +108,10 @@ export default function IncomeStatementForm() {
       })),
     []
   )
+
+  const navigateToList = React.useCallback(() => {
+    history.push('/income')
+  }, [history])
 
   return (
     <>
@@ -164,13 +170,13 @@ export default function IncomeStatementForm() {
             checked={formData.assure}
             onChange={(value) => setFormData({ ...formData, assure: value })}
           />
-          <Button text={t.common.cancel} />
+          <Button text={t.common.cancel} onClick={navigateToList} />
           <AsyncButton
             text={t.common.save}
             primary
             onClick={save}
             disabled={!isValid}
-            onSuccess={() => undefined}
+            onSuccess={navigateToList}
           />
         </FixedSpaceRow>
       </Container>

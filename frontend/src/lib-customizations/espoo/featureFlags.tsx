@@ -25,6 +25,7 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
+      incomeStatements: true,
       vasu: true
     }
   },

@@ -18,7 +18,6 @@ import requireAuth from './auth/requireAuth'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
-import IncomeStatementForm from './income-statements/IncomeStatementForm'
 import { Localization } from './localization'
 import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
@@ -27,6 +26,9 @@ import { MessageContextProvider } from './messages/state'
 import GlobalErrorDialog from './overlay/Error'
 import GlobalInfoDialog from './overlay/Info'
 import { OverlayContextProvider } from './overlay/state'
+import IncomeStatements from './income-statements/IncomeStatements'
+import IncomeStatementForm from './income-statements/IncomeStatementForm'
+import { featureFlags } from 'lib-customizations/citizen'
 
 export default function App() {
   return (
@@ -55,11 +57,20 @@ export default function App() {
                       path="/applications/:applicationId"
                       component={requireAuth(ApplicationReadView)}
                     />
-                    <Route
-                      exact
-                      path="/income"
-                      component={requireAuth(IncomeStatementForm)}
-                    />
+                    {featureFlags.experimental?.incomeStatements && (
+                      <>
+                        <Route
+                          exact
+                          path="/income"
+                          component={requireAuth(IncomeStatements)}
+                        />
+                        <Route
+                          exact
+                          path="/income/:incomeStatementId"
+                          component={requireAuth(IncomeStatementForm)}
+                        />
+                      </>
+                    )}
                     <Route
                       exact
                       path="/applications/:applicationId/edit"
