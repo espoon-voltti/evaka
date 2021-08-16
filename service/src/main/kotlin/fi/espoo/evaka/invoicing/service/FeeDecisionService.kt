@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
@@ -139,7 +140,10 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-        val sendAddress = DecisionSendAddress.fromPerson(recipient, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
 
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"

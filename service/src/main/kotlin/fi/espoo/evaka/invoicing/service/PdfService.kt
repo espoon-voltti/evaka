@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
@@ -133,7 +134,10 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily, messageProvider, lang.name)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang.name) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
@@ -195,7 +199,10 @@ class PDFService(
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||

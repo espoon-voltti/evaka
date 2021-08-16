@@ -50,19 +50,16 @@ data class DecisionSendAddress(
     val row3: String
 ) {
     companion object {
-        fun fromPerson(person: PersonData.Detailed, messageProvider: IMessageProvider, lang: String? = "fi") =
+        fun fromPerson(person: PersonData.Detailed): DecisionSendAddress? {
             person.let {
                 if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
-                    DecisionSendAddress(
+                    return DecisionSendAddress(
                         person.streetAddress!!, person.postalCode!!, person.postOffice!!,
                         person.streetAddress, "${person.postalCode} ${person.postOffice}", ""
                     )
-                } else {
-                    when (lang) {
-                        "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-                        else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
-                    }
                 }
             }
+            return null
+        }
     }
 }

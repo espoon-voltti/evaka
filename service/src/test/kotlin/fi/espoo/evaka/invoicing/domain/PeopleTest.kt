@@ -5,12 +5,11 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.decision.DecisionSendAddress
-import fi.espoo.evaka.shared.message.EvakaMessageProvider
-import fi.espoo.evaka.shared.message.MessageLanguage
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class PeopleTest {
     private val testPerson = PersonData.Detailed(
@@ -26,7 +25,7 @@ class PeopleTest {
 
     @Test
     fun `DecisionSendAddress basic case`() {
-        val address = DecisionSendAddress.fromPerson(testPerson, EvakaMessageProvider())
+        val address = DecisionSendAddress.fromPerson(testPerson)
         val expected = DecisionSendAddress(
             testPerson.streetAddress!!,
             testPerson.postalCode!!,
@@ -49,9 +48,8 @@ class PeopleTest {
         )
 
         testPeople.forEach {
-            val messageProvider = EvakaMessageProvider()
-            val address = DecisionSendAddress.fromPerson(it, messageProvider)
-            assertEquals(messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI), address)
+            val address = DecisionSendAddress.fromPerson(it)
+            assertNull(address)
         }
     }
 }
