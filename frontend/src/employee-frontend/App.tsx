@@ -344,14 +344,12 @@ export default function App() {
               component={ensureAuthenticated(VoucherServiceProviderUnit)}
               title={i18n.titles.reports}
             />
-            {featureFlags.messaging && (
-              <RouteWithTitle
-                exact
-                path="/messages"
-                component={ensureAuthenticated(MessagesPage)}
-                title={i18n.titles.messages}
-              />
-            )}
+            <RouteWithTitle
+              exact
+              path="/messages"
+              component={ensureAuthenticated(MessagesPage)}
+              title={i18n.titles.messages}
+            />
             <RouteWithTitle
               exact
               path="/reports/placement-sketching"
