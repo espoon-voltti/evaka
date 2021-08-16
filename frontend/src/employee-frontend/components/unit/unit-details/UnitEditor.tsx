@@ -37,7 +37,7 @@ import {
 import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import Combobox from 'lib-components/atoms/form/Combobox'
-import { unitProviderTypes } from 'lib-customizations/employee'
+import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { UnitProviderType } from 'lib-customizations/types'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -524,7 +524,6 @@ function toFormData(unit: Unit | undefined): FormData {
 
 export default function UnitEditor(props: Props): JSX.Element {
   const { i18n } = useTranslation()
-
   const initialData = useMemo<FormData>(
     () => toFormData(props.unit),
     [props.unit]
@@ -532,6 +531,31 @@ export default function UnitEditor(props: Props): JSX.Element {
   const [form, setForm] = useState<FormData>(initialData)
   const [formErrors, setFormErrors] = useState<string[]>([])
   const { careTypes, decisionCustomization, unitManager } = form
+
+  const canApplyTypes = [
+    {
+      type: 'daycare',
+      checkboxI18n: 'canApplyDaycare',
+      field: 'daycareApplyPeriod',
+      period: form.daycareApplyPeriod
+    },
+    ...(featureFlags.preschoolEnabled
+      ? [
+          {
+            type: 'preschool',
+            checkboxI18n: 'canApplyPreschool',
+            field: 'preschoolApplyPeriod',
+            period: form.preschoolApplyPeriod
+          }
+        ]
+      : []),
+    {
+      type: 'club',
+      checkboxI18n: 'canApplyClub',
+      field: 'clubApplyPeriod',
+      period: form.clubApplyPeriod
+    }
+  ]
 
   const updateForm = (updates: Partial<FormData>) => {
     const newForm = { ...form, ...updates }
@@ -700,22 +724,26 @@ export default function UnitEditor(props: Props): JSX.Element {
               />
             )}
           </DaycareTypeSelectContainer>
-          <Checkbox
-            disabled={!props.editable}
-            checked={form.careTypes.PRESCHOOL}
-            label={i18n.common.types.PRESCHOOL}
-            onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
-            data-qa="care-type-checkbox-PRESCHOOL"
-          />
-          <Checkbox
-            disabled={!props.editable}
-            checked={form.careTypes.PREPARATORY_EDUCATION}
-            label={i18n.common.types.PREPARATORY_EDUCATION}
-            onChange={(checked) =>
-              updateCareTypes({ PREPARATORY_EDUCATION: checked })
-            }
-            data-qa="care-type-checkbox-PREPARATORY"
-          />
+          {featureFlags.preschoolEnabled && (
+            <>
+              <Checkbox
+                disabled={!props.editable}
+                checked={form.careTypes.PRESCHOOL}
+                label={i18n.common.types.PRESCHOOL}
+                onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
+                data-qa="care-type-checkbox-PRESCHOOL"
+              />
+              <Checkbox
+                disabled={!props.editable}
+                checked={form.careTypes.PREPARATORY_EDUCATION}
+                label={i18n.common.types.PREPARATORY_EDUCATION}
+                onChange={(checked) =>
+                  updateCareTypes({ PREPARATORY_EDUCATION: checked })
+                }
+                data-qa="care-type-checkbox-PREPARATORY"
+              />
+            </>
+          )}
           <Checkbox
             disabled={!props.editable}
             checked={form.careTypes.CLUB}
@@ -728,26 +756,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
         <FixedSpaceColumn>
-          {[
-            {
-              type: 'daycare',
-              checkboxI18n: 'canApplyDaycare',
-              field: 'daycareApplyPeriod',
-              period: form.daycareApplyPeriod
-            },
-            {
-              type: 'preschool',
-              checkboxI18n: 'canApplyPreschool',
-              field: 'preschoolApplyPeriod',
-              period: form.preschoolApplyPeriod
-            },
-            {
-              type: 'club',
-              checkboxI18n: 'canApplyClub',
-              field: 'clubApplyPeriod',
-              period: form.clubApplyPeriod
-            }
-          ].map(({ type, checkboxI18n, field, period }) => {
+          {canApplyTypes.map(({ type, checkboxI18n, field, period }) => {
             return (
               <div key={type}>
                 <Checkbox
@@ -950,12 +959,14 @@ export default function UnitEditor(props: Props): JSX.Element {
               updateForm({ uploadChildrenToVarda })
             }
           />
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.uploadToKoski}
-            checked={form.uploadToKoski}
-            onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
-          />
+          {featureFlags.preschoolEnabled && (
+            <Checkbox
+              disabled={!props.editable}
+              label={i18n.unitEditor.field.uploadToKoski}
+              checked={form.uploadToKoski}
+              onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
+            />
+          )}
           <Checkbox
             disabled={!props.editable}
             label={i18n.unitEditor.field.invoicedByMunicipality}
@@ -1208,26 +1219,32 @@ export default function UnitEditor(props: Props): JSX.Element {
           decisionCustomization.daycareName
         )}
       </FormPart>
-      <FormPart>
-        <label htmlFor="unit-preschool-name">
-          {i18n.unitEditor.label.decisionCustomization.preschoolName}
-        </label>
-        {props.editable ? (
-          <InputField
-            id="unit-preschool-name"
-            placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
-            value={decisionCustomization.preschoolName}
-            width={'L'}
-            onChange={(value) =>
-              updateDecisionCustomization({
-                preschoolName: value
-              })
-            }
-          />
-        ) : (
-          decisionCustomization.preschoolName
-        )}
-      </FormPart>
+      {featureFlags.preschoolEnabled && (
+        <>
+          <FormPart>
+            <label htmlFor="unit-preschool-name">
+              {i18n.unitEditor.label.decisionCustomization.preschoolName}
+            </label>
+            {props.editable ? (
+              <InputField
+                id="unit-preschool-name"
+                placeholder={
+                  i18n.unitEditor.placeholder.decisionCustomization.name
+                }
+                value={decisionCustomization.preschoolName}
+                width={'L'}
+                onChange={(value) =>
+                  updateDecisionCustomization({
+                    preschoolName: value
+                  })
+                }
+              />
+            ) : (
+              decisionCustomization.preschoolName
+            )}
+          </FormPart>
+        </>
+      )}
       <FormPart>
         <div>{i18n.unitEditor.label.decisionCustomization.handler}</div>
         {props.editable ? (
