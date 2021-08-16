@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import org.junit.jupiter.api.Test
@@ -24,18 +25,21 @@ class PeopleTest {
     )
 
     @Test
-    fun `MailAddress basic case`() {
-        val address = MailAddress.fromPerson(testPerson, EvakaMessageProvider())
-        val expected = MailAddress(
+    fun `DecisionSendAddress basic case`() {
+        val address = DecisionSendAddress.fromPerson(testPerson, EvakaMessageProvider())
+        val expected = DecisionSendAddress(
             testPerson.streetAddress!!,
             testPerson.postalCode!!,
-            testPerson.postOffice!!
+            testPerson.postOffice!!,
+            testPerson.streetAddress!!,
+            "${testPerson.postalCode} ${testPerson.postOffice}",
+            ""
         )
         assertEquals(expected, address)
     }
 
     @Test
-    fun `MailAddress handles missing fields`() {
+    fun `DecisionSendAddress handles missing fields`() {
         val testPeople = listOf(
             testPerson.copy(streetAddress = null, postalCode = null, postOffice = null),
             testPerson.copy(streetAddress = "", postalCode = null, postOffice = null),
@@ -46,7 +50,7 @@ class PeopleTest {
 
         testPeople.forEach {
             val messageProvider = EvakaMessageProvider()
-            val address = MailAddress.fromPerson(it, messageProvider)
+            val address = DecisionSendAddress.fromPerson(it, messageProvider)
             assertEquals(messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI), address)
         }
     }

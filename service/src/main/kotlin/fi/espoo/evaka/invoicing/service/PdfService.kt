@@ -5,11 +5,11 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.lowagie.text.pdf.BaseFont
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -133,7 +133,7 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang.name)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily, messageProvider, lang.name)
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
@@ -157,7 +157,6 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
-            "hasPoBox" to (sendAddress.poBox != null),
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
@@ -196,7 +195,7 @@ class PDFService(
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily, messageProvider, lang)
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
@@ -210,7 +209,6 @@ class PDFService(
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "hasPartner" to (decision.partner != null),
-            "hasPoBox" to (sendAddress.poBox != null),
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),

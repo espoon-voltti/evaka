@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.application.utils.helsinkiZone
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
@@ -23,7 +24,6 @@ import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -139,7 +139,7 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-        val sendAddress = MailAddress.fromPerson(recipient, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(recipient, messageProvider, lang)
 
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
@@ -153,7 +153,7 @@ class FeeDecisionService(
             language = lang,
             firstName = recipient.firstName,
             lastName = recipient.lastName,
-            streetAddress = sendAddress.streetAddress,
+            streetAddress = sendAddress.street,
             postalCode = sendAddress.postalCode,
             postOffice = sendAddress.postOffice,
             ssn = recipient.ssn!!,
