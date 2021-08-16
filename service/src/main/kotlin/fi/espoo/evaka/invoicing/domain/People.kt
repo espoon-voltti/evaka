@@ -6,8 +6,6 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageLanguage
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
 import java.util.UUID
@@ -59,27 +57,6 @@ sealed class PersonData {
 
 fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =
     listOf(streetAddress, postalCode, city).none { it.isNullOrBlank() }
-
-data class MailAddress(
-    val streetAddress: String,
-    val postalCode: String,
-    val postOffice: String,
-    val poBox: String? = null
-) {
-    companion object {
-        fun fromPerson(person: PersonData.Detailed, messageProvider: IMessageProvider, lang: String? = "fi") =
-            person.let {
-                if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
-                    MailAddress(person.streetAddress!!, person.postalCode!!, person.postOffice!!)
-                } else {
-                    when (lang) {
-                        "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-                        else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
-                    }
-                }
-            }
-    }
-}
 
 data class FridgeFamily(
     val headOfFamily: PersonData.JustId,

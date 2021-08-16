@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
@@ -192,10 +192,13 @@ class PdfServiceTest {
             it != "parts"
         }
 
-        val expectedSendAddress = MailAddress(
+        val expectedSendAddress = DecisionSendAddress(
             "Kamreerintie 2",
             "02770",
-            "Espoo"
+            "Espoo",
+            "Kamreerintie 2",
+            "02770 Espoo",
+            ""
         )
 
         val expected = mapOf(
@@ -204,7 +207,6 @@ class PdfServiceTest {
             "decisionType" to "NORMAL",
             "isReliefDecision" to false,
             "hasPartner" to true,
-            "hasPoBox" to false,
             "headFullName" to "John Doe",
             "headIncomeEffect" to "INCOME",
             "headIncomeTotal" to "2141,59",
@@ -238,10 +240,13 @@ class PdfServiceTest {
             it != "parts"
         }
 
-        val expectedSendAddress = MailAddress(
+        val expectedSendAddress = DecisionSendAddress(
             "Kamreerintie 2",
             "02770",
-            "Espoo"
+            "Espoo",
+            "Kamreerintie 2",
+            "02770 Espoo",
+            ""
         )
 
         val expected = mapOf(
@@ -250,7 +255,6 @@ class PdfServiceTest {
             "decisionType" to "RELIEF_ACCEPTED",
             "isReliefDecision" to true,
             "hasPartner" to true,
-            "hasPoBox" to false,
             "headFullName" to "John Doe",
             "headIncomeEffect" to "INCOME",
             "headIncomeTotal" to "2141,59",
