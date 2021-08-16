@@ -96,7 +96,7 @@
   },
   "resolutions": {
     "@types/node": "^14.14.6",
-    "xmldom": "github:xmldom/xmldom#0.7.0"
+    "xmldom": "file:./xmldom-0.7.0.tgz"
   },
   "jest": {
     "preset": "ts-jest",
