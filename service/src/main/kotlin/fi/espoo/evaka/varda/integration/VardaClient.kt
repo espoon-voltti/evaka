@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
@@ -140,7 +141,12 @@ class VardaClient(
         }
     }
 
-    data class VardaPersonSearchRequest(val henkilotunnus: String?, val henkilo_oid: String?) {
+    data class VardaPersonSearchRequest(
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        val henkilotunnus: String?,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        val henkilo_oid: String?
+    ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
                 "Both params ssn and oid shouldn't be null"
