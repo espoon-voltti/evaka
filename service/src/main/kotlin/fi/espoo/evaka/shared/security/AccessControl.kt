@@ -165,6 +165,20 @@ class AccessControl(
         )
     }
 
+    fun getPermittedGroupActions(user: AuthenticatedUser, id: GroupId): Set<Action.Group> {
+        val aclRoles: Set<UserRole> by lazy {
+            acl.getRolesForUnitGroup(user, id).roles
+        }
+        return Action.Group.values().asSequence().filter {
+            hasPermission(
+                user = user,
+                getAclRoles = { aclRoles },
+                action = it,
+                mapping = permittedRoleActions::groupActions
+            )
+        }.toSet()
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.GroupPlacement, id: GroupPlacementId) {
         assertPermission(
             user = user,
@@ -226,6 +240,20 @@ class AccessControl(
             action = action,
             mapping = permittedRoleActions::unitActions
         )
+    }
+
+    fun getPermittedUnitActions(user: AuthenticatedUser, id: DaycareId): Set<Action.Unit> {
+        val aclRoles: Set<UserRole> by lazy {
+            acl.getRolesForUnit(user, id).roles
+        }
+        return Action.Unit.values().asSequence().filter {
+            hasPermission(
+                user = user,
+                getAclRoles = { aclRoles },
+                action = it,
+                mapping = permittedRoleActions::unitActions
+            )
+        }.toSet()
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {

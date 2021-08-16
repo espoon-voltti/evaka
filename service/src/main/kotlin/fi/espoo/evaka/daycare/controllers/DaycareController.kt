@@ -31,6 +31,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -51,7 +53,8 @@ import java.util.UUID
 class DaycareController(
     private val daycareService: DaycareService,
     private val caretakerService: CaretakerService,
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
     @GetMapping
     fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
@@ -72,7 +75,7 @@ class DaycareController(
         return db.read { tx ->
             tx.getDaycare(daycareId)?.let { daycare ->
                 val groups = tx.getDaycareGroupSummaries(daycareId)
-                ResponseEntity.ok(DaycareResponse(daycare, groups, currentUserRoles.roles))
+                ResponseEntity.ok(DaycareResponse(daycare, groups, accessControl.getPermittedUnitActions(user, daycareId)))
             }
         } ?: ResponseEntity.notFound().build()
     }
@@ -271,7 +274,7 @@ class DaycareController(
         @RequestBody fields: DaycareFields
     ): ResponseEntity<Daycare> {
         Audit.UnitUpdate.log(targetId = daycareId)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE, daycareId)
         fields.validate()
         return ResponseEntity.ok(
             db.transaction {
@@ -324,4 +327,4 @@ class DaycareController(
     )
 }
 
-data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupSummary>, val currentUserRoles: Set<UserRole>)
+data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupSummary>, val permittedActions: Set<Action.Unit>)

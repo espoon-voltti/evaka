@@ -84,7 +84,7 @@ class UnitsView(
                 placements = placements,
                 backupCares = backupCares,
                 missingGroupPlacements = missingGroupPlacements,
-                caretakers = caretakers
+                caretakers = caretakers,
             )
 
             if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
@@ -119,7 +119,7 @@ data class UnitDataResponse(
     val groupOccupancies: GroupOccupancies? = null,
     val placementProposals: List<PlacementPlanDetails>? = null,
     val placementPlans: List<PlacementPlanDetails>? = null,
-    val applications: List<ApplicationUnitSummary>? = null
+    val applications: List<ApplicationUnitSummary>? = null,
 )
 
 data class Caretakers(

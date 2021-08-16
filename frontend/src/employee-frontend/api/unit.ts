@@ -32,6 +32,7 @@ import DateRange from 'lib-common/date-range'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { UnitProviderType } from 'lib-customizations/types'
 import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
+import { Action } from 'lib-common/generated/action'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -72,14 +73,18 @@ export interface DaycareGroupSummary {
 export interface UnitResponse {
   daycare: Unit
   groups: DaycareGroupSummary[]
-  currentUserRoles: AdRole[]
+  permittedActions: Set<Action.Unit>
 }
 
 export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
     .then(({ data }) =>
-      Success.of({ ...data, daycare: convertUnitJson(data.daycare) })
+      Success.of({
+        ...data,
+        daycare: convertUnitJson(data.daycare),
+        permittedActions: new Set(data.permittedActions)
+      })
     )
     .catch((e) => Failure.fromError(e))
 }
