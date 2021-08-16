@@ -5,6 +5,12 @@
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
+import { format } from 'date-fns'
+
+const currentPreferredStartDate = format(
+  new Date(new Date().getFullYear() + 1, 7, 13),
+  'dd.MM.yyyy'
+)
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)
@@ -54,7 +60,7 @@ export const minimalDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021',
+      preferredStartDate: currentPreferredStartDate,
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -93,7 +99,7 @@ export const minimalDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
@@ -118,7 +124,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021',
+      preferredStartDate: currentPreferredStartDate,
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -219,7 +225,7 @@ export const fullDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
@@ -245,7 +251,7 @@ export const minimalClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021'
+      preferredStartDate: currentPreferredStartDate
     },
     unitPreference: {
       preferredUnits: [
@@ -282,7 +288,7 @@ export const minimalClubForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -305,7 +311,7 @@ export const fullClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021',
+      preferredStartDate: currentPreferredStartDate,
       wasOnClubCare: true,
       wasOnDaycare: true,
       assistanceNeeded: true,
@@ -373,7 +379,7 @@ export const fullClubForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -397,7 +403,7 @@ export const minimalPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021'
+      preferredStartDate: currentPreferredStartDate
     },
     unitPreference: {
       preferredUnits: [
@@ -437,7 +443,7 @@ export const minimalPreschoolForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -459,7 +465,7 @@ export const fullPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.08.2021',
+      preferredStartDate: currentPreferredStartDate,
       connectedDaycare: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -557,7 +563,7 @@ export const fullPreschoolForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      currentPreferredStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
