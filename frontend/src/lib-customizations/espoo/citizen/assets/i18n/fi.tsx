@@ -1277,13 +1277,13 @@ export default {
     },
     moreInfo: {
       title: 'Muita maksuun liittyviä tietoja',
+      studentLabel: 'Oletko opiskelija?',
       student: 'Olen opiskelija.',
       studentInfo:
         'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
       deductions: 'Vähennykset',
       alimony:
         'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
-      otherInfo: 'Lisätietoja',
       otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
     },
     attachments: {

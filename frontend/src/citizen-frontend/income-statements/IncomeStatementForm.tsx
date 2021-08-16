@@ -678,15 +678,17 @@ function OtherInfo({
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.moreInfo.title}</H2>
         <Gap size="m" />
+        <Label>{t.income.moreInfo.studentLabel}</Label>
+        <Gap size="s" />
         <Checkbox
           label={t.income.moreInfo.student}
           checked={formData.student}
           onChange={(value) => onChange({ ...formData, student: value })}
         />
         <Gap size="s" />
-        <Indent>{t.income.moreInfo.studentInfo}</Indent>
+        <P noMargin>{t.income.moreInfo.studentInfo}</P>
         <Gap size="L" />
-        <H3 noMargin>{t.income.moreInfo.deductions}</H3>
+        <Label>{t.income.moreInfo.deductions}</Label>
         <Gap size="s" />
         <Checkbox
           label={t.income.moreInfo.alimony}
@@ -694,8 +696,6 @@ function OtherInfo({
           onChange={(value) => onChange({ ...formData, alimony: value })}
         />
         <Gap size="L" />
-        <H3 noMargin>{t.income.moreInfo.otherInfo}</H3>
-        <Gap size="s" />
         <Label htmlFor="more-info">{t.income.moreInfo.otherInfoLabel}</Label>
         <Gap size="s" />
         <TextArea
