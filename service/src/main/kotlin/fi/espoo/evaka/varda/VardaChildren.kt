@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -206,8 +207,10 @@ data class VardaPersonRequest(
     val lastName: String,
     @JsonProperty("kutsumanimi")
     val nickName: String,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("henkilotunnus")
     val ssn: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("henkilo_oid")
     val personOid: String? = null
 )
