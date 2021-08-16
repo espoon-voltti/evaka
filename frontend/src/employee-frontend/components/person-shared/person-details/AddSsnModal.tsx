@@ -73,7 +73,11 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
         label: i18n.common.cancel
       }}
     >
-      <InputField value={ssn} onChange={(value) => setSsn(value)} />
+      <InputField
+        value={ssn}
+        onChange={(value) => setSsn(value)}
+        data-qa="ssn-input"
+      />
       <Error>
         {error === 'invalid'
           ? i18n.personProfile.ssnInvalid
