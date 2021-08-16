@@ -11,6 +11,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,7 +27,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/daycare-daily-note")
 class DaycareDailyNoteController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
 
     @GetMapping("/daycare/group/{groupId}")
@@ -35,9 +38,7 @@ class DaycareDailyNoteController(
         @PathVariable groupId: GroupId
     ): ResponseEntity<List<DaycareDailyNote>> {
         Audit.DaycareDailyNoteRead.log(user.id)
-
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Group.READ_DAYCARE_DAILY_NOTES, groupId)
 
         return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }

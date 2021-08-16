@@ -55,14 +55,13 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Combobox from 'lib-components/atoms/form/Combobox'
-import { featureFlags } from 'lib-customizations/employee'
-import { UnitAction } from 'employee-frontend/types/action'
+import { Action } from 'lib-common/generated/action'
 
 type Props = {
   unitId: string
   groups: Record<UUID, DaycareGroupSummary>
   mobileEnabled: boolean
-  permittedActions: Set<UnitAction>
+  permittedActions: Set<Action.Unit>
 }
 
 interface FormattedRow {

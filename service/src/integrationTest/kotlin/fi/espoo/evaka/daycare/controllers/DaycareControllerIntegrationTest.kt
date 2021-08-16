@@ -79,10 +79,9 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get daycare`() {
-        val (daycare, _, currentUserRoles) = getDaycare(daycareId)
+        val (daycare, _, _) = getDaycare(daycareId)
 
         db.read { assertEquals(it.getDaycare(daycareId), daycare) }
-        assertEquals(setOf(UserRole.STAFF), currentUserRoles)
     }
 
     @Test
@@ -190,10 +189,10 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(Stats(minimum = 8.5, maximum = 8.5), stats.unitTotalCaretakers)
     }
 
-    private fun getDaycare(daycareId: DaycareId): DaycareResponse {
+    private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         val (_, res, body) = http.get("/daycares/$daycareId")
             .asUser(staffMember)
-            .responseObject<DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()

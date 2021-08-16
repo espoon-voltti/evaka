@@ -74,7 +74,15 @@ export type DailyNote = never
 
 export type Decision = never
 
-export type Group = never
+export type Group =
+  | 'CREATE_CARETAKERS'
+  | 'DELETE'
+  | 'DELETE_CARETAKERS'
+  | 'READ_ABSENCES'
+  | 'READ_CARETAKERS'
+  | 'READ_DAYCARE_DAILY_NOTES'
+  | 'UPDATE'
+  | 'UPDATE_CARETAKERS'
 
 export type GroupPlacement =
   | 'DELETE'
@@ -96,6 +104,7 @@ export type ServiceNeed =
 
 export type Unit =
   | 'ACCEPT_PLACEMENT_PROPOSAL'
+  | 'CREATE_GROUP'
   | 'CREATE_PLACEMENT'
   | 'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
   | 'DELETE_ACL_STAFF'

@@ -27,8 +27,11 @@ import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -85,6 +88,22 @@ class UnitsView(
                 backupCares = backupCares,
                 missingGroupPlacements = missingGroupPlacements,
                 caretakers = caretakers,
+                permittedBackupCareActions = backupCares.associate { backupCare ->
+                    val permittedActions = accessControl.getPermittedBackupCareActions(user, backupCare.id)
+                    (backupCare.id to permittedActions)
+                },
+                permittedPlacementActions = placements.associate { placement ->
+                    val permittedActions = accessControl.getPermittedPlacementActions(user, placement.id)
+                    (placement.id to permittedActions)
+                },
+                permittedGroupPlacementActions = placements.flatMap {
+                    placement ->
+                    placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
+                }
+                    .associate { id ->
+                        val permittedActions = accessControl.getPermittedGroupPlacementActions(user, id)
+                        (id to permittedActions)
+                    }
             )
 
             if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
@@ -120,6 +139,9 @@ data class UnitDataResponse(
     val placementProposals: List<PlacementPlanDetails>? = null,
     val placementPlans: List<PlacementPlanDetails>? = null,
     val applications: List<ApplicationUnitSummary>? = null,
+    val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
+    val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
+    val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>,
 )
 
 data class Caretakers(

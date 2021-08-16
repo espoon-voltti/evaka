@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
+import fi.espoo.evaka.shared.auth.UserRole.MOBILE
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
@@ -134,6 +135,17 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Group(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE(UNIT_SUPERVISOR),
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
+
+        READ_ABSENCES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_DAYCARE_DAILY_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+
+        READ_CARETAKERS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        CREATE_CARETAKERS(UNIT_SUPERVISOR),
+        UPDATE_CARETAKERS(UNIT_SUPERVISOR),
+        DELETE_CARETAKERS(UNIT_SUPERVISOR),
+
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -200,6 +212,8 @@ sealed interface Action {
         READ_PLACEMENT_PLAN(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR),
 
         ACCEPT_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR),
+
+        CREATE_GROUP(UNIT_SUPERVISOR),
 
         READ_ACL(UNIT_SUPERVISOR),
         INSERT_ACL_UNIT_SUPERVISOR(),

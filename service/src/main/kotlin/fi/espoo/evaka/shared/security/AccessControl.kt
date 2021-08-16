@@ -120,6 +120,20 @@ class AccessControl(
         )
     }
 
+    fun getPermittedBackupCareActions(user: AuthenticatedUser, id: BackupCareId): Set<Action.BackupCare> {
+        val aclRoles: Set<UserRole> by lazy {
+            acl.getRolesForBackupCare(user, id).roles
+        }
+        return Action.BackupCare.values().asSequence().filter {
+            hasPermission(
+                user = user,
+                getAclRoles = { aclRoles },
+                action = it,
+                mapping = permittedRoleActions::backupCareActions
+            )
+        }.toSet()
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
         assertPermission(
             user = user,
@@ -188,6 +202,20 @@ class AccessControl(
         )
     }
 
+    fun getPermittedGroupPlacementActions(user: AuthenticatedUser, id: GroupPlacementId): Set<Action.GroupPlacement> {
+        val aclRoles: Set<UserRole> by lazy {
+            acl.getRolesForGroupPlacement(user, id).roles
+        }
+        return Action.GroupPlacement.values().asSequence().filter {
+            hasPermission(
+                user = user,
+                getAclRoles = { aclRoles },
+                action = it,
+                mapping = permittedRoleActions::groupPlacementActions
+            )
+        }.toSet()
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(
             user = user,
@@ -213,6 +241,20 @@ class AccessControl(
             action = action,
             mapping = permittedRoleActions::placementActions
         )
+    }
+
+    fun getPermittedPlacementActions(user: AuthenticatedUser, id: PlacementId): Set<Action.Placement> {
+        val aclRoles: Set<UserRole> by lazy {
+            acl.getRolesForPlacement(user, id).roles
+        }
+        return Action.Placement.values().asSequence().filter {
+            hasPermission(
+                user = user,
+                getAclRoles = { aclRoles },
+                action = it,
+                mapping = permittedRoleActions::placementActions
+            )
+        }.toSet()
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.ServiceNeed, id: ServiceNeedId) {

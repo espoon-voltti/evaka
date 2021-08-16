@@ -33,6 +33,7 @@ import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/commo
 import { UnitProviderType } from 'lib-customizations/types'
 import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
 import { Action } from 'lib-common/generated/action'
+import { mapValues } from 'lodash'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -68,6 +69,7 @@ export async function getDaycares(): Promise<Result<Unit[]>> {
 export interface DaycareGroupSummary {
   id: UUID
   name: string
+  permittedActions: Set<Action.Group>
 }
 
 export interface UnitResponse {
@@ -81,8 +83,12 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
     .then(({ data }) =>
       Success.of({
-        ...data,
         daycare: convertUnitJson(data.daycare),
+        groups: data.groups.map(({ id, name, permittedActions }) => ({
+          id,
+          name,
+          permittedActions: new Set(permittedActions)
+        })),
         permittedActions: new Set(data.permittedActions)
       })
     )
@@ -158,6 +164,9 @@ export type UnitData = {
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
   applications?: ApplicationUnitSummary[]
+  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
 }
 
 export async function getUnitData(
@@ -205,7 +214,19 @@ export async function getUnitData(
                 'fi',
                 { ignorePunctuation: true }
               )
-        })
+        }),
+      permittedPlacementActions: mapValues(
+        response.data.permittedPlacementActions,
+        (actions) => new Set(actions)
+      ),
+      permittedBackupCareActions: mapValues(
+        response.data.permittedBackupCareActions,
+        (actions) => new Set(actions)
+      ),
+      permittedGroupPlacementActions: mapValues(
+        response.data.permittedGroupPlacementActions,
+        (actions) => new Set(actions)
+      )
     })
   } catch (e) {
     console.error(e)

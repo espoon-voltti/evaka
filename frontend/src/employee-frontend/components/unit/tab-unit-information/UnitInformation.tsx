@@ -10,7 +10,7 @@ import { useTranslation } from '../../../state/i18n'
 import { Unit } from '../../../types/unit'
 import { DataList } from '../../common/DataList'
 import { Gap } from 'lib-components/white-space'
-import { UnitAction } from 'employee-frontend/types/action'
+import { Action } from 'lib-common/generated/action'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;
@@ -18,7 +18,7 @@ const DetailsLink = styled(Link)`
 
 interface Props {
   unit: Unit
-  permittedActions: Set<UnitAction>
+  permittedActions: Set<Action.Unit>
 }
 
 function UnitInformation({ unit, permittedActions }: Props) {

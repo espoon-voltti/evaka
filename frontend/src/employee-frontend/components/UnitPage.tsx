@@ -25,15 +25,12 @@ import { UnitContext } from '../state/unit'
 import TabPlacementProposals from '../components/unit/TabPlacementProposals'
 import TabWaitingConfirmation from '../components/unit/TabWaitingConfirmation'
 import TabApplications from '../components/unit/TabApplications'
-import { requireRole } from '../utils/roles'
-import { UserContext } from '../state/user'
 import { useQuery } from '../utils/useQuery'
 import LocalDate from 'lib-common/local-date'
 
 export default React.memo(function UnitPage() {
   const { id } = useParams<{ id: UUID }>()
   const { i18n } = useTranslation()
-  const { roles } = useContext(UserContext)
   const { setTitle } = useContext<TitleState>(TitleContext)
   const {
     unitInformation,
@@ -96,13 +93,8 @@ export default React.memo(function UnitPage() {
           .map((data) => data.missingGroupPlacements.length)
           .getOrElse(undefined)
       },
-      ...(requireRole(
-        roles,
-        'ADMIN',
-        'SERVICE_WORKER',
-        'FINANCE_ADMIN',
-        'UNIT_SUPERVISOR'
-      )
+      ...(unitInformation.isSuccess &&
+      unitInformation.value.permittedActions.has('READ_DETAILED')
         ? [
             {
               id: 'waiting-confirmation',
@@ -125,7 +117,7 @@ export default React.memo(function UnitPage() {
           ]
         : [])
     ],
-    [i18n, unitData] // eslint-disable-line react-hooks/exhaustive-deps
+    [i18n, unitData, unitInformation] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const RedirectToUnitInfo = useCallback(
