@@ -208,7 +208,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               </RequireRole>
 
               {featureFlags.messaging &&
-                (featureFlags.experimental?.mobileDailyNotes ||
+                (featureFlags.experimental?.employeeMobile ||
                   hasPilotAccess) && (
                   <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
                     <NavbarLink

@@ -24,7 +24,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { isPilotUnit } from '../../constants'
 import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
 import { requireRole } from '../../utils/roles'
@@ -118,8 +117,8 @@ const appendMessageAndMoveThreadToTopOfList =
       ]
     })
 
-const isPilotUnitAccount = (acc: MessageAccount) =>
-  isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)
+const isEnabledUnitAccount = (acc: MessageAccount) =>
+  isGroupMessageAccount(acc) && featureFlags.messaging(acc.daycareGroup.unitId)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
@@ -137,14 +136,12 @@ export const MessageContextProvider = React.memo(
     )
     const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
       if (res.isSuccess) {
-        setPilotAccess((prev) => prev || res.value.some(isPilotUnitAccount))
+        setPilotAccess((prev) => prev || res.value.some(isEnabledUnitAccount))
         setAccounts(
           res.map((val) =>
             val.filter(
               (acc) =>
-                featureFlags.experimental?.mobileDailyNotes ||
-                isPilotUnitAccount(acc) ||
-                isPersonalMessageAccount(acc)
+                isEnabledUnitAccount(acc) || isPersonalMessageAccount(acc)
             )
           )
         )

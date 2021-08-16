@@ -64,7 +64,6 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { isPilotUnit } from '../../../../constants'
 import { RequireRole } from 'employee-frontend/utils/roles'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -147,6 +146,7 @@ function Group({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const employeeMobileEnabled = featureFlags.employeeMobile(unit.id)
   const [selectedDaycareDailyNote, setSelectedDaycareDailyNote] =
     useState<DaycareDailyNoteAndChildInfo>({
       daycareDailyNote: null,
@@ -254,89 +254,86 @@ function Group({
   ) => {
     const childNote = getChildNote(placement.child.id)
     const groupNote = getGroupNote(group.id)
+
+    if (!employeeMobileEnabled) return null
+
     return (
       <>
-        {groupDaycareDailyNotes.isLoading &&
-          (featureFlags.experimental?.mobileDailyNotes ||
-            isPilotUnit(unit.id)) && <SpinnerSegment />}
-        {groupDaycareDailyNotes.isFailure &&
-          (featureFlags.experimental?.mobileDailyNotes ||
-            isPilotUnit(unit.id)) && (
-            <ErrorSegment title={i18n.common.loadingFailed} compact />
-          )}
-        {groupDaycareDailyNotes.isSuccess &&
-          (featureFlags.experimental?.mobileDailyNotes ||
-            isPilotUnit(unit.id)) && (
-            <Tooltip
-              data-qa={`daycare-daily-note-hover-${placement.child.id}`}
-              up
-              tooltip={
-                childNote ? (
-                  <div>
-                    <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
-                    <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
-                    <p>{childNote.note}</p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
-                    <p>
-                      {childNote.feedingNote
-                        ? i18n.unit.groups.daycareDailyNote.level[
-                            childNote.feedingNote
+        {groupDaycareDailyNotes.isLoading && <SpinnerSegment />}
+        {groupDaycareDailyNotes.isFailure && (
+          <ErrorSegment title={i18n.common.loadingFailed} compact />
+        )}
+        {groupDaycareDailyNotes.isSuccess && (
+          <Tooltip
+            data-qa={`daycare-daily-note-hover-${placement.child.id}`}
+            up
+            tooltip={
+              childNote ? (
+                <div>
+                  <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+                  <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
+                  <p>{childNote.note}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+                  <p>
+                    {childNote.feedingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.feedingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+                  <p>{formatSleepingTooltipText(childNote)}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+                  <p>
+                    {childNote.reminders
+                      .map(
+                        (reminder) =>
+                          i18n.unit.groups.daycareDailyNote.reminderType[
+                            reminder
                           ]
-                        : ''}
-                    </p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
-                    <p>{formatSleepingTooltipText(childNote)}</p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
-                    <p>
-                      {childNote.reminders
-                        .map(
-                          (reminder) =>
-                            i18n.unit.groups.daycareDailyNote.reminderType[
-                              reminder
-                            ]
-                        )
-                        .join(',')}
-                    </p>
-                    <h5>
-                      {
-                        i18n.unit.groups.daycareDailyNote
-                          .otherThingsToRememberHeader
-                      }
-                    </h5>
-                    <p>{childNote.reminderNote}</p>
-                    {groupNote && (
-                      <>
-                        <h5>
-                          {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
-                        </h5>
-                        <p>{groupNote.note}</p>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
-                )
-              }
-            >
-              <RoundIcon
-                active={childNote != null || groupNote != null}
-                data-qa={`daycare-daily-note-icon-${placement.child.id}`}
-                content={faStickyNote}
-                color={colors.blues.primary}
-                size="m"
-                onClick={() => {
-                  setSelectedDaycareDailyNote({
-                    daycareDailyNote: childNote || null,
-                    groupId: null,
-                    childId: placement.child.id,
-                    childFirstName: placement.child.firstName || '',
-                    childLastName: placement.child.lastName || ''
-                  })
-                  toggleUiMode(`daycare-daily-note-edit-${group.id}`)
-                }}
-              />
-            </Tooltip>
-          )}
+                      )
+                      .join(',')}
+                  </p>
+                  <h5>
+                    {
+                      i18n.unit.groups.daycareDailyNote
+                        .otherThingsToRememberHeader
+                    }
+                  </h5>
+                  <p>{childNote.reminderNote}</p>
+                  {groupNote && (
+                    <>
+                      <h5>
+                        {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+                      </h5>
+                      <p>{groupNote.note}</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
+              )
+            }
+          >
+            <RoundIcon
+              active={childNote != null || groupNote != null}
+              data-qa={`daycare-daily-note-icon-${placement.child.id}`}
+              content={faStickyNote}
+              color={colors.blues.primary}
+              size="m"
+              onClick={() => {
+                setSelectedDaycareDailyNote({
+                  daycareDailyNote: childNote || null,
+                  groupId: null,
+                  childId: placement.child.id,
+                  childFirstName: placement.child.firstName || '',
+                  childLastName: placement.child.lastName || ''
+                })
+                toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+              }}
+            />
+          </Tooltip>
+        )}
       </>
     )
   }
@@ -502,8 +499,7 @@ function Group({
               <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
-                    {(featureFlags.experimental?.mobileDailyNotes ||
-                      isPilotUnit(unit.id)) && (
+                    {employeeMobileEnabled && (
                       <RequireRole
                         oneOf={[
                           'ADMIN',
@@ -554,8 +550,7 @@ function Group({
                         className={'group-placement-row'}
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
-                        {(featureFlags.experimental?.mobileDailyNotes ||
-                          isPilotUnit(unit.id)) && (
+                        {employeeMobileEnabled && (
                           <RequireRole
                             oneOf={[
                               'ADMIN',
@@ -663,8 +658,7 @@ function Group({
                   })}
                 </Tbody>
               </Table>
-              {(featureFlags.experimental?.mobileDailyNotes ||
-                isPilotUnit(unit.id)) && (
+              {employeeMobileEnabled && (
                 <RequireRole
                   oneOf={[
                     'ADMIN',
