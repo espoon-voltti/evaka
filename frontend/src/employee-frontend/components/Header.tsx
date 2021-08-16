@@ -79,7 +79,7 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { hasPilotAccess, accounts } = useContext(MessageContext)
+  const { accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
@@ -207,23 +207,21 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               </RequireRole>
 
-              {featureFlags.messaging &&
-                (featureFlags.experimental?.employeeMobile ||
-                  hasPilotAccess) && (
-                  <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
-                    <NavbarLink
-                      onClick={() => setPopupVisible(false)}
-                      className="navbar-item is-tab"
-                      to="/messages"
-                      data-qa="messages-nav"
-                    >
-                      {i18n.header.messages}
-                      {unreadCount > 0 && (
-                        <UnreadCount>{unreadCount}</UnreadCount>
-                      )}
-                    </NavbarLink>
-                  </RequireRole>
-                )}
+              {accounts.isSuccess && accounts.value.length > 0 && (
+                <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
+                  <NavbarLink
+                    onClick={() => setPopupVisible(false)}
+                    className="navbar-item is-tab"
+                    to="/messages"
+                    data-qa="messages-nav"
+                  >
+                    {i18n.header.messages}
+                    {unreadCount > 0 && (
+                      <UnreadCount>{unreadCount}</UnreadCount>
+                    )}
+                  </NavbarLink>
+                </RequireRole>
+              )}
             </NavbarStart>
           )}
 

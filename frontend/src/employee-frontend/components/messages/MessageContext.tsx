@@ -49,7 +49,6 @@ const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  hasPilotAccess: boolean
   accounts: Result<MessageAccount[]>
   loadAccounts: () => void
   selectedDraft: DraftContent | undefined
@@ -75,7 +74,6 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  hasPilotAccess: false,
   accounts: Loading.of(),
   loadAccounts: () => undefined,
   selectedDraft: undefined,
@@ -117,9 +115,6 @@ const appendMessageAndMoveThreadToTopOfList =
       ]
     })
 
-const isEnabledUnitAccount = (acc: MessageAccount) =>
-  isGroupMessageAccount(acc) && featureFlags.messaging(acc.daycareGroup.unitId)
-
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const { roles } = useContext(UserContext)
@@ -127,7 +122,6 @@ export const MessageContextProvider = React.memo(
       () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
       [roles]
     )
-    const [hasPilotAccess, setPilotAccess] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
 
@@ -136,12 +130,13 @@ export const MessageContextProvider = React.memo(
     )
     const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
       if (res.isSuccess) {
-        setPilotAccess((prev) => prev || res.value.some(isEnabledUnitAccount))
         setAccounts(
           res.map((val) =>
             val.filter(
               (acc) =>
-                isEnabledUnitAccount(acc) || isPersonalMessageAccount(acc)
+                (isGroupMessageAccount(acc) &&
+                  featureFlags.messaging(acc.daycareGroup.unitId)) ||
+                isPersonalMessageAccount(acc)
             )
           )
         )
@@ -296,7 +291,6 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,
@@ -321,7 +315,6 @@ export const MessageContextProvider = React.memo(
         refreshMessages
       }),
       [
-        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,
