@@ -19,3 +19,12 @@ VALUES (
     '[2021-08-01,2022-06-03]',
     '[2021-01-08,2021-01-20]'
 );
+
+-- 2022-2023
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+           '[2022-08-10,2023-06-03]',
+           '[2022-08-10,2023-06-03]',
+           '[2022-08-01,2023-06-03]',
+           '[2022-01-08,2022-01-20]'
+       );
