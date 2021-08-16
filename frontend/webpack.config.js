@@ -30,12 +30,12 @@ function resolveIcons() {
   switch (process.env.ICONS) {
     case 'pro':
       console.info('Using pro icons (forced)')
-      return 'pro';
+      return 'pro'
     case 'free':
       console.info('Using free icons (forced)')
-      return 'free';
+      return 'free'
     case undefined:
-      break;
+      break
     default:
       throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
   }
@@ -130,7 +130,17 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
             {
               loader: 'babel-loader',
               options: {
-                presets: ['@babel/preset-env']
+                presets: ['@babel/preset-env'],
+                plugins: [
+                  [
+                    'babel-plugin-styled-components',
+                    {
+                      displayName: isDevServer,
+                      fileName: false,
+                      pure: true
+                    }
+                  ]
+                ]
               }
             },
             {

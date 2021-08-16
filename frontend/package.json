@@ -38,6 +38,7 @@
     "@fortawesome/react-fontawesome": "0.1.14",
     "@sentry/browser": "^6.10.0",
     "axios": "^0.21.1",
+    "babel-plugin-styled-components": "^1.13.2",
     "chart.js": "^2.9.4",
     "chartjs-adapter-date-fns": "^1.0.0",
     "citizen-frontend": "link:src/citizen-frontend",
