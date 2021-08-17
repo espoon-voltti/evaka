@@ -170,10 +170,10 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             }
 
             logger.info { "VardaUpdate: successfully deleted data for child $evakaChildId (varda id $vardaChildId)" }
-            return true
+            true
         } catch (e: Exception) {
             logger.info("VardaUpdate: couldn't reset varda child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}")
-            return false
+            false
         }
     }
 
