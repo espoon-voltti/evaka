@@ -22,7 +22,6 @@ import styled from 'styled-components'
 import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
-import { RequireRole } from '../utils/roles'
 import { MessageContext } from './messages/MessageContext'
 
 const Img = styled.img`
@@ -120,9 +119,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
         >
           {loggedIn && user && (
             <NavbarStart>
-              <RequireRole
-                oneOf={['SERVICE_WORKER', 'ADMIN', 'SPECIAL_EDUCATION_TEACHER']}
-              >
+              {user.accessibleFeatures.applications && (
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
@@ -132,18 +129,9 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 >
                   {i18n.header.applications}
                 </NavbarLink>
-              </RequireRole>
+              )}
 
-              <RequireRole
-                oneOf={[
-                  'SERVICE_WORKER',
-                  'UNIT_SUPERVISOR',
-                  'STAFF',
-                  'FINANCE_ADMIN',
-                  'ADMIN',
-                  'SPECIAL_EDUCATION_TEACHER'
-                ]}
-              >
+              {user.accessibleFeatures.units && (
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
@@ -152,17 +140,9 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 >
                   {i18n.header.units}
                 </NavbarLink>
-              </RequireRole>
+              )}
 
-              <RequireRole
-                oneOf={[
-                  'ADMIN',
-                  'SERVICE_WORKER',
-                  'FINANCE_ADMIN',
-                  'UNIT_SUPERVISOR',
-                  'SPECIAL_EDUCATION_TEACHER'
-                ]}
-              >
+              {user.accessibleFeatures.personSearch && (
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className={`navbar-item is-tab ${
@@ -173,30 +153,20 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 >
                   {i18n.header.search}
                 </NavbarLink>
-              </RequireRole>
+              )}
 
-              <RequireRole oneOf={['FINANCE_ADMIN']}>
-                <>
-                  <NavbarLink
-                    onClick={() => setPopupVisible(false)}
-                    className="navbar-item is-tab"
-                    to="/finance"
-                    data-qa="finance-nav"
-                  >
-                    {i18n.header.finance}
-                  </NavbarLink>
-                </>
-              </RequireRole>
+              {user.accessibleFeatures.finance && (
+                <NavbarLink
+                  onClick={() => setPopupVisible(false)}
+                  className="navbar-item is-tab"
+                  to="/finance"
+                  data-qa="finance-nav"
+                >
+                  {i18n.header.finance}
+                </NavbarLink>
+              )}
 
-              <RequireRole
-                oneOf={[
-                  'SERVICE_WORKER',
-                  'FINANCE_ADMIN',
-                  'UNIT_SUPERVISOR',
-                  'DIRECTOR',
-                  'SPECIAL_EDUCATION_TEACHER'
-                ]}
-              >
+              {user.accessibleFeatures.reports && (
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
@@ -205,24 +175,23 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 >
                   {i18n.header.reports}
                 </NavbarLink>
-              </RequireRole>
+              )}
 
               {featureFlags.messaging &&
                 (featureFlags.experimental?.mobileDailyNotes ||
-                  hasPilotAccess) && (
-                  <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
-                    <NavbarLink
-                      onClick={() => setPopupVisible(false)}
-                      className="navbar-item is-tab"
-                      to="/messages"
-                      data-qa="messages-nav"
-                    >
-                      {i18n.header.messages}
-                      {unreadCount > 0 && (
-                        <UnreadCount>{unreadCount}</UnreadCount>
-                      )}
-                    </NavbarLink>
-                  </RequireRole>
+                  hasPilotAccess) &&
+                user.accessibleFeatures.messages && (
+                  <NavbarLink
+                    onClick={() => setPopupVisible(false)}
+                    className="navbar-item is-tab"
+                    to="/messages"
+                    data-qa="messages-nav"
+                  >
+                    {i18n.header.messages}
+                    {unreadCount > 0 && (
+                      <UnreadCount>{unreadCount}</UnreadCount>
+                    )}
+                  </NavbarLink>
                 )}
             </NavbarStart>
           )}
@@ -243,7 +212,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {popupVisible && (
             <UserPopup>
               <FixedSpaceColumn spacing={'m'}>
-                <RequireRole oneOf={['ADMIN']}>
+                {user?.accessibleFeatures.employees && (
                   <Link
                     to={`/employees`}
                     onClick={() => setPopupVisible(false)}
@@ -251,9 +220,9 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   >
                     {i18n.employees.title}
                   </Link>
-                </RequireRole>
-                {featureFlags.financeBasicsPage && (
-                  <RequireRole oneOf={['FINANCE_ADMIN']}>
+                )}
+                {featureFlags.financeBasicsPage &&
+                  user?.accessibleFeatures.financeBasics && (
                     <Link
                       to="/finance/basics"
                       onClick={() => setPopupVisible(false)}
@@ -261,10 +230,9 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     >
                       {i18n.financeBasics.title}
                     </Link>
-                  </RequireRole>
-                )}
-                {featureFlags.experimental?.vasu && (
-                  <RequireRole oneOf={['ADMIN']}>
+                  )}
+                {featureFlags.experimental?.vasu &&
+                  user?.accessibleFeatures.vasuTemplates && (
                     <Link
                       to="/vasu-templates"
                       onClick={() => setPopupVisible(false)}
@@ -272,8 +240,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     >
                       {i18n.vasuTemplates.title}
                     </Link>
-                  </RequireRole>
-                )}
+                  )}
                 <Link
                   to={`/pin-code`}
                   onClick={() => setPopupVisible(false)}

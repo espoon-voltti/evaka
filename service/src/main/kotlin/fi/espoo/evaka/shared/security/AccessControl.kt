@@ -32,6 +32,42 @@ class AccessControl(
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
+    fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
+        EmployeeFeatures(
+            applications = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.SERVICE_WORKER,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            ),
+            employees = user.hasOneOfRoles(UserRole.ADMIN),
+            financeBasics = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
+            finance = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
+            messages = user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF),
+            personSearch = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.SERVICE_WORKER,
+                UserRole.FINANCE_ADMIN,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            ),
+            reports = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.DIRECTOR,
+                UserRole.SERVICE_WORKER,
+                UserRole.FINANCE_ADMIN,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            ),
+            units = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.SERVICE_WORKER,
+                UserRole.FINANCE_ADMIN,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.STAFF,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            ),
+            vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
+        )
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
         assertGlobalPermission(user, action, permittedRoleActions::globalActions)
@@ -197,7 +233,11 @@ class AccessControl(
         )
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuTemplate, @Suppress("UNUSED_PARAMETER") id: VasuTemplateId) {
+    fun requirePermissionFor(
+        user: AuthenticatedUser,
+        action: Action.VasuTemplate,
+        @Suppress("UNUSED_PARAMETER") id: VasuTemplateId
+    ) {
         // VasuTemplate actions in Espoo are global so the id parameter is ignored
         assertGlobalPermission(user, action, permittedRoleActions::vasuTemplateActions)
     }

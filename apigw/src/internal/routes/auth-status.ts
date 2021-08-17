@@ -38,7 +38,8 @@ export default toRequestHandler(async (req, res) => {
         firstName,
         lastName,
         globalRoles,
-        allScopedRoles
+        allScopedRoles,
+        accessibleFeatures
       } = await getEmployeeDetails(req, user.id)
       const name = [firstName, lastName].filter((x) => !!x).join(' ')
 
@@ -54,7 +55,7 @@ export default toRequestHandler(async (req, res) => {
 
       res.status(200).json({
         loggedIn: true,
-        user: { id, name },
+        user: { id, name, accessibleFeatures: accessibleFeatures ?? {} },
         globalRoles,
         allScopedRoles,
         roles: [...globalRoles, ...allScopedRoles]
