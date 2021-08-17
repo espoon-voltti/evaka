@@ -177,11 +177,11 @@ fun getVardaChildIdsByEvakaChildId(db: Database.Connection, evakaChildId: UUID):
     return db.read {
         it.createQuery(
             """
-            select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId
+            select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId and varda_child_id is not null 
             union
             select varda_child_id from varda_organizer_child where evaka_person_id = :evakaChildId
             union
-            select varda_child_id from varda_child where person_id = :evakaChildId
+            select varda_child_id from varda_child where person_id = :evakaChildId and varda_child_id is not null
             """.trimIndent()
         )
             .bind("evakaChildId", evakaChildId)
@@ -741,10 +741,14 @@ SELECT
 FROM service_need sn
 LEFT JOIN service_need_option option ON sn.option_id = option.id
 LEFT JOIN placement ON sn.placement_id = placement.id
+LEFT JOIN daycare ON daycare.id = placement.unit_id
 WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
+AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
+AND daycare.invoiced_by_municipality = true
 """
     )
         .bind("startingFrom", startingFrom)
+        .bind("vardaPlacementTypes", vardaPlacementTypes)
         .mapTo<VardaServiceNeed>()
         .list()
 
@@ -918,10 +922,13 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         JOIN daycare d ON p.unit_id = d.id
         LEFT JOIN application_view a ON daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate AND a.preferredstartdate=(select max(preferredstartdate) from application_view a where daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate)
         WHERE sn.id = :id
+        AND p.type = ANY(:vardaPlacementTypes::placement_type[])
+        AND d.invoiced_by_municipality = true
     """.trimIndent()
 
     return createQuery(sql)
         .bind("id", id)
+        .bind("vardaPlacementTypes", vardaPlacementTypes)
         .mapTo<EvakaServiceNeedInfoForVarda>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }

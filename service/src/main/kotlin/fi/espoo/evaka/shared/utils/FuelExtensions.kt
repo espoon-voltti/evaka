@@ -60,6 +60,7 @@ fun Request.responseStringWithRetries(
     remainingTries: Int = 5,
     errorCallback: (r: ErrorResponseResultOf, remainingTries: Int) -> ResponseResultOf<String> = { r, _ -> r }
 ): ResponseResultOf<String> {
+    val maxWaitSeconds = 600L
     val responseResult = responseString()
     val (request, response, result) = responseResult
 
@@ -76,6 +77,9 @@ fun Request.responseStringWithRetries(
                 } else {
                     val retryAfter = response[Headers.RETRY_AFTER].firstOrNull()?.toLong()
                         ?: throw IllegalStateException("Failed to find a valid Retry-After header with throttle response")
+
+                    if (retryAfter > maxWaitSeconds) throw IllegalStateException("Aborting fuel request after too big Retry-After value: $retryAfter seconds")
+
                     TimeUnit.SECONDS.sleep(retryAfter)
                     this.responseStringWithRetries(remainingTries - 1)
                 }
