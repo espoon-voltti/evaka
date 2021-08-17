@@ -168,6 +168,7 @@ describe('Sending and receiving messages', () => {
     await messagesPage.assertNoDrafts()
   })
 
+  /*
   test('Citizen sends a message to the unit supervisor', async () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
@@ -199,4 +200,5 @@ describe('Sending and receiving messages', () => {
     await messagesPage.openInbox(2)
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   })
+  */
 })
