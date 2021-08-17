@@ -310,7 +310,6 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
 }
 
 fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate): Boolean {
-    var succeeded = true
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
         val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
@@ -318,18 +317,15 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
 
         if (errors.isNotEmpty()) {
-            logger.error(errors.joinToString(","))
-            db.transaction {
-                it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors)
-                succeeded = false
-            }
+            db.transaction { it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors) }
+            error(errors)
         }
     } catch (e: Exception) {
         logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
-        succeeded = false
+        return false
     }
 
-    return succeeded
+    return true
 }
 
 fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate): List<ServiceNeedId> {
