@@ -42,7 +42,7 @@ class AccessControl(
             employees = user.hasOneOfRoles(UserRole.ADMIN),
             financeBasics = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
             finance = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
-            messages = user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF),
+            messages = isMessagingEnabled(user),
             personSearch = user.hasOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.SERVICE_WORKER,
@@ -68,6 +68,10 @@ class AccessControl(
             ),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
         )
+
+    private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
+        return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING).hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR)
+    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
         assertGlobalPermission(user, action, permittedRoleActions::globalActions)

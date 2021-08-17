@@ -47,7 +47,7 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/decisions" data-qa="nav-decisions">
               {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
-            {featureFlags.messaging && (
+            {featureFlags.messaging && user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}
                 {unreadMessagesCount > 0 ? (

@@ -79,6 +79,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -422,6 +423,7 @@ RETURNING id
             tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
             tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
             tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
+            tx.execute("UPDATE daycare SET enabled_pilot_features = '{MESSAGING}'")
         }
     }
 
@@ -837,7 +839,8 @@ data class DevDaycare(
     val ophOrganizerOid: String? = "1.2.3.4.5",
     val ophOrganizationOid: String? = "1.2.3.4.5",
     val roundTheClock: Boolean? = false,
-    val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5)
+    val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5),
+    val enabledPilotFeatures: Set<PilotFeature> = setOf(PilotFeature.MESSAGING)
 )
 
 data class DevDaycareGroup(

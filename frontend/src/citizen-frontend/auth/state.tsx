@@ -17,9 +17,16 @@ export type Person = {
   socialSecurityNumber: string
 }
 
+export type AccessibleFeatures = {
+  applications: boolean
+  decisions: boolean
+  messages: boolean
+}
+
 export type User = Person & {
   children: Person[]
   userType: 'ENDUSER' | 'CITIZEN_WEAK'
+  accessibleFeatures: AccessibleFeatures
 }
 
 type AuthState = {

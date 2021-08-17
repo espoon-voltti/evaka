@@ -78,7 +78,7 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { hasPilotAccess, accounts } = useContext(MessageContext)
+  const { accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
@@ -177,22 +177,17 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               )}
 
-              {featureFlags.messaging &&
-                (featureFlags.experimental?.mobileDailyNotes ||
-                  hasPilotAccess) &&
-                user.accessibleFeatures.messages && (
-                  <NavbarLink
-                    onClick={() => setPopupVisible(false)}
-                    className="navbar-item is-tab"
-                    to="/messages"
-                    data-qa="messages-nav"
-                  >
-                    {i18n.header.messages}
-                    {unreadCount > 0 && (
-                      <UnreadCount>{unreadCount}</UnreadCount>
-                    )}
-                  </NavbarLink>
-                )}
+              {featureFlags.messaging && user.accessibleFeatures.messages && (
+                <NavbarLink
+                  onClick={() => setPopupVisible(false)}
+                  className="navbar-item is-tab"
+                  to="/messages"
+                  data-qa="messages-nav"
+                >
+                  {i18n.header.messages}
+                  {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+                </NavbarLink>
+              )}
             </NavbarStart>
           )}
 

@@ -6,6 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
+import { getAuthStatus } from 'employee-frontend/api/auth'
 import { SelectOption } from 'employee-frontend/components/common/Select'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
@@ -19,15 +20,11 @@ import { featureFlags } from 'lib-customizations/employee'
 import React, {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState
 } from 'react'
-import { isPilotUnit } from '../../constants'
-import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
-import { requireRole } from '../../utils/roles'
 import {
   getMessageDrafts,
   getMessagingAccounts,
@@ -39,7 +36,6 @@ import {
 } from './api'
 import {
   DraftContent,
-  isGroupMessageAccount,
   isPersonalMessageAccount,
   MessageAccount,
   SentMessage
@@ -50,7 +46,6 @@ const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  hasPilotAccess: boolean
   accounts: Result<MessageAccount[]>
   loadAccounts: () => void
   selectedDraft: DraftContent | undefined
@@ -76,7 +71,6 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  hasPilotAccess: false,
   accounts: Loading.of(),
   loadAccounts: () => undefined,
   selectedDraft: undefined,
@@ -118,32 +112,21 @@ const appendMessageAndMoveThreadToTopOfList =
       ]
     })
 
-const isPilotUnitAccount = (acc: MessageAccount) =>
-  isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)
-
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const { roles } = useContext(UserContext)
-    const hasRequiredRoleForMessaging = useMemo(
-      () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
-      [roles]
-    )
-    const [hasPilotAccess, setPilotAccess] = useState(false)
-
     const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
+    const auth = useMemo(() => getAuthStatus(), [])
 
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
     )
     const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
       if (res.isSuccess) {
-        setPilotAccess((prev) => prev || res.value.some(isPilotUnitAccount))
         setAccounts(
           res.map((val) =>
             val.filter(
               (acc) =>
                 featureFlags.experimental?.mobileDailyNotes ||
-                isPilotUnitAccount(acc) ||
                 isPersonalMessageAccount(acc)
             )
           )
@@ -156,8 +139,8 @@ export const MessageContextProvider = React.memo(
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
-      if (hasRequiredRoleForMessaging) loadAccounts()
-    }, [hasRequiredRoleForMessaging, loadAccounts])
+      void auth.then(({ loggedIn }) => (loggedIn ? loadAccounts() : null))
+    }, [loadAccounts, auth])
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(
@@ -299,7 +282,6 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,
@@ -324,7 +306,6 @@ export const MessageContextProvider = React.memo(
         refreshMessages
       }),
       [
-        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,
