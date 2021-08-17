@@ -40,6 +40,7 @@ import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
@@ -356,6 +357,17 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL)
+
+        updateChildData(db, vardaClient, since, feeDecisionMinDate)
+        assertVardaElementCounts(0, 0, 0)
+    }
+
+    @Test
+    fun `updateChildData does not react to new evaka service for non varda unit`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testDaycareNotInvoiced.id)
 
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
@@ -751,12 +763,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertEquals(expectedDeletes, diff.deletes.size)
     }
 
-    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(), placementType: PlacementType = PlacementType.DAYCARE): ServiceNeedId {
+    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(), placementType: PlacementType = PlacementType.DAYCARE, unitId: DaycareId = testDaycare.id): ServiceNeedId {
         var serviceNeedId = ServiceNeedId(UUID.randomUUID())
         db.transaction { tx ->
             FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
                 .addChild().usePerson(child).saveAnd {
-                    addPlacement().ofType(placementType).toUnit(testDaycare.id).fromDay(fromDays).toDay(toDays).saveAnd {
+                    addPlacement().ofType(placementType).toUnit(unitId).fromDay(fromDays).toDay(toDays).saveAnd {
                         addServiceNeed()
                             .withId(serviceNeedId)
                             .withUpdated(updated)

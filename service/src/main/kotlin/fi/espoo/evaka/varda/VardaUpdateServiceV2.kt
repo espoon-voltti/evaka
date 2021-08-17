@@ -741,8 +741,10 @@ SELECT
 FROM service_need sn
 LEFT JOIN service_need_option option ON sn.option_id = option.id
 LEFT JOIN placement ON sn.placement_id = placement.id
+LEFT JOIN daycare ON daycare.id = placement.unit_id
 WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
+AND daycare.invoiced_by_municipality = true
 """
     )
         .bind("startingFrom", startingFrom)
@@ -921,6 +923,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         LEFT JOIN application_view a ON daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate AND a.preferredstartdate=(select max(preferredstartdate) from application_view a where daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate)
         WHERE sn.id = :id
         AND p.type = ANY(:vardaPlacementTypes::placement_type[])
+        AND d.invoiced_by_municipality = true
     """.trimIndent()
 
     return createQuery(sql)
