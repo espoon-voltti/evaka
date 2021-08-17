@@ -84,11 +84,16 @@ class VardaUpdateServiceV2(
                 val childServiceNeeds = db.read { it.getServiceNeedsByChild(childId) }
                 logger.info("VardaUpdate: will send ${childServiceNeeds.size} service needs for child $childId")
                 try {
-                    childServiceNeeds.forEach { serviceNeed ->
+                    val allSucceeded = childServiceNeeds.map { serviceNeed ->
                         handleNewEvakaServiceNeed(db, client, serviceNeed.id, feeDecisionMinDate)
+                    }.all { it }
+
+                    if (allSucceeded) {
+                        db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
+                        logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
+                    } else {
+                        logger.info("VardaUpdate: failed to send one or more service needs for child $childId")
                     }
-                    db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
-                    logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
                 } catch (e: Exception) {
                     logger.warn("VardaUpdate: could not add service need for reset child $childId: ${e.message} - full reset will be retried next time")
                 }
@@ -121,12 +126,14 @@ class VardaUpdateServiceV2(
 }
 
 fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
-    logger.info("VardaUpdate: resetting all varda data for evaka child $evakaChildId")
-
     val vardaChildIds = getVardaChildIdsByEvakaChildId(db, evakaChildId)
+
+    logger.info("VardaUpdate: resetting all varda data for evaka child $evakaChildId, varda child ids: ${vardaChildIds.joinToString(",")}")
 
     val successfulDeletes: List<Boolean> = vardaChildIds.map { vardaChildId ->
         try {
+            logger.info { "VardaUpdate: resetting data for evaka child $evakaChildId, varda child $vardaChildId" }
+
             val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
             logger.info { "VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
@@ -302,7 +309,8 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
     }
 }
 
-fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate) {
+fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate): Boolean {
+    var succeeded = true
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
         val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
@@ -313,11 +321,15 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
             logger.error(errors.joinToString(","))
             db.transaction {
                 it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors)
+                succeeded = false
             }
         }
     } catch (e: Exception) {
         logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        succeeded = false
     }
+
+    return succeeded
 }
 
 fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate): List<ServiceNeedId> {
