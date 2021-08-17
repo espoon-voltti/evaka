@@ -459,7 +459,7 @@ function VoucherServiceProviderUnit() {
                             tooltip={<div>{row.numberOfDays}</div>}
                             position="right"
                           >
-                            {row.realizedPeriod.format()}
+                            {row.realizedPeriod.formatCompact()}
                           </Tooltip>
                         </Td>
                         <Td>{row.serviceNeedDescription}</Td>
