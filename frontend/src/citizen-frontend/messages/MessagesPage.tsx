@@ -7,6 +7,7 @@ import {
   sendMessage,
   SendMessageParams
 } from 'citizen-frontend/messages/api'
+import EmptyThreadView from 'citizen-frontend/messages/EmptyThreadView'
 import MessageEditor from 'citizen-frontend/messages/MessageEditor'
 import { Loading, Result } from 'lib-common/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
@@ -38,7 +39,7 @@ const StyledFlex = styled(AdaptiveFlex)`
 `
 
 export default React.memo(function MessagesPage() {
-  const { accountId, loadAccount, selectedThread, refreshThreads } =
+  const { accountId, loadAccount, selectedThread, refreshThreads, threads } =
     useContext(MessageContext)
   useEffect(() => {
     if (!accountId.isSuccess) {
@@ -72,10 +73,14 @@ export default React.memo(function MessagesPage() {
                 <ThreadList
                   accountId={id}
                   setEditorVisible={setEditorVisible}
-                  newMessageButtonEnabled={receivers.isSuccess}
+                  newMessageButtonEnabled={
+                    receivers.isSuccess && !editorVisible
+                  }
                 />
-                {selectedThread && (
+                {selectedThread ? (
                   <ThreadView accountId={id} thread={selectedThread} />
+                ) : (
+                  <EmptyThreadView inboxEmpty={threads.length == 0} />
                 )}
               </>
             )

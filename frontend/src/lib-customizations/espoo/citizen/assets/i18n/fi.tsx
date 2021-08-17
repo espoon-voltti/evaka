@@ -136,7 +136,9 @@ export default {
   },
   messages: {
     inboxTitle: 'Viestit',
-    noMessages: 'Ei viestejä',
+    noMessagesInfo: 'Tässä näet saapuneet ja lähetetyt viestisi',
+    emptyInbox: 'Viestilaatikkosi on tyhjä',
+    noSelectedMessage: 'Ei valittua viestiä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
     sending: 'Lähetetään',
@@ -146,6 +148,7 @@ export default {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
     },
+    replyToThread: 'Vastaa viestiin',
     messageEditor: {
       newMessage: 'Uusi viesti',
       receivers: 'Vastaanottajat',
