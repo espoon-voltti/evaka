@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
+import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
@@ -106,6 +107,18 @@ class VoucherValueDecisionController(
         val res = db.read { it.getVoucherValueDecision(id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
+    }
+
+    @GetMapping("/head-of-family/{headOfFamilyId}")
+    fun getHeadOfFamilyDecisions(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable headOfFamilyId: UUID
+    ): ResponseEntity<List<VoucherValueDecisionSummary>> {
+        Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        val res = db.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+        return ResponseEntity.ok(res)
     }
 
     @PostMapping("/send")

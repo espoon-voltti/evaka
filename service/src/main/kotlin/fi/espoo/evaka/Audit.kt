@@ -236,6 +236,7 @@ enum class Audit(
     VasuTemplateDelete("evaka.vasu-template.delete"),
     VasuTemplateRead("evaka.vasu-template.read"),
     VasuTemplateUpdate("evaka.vasu-template.update"),
+    VoucherValueDecisionHeadOfFamilyRead("evaka.value-decision.head-of-family.read"),
     VoucherValueDecisionMarkSent("evaka.value-decision.mark-sent"),
     VoucherValueDecisionRead("evaka.value-decision.read"),
     VoucherValueDecisionSearch("evaka.value-decision.search"),

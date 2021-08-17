@@ -45,7 +45,10 @@ export default React.memo(function PlacementCircle({
   tooltipUp
 }: Props) {
   return (
-    <Tooltip tooltip={<span>{label}</span>} up={tooltipUp}>
+    <Tooltip
+      tooltip={<span>{label}</span>}
+      position={tooltipUp ? 'top' : 'bottom'}
+    >
       {type === 'half' ? <HalfCircle /> : <Circle />}
     </Tooltip>
   )

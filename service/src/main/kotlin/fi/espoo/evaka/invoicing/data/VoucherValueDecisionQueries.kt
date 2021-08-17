@@ -325,6 +325,42 @@ WHERE decision.id = :id
         .singleOrNull()
 }
 
+fun Database.Read.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId: UUID): List<VoucherValueDecisionSummary> {
+    return createQuery(
+        """
+SELECT
+    decision.id,
+    decision.status,
+    decision.decision_number,
+    decision.valid_from,
+    decision.valid_to,
+    decision.head_of_family_id,
+    decision.child_id,
+    decision.child_date_of_birth,
+    decision.final_co_payment,
+    decision.voucher_value,
+    decision.approved_at,
+    decision.sent_at,
+    decision.created,
+    head.date_of_birth AS head_date_of_birth,
+    head.first_name AS head_first_name,
+    head.last_name AS head_last_name,
+    head.social_security_number AS head_ssn,
+    head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
+    child.first_name AS child_first_name,
+    child.last_name AS child_last_name,
+    child.social_security_number AS child_ssn
+FROM voucher_value_decision decision
+JOIN person head ON decision.head_of_family_id = head.id
+JOIN person child ON decision.child_id = child.id
+WHERE decision.head_of_family_id = :headOfFamilyId
+"""
+    )
+        .bind("headOfFamilyId", headOfFamilyId)
+        .map(toVoucherValueDecisionSummary)
+        .toList()
+}
+
 fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<VoucherValueDecisionId>, approvedBy: UUID, approvedAt: Instant) {
     // language=sql
     val sql =

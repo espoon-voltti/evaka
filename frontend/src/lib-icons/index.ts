@@ -91,6 +91,8 @@ export interface IconSet {
   farMap: IconDefinition
   fasCaretUp: IconDefinition
   fasCaretDown: IconDefinition
+  fasCaretLeft: IconDefinition
+  fasCaretRight: IconDefinition
   fasCheckCircle: IconDefinition
   fasChevronDown: IconDefinition
   fasChevronUp: IconDefinition
@@ -197,6 +199,8 @@ export const fasChevronDown = iconSet.fasChevronDown
 export const fasChevronUp = iconSet.fasChevronUp
 export const fasCaretUp = iconSet.fasCaretUp
 export const fasCaretDown = iconSet.fasCaretDown
+export const fasCaretLeft = iconSet.fasCaretLeft
+export const fasCaretRight = iconSet.fasCaretRight
 export const fasExclamationTriangle = iconSet.fasExclamationTriangle
 export const fasInfo = iconSet.fasInfo
 export const fasMapMarkerAlt = iconSet.fasMapMarkerAlt

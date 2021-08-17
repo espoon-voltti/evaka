@@ -1015,6 +1015,7 @@ export const fi = {
       modalTitle: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
+    voucherValueDecisions: 'Päämiehen arvopäätökset',
     dependants: 'Päämiehen huollettavat',
     guardiansAndParents: 'Huoltajat ja päämiehet',
     guardians: 'Huoltajat',
@@ -2314,11 +2315,12 @@ export const fi = {
       reportFileName: 'alkavat_sijoitukset'
     },
     voucherServiceProviders: {
-      title: 'Palveluseteli',
+      title: 'Palveluseteliyksiköt',
       description:
         'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
+        allAreas: 'Kaikki alueet',
         unitPlaceholder: 'Hae yksikön nimellä'
       },
       locked: 'Raportti lukittu',
@@ -2329,6 +2331,7 @@ export const fi = {
     },
     voucherServiceProviderUnit: {
       title: 'Palvelusetelilapset yksikössä',
+      unitPageLink: 'Yksikön sivu',
       month: 'Kuukausi',
       total: 'Palvelusetelien summa valittuna kuukautena',
       child: 'Lapsen nimi / synt. aika',
@@ -2342,7 +2345,14 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
-      partTime: 'Osa/Koko'
+      partTime: 'Osa/Koko',
+      under3: 'Alle 3-vuotias',
+      atLeast3: 'Vähintään 3-vuotias',
+      type: {
+        NEW: 'Uusi päätös',
+        REFUND: 'Hyvitys',
+        CORRECTION: 'Korjaus'
+      }
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',
