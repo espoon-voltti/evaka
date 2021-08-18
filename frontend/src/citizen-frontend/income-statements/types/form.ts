@@ -3,11 +3,12 @@ import { Attachment } from 'lib-common/api-types/attachment'
 
 export interface IncomeStatementForm {
   startDate: string
+  endDate: string
   highestFee: boolean
   gross: Gross
   entrepreneur: Entrepreneur
   student: boolean
-  alimony: boolean
+  alimonyPayer: boolean
   otherInfo: string
   attachments: Attachment[]
   assure: boolean
@@ -16,6 +17,9 @@ export interface IncomeStatementForm {
 export interface Gross {
   selected: boolean
   incomeSource: IncomeSource | null
+  estimatedMonthlyIncome: string
+  incomeStartDate: string
+  incomeEndDate: string
   otherIncome: OtherIncome[] | null
 }
 
@@ -25,18 +29,21 @@ export interface Entrepreneur {
   startOfEntrepreneurship: string
   spouseWorksInCompany: boolean | null
   startupGrant: boolean
+  checkupConsent: boolean
   selfEmployed: SelfEmployed
   limitedCompany: LimitedCompany
-  partnership: Partnership
+  partnership: boolean
+  lightEntrepreneur: boolean
+  accountant: Accountant
 }
 
 export interface SelfEmployed {
   selected: boolean
-  estimation: boolean | null
+  attachments: boolean
+  estimation: boolean
   estimatedMonthlyIncome: string
   incomeStartDate: string
   incomeEndDate: string
-  kelaConsent: boolean
 }
 
 export interface LimitedCompany {
@@ -44,7 +51,9 @@ export interface LimitedCompany {
   incomeSource: IncomeSource | null
 }
 
-export interface Partnership {
-  selected: boolean
-  lookupConsent: boolean
+export interface Accountant {
+  name: string
+  email: string
+  address: string
+  phone: string
 }

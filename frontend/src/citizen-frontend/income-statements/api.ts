@@ -4,6 +4,8 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import {
   Entrepreneur,
+  EstimatedIncome,
+  Gross,
   IncomeStatement,
   SelfEmployed
 } from './types/income-statement'
@@ -26,21 +28,35 @@ export async function createIncomeStatement(
 }
 
 type IncomeBodyJson = JsonOf<IncomeBody>
+type GrossJson = Exclude<IncomeBodyJson['gross'], null>
 type EntrepreneurJson = Exclude<IncomeBodyJson['entrepreneur'], null>
 type SelfEmployedJson = Exclude<EntrepreneurJson['selfEmployed'], null>
+type EstimatedIncomeJson = Exclude<SelfEmployedJson['estimatedIncome'], null>
 
 function deserializeIncomeStatement(
   data: JsonOf<IncomeStatement>
 ): IncomeStatement {
+  const startDate = LocalDate.parseIso(data.startDate)
+  const endDate = data.endDate ? LocalDate.parseIso(data.endDate) : null
   switch (data.type) {
     case 'HIGHEST_FEE':
-      return { ...data, startDate: LocalDate.parseIso(data.startDate) }
+      return { ...data, startDate, endDate }
     case 'INCOME':
       return {
         ...data,
-        startDate: LocalDate.parseIso(data.startDate),
+        startDate,
+        endDate,
+        gross: deserializeGross(data.gross),
         entrepreneur: deserializeEntrepreneur(data.entrepreneur)
       }
+  }
+}
+
+function deserializeGross(gross: GrossJson | null): Gross | null {
+  if (!gross) return null
+  return {
+    ...gross,
+    estimatedIncome: deserializeEstimatedIncome(gross.estimatedIncome)
   }
 }
 
@@ -61,13 +77,21 @@ function deserializeSelfEmployed(
   selfEmployed: SelfEmployedJson | null
 ): SelfEmployed | null {
   if (!selfEmployed) return null
-  return selfEmployed.type === 'ESTIMATION'
-    ? {
-        ...selfEmployed,
-        incomeStartDate: LocalDate.parseIso(selfEmployed.incomeStartDate),
-        incomeEndDate: selfEmployed.incomeEndDate
-          ? LocalDate.parseIso(selfEmployed.incomeEndDate)
-          : null
-      }
-    : selfEmployed
+  return {
+    ...selfEmployed,
+    estimatedIncome: deserializeEstimatedIncome(selfEmployed.estimatedIncome)
+  }
+}
+
+function deserializeEstimatedIncome(
+  estimatedIncome: EstimatedIncomeJson | null
+): EstimatedIncome | null {
+  if (!estimatedIncome) return null
+  return {
+    ...estimatedIncome,
+    incomeStartDate: LocalDate.parseIso(estimatedIncome.incomeStartDate),
+    incomeEndDate: estimatedIncome.incomeEndDate
+      ? LocalDate.parseIso(estimatedIncome.incomeEndDate)
+      : null
+  }
 }

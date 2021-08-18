@@ -18,13 +18,14 @@ export function validateIncomeStatementBody(
   if (!formData.assure) return null
 
   const startDate = LocalDate.parseFiOrNull(formData.startDate)
-  if (!startDate) return null
+  const endDate =
+    formData.endDate == ''
+      ? null
+      : LocalDate.parseFiOrNull(formData.endDate) ?? invalid
+  if (startDate === null || endDate === invalid) return null
 
   if (formData.highestFee) {
-    return {
-      type: 'HIGHEST_FEE',
-      startDate
-    }
+    return { type: 'HIGHEST_FEE', startDate, endDate }
   }
 
   const gross = validateGross(formData.gross)
@@ -41,8 +42,11 @@ export function validateIncomeStatementBody(
   return {
     type: 'INCOME' as const,
     startDate,
+    endDate,
     gross,
     entrepreneur,
+    student: formData.student,
+    alimonyPayer: formData.alimonyPayer,
     otherInfo: formData.otherInfo,
     attachmentIds: formData.attachments.map((a) => a.id)
   }
@@ -53,8 +57,19 @@ const invalid: unique symbol = Symbol()
 function validateGross(formData: Form.Gross) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
+
+  const estimatedIncome =
+    formData.estimatedMonthlyIncome ||
+    formData.incomeStartDate ||
+    formData.incomeEndDate
+      ? validateEstimatedIncome(formData)
+      : null
+
+  if (estimatedIncome === invalid) return invalid
+
   return {
     incomeSource: formData.incomeSource,
+    estimatedIncome,
     otherIncome: formData.otherIncome ?? []
   }
 }
@@ -62,13 +77,18 @@ function validateGross(formData: Form.Gross) {
 function validateEntrepreneur(formData: Form.Entrepreneur) {
   if (!formData.selected) return null
 
-  const { fullTime, spouseWorksInCompany, startupGrant } = formData
+  const {
+    fullTime,
+    spouseWorksInCompany,
+    startupGrant,
+    partnership,
+    lightEntrepreneur
+  } = formData
   const startOfEntrepreneurship =
     LocalDate.parseFiOrNull(formData.startOfEntrepreneurship) ?? invalid
 
   const selfEmployed = validateSelfEmployed(formData.selfEmployed)
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
-  const partnership = validatePartnership(formData.partnership)
 
   if (
     fullTime === null ||
@@ -76,8 +96,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     spouseWorksInCompany === null ||
     selfEmployed === invalid ||
     limitedCompany === invalid ||
-    partnership === invalid ||
-    (!selfEmployed && !limitedCompany && !partnership)
+    (!selfEmployed && !limitedCompany && !partnership && !lightEntrepreneur)
   ) {
     return invalid
   }
@@ -89,16 +108,30 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     startupGrant,
     selfEmployed,
     limitedCompany,
-    partnership
+    partnership,
+    lightEntrepreneur
   }
 }
 
 function validateSelfEmployed(formData: Form.SelfEmployed) {
   if (!formData.selected) return null
-  if (!formData.kelaConsent) return invalid
-  if (formData.estimation === null) return invalid
-  if (formData.estimation === false) return { type: 'ATTACHMENTS' as const }
+  const estimation = formData.estimation
+    ? validateEstimatedIncome(formData)
+    : null
 
+  if (estimation === invalid) return invalid
+
+  return {
+    attachments: formData.attachments,
+    estimatedIncome: estimation
+  }
+}
+
+function validateEstimatedIncome(formData: {
+  estimatedMonthlyIncome: string
+  incomeStartDate: string
+  incomeEndDate: string
+}) {
   const estimatedMonthlyIncome =
     stringToInt(formData.estimatedMonthlyIncome) ?? invalid
   const incomeStartDate =
@@ -117,7 +150,6 @@ function validateSelfEmployed(formData: Form.SelfEmployed) {
   }
 
   return {
-    type: 'ESTIMATION' as const,
     estimatedMonthlyIncome,
     incomeStartDate,
     incomeEndDate
@@ -128,10 +160,4 @@ function validateLimitedCompany(formData: Form.LimitedCompany) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
   return { incomeSource: formData.incomeSource }
-}
-
-function validatePartnership(formData: Form.Partnership) {
-  if (!formData.selected) return false
-  if (!formData.lookupConsent) return invalid
-  return true
 }

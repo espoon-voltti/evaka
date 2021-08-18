@@ -1,6 +1,5 @@
 package fi.espoo.evaka.incomestatement
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.shared.AttachmentId
@@ -26,25 +25,20 @@ enum class IncomeSource {
 
 data class Gross(
     val incomeSource: IncomeSource,
+    val estimatedIncome: EstimatedIncome?,
     val otherIncome: Set<OtherGrossIncome>,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed interface SelfEmployed {
-    @JsonTypeName("ATTACHMENTS")
-    object Attachments : SelfEmployed {
-        @JvmStatic
-        @JsonCreator
-        fun deserialize() = Attachments
-    }
+data class SelfEmployed(
+    val attachments: Boolean,
+    val estimatedIncome: EstimatedIncome?
+)
 
-    @JsonTypeName("ESTIMATION")
-    data class Estimation(
-        val estimatedMonthlyIncome: Int,
-        val incomeStartDate: LocalDate,
-        val incomeEndDate: LocalDate?,
-    ) : SelfEmployed
-}
+data class EstimatedIncome(
+    val estimatedMonthlyIncome: Int,
+    val incomeStartDate: LocalDate,
+    val incomeEndDate: LocalDate?,
+)
 
 data class LimitedCompany(
     val incomeSource: IncomeSource
@@ -58,25 +52,31 @@ data class Entrepreneur(
     val selfEmployed: SelfEmployed?,
     val limitedCompany: LimitedCompany?,
     val partnership: Boolean,
+    val lightEntrepreneur: Boolean,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class IncomeStatementBody(
     open val startDate: LocalDate,
+    open val endDate: LocalDate?,
 ) {
     @JsonTypeName("HIGHEST_FEE")
-    data class HighestFee(override val startDate: LocalDate) : IncomeStatementBody(startDate)
+    data class HighestFee(
+        override val startDate: LocalDate,
+        override val endDate: LocalDate?
+    ) : IncomeStatementBody(startDate, endDate)
 
     @JsonTypeName("INCOME")
     data class Income(
         override val startDate: LocalDate,
+        override val endDate: LocalDate?,
         val gross: Gross?,
         val entrepreneur: Entrepreneur?,
         val student: Boolean,
-        val alimony: Boolean,
+        val alimonyPayer: Boolean,
         val otherInfo: String,
         val attachmentIds: List<AttachmentId>
-    ) : IncomeStatementBody(startDate)
+    ) : IncomeStatementBody(startDate, endDate)
 }
 
 fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
@@ -88,7 +88,8 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
                 body.entrepreneur != null &&
                     body.entrepreneur.selfEmployed == null &&
                     body.entrepreneur.limitedCompany == null &&
-                    !body.entrepreneur.partnership
+                    !body.entrepreneur.partnership &&
+                    !body.entrepreneur.lightEntrepreneur
                 )
     }
 
@@ -98,22 +99,25 @@ data class Attachment(val id: AttachmentId, val name: String, val contentType: S
 sealed class IncomeStatement(
     open val id: IncomeStatementId,
     open val startDate: LocalDate,
+    open val endDate: LocalDate?,
 ) {
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
         override val id: IncomeStatementId,
         override val startDate: LocalDate,
-    ) : IncomeStatement(id, startDate)
+        override val endDate: LocalDate?,
+    ) : IncomeStatement(id, startDate, endDate)
 
     @JsonTypeName("INCOME")
     data class Income(
         override val id: IncomeStatementId,
         override val startDate: LocalDate,
+        override val endDate: LocalDate?,
         val gross: Gross?,
         val entrepreneur: Entrepreneur?,
         val student: Boolean,
-        val alimony: Boolean,
+        val alimonyPayer: Boolean,
         val otherInfo: String,
         val attachments: List<Attachment>
-    ) : IncomeStatement(id, startDate)
+    ) : IncomeStatement(id, startDate, endDate)
 }

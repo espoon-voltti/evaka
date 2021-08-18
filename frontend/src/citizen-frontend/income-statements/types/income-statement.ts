@@ -6,6 +6,7 @@ import { Attachment } from 'lib-common/api-types/attachment'
 interface Base {
   id: UUID
   startDate: LocalDate
+  endDate: LocalDate | null
 }
 
 export interface HighestFee extends Base {
@@ -16,12 +17,15 @@ export interface Income extends Base {
   type: 'INCOME'
   gross: Gross | null
   entrepreneur: Entrepreneur | null
+  student: boolean
+  alimonyPayer: boolean
   otherInfo: string
   attachments: Attachment[]
 }
 
 export interface Gross {
   incomeSource: IncomeSource
+  estimatedIncome: EstimatedIncome | null
   otherIncome: OtherIncome[]
 }
 
@@ -30,23 +34,22 @@ export interface Entrepreneur {
   startOfEntrepreneurship: LocalDate
   spouseWorksInCompany: boolean
   startupGrant: boolean
-  selfEmployed: SelfEmployedAttachments | SelfEmployedEstimation | null
+  selfEmployed: SelfEmployed | null
   limitedCompany: LimitedCompany | null
   partnership: boolean
+  lightEntrepreneur: boolean
 }
 
-export interface SelfEmployedAttachments {
-  type: 'ATTACHMENTS'
+export interface SelfEmployed {
+  attachments: boolean
+  estimatedIncome: EstimatedIncome | null
 }
 
-export interface SelfEmployedEstimation {
-  type: 'ESTIMATION'
+export interface EstimatedIncome {
   estimatedMonthlyIncome: number
   incomeStartDate: LocalDate
   incomeEndDate: LocalDate | null
 }
-
-export type SelfEmployed = SelfEmployedAttachments | SelfEmployedEstimation
 
 export interface LimitedCompany {
   incomeSource: IncomeSource

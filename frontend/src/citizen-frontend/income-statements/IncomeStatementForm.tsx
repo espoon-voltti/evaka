@@ -36,10 +36,14 @@ import { useHistory } from 'react-router-dom'
 
 const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
+  endDate: '',
   highestFee: false,
   gross: {
     selected: false,
     incomeSource: null,
+    estimatedMonthlyIncome: '',
+    incomeStartDate: '',
+    incomeEndDate: '',
     otherIncome: null
   },
   entrepreneur: {
@@ -47,26 +51,31 @@ const initialFormData: Form.IncomeStatementForm = {
     fullTime: null,
     startOfEntrepreneurship: '',
     spouseWorksInCompany: null,
+    startupGrant: false,
+    checkupConsent: false,
     selfEmployed: {
       selected: false,
-      estimation: null,
+      attachments: false,
+      estimation: false,
       estimatedMonthlyIncome: '',
       incomeStartDate: '',
-      incomeEndDate: '',
-      kelaConsent: false
+      incomeEndDate: ''
     },
     limitedCompany: {
       selected: false,
       incomeSource: null
     },
-    partnership: {
-      selected: false,
-      lookupConsent: false
-    },
-    startupGrant: false
+    partnership: false,
+    lightEntrepreneur: false,
+    accountant: {
+      name: '',
+      email: '',
+      address: '',
+      phone: ''
+    }
   },
   student: false,
-  alimony: false,
+  alimonyPayer: false,
   otherInfo: '',
   attachments: [],
   assure: false
@@ -166,7 +175,7 @@ export default function IncomeStatementForm() {
           spacing="L"
         >
           <Checkbox
-            label={t.income.assure}
+            label={`${t.income.assure} *`}
             checked={formData.assure}
             onChange={(value) => setFormData({ ...formData, assure: value })}
           />
@@ -200,19 +209,44 @@ function IncomeTypeSelection({
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.incomeInfo}</H2>
         <Gap size="s" />
-        <Label htmlFor="start-date">{t.income.incomeType.startDate} *</Label>
-        <Gap size="xs" />
-        <DatePicker
-          id="start-date"
-          date={formData.startDate}
-          onChange={(value) => onChange({ ...formData, startDate: value })}
-          info={errorToInputInfo(
-            validDate(formData.startDate),
-            t.validationErrors
-          )}
-          hideErrorsBeforeTouched
-          locale={lang}
-        />
+        <FixedSpaceRow spacing="XL">
+          <div>
+            <Label htmlFor="start-date">
+              {t.income.incomeType.startDate} *
+            </Label>
+            <Gap size="xs" />
+            <DatePicker
+              id="start-date"
+              date={formData.startDate}
+              onChange={(value) => onChange({ ...formData, startDate: value })}
+              info={errorToInputInfo(
+                validDate(formData.startDate),
+                t.validationErrors
+              )}
+              hideErrorsBeforeTouched
+              locale={lang}
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
+            <Gap size="xs" />
+            <DatePicker
+              id="end-date"
+              date={formData.endDate}
+              onChange={(value) => onChange({ ...formData, endDate: value })}
+              info={
+                formData.endDate
+                  ? errorToInputInfo(
+                      validDate(formData.endDate),
+                      t.validationErrors
+                    )
+                  : undefined
+              }
+              hideErrorsBeforeTouched
+              locale={lang}
+            />
+          </div>
+        </FixedSpaceRow>
         <Gap size="L" />
         <H3 noMargin>{t.income.incomeType.title}</H3>
         <Gap size="s" />
@@ -275,6 +309,7 @@ function GrossIncomeSelection({
   onChange: (value: Form.Gross) => void
 }) {
   const t = useTranslation()
+  const [lang] = useLang()
   return (
     <ContentArea opaque paddingVertical="L">
       <FixedSpaceColumn spacing="zero">
@@ -299,19 +334,77 @@ function GrossIncomeSelection({
             onChange({ ...formData, incomeSource: 'ATTACHMENTS' })
           }
         />
-        <Gap size="XL" />
-        <Checkbox
-          label={t.income.grossIncome.otherIncome}
-          checked={formData.otherIncome !== null}
-          onChange={(checked) =>
-            onChange({
-              ...formData,
-              otherIncome: checked ? [] : null
-            })
-          }
-        />
+        <Gap size="L" />
+        <Label>{t.income.grossIncome.estimate}</Label>
+        <Gap size="m" />
+        <FixedSpaceRow>
+          <FixedSpaceColumn>
+            <LightLabel htmlFor="estimated-monthly-income">
+              {t.income.selfEmployed.estimatedMonthlyIncome}
+            </LightLabel>
+            <InputField
+              id="estimated-monthly-income"
+              value={formData.estimatedMonthlyIncome}
+              onChange={(value) =>
+                onChange({ ...formData, estimatedMonthlyIncome: value })
+              }
+              hideErrorsBeforeTouched
+              info={
+                formData.estimatedMonthlyIncome
+                  ? errorToInputInfo(
+                      validInt(formData.estimatedMonthlyIncome),
+                      t.validationErrors
+                    )
+                  : undefined
+              }
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn>
+            <LightLabel htmlFor="income-start-date">
+              {t.income.selfEmployed.timeRange}
+            </LightLabel>
+            <FixedSpaceRow>
+              <DatePicker
+                id="income-start-date"
+                date={formData.incomeStartDate}
+                onChange={(value) =>
+                  onChange({ ...formData, incomeStartDate: value })
+                }
+                locale={lang}
+                hideErrorsBeforeTouched
+                info={
+                  formData.incomeStartDate
+                    ? errorToInputInfo(
+                        validDate(formData.incomeStartDate),
+                        t.validationErrors
+                      )
+                    : undefined
+                }
+              />
+              <span>{' - '}</span>
+              <DatePicker
+                date={formData.incomeEndDate}
+                onChange={(value) =>
+                  onChange({ ...formData, incomeEndDate: value })
+                }
+                locale={lang}
+                hideErrorsBeforeTouched
+                info={
+                  formData.incomeEndDate
+                    ? errorToInputInfo(
+                        validDate(formData.incomeStartDate),
+                        t.validationErrors
+                      )
+                    : undefined
+                }
+              />
+            </FixedSpaceRow>
+          </FixedSpaceColumn>
+        </FixedSpaceRow>
+        <Gap size="L" />
+        <Label>{t.income.grossIncome.otherIncome}</Label>
         <Gap size="s" />
-        <Indent>{t.income.grossIncome.otherIncomeInfo}</Indent>
+        {t.income.grossIncome.otherIncomeInfo}
         <Gap size="s" />
         <OtherIncomeWrapper>
           <MultiSelect
@@ -378,7 +471,7 @@ function EntrepreneurIncomeSelection({
         />
         <Gap size="L" />
         <Label htmlFor="entrepreneur-start-date">
-          {t.income.entrepreneurIncome.startOfEntrepreneurship}
+          {t.income.entrepreneurIncome.startOfEntrepreneurship} *
         </Label>
         <Gap size="s" />
         <DatePicker
@@ -425,7 +518,19 @@ function EntrepreneurIncomeSelection({
           }
         />
         <Gap size="L" />
-        <Label>Yrityksen toimintamuoto *</Label>
+        <Label>{t.income.entrepreneurIncome.checkupLabel} *</Label>
+        <Gap size="s" />
+        <Checkbox
+          label={t.income.entrepreneurIncome.checkupConsent}
+          checked={formData.checkupConsent}
+          onChange={(value) =>
+            handleChange({ ...formData, checkupConsent: value })
+          }
+        />
+        <Gap size="XL" />
+        <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
+        <Gap size="L" />
+        <Label>{t.income.entrepreneurIncome.companyForm} *</Label>
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.selfEmployed}
@@ -433,17 +538,13 @@ function EntrepreneurIncomeSelection({
           onChange={(value) =>
             handleChange({
               ...formData,
-              selfEmployed: {
-                ...formData.selfEmployed,
-                selected: value,
-                ...(value ? {} : { estimation: null })
-              }
+              selfEmployed: { ...formData.selfEmployed, selected: value }
             })
           }
         />
-        <Gap size="s" />
         {formData.selfEmployed.selected && (
           <>
+            <Gap size="s" />
             <SelfEmployedIncomeSelection
               formData={formData.selfEmployed}
               onChange={(value) =>
@@ -453,9 +554,9 @@ function EntrepreneurIncomeSelection({
                 })
               }
             />
-            <Gap size="s" />
           </>
         )}
+        <Gap size="m" />
         <Checkbox
           label={t.income.entrepreneurIncome.limitedCompany}
           checked={formData.limitedCompany.selected}
@@ -470,9 +571,9 @@ function EntrepreneurIncomeSelection({
             })
           }
         />
-        <Gap size="s" />
         {formData.limitedCompany.selected && (
           <>
+            <Gap size="s" />
             <LimitedCompanyIncomeSelection
               formData={formData.limitedCompany}
               onChange={(value) =>
@@ -482,38 +583,49 @@ function EntrepreneurIncomeSelection({
                 })
               }
             />
-            <Gap size="s" />
           </>
         )}
+        <Gap size="m" />
         <Checkbox
           label={t.income.entrepreneurIncome.partnership}
-          checked={formData.partnership.selected}
+          checked={formData.partnership}
+          onChange={(value) =>
+            handleChange({ ...formData, partnership: value })
+          }
+        />
+        {formData.partnership && (
+          <>
+            <Gap size="s" />
+            <Indent>{t.income.entrepreneurIncome.partnershipInfo}</Indent>
+          </>
+        )}
+        <Gap size="m" />
+        <Checkbox
+          label={t.income.entrepreneurIncome.lightEntrepreneur}
+          checked={formData.lightEntrepreneur}
           onChange={(value) =>
             handleChange({
               ...formData,
-              partnership: {
-                ...formData.partnership,
-                selected: value,
-                ...(value ? {} : { incomeSource: null })
-              }
+              lightEntrepreneur: value
             })
           }
         />
-        <Gap size="s" />
-        {formData.partnership.selected && (
-          <PartnershipIncomeSelection
-            formData={formData.partnership}
-            onChange={(value) =>
-              handleChange({
-                ...formData,
-                partnership: {
-                  ...value,
-                  selected: true,
-                  ...(value ? {} : { lookupConsent: false })
-                }
-              })
-            }
-          />
+        {formData.lightEntrepreneur && (
+          <>
+            <Gap size="s" />
+            <Indent>{t.income.entrepreneurIncome.lightEntrepreneurInfo}</Indent>
+          </>
+        )}
+        {(formData.limitedCompany.selected || formData.partnership) && (
+          <>
+            <Gap size="L" />
+            <Accounting
+              formData={formData.accountant}
+              onChange={(value) =>
+                handleChange({ ...formData, accountant: value })
+              }
+            />
+          </>
         )}
       </FixedSpaceColumn>
     </ContentArea>
@@ -532,15 +644,16 @@ function SelfEmployedIncomeSelection({
   return (
     <Indent>
       <FixedSpaceColumn>
-        <Radio
+        <P noMargin>{t.income.selfEmployed.info}</P>
+        <Checkbox
           label={t.income.selfEmployed.attachments}
-          checked={formData.estimation === false}
-          onChange={() => onChange({ ...formData, estimation: false })}
+          checked={formData.attachments}
+          onChange={(value) => onChange({ ...formData, attachments: value })}
         />
-        <Radio
-          label={t.income.selfEmployed.estimation}
-          checked={formData.estimation === true}
-          onChange={() => onChange({ ...formData, estimation: true })}
+        <Checkbox
+          label={t.income.selfEmployed.estimatedIncome}
+          checked={formData.estimation}
+          onChange={(value) => onChange({ ...formData, estimation: value })}
         />
         <Indent>
           <FixedSpaceRow spacing="XL">
@@ -603,11 +716,6 @@ function SelfEmployedIncomeSelection({
             </FixedSpaceColumn>
           </FixedSpaceRow>
         </Indent>
-        <Checkbox
-          label={`${t.income.selfEmployed.kelaConsent} *`}
-          checked={formData.kelaConsent}
-          onChange={(value) => onChange({ ...formData, kelaConsent: value })}
-        />
       </FixedSpaceColumn>
     </Indent>
   )
@@ -626,7 +734,7 @@ function LimitedCompanyIncomeSelection({
       <FixedSpaceColumn>
         <P noMargin>{t.income.limitedCompany.info}</P>
         <Radio
-          label={t.income.incomesRegisterConsent}
+          label={t.income.limitedCompany.incomesRegister}
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
           onChange={() =>
             onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
@@ -644,24 +752,56 @@ function LimitedCompanyIncomeSelection({
   )
 }
 
-function PartnershipIncomeSelection({
+function Accounting({
   formData,
   onChange
 }: {
-  formData: Form.Partnership
-  onChange: (value: Form.Partnership) => void
+  formData: Form.Accountant
+  onChange: (value: Form.Accountant) => void
 }) {
-  const t = useTranslation()
+  const t = useTranslation().income.accounting
   return (
-    <Indent>
-      <FixedSpaceColumn>
-        <Checkbox
-          label={`${t.income.incomesRegisterConsent} *`}
-          checked={formData.lookupConsent}
-          onChange={(value) => onChange({ ...formData, lookupConsent: value })}
-        />
-      </FixedSpaceColumn>
-    </Indent>
+    <>
+      <H3 noMargin>{t.title}</H3>
+      <Gap size="s" />
+      <FixedSpaceRow spacing="L" fullWidth maxWidth="400px">
+        <FixedSpaceColumn spacing="zero" fullWidth>
+          <Label>{t.accountant} *</Label>
+          <Gap size="s" />
+          <InputField
+            placeholder={t.accountantPlaceholder}
+            value={formData.name}
+            onChange={(value) => onChange({ ...formData, name: value })}
+          />
+          <Gap size="s" />
+          <Label>{t.email} *</Label>
+          <Gap size="s" />
+          <InputField
+            placeholder={t.emailPlaceholder}
+            value={formData.email}
+            onChange={(value) => onChange({ ...formData, email: value })}
+          />
+          <Gap size="s" />
+          <Label>{t.address}</Label>
+          <Gap size="s" />
+          <InputField
+            placeholder={t.addressPlaceholder}
+            value={formData.address}
+            onChange={(value) => onChange({ ...formData, address: value })}
+          />
+          <Gap size="s" />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="zero" fullWidth>
+          <Label>{t.phone} *</Label>
+          <Gap size="s" />
+          <InputField
+            placeholder={t.phonePlaceholder}
+            value={formData.phone}
+            onChange={(value) => onChange({ ...formData, phone: value })}
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
+    </>
   )
 }
 
@@ -692,8 +832,8 @@ function OtherInfo({
         <Gap size="s" />
         <Checkbox
           label={t.income.moreInfo.alimony}
-          checked={formData.alimony}
-          onChange={(value) => onChange({ ...formData, alimony: value })}
+          checked={formData.alimonyPayer}
+          onChange={(value) => onChange({ ...formData, alimonyPayer: value })}
         />
         <Gap size="L" />
         <Label htmlFor="more-info">{t.income.moreInfo.otherInfoLabel}</Label>
@@ -804,13 +944,13 @@ export function computeRequiredAttachments(
       }
       result.add('ACCOUNTANT_REPORT')
     }
-    if (entrepreneur.partnership.selected) {
+    if (entrepreneur.partnership) {
       result.add('PROFIT_AND_LOSS_STATEMENT').add('ACCOUNTANT_REPORT')
     }
   }
   if (gross.selected || entrepreneur.selected) {
     if (formData.student) result.add('PROOF_OF_STUDIES')
-    if (formData.alimony) result.add('ALIMONY_PAYOUT')
+    if (formData.alimonyPayer) result.add('ALIMONY_PAYOUT')
   }
 
   return result
@@ -820,11 +960,15 @@ const HighestFeeInfo = styled(P).attrs({ noMargin: true })`
   margin-left: ${defaultMargins.XL};
 `
 
+const LightLabel = styled(Label)`
+  font-weight: 400;
+`
+
 const Indent = styled.div`
   width: 100%;
   padding-left: ${defaultMargins.XL};
 `
 
-const OtherIncomeWrapper = styled(Indent)`
+const OtherIncomeWrapper = styled.div`
   max-width: 480px;
 `

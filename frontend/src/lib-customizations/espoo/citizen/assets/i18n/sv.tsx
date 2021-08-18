@@ -1185,34 +1185,36 @@ const sv: Translations = {
     title: 'Tulotietojen ilmoitus',
     description: (
       <>
-        <P>
-          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
-          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
-          korkeimpaan maksuun.
-        </P>
-        <P>
-          Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
-          alkamispäivästä lähtien.
-          <br />
-          Tulojen, menojen ja perhekoon muutoksista on ilmoitettava
-          asiakasmaksuyksikköön
-        </P>
-        <P>* Tähdellä merkityt kentät ovat pakollisia.</P>
+        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+        korkeimpaan maksuun.
+        <br />
+        <br />
+        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+        alkamispäivästä lähtien.
+        <br />
+        <br />
+        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
+        varhaiskasvatusmaksuja myös takautuvasti.
+        <br />
+        <br />* Tähdellä merkityt tiedot ovat pakollisia
       </>
     ),
     addNew: 'Luo uusi tulotieto',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta, sekä tulorekisteristä.',
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
     incomeType: {
       description: (
-        <P>
+        <>
           Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
           <strong>Yrittäjän tulotiedot</strong>, että{' '}
           <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
-        </P>
+        </>
       ),
       startDate: 'Voimassa alkaen',
+      endDate: 'Voimassaolo päättyy',
       title: 'Asiakasmaksun perusteet',
       agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
       highestFeeInfo:
@@ -1227,7 +1229,8 @@ const sv: Translations = {
       incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
-      otherIncome: 'Minulla on muita tuloja. Valitse mitä.',
+      estimate: 'Arvio bruttotuloistani',
+      otherIncome: 'Muut tulot',
       otherIncomeInfo:
         'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
       choosePlaceholder: 'Valitse',
@@ -1235,26 +1238,41 @@ const sv: Translations = {
         PENSION: 'Eläke',
         ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
         SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-        PARENTAL_ALLOWANCE: 'Vanhempainraha',
-        HOME_CARE_ALLOWANCE: 'Lastenhoidontuki',
+        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
           'Joustava tai osittainen hoitoraha',
         ALIMONY: 'Elatusapu tai -tuki',
         INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
-        RENTAL_INCOME: 'Vuokratulot'
+        RENTAL_INCOME: 'Vuokratulot',
+        UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+        JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Palkkio tai bonus',
+        RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+        BASIC_INCOME: 'Perustulo',
+        FOREST_INCOME: 'Metsätulo',
+        FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+        REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+        EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+        GRANT: 'Apuraha',
+        APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+        ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+        OTHER_INCOME: 'Muut tulot'
       }
     },
     entrepreneurIncome: {
       title: 'Yrittäjän tulotietojen täyttäminen',
       description: (
-        <P>
+        <>
           Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
           yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
           tarkemmat yrityskohtaiset tiedot liitteinä.
           <br />
           Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
           “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
-        </P>
+        </>
       ),
       fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
       fullTime: 'Päätoimista',
@@ -1263,31 +1281,55 @@ const sv: Translations = {
       spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
       yes: 'Kyllä',
       no: 'Ei',
+      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
+      startupGrant:
+        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
+      checkupLabel: 'Tietojen tarkastus',
+      checkupConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+      companyInfo: 'Yrityksen tiedot',
+      companyForm: 'Yrityksen toimintamuoto',
       selfEmployed: 'Toiminimi',
       limitedCompany: 'Osakeyhtiö',
       partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
-      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
-      startupGrant:
-        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.'
+      lightEntrepreneur: 'Kevytyrittäjyys',
+      lightEntrepreneurInfo:
+        'Maksutositteet palkoista ja työkorvauksista tulee toimittaa liitteinä.',
+      partnershipInfo:
+        'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
     },
     selfEmployed: {
+      info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
       attachments:
         'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
-      estimation: 'Täytän arvion keskimääräisistä kuukausitulostani.',
+      estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
       estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
-      timeRange: 'Aikavälillä',
-      kelaConsent:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta'
+      timeRange: 'Aikavälillä'
     },
     limitedCompany: {
       info: (
         <>
           <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
-          Valitse sopiva tapa muiden tietojen toimittamiseen.
+          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
         </>
       ),
+      incomesRegister:
+        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
       attachments:
         'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    accounting: {
+      title: 'Kirjanpitäjän yhteystiedot',
+      description:
+        'Kirjanpitäjän yhteystiedot tarvitaan jos toimit osakeyhtiössä, kommandiittiyhtiössä tai avoimessa yhtiössä.',
+      accountant: 'Kirjanpitäjä',
+      accountantPlaceholder: 'Kirjanpitäjän nimi / yhtiön nimi',
+      email: 'Sähköpostiosoite',
+      emailPlaceholder: 'Sähköposti',
+      address: 'Postiosoite',
+      addressPlaceholder: 'Katuosoite, postinumero, toimipaikka',
+      phone: 'Puhelinnumero',
+      phonePlaceholder: 'Puhelinnumero'
     },
     moreInfo: {
       title: 'Muita maksuun liittyviä tietoja',
@@ -1311,10 +1353,26 @@ const sv: Translations = {
         PENSION: 'Päätös eläkkeestä',
         ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
         SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
-        PARENTAL_ALLOWANCE: 'Päätös vanhempainrahasta',
-        HOME_CARE_ALLOWANCE: 'Päätös lastenhoidontuesta',
+        PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
         ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+        UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
+        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
+        RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
+        BASIC_INCOME: 'Päätös perustulosta',
+        FOREST_INCOME: 'Tosite metsätulosta',
+        FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
+        REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
+        EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
+        GRANT: 'Tosite apurahasta',
+        APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Tosite tapaturmavakuutuksen korvauksesta',
+        OTHER_INCOME: 'Liitteet muista tuloista',
         ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
         INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
         RENTAL_INCOME: 'Tositteet vuokratuloista',
@@ -1324,7 +1382,7 @@ const sv: Translations = {
           'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
         PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
         PROOF_OF_STUDIES:
-          'Opiskelutodituks tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
+          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
       }
     },
     assure: 'Vakuutan antamani tiedot oikeiksi.'

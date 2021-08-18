@@ -7,13 +7,13 @@ DROP TABLE IF EXISTS income_statement;
 DROP TYPE IF EXISTS income_statement_type;
 DROP TYPE IF EXISTS income_source;
 DROP TYPE IF EXISTS other_income_type;
-DROP TYPE IF EXISTS self_employed_type;
 
 -- Used earlier
 DROP TYPE IF EXISTS gross_income_source;
 DROP TYPE IF EXISTS limited_company_income_source;
 DROP TYPE IF EXISTS company_type;
 DROP TYPE IF EXISTS self_employed_income_source;
+DROP TYPE IF EXISTS self_employed_type;
 
 CREATE TYPE income_statement_type AS ENUM (
     'HIGHEST_FEE',
@@ -37,30 +37,30 @@ CREATE TYPE other_income_type AS ENUM (
     'RENTAL_INCOME'
 );
 
-CREATE TYPE self_employed_type AS ENUM (
-    'ATTACHMENTS',
-    'ESTIMATION'
-);
-
 CREATE TABLE income_statement (
   id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
   person_id uuid NOT NULL CONSTRAINT fk$person REFERENCES person (id) ON DELETE CASCADE,
   start_date date NOT NULL,
+  end_date date,
   type income_statement_type NOT NULL,
   gross_income_source income_source,
+  gross_estimated_monthly_income int,
+  gross_income_start_date date,
+  gross_income_end_date date,
   gross_other_income other_income_type[],
-  student bool,
-  alimony bool,
   entrepreneur_full_time bool,
   start_of_entrepreneurship date,
   spouse_works_in_company bool,
   startup_grant bool,
-  self_employed_type self_employed_type,
+  self_employed_attachments bool,
   self_employed_estimated_monthly_income int,
   self_employed_income_start_date date,
   self_employed_income_end_date date,
   limited_company_income_source income_source,
   partnership bool,
+  light_entrepreneur bool,
+  student bool,
+  alimony_payer bool,
   other_info text,
   created timestamp with time zone NOT NULL DEFAULT now(),
   updated timestamp with time zone NOT NULL DEFAULT now()
