@@ -488,7 +488,7 @@ commands:
               TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
               echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
 
-              yarn e2e-ci-testcafe --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
+              yarn e2e-ci-testcafe --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" src/e2e-test/specs/
 
             else
               echo 'ERROR: Invalid test_runner: "<< parameters.test_runner >>"'
