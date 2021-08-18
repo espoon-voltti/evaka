@@ -7,7 +7,7 @@ package fi.espoo.evaka.vtjclient.service.persondetails
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
@@ -19,7 +19,7 @@ import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 
 class VTJPersonDetailsService(
     private val vtjClientService: IVtjClientService,
-    private val henkiloMapper: IVtjHenkiloMapper,
+    private val henkiloMapper: VtjHenkiloMapper,
     private val vtjCache: VtjCache
 ) : IPersonDetailsService {
     /*

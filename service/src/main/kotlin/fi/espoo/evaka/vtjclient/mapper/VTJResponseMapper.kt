@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service
 import javax.xml.bind.JAXBElement
 
 @Service
-class VTJResponseMapper : IVTJResponseMapper {
-    override fun mapResponseToHenkilo(response: JAXBElement<HenkiloTunnusKyselyResBody>): VTJHenkiloVastaussanoma.Henkilo? =
+class VTJResponseMapper {
+    fun mapResponseToHenkilo(response: JAXBElement<HenkiloTunnusKyselyResBody>): VTJHenkiloVastaussanoma.Henkilo? =
         response.value.response
             .let(HenkiloTunnusKyselyResType::mapResponse)
             .let(VTJResponse::mapToHenkiloOrLogError)

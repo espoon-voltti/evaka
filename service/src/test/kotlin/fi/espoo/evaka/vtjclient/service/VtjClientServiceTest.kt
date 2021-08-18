@@ -21,7 +21,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
-import fi.espoo.evaka.vtjclient.mapper.IVTJResponseMapper
+import fi.espoo.evaka.vtjclient.mapper.VTJResponseMapper
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
@@ -74,7 +74,7 @@ class VtjClientServiceTest {
     lateinit var mockCallback: WebServiceMessageCallback
 
     @Mock
-    lateinit var responseMapper: IVTJResponseMapper
+    lateinit var responseMapper: VTJResponseMapper
 
     @InjectMocks
     lateinit var service: VtjClientService

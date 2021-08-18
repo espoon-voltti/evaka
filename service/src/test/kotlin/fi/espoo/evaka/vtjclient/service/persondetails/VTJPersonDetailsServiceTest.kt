@@ -17,7 +17,7 @@ import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
@@ -47,7 +47,7 @@ class VTJPersonDetailsServiceTest {
     lateinit var vtjCache: VtjCache
 
     @Mock
-    lateinit var henkiloMapper: IVtjHenkiloMapper
+    lateinit var henkiloMapper: VtjHenkiloMapper
 
     @Test
     fun `basic query should return results without dependants details with a successful query`() {

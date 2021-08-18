@@ -20,8 +20,8 @@ import java.time.format.DateTimeParseException
 private val logger = KotlinLogging.logger {}
 
 @Service
-class VtjHenkiloMapper : IVtjHenkiloMapper {
-    override fun mapToVtjPerson(henkilo: Henkilo) = henkilo.mapToVtjPerson()
+class VtjHenkiloMapper {
+    fun mapToVtjPerson(henkilo: Henkilo) = henkilo.mapToVtjPerson()
 }
 
 // As per https://stackoverflow.com/questions/1650249/how-to-make-generated-classes-contain-javadoc-from-xml-schema-documentation
