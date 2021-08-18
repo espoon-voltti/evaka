@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -331,7 +332,9 @@ enum class FeeBasisCode(val code: String) {
 }
 
 data class VardaGuardian(
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val henkilotunnus: String?,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val henkilo_oid: String? = null,
     val etunimet: String,
     val sukunimi: String
