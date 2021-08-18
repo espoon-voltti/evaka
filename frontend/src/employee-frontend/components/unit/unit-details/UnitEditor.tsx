@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import {
   CareArea,
   Coordinate,
-  ProviderType,
   Unit,
   UnitLanguage,
   UnitTypes
@@ -38,6 +37,8 @@ import {
 import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { unitProviderTypes } from 'lib-customizations/employee'
+import { UnitProviderType } from 'lib-customizations/types'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -52,7 +53,7 @@ interface FormData {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: string
   language: UnitLanguage
@@ -830,15 +831,7 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{showRequired(i18n.unitEditor.label.providerType)}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {(
-              [
-                'MUNICIPAL',
-                'PURCHASED',
-                'MUNICIPAL_SCHOOL',
-                'PRIVATE',
-                'PRIVATE_SERVICE_VOUCHER'
-              ] as const
-            ).map((value) => (
+            {unitProviderTypes.map((value) => (
               <Radio
                 key={value}
                 label={i18n.common.providerType[value]}

@@ -36,7 +36,14 @@ const customizations: EmployeeCustomizations = {
     'CHILD_ACCULTURATION_SUPPORT',
     'TRANSPORT_BENEFIT'
   ],
-  placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER']
+  placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER'],
+  unitProviderTypes: [
+    'MUNICIPAL',
+    'PURCHASED',
+    'PRIVATE',
+    'MUNICIPAL_SCHOOL',
+    'PRIVATE_SERVICE_VOUCHER'
+  ]
 }
 
 export default customizations

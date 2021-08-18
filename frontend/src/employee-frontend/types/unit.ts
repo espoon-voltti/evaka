@@ -7,7 +7,10 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import {
+  PlacementPlanRejectReason,
+  UnitProviderType
+} from 'lib-customizations/types'
 
 export interface CareArea {
   id: UUID
@@ -22,13 +25,6 @@ export type UnitTypes =
   | 'GROUP_FAMILY'
   | 'PRESCHOOL'
   | 'PREPARATORY_EDUCATION'
-
-export type ProviderType =
-  | 'MUNICIPAL'
-  | 'PURCHASED'
-  | 'PRIVATE'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE_SERVICE_VOUCHER'
 
 export type UnitLanguage = 'fi' | 'sv'
 
@@ -47,7 +43,7 @@ export interface Unit {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: number
   language: UnitLanguage

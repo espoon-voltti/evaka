@@ -17,7 +17,8 @@ const {
   featureFlags,
   assistanceMeasures,
   placementTypes,
-  placementPlanRejectReasons
+  placementPlanRejectReasons,
+  unitProviderTypes
 }: EmployeeCustomizations = customizations
 export {
   appConfig,
@@ -25,7 +26,8 @@ export {
   featureFlags,
   assistanceMeasures,
   placementTypes,
-  placementPlanRejectReasons
+  placementPlanRejectReasons,
+  unitProviderTypes
 }
 
 export type Lang = 'fi'
