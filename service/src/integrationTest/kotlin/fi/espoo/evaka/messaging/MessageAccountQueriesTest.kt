@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -66,7 +67,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.upsertEmployeeMessageAccount(randomUuid)
 
             val areaId = it.insertTestCareArea(DevCareArea())
-            val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+            val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
 
             val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId, name = "Testiläiset"))
             it.createDaycareGroupMessageAccount(groupId)
@@ -83,7 +84,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)
 
             // There should be no permissions to anything about this daycare
-            val daycare2Id = it.insertTestDaycare(DevDaycare(areaId = areaId, name = "Väärä päiväkoti"))
+            val daycare2Id = it.insertTestDaycare(DevDaycare(areaId = areaId, name = "Väärä päiväkoti", enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
             val group3Id = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
         }

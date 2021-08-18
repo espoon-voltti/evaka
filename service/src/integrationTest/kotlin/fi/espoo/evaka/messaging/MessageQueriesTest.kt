@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
@@ -368,7 +369,8 @@ class MessageQueriesTest : PureJdbiTest() {
                     areaId = testAreaId,
                     id = testDaycare.id,
                     name = testDaycare.name,
-                    language = Language.fi
+                    language = Language.fi,
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
             tx.insertDaycareAclRow(daycareId = testDaycare.id, employeeId = employee1Id, role = UserRole.UNIT_SUPERVISOR)

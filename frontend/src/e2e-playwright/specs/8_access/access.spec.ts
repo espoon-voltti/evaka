@@ -99,7 +99,7 @@ afterEach(async () => {
 })
 
 describe('Child information page', () => {
-  test('Admin sees every tab', async () => {
+  test('Admin sees every tab, except messaging', async () => {
     await employeeLogin(page, 'ADMIN')
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
@@ -108,7 +108,7 @@ describe('Child information page', () => {
       search: true,
       finance: true,
       reports: true,
-      messages: true
+      messages: false
     })
   })
 
