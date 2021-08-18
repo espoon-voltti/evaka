@@ -567,18 +567,17 @@ data class Placements(
 internal fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange
 ): List<Placements> {
-    val invoiceableTypes = PlacementType.values().filter { it.isInvoiceable() }
     val placements = createQuery(
         // language=sql
         """
             SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
-            AND p.type = ANY(:invoiceableTypes::placement_type[])
+            AND p.type = ANY(:invoicedTypes::placement_type[])
         """.trimIndent()
     )
         .bind("period", spanningPeriod)
-        .bind("invoiceableTypes", invoiceableTypes.toTypedArray())
+        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
@@ -727,23 +726,26 @@ fun Database.Read.getFreeJulyChildren(year: Int): List<UUID> {
     val sql =
         //language=sql
         """
+WITH invoiced_placement AS (
+    SELECT * FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
+)
 SELECT
   distinct(p09.child_id)
 FROM
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 9)}) p09,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 10)}) p10,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 11)}) p11,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 12)}) p12,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 1)}) p01,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 2)}) p02,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 3)}) p03,
-   ${if (year != 2020) {
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 9)}) p09,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 10)}) p10,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 11)}) p11,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 12)}) p12,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 1)}) p01,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 2)}) p02,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 3)}) p03,
+${if (year != 2020) {
             """
-            (SELECT child_id FROM placement WHERE ${placementOn(year, 4)}) p04,
-            (SELECT child_id FROM placement WHERE ${placementOn(year, 5)}) p05,
-        """
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
+"""
         } else ""}
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 6)}) p06
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
 WHERE
   p09.child_id = p10.child_id AND
   p09.child_id = p11.child_id AND
@@ -760,6 +762,7 @@ WHERE
     """
 
     return createQuery(sql)
+        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
         .mapTo(UUID::class.java)
         .list()
 }

@@ -2164,6 +2164,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `free july 2021 if child has been placed in preparatory with daycare all the time`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            listOf(PlacementType.PREPARATORY_DAYCARE to DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
+        )
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `no free july 2020 if even one mandatory month has no placement`() {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
@@ -2176,6 +2186,34 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
                 DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
                 DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+            )
+        )
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `no free july 2020 if child has a mix of club and daycare placements`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            listOf(
+                PlacementType.CLUB to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+            )
+        )
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `no free july 2020 if child has a mix of preschool and preschool daycare placements`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            listOf(
+                PlacementType.PRESCHOOL to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.PRESCHOOL_DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
             )
         )
 
@@ -2205,7 +2243,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `plain preschool is not invoiced`() {
-        assertFalse(PlacementType.PRESCHOOL.isInvoiceable())
+        assertFalse(PlacementType.PRESCHOOL.isInvoiced())
 
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
@@ -2219,7 +2257,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `plain preparatory is not invoiced`() {
-        assertFalse(PlacementType.PREPARATORY.isInvoiceable())
+        assertFalse(PlacementType.PREPARATORY.isInvoiced())
 
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
@@ -2233,7 +2271,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `plain club is not invoiced`() {
-        assertFalse(PlacementType.CLUB.isInvoiceable())
+        assertFalse(PlacementType.CLUB.isInvoiced())
 
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.CLUB)
@@ -2272,7 +2310,19 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun initFreeJulyTestData(invoicingPeriod: DateRange, placementPeriods: List<DateRange>, placementType: PlacementType = PlacementType.DAYCARE) {
+    private fun initFreeJulyTestData(
+        invoicingPeriod: DateRange,
+        placementPeriods: List<DateRange>,
+        placementType: PlacementType = PlacementType.DAYCARE
+    ) = initFreeJulyTestData(
+        invoicingPeriod,
+        placementPeriods.map { placementType to it }
+    )
+
+    private fun initFreeJulyTestData(
+        invoicingPeriod: DateRange,
+        placementPeriods: List<Pair<PlacementType, DateRange>>
+    ) {
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -2299,7 +2349,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        placementPeriods.forEach { period -> db.transaction(insertPlacement(testChild_1.id, period, placementType)) }
+        placementPeriods.forEach { (type, period) -> db.transaction(insertPlacement(testChild_1.id, period, type)) }
         db.transaction { it.createAllDraftInvoices(invoicingPeriod) }
     }
 
