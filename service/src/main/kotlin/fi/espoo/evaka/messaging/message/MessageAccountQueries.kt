@@ -68,8 +68,14 @@ FROM message_account acc
     LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
+    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND acl.role = 'UNIT_SUPERVISOR'
+    LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
 WHERE acc.id = ANY(:accountIds)
-GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_unitName
+AND (
+    'MESSAGING' = ANY(dc.enabled_pilot_features)
+    OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
+)
+GROUP BY acc.id, account_name, 3, group_id, group_name, group_unitId, group_unitName
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())

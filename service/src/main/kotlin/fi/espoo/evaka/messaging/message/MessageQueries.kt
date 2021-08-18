@@ -280,8 +280,8 @@ fun Database.Read.getCitizenReceivers(accountId: UUID): List<MessageAccount> {
 
     // language=SQL
     val sql = """
-WITH placement_ids AS (
-    SELECT pl.id AS id
+WITH all_placement_ids AS (
+    SELECT pl.id, pl.unit_id
     FROM guardian g
     JOIN placement pl
     ON g.child_id = pl.child_id
@@ -302,7 +302,7 @@ WITH placement_ids AS (
 
     UNION
 
-    SELECT pl.id AS id
+    SELECT pl.id, pl.unit_id
     FROM fridge_child fg
     JOIN placement pl
     ON fg.child_id = pl.child_id
@@ -324,11 +324,18 @@ WITH placement_ids AS (
         )
 
 ),
+pilot_placement_ids AS (
+    SELECT pl.id
+    FROM all_placement_ids pl
+    JOIN daycare d
+    ON pl.unit_id = d.id
+    WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+),
 supervisors AS (
     SELECT DISTINCT e.id AS id
-    FROM placement_ids
+    FROM pilot_placement_ids
     JOIN placement plt
-    ON placement_ids.id = plt.id
+    ON pilot_placement_ids.id = plt.id
     JOIN daycare d
     ON plt.unit_id = d.id
     JOIN daycare_acl_view acl
@@ -339,9 +346,9 @@ supervisors AS (
 ),
 groups AS (
     SELECT DISTINCT gplt.daycare_group_id AS id
-    FROM placement_ids
+    FROM pilot_placement_ids
     JOIN daycare_group_placement gplt
-    ON placement_ids.id = gplt.daycare_placement_id
+    ON pilot_placement_ids.id = gplt.daycare_placement_id
 )
 
 SELECT
@@ -479,10 +486,12 @@ fun Database.Read.getReceiversForNewMessage(
             FROM daycare_group dg
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            JOIN daycare d ON pl.unit_id = d.id
             WHERE pl.unit_id = :unitId AND EXISTS (
                 SELECT 1 FROM child_acl_view a
                 WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
             )
+            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
             SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c

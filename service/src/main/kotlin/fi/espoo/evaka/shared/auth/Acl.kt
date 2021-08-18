@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -292,6 +293,22 @@ JOIN child_acl_view ON vasu_document.child_id = child_acl_view.child_id
 WHERE employee_id = :userId AND vasu_document.id = :documentId
                 """.trimIndent()
             ).bind("userId", user.id).bind("documentId", documentId).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForPilotFeature(user: AuthenticatedUser, feature: PilotFeature): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM daycare d
+JOIN daycare_acl_view acl
+ON d.id = acl.daycare_id
+WHERE :pilotFeature = ANY(d.enabled_pilot_features)
+AND employee_id = :userId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
         }
     )
 }

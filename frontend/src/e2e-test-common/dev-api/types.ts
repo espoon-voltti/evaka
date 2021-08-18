@@ -16,6 +16,7 @@ type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
 export type Language = 'fi' | 'sv' | 'en'
+export type PilotFeature = 'MESSAGING'
 
 export interface Coordinate {
   lat: number
@@ -185,6 +186,7 @@ export interface Daycare {
   roundTheClock: boolean
   language?: Language
   location?: Coordinate | null
+  enabledPilotFeatures: PilotFeature[]
 }
 
 export interface DaycareGroup {

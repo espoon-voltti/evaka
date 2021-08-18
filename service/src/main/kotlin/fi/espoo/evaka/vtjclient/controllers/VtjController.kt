@@ -14,6 +14,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControlCitizen
+import fi.espoo.evaka.shared.security.CitizenFeatures
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -24,7 +26,7 @@ import java.util.UUID
 @Deprecated("Use PersonController instead")
 @RestController
 @RequestMapping("/persondetails")
-class VtjController(private val personService: PersonService) {
+class VtjController(private val personService: PersonService, private val accessControlCitizen: AccessControlCitizen) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
         db: Database.Connection,
@@ -39,12 +41,13 @@ class VtjController(private val personService: PersonService) {
         }
 
         return db.read { it.getPersonById(personId) }?.let { person ->
+            val accessibleFeatures = accessControlCitizen.getPermittedFeatures(user)
             when (person.identity) {
-                is ExternalIdentifier.NoID -> CitizenUserDetails.from(person)
+                is ExternalIdentifier.NoID -> CitizenUserDetails.from(person, accessibleFeatures)
                 is ExternalIdentifier.SSN -> db.transaction {
                     personService.getPersonWithChildren(it, user, personId)
                 }
-                    ?.let { CitizenUserDetails.from(it) }
+                    ?.let { CitizenUserDetails.from(it, accessibleFeatures) }
             }
         } ?: notFound()
     }
@@ -77,31 +80,26 @@ class VtjController(private val personService: PersonService) {
         val firstName: String,
         val lastName: String,
         val socialSecurityNumber: String,
-        val children: List<Child>
+        val children: List<Child>,
+        val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
-            fun from(person: PersonDTO): CitizenUserDetails = CitizenUserDetails(
+            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails = CitizenUserDetails(
                 id = person.id,
                 firstName = person.firstName ?: "",
                 lastName = person.lastName ?: "",
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
-                children = emptyList()
+                children = emptyList(),
+                accessibleFeatures = accessibleFeatures
             )
 
-            fun from(person: VtjPersonDTO): CitizenUserDetails = CitizenUserDetails(
-                id = person.id,
-                firstName = person.firstName,
-                lastName = person.lastName,
-                socialSecurityNumber = person.socialSecurityNumber,
-                children = person.children.map { Child.from(it) }
-            )
-
-            fun from(person: PersonWithChildrenDTO) = CitizenUserDetails(
+            fun from(person: PersonWithChildrenDTO, accessibleFeatures: CitizenFeatures) = CitizenUserDetails(
                 id = person.id,
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber!!,
-                children = person.children.map { Child.from(it) }
+                children = person.children.map { Child.from(it) },
+                accessibleFeatures = accessibleFeatures
             )
         }
     }

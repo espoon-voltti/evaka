@@ -184,7 +184,8 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
         providerType: it.providerType,
         roundTheClock: it.roundTheClock,
         location: it.location,
-        language: it.language
+        language: it.language,
+        enabledPilotFeatures: it.enabledPilotFeatures
       }))
     )
   } catch (e) {

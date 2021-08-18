@@ -36,7 +36,7 @@ class MessageController(
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<DetailedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        requireAuthorizedMessagingRole(user)
+        user.requireAnyEmployee()
         return db.read { it.getEmployeeDetailedMessageAccounts(user.id) }
     }
 

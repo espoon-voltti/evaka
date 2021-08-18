@@ -84,7 +84,8 @@ export const clubFixture: Daycare = {
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
-  roundTheClock: true
+  roundTheClock: true,
+  enabledPilotFeatures: ['MESSAGING']
 }
 
 export const daycareFixture: Daycare = {
@@ -105,7 +106,8 @@ export const daycareFixture: Daycare = {
   location: {
     lat: 60.20377343765089,
     lon: 24.655715743526994
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING']
 }
 
 export const daycare2Fixture: Daycare = {
@@ -126,7 +128,8 @@ export const daycare2Fixture: Daycare = {
   location: {
     lat: 60.20350901607783,
     lon: 24.669
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING']
 }
 
 export const preschoolFixture: Daycare = {
@@ -147,7 +150,8 @@ export const preschoolFixture: Daycare = {
   location: {
     lat: 60.2040261560435,
     lon: 24.65517745652623
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING']
 }
 
 export const enduserGuardianFixture: PersonDetail = {
@@ -875,7 +879,8 @@ export class Fixture {
       decisionHandler: `decisionHandler_${id}`,
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
       providerType: 'MUNICIPAL',
-      roundTheClock: true
+      roundTheClock: true,
+      enabledPilotFeatures: ['MESSAGING']
     })
   }
 

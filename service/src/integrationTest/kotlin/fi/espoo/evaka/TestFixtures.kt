@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -397,7 +398,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaId = svebiTestId,
             id = testSvebiDaycare.id,
             name = testSvebiDaycare.name,
-            language = Language.sv
+            language = Language.sv,
         )
     )
     insertTestDaycare(
@@ -405,10 +406,11 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaId = testAreaId,
             id = testDaycare.id,
             name = testDaycare.name,
-            ophOrganizerOid = defaultMunicipalOrganizerOid
+            ophOrganizerOid = defaultMunicipalOrganizerOid,
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
         )
     )
-    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
+    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
     insertTestDaycare(
         DevDaycare(
             areaId = testArea2Id,
