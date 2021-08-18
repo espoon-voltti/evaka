@@ -57,15 +57,13 @@ export default React.memo(function ThreadList({
       <Container className={selectedThread ? 'desktop-only' : undefined}>
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
-          <div style={{ display: 'none' }}>
-            <Button
-              text={t.messages.messageEditor.newMessage}
-              onClick={() => setEditorVisible(true)}
-              primary
-              data-qa="new-message-btn"
-              disabled={!newMessageButtonEnabled}
-            />
-          </div>
+          <Button
+            text={t.messages.messageEditor.newMessage}
+            onClick={() => setEditorVisible(true)}
+            primary
+            data-qa="new-message-btn"
+            disabled={!newMessageButtonEnabled}
+          />
           {threadLoadingResult.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
           )}
