@@ -29,7 +29,6 @@ import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -43,14 +42,8 @@ class PersonService(
         val person = tx.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN) {
             val personDetails =
-                personDetailsService.getBasicDetailsFor(
-                    IPersonDetailsService.DetailsQuery(user, person.identity)
-                )
-            if (personDetails is PersonDetails.Result) {
-                upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-            } else {
-                hideNonDisclosureInfo(person)
-            }
+                personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, person.identity))
+            upsertVtjPerson(tx, personDetails.mapToDto())
         } else {
             person
         }
@@ -93,8 +86,8 @@ class PersonService(
             is ExternalIdentifier.SSN -> {
                 if (forceRefresh || guardian.vtjDependantsQueried == null) {
                     getPersonWithDependants(user, guardian.identity)
-                        ?.let { upsertVtjChildren(tx, it) }
-                        ?.let { toPersonWithChildrenDTO(it) }
+                        .let { upsertVtjChildren(tx, it) }
+                        .let { toPersonWithChildrenDTO(it) }
                 } else {
                     val children = tx.getGuardianDependants(id)
                         .map { toPersonWithChildrenDTO(it) }
@@ -113,9 +106,8 @@ class PersonService(
             is ExternalIdentifier.SSN -> {
                 if (child.vtjGuardiansQueried == null) {
                     getPersonWithGuardians(user, child.identity)
-                        ?.let { upsertVtjGuardians(tx, it) }
-                        ?.guardians?.map(::toPersonDTO)
-                        ?: emptyList()
+                        .let { upsertVtjGuardians(tx, it) }
+                        .guardians.map(::toPersonDTO)
                 } else {
                     tx.getDependantGuardians(id)
                 }
@@ -141,17 +133,11 @@ class PersonService(
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
         return if (person?.updatedFromVtj == null) {
-            val personDetails = personDetailsService.getBasicDetailsFor(
-                IPersonDetailsService.DetailsQuery(user, ssn)
-            )
-            if (personDetails is PersonDetails.Result) {
-                if (readonly) return personDetails.vtjPerson.mapToDto().let { toPersonDTO(it) }
+            val personDetails = personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
+            if (readonly) return toPersonDTO(personDetails.mapToDto())
 
-                upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-                tx.getPersonBySSN(ssn.ssn)
-            } else {
-                null
-            }
+            upsertVtjPerson(tx, personDetails.mapToDto())
+            tx.getPersonBySSN(ssn.ssn)
         } else {
             person
         }
@@ -193,38 +179,24 @@ class PersonService(
                 val personDetails =
                     personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
 
-                if (personDetails is PersonDetails.Result) {
-                    val updatedPerson = getPersonWithUpdatedProperties(
-                        personDetails.vtjPerson.mapToDto(),
-                        person.copy(identity = ssn)
-                    )
-                    tx.updatePersonFromVtj(updatedPerson)
-                    upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-                } else {
-                    error("Failed to fetch person data from VTJ")
-                }
+                val updatedPerson = getPersonWithUpdatedProperties(
+                    personDetails.mapToDto(),
+                    person.copy(identity = ssn)
+                )
+                tx.updatePersonFromVtj(updatedPerson)
+                upsertVtjPerson(tx, personDetails.mapToDto())
             }
         }.exhaust()
     }
 
     // Does a request to VTJ
-    private fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
-        return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn))
-            .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
+    private fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO {
+        return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn)).mapToDto()
     }
 
     // Does a request to VTJ
-    private fun getPersonWithGuardians(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
-        return personDetailsService.getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user, ssn))
-            .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
-    }
-
-    private fun hideNonDisclosureInfo(person: PersonDTO): PersonDTO {
-        return person.copy(
-            streetAddress = "",
-            postalCode = "",
-            postOffice = ""
-        )
+    private fun getPersonWithGuardians(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO {
+        return personDetailsService.getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user, ssn)).mapToDto()
     }
 
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
