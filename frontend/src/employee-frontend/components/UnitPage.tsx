@@ -117,7 +117,7 @@ export default React.memo(function UnitPage() {
           ]
         : [])
     ],
-    [i18n, unitData, unitInformation] // eslint-disable-line react-hooks/exhaustive-deps
+    [id, i18n, unitData, unitInformation]
   )
 
   const RedirectToUnitInfo = useCallback(
@@ -128,7 +128,7 @@ export default React.memo(function UnitPage() {
   return (
     <>
       <Gap size="s" />
-      <Tabs tabs={tabs} />
+      {unitInformation.isSuccess && <Tabs tabs={tabs} />}
       <Gap size="s" />
       <Container>
         <Switch>
