@@ -370,16 +370,6 @@ val modifications = mapOf<String, String>(
           "edellisetHenkilotunnukset": [
             "010118-9999"
           ]
-        },
-        {
-          "tietoryhma": "HENKILON_NIMI",
-          "etunimi": "Etunimi12",
-          "sukunimi": "Sukunimi12",
-          "alkupv": {
-            "tarkkuus": "PAIVA",
-            "arvo": "2019-04-23"
-          },
-          "muutosattribuutti": "LISATIETO"
         }
       ],
       "muutospv": "2019-09-24T21:00:00.000Z"

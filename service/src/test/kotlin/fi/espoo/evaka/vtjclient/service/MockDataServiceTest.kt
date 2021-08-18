@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -24,11 +23,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (2)`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("270372-905L"))
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-
-        val kaarinaAnttola = (result as PersonDetails.Result).vtjPerson
+        val kaarinaAnttola = mockDetailsService.getPersonWithDependants(mapToQuery("270372-905L"))
 
         val children = kaarinaAnttola.dependants
         val childTwo = children[1]
@@ -40,10 +35,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (1)`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("060195-966B"))
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("060195-966B"))
 
         val children = parent.dependants
         val childTwo = children[1]
@@ -55,10 +47,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (0)`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
 
         val children = parent.dependants
         val childTwo = children[1]
@@ -70,12 +59,9 @@ class MockDataServiceTest {
 
     @Test
     fun `check that normal user and their children have addresses`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
 
         val expectedAddress = "Raivaajantie 13"
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
         assertThat(parent.address!!.streetAddress).isEqualTo(expectedAddress)
@@ -91,12 +77,9 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with both them and their children having details restrictions`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("150978-9025"))
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("150978-9025"))
 
         val expectedEmptyAddress = ""
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
         assertThat(parent.address!!.streetAddress).isBlank()
@@ -113,13 +96,10 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with no restrictions but whose children have details restrictions`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("300190-9257"))
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("300190-9257"))
 
         val expectedGuardianAddress = "Raivaajantie 18"
         val expectedEmptyAddress = ""
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
         assertThat(parent.address!!.streetAddress).isEqualTo(expectedGuardianAddress)
@@ -136,12 +116,9 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with details restriction but whose children don't have details restrictions`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("031083-910S"))
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("031083-910S"))
 
         val expectedChildAddress = "Raivaajantie 19"
-
-        assertThat(result).isExactlyInstanceOf(PersonDetails.Result::class.java)
-        val parent = (result as PersonDetails.Result).vtjPerson
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
         assertThat(parent.address!!.streetAddress).isBlank()
@@ -158,19 +135,16 @@ class MockDataServiceTest {
 
     @Test
     fun `mr Karhula has 3 children`() {
-        val result = mockDetailsService.getPersonWithDependants(mapToQuery("070644-937X"))
-        val parent = (result as PersonDetails.Result).vtjPerson
+        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("070644-937X"))
 
         assertEquals(3, parent.dependants.size)
     }
 
     @Test
     fun `nationalities come through`() {
-        val result = mockDetailsService.getBasicDetailsFor(mapToQuery("070644-937X"))
+        val parent = mockDetailsService.getBasicDetailsFor(mapToQuery("070644-937X"))
 
         val expectedNationality = Nationality("Suomi", "FIN")
-
-        val parent = (result as PersonDetails.Result).vtjPerson
 
         assertEquals(listOf(expectedNationality), parent.nationalities)
     }
