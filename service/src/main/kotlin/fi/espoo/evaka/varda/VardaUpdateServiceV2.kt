@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -79,13 +78,14 @@ class VardaUpdateServiceV2(
         val resetChildIds = db.read { it.getVardaChildrenToReset() }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
 
-        val successfulResets = resetChildIds.fold(listOf<UUID>()) { successfulResets, childId ->
+        val successfulResets = resetChildIds.foldIndexed(listOf<UUID>()) { index, successfulResets, childId ->
+            logger.info { "VardaUpdate: resetting child $childId (${index + 1}/$resetChildIds)" }
             if (deleteChildDataFromVardaAndDb(db, client, childId)) {
                 try {
-                    val childServiceNeeds = db.read { it.getServiceNeedsByChild(childId) }
+                    val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
                     logger.info("VardaUpdate: will send ${childServiceNeeds.size} service needs for child $childId")
-                    childServiceNeeds.forEach { serviceNeed ->
-                        if (!handleNewEvakaServiceNeed(db, client, serviceNeed.id, feeDecisionMinDate))
+                    childServiceNeeds.forEach { serviceNeedId ->
+                        if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
                             error("VardaUpdate: failed to send service need for child $childId")
                     }
                     db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
@@ -500,17 +500,6 @@ fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGu
             .mapTo<VardaGuardianWithId>()
             .list()
     }
-}
-
-fun getGuardianFromVarda(client: VardaClient, ssn: String?, oid: String?): VardaGuardian {
-    val person = client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(ssn, oid))
-        ?: error("VardaUpdate: couldn't fetch guardian from Varda")
-    return VardaGuardian(
-        henkilotunnus = ssn,
-        henkilo_oid = person.personOid,
-        etunimet = person.firstName,
-        sukunimi = person.lastName
-    )
 }
 
 fun sendFeeDecisionToVarda(
@@ -988,3 +977,23 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
     .bind("serviceNeedId", serviceNeedId)
     .mapTo<Boolean>()
     .list().isNotEmpty()
+
+fun Database.Read.getServiceNeedsForVardaByChild(
+    childId: UUID
+): List<ServiceNeedId> {
+    // language=SQL
+    val sql =
+        """
+        SELECT sn.id
+        FROM service_need sn
+        JOIN placement pl ON pl.id = sn.placement_id
+        WHERE pl.child_id = :childId
+        AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("vardaPlacementTypes", vardaPlacementTypes)
+        .mapTo<ServiceNeedId>()
+        .toList()
+}
