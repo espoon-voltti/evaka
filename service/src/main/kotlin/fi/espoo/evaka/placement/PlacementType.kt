@@ -17,7 +17,7 @@ enum class PlacementType {
     TEMPORARY_DAYCARE,
     TEMPORARY_DAYCARE_PART_DAY,
     SCHOOL_SHIFT_CARE;
-    fun isInvoiceable(): Boolean = when (this) {
+    fun isInvoiced(): Boolean = when (this) {
         CLUB -> false
         DAYCARE -> true
         DAYCARE_PART_TIME -> true
@@ -30,5 +30,9 @@ enum class PlacementType {
         TEMPORARY_DAYCARE -> true
         TEMPORARY_DAYCARE_PART_DAY -> true
         SCHOOL_SHIFT_CARE -> true
+    }
+
+    companion object {
+        fun invoiced() = values().filter { it.isInvoiced() }
     }
 }
