@@ -363,14 +363,14 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updateChildData does not react to new evaka service for non varda unit`() {
+    fun `updateChildData sends service need without fee data if unit is not invoiced by evaka`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testDaycareNotInvoiced.id)
 
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
-        assertVardaElementCounts(0, 0, 0)
+        assertVardaElementCounts(1, 1, 0)
     }
 
     @Test
@@ -576,11 +576,11 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     fun `updateChildData sends child service need to varda without the fee data if service need ends before the fee data handling started in evaka`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
-        val feeDecisionMinDate = since.minusDays(10)
-        val serviceNeedPeriod = DateRange(feeDecisionMinDate.minusDays(10).toLocalDate(), feeDecisionMinDate.minusDays(1).toLocalDate())
+        val tenDaysAgoFeeDecisionMinDate = since.minusDays(10)
+        val serviceNeedPeriod = DateRange(tenDaysAgoFeeDecisionMinDate.minusDays(10).toLocalDate(), tenDaysAgoFeeDecisionMinDate.minusDays(1).toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
-        updateChildData(db, vardaClient, since, feeDecisionMinDate.toLocalDate())
+        updateChildData(db, vardaClient, since, tenDaysAgoFeeDecisionMinDate.toLocalDate())
 
         assertVardaElementCounts(1, 1, 0)
 

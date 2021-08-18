@@ -373,7 +373,10 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
-        val shouldHaveFeeData = !evakaServiceNeed.endDate.isBefore(feeDecisionMinDate)
+        // Service need should have fee data if unit is invoiced by evaka, and if so, if service need is in effect after evaka started invoicing
+        val shouldHaveFeeData = if (!db.read { it.serviceNeedIsInvoicedByMunicipality(evakaServiceNeed.id) }) false else
+            !evakaServiceNeed.endDate.isBefore(feeDecisionMinDate)
+
         val hasFeeData: Boolean = serviceNeedFeeData.firstOrNull().let { it != null && it.hasFeeData() }
 
         if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
@@ -752,7 +755,6 @@ LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
 WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
-AND daycare.invoiced_by_municipality = true
 """
     )
         .bind("startingFrom", startingFrom)
@@ -931,7 +933,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         LEFT JOIN application_view a ON daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate AND a.preferredstartdate=(select max(preferredstartdate) from application_view a where daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate)
         WHERE sn.id = :id
         AND p.type = ANY(:vardaPlacementTypes::placement_type[])
-        AND d.invoiced_by_municipality = true
     """.trimIndent()
 
     return createQuery(sql)
@@ -975,3 +976,18 @@ WHERE evaka_child_id = :evakaChildId
 ).bind("evakaChildId", evakaChildId)
     .bind("resetTimestamp", resetTimestamp)
     .execute()
+
+fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeedId): Boolean = createQuery(
+    """
+            SELECT true
+            FROM service_need sn 
+                LEFT JOIN placement p ON sn.placement_id = p.id
+                LEFT JOIN daycare d ON d.id = p.unit_id
+            WHERE
+                sn.id = :serviceNeedId 
+                AND d.invoiced_by_municipality = true
+    """.trimIndent()
+)
+    .bind("serviceNeedId", serviceNeedId)
+    .mapTo<Boolean>()
+    .list().isNotEmpty()
