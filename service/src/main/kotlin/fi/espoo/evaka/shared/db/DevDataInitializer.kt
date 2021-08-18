@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("local")
+@Profile("espoo_evaka & local")
 class DevDataInitializer(jdbi: Jdbi) {
     init {
         Database(jdbi).transaction { tx ->
