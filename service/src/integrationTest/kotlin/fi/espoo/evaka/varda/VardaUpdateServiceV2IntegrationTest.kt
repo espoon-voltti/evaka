@@ -33,8 +33,10 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.snDefaultClub
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPartDayDaycare
+import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -371,6 +373,18 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 0)
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild for non varda unit handles placement types`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.minusDays(81).toLocalDate(), PlacementType.DAYCARE, testDaycareNotInvoiced.id)
+        createServiceNeed(db, since, snDefaultPreschool, testChild_1, since.minusDays(80).toLocalDate(), since.minusDays(61).toLocalDate(), PlacementType.PRESCHOOL, testDaycareNotInvoiced.id)
+        createServiceNeed(db, since, snDefaultClub, testChild_1, since.minusDays(60).toLocalDate(), since.minusDays(40).toLocalDate(), PlacementType.CLUB, testDaycareNotInvoiced.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(1, serviceNeeds.size)
+        assertEquals(id, serviceNeeds.first())
     }
 
     @Test

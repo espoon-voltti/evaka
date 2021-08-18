@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -79,28 +78,26 @@ class VardaUpdateServiceV2(
         val resetChildIds = db.read { it.getVardaChildrenToReset() }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
 
-        val successfulDeletes = resetChildIds.filter { childId ->
-            if (deleteChildDataFromVardaAndDb(db, client, childId)) true
-            else {
-                logger.warn("VardaUpdate: could not reset evaka child $childId from varda")
-                false
-            }
-        }
-
-        val successfulResets = successfulDeletes.filter { childId ->
-            val childServiceNeeds = db.read { it.getServiceNeedsByChild(childId) }
-            logger.info("VardaUpdate: will send ${childServiceNeeds.size} service needs for child $childId")
-            try {
-                childServiceNeeds.forEach { serviceNeed ->
-                    if (!handleNewEvakaServiceNeed(db, client, serviceNeed.id, feeDecisionMinDate))
-                        error("VardaUpdate: failed to send service need for child $childId")
+        val successfulResets = resetChildIds.foldIndexed(listOf<UUID>()) { index, successfulResets, childId ->
+            logger.info { "VardaUpdate: resetting child $childId (${index + 1}/$resetChildIds)" }
+            if (deleteChildDataFromVardaAndDb(db, client, childId)) {
+                try {
+                    val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
+                    logger.info("VardaUpdate: will send ${childServiceNeeds.size} service needs for child $childId")
+                    childServiceNeeds.forEach { serviceNeedId ->
+                        if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
+                            error("VardaUpdate: failed to send service need for child $childId")
+                    }
+                    db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
+                    logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
+                    successfulResets.plus(childId)
+                } catch (e: Exception) {
+                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.message}")
+                    successfulResets
                 }
-                db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
-                logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
-                true
-            } catch (e: Exception) {
-                logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.message}")
-                false
+            } else {
+                logger.warn("VardaUpdate: could not delete evaka child $childId from varda")
+                successfulResets
             }
         }
 
@@ -130,7 +127,7 @@ class VardaUpdateServiceV2(
 fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
     val vardaChildIds = getVardaChildIdsByEvakaChildId(db, evakaChildId)
 
-    logger.info("VardaUpdate: resetting all varda data for evaka child $evakaChildId, varda child ids: ${vardaChildIds.joinToString(",")}")
+    logger.info("VardaUpdate: deleting all varda data for evaka child $evakaChildId, varda child ids: ${vardaChildIds.joinToString(",")}")
 
     val successfulDeletes: List<Boolean> = vardaChildIds.map { vardaChildId ->
         try {
@@ -142,7 +139,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
             logger.info { "VardaUpdate: found ${placementIds.size} placements to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
-            val feeIds = placementIds.flatMap { vardaClient.getFeeDataByChild(it) }
+            val feeIds = vardaClient.getFeeDataByChild(vardaChildId)
             logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             feeIds.forEach { feeId ->
@@ -503,17 +500,6 @@ fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGu
             .mapTo<VardaGuardianWithId>()
             .list()
     }
-}
-
-fun getGuardianFromVarda(client: VardaClient, ssn: String?, oid: String?): VardaGuardian {
-    val person = client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(ssn, oid))
-        ?: error("VardaUpdate: couldn't fetch guardian from Varda")
-    return VardaGuardian(
-        henkilotunnus = ssn,
-        henkilo_oid = person.personOid,
-        etunimet = person.firstName,
-        sukunimi = person.lastName
-    )
 }
 
 fun sendFeeDecisionToVarda(
@@ -991,3 +977,23 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
     .bind("serviceNeedId", serviceNeedId)
     .mapTo<Boolean>()
     .list().isNotEmpty()
+
+fun Database.Read.getServiceNeedsForVardaByChild(
+    childId: UUID
+): List<ServiceNeedId> {
+    // language=SQL
+    val sql =
+        """
+        SELECT sn.id
+        FROM service_need sn
+        JOIN placement pl ON pl.id = sn.placement_id
+        WHERE pl.child_id = :childId
+        AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("vardaPlacementTypes", vardaPlacementTypes)
+        .mapTo<ServiceNeedId>()
+        .toList()
+}
