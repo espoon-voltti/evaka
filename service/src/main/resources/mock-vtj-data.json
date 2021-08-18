@@ -3294,5 +3294,34 @@
         ]
       }
     ]
+  },
+  {
+    "firstNames": "Hillary",
+    "lastName": "Foo",
+    "socialSecurityNumber": "120220A995L",
+    "nationalities": [
+      {
+        "countryName": "Suomi",
+        "countryCode": "FIN"
+      }
+    ],
+    "nativeLanguage": {
+      "languageName": "suomi",
+      "code": "fi"
+    },
+    "restrictedDetails": {
+      "enabled": false,
+      "endDate": null
+    },
+    "residenceCode": "hogfors_kamreerintie1",
+    "address": {
+      "streetAddress": "Kankkulankaivo 1",
+      "postalCode": "00340",
+      "postOffice": "Espoo",
+      "streetAddressSe": "Kankkulaswell 1",
+      "postOfficeSe": "Esbo"
+    },
+    "dependants": [],
+    "guardians": []
   }
 ]

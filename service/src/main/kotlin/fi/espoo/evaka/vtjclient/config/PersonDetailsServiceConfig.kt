@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vtjclient.config
 
 import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -22,7 +22,7 @@ class PersonDetailsServiceConfig {
         when (evakaEnv.vtjEnabled) {
             true -> VTJPersonDetailsService(
                 vtjClientService = ctx.getBean(VtjClientService::class.java),
-                henkiloMapper = ctx.getBean(IVtjHenkiloMapper::class.java),
+                henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
                 vtjCache = ctx.getBean(VtjCache::class.java)
             )
             false -> MockPersonDetailsService()

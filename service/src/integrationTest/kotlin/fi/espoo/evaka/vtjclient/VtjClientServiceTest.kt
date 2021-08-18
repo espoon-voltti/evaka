@@ -12,7 +12,7 @@ import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.ASUKASMAARA
@@ -47,7 +47,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
     lateinit var vtjClientService: IVtjClientService
 
     @Autowired
-    lateinit var mapper: IVtjHenkiloMapper
+    lateinit var mapper: VtjHenkiloMapper
 
     private val schemaResource: Resource = ClassPathResource("wsdl/query.xsd")
 

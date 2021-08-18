@@ -291,9 +291,9 @@ val testChild_3 = PersonData.Detailed(
     ssn = "120220A995L",
     firstName = "Hillary",
     lastName = "Foo",
-    streetAddress = "",
-    postalCode = "",
-    postOffice = "",
+    streetAddress = "Kankkulankaivo 1",
+    postalCode = "00340",
+    postOffice = "Espoo",
     restrictedDetailsEnabled = false
 )
 
