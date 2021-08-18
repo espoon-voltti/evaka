@@ -536,7 +536,6 @@ fun sendFeeDecisionToVarda(
     )
 
     return client.createFeeData(requestPayload)?.id
-        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
 fun sendVoucherDecisionToVarda(
@@ -559,7 +558,6 @@ fun sendVoucherDecisionToVarda(
     )
 
     return client.createFeeData(requestPayload)?.id
-        ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getGuardianFromVarda(client, it.henkilotunnus, it.henkilo_oid) }))?.id
 }
 
 private fun vardaFeeBasisByPlacementType(type: PlacementType): String {

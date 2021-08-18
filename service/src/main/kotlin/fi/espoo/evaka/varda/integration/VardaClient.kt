@@ -167,6 +167,8 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
+                // TODO: once everything works, remove this debug logging
+                logger.error { "VardaUpdate: Fetching person from Varda failed for ${body.henkilotunnus?.slice(0..4)}" }
                 logRequestError(request, result.error)
                 null
             }
