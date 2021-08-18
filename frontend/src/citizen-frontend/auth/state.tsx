@@ -18,8 +18,6 @@ export type Person = {
 }
 
 export type AccessibleFeatures = {
-  applications: boolean
-  decisions: boolean
   messages: boolean
 }
 

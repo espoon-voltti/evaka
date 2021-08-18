@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import { getAuthStatus } from 'employee-frontend/api/auth'
 import { SelectOption } from 'employee-frontend/components/common/Select'
+import { UserContext } from 'employee-frontend/state/user'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,
@@ -16,10 +16,10 @@ import {
 } from 'lib-common/api-types/messaging/message'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { featureFlags } from 'lib-customizations/employee'
 import React, {
   createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState
@@ -34,12 +34,7 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import {
-  DraftContent,
-  isPersonalMessageAccount,
-  MessageAccount,
-  SentMessage
-} from './types'
+import { DraftContent, MessageAccount, SentMessage } from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
@@ -115,32 +110,18 @@ const appendMessageAndMoveThreadToTopOfList =
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
-    const auth = useMemo(() => getAuthStatus(), [])
+    const { loggedIn } = useContext(UserContext)
 
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
     )
-    const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
-      if (res.isSuccess) {
-        setAccounts(
-          res.map((val) =>
-            val.filter(
-              (acc) =>
-                featureFlags.experimental?.mobileDailyNotes ||
-                isPersonalMessageAccount(acc)
-            )
-          )
-        )
-      } else {
-        setAccounts(res)
-      }
-    }, [])
-    const getAccounts = useRestApi(getMessagingAccounts, setAccountsResult)
+
+    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
-      void auth.then(({ loggedIn }) => (loggedIn ? loadAccounts() : null))
-    }, [loadAccounts, auth])
+      loggedIn ? loadAccounts() : null
+    }, [loadAccounts, loggedIn])
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(

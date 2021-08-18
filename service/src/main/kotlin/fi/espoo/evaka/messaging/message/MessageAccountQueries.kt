@@ -52,14 +52,12 @@ fun Database.Read.getEmployeeDetailedMessageAccounts(employeeId: UUID): Set<Deta
     val accountIds = getEmployeeMessageAccounts(employeeId)
 
     val sql = """
-SELECT id, name, account_type as type, group_id, group_name, group_unitId, group_unitName, unreadCount
-FROM (
 SELECT acc.id,
        name_view.account_name AS name,
        CASE
            WHEN dg.id IS NOT NULL THEN 'group'
            ELSE 'personal'
-       END                    AS account_type,
+       END                    AS type,
        dg.id                  AS group_id,
        dg.name                AS group_name,
        dc.id                  AS group_unitId,
@@ -70,15 +68,14 @@ FROM message_account acc
     LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
-    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id
+    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND acl.role = 'UNIT_SUPERVISOR'
     LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
 WHERE acc.id = ANY(:accountIds)
 AND (
     'MESSAGING' = ANY(dc.enabled_pilot_features)
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
 )
-GROUP BY acc.id, account_name, account_type, group_id, group_name, group_unitId, group_unitName
-) AS tmp
+GROUP BY acc.id, account_name, 3, group_id, group_name, group_unitId, group_unitName
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())

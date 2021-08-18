@@ -17,8 +17,6 @@ class AccessControlCitizen(private val jdbi: Jdbi) {
         return Database(jdbi).read {
             val hasAccessToMessaging = it.citizenHasAccessToMessaging(user.id)
             CitizenFeatures(
-                applications = true,
-                decisions = true,
                 messages = hasAccessToMessaging
             )
         }
