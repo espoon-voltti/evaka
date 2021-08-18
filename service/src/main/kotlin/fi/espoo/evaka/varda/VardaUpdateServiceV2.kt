@@ -139,7 +139,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
             logger.info { "VardaUpdate: found ${placementIds.size} placements to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
-            val feeIds = placementIds.flatMap { vardaClient.getFeeDataByChild(it) }
+            val feeIds = vardaClient.getFeeDataByChild(vardaChildId)
             logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             feeIds.forEach { feeId ->
