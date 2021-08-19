@@ -42,6 +42,9 @@ const en: Translations = {
     openExpandingInfo: 'Open the details',
     errors: {
       genericGetError: 'Error in fetching the requested information'
+    },
+    datetime: {
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su']
     }
   },
   header: {

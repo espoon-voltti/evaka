@@ -21,6 +21,7 @@ import Header from './header/Header'
 import { Localization } from './localization'
 import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
+import CalendarPage from './calendar/CalendarPage'
 import { MessageContextProvider } from './messages/state'
 import GlobalErrorDialog from './overlay/Error'
 import GlobalInfoDialog from './overlay/Info'
@@ -72,6 +73,11 @@ export default function App() {
                       exact
                       path="/messages"
                       component={requireAuth(MessagesPage, false)}
+                    />
+                    <Route
+                      exact
+                      path="/calendar"
+                      component={requireAuth(CalendarPage, false)}
                     />
                     <Route path="/" component={RedirectToMap} />
                   </Switch>
