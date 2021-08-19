@@ -159,8 +159,8 @@ export default React.memo(function Groups({
             data-qa="toggle-all-groups-collapsible"
           />
         </TitleContainer>
-        {canManageGroups && (
-          <div>
+        <FixedSpaceRow spacing="L" alignItems="center">
+          {canManageGroups && (
             <Link to={`/units/${unit.id}/family-contacts`}>
               <InlineButton
                 text={i18n.unit.groups.familyContacts}
@@ -168,19 +168,25 @@ export default React.memo(function Groups({
                 data-qa="open-family-contacts-button"
               />
             </Link>
-          </div>
-        )}
-        {canManageGroups ? (
-          <>
-            <Gap size="L" horizontal />
+          )}
+          {unit.enabledPilotFeatures.includes('RESERVATIONS') ? (
+            <Link to={`/units/${unit.id}/attendance-reservations`}>
+              <InlineButton
+                text={i18n.unit.groups.attendanceReservations}
+                onClick={() => undefined}
+                data-qa="open-unit-attendance-reservations-button"
+              />
+            </Link>
+          ) : null}
+          {canManageGroups ? (
             <AddButton
               text={i18n.unit.groups.create}
               onClick={() => toggleUiMode('create-new-daycare-group')}
               disabled={uiMode === 'create-new-daycare-group'}
               flipped
             />
-          </>
-        ) : null}
+          ) : null}
+        </FixedSpaceRow>
       </TitleBar>
       <Gap size="s" />
       <FixedSpaceRow alignItems="center">

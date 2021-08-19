@@ -34,7 +34,7 @@ interface FinanceDecisionHandler {
   lastName: string
 }
 
-export type PilotFeature = 'MESSAGING' | 'MOBILE'
+export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 
 export interface Unit {
   id: UUID

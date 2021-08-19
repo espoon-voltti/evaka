@@ -61,6 +61,7 @@ import { RouteWithTitle } from './components/RouteWithTitle'
 import Search from './components/Search'
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
+import UnitAttendanceReservationsPage from './components/unit/unit-reservations/UnitAttendanceReservationsPage'
 import UnitPage from './components/UnitPage'
 import Units from './components/Units'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
@@ -154,6 +155,11 @@ export default function App() {
               exact
               path="/units/:unitId/groups/:groupId/caretakers"
               component={ensureAuthenticated(GroupCaretakers)}
+            />
+            <Route
+              exact
+              path="/units/:unitId/attendance-reservations"
+              component={ensureAuthenticated(UnitAttendanceReservationsPage)}
             />
             <RouteWithTitle
               path="/units/:id"
