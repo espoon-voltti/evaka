@@ -79,7 +79,7 @@ class VardaUpdateServiceV2(
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
 
         val successfulResets = resetChildIds.foldIndexed(listOf<UUID>()) { index, successfulResets, childId ->
-            logger.info { "VardaUpdate: resetting child $childId (${index + 1}/$resetChildIds)" }
+            logger.info { "VardaUpdate: resetting child $childId (${index + 1}/${resetChildIds.size})" }
             if (deleteChildDataFromVardaAndDb(db, client, childId)) {
                 try {
                     val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
