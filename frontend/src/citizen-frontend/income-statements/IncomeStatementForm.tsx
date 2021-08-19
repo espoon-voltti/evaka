@@ -1,5 +1,5 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { H1, H2, H3, H4, Label, P } from 'lib-components/typography'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -19,7 +19,14 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { AttachmentType, otherIncome } from './types/common'
 import * as Form from './types/form'
 import { validateIncomeStatementBody } from './types/body'
-import { errorToInputInfo, validDate, validInt } from '../form-validation'
+import {
+  errorToInputInfo,
+  required,
+  validate,
+  validateIf,
+  validDate,
+  validInt
+} from '../form-validation'
 import { createIncomeStatement } from './api'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -33,6 +40,9 @@ import {
   saveAttachment
 } from '../attachments'
 import { useHistory } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasExclamationTriangle } from 'lib-icons'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 const initialFormData: Form.IncomeStatementForm = {
   startDate: formatDate(new Date()),
@@ -84,21 +94,39 @@ const initialFormData: Form.IncomeStatementForm = {
 export default function IncomeStatementForm() {
   const history = useHistory()
   const t = useTranslation()
-  const [formData, setFormData] =
-    React.useState<Form.IncomeStatementForm>(initialFormData)
+  const scrollTarget = React.useRef<HTMLElement>()
+  const [formData, setFormData] = React.useState(initialFormData)
+  const [showFormErrors, setShowFormErrors] = React.useState(false)
 
   const validatedData = validateIncomeStatementBody(formData)
-  const isValid = validatedData !== null
   const showOtherInfo =
     formData.gross.selected || formData.entrepreneur.selected
 
   const requiredAttachments = computeRequiredAttachments(formData)
 
-  const save = React.useCallback(
-    () =>
-      validatedData ? createIncomeStatement(validatedData) : Promise.resolve(),
-    [validatedData]
-  )
+  const saveButtonEnabled =
+    (formData.highestFee ||
+      formData.gross.selected ||
+      formData.entrepreneur.selected) &&
+    formData.assure
+
+  const save = React.useCallback(() => {
+    if (validatedData) {
+      return createIncomeStatement(validatedData)
+    } else {
+      setShowFormErrors(true)
+      if (scrollTarget.current) {
+        window.scrollTo({
+          left: 0,
+          top:
+            window.pageYOffset +
+            scrollTarget.current.getBoundingClientRect().top,
+          behavior: 'smooth'
+        })
+      }
+      return Promise.resolve('AsyncButton.cancel')
+    }
+  }, [validatedData])
 
   const handleAttachmentUploaded = React.useCallback(
     (attachment: Attachment) =>
@@ -134,12 +162,17 @@ export default function IncomeStatementForm() {
           </FixedSpaceColumn>
         </ContentArea>
         <Gap size="s" />
-        <IncomeTypeSelection formData={formData} onChange={setFormData} />
+        <IncomeTypeSelection
+          formData={formData}
+          onChange={setFormData}
+          ref={scrollTarget}
+        />
         {formData.gross.selected && (
           <>
             <Gap size="L" />
             <GrossIncomeSelection
               formData={formData.gross}
+              showFormErrors={showFormErrors}
               onChange={(value) => setFormData({ ...formData, gross: value })}
             />
           </>
@@ -149,6 +182,7 @@ export default function IncomeStatementForm() {
             <Gap size="L" />
             <EntrepreneurIncomeSelection
               formData={formData.entrepreneur}
+              showFormErrors={showFormErrors}
               onChange={(value) =>
                 setFormData({ ...formData, entrepreneur: value })
               }
@@ -184,7 +218,7 @@ export default function IncomeStatementForm() {
             text={t.common.save}
             primary
             onClick={save}
-            disabled={!isValid}
+            disabled={!saveButtonEnabled}
             onSuccess={navigateToList}
           />
         </FixedSpaceRow>
@@ -194,18 +228,21 @@ export default function IncomeStatementForm() {
   )
 }
 
-function IncomeTypeSelection({
-  formData,
-  onChange
-}: {
-  formData: Form.IncomeStatementForm
-  onChange: (value: Form.IncomeStatementForm) => void
-}) {
+const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
+  {
+    formData,
+    onChange
+  }: {
+    formData: Form.IncomeStatementForm
+    onChange: (value: Form.IncomeStatementForm) => void
+  },
+  ref: React.ForwardedRef<HTMLElement>
+) {
   const t = useTranslation()
   const [lang] = useLang()
 
   return (
-    <ContentArea opaque paddingVertical="L">
+    <ContentArea opaque paddingVertical="L" ref={ref}>
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.incomeInfo}</H2>
         <Gap size="s" />
@@ -234,14 +271,10 @@ function IncomeTypeSelection({
               id="end-date"
               date={formData.endDate}
               onChange={(value) => onChange({ ...formData, endDate: value })}
-              info={
-                formData.endDate
-                  ? errorToInputInfo(
-                      validDate(formData.endDate),
-                      t.validationErrors
-                    )
-                  : undefined
-              }
+              info={errorToInputInfo(
+                validateIf(formData.endDate != '', formData.endDate, validDate),
+                t.validationErrors
+              )}
               hideErrorsBeforeTouched
               locale={lang}
             />
@@ -299,13 +332,15 @@ function IncomeTypeSelection({
       </FixedSpaceColumn>
     </ContentArea>
   )
-}
+})
 
 function GrossIncomeSelection({
   formData,
+  showFormErrors,
   onChange
 }: {
   formData: Form.Gross
+  showFormErrors: boolean
   onChange: (value: Form.Gross) => void
 }) {
   const t = useTranslation()
@@ -317,7 +352,11 @@ function GrossIncomeSelection({
         <Gap size="m" />
         <P noMargin>{t.income.grossIncome.description}</P>
         <Gap size="m" />
-        <Label>{t.income.grossIncome.incomeSource} *</Label>
+        <LabelWithError
+          label={`${t.income.grossIncome.incomeSource} *`}
+          showError={showFormErrors && formData.incomeSource === null}
+          errorText={t.income.errors.choose}
+        />
         <Gap size="s" />
         <Radio
           label={t.income.incomesRegisterConsent}
@@ -437,9 +476,11 @@ function adjustEntrepreneurFormRadioButtons(
 
 function EntrepreneurIncomeSelection({
   formData,
+  showFormErrors,
   onChange
 }: {
   formData: Form.Entrepreneur
+  showFormErrors: boolean
   onChange: (value: Form.Entrepreneur) => void
 }) {
   const t = useTranslation()
@@ -456,7 +497,11 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <P noMargin>{t.income.entrepreneurIncome.description}</P>
         <Gap size="L" />
-        <Label>{t.income.entrepreneurIncome.fullTimeLabel} *</Label>
+        <LabelWithError
+          label={`${t.income.entrepreneurIncome.fullTimeLabel} *`}
+          showError={showFormErrors && formData.fullTime === null}
+          errorText={t.income.errors.choose}
+        />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.fullTime}
@@ -481,13 +526,17 @@ function EntrepreneurIncomeSelection({
           }
           locale={lang}
           info={errorToInputInfo(
-            validDate(formData.startOfEntrepreneurship),
+            validate(formData.startOfEntrepreneurship, required, validDate),
             t.validationErrors
           )}
-          hideErrorsBeforeTouched
+          hideErrorsBeforeTouched={!showFormErrors}
         />
         <Gap size="L" />
-        <Label>{t.income.entrepreneurIncome.spouseWorksInCompany} *</Label>
+        <LabelWithError
+          label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}
+          showError={showFormErrors && formData.spouseWorksInCompany === null}
+          errorText={t.income.errors.choose}
+        />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.yes}
@@ -527,10 +576,23 @@ function EntrepreneurIncomeSelection({
             handleChange({ ...formData, checkupConsent: value })
           }
         />
+        {showFormErrors && !formData.checkupConsent && (
+          <AlertBox message={t.income.errors.consentRequired} />
+        )}
         <Gap size="XL" />
         <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
         <Gap size="L" />
-        <Label>{t.income.entrepreneurIncome.companyForm} *</Label>
+        <LabelWithError
+          label={`${t.income.entrepreneurIncome.companyForm} *`}
+          showError={
+            showFormErrors &&
+            !formData.selfEmployed.selected &&
+            !formData.limitedCompany.selected &&
+            !formData.partnership &&
+            !formData.lightEntrepreneur
+          }
+          errorText={t.income.errors.chooseAtLeastOne}
+        />
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.selfEmployed}
@@ -547,6 +609,7 @@ function EntrepreneurIncomeSelection({
             <Gap size="s" />
             <SelfEmployedIncomeSelection
               formData={formData.selfEmployed}
+              showFormErrors={showFormErrors}
               onChange={(value) =>
                 handleChange({
                   ...formData,
@@ -576,6 +639,7 @@ function EntrepreneurIncomeSelection({
             <Gap size="s" />
             <LimitedCompanyIncomeSelection
               formData={formData.limitedCompany}
+              showFormErrors={showFormErrors}
               onChange={(value) =>
                 handleChange({
                   ...formData,
@@ -621,6 +685,7 @@ function EntrepreneurIncomeSelection({
             <Gap size="L" />
             <Accounting
               formData={formData.accountant}
+              showFormErrors={showFormErrors}
               onChange={(value) =>
                 handleChange({ ...formData, accountant: value })
               }
@@ -634,9 +699,11 @@ function EntrepreneurIncomeSelection({
 
 function SelfEmployedIncomeSelection({
   formData,
+  showFormErrors,
   onChange
 }: {
   formData: Form.SelfEmployed
+  showFormErrors: boolean
   onChange: (value: Form.SelfEmployed) => void
 }) {
   const t = useTranslation()
@@ -645,6 +712,9 @@ function SelfEmployedIncomeSelection({
     <Indent>
       <FixedSpaceColumn>
         <P noMargin>{t.income.selfEmployed.info}</P>
+        {showFormErrors && !formData.attachments && !formData.estimation && (
+          <LabelError text={t.income.errors.chooseAtLeastOne} />
+        )}
         <Checkbox
           label={t.income.selfEmployed.attachments}
           checked={formData.attachments}
@@ -668,9 +738,14 @@ function SelfEmployedIncomeSelection({
                 onChange={(value) =>
                   onChange({ ...formData, estimatedMonthlyIncome: value })
                 }
-                hideErrorsBeforeTouched
+                hideErrorsBeforeTouched={!showFormErrors}
                 info={errorToInputInfo(
-                  validInt(formData.estimatedMonthlyIncome),
+                  validateIf(
+                    formData.estimation,
+                    formData.estimatedMonthlyIncome,
+                    required,
+                    validInt
+                  ),
                   t.validationErrors
                 )}
               />
@@ -688,9 +763,14 @@ function SelfEmployedIncomeSelection({
                     onChange({ ...formData, incomeStartDate: value })
                   }
                   locale={lang}
-                  hideErrorsBeforeTouched
+                  hideErrorsBeforeTouched={!showFormErrors}
                   info={errorToInputInfo(
-                    validDate(formData.incomeStartDate),
+                    validateIf(
+                      formData.estimation,
+                      formData.incomeStartDate,
+                      required,
+                      validDate
+                    ),
                     t.validationErrors
                   )}
                 />
@@ -702,15 +782,15 @@ function SelfEmployedIncomeSelection({
                     onChange({ ...formData, incomeEndDate: value })
                   }
                   locale={lang}
-                  hideErrorsBeforeTouched
-                  info={
-                    formData.incomeEndDate
-                      ? errorToInputInfo(
-                          validDate(formData.incomeStartDate),
-                          t.validationErrors
-                        )
-                      : undefined
-                  }
+                  hideErrorsBeforeTouched={!showFormErrors}
+                  info={errorToInputInfo(
+                    validateIf(
+                      formData.estimation && formData.incomeEndDate != '',
+                      formData.incomeEndDate,
+                      validDate
+                    ),
+                    t.validationErrors
+                  )}
                 />
               </FixedSpaceRow>
             </FixedSpaceColumn>
@@ -723,9 +803,11 @@ function SelfEmployedIncomeSelection({
 
 function LimitedCompanyIncomeSelection({
   formData,
+  showFormErrors,
   onChange
 }: {
   formData: Form.LimitedCompany
+  showFormErrors: boolean
   onChange: (value: Form.LimitedCompany) => void
 }) {
   const t = useTranslation()
@@ -733,6 +815,9 @@ function LimitedCompanyIncomeSelection({
     <Indent>
       <FixedSpaceColumn>
         <P noMargin>{t.income.limitedCompany.info}</P>
+        {showFormErrors && formData.incomeSource === null && (
+          <LabelError text={t.income.errors.choose} />
+        )}
         <Radio
           label={t.income.limitedCompany.incomesRegister}
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
@@ -754,12 +839,15 @@ function LimitedCompanyIncomeSelection({
 
 function Accounting({
   formData,
+  showFormErrors,
   onChange
 }: {
   formData: Form.Accountant
+  showFormErrors: boolean
   onChange: (value: Form.Accountant) => void
 }) {
-  const t = useTranslation().income.accounting
+  const tr = useTranslation()
+  const t = tr.income.accounting
   return (
     <>
       <H3 noMargin>{t.title}</H3>
@@ -772,16 +860,26 @@ function Accounting({
             placeholder={t.accountantPlaceholder}
             value={formData.name}
             onChange={(value) => onChange({ ...formData, name: value })}
+            hideErrorsBeforeTouched={!showFormErrors}
+            info={errorToInputInfo(
+              validate(formData.name, required),
+              tr.validationErrors
+            )}
           />
-          <Gap size="s" />
+          <Gap size="L" />
           <Label>{t.email} *</Label>
           <Gap size="s" />
           <InputField
             placeholder={t.emailPlaceholder}
             value={formData.email}
             onChange={(value) => onChange({ ...formData, email: value })}
+            hideErrorsBeforeTouched={!showFormErrors}
+            info={errorToInputInfo(
+              validate(formData.email, required),
+              tr.validationErrors
+            )}
           />
-          <Gap size="s" />
+          <Gap size="L" />
           <Label>{t.address}</Label>
           <Gap size="s" />
           <InputField
@@ -789,7 +887,6 @@ function Accounting({
             value={formData.address}
             onChange={(value) => onChange({ ...formData, address: value })}
           />
-          <Gap size="s" />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="zero" fullWidth>
           <Label>{t.phone} *</Label>
@@ -798,6 +895,11 @@ function Accounting({
             placeholder={t.phonePlaceholder}
             value={formData.phone}
             onChange={(value) => onChange({ ...formData, phone: value })}
+            hideErrorsBeforeTouched={!showFormErrors}
+            info={errorToInputInfo(
+              validate(formData.phone, required),
+              tr.validationErrors
+            )}
           />
         </FixedSpaceColumn>
       </FixedSpaceRow>
@@ -972,3 +1074,47 @@ const Indent = styled.div`
 const OtherIncomeWrapper = styled.div`
   max-width: 480px;
 `
+
+const LabelError = styled(function ({
+  text,
+  className
+}: {
+  text: string
+  className?: string
+}) {
+  const { colors } = useTheme()
+  return (
+    <span className={className}>
+      <FontAwesomeIcon
+        icon={fasExclamationTriangle}
+        color={colors.accents.orange}
+      />
+      {text}
+    </span>
+  )
+})`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.accents.orangeDark};
+
+  > :first-child {
+    margin-right: ${defaultMargins.xs};
+  }
+`
+
+function LabelWithError({
+  label,
+  showError,
+  errorText
+}: {
+  label: string
+  showError: boolean
+  errorText: string
+}) {
+  return (
+    <FixedSpaceRow>
+      <Label>{label}</Label>
+      {showError ? <LabelError text={errorText} /> : null}
+    </FixedSpaceRow>
+  )
+}

@@ -13,11 +13,12 @@ interface MessageBoxContainerProps {
   color: string
   width: string
   thin?: boolean
+  noMargin?: boolean
 }
 
 const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   width: ${(props) => props.width};
-  margin: ${(props) => (props.thin ? '0' : '24px 0')};
+  margin: ${(props) => (props.thin || props.noMargin ? '0' : '24px 0')};
   padding: ${(props) =>
     props.thin
       ? `${defaultMargins.xxs} ${defaultMargins.s}`
@@ -56,6 +57,7 @@ export interface MessageBoxProps {
   color: string
   width?: string
   thin?: boolean
+  noMargin?: boolean
   'data-qa'?: string
 }
 
@@ -66,6 +68,7 @@ export function MessageBox({
   color,
   width,
   thin,
+  noMargin,
   ...props
 }: MessageBoxProps) {
   if (!title && !message) {
@@ -77,6 +80,7 @@ export function MessageBox({
       color={color}
       width={width ?? 'fit-content'}
       thin={thin}
+      noMargin={noMargin}
       data-qa={props['data-qa']}
     >
       <div className="message-container">
@@ -100,6 +104,7 @@ interface InfoBoxProps {
   icon?: IconProp
   wide?: boolean
   thin?: boolean
+  noMargin?: boolean
   'data-qa'?: string
 }
 
@@ -109,6 +114,7 @@ export function InfoBox({
   icon,
   wide,
   thin,
+  noMargin,
   ...props
 }: InfoBoxProps) {
   const {
@@ -125,6 +131,7 @@ export function InfoBox({
       color={accentColors.water}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
+      noMargin={noMargin}
       data-qa={props['data-qa']}
     />
   )
@@ -135,6 +142,7 @@ interface AlertBoxProps {
   message?: string | React.ReactNode
   wide?: boolean
   thin?: boolean
+  noMargin?: boolean
   'data-qa'?: string
 }
 
@@ -143,6 +151,7 @@ export function AlertBox({
   message,
   wide,
   thin,
+  noMargin,
   ...props
 }: AlertBoxProps) {
   const {
@@ -156,6 +165,7 @@ export function AlertBox({
       color={accentColors.orange}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
+      noMargin={noMargin}
       data-qa={props['data-qa']}
     />
   )

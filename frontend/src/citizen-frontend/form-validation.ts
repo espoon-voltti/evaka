@@ -95,6 +95,7 @@ export const emailVerificationCheck =
     val === verification ? undefined : err
 
 type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
+
 export const validate = (
   val: string,
   ...validators: StandardValidator[]
@@ -103,6 +104,15 @@ export const validate = (
     const err = validator(val)
     if (err) return err
   }
+  return undefined
+}
+
+export const validateIf = (
+  condition: boolean,
+  val: string,
+  ...validators: StandardValidator[]
+): ErrorKey | undefined => {
+  if (condition) return validate(val, ...validators)
   return undefined
 }
 
