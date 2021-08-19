@@ -41,3 +41,7 @@ export const translations: { [K in Lang]: Translations } = {
 export const applicationTypes: ApplicationType[] = (
   ['DAYCARE', 'PRESCHOOL', 'CLUB'] as const
 ).filter((type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL')
+
+export const decisionCustomizationHandlerKeys: number[] = Object.keys(fi.unitEditor.field.decisionCustomization.handler)
+  .filter(key => (fi.unitEditor.field.decisionCustomization.handler[key]).length > 0)
+  .map(key => parseInt(key, 10))

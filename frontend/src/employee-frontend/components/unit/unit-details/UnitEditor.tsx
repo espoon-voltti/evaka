@@ -39,6 +39,7 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { unitProviderTypes } from 'lib-customizations/employee'
 import { UnitProviderType } from 'lib-customizations/types'
+import { decisionCustomizationHandlerKeys } from 'lib-customizations/employee'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -1232,20 +1233,18 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{i18n.unitEditor.label.decisionCustomization.handler}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {([0, 1, 2, 3] as const).map((index) => (
+            {decisionCustomizationHandlerKeys.map(key => (
               <Radio
-                key={index}
+                key={key}
                 label={
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
+                  i18n.unitEditor.field.decisionCustomization.handler[key]
                 }
                 checked={
-                  form.decisionCustomization.handler ===
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
+                  form.decisionCustomization.handler === i18n.unitEditor.field.decisionCustomization.handler[key]
                 }
                 onChange={() =>
                   updateDecisionCustomization({
-                    handler:
-                      i18n.unitEditor.field.decisionCustomization.handler[index]
+                    handler: i18n.unitEditor.field.decisionCustomization.handler[key]
                   })
                 }
               />
