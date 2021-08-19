@@ -48,7 +48,8 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
-      messages: 'Viestit'
+      messages: 'Viestit',
+      calendar: 'Kalenteri'
     },
     lang: {
       fi: 'Suomeksi',

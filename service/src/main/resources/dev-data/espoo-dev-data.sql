@@ -1935,4 +1935,8 @@ INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_ord
     ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
     ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
 
+<<<<<<< HEAD
 UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE}';
+=======
+UPDATE daycare SET enabled_pilot_features = '{MESSAGING, RESERVATIONS}';
+>>>>>>> 3b8a06ce3... add nav link and pilot feature

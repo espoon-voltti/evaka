@@ -49,7 +49,8 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
-      messages: 'Messages'
+      messages: 'Messages',
+      calendar: 'Calendar'
     },
     lang: {
       fi: 'Suomeksi',

@@ -19,6 +19,7 @@ export type Person = {
 
 export type AccessibleFeatures = {
   messages: boolean
+  reservations: boolean
 }
 
 export type User = Person & {

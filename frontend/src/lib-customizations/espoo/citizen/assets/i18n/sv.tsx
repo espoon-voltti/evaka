@@ -49,7 +49,8 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
-      messages: 'Meddelanden'
+      messages: 'Meddelanden',
+      calendar: 'Kalender'
     },
     lang: {
       fi: 'Suomeksi',

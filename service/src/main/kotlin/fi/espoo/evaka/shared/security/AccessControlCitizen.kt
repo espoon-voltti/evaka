@@ -15,9 +15,9 @@ import java.util.UUID
 class AccessControlCitizen(private val jdbi: Jdbi) {
     fun getPermittedFeatures(user: AuthenticatedUser): CitizenFeatures {
         return Database(jdbi).read {
-            val hasAccessToMessaging = it.citizenHasAccessToMessaging(user.id)
             CitizenFeatures(
-                messages = hasAccessToMessaging
+                messages = it.citizenHasAccessToMessaging(user.id),
+                reservations = it.citizenHasAccessToReservations(user.id)
             )
         }
     }
@@ -25,7 +25,7 @@ class AccessControlCitizen(private val jdbi: Jdbi) {
     private fun Database.Read.citizenHasAccessToMessaging(personId: UUID): Boolean {
         // language=sql
         val sql = """
-WITH placement_ids AS (
+WITH child_placements AS (
     SELECT pl.unit_id
     FROM guardian g
     JOIN placement pl
@@ -59,10 +59,24 @@ WITH placement_ids AS (
 )
 SELECT EXISTS (
     SELECT 1
-    FROM placement_ids
+    FROM child_placements
     JOIN daycare
-    ON placement_ids.unit_id = daycare.id
+    ON child_placements.unit_id = daycare.id
     WHERE 'MESSAGING' = ANY(enabled_pilot_features)
+)
+        """.trimIndent()
+        return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
+    }
+
+    private fun Database.Read.citizenHasAccessToReservations(personId: UUID): Boolean {
+        // language=sql
+        val sql = """
+SELECT EXISTS (
+    SELECT 1
+    FROM guardian g
+    JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    JOIN daycare ON pl.unit_id = daycare.id
+    WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
