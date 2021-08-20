@@ -83,7 +83,7 @@ class VardaUpdateServiceV2(
             if (deleteChildDataFromVardaAndDb(db, client, childId)) {
                 try {
                     val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
-                    logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs to be sent for child $childId")
+                    logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
                     childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
                         logger.info { "VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})" }
                         if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
@@ -311,10 +311,10 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
         check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
-            "VardaUpdate: oph organizer oid was null for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
+            "VardaUpdate: oph organizer oid was empty for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
         }
         check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
-            "VardaUpdate: oph unit oid was null for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
+            "VardaUpdate: oph unit oid was empty for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
         }
         val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
         val errors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
