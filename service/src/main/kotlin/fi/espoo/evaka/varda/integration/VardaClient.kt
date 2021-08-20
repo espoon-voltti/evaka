@@ -257,7 +257,7 @@ class VardaClient(
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                throw error(result.error)
+                error(result.error)
             }
         }
     }
@@ -325,7 +325,7 @@ class VardaClient(
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                throw error(result.error)
+                error(result.error)
             }
         }
     }
@@ -398,7 +398,7 @@ class VardaClient(
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                throw error(result.error)
+                error(result.error)
             }
         }
     }
