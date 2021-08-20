@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.utils.enumSetOf
 import java.util.EnumMap
 import java.util.EnumSet
 
@@ -84,7 +85,7 @@ private inline fun <reified A> RolesByAction<A>.invert(): ActionsByRole<A> where
     val result = EnumMap<UserRole, EnumSet<A>>(UserRole::class.java)
     this.entries.forEach { (action, roles) ->
         roles.forEach { role ->
-            result[role] = EnumSet.copyOf(result[role] ?: EnumSet.noneOf(A::class.java)).apply {
+            result[role] = EnumSet.copyOf(result[role] ?: enumSetOf()).apply {
                 add(action)
             }
         }

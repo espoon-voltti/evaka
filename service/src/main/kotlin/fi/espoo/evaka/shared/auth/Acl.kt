@@ -7,13 +7,11 @@ package fi.espoo.evaka.shared.auth
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
-import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PlacementId
@@ -115,21 +113,6 @@ WHERE employee_id = :userId AND placement.id = :placementId
         }
     )
 
-    fun getRolesForGroupPlacement(user: AuthenticatedUser, groupPlacementId: GroupPlacementId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
-            it.createQuery(
-                // language=SQL
-                """
-SELECT role
-FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
-WHERE employee_id = :userId AND daycare_group_placement.id = :groupPlacementId
-                """.trimIndent()
-            ).bind("userId", user.id).bind("groupPlacementId", groupPlacementId).mapTo<UserRole>().toSet()
-        }
-    )
-
     fun getRolesForChild(user: AuthenticatedUser, childId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
@@ -185,20 +168,6 @@ WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
                 ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
             }
         )
-
-    fun getRolesForBackupCare(user: AuthenticatedUser, backupCareId: BackupCareId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
-            it.createQuery(
-                // language=SQL
-                """
-SELECT role
-FROM child_acl_view acl
-JOIN backup_care bc ON acl.child_id = bc.child_id
-WHERE bc.id = :backupCareId AND acl.employee_id = :userId
-                """.trimIndent()
-            ).bind("backupCareId", backupCareId).bind("userId", user.id).mapTo<UserRole>().toSet()
-        }
-    )
 
     fun getRolesForBackupPickup(user: AuthenticatedUser, backupPickupId: BackupPickupId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {

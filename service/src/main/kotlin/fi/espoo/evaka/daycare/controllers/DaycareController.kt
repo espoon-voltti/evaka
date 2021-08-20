@@ -74,13 +74,14 @@ class DaycareController(
         return db.read { tx ->
             tx.getDaycare(daycareId)?.let { daycare ->
                 val groups = tx.getDaycareGroupSummaries(daycareId)
+                val permittedActions = accessControl.getPermittedGroupActions(user, groups.map { it.id })
                 ResponseEntity.ok(
                     DaycareResponse(
                         daycare,
                         groups.map {
-                            DaycareGroupResponse(id = it.id, name = it.name, permittedActions = accessControl.getPermittedGroupActions(user, it.id))
+                            DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
                         },
-                        accessControl.getPermittedUnitActions(user, daycareId)
+                        accessControl.getPermittedUnitActions(user, listOf(daycareId)).values.first()
                     )
                 )
             }

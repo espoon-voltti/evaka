@@ -4,6 +4,11 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
@@ -15,6 +20,7 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import java.util.EnumSet
 
 sealed interface Action {
+    sealed interface ScopedAction<I> : Action
     enum class Global(private val roles: EnumSet<UserRole>) : Action {
         CREATE_VASU_TEMPLATE(),
         READ_VASU_TEMPLATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
@@ -31,7 +37,7 @@ sealed interface Action {
     }
     enum class Application(private val roles: EnumSet<UserRole>) : Action {
         READ_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_WITHHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
+        READ_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE(SERVICE_WORKER),
 
         SEND(SERVICE_WORKER),
@@ -76,7 +82,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class BackupCare(private val roles: EnumSet<UserRole>) : Action {
+    enum class BackupCare(private val roles: EnumSet<UserRole>) : ScopedAction<BackupCareId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR),
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR);
 
@@ -134,7 +140,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Group(private val roles: EnumSet<UserRole>) : Action {
+    enum class Group(private val roles: EnumSet<UserRole>) : ScopedAction<GroupId> {
         UPDATE(UNIT_SUPERVISOR),
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
 
@@ -152,7 +158,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class GroupPlacement(private val roles: EnumSet<UserRole>) : Action {
+    enum class GroupPlacement(private val roles: EnumSet<UserRole>) : ScopedAction<GroupPlacementId> {
         UPDATE(UNIT_SUPERVISOR),
         DELETE(UNIT_SUPERVISOR);
 
@@ -174,7 +180,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Placement(private val roles: EnumSet<UserRole>) : Action {
+    enum class Placement(private val roles: EnumSet<UserRole>) : ScopedAction<PlacementId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR),
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
 
@@ -194,13 +200,10 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Unit(private val roles: EnumSet<UserRole>) : Action {
+    enum class Unit(private val roles: EnumSet<UserRole>) : ScopedAction<DaycareId> {
         READ_BASIC(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_DETAILED(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR),
         UPDATE(),
-
-        READ_APPLICATION_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_APPLICATION_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
 
         READ_ATTENDANCE_RESERVATIONS(UNIT_SUPERVISOR, STAFF),
 
