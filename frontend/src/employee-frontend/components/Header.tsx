@@ -177,7 +177,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               )}
 
-              {featureFlags.messaging && user.accessibleFeatures.messages && (
+              {user.accessibleFeatures.messages && (
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"

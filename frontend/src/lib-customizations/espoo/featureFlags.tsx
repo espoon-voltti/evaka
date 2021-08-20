@@ -21,7 +21,6 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
@@ -38,7 +37,6 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
@@ -55,7 +53,6 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {

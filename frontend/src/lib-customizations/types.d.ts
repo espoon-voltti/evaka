@@ -99,7 +99,6 @@ interface BaseFeatureFlags {
   }
   evakaLogin: boolean
   financeBasicsPage: boolean
-  messaging: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
 
