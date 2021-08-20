@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.security.AccessControl
@@ -83,45 +82,6 @@ class BackupPickupController(
     ): ResponseEntity<Unit> {
         Audit.ChildBackupPickupDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.BackupPickup.DELETE, id)
-        db.transaction { tx ->
-            tx.deleteBackupPickup(id)
-        }
-        return ResponseEntity.noContent().build()
-    }
-
-    // TODO: Delete these after deployment
-
-    @PutMapping("/children/{childId}/backup-pickups")
-    fun updateForChildV0(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID,
-        @RequestBody body: ChildBackupPickup
-    ): ResponseEntity<Unit> {
-        Audit.ChildBackupPickupUpdate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-        return db.transaction { tx ->
-            tx.updateBackupPickup(
-                body.id,
-                ChildBackupPickupContent(
-                    name = body.name,
-                    phone = body.name
-                )
-            )
-        }.let {
-            ResponseEntity.noContent().build()
-        }
-    }
-
-    @DeleteMapping("/children/{childId}/backup-pickups/{id}")
-    fun deleteV0(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable("id") id: BackupPickupId,
-        @PathVariable("childId") childId: UUID
-    ): ResponseEntity<Unit> {
-        Audit.ChildBackupPickupDelete.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         db.transaction { tx ->
             tx.deleteBackupPickup(id)
         }
