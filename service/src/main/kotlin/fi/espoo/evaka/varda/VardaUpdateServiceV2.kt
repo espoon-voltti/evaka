@@ -316,7 +316,7 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
         check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
             "VardaUpdate: oph unit oid was null for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
         }
-        val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
+        val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
         val errors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
 
@@ -844,15 +844,6 @@ data class FeeDataByServiceNeed(
     fun hasFeeData() = feeDecisionIds.isNotEmpty() || voucherValueDecisionIds.isNotEmpty()
 }
 
-private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: EvakaServiceNeedInfoForVarda): VardaServiceNeed =
-    VardaServiceNeed(
-        evakaChildId = childId,
-        evakaServiceNeedId = evakaServiceNeed.id,
-        evakaServiceNeedOptionId = evakaServiceNeed.optionId,
-        evakaServiceNeedUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedUpdated),
-        evakaServiceNeedOptionUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedOptionUpdated)
-    )
-
 data class EvakaServiceNeedInfoForVarda(
     val id: ServiceNeedId,
     val optionId: ServiceNeedOptionId,
@@ -896,6 +887,15 @@ data class EvakaServiceNeedInfoForVarda(
         endDate = this.endDate,
         sourceSystem = sourceSystem
     )
+
+    fun toVardaServiceNeed(): VardaServiceNeed =
+        VardaServiceNeed(
+            evakaChildId = this.childId,
+            evakaServiceNeedId = this.id,
+            evakaServiceNeedOptionId = this.optionId,
+            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated),
+            evakaServiceNeedOptionUpdated = HelsinkiDateTime.from(this.serviceNeedOptionUpdated)
+        )
 }
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
