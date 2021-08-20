@@ -741,6 +741,7 @@ LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
 WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
+AND daycare.upload_children_to_varda = true
 """
     )
         .bind("startingFrom", startingFrom)
@@ -918,7 +919,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         JOIN daycare d ON p.unit_id = d.id
         LEFT JOIN application_view a ON daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate AND a.preferredstartdate=(select max(preferredstartdate) from application_view a where daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate)
         WHERE sn.id = :id
-        AND p.type = ANY(:vardaPlacementTypes::placement_type[])
     """.trimIndent()
 
     return createQuery(sql)
@@ -987,8 +987,10 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         SELECT sn.id
         FROM service_need sn
         JOIN placement pl ON pl.id = sn.placement_id
+        JOIN daycare d ON d.id = pl.unit_id
         WHERE pl.child_id = :childId
         AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
+        AND d.upload_children_to_varda = true
         """.trimIndent()
 
     return createQuery(sql)

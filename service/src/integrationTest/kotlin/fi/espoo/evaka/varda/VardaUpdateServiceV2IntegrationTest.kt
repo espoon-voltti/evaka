@@ -44,6 +44,7 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
@@ -354,11 +355,22 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updateChildData does not react to new evaka service for non varda placement`() {
+    fun `updateChildData does not react to new evaka service need for non varda placement`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL)
+
+        updateChildData(db, vardaClient, since, feeDecisionMinDate)
+        assertVardaElementCounts(0, 0, 0)
+    }
+
+    @Test
+    fun `updateChildData does not react to new evaka service need for unit which does not send child info to varda`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL, testGhostUnitDaycare.id!!)
 
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
