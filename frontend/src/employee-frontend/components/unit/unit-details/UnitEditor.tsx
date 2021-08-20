@@ -59,6 +59,7 @@ interface FormData {
   language: UnitLanguage
   ghostUnit: boolean
   uploadToVarda: boolean
+  uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
@@ -385,6 +386,7 @@ function validateForm(
     ghostUnit,
     financeDecisionHandlerId,
     uploadToVarda,
+    uploadChildrenToVarda,
     uploadToKoski,
     invoicedByMunicipality,
     ophUnitOid,
@@ -415,6 +417,7 @@ function validateForm(
         language,
         ghostUnit,
         uploadToVarda,
+        uploadChildrenToVarda,
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
@@ -481,6 +484,7 @@ function toFormData(unit: Unit | undefined): FormData {
     language: unit?.language ?? 'fi',
     ghostUnit: unit?.ghostUnit ?? false,
     uploadToVarda: unit?.uploadToVarda ?? false,
+    uploadChildrenToVarda: unit?.uploadChildrenToVarda ?? false,
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
@@ -937,6 +941,14 @@ export default function UnitEditor(props: Props): JSX.Element {
             label={i18n.unitEditor.field.uploadToVarda}
             checked={form.uploadToVarda}
             onChange={(uploadToVarda) => updateForm({ uploadToVarda })}
+          />
+          <Checkbox
+            disabled={!props.editable}
+            label={i18n.unitEditor.field.uploadChildrenToVarda}
+            checked={form.uploadChildrenToVarda}
+            onChange={(uploadChildrenToVarda) =>
+              updateForm({ uploadChildrenToVarda })
+            }
           />
           <Checkbox
             disabled={!props.editable}

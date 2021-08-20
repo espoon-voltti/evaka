@@ -131,6 +131,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
                 unitManager = UnitManager(name = null, email = null, phone = null),
                 invoicedByMunicipality = false,
                 uploadToVarda = false,
+                uploadChildrenToVarda = false,
                 uploadToKoski = false,
                 capacity = 0,
                 ghostUnit = false,

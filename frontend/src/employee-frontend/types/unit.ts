@@ -49,6 +49,7 @@ export interface Unit {
   language: UnitLanguage
   ghostUnit: boolean
   uploadToVarda: boolean
+  uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null

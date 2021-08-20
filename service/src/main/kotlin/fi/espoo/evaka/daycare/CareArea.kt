@@ -45,6 +45,7 @@ data class Daycare(
     val language: Language,
     val ghostUnit: Boolean,
     val uploadToVarda: Boolean,
+    val uploadChildrenToVarda: Boolean,
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,

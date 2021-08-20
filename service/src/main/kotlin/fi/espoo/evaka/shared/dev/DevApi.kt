@@ -809,6 +809,7 @@ data class DevDaycare(
     val language: Language = Language.fi,
     val ghostUnit: Boolean = false,
     val uploadToVarda: Boolean = true,
+    val uploadChildrenToVarda: Boolean = true,
     val uploadToKoski: Boolean = true,
     val invoicedByMunicipality: Boolean = true,
     val costCenter: String? = "31500",

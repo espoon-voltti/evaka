@@ -108,7 +108,7 @@ WITH insert_unit_manager AS (
 )
 INSERT INTO daycare (
   id, name, opening_date, closing_date, care_area_id, type, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
-  capacity, language, ghost_unit, upload_to_varda, upload_to_koski, invoiced_by_municipality, cost_center,
+  capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center,
   additional_info, phone, email, url,
   street_address, postal_code, post_office,
   location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
@@ -117,7 +117,7 @@ INSERT INTO daycare (
   oph_unit_oid, oph_organizer_oid, oph_organization_oid, round_the_clock, operation_days, enabled_pilot_features
 ) VALUES (
   :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
-  :capacity, :language, :ghostUnit, :uploadToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter,
+  :capacity, :language, :ghostUnit, :uploadToVarda, :uploadChildrenToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter,
   :additionalInfo, :phone, :email, :url,
   :visitingAddress.streetAddress, :visitingAddress.postalCode, :visitingAddress.postOffice,
   :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,

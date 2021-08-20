@@ -49,6 +49,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         language = Language.fi,
         ghostUnit = false,
         uploadToVarda = false,
+        uploadChildrenToVarda = false,
         uploadToKoski = false,
         invoicedByMunicipality = false,
         costCenter = "123456",
@@ -136,6 +137,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.language, daycare.language)
         assertEquals(fields.ghostUnit, daycare.ghostUnit)
         assertEquals(fields.uploadToVarda, daycare.uploadToVarda)
+        assertEquals(fields.uploadChildrenToVarda, daycare.uploadChildrenToVarda)
         assertEquals(fields.invoicedByMunicipality, daycare.invoicedByMunicipality)
         assertEquals(fields.costCenter, daycare.costCenter)
         assertEquals(fields.additionalInfo, daycare.additionalInfo)
