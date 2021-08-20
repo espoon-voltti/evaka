@@ -96,10 +96,7 @@ class VardaUpdateServiceV2(
                     logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.message}")
                     successfulResets
                 }
-            } else {
-                logger.warn("VardaUpdate: could not delete evaka child $childId from varda")
-                successfulResets
-            }
+            } else successfulResets
         }
 
         logger.info("VardaUpdate: successfully reset ${successfulResets.size} children (failed ${resetChildIds.size - successfulResets.size} children)")
