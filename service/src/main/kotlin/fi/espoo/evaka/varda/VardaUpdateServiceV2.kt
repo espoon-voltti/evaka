@@ -310,6 +310,12 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
 fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate): Boolean {
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+        check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
+            "VardaUpdate: oph organizer oid was null for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
+        }
+        check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
+            "VardaUpdate: oph unit oid was null for child ${evakaServiceNeed.childId}, service need ${evakaServiceNeed.id}"
+        }
         val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
         val errors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
@@ -896,8 +902,13 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
     // language=sql
     val sql = """
         SELECT
-            sn.id, p.child_id AS child_id, LEAST(COALESCE(a.sentdate, a.created::date), sn.start_date) AS application_date, sn.start_date, sn.end_date,
-            COALESCE(a.urgent, false) AS urgent, sno.daycare_hours_per_week AS hours_per_week,
+            sn.id,
+            p.child_id AS child_id,
+            LEAST(COALESCE(a.sentdate, a.created::date), sn.start_date) AS application_date,
+            sn.start_date,
+            sn.end_date,
+            COALESCE(a.urgent, false) AS urgent,
+            sno.daycare_hours_per_week AS hours_per_week,
             CASE 
                 WHEN sno.valid_placement_type = 'TEMPORARY_DAYCARE' OR sno.valid_placement_type = 'TEMPORARY_DAYCARE_PART_DAY' THEN true
                 ELSE false
