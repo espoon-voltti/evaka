@@ -23,6 +23,7 @@ import { formatName } from '../../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '../../../api/unit'
 import { isPartDayPlacement } from '../../../utils/placements'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
@@ -67,8 +68,10 @@ function renderMissingGroupPlacementRow(
             label={
               featureFlags.daycareApplication.serviceNeedOptionsEnabled
                 ? serviceNeeds
-                    .filter(
-                      (sn) => sn.startDate <= gap.end && sn.endDate >= gap.start
+                    .filter((sn) =>
+                      gap.overlaps(
+                        new FiniteDateRange(sn.startDate, sn.endDate)
+                      )
                     )
                     .map((sn) => sn.option.name)
                     .join(' / ')
