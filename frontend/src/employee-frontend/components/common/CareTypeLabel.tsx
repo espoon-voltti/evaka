@@ -33,7 +33,7 @@ interface CareTypeLabelContainerProps {
 const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
   font-weight: 600;
   border-radius: 12px;
-  height: 25px;
+  min-height: 25px;
   padding: 0 10px;
   text-align: center;
   line-height: 25px;
@@ -53,6 +53,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
         return colors.greyscale.lighter
       case 'temporary':
         return colors.accents.violet
+      case 'school-shift-care':
+        return colors.accents.petrol
       default:
         return colors.greyscale.white
     }
@@ -72,6 +74,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
       case 'club':
         return colors.greyscale.dark
       case 'temporary':
+        return colors.greyscale.white
+      case 'school-shift-care':
         return colors.greyscale.white
       default:
         return 'initial'
@@ -109,6 +113,9 @@ export function careTypesFromPlacementType(type: PlacementType) {
       {(type === 'TEMPORARY_DAYCARE' ||
         type === 'TEMPORARY_DAYCARE_PART_DAY') && (
         <CareTypeLabel type="temporary" />
+      )}
+      {type === 'SCHOOL_SHIFT_CARE' && (
+        <CareTypeLabel type="school-shift-care" />
       )}
     </CareTypeLabelsContainer>
   )
