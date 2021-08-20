@@ -132,6 +132,7 @@ val testClub = DevDaycare(
     daycareApplyPeriod = null,
     preschoolApplyPeriod = null,
     uploadToVarda = false,
+    uploadChildrenToVarda = false,
     uploadToKoski = false
 )
 
@@ -141,6 +142,7 @@ val testGhostUnitDaycare = DevDaycare(
     areaId = testAreaId,
     type = setOf(CareType.CENTRE),
     uploadToVarda = false,
+    uploadChildrenToVarda = false,
     uploadToKoski = false,
     ghostUnit = true
 )

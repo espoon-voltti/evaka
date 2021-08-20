@@ -2440,7 +2440,8 @@ export const fi = {
       roundTheClock: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
       capacity: 'henkilöä',
       ghostUnit: 'Yksikkö on haamuyksikkö',
-      uploadToVarda: 'Lähetetään Vardaan',
+      uploadToVarda: 'Yksikön tiedot lähetetään Vardaan',
+      uploadChildrenToVarda: 'Yksikön lasten tiedot lähetetään Vardaan',
       uploadToKoski: 'Lähetetään Koski-palveluun',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       decisionCustomization: {
