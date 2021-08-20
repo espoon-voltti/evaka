@@ -1,5 +1,6 @@
 package fi.espoo.evaka.reservations
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -19,7 +20,6 @@ import java.util.UUID
 
 @RestController
 class ReservationControllerCitizen {
-
     @GetMapping("/citizen/reservations")
     fun getReservations(
         db: Database.Connection,
@@ -27,7 +27,7 @@ class ReservationControllerCitizen {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<DailyReservationData> {
-        // TODO: Audit
+        Audit.AttendanceReservationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
         return db.read { it.getReservations(user.id, FiniteDateRange(from, to)) }
