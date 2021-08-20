@@ -43,7 +43,8 @@ export default {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
     },
     datetime: {
-      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su']
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      weekShort: 'Vk'
     }
   },
   header: {

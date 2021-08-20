@@ -44,7 +44,8 @@ const sv: Translations = {
       genericGetError: 'Hämtning av information misslyckades'
     },
     datetime: {
-      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su']
+      weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
+      weekShort: 'Veckan'
     }
   },
   header: {

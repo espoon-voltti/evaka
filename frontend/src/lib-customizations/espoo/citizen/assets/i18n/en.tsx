@@ -44,7 +44,8 @@ const en: Translations = {
       genericGetError: 'Error in fetching the requested information'
     },
     datetime: {
-      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su']
+      weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      weekShort: 'Week'
     }
   },
   header: {

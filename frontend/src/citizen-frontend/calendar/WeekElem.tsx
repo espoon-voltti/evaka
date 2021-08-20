@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { DailyReservationData } from './api'
 import DayElem from './DayElem'
+import { useTranslation } from '../localization'
 
 export interface WeekProps {
   weekNumber: number
@@ -10,9 +11,12 @@ export interface WeekProps {
 }
 
 export default React.memo(function WeekElem({ weekNumber, data }: WeekProps) {
+  const i18n = useTranslation()
   return (
     <div>
-      <WeekDiv>Vk {weekNumber}</WeekDiv>
+      <WeekDiv>
+        {i18n.common.datetime} {weekNumber}
+      </WeekDiv>
       <div>
         {data.map((d) => (
           <DayElem data={d} key={d.date.formatIso()} />
