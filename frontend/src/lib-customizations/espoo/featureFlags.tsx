@@ -26,7 +26,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      mobileDailyNotes: true,
       vasu: true
     }
   },
@@ -44,7 +43,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      mobileDailyNotes: false,
       vasu: true
     }
   },
@@ -62,7 +60,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: false,
-      mobileDailyNotes: false,
       vasu: false
     }
   }

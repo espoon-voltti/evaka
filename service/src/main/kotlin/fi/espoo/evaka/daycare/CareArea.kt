@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
@@ -68,7 +69,8 @@ data class Daycare(
     val ophOrganizerOid: String?,
     val ophOrganizationOid: String?,
     val operationDays: Set<Int>,
-    val roundTheClock: Boolean
+    val roundTheClock: Boolean,
+    val enabledPilotFeatures: List<PilotFeature>
 )
 
 @PropagateNull("finance_decision_handler_id")

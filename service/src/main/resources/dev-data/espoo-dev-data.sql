@@ -1935,4 +1935,4 @@ INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_ord
     ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
     ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
 
-UPDATE daycare SET enabled_pilot_features = '{MESSAGING}';
+UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE}';
