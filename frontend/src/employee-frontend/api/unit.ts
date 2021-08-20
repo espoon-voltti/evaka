@@ -16,7 +16,6 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
-  ProviderType,
   Stats,
   Unit,
   UnitLanguage,
@@ -35,6 +34,7 @@ import {
   PlacementType,
   ServiceNeedOptionSummary
 } from 'lib-common/api-types/serviceNeed/common'
+import { UnitProviderType } from 'lib-customizations/types'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -638,7 +638,7 @@ export interface DaycareFields {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: number
   language: UnitLanguage

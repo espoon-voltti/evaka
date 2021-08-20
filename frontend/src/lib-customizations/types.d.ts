@@ -37,6 +37,13 @@ export type PlacementPlanRejectReason =
   | 'REASON_2'
   | 'REASON_3'
 
+export type UnitProviderType =
+  | 'MUNICIPAL'
+  | 'PURCHASED'
+  | 'PRIVATE'
+  | 'MUNICIPAL_SCHOOL'
+  | 'PRIVATE_SERVICE_VOUCHER'
+
 export interface BaseAppConfig {
   sentry?: {
     dsn: string
@@ -128,6 +135,7 @@ export interface EmployeeCustomizations {
   placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
+  unitProviderTypes: UnitProviderType[]
 }
 
 export interface EmployeeMobileCustomizations {
