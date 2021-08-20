@@ -133,27 +133,21 @@ class VtjClientServiceTest {
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(null)
 
-        try {
-            service.query(query)
-            fail<Exception>("Exception not thrown")
-        } catch (ex: IllegalStateException) {
+        service.query(query)
 
-            assertThat(ex.message).isEqualTo("No results received")
+        argumentCaptor<ILoggingEvent>().apply {
+            verify(mockAppender, times(2)).doAppend(capture())
 
-            argumentCaptor<ILoggingEvent>().apply {
-                verify(mockAppender, times(2)).doAppend(capture())
+            val queryLogEvent = firstValue
 
-                val queryLogEvent = firstValue
+            queryLogEvent.assertCreateQueryLogMessage(query)
+            queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
 
-                queryLogEvent.assertCreateQueryLogMessage(query)
-                queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
-
-                val responseLogEvent = secondValue
-                assertThat(responseLogEvent.message).isEqualTo(
-                    "Did not receive VTJ results"
-                )
-                responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_NO_RESPONSE_OR_PARSING_ERROR)
-            }
+            val responseLogEvent = secondValue
+            assertThat(responseLogEvent.message).isEqualTo(
+                "Did not receive VTJ results"
+            )
+            responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_NO_RESPONSE_OR_PARSING_ERROR)
         }
     }
 

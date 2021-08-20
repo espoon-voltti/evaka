@@ -76,7 +76,6 @@ class VtjClientService(
             ) {
                 "Did not receive VTJ results"
             }
-            throw IllegalStateException("No results received")
         } else {
             logger.auditVTJ(
                 toLogParamsMap(
