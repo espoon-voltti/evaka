@@ -395,18 +395,18 @@ fun getMissingGroupPlacements(
             pl.type,
             daterange(greatest(pl.start_date, :launch), pl.end_date, '[]') AS range,
             pl.child_id,
-            coalesce(json_agg(json_build_object(
+            coalesce(jsonb_agg(jsonb_build_object(
                 'id', sn.id,
                 'placementId', sn.placement_id,
                 'startDate', sn.start_date,
                 'endDate', sn.end_date,
-                'option', json_build_object(
+                'option', jsonb_build_object(
                     'id', sno.id,
                     'name', sno.name,
                     'updated', date_part('epoch', sno.updated)
                 ),
                 'shiftCare', sn.shift_care,
-                'confirmed', json_build_object(
+                'confirmed', jsonb_build_object(
                     'employeeId', e.id,
                     'firstName', e.first_name,
                     'lastName', e.last_name,
