@@ -85,6 +85,7 @@ CREATE TABLE attendance_reservation (
     child_id uuid NOT NULL REFERENCES person(id),
     start_time timestamp with time zone NOT NULL,
     end_time timestamp with time zone NOT NULL,
+    start_date date GENERATED ALWAYS AS ((start_time AT TIME ZONE 'Europe/Helsinki')::date) STORED,
     created_by_guardian_id uuid REFERENCES person(id),
     created_by_employee_id uuid REFERENCES employee(id),
     CONSTRAINT attendance_reservation_start_before_end CHECK (start_time < end_time),

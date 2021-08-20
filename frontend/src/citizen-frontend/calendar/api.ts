@@ -4,8 +4,8 @@ import {client} from "../api-client";
 import {JsonOf} from "../../lib-common/json";
 
 export interface Reservation {
-  startTime: string
-  endTime: string
+  startTime: Date
+  endTime: Date
   childId: string
 }
 
@@ -25,7 +25,12 @@ export async function getReservations(
     })
     .then((res) => Success.of(res.data.map(data => ({
       ...data,
-      date: LocalDate.parseIso(data.date)
+      date: LocalDate.parseIso(data.date),
+      reservations: data.reservations.map(r => ({
+        ...r,
+        startTime: new Date(r.startTime),
+        endTime: new Date(r.endTime)
+      }))
     }))))
     .catch((e) => Failure.fromError(e))
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 @RestController
@@ -63,7 +64,7 @@ FROM (
         CASE WHEN ar.id IS NOT NULL THEN json_build_object('startTime', ar.start_time, 'endTime', ar.end_time, 'childId', ar.child_id) END AS reservation
     FROM generate_series(:start, :end, '1 day') t
     JOIN guardian g ON g.guardian_id = :guardianId
-    LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_time::date = t::date
+    LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
 ) AS rows
 GROUP BY date, is_holiday
         """.trimIndent()
