@@ -66,7 +66,7 @@ function renderMissingGroupPlacementRow(
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
             label={
-              featureFlags.daycareApplication.serviceNeedOptionsEnabled
+              featureFlags.groupsTableServiceNeedsEnabled
                 ? serviceNeeds
                     .filter((sn) =>
                       gap.overlaps(

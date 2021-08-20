@@ -595,8 +595,7 @@ function Group({
                                   : 'full'
                               }
                               label={
-                                featureFlags.daycareApplication
-                                  .serviceNeedOptionsEnabled
+                                featureFlags.groupsTableServiceNeedsEnabled
                                   ? placement.serviceNeeds
                                       .filter((sn) =>
                                         new FiniteDateRange(
