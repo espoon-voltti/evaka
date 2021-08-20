@@ -2,24 +2,47 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
-import {getReservations} from "./api";
-import LocalDate from "../../lib-common/local-date";
+import { DailyReservationData, getReservations } from './api'
+import LocalDate from 'lib-common/local-date'
+import { Loading, Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Loader from 'lib-components/atoms/Loader'
+import { useTranslation } from '../localization'
 
 export default React.memo(function CalendarPage() {
-  void getReservations(
-    LocalDate.today().startOfWeek(),
-    LocalDate.today().addMonths(2).startOfWeek()
+  const i18n = useTranslation()
+
+  const [data, setData] = useState<Result<DailyReservationData[]>>(Loading.of())
+
+  const loadData = useRestApi(getReservations, setData)
+  useEffect(
+    () =>
+      loadData(
+        LocalDate.today().startOfWeek(),
+        LocalDate.today().addMonths(2).startOfWeek().subDays(1)
+      ),
+    [loadData]
   )
 
   return (
     <>
       <Container>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
-          <CalendarListView />
+          {data.mapAll({
+            loading() {
+              return <Loader />
+            },
+            failure() {
+              return <div>{i18n.common.errors.genericGetError}</div>
+            },
+            success() {
+              return <CalendarListView data={data.getOrElse([])} />
+            }
+          })}
         </ContentArea>
       </Container>
       <Footer />

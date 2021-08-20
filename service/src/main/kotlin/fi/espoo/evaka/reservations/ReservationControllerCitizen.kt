@@ -7,6 +7,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.isWeekend
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 @RestController
@@ -54,18 +54,17 @@ fun Database.Read.getReservations(guardianId: UUID, range: FiniteDateRange): Lis
     return createQuery(
         """
 SELECT
-    date,
-    is_holiday,
-    coalesce(jsonb_agg(reservation) FILTER ( WHERE reservation IS NOT NULL ), '[]') AS reservations
-FROM (
-    SELECT
-        t::date AS date,
-        EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
-        CASE WHEN ar.id IS NOT NULL THEN json_build_object('startTime', ar.start_time, 'endTime', ar.end_time, 'childId', ar.child_id) END AS reservation
-    FROM generate_series(:start, :end, '1 day') t
-    JOIN guardian g ON g.guardian_id = :guardianId
-    LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
-) AS rows
+    t::date AS date,
+    EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
+    coalesce(
+        jsonb_agg(
+            jsonb_build_object('startTime', ar.start_time, 'endTime', ar.end_time, 'childId', ar.child_id)
+        ) FILTER (WHERE ar.id IS NOT NULL), 
+        '[]'
+    ) AS reservations
+FROM generate_series(:start, :end, '1 day') t
+JOIN guardian g ON g.guardian_id = :guardianId
+LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
 GROUP BY date, is_holiday
         """.trimIndent()
     )
@@ -74,4 +73,5 @@ GROUP BY date, is_holiday
         .bind("end", range.end)
         .mapTo<DailyReservationData>()
         .list()
+        .filter { !it.date.isWeekend() }
 }
