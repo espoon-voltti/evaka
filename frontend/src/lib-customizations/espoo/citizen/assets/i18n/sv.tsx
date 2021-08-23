@@ -42,6 +42,10 @@ const sv: Translations = {
     openExpandingInfo: 'Öppna detaljer',
     errors: {
       genericGetError: 'Hämtning av information misslyckades'
+    },
+    datetime: {
+      weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
+      weekShort: 'Veckan'
     }
   },
   header: {
@@ -49,7 +53,8 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
-      messages: 'Meddelanden'
+      messages: 'Meddelanden',
+      calendar: 'Kalender'
     },
     lang: {
       fi: 'Suomeksi',
@@ -126,6 +131,9 @@ const sv: Translations = {
       'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning'
+  },
+  calendar: {
+    holiday: 'Helgdag'
   },
   messages: {
     inboxTitle: 'Inkorg',

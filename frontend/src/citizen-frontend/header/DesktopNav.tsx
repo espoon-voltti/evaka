@@ -56,6 +56,11 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
                 )}
               </StyledNavLink>
             )}
+            {user.accessibleFeatures.reservations && (
+              <StyledNavLink to="/calendar" data-qa="nav-calendar">
+                {t.header.nav.calendar}
+              </StyledNavLink>
+            )}
           </>
         )}
       </Nav>

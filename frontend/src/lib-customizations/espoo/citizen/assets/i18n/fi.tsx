@@ -41,6 +41,10 @@ export default {
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
+    },
+    datetime: {
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      weekShort: 'Vk'
     }
   },
   header: {
@@ -48,7 +52,8 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
-      messages: 'Viestit'
+      messages: 'Viestit',
+      calendar: 'Kalenteri'
     },
     lang: {
       fi: 'Suomeksi',
@@ -125,6 +130,9 @@ export default {
       'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun'
+  },
+  calendar: {
+    holiday: 'Pyhäpäivä'
   },
   messages: {
     inboxTitle: 'Viestit',

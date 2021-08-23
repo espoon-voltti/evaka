@@ -207,6 +207,11 @@ const Navigation = React.memo(function Navigation({
               )}
             </StyledNavLink>
           )}
+          {user.accessibleFeatures.reservations && (
+            <StyledNavLink to="/calendar" onClick={close}>
+              {t.header.nav.calendar}
+            </StyledNavLink>
+          )}
         </>
       )}
     </Nav>

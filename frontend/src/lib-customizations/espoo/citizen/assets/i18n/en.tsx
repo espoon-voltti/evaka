@@ -42,6 +42,10 @@ const en: Translations = {
     openExpandingInfo: 'Open the details',
     errors: {
       genericGetError: 'Error in fetching the requested information'
+    },
+    datetime: {
+      weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      weekShort: 'Week'
     }
   },
   header: {
@@ -49,7 +53,8 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
-      messages: 'Messages'
+      messages: 'Messages',
+      calendar: 'Calendar'
     },
     lang: {
       fi: 'Suomeksi',
@@ -126,6 +131,9 @@ const en: Translations = {
       'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families',
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search'
+  },
+  calendar: {
+    holiday: 'Holiday'
   },
   messages: {
     inboxTitle: 'Inbox',
