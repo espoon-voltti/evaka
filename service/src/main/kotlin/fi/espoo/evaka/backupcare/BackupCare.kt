@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -27,6 +29,8 @@ data class UnitBackupCare(
     @Nested("group_")
     val group: BackupCareGroup?,
     val period: FiniteDateRange,
+    @Json
+    val serviceNeeds: Set<ServiceNeed>,
     val missingServiceNeedDays: Int
 )
 

@@ -179,6 +179,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                         name = groupName
                     ),
                     period = period,
+                    serviceNeeds = setOf(),
                     missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
                 )
             ),
