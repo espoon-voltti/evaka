@@ -460,7 +460,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
-        http.get("/citizen/income-statements/${id}")
+        http.get("/citizen/income-statements/$id")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)

@@ -94,7 +94,7 @@ export default React.forwardRef(function IncomeStatementForm(
         ...prev,
         attachments: [...prev.attachments, attachment]
       })),
-    []
+    [onChange]
   )
 
   const handleAttachmentDeleted = React.useCallback(
@@ -103,7 +103,7 @@ export default React.forwardRef(function IncomeStatementForm(
         ...prev,
         attachments: prev.attachments.filter((a) => a.id !== id)
       })),
-    []
+    [onChange]
   )
 
   const saveButtonEnabled =

@@ -15,7 +15,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Button from '../../lib-components/atoms/buttons/Button'
+import Button from 'lib-components/atoms/buttons/Button'
 
 export default function IncomeStatements() {
   const t = useTranslation()

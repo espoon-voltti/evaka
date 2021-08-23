@@ -60,10 +60,11 @@ export default function IncomeStatementEditor() {
       ? { type: 'new', formData: empty }
       : { type: 'existing', id: incomeStatementId, data: Loading.of() }
   )
+  const id = state.type === 'existing' ? state.id : null
 
   React.useEffect(() => {
-    if (state.type === 'existing') {
-      void loadIncomeStatement(state.id).then((incomeStatementAndForm) =>
+    if (id) {
+      void loadIncomeStatement(id).then((incomeStatementAndForm) =>
         setState((prev) =>
           prev.type === 'existing'
             ? { ...prev, data: incomeStatementAndForm }
@@ -71,7 +72,7 @@ export default function IncomeStatementEditor() {
         )
       )
     }
-  }, [])
+  }, [id])
 
   const updateFormData = (
     fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
@@ -96,17 +97,17 @@ export default function IncomeStatementEditor() {
       ? validateIncomeStatementBody(formData)
       : undefined
     if (validatedData) {
-      if (state.type === 'new') {
-        return createIncomeStatement(validatedData)
+      if (id) {
+        return updateIncomeStatement(id, validatedData)
       } else {
-        return updateIncomeStatement(state.id, validatedData)
+        return createIncomeStatement(validatedData)
       }
     } else {
       setShowFormErrors(true)
       if (form.current) form.current.scrollToErrors()
       return Promise.resolve('AsyncButton.cancel' as const)
     }
-  }, [formData])
+  }, [id, formData])
 
   const navigateToList = React.useCallback(() => {
     history.push('/income')
