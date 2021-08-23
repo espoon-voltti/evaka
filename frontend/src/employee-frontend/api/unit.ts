@@ -776,11 +776,15 @@ export interface DaycareDailyNoteFormData {
 
 export async function getUnitAttendanceReservations(
   unitId: UUID,
-  from: LocalDate
+  dateRange: FiniteDateRange
 ): Promise<Result<UnitAttendanceReservations>> {
   return client
     .get<JsonOf<UnitAttendanceReservations>>('/attendance-reservations', {
-      params: { unitId, from: from.formatIso() }
+      params: {
+        unitId,
+        from: dateRange.start.formatIso(),
+        to: dateRange.end?.formatIso()
+      }
     })
     .then(({ data }) =>
       Success.of({

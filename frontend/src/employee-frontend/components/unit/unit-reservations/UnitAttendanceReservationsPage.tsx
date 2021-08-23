@@ -4,15 +4,20 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { faChevronLeft, faChevronRight } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import {
   getUnitAttendanceReservations,
   UnitAttendanceReservations
@@ -24,6 +29,9 @@ export default React.memo(function UnitAttendanceReservationsPage() {
   const { unitId } = useParams<{ unitId: string }>()
   const { i18n } = useTranslation()
 
+  const [dateRange, setDateRange] = useState(
+    getWeekDateRange(LocalDate.today())
+  )
   const [reservations, setReservations] = useState<
     Result<UnitAttendanceReservations>
   >(Loading.of())
@@ -33,8 +41,8 @@ export default React.memo(function UnitAttendanceReservationsPage() {
   )
 
   useEffect(
-    () => loadAttendanceReservations(unitId, LocalDate.today()),
-    [unitId, loadAttendanceReservations]
+    () => loadAttendanceReservations(unitId, dateRange),
+    [unitId, dateRange, loadAttendanceReservations]
   )
 
   return (
@@ -53,6 +61,28 @@ export default React.memo(function UnitAttendanceReservationsPage() {
               <>
                 <H2>{data.unit}</H2>
                 <Gap size="m" />
+                <WeekPicker>
+                  <WeekPickerButton
+                    icon={faChevronLeft}
+                    onClick={() =>
+                      setDateRange(getWeekDateRange(dateRange.start.subDays(7)))
+                    }
+                    size="s"
+                  />
+                  <H3 noMargin>
+                    {`${dateRange.start.format(
+                      'dd.MM.'
+                    )} - ${dateRange.end.format()}`}
+                  </H3>
+                  <WeekPickerButton
+                    icon={faChevronRight}
+                    onClick={() =>
+                      setDateRange(getWeekDateRange(dateRange.start.addDays(7)))
+                    }
+                    size="s"
+                  />
+                </WeekPicker>
+                <Gap size="s" />
                 <FixedSpaceColumn spacing="L">
                   {data.groups.map(({ group, children }) => (
                     <div key={group}>
@@ -84,3 +114,19 @@ export default React.memo(function UnitAttendanceReservationsPage() {
     </Container>
   )
 })
+
+const getWeekDateRange = (date: LocalDate) =>
+  new FiniteDateRange(date.startOfWeek(), date.startOfWeek().addDays(6))
+
+const WeekPicker = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+`
+
+const WeekPickerButton = styled(IconButton)`
+  margin: 0 ${defaultMargins.s};
+  color: ${colors.greyscale.dark};
+`

@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -30,11 +31,13 @@ class AttendanceReservationController(private val ac: AccessControl) {
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitAttendanceReservations {
         Audit.UnitAttendanceReservations.log(targetId = unitId, objectId = from)
         ac.requirePermissionFor(user, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
-        val dateRange = FiniteDateRange(from, from.plusDays(6))
+        if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
+        val dateRange = FiniteDateRange(from, to)
         return db.read { tx ->
             val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
             tx
