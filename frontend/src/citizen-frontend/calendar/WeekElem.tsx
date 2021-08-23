@@ -4,6 +4,7 @@ import colors from 'lib-customizations/common'
 import { DailyReservationData } from './api'
 import DayElem from './DayElem'
 import { useTranslation } from '../localization'
+import { defaultMargins } from 'lib-components/white-space'
 
 export interface WeekProps {
   weekNumber: number
@@ -33,10 +34,10 @@ const WeekDiv = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px 0 8px;
+  padding: ${defaultMargins.s} 0 ${defaultMargins.xs};
   background-color: ${colors.brandEspoo.espooTurquoiseLight};
   color: ${colors.blues.dark};
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.875rem;
   border-bottom: 1px solid ${colors.greyscale.lighter};
 `
