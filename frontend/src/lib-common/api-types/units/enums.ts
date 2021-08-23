@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+export type UnitLanguage = 'fi' | 'sv'
+
 export type CareType =
   | 'CLUB'
   | 'FAMILY'
