@@ -111,7 +111,8 @@ enum class VardaUnitProviderType(val vardaCode: String) {
     MUNICIPAL_SCHOOL("jm01"),
     PURCHASED("jm02"),
     PRIVATE_SERVICE_VOUCHER("jm03"),
-    PRIVATE("jm04")
+    PRIVATE("jm04"),
+    EXTERNAL_PURCHASED("jm02")
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardatoimintamuoto/koodi
