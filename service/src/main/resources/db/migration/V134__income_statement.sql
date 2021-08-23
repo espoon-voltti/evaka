@@ -1,20 +1,3 @@
-ALTER TABLE attachment
-    DROP CONSTRAINT IF EXISTS attachment_income_statement_id_fkey,
-    DROP CONSTRAINT IF EXISTS created_for_fk,
-    DROP COLUMN IF EXISTS income_statement_id;
-
-DROP TABLE IF EXISTS income_statement;
-DROP TYPE IF EXISTS income_statement_type;
-DROP TYPE IF EXISTS income_source;
-DROP TYPE IF EXISTS other_income_type;
-
--- Used earlier
-DROP TYPE IF EXISTS gross_income_source;
-DROP TYPE IF EXISTS limited_company_income_source;
-DROP TYPE IF EXISTS company_type;
-DROP TYPE IF EXISTS self_employed_income_source;
-DROP TYPE IF EXISTS self_employed_type;
-
 CREATE TYPE income_statement_type AS ENUM (
     'HIGHEST_FEE',
     'INCOME'
