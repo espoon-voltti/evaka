@@ -101,6 +101,14 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     return invalid
   }
 
+  const accountant =
+    limitedCompany || partnership
+      ? validateAccountant(formData.accountant)
+      : null
+  if (accountant === invalid) {
+    return invalid
+  }
+
   return {
     fullTime,
     startOfEntrepreneurship,
@@ -109,7 +117,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     selfEmployed,
     limitedCompany,
     partnership,
-    lightEntrepreneur
+    lightEntrepreneur,
+    accountant
   }
 }
 
@@ -160,4 +169,15 @@ function validateLimitedCompany(formData: Form.LimitedCompany) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
   return { incomeSource: formData.incomeSource }
+}
+
+function validateAccountant(accountant: Form.Accountant) {
+  const result = {
+    name: accountant.name.trim(),
+    address: accountant.address.trim(),
+    phone: accountant.phone.trim(),
+    email: accountant.email.trim()
+  }
+  if (!result.name || !result.phone || !result.email) return invalid
+  return result
 }

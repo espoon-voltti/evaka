@@ -11,14 +11,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import Button from 'lib-components/atoms/buttons/Button'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { formatDate } from 'lib-common/date'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton, {
+  AsyncClickCallback
+} from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InputField from 'lib-components/atoms/form/InputField'
 import { AttachmentType, otherIncome } from './types/common'
 import * as Form from './types/form'
-import { validateIncomeStatementBody } from './types/body'
 import {
   errorToInputInfo,
   required,
@@ -27,7 +27,6 @@ import {
   validDate,
   validInt
 } from '../form-validation'
-import { createIncomeStatement } from './api'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
@@ -39,98 +38,59 @@ import {
   getAttachmentBlob,
   saveAttachment
 } from '../attachments'
-import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'lib-icons'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
-const initialFormData: Form.IncomeStatementForm = {
-  startDate: formatDate(new Date()),
-  endDate: '',
-  highestFee: false,
-  gross: {
-    selected: false,
-    incomeSource: null,
-    estimatedMonthlyIncome: '',
-    incomeStartDate: '',
-    incomeEndDate: '',
-    otherIncome: null
-  },
-  entrepreneur: {
-    selected: false,
-    fullTime: null,
-    startOfEntrepreneurship: '',
-    spouseWorksInCompany: null,
-    startupGrant: false,
-    checkupConsent: false,
-    selfEmployed: {
-      selected: false,
-      attachments: false,
-      estimation: false,
-      estimatedMonthlyIncome: '',
-      incomeStartDate: '',
-      incomeEndDate: ''
-    },
-    limitedCompany: {
-      selected: false,
-      incomeSource: null
-    },
-    partnership: false,
-    lightEntrepreneur: false,
-    accountant: {
-      name: '',
-      email: '',
-      address: '',
-      phone: ''
-    }
-  },
-  student: false,
-  alimonyPayer: false,
-  otherInfo: '',
-  attachments: [],
-  assure: false
+interface Props {
+  formData: Form.IncomeStatementForm
+  showFormErrors: boolean
+  onChange: (
+    fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
+  ) => void
+  onSave: AsyncClickCallback
+  onSuccess: () => void
+  onCancel: () => void
 }
 
-export default function IncomeStatementForm() {
-  const history = useHistory()
-  const t = useTranslation()
-  const scrollTarget = React.useRef<HTMLElement>()
-  const [formData, setFormData] = React.useState(initialFormData)
-  const [showFormErrors, setShowFormErrors] = React.useState(false)
+export interface IncomeStatementFormAPI {
+  scrollToErrors: () => void
+}
 
-  const validatedData = validateIncomeStatementBody(formData)
+export default React.forwardRef(function IncomeStatementForm(
+  { formData, showFormErrors, onChange, onSave, onSuccess, onCancel }: Props,
+  ref: React.ForwardedRef<IncomeStatementFormAPI>
+) {
+  const t = useTranslation()
+
+  const handleChange = React.useCallback(
+    (value: Form.IncomeStatementForm) => onChange(() => value),
+    [onChange]
+  )
+
+  const scrollTarget = React.useRef<HTMLElement>(null)
+
+  React.useImperativeHandle(ref, () => ({
+    scrollToErrors() {
+      if (!scrollTarget.current) return
+      const top =
+        window.pageYOffset + scrollTarget.current.getBoundingClientRect().top
+      window.scrollTo({
+        top,
+        left: 0,
+        behavior: 'smooth'
+      })
+    }
+  }))
+
   const showOtherInfo =
     formData.gross.selected || formData.entrepreneur.selected
 
   const requiredAttachments = computeRequiredAttachments(formData)
 
-  const saveButtonEnabled =
-    (formData.highestFee ||
-      formData.gross.selected ||
-      formData.entrepreneur.selected) &&
-    formData.assure
-
-  const save = React.useCallback(() => {
-    if (validatedData) {
-      return createIncomeStatement(validatedData)
-    } else {
-      setShowFormErrors(true)
-      if (scrollTarget.current) {
-        window.scrollTo({
-          left: 0,
-          top:
-            window.pageYOffset +
-            scrollTarget.current.getBoundingClientRect().top,
-          behavior: 'smooth'
-        })
-      }
-      return Promise.resolve('AsyncButton.cancel')
-    }
-  }, [validatedData])
-
   const handleAttachmentUploaded = React.useCallback(
     (attachment: Attachment) =>
-      setFormData((prev) => ({
+      onChange((prev) => ({
         ...prev,
         attachments: [...prev.attachments, attachment]
       })),
@@ -139,16 +99,18 @@ export default function IncomeStatementForm() {
 
   const handleAttachmentDeleted = React.useCallback(
     (id: UUID) =>
-      setFormData((prev) => ({
+      onChange((prev) => ({
         ...prev,
         attachments: prev.attachments.filter((a) => a.id !== id)
       })),
     []
   )
 
-  const navigateToList = React.useCallback(() => {
-    history.push('/income')
-  }, [history])
+  const saveButtonEnabled =
+    (formData.highestFee ||
+      formData.gross.selected ||
+      formData.entrepreneur.selected) &&
+    formData.assure
 
   return (
     <>
@@ -164,7 +126,8 @@ export default function IncomeStatementForm() {
         <Gap size="s" />
         <IncomeTypeSelection
           formData={formData}
-          onChange={setFormData}
+          showFormErrors={showFormErrors}
+          onChange={handleChange}
           ref={scrollTarget}
         />
         {formData.gross.selected && (
@@ -173,7 +136,7 @@ export default function IncomeStatementForm() {
             <GrossIncomeSelection
               formData={formData.gross}
               showFormErrors={showFormErrors}
-              onChange={(value) => setFormData({ ...formData, gross: value })}
+              onChange={(value) => handleChange({ ...formData, gross: value })}
             />
           </>
         )}
@@ -184,7 +147,7 @@ export default function IncomeStatementForm() {
               formData={formData.entrepreneur}
               showFormErrors={showFormErrors}
               onChange={(value) =>
-                setFormData({ ...formData, entrepreneur: value })
+                handleChange({ ...formData, entrepreneur: value })
               }
             />
           </>
@@ -192,7 +155,7 @@ export default function IncomeStatementForm() {
         {showOtherInfo && (
           <>
             <Gap size="L" />
-            <OtherInfo formData={formData} onChange={setFormData} />
+            <OtherInfo formData={formData} onChange={handleChange} />
             <Gap size="L" />
             <Attachments
               requiredAttachments={requiredAttachments}
@@ -211,29 +174,31 @@ export default function IncomeStatementForm() {
           <Checkbox
             label={`${t.income.assure} *`}
             checked={formData.assure}
-            onChange={(value) => setFormData({ ...formData, assure: value })}
+            onChange={(value) => handleChange({ ...formData, assure: value })}
           />
-          <Button text={t.common.cancel} onClick={navigateToList} />
+          <Button text={t.common.cancel} onClick={onCancel} />
           <AsyncButton
             text={t.common.save}
             primary
-            onClick={save}
+            onClick={onSave}
             disabled={!saveButtonEnabled}
-            onSuccess={navigateToList}
+            onSuccess={onSuccess}
           />
         </FixedSpaceRow>
       </Container>
       <Footer />
     </>
   )
-}
+})
 
 const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
   {
     formData,
+    showFormErrors,
     onChange
   }: {
     formData: Form.IncomeStatementForm
+    showFormErrors: boolean
     onChange: (value: Form.IncomeStatementForm) => void
   },
   ref: React.ForwardedRef<HTMLElement>
@@ -246,6 +211,12 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.incomeInfo}</H2>
         <Gap size="s" />
+        {showFormErrors && (
+          <>
+            <AlertBox noMargin message={t.income.errors.invalidForm} />
+            <Gap size="s" />
+          </>
+        )}
         <FixedSpaceRow spacing="XL">
           <div>
             <Label htmlFor="start-date">

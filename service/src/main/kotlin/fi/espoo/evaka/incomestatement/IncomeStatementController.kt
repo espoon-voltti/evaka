@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,6 +29,20 @@ class IncomeStatementController {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             ResponseEntity.ok(tx.readIncomeStatementsForPerson(user.id))
+        }
+    }
+
+    @GetMapping("/{incomeStatementId}")
+    fun getIncomeStatement(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable incomeStatementId: IncomeStatementId,
+    ): ResponseEntity<IncomeStatement> {
+        user.requireOneOfRoles(UserRole.END_USER)
+        return db.read { tx ->
+            val incomeStatement = tx.readIncomeStatementForPerson(user.id, incomeStatementId)
+            if (incomeStatement == null) throw NotFound("No such income statement")
+            else ResponseEntity.ok(incomeStatement)
         }
     }
 

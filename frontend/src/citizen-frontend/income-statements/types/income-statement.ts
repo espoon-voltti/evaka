@@ -38,6 +38,7 @@ export interface Entrepreneur {
   limitedCompany: LimitedCompany | null
   partnership: boolean
   lightEntrepreneur: boolean
+  accountant: Accountant | null
 }
 
 export interface SelfEmployed {
@@ -53,6 +54,13 @@ export interface EstimatedIncome {
 
 export interface LimitedCompany {
   incomeSource: IncomeSource
+}
+
+export interface Accountant {
+  name: string
+  email: string
+  address: string
+  phone: string
 }
 
 export type IncomeStatement = HighestFee | Income

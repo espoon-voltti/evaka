@@ -15,6 +15,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import Button from '../../lib-components/atoms/buttons/Button'
 
 export default function IncomeStatements() {
   const t = useTranslation()
@@ -76,6 +77,8 @@ function IncomeStatementItem({
 }: {
   incomeStatement: IncomeStatement
 }) {
+  const history = useHistory()
+
   return (
     <div>
       <H2>Tulotiedot ajalle {incomeStatement.startDate.format()} -</H2>
@@ -84,6 +87,10 @@ function IncomeStatementItem({
           <Label>Tulotiedot päivitetty</Label>
           <div>{incomeStatement.startDate.format()}</div>
         </FixedSpaceRow>
+        <Button
+          text="Muokkaa"
+          onClick={() => history.push(`/income/${incomeStatement.id}`)}
+        />
       </FixedSpaceColumn>
     </div>
   )

@@ -44,6 +44,13 @@ data class LimitedCompany(
     val incomeSource: IncomeSource
 )
 
+data class Accountant(
+    val name: String,
+    val address: String,
+    val phone: String,
+    val email: String,
+)
+
 data class Entrepreneur(
     val fullTime: Boolean,
     val startOfEntrepreneurship: LocalDate,
@@ -53,6 +60,7 @@ data class Entrepreneur(
     val limitedCompany: LimitedCompany?,
     val partnership: Boolean,
     val lightEntrepreneur: Boolean,
+    val accountant: Accountant?
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -84,13 +92,28 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
         is IncomeStatementBody.HighestFee -> true
         is IncomeStatementBody.Income ->
             if (body.gross == null && body.entrepreneur == null) false
-            else !(
-                body.entrepreneur != null &&
-                    body.entrepreneur.selfEmployed == null &&
-                    body.entrepreneur.limitedCompany == null &&
-                    !body.entrepreneur.partnership &&
-                    !body.entrepreneur.lightEntrepreneur
-                )
+            else
+                body.entrepreneur.let { entrepreneur ->
+                    entrepreneur == null ||
+                        // At least one company type must be selected
+                        (
+                            (
+                                entrepreneur.selfEmployed != null ||
+                                    entrepreneur.limitedCompany != null ||
+                                    entrepreneur.partnership ||
+                                    entrepreneur.lightEntrepreneur
+                                ) &&
+                                // Accountant must be given if limitedCompany or partnership is selected
+                                (
+                                    (entrepreneur.limitedCompany == null && !entrepreneur.partnership) ||
+                                        (entrepreneur.accountant != null)
+                                    ) &&
+                                // Accountant name, phone and email must be non-empty
+                                entrepreneur.accountant.let { accountant ->
+                                    accountant == null || (accountant.name != "" && accountant.phone != "" && accountant.email != "")
+                                }
+                            )
+                }
     }
 
 data class Attachment(val id: AttachmentId, val name: String, val contentType: String)

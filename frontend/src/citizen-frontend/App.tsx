@@ -27,7 +27,7 @@ import GlobalErrorDialog from './overlay/Error'
 import GlobalInfoDialog from './overlay/Info'
 import { OverlayContextProvider } from './overlay/state'
 import IncomeStatements from './income-statements/IncomeStatements'
-import IncomeStatementForm from './income-statements/IncomeStatementForm'
+import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import { featureFlags } from 'lib-customizations/citizen'
 
 export default function App() {
@@ -67,7 +67,7 @@ export default function App() {
                         <Route
                           exact
                           path="/income/:incomeStatementId"
-                          component={requireAuth(IncomeStatementForm)}
+                          component={requireAuth(IncomeStatementEditor)}
                         />
                       </>
                     )}

@@ -14,13 +14,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'lib-icons'
 import { StyledButton } from './Button'
 
+export type AsyncClickCallback = () => Promise<
+  void | Result | (void | Result)[] | 'AsyncButton.cancel'
+>
+
 type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<
-    void | Result | (void | Result)[] | 'AsyncButton.cancel'
-  >
+  onClick: AsyncClickCallback
   onSuccess: () => void
   onFailure?: () => void
   primary?: boolean

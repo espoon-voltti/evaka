@@ -6,6 +6,7 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
 import java.time.LocalDate
 import java.util.UUID
@@ -15,11 +16,9 @@ enum class IncomeStatementType {
     INCOME,
 }
 
-fun Database.Read.readIncomeStatementsForPerson(
-    personId: UUID,
-): List<IncomeStatement> =
-    createQuery(
-        """
+private fun selectQuery(single: Boolean): String {
+    // language=SQL
+    return """
 SELECT
     id,
     start_date,
@@ -40,6 +39,10 @@ SELECT
     limited_company_income_source,
     partnership,
     light_entrepreneur,
+    accountant_name,
+    accountant_address,
+    accountant_phone,
+    accountant_email,
     startup_grant,
     student,
     alimony_payer,
@@ -55,76 +58,106 @@ SELECT
     ) s) AS attachments
 FROM income_statement ist
 WHERE person_id = :personId
+${if (single) "AND id = :id" else ""}
 ORDER BY start_date DESC
-        """.trimIndent()
-    ).bind("personId", personId).map { row ->
-        val id = row.mapColumn<IncomeStatementId>("id")
-        val startDate = row.mapColumn<LocalDate>("start_date")
-        val endDate = row.mapColumn<LocalDate?>("end_date")
-        when (row.mapColumn<IncomeStatementType>("type")) {
-            IncomeStatementType.HIGHEST_FEE ->
-                IncomeStatement.HighestFee(
-                    id = id,
-                    startDate = startDate,
-                    endDate = endDate,
-                )
+        """
+}
 
-            IncomeStatementType.INCOME -> {
-                val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
-                val grossEstimatedMonthlyIncome = row.mapColumn<Int?>("gross_estimated_monthly_income")
-                val gross = if (grossIncomeSource != null) Gross(
-                    incomeSource = grossIncomeSource,
-                    estimatedIncome = if (grossEstimatedMonthlyIncome != null) EstimatedIncome(
-                        grossEstimatedMonthlyIncome,
-                        incomeStartDate = row.mapColumn("gross_income_start_date"),
-                        incomeEndDate = row.mapColumn("gross_income_end_date")
-                    ) else null,
-                    otherIncome = row.mapColumn<Array<OtherGrossIncome>>("gross_other_income").toSet(),
-                ) else null
+private fun mapIncomeStatement(row: RowView): IncomeStatement {
+    val id = row.mapColumn<IncomeStatementId>("id")
+    val startDate = row.mapColumn<LocalDate>("start_date")
+    val endDate = row.mapColumn<LocalDate?>("end_date")
+    return when (row.mapColumn<IncomeStatementType>("type")) {
+        IncomeStatementType.HIGHEST_FEE ->
+            IncomeStatement.HighestFee(
+                id = id,
+                startDate = startDate,
+                endDate = endDate,
+            )
 
-                val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
-                val selfEmployedEstimatedMonthlyIncome = row.mapColumn<Int?>("self_employed_estimated_monthly_income")
-                val selfEmployed = if (selfEmployedAttachments != null)
-                    SelfEmployed(
-                        attachments = selfEmployedAttachments,
-                        estimatedIncome = if (selfEmployedEstimatedMonthlyIncome != null) EstimatedIncome(
-                            selfEmployedEstimatedMonthlyIncome,
-                            incomeStartDate = row.mapColumn("self_employed_income_start_date"),
-                            incomeEndDate = row.mapColumn("self_employed_income_end_date")
-                        ) else null
+        IncomeStatementType.INCOME -> {
+            val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
+            val grossEstimatedMonthlyIncome = row.mapColumn<Int?>("gross_estimated_monthly_income")
+            val gross = if (grossIncomeSource != null) Gross(
+                incomeSource = grossIncomeSource,
+                estimatedIncome = if (grossEstimatedMonthlyIncome != null) EstimatedIncome(
+                    grossEstimatedMonthlyIncome,
+                    incomeStartDate = row.mapColumn("gross_income_start_date"),
+                    incomeEndDate = row.mapColumn("gross_income_end_date")
+                ) else null,
+                otherIncome = row.mapColumn<Array<OtherGrossIncome>>("gross_other_income").toSet(),
+            ) else null
+
+            val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
+            val selfEmployedEstimatedMonthlyIncome = row.mapColumn<Int?>("self_employed_estimated_monthly_income")
+            val selfEmployed = if (selfEmployedAttachments != null)
+                SelfEmployed(
+                    attachments = selfEmployedAttachments,
+                    estimatedIncome = if (selfEmployedEstimatedMonthlyIncome != null) EstimatedIncome(
+                        selfEmployedEstimatedMonthlyIncome,
+                        incomeStartDate = row.mapColumn("self_employed_income_start_date"),
+                        incomeEndDate = row.mapColumn("self_employed_income_end_date")
                     ) else null
-
-                val limitedCompanyIncomeSource = row.mapColumn<IncomeSource?>("limited_company_income_source")
-                val limitedCompany =
-                    if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource) else null
-
-                // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has been filled
-                val fullTime = row.mapColumn<Boolean?>("entrepreneur_full_time")
-                val entrepreneur = if (fullTime != null) Entrepreneur(
-                    fullTime = fullTime,
-                    startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
-                    spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
-                    startupGrant = row.mapColumn("startup_grant"),
-                    selfEmployed = selfEmployed,
-                    limitedCompany = limitedCompany,
-                    partnership = row.mapColumn("partnership"),
-                    lightEntrepreneur = row.mapColumn("light_entrepreneur")
                 ) else null
 
-                IncomeStatement.Income(
-                    id = id,
-                    startDate = startDate,
-                    endDate = endDate,
-                    gross = gross,
-                    entrepreneur = entrepreneur,
-                    student = row.mapColumn("student"),
-                    alimonyPayer = row.mapColumn("alimony_payer"),
-                    otherInfo = row.mapColumn("other_info"),
-                    attachments = row.mapJsonColumn("attachments")
-                )
-            }
+            val limitedCompanyIncomeSource = row.mapColumn<IncomeSource?>("limited_company_income_source")
+            val limitedCompany =
+                if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource) else null
+
+            val accountantName = row.mapColumn<String>("accountant_name")
+            val accountant = if (accountantName != "") Accountant(
+                name = accountantName,
+                address = row.mapColumn("accountant_address"),
+                phone = row.mapColumn("accountant_phone"),
+                email = row.mapColumn("accountant_email"),
+            ) else null
+
+            // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has been filled
+            val fullTime = row.mapColumn<Boolean?>("entrepreneur_full_time")
+            val entrepreneur = if (fullTime != null) Entrepreneur(
+                fullTime = fullTime,
+                startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
+                spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
+                startupGrant = row.mapColumn("startup_grant"),
+                selfEmployed = selfEmployed,
+                limitedCompany = limitedCompany,
+                partnership = row.mapColumn("partnership"),
+                lightEntrepreneur = row.mapColumn("light_entrepreneur"),
+                accountant = accountant
+            ) else null
+
+            IncomeStatement.Income(
+                id = id,
+                startDate = startDate,
+                endDate = endDate,
+                gross = gross,
+                entrepreneur = entrepreneur,
+                student = row.mapColumn("student"),
+                alimonyPayer = row.mapColumn("alimony_payer"),
+                otherInfo = row.mapColumn("other_info"),
+                attachments = row.mapJsonColumn("attachments")
+            )
         }
-    }.list()
+    }
+}
+
+fun Database.Read.readIncomeStatementsForPerson(
+    personId: UUID,
+): List<IncomeStatement> =
+    createQuery(selectQuery(false))
+        .bind("personId", personId)
+        .map { row -> mapIncomeStatement(row) }
+        .list()
+
+fun Database.Read.readIncomeStatementForPerson(
+    personId: UUID,
+    incomeStatementId: IncomeStatementId
+): IncomeStatement? =
+    createQuery(selectQuery(true))
+        .bind("personId", personId)
+        .bind("id", incomeStatementId)
+        .map { row -> mapIncomeStatement(row) }
+        .firstOrNull()
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBody(body: IncomeStatementBody): This =
     bind("startDate", body.startDate)
@@ -145,6 +178,10 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("limitedCompanyIncomeSource", null as IncomeSource?)
         .bindNullable("partnership", null as Boolean?)
         .bindNullable("lightEntrepreneur", null as Boolean?)
+        .bind("accountantName", "")
+        .bind("accountantAddress", "")
+        .bind("accountantPhone", "")
+        .bind("accountantEmail", "")
         .bindNullable("student", null as Boolean?)
         .bindNullable("alimonyPayer", null as Boolean?)
         .bindNullable("otherInfo", null as String?)
@@ -182,6 +219,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entr
         .bind("startupGrant", entrepreneur.startupGrant)
         .bind("partnership", entrepreneur.partnership)
         .bind("lightEntrepreneur", entrepreneur.lightEntrepreneur)
+        .run { if (entrepreneur.accountant != null) bindAccountant(entrepreneur.accountant) else this }
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindSelfEmployed(selfEmployed: SelfEmployed): This =
     bind("selfEmployedAttachments", selfEmployed.attachments)
@@ -194,6 +232,12 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindSelfEmployedEstim
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindLimitedCompany(limitedCompany: LimitedCompany): This =
     bind("limitedCompanyIncomeSource", limitedCompany.incomeSource)
+
+private fun <This : SqlStatement<This>> SqlStatement<This>.bindAccountant(accountant: Accountant): This =
+    bind("accountantName", accountant.name)
+        .bind("accountantAddress", accountant.address)
+        .bind("accountantPhone", accountant.phone)
+        .bind("accountantEmail", accountant.email)
 
 fun Database.Transaction.createIncomeStatement(
     personId: UUID,
@@ -222,6 +266,10 @@ INSERT INTO income_statement (
     limited_company_income_source,
     partnership,
     light_entrepreneur,
+    accountant_name,
+    accountant_address,
+    accountant_phone,
+    accountant_email,
     student,
     alimony_payer,
     other_info
@@ -246,6 +294,10 @@ INSERT INTO income_statement (
     :limitedCompanyIncomeSource,
     :partnership,
     :lightEntrepreneur,
+    :accountantName,
+    :accountantAddress,
+    :accountantPhone,
+    :accountantEmail,
     :student,
     :alimonyPayer,
     :otherInfo
@@ -286,6 +338,10 @@ UPDATE income_statement SET
     limited_company_income_source = :limitedCompanyIncomeSource,
     partnership = :partnership,
     light_entrepreneur = :lightEntrepreneur,
+    accountant_name = :accountantName,
+    accountant_address = :accountantAddress,
+    accountant_phone = :accountantPhone,
+    accountant_email = :accountantEmail,
     student = :student,
     alimony_payer = :alimonyPayer,
     other_info = :otherInfo

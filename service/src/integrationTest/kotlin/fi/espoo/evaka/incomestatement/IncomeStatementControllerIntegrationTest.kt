@@ -84,6 +84,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
                     partnership = false,
                     lightEntrepreneur = true,
+                    accountant = Accountant(
+                        name = "Foo",
+                        address = "Bar",
+                        phone = "123",
+                        email = "foo.bar@example.com",
+                    )
                 ),
                 student = false,
                 alimonyPayer = true,
@@ -124,6 +130,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
                         partnership = false,
                         lightEntrepreneur = true,
+                        accountant = Accountant(
+                            name = "Foo",
+                            address = "Bar",
+                            phone = "123",
+                            email = "foo.bar@example.com",
+                        )
                     ),
                     student = false,
                     alimonyPayer = true,
@@ -166,6 +178,65 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     limitedCompany = null,
                     partnership = false,
                     lightEntrepreneur = false,
+                    accountant = Accountant(
+                        name = "Foo",
+                        address = "Bar",
+                        phone = "123",
+                        email = "foo.bar@example.com",
+                    )
+                ),
+                student = false,
+                alimonyPayer = false,
+                otherInfo = "foo bar",
+                attachmentIds = listOf()
+            ),
+            400
+        )
+        createIncomeStatement(
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+                gross = null,
+                entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                    spouseWorksInCompany = true,
+                    startupGrant = true,
+                    selfEmployed = null,
+                    limitedCompany = null,
+                    partnership = true,
+                    lightEntrepreneur = false,
+                    // Accountant is required if limitedCompany or partnership is given
+                    accountant = null,
+                ),
+                student = false,
+                alimonyPayer = false,
+                otherInfo = "foo bar",
+                attachmentIds = listOf()
+            ),
+            400
+        )
+        createIncomeStatement(
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+                gross = null,
+                entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                    spouseWorksInCompany = true,
+                    startupGrant = true,
+                    selfEmployed = null,
+                    limitedCompany = null,
+                    partnership = true,
+                    lightEntrepreneur = false,
+                    // Accountant name, phone or email cannot be empty
+                    accountant = Accountant(
+                        name = "",
+                        address = "",
+                        phone = "",
+                        email = "",
+                    )
                 ),
                 student = false,
                 alimonyPayer = false,
@@ -304,6 +375,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     ),
                     partnership = false,
                     lightEntrepreneur = false,
+                    Accountant(
+                        name = "Foo",
+                        address = "Bar",
+                        phone = "123",
+                        email = "foo.bar@example.com",
+                    )
                 ),
                 student = false,
                 alimonyPayer = true,
@@ -329,6 +406,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     limitedCompany = null,
                     partnership = true,
                     lightEntrepreneur = false,
+                    Accountant(
+                        name = "Baz",
+                        address = "Quux",
+                        phone = "456",
+                        email = "baz.quux@example.com",
+                    )
                 ),
                 student = true,
                 alimonyPayer = false,
@@ -338,29 +421,33 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         )
 
         assertEquals(
-            listOf(
-                IncomeStatement.Income(
-                    id = incomeStatementId,
-                    startDate = LocalDate.of(2021, 6, 11),
-                    endDate = null,
-                    gross = null,
-                    entrepreneur = Entrepreneur(
-                        fullTime = false,
-                        startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
-                        spouseWorksInCompany = true,
-                        startupGrant = false,
-                        selfEmployed = null,
-                        limitedCompany = null,
-                        partnership = true,
-                        lightEntrepreneur = false,
-                    ),
-                    student = true,
-                    alimonyPayer = false,
-                    otherInfo = "",
-                    attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
+            IncomeStatement.Income(
+                id = incomeStatementId,
+                startDate = LocalDate.of(2021, 6, 11),
+                endDate = null,
+                gross = null,
+                entrepreneur = Entrepreneur(
+                    fullTime = false,
+                    startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                    spouseWorksInCompany = true,
+                    startupGrant = false,
+                    selfEmployed = null,
+                    limitedCompany = null,
+                    partnership = true,
+                    lightEntrepreneur = false,
+                    Accountant(
+                        name = "Baz",
+                        address = "Quux",
+                        phone = "456",
+                        email = "baz.quux@example.com",
+                    )
                 ),
+                student = true,
+                alimonyPayer = false,
+                otherInfo = "",
+                attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
-            getIncomeStatements(),
+            getIncomeStatement(incomeStatementId),
         )
     }
 
@@ -370,6 +457,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             .timeoutRead(1000000)
             .asUser(citizen)
             .responseObject<List<IncomeStatement>>(objectMapper)
+            .let { (_, _, body) -> body.get() }
+
+    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
+        http.get("/citizen/income-statements/${id}")
+            .timeout(1000000)
+            .timeoutRead(1000000)
+            .asUser(citizen)
+            .responseObject<IncomeStatement>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 204) {
