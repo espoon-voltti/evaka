@@ -56,6 +56,7 @@ export default React.memo(function PreferredUnitBox({
           textColor: colors.greyscale.white
         }
       case 'PURCHASED':
+      case 'EXTERNAL_PURCHASED':
         return {
           color: colors.accents.green,
           textColor: colors.greyscale.darkest

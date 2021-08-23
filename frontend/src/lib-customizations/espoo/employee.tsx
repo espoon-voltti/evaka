@@ -42,7 +42,8 @@ const customizations: EmployeeCustomizations = {
     'PURCHASED',
     'PRIVATE',
     'MUNICIPAL_SCHOOL',
-    'PRIVATE_SERVICE_VOUCHER'
+    'PRIVATE_SERVICE_VOUCHER',
+    'EXTERNAL_PURCHASED'
   ]
 }
 

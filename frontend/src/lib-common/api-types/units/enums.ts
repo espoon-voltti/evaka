@@ -16,5 +16,6 @@ export type ProviderType =
   | 'PRIVATE'
   | 'MUNICIPAL_SCHOOL'
   | 'PRIVATE_SERVICE_VOUCHER'
+  | 'EXTERNAL_PURCHASED'
 
 export type UnitLanguage = 'fi' | 'sv'

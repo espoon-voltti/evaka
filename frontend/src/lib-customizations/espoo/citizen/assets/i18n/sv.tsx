@@ -20,7 +20,8 @@ const sv: Translations = {
         PURCHASED: 'Köptjänst',
         PRIVATE: 'Privat',
         MUNICIPAL_SCHOOL: 'Kommunal',
-        PRIVATE_SERVICE_VOUCHER: 'Servicesedel'
+        PRIVATE_SERVICE_VOUCHER: 'Servicesedel',
+        EXTERNAL_PURCHASED: 'Köptjänst (annat)'
       },
       careTypes: {
         CLUB: 'Klubbverksamhet',
@@ -107,7 +108,8 @@ const sv: Translations = {
       MUNICIPAL: 'kommunala',
       PURCHASED: 'köpavtal',
       PRIVATE: 'privata',
-      PRIVATE_SERVICE_VOUCHER: 'servicesedel'
+      PRIVATE_SERVICE_VOUCHER: 'servicesedel',
+      EXTERNAL_PURCHASED: 'köpavtal (annat)'
     },
     homepage: 'Hemsida',
     unitHomepage: 'Enhetens hemsida',
