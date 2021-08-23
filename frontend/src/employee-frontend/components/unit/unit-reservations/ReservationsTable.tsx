@@ -11,6 +11,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
 import { useTranslation } from 'employee-frontend/state/i18n'
+import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
 
 interface Props {
   operationalDays: OperationalDay[]
@@ -50,9 +51,14 @@ export default React.memo(function ReservationsTable({
           return (
             <Tr key={childName}>
               <Td>
-                <Link to={`/child-information/${childReservations.child.id}`}>
-                  {childName}
-                </Link>
+                <ChildName>
+                  <Link to={`/child-information/${childReservations.child.id}`}>
+                    {childName}
+                  </Link>
+                  <AgeIndicatorIcon
+                    dateOfBirth={childReservations.child.dateOfBirth}
+                  />
+                </ChildName>
               </Td>
               {operationalDays.map(({ date, isHoliday }) => (
                 <Td key={date.formatIso()}>
@@ -90,6 +96,18 @@ const CustomTh = styled(Th)`
 const DateTh = styled(CustomTh)<{ faded: boolean }>`
   width: 0; // causes the column to take as little space as possible
   ${({ faded }) => (faded ? `color: ${colors.greyscale.medium};` : '')}
+`
+
+const ChildName = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+
+  a {
+    margin-right: ${defaultMargins.xs};
+  }
 `
 
 const Date = styled(H4)`

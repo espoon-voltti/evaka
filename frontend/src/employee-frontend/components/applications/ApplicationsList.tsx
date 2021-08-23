@@ -4,13 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import {
-  faCheck,
-  fasArrowDown,
-  fasArrowUp,
-  faPaperclip,
-  faTimes
-} from 'lib-icons'
+import { faCheck, faPaperclip, faTimes } from 'lib-icons'
 import { Paged } from 'lib-common/api'
 import {
   Table,
@@ -48,6 +42,7 @@ import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -225,20 +220,11 @@ const ApplicationsList = React.memo(function Applications({
               </span>
             }
           >
-            <RoundIcon
-              content={
+            <AgeIndicatorIcon
+              isUnder3={
                 startDateOrDueDate.differenceInYears(application.dateOfBirth) <
                 3
-                  ? fasArrowDown
-                  : fasArrowUp
               }
-              color={
-                startDateOrDueDate.differenceInYears(application.dateOfBirth) <
-                3
-                  ? colors.accents.green
-                  : colors.blues.medium
-              }
-              size="s"
             />
           </Tooltip>
           <span>

@@ -9,7 +9,6 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { H2, H3 } from 'lib-components/typography'
 import Tooltip, { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -27,7 +26,7 @@ import {
 } from 'lib-components/layout/Table'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faHomeAlt, faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
+import { faHomeAlt, faLockAlt } from 'lib-icons'
 import { range, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
@@ -49,6 +48,7 @@ import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -437,17 +437,7 @@ function VoucherServiceProviderUnit() {
                                 }
                                 position="right"
                               >
-                                <RoundIcon
-                                  content={
-                                    under3YearsOld ? fasArrowDown : fasArrowUp
-                                  }
-                                  color={
-                                    under3YearsOld
-                                      ? colors.accents.green
-                                      : colors.blues.medium
-                                  }
-                                  size="s"
-                                />
+                                <AgeIndicatorIcon isUnder3={under3YearsOld} />
                               </Tooltip>
                               <span>{row.childDateOfBirth.format()}</span>
                             </FixedSpaceRow>
