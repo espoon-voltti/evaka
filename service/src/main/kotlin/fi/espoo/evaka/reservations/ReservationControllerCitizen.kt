@@ -27,7 +27,7 @@ class ReservationControllerCitizen {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<DailyReservationData> {
-        Audit.AttendanceReservationRead.log(targetId = user.id)
+        Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
         return db.read { it.getReservations(user.id, FiniteDateRange(from, to)) }

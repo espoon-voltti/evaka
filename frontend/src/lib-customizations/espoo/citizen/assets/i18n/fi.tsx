@@ -131,6 +131,9 @@ export default {
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun'
   },
+  calendar: {
+    holiday: 'Pyhäpäivä'
+  },
   messages: {
     inboxTitle: 'Viestit',
     noMessages: 'Ei viestejä',

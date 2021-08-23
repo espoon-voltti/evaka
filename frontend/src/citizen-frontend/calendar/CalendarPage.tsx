@@ -12,9 +12,11 @@ import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
+import { useUser } from '../auth'
 
 export default React.memo(function CalendarPage() {
   const i18n = useTranslation()
+  const user = useUser()
 
   const [data, setData] = useState<Result<DailyReservationData[]>>(Loading.of())
 
@@ -28,6 +30,8 @@ export default React.memo(function CalendarPage() {
     [loadData]
   )
 
+  if (!user || !user.accessibleFeatures.reservations) return null
+
   return (
     <>
       <Container>
@@ -39,8 +43,8 @@ export default React.memo(function CalendarPage() {
             failure() {
               return <div>{i18n.common.errors.genericGetError}</div>
             },
-            success() {
-              return <CalendarListView data={data.getOrElse([])} />
+            success(dallyReservations) {
+              return <CalendarListView dailyReservations={dallyReservations} />
             }
           })}
         </ContentArea>

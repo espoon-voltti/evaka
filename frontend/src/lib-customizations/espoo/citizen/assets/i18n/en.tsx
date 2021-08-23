@@ -132,6 +132,9 @@ const en: Translations = {
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search'
   },
+  calendar: {
+    holiday: 'Holiday'
+  },
   messages: {
     inboxTitle: 'Inbox',
     noMessages: 'No messages',

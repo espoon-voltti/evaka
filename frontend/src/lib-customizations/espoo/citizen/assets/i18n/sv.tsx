@@ -132,6 +132,9 @@ const sv: Translations = {
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning'
   },
+  calendar: {
+    holiday: 'Helgdag'
+  },
   messages: {
     inboxTitle: 'Inkorg',
     noMessages: 'Inga meddelanden',

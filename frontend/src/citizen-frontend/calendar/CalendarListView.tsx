@@ -9,20 +9,25 @@ import { DailyReservationData } from './api'
 import WeekElem, { WeekProps } from './WeekElem'
 
 export interface Props {
-  data: DailyReservationData[]
+  dailyReservations: DailyReservationData[]
 }
 
-export default React.memo(function CalendarListView({ data }: Props) {
-  const weeklyData = data.reduce((weekly, daily) => {
+export default React.memo(function CalendarListView({
+  dailyReservations
+}: Props) {
+  const weeklyData = dailyReservations.reduce((weekly, daily) => {
     const last = _.last(weekly)
     if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
-      return [...weekly, { weekNumber: daily.date.getIsoWeek(), data: [daily] }]
+      return [
+        ...weekly,
+        { weekNumber: daily.date.getIsoWeek(), dailyReservations: [daily] }
+      ]
     } else {
       return [
         ..._.dropRight(weekly),
         {
           ...last,
-          data: [...last.data, daily]
+          dailyReservations: [...last.dailyReservations, daily]
         }
       ]
     }

@@ -9,25 +9,29 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { useTranslation } from '../localization'
 import { DailyReservationData } from './api'
+import { defaultMargins } from 'lib-components/white-space'
 
 export interface DayProps {
-  data: DailyReservationData
+  dailyReservations: DailyReservationData
 }
 
 export default React.memo(function DayElem({
-  data: { date, isHoliday, reservations }
+  dailyReservations: { date, isHoliday, reservations }
 }: DayProps) {
   const i18n = useTranslation()
 
   return (
-    <DayDiv alignItems="center" today={date.isToday()} holiday={isHoliday}>
-      <DayColumn spacing="xxs">
+    <DayDiv alignItems="center" today={date.isToday()}>
+      <DayColumn spacing="xxs" holiday={isHoliday}>
         <div>
           {i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]}
         </div>
         <div>{date.format('dd.MM.')}</div>
       </DayColumn>
       <div>
+        {reservations.length === 0 && isHoliday && (
+          <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
+        )}
         {reservations
           .map(
             (reservation) =>
@@ -43,33 +47,23 @@ export default React.memo(function DayElem({
   )
 })
 
-const DayColumn = styled(FixedSpaceColumn)`
-  width: 48px;
-  color: ${colors.blues.dark};
-  font-weight: 600;
-  font-size: 16px;
+const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
+  position: relative;
+  padding: ${defaultMargins.s} ${defaultMargins.s};
+  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-left: 6px solid
+    ${(p) => (p.today ? colors.brandEspoo.espooTurquoise : 'transparent')};
 `
 
-const DayDiv = styled(FixedSpaceRow)<{ today: boolean; holiday: boolean }>`
-  position: relative;
-  padding: 8px 16px;
-  height: 80px;
-  border-bottom: 1px solid ${colors.greyscale.lighter};
-  ${(p) =>
-    p.today
-      ? `
-    border-left: 6px solid ${colors.brandEspoo.espooTurquoise};
-    padding-left: 10px;
-  `
-      : ''}
+const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`
+  width: 3rem;
+  color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
+  font-weight: 600;
+`
 
-  ${(p) =>
-    p.holiday
-      ? `
-    border-left: 6px solid ${colors.accents.red};
-    padding-left: 10px;
-  `
-      : ''}
+const HolidayNote = styled.div`
+  font-style: italic;
+  color: ${colors.greyscale.dark};
 `
 
 const HistoryOverlay = styled.div`

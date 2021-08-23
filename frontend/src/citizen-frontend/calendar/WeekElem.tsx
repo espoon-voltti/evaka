@@ -7,19 +7,22 @@ import { useTranslation } from '../localization'
 
 export interface WeekProps {
   weekNumber: number
-  data: DailyReservationData[]
+  dailyReservations: DailyReservationData[]
 }
 
-export default React.memo(function WeekElem({ weekNumber, data }: WeekProps) {
+export default React.memo(function WeekElem({
+  weekNumber,
+  dailyReservations
+}: WeekProps) {
   const i18n = useTranslation()
   return (
     <div>
       <WeekDiv>
-        {i18n.common.datetime} {weekNumber}
+        {i18n.common.datetime.weekShort} {weekNumber}
       </WeekDiv>
       <div>
-        {data.map((d) => (
-          <DayElem data={d} key={d.date.formatIso()} />
+        {dailyReservations.map((d) => (
+          <DayElem dailyReservations={d} key={d.date.formatIso()} />
         ))}
       </div>
     </div>
@@ -31,7 +34,7 @@ const WeekDiv = styled.div`
   justify-content: center;
   align-items: center;
   padding: 16px 0 8px;
-  background-color: ${colors.blues.lighter};
+  background-color: ${colors.brandEspoo.espooTurquoiseLight};
   color: ${colors.blues.dark};
   font-weight: 600;
   font-size: 14px;
