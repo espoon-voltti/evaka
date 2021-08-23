@@ -2445,12 +2445,12 @@ export const fi = {
       uploadToKoski: 'Lähetetään Koski-palveluun',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       decisionCustomization: {
-        handler: {
-          0: 'Palveluohjaus',
-          1: 'Varhaiskasvatusyksikön johtaja',
-          2: 'Ledare inom småbarnspedagogik',
-          3: 'Svenska bildningstjänster / Småbarnspedagogik'
-        }
+        handler: [
+          'Palveluohjaus',
+          'Varhaiskasvatusyksikön johtaja',
+          'Ledare inom småbarnspedagogik',
+          'Svenska bildningstjänster / Småbarnspedagogik'
+        ]
       }
     },
     placeholder: {
