@@ -33,6 +33,9 @@ interface FinanceDecisionHandler {
   firstName: string
   lastName: string
 }
+
+export type PilotFeature = 'MESSAGING' | 'MOBILE'
+
 export interface Unit {
   id: UUID
   name: string
@@ -67,6 +70,7 @@ export interface Unit {
   ophOrganizerOid: string | null
   ophOrganizationOid: string | null
   operationDays: DayOfWeek[] | null
+  enabledPilotFeatures: PilotFeature[]
 }
 
 export interface DecisionCustomization {

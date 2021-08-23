@@ -119,6 +119,9 @@ function TabUnitInformation() {
         <UnitAccessControl
           unitId={unitInformation.value.daycare.id}
           groups={groups}
+          mobileEnabled={unitInformation.value.daycare.enabledPilotFeatures.includes(
+            'MOBILE'
+          )}
         />
       </RequireRole>
     </FixedSpaceColumn>

@@ -99,7 +99,6 @@ interface BaseFeatureFlags {
   }
   evakaLogin: boolean
   financeBasicsPage: boolean
-  messaging: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
 
@@ -111,13 +110,6 @@ interface BaseFeatureFlags {
    */
   experimental?: {
     ai?: boolean
-    /**
-     * Enable access to mobile features.
-     *
-     * NOTE: In some places, this might require messaging to also be enabled
-     * AND might be short-circuited if pilot unit access is enabled..
-     */
-    mobileDailyNotes?: boolean
     vasu?: boolean
   }
 }

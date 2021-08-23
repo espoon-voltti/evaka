@@ -16,7 +16,6 @@ import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
-import { featureFlags } from 'lib-customizations/citizen'
 
 type Props = {
   showMenu: boolean
@@ -198,7 +197,7 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.decisions} {maybeLockElem}
           </StyledNavLink>
-          {featureFlags.messaging && user.accessibleFeatures.messages && (
+          {user.accessibleFeatures.messages && (
             <StyledNavLink to="/messages" onClick={close}>
               {t.header.nav.messages}{' '}
               {unreadMessagesCount > 0 ? (

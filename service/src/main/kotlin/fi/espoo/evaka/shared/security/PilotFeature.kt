@@ -5,5 +5,6 @@
 package fi.espoo.evaka.shared.security
 
 enum class PilotFeature {
-    MESSAGING
+    MESSAGING,
+    MOBILE
 }

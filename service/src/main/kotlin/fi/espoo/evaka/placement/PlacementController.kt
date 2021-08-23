@@ -218,20 +218,6 @@ class PlacementController(
         db.transaction { it.deleteGroupPlacement(groupPlacementId) }
     }
 
-    // TODO: remove after deployed once
-    @DeleteMapping("/placements/{daycarePlacementId}/group-placements/{groupPlacementId}")
-    fun deleteGroupPlacementDeprecated(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
-        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
-    ) {
-        Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
-        accessControl.requirePermissionFor(user, Action.GroupPlacement.DELETE, groupPlacementId)
-
-        db.transaction { it.deleteGroupPlacement(groupPlacementId) }
-    }
-
     @PostMapping("/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
         db: Database.Connection,
@@ -241,23 +227,6 @@ class PlacementController(
     ) {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
         accessControl.requirePermissionFor(user, Action.GroupPlacement.UPDATE, groupPlacementId)
-
-        db.transaction {
-            it.transferGroup(groupPlacementId, body.groupId, body.startDate)
-        }
-    }
-
-    // TODO: remove after deployed once
-    @PostMapping("/placements/{daycarePlacementId}/group-placements/{groupPlacementId}/transfer")
-    fun transferGroupPlacementDeprecated(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
-        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
-        @RequestBody body: GroupTransferRequestBody
-    ) {
-        Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
-        accessControl.requirePermissionFor(user, Action.Placement.CREATE_GROUP_PLACEMENT, daycarePlacementId)
 
         db.transaction {
             it.transferGroup(groupPlacementId, body.groupId, body.startDate)

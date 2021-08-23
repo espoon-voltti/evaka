@@ -4,7 +4,6 @@
 
 import { AuthContext } from 'citizen-frontend/auth/state'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 import React, { ReactNode, useContext } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
@@ -69,13 +68,11 @@ export default function App() {
                       path="/decisions/by-application/:applicationId"
                       component={requireAuth(DecisionResponseList)}
                     />
-                    {featureFlags.messaging && (
-                      <Route
-                        exact
-                        path="/messages"
-                        component={requireAuth(MessagesPage, false)}
-                      />
-                    )}
+                    <Route
+                      exact
+                      path="/messages"
+                      component={requireAuth(MessagesPage, false)}
+                    />
                     <Route path="/" component={RedirectToMap} />
                   </Switch>
                 </Main>

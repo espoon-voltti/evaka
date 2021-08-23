@@ -21,12 +21,10 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      mobileDailyNotes: true,
       vasu: true
     }
   },
@@ -39,12 +37,10 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      mobileDailyNotes: false,
       vasu: true
     }
   },
@@ -57,12 +53,10 @@ const features: Features = {
     },
     evakaLogin: true,
     financeBasicsPage: true,
-    messaging: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: false,
-      mobileDailyNotes: false,
       vasu: false
     }
   }
