@@ -147,20 +147,24 @@ export default React.memo(function SearchSection({
             <Label>{t.map.providerType}</Label>
 
             <FixedSpaceRow spacing="s">
-              {(['MUNICIPAL', 'PURCHASED'] as ProviderTypeOption[]).map(
-                (type) => (
-                  <SelectionChip
-                    key={type}
-                    text={t.map.providerTypes[type]}
-                    selected={providerTypes.includes(type)}
-                    onChange={(selected) => {
-                      const nextValue = providerTypes.filter((t) => t !== type)
-                      if (selected) nextValue.push(type)
-                      setProviderTypes(nextValue)
-                    }}
-                  />
-                )
-              )}
+              {(
+                [
+                  'MUNICIPAL',
+                  'PURCHASED',
+                  'EXTERNAL_PURCHASED'
+                ] as ProviderTypeOption[]
+              ).map((type) => (
+                <SelectionChip
+                  key={type}
+                  text={t.map.providerTypes[type]}
+                  selected={providerTypes.includes(type)}
+                  onChange={(selected) => {
+                    const nextValue = providerTypes.filter((t) => t !== type)
+                    if (selected) nextValue.push(type)
+                    setProviderTypes(nextValue)
+                  }}
+                />
+              ))}
             </FixedSpaceRow>
 
             <FixedSpaceRow spacing="s">

@@ -30,7 +30,8 @@ const en: Translations = {
         PURCHASED: 'Purchased service',
         PRIVATE: 'Private service',
         MUNICIPAL_SCHOOL: 'Municipal',
-        PRIVATE_SERVICE_VOUCHER: 'Private service (service voucher)'
+        PRIVATE_SERVICE_VOUCHER: 'Private service (service voucher)',
+        EXTERNAL_PURCHASED: 'Purchased service (other)'
       },
       careTypes: {
         CLUB: 'Club',
@@ -139,7 +140,8 @@ const en: Translations = {
       MUNICIPAL: 'municipal',
       PURCHASED: 'purchased service',
       PRIVATE: 'private service',
-      PRIVATE_SERVICE_VOUCHER: 'private service (service voucher)'
+      PRIVATE_SERVICE_VOUCHER: 'private service (service voucher)',
+      EXTERNAL_PURCHASED: 'purchased service (other)'
     },
     homepage: 'Homepage',
     unitHomepage: "Unit's homepage",

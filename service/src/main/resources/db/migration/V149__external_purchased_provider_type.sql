@@ -1,0 +1,1 @@
+ALTER TYPE unit_provider_type ADD VALUE 'EXTERNAL_PURCHASED';

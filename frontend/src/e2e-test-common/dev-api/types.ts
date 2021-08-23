@@ -189,6 +189,7 @@ export interface Daycare {
     | 'PURCHASED'
     | 'PRIVATE'
     | 'PRIVATE_SERVICE_VOUCHER'
+    | 'EXTERNAL_PURCHASED'
   roundTheClock: boolean
   language?: Language
   location?: Coordinate | null
