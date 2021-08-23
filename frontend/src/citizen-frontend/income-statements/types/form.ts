@@ -25,7 +25,7 @@ export interface Estimation {
 export interface Gross extends Estimation {
   selected: boolean
   incomeSource: IncomeSource | null
-  otherIncome: OtherIncome[] | null
+  otherIncome: OtherIncome[]
 }
 
 export interface Entrepreneur {
@@ -70,7 +70,7 @@ export const empty: IncomeStatementForm = {
     estimatedMonthlyIncome: '',
     incomeStartDate: '',
     incomeEndDate: '',
-    otherIncome: null
+    otherIncome: []
   },
   entrepreneur: {
     selected: false,

@@ -41,6 +41,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'lib-icons'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   formData: Form.IncomeStatementForm
@@ -206,6 +207,8 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
   const t = useTranslation()
   const [lang] = useLang()
 
+  const startDate = LocalDate.parseFiOrNull(formData.startDate)
+
   return (
     <ContentArea opaque paddingVertical="L" ref={ref}>
       <FixedSpaceColumn spacing="zero">
@@ -242,6 +245,7 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
               id="end-date"
               date={formData.endDate}
               onChange={(value) => onChange({ ...formData, endDate: value })}
+              isValidDate={(date) => startDate === null || startDate <= date}
               info={errorToInputInfo(
                 validateIf(formData.endDate != '', formData.endDate, validDate),
                 t.validationErrors
@@ -316,6 +320,7 @@ function GrossIncomeSelection({
 }) {
   const t = useTranslation()
   const [lang] = useLang()
+  const incomeStartDate = LocalDate.parseFiOrNull(formData.incomeStartDate)
   return (
     <ContentArea opaque paddingVertical="L">
       <FixedSpaceColumn spacing="zero">
@@ -397,12 +402,15 @@ function GrossIncomeSelection({
                 onChange={(value) =>
                   onChange({ ...formData, incomeEndDate: value })
                 }
+                isValidDate={(date) =>
+                  incomeStartDate === null || incomeStartDate <= date
+                }
                 locale={lang}
                 hideErrorsBeforeTouched
                 info={
                   formData.incomeEndDate
                     ? errorToInputInfo(
-                        validDate(formData.incomeStartDate),
+                        validDate(formData.incomeEndDate),
                         t.validationErrors
                       )
                     : undefined
@@ -418,7 +426,7 @@ function GrossIncomeSelection({
         <Gap size="s" />
         <OtherIncomeWrapper>
           <MultiSelect
-            value={formData.otherIncome ?? []}
+            value={formData.otherIncome}
             options={otherIncome}
             getOptionId={(option) => option}
             getOptionLabel={(option) =>
@@ -679,6 +687,7 @@ function SelfEmployedIncomeSelection({
 }) {
   const t = useTranslation()
   const [lang] = useLang()
+  const incomeStartDate = LocalDate.parseFiOrNull(formData.incomeStartDate)
   return (
     <Indent>
       <FixedSpaceColumn>
@@ -753,6 +762,9 @@ function SelfEmployedIncomeSelection({
                     onChange({ ...formData, incomeEndDate: value })
                   }
                   locale={lang}
+                  isValidDate={(date) =>
+                    incomeStartDate === null || incomeStartDate <= date
+                  }
                   hideErrorsBeforeTouched={!showFormErrors}
                   info={errorToInputInfo(
                     validateIf(

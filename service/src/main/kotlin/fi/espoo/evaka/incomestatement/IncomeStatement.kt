@@ -87,8 +87,9 @@ sealed class IncomeStatementBody(
     ) : IncomeStatementBody(startDate, endDate)
 }
 
-fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
-    when (body) {
+fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
+    if (body.endDate != null && body.startDate > body.endDate) return false
+    return when (body) {
         is IncomeStatementBody.HighestFee -> true
         is IncomeStatementBody.Income ->
             if (body.gross == null && body.entrepreneur == null) false
@@ -111,10 +112,16 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean =
                                 // Accountant name, phone and email must be non-empty
                                 entrepreneur.accountant.let { accountant ->
                                     accountant == null || (accountant.name != "" && accountant.phone != "" && accountant.email != "")
-                                }
+                                } &&
+                                validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome)
                             )
-                }
+                } && validateEstimatedIncome(body.gross?.estimatedIncome)
     }
+}
+
+private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean =
+    // Start and end dates must be in the right order
+    estimatedIncome?.incomeEndDate == null || estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
 data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
 

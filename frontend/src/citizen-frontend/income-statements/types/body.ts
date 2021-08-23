@@ -12,7 +12,7 @@ export interface IncomeBody extends Omit<Income, 'id' | 'attachments'> {
 
 export type IncomeStatementBody = HighestFeeBody | IncomeBody
 
-export function validateIncomeStatementBody(
+export function fromBody(
   formData: Form.IncomeStatementForm
 ): IncomeStatementBody | null {
   if (!formData.assure) return null
@@ -23,6 +23,7 @@ export function validateIncomeStatementBody(
       ? null
       : LocalDate.parseFiOrNull(formData.endDate) ?? invalid
   if (startDate === null || endDate === invalid) return null
+  if (endDate && startDate > endDate) return null
 
   if (formData.highestFee) {
     return { type: 'HIGHEST_FEE', startDate, endDate }
@@ -155,6 +156,10 @@ function validateEstimatedIncome(formData: {
     incomeStartDate === invalid ||
     incomeEndDate === invalid
   ) {
+    return invalid
+  }
+
+  if (incomeEndDate && incomeStartDate > incomeEndDate) {
     return invalid
   }
 

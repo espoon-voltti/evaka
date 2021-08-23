@@ -5,7 +5,7 @@ import IncomeStatementForm, {
 import * as Form from './types/form'
 import { empty } from './types/form'
 import { IncomeStatement } from './types/income-statement'
-import { validateIncomeStatementBody } from './types/body'
+import { fromBody } from './types/body'
 import {
   createIncomeStatement,
   getIncomeStatement,
@@ -93,9 +93,7 @@ export default function IncomeStatementEditor() {
   const [showFormErrors, setShowFormErrors] = React.useState(false)
 
   const save = React.useCallback(() => {
-    const validatedData = formData
-      ? validateIncomeStatementBody(formData)
-      : undefined
+    const validatedData = formData ? fromBody(formData) : undefined
     if (validatedData) {
       if (id) {
         return updateIncomeStatement(id, validatedData)

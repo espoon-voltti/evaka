@@ -165,6 +165,24 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         )
         createIncomeStatement(
             IncomeStatementBody.Income(
+                // endDate is before startDate
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = LocalDate.of(2021, 4, 2),
+                gross = Gross(
+                    incomeSource = IncomeSource.INCOMES_REGISTER,
+                    estimatedIncome = null,
+                    otherIncome = setOf()
+                ),
+                entrepreneur = null,
+                student = false,
+                alimonyPayer = true,
+                otherInfo = "foo bar",
+                attachmentIds = listOf()
+            ),
+            400
+        )
+        createIncomeStatement(
+            IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
                 gross = null,
