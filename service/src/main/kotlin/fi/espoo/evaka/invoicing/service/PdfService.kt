@@ -142,6 +142,7 @@ class PDFService(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
             "validFrom" to decision.validFrom,
+            "validTo" to decision.validTo,
             "placementUnit" to decision.placement.unit,
             "placementType" to decision.placement.type,
             "familySize" to decision.familySize,
@@ -238,6 +239,7 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
             "validFrom" to dateFmt(decision.validDuring.start),
+            "validTo" to dateFmt(decision.validDuring.end),
             "feePercent" to (decision.feeThresholds.incomeMultiplier * BigDecimal(100))
                 .setScale(1, RoundingMode.HALF_UP)
                 .toDecimalString(),
