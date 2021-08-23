@@ -6,9 +6,6 @@ package fi.espoo.evaka.shared.security
 
 enum class PilotFeature {
     MESSAGING,
-<<<<<<< HEAD
-    MOBILE
-=======
+    MOBILE,
     RESERVATIONS
->>>>>>> 3b8a06ce3... add nav link and pilot feature
 }
