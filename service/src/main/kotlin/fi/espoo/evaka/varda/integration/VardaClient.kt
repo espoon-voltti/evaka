@@ -479,7 +479,7 @@ class VardaClient(
                     }
                     is Result.Failure -> {
                         logRequestError(request, result.error)
-                        acc
+                        error("VardaUpdate: failed to get paginated results: ${result.error}")
                     }
                 }
             }
@@ -529,7 +529,7 @@ private fun logRequestError(request: Request, error: FuelError) {
         "body" to request.body.asString("application/json"),
         "errorMessage" to error.errorData.decodeToString()
     )
-    logger.error(error, meta) { "Varda request to ${request.url} failed, status ${error.response.statusCode}" }
+    logger.error(error, meta) { "Varda request failed to ${request.url}, status ${error.response.statusCode}" }
 }
 
 fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
