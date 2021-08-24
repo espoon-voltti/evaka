@@ -567,8 +567,13 @@ private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDa
 
 fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, startingFrom: HelsinkiDateTime): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
     val evakaServiceNeedDeletionsByChild = calculateDeletedChildServiceNeeds(db)
+
+    // This is used to control which children are ready for the new varda update service
+    // (e.g. old bogus info has been removed from varda and historical info has been successfully uploaded)
+    val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
     val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(startingFrom) }
         .groupBy { it.evakaChildId }
+        .filter { includedChildIds.contains(it.key) }
 
     val additionsAndChangesToVardaByChild = evakaServiceNeedChangesByChild.entries.associate { evakaServiceNeedChangesForChild ->
         val vardaServiceNeedsForChild = db.read { it.getChildVardaServiceNeeds(evakaServiceNeedChangesForChild.key) }
@@ -1009,3 +1014,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         .mapTo<ServiceNeedId>()
         .toList()
 }
+
+fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<UUID> = createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
+    .mapTo<UUID>()
+    .list()
