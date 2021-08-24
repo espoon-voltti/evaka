@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -105,8 +105,8 @@ data class ChildAttendance(
     val id: AttendanceId,
     val childId: UUID,
     val unitId: DaycareId,
-    val arrived: Instant,
-    val departed: Instant?
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?
 )
 
 data class ChildAbsence(

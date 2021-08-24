@@ -738,8 +738,8 @@ fun Database.Transaction.insertTestChildAttendance(
     id: UUID = UUID.randomUUID(),
     childId: UUID,
     unitId: DaycareId,
-    arrived: Instant,
-    departed: Instant?
+    arrived: HelsinkiDateTime,
+    departed: HelsinkiDateTime?
 ) {
     //language=sql
     val sql =
