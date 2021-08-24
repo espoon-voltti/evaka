@@ -94,7 +94,8 @@ data class Child(
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: DaycareDailyNote?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val reservation: AttendanceReservation?
 )
 
 enum class AttendanceStatus {
@@ -122,3 +123,5 @@ data class Staff(
     val pinSet: Boolean = false,
     val groups: List<UUID>
 )
+
+data class AttendanceReservation(val startTime: String, val endTime: String)

@@ -37,6 +37,8 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import colors from 'lib-customizations/common'
 import { deleteChildImage } from '../../../api/childImages'
 import { IconBox } from '../ChildListItem'
+import Absences from '../Absences'
+import ArrivalAndDeparture from './ArrivalAndDeparture'
 
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -260,7 +262,13 @@ export default React.memo(function AttendanceChildPage() {
               </Zindex>
 
               <FlexColumn paddingHorizontal={'s'}>
-                <AttendanceDailyServiceTimes times={child.dailyServiceTimes} />
+                <AttendanceDailyServiceTimes
+                  times={child.dailyServiceTimes}
+                  reservation={child.reservation}
+                />
+                <ArrivalAndDeparture child={child} />
+                <Absences attendanceChild={child} />
+                <Gap size="xs" />
                 {child.status === 'COMING' && (
                   <AttendanceChildComing
                     unitId={unitId}

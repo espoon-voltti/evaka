@@ -249,7 +249,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", date)
+        .bind("date", date)
         .map { row ->
             ChildBasics(
                 id = row.mapColumn("id"),
@@ -399,6 +399,31 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
         .bind("dateRange", dateRange)
         .execute()
 }
+
+fun Database.Read.fetchAttendanceReservations(
+    unitId: DaycareId,
+    date: LocalDate
+): Map<UUID, AttendanceReservation> = createQuery(
+    """
+    SELECT
+        child.id AS child_id,
+        to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS start_time,
+        to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS end_time
+    FROM attendance_reservation res
+    JOIN person child ON res.child_id = child.id
+    JOIN placement ON child.id = placement.child_id AND res.start_date BETWEEN placement.start_date AND placement.end_date
+    WHERE res.start_date = :date AND placement.unit_id = :unitId
+    """.trimIndent()
+)
+    .bind("unitId", unitId)
+    .bind("date", date)
+    .map { ctx ->
+        ctx.mapColumn<UUID>("child_id") to AttendanceReservation(
+            ctx.mapColumn("start_time"),
+            ctx.mapColumn("end_time")
+        )
+    }
+    .toMap()
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = getPersonById(childId)

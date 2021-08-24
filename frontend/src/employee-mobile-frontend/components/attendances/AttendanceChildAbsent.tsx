@@ -8,10 +8,8 @@ import {
   getDaycareAttendances,
   returnToComing
 } from '../../api/attendances'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
-import Absences from './Absences'
 import { InlineWideAsyncButton } from './components'
 
 interface Props {
@@ -32,17 +30,14 @@ export default React.memo(function AttendanceChildAbsent({
 
   return (
     <Fragment>
-      <FixedSpaceColumn>
-        <Absences attendanceChild={child} />
-        <InlineWideAsyncButton
-          text={i18n.attendances.actions.returnToComing}
-          onClick={() => returnToComingCall()}
-          onSuccess={async () => {
-            await getDaycareAttendances(unitId).then(setAttendanceResponse)
-          }}
-          data-qa="delete-attendance"
-        />
-      </FixedSpaceColumn>
+      <InlineWideAsyncButton
+        text={i18n.attendances.actions.returnToComing}
+        onClick={() => returnToComingCall()}
+        onSuccess={async () => {
+          await getDaycareAttendances(unitId).then(setAttendanceResponse)
+        }}
+        data-qa="delete-attendance"
+      />
     </Fragment>
   )
 })

@@ -161,7 +161,12 @@ export default React.memo(function ChildListItem({
           </Bold>
           <DetailsRow>
             <div data-qa={'child-status'}>
-              {i18n.attendances.status[attendanceChild.status]}
+              {attendanceChild.reservation !== null
+                ? i18n.attendances.listChildReservation(
+                    attendanceChild.reservation.startTime,
+                    attendanceChild.reservation.endTime
+                  )
+                : i18n.attendances.status[attendanceChild.status]}
               <StatusDetails>
                 {attendanceResponse.isSuccess &&
                   attendanceChild.status === 'COMING' && (
@@ -177,15 +182,15 @@ export default React.memo(function ChildListItem({
                     </span>
                   )}
                 {attendanceChild.status === 'PRESENT' &&
-                  formatDate(
+                  `${i18n.attendances.arrived} ${formatDate(
                     attendanceChild.attendance?.arrived,
                     DATE_FORMAT_TIME_ONLY
-                  )}
+                  )}`}
                 {attendanceChild.status === 'DEPARTED' &&
-                  formatDate(
+                  `${i18n.attendances.departed} ${formatDate(
                     attendanceChild.attendance?.departed,
                     DATE_FORMAT_TIME_ONLY
-                  )}
+                  )}`}
               </StatusDetails>
               {attendanceChild.backup && (
                 <RoundIcon content="V" size="m" color={colors.accents.green} />
