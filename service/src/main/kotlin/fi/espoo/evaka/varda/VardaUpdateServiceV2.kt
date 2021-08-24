@@ -141,7 +141,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)" }
 
             feeIds.forEachIndexed { index, feeId ->
-                logger.info { "VardaUpdate: deleting fee data ${index + 1} / ${feeIds.size}" }
+                logger.info { "VardaUpdate: deleting fee data $feeId for child $vardaChildId (${index + 1} / ${feeIds.size})" }
                 if (vardaClient.deleteFeeDataV2(feeId)) {
                     logger.info { "VardaUpdate: deleting fee data from db for child $evakaChildId (varda id $vardaChildId) by id $feeId" }
                     db.transaction { deleteVardaFeeData(it, feeId) }
@@ -149,7 +149,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             }
 
             placementIds.forEachIndexed { index, placementId ->
-                logger.info { "VardaUpdate: deleting placement ${index + 1} / ${placementIds.size}" }
+                logger.info { "VardaUpdate: deleting placement $placementId for child $vardaChildId (${index + 1} / ${placementIds.size})" }
                 if (vardaClient.deletePlacementV2(placementId)) {
                     logger.info { "VardaUpdate: deleting placement data from db for child $evakaChildId (varda id $vardaChildId) by id $placementId" }
                     db.transaction { deletePlacement(it, placementId) }
@@ -157,7 +157,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             }
 
             decisionIds.forEachIndexed { index, decisionId ->
-                logger.info { "VardaUpdate: deleting decision ${index + 1} / ${decisionIds.size}" }
+                logger.info { "VardaUpdate: deleting decision $decisionId for child $vardaChildId (${index + 1} / ${decisionIds.size})" }
                 if (vardaClient.deleteDecisionV2(decisionId)) {
                     logger.info { "VardaUpdate: deleting decision data from db for child $evakaChildId (varda id $vardaChildId) by id $decisionId" }
                     db.transaction { deleteDecision(it, decisionId) }
