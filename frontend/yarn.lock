@@ -8400,7 +8400,7 @@ __metadata:
     lib-icons: "link:src/lib-icons"
     lodash: ^4.17.21
     make-error-cause: ^2.3.0
-    playwright: ^1.13.0
+    playwright: ^1.14.1
     polished: ^4.1.3
     postcss: ^8.3.6
     postcss-loader: ^6.1.1
@@ -13841,9 +13841,9 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "playwright@npm:1.13.0"
+"playwright@npm:^1.14.1":
+  version: 1.14.1
+  resolution: "playwright@npm:1.14.1"
   dependencies:
     commander: ^6.1.0
     debug: ^4.1.1
@@ -13861,7 +13861,7 @@ fsevents@^1.2.7:
     yazl: ^2.5.1
   bin:
     playwright: lib/cli/cli.js
-  checksum: 48c9227695ed7bef55f0a37c07bc354492ceb70565e9cbfcc7db7733af94ba2420c43a0fc1a22a3658303a8bde881d2b21e1f9457657ec142304fbbbe44bd051
+  checksum: 0e940c42032c407861f8dcc8d2f48ec73f4b9dfd28e2be422a08ba329a696290b14d0a9a7b37a4238b5092736a6641fe8cfbd7ea0f0b9d0f2a05f4bd874b2a96
   languageName: node
   linkType: hard
 
