@@ -52,11 +52,8 @@ class VardaDevController(
     fun runFullVardaUpdate(
         db: Database.Connection
     ): ResponseEntity<Unit> {
-        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
-            vardaUpdateServiceV2.scheduleVardaUpdate(db, runNow = true)
-            return ResponseEntity.noContent().build()
-        }
-        return ResponseEntity.notFound().build()
+        vardaUpdateServiceV2.scheduleVardaUpdate(db, runNow = true)
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/delete-old-varda-data")
