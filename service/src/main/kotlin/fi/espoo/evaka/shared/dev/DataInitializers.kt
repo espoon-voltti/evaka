@@ -402,6 +402,25 @@ fun Database.Transaction.insertTestPlacement(
     return id
 }
 
+fun Database.Transaction.insertTestHoliday(
+    date: LocalDate,
+    description: String = "holiday"
+) {
+    createUpdate(
+        """
+            INSERT INTO holiday (date, description)
+            VALUES (:date, :description)
+            """
+    )
+        .bindMap(
+            mapOf(
+                "date" to date,
+                "description" to description
+            )
+        )
+        .execute()
+}
+
 fun Database.Transaction.insertTestServiceNeed(
     confirmedBy: UUID,
     placementId: PlacementId,
