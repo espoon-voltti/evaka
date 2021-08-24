@@ -72,6 +72,10 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 .bind("guardianId", testAdult_1.id)
                 .bind("childId", testChild_1.id)
                 .execute()
+
+            it.createUpdate("INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, now())")
+                .bind("evakaChildId", testChild_1.id)
+                .execute()
         }
         mockEndpoint.cleanUp()
     }
@@ -156,6 +160,17 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 1, 0, 0)
         assertEquals(snId, diffs.get(childId)?.additions?.get(0))
+    }
+
+    @Test
+    fun `calculateEvakaVsVardaServiceNeedChangesByChild does not add service need to varda if child old varda info is not reset`() {
+        val since = HelsinkiDateTime.now()
+        val option = snDefaultDaycare.copy(updated = since)
+        val snId = createServiceNeed(db, since, option, testChild_2)
+        val childId = db.read { it.getChildIdByServiceNeedId(snId) }
+
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        assertEquals(0, diffs.keys.size)
     }
 
     @Test
