@@ -441,18 +441,6 @@ function GrossIncomeSelection({
   )
 }
 
-function adjustEntrepreneurFormRadioButtons(
-  formData: Form.Entrepreneur
-): Form.Entrepreneur {
-  // if (formData.incomeType.startsWith('ENTREPRENEUR_SELF_EMPLOYED_')) {
-  //   return { ...formData, incomeSource: null }
-  // }
-  // if (formData.incomeType === 'ENTREPRENEUR_PARTNERSHIP') {
-  //   return { ...formData, incomeSource: null }
-  // }
-  return formData
-}
-
 function EntrepreneurIncomeSelection({
   formData,
   showFormErrors,
@@ -464,10 +452,6 @@ function EntrepreneurIncomeSelection({
 }) {
   const t = useTranslation()
   const [lang] = useLang()
-
-  const handleChange = (value: Form.Entrepreneur) => {
-    onChange(adjustEntrepreneurFormRadioButtons(value))
-  }
 
   return (
     <ContentArea opaque paddingVertical="L">
@@ -485,13 +469,13 @@ function EntrepreneurIncomeSelection({
         <Radio
           label={t.income.entrepreneurIncome.fullTime}
           checked={formData.fullTime === true}
-          onChange={() => handleChange({ ...formData, fullTime: true })}
+          onChange={() => onChange({ ...formData, fullTime: true })}
         />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.partTime}
           checked={formData.fullTime === false}
-          onChange={() => handleChange({ ...formData, fullTime: false })}
+          onChange={() => onChange({ ...formData, fullTime: false })}
         />
         <Gap size="L" />
         <Label htmlFor="entrepreneur-start-date">
@@ -501,7 +485,7 @@ function EntrepreneurIncomeSelection({
         <DatePicker
           date={formData.startOfEntrepreneurship}
           onChange={(value) =>
-            handleChange({ ...formData, startOfEntrepreneurship: value })
+            onChange({ ...formData, startOfEntrepreneurship: value })
           }
           locale={lang}
           info={errorToInputInfo(
@@ -520,16 +504,14 @@ function EntrepreneurIncomeSelection({
         <Radio
           label={t.income.entrepreneurIncome.yes}
           checked={formData.spouseWorksInCompany === true}
-          onChange={() =>
-            handleChange({ ...formData, spouseWorksInCompany: true })
-          }
+          onChange={() => onChange({ ...formData, spouseWorksInCompany: true })}
         />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.no}
           checked={formData.spouseWorksInCompany === false}
           onChange={() =>
-            handleChange({ ...formData, spouseWorksInCompany: false })
+            onChange({ ...formData, spouseWorksInCompany: false })
           }
         />
         <Gap size="L" />
@@ -539,7 +521,7 @@ function EntrepreneurIncomeSelection({
           label={t.income.entrepreneurIncome.startupGrant}
           checked={formData.startupGrant}
           onChange={(value) =>
-            handleChange({
+            onChange({
               ...formData,
               startupGrant: value
             })
@@ -551,9 +533,7 @@ function EntrepreneurIncomeSelection({
         <Checkbox
           label={t.income.entrepreneurIncome.checkupConsent}
           checked={formData.checkupConsent}
-          onChange={(value) =>
-            handleChange({ ...formData, checkupConsent: value })
-          }
+          onChange={(value) => onChange({ ...formData, checkupConsent: value })}
         />
         {showFormErrors && !formData.checkupConsent && (
           <AlertBox message={t.income.errors.consentRequired} />
@@ -577,7 +557,7 @@ function EntrepreneurIncomeSelection({
           label={t.income.entrepreneurIncome.selfEmployed}
           checked={formData.selfEmployed.selected}
           onChange={(value) =>
-            handleChange({
+            onChange({
               ...formData,
               selfEmployed: { ...formData.selfEmployed, selected: value }
             })
@@ -590,7 +570,7 @@ function EntrepreneurIncomeSelection({
               formData={formData.selfEmployed}
               showFormErrors={showFormErrors}
               onChange={(value) =>
-                handleChange({
+                onChange({
                   ...formData,
                   selfEmployed: { ...value, selected: true }
                 })
@@ -603,7 +583,7 @@ function EntrepreneurIncomeSelection({
           label={t.income.entrepreneurIncome.limitedCompany}
           checked={formData.limitedCompany.selected}
           onChange={(value) =>
-            handleChange({
+            onChange({
               ...formData,
               limitedCompany: {
                 ...formData.limitedCompany,
@@ -620,7 +600,7 @@ function EntrepreneurIncomeSelection({
               formData={formData.limitedCompany}
               showFormErrors={showFormErrors}
               onChange={(value) =>
-                handleChange({
+                onChange({
                   ...formData,
                   limitedCompany: { ...value, selected: true }
                 })
@@ -632,9 +612,7 @@ function EntrepreneurIncomeSelection({
         <Checkbox
           label={t.income.entrepreneurIncome.partnership}
           checked={formData.partnership}
-          onChange={(value) =>
-            handleChange({ ...formData, partnership: value })
-          }
+          onChange={(value) => onChange({ ...formData, partnership: value })}
         />
         {formData.partnership && (
           <>
@@ -647,7 +625,7 @@ function EntrepreneurIncomeSelection({
           label={t.income.entrepreneurIncome.lightEntrepreneur}
           checked={formData.lightEntrepreneur}
           onChange={(value) =>
-            handleChange({
+            onChange({
               ...formData,
               lightEntrepreneur: value
             })
@@ -665,9 +643,7 @@ function EntrepreneurIncomeSelection({
             <Accounting
               formData={formData.accountant}
               showFormErrors={showFormErrors}
-              onChange={(value) =>
-                handleChange({ ...formData, accountant: value })
-              }
+              onChange={(value) => onChange({ ...formData, accountant: value })}
             />
           </>
         )}
