@@ -16,7 +16,7 @@ type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
 export type Language = 'fi' | 'sv' | 'en'
-export type PilotFeature = 'MESSAGING' | 'MOBILE'
+export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 
 export interface Coordinate {
   lat: number

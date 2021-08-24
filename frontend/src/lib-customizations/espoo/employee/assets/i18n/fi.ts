@@ -1392,6 +1392,7 @@ export const fi = {
     groups: {
       title: 'Toimipisteen ryhmät',
       familyContacts: 'Näytä yhteystietokooste',
+      attendanceReservations: 'Läsnäolovaraukset',
       create: 'Luo uusi ryhmä',
       createModal: {
         title: 'Uusi ryhmä',
@@ -1474,6 +1475,12 @@ export const fi = {
       childName: 'Nimi',
       duration: 'Sijoitettu yksikköön',
       birthDate: 'Syntymäaika'
+    },
+    attendanceReservations: {
+      ungrouped: 'Lapset ilman ryhmää',
+      childName: 'Lapsen nimi',
+      startTime: 'Saapuu',
+      endTime: 'Lähtee'
     },
     error: {
       placement: {

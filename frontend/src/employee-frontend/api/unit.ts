@@ -773,3 +773,71 @@ export interface DaycareDailyNoteFormData {
   modifiedAt?: Date | null
   modifiedBy?: string
 }
+
+export async function getUnitAttendanceReservations(
+  unitId: UUID,
+  dateRange: FiniteDateRange
+): Promise<Result<UnitAttendanceReservations>> {
+  return client
+    .get<JsonOf<UnitAttendanceReservations>>('/attendance-reservations', {
+      params: {
+        unitId,
+        from: dateRange.start.formatIso(),
+        to: dateRange.end?.formatIso()
+      }
+    })
+    .then(({ data }) =>
+      Success.of({
+        unit: data.unit,
+        operationalDays: data.operationalDays.map(({ date, isHoliday }) => ({
+          date: LocalDate.parseIso(date),
+          isHoliday
+        })),
+        groups: data.groups.map(({ group, children }) => ({
+          group,
+          children: children.map(mapChildReservationJson)
+        })),
+        ungrouped: data.ungrouped.map(mapChildReservationJson)
+      })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface UnitAttendanceReservations {
+  unit: string
+  operationalDays: OperationalDay[]
+  groups: Array<{
+    group: string
+    children: Array<ChildReservations>
+  }>
+  ungrouped: Array<ChildReservations>
+}
+
+export interface OperationalDay {
+  date: LocalDate
+  isHoliday: boolean
+}
+
+export interface ChildReservations {
+  child: {
+    id: string
+    firstName: string
+    lastName: string
+    dateOfBirth: LocalDate
+  }
+  reservations: Record<
+    JsonOf<LocalDate>,
+    { startTime: string; endTime: string }
+  >
+}
+
+const mapChildReservationJson = ({
+  child,
+  ...json
+}: JsonOf<ChildReservations>): ChildReservations => ({
+  ...json,
+  child: {
+    ...child,
+    dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
+  }
+})

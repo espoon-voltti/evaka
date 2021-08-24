@@ -96,167 +96,157 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
 
-  const isMobileView =
-    location.pathname.includes('/attendance') ||
-    location.pathname.includes('/groupselector') ||
-    location.pathname.includes('/mobile') ||
-    location.pathname.includes('/childattendance')
-
   return (
-    <>
-      {!isMobileView && (
-        <StyledHeader
-          data-qa="header"
-          title={i18n.header.title}
-          logo={
-            <Img
-              data-qa="espoo-logo"
-              src={cityLogo.src}
-              alt={cityLogo.alt}
-              className="logo"
-            />
-          }
-        >
-          {loggedIn && user && (
-            <NavbarStart>
-              {user.accessibleFeatures.applications && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className="navbar-item is-tab"
-                  to="/applications"
-                  data-qa="applications-nav"
-                  $noMargin
-                >
-                  {i18n.header.applications}
-                </NavbarLink>
-              )}
-
-              {user.accessibleFeatures.units && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className="navbar-item is-tab"
-                  to="/units"
-                  data-qa="units-nav"
-                >
-                  {i18n.header.units}
-                </NavbarLink>
-              )}
-
-              {user.accessibleFeatures.personSearch && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className={`navbar-item is-tab ${
-                    atCustomerInfo ? 'is-active' : ''
-                  }`}
-                  to="/search"
-                  data-qa="search-nav"
-                >
-                  {i18n.header.search}
-                </NavbarLink>
-              )}
-
-              {user.accessibleFeatures.finance && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className="navbar-item is-tab"
-                  to="/finance"
-                  data-qa="finance-nav"
-                >
-                  {i18n.header.finance}
-                </NavbarLink>
-              )}
-
-              {user.accessibleFeatures.reports && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className="navbar-item is-tab"
-                  to="/reports"
-                  data-qa="reports-nav"
-                >
-                  {i18n.header.reports}
-                </NavbarLink>
-              )}
-
-              {user.accessibleFeatures.messages && (
-                <NavbarLink
-                  onClick={() => setPopupVisible(false)}
-                  className="navbar-item is-tab"
-                  to="/messages"
-                  data-qa="messages-nav"
-                >
-                  {i18n.header.messages}
-                  {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
-                </NavbarLink>
-              )}
-            </NavbarStart>
+    <StyledHeader
+      data-qa="header"
+      title={i18n.header.title}
+      logo={
+        <Img
+          data-qa="espoo-logo"
+          src={cityLogo.src}
+          alt={cityLogo.alt}
+          className="logo"
+        />
+      }
+    >
+      {loggedIn && user && (
+        <NavbarStart>
+          {user.accessibleFeatures.applications && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className="navbar-item is-tab"
+              to="/applications"
+              data-qa="applications-nav"
+              $noMargin
+            >
+              {i18n.header.applications}
+            </NavbarLink>
           )}
 
-          {loggedIn && user && (
-            <NavbarItem>
-              <NavbarEnd>
-                <InlineButton
-                  data-qa="username"
-                  onClick={() => setPopupVisible(!popupVisible)}
-                  text={user.name}
-                  iconRight
-                  icon={popupVisible ? faChevronUp : faChevronDown}
-                />
-              </NavbarEnd>
-            </NavbarItem>
+          {user.accessibleFeatures.units && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className="navbar-item is-tab"
+              to="/units"
+              data-qa="units-nav"
+            >
+              {i18n.header.units}
+            </NavbarLink>
           )}
-          {popupVisible && (
-            <UserPopup>
-              <FixedSpaceColumn spacing={'m'}>
-                {user?.accessibleFeatures.employees && (
-                  <Link
-                    to={`/employees`}
-                    onClick={() => setPopupVisible(false)}
-                    data-qa="user-popup-employees"
-                  >
-                    {i18n.employees.title}
-                  </Link>
-                )}
-                {featureFlags.financeBasicsPage &&
-                  user?.accessibleFeatures.financeBasics && (
-                    <Link
-                      to="/finance/basics"
-                      onClick={() => setPopupVisible(false)}
-                      data-qa="user-popup-finance-basics"
-                    >
-                      {i18n.financeBasics.title}
-                    </Link>
-                  )}
-                {featureFlags.experimental?.vasu &&
-                  user?.accessibleFeatures.vasuTemplates && (
-                    <Link
-                      to="/vasu-templates"
-                      onClick={() => setPopupVisible(false)}
-                      data-qa="user-popup-vasu-templates"
-                    >
-                      {i18n.vasuTemplates.title}
-                    </Link>
-                  )}
-                <Link
-                  to={`/pin-code`}
-                  onClick={() => setPopupVisible(false)}
-                  data-qa="user-popup-pin-code"
-                >
-                  {i18n.pinCode.link}
-                </Link>
-                <LogoutLink
-                  data-qa="logout-btn"
-                  href={logoutUrl}
-                  onClick={() => setPopupVisible(false)}
-                >
-                  <LogoutText>{i18n.header.logout}</LogoutText>
-                  <FontAwesomeIcon icon={faSignOut} />
-                </LogoutLink>
-              </FixedSpaceColumn>
-            </UserPopup>
+
+          {user.accessibleFeatures.personSearch && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className={`navbar-item is-tab ${
+                atCustomerInfo ? 'is-active' : ''
+              }`}
+              to="/search"
+              data-qa="search-nav"
+            >
+              {i18n.header.search}
+            </NavbarLink>
           )}
-        </StyledHeader>
+
+          {user.accessibleFeatures.finance && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className="navbar-item is-tab"
+              to="/finance"
+              data-qa="finance-nav"
+            >
+              {i18n.header.finance}
+            </NavbarLink>
+          )}
+
+          {user.accessibleFeatures.reports && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className="navbar-item is-tab"
+              to="/reports"
+              data-qa="reports-nav"
+            >
+              {i18n.header.reports}
+            </NavbarLink>
+          )}
+
+          {user.accessibleFeatures.messages && (
+            <NavbarLink
+              onClick={() => setPopupVisible(false)}
+              className="navbar-item is-tab"
+              to="/messages"
+              data-qa="messages-nav"
+            >
+              {i18n.header.messages}
+              {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+            </NavbarLink>
+          )}
+        </NavbarStart>
       )}
-    </>
+
+      {loggedIn && user && (
+        <NavbarItem>
+          <NavbarEnd>
+            <InlineButton
+              data-qa="username"
+              onClick={() => setPopupVisible(!popupVisible)}
+              text={user.name}
+              iconRight
+              icon={popupVisible ? faChevronUp : faChevronDown}
+            />
+          </NavbarEnd>
+        </NavbarItem>
+      )}
+      {popupVisible && (
+        <UserPopup>
+          <FixedSpaceColumn spacing={'m'}>
+            {user?.accessibleFeatures.employees && (
+              <Link
+                to={`/employees`}
+                onClick={() => setPopupVisible(false)}
+                data-qa="user-popup-employees"
+              >
+                {i18n.employees.title}
+              </Link>
+            )}
+            {featureFlags.financeBasicsPage &&
+              user?.accessibleFeatures.financeBasics && (
+                <Link
+                  to="/finance/basics"
+                  onClick={() => setPopupVisible(false)}
+                  data-qa="user-popup-finance-basics"
+                >
+                  {i18n.financeBasics.title}
+                </Link>
+              )}
+            {featureFlags.experimental?.vasu &&
+              user?.accessibleFeatures.vasuTemplates && (
+                <Link
+                  to="/vasu-templates"
+                  onClick={() => setPopupVisible(false)}
+                  data-qa="user-popup-vasu-templates"
+                >
+                  {i18n.vasuTemplates.title}
+                </Link>
+              )}
+            <Link
+              to={`/pin-code`}
+              onClick={() => setPopupVisible(false)}
+              data-qa="user-popup-pin-code"
+            >
+              {i18n.pinCode.link}
+            </Link>
+            <LogoutLink
+              data-qa="logout-btn"
+              href={logoutUrl}
+              onClick={() => setPopupVisible(false)}
+            >
+              <LogoutText>{i18n.header.logout}</LogoutText>
+              <FontAwesomeIcon icon={faSignOut} />
+            </LogoutLink>
+          </FixedSpaceColumn>
+        </UserPopup>
+      )}
+    </StyledHeader>
   )
 })
 
