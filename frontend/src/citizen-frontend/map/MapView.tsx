@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
-import { ProviderType, UnitLanguage } from 'lib-common/api-types/units/enums'
+import { UnitLanguage } from 'lib-common/api-types/units/enums'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Coordinate } from 'lib-common/api-types/units/Coordinate'
@@ -25,6 +25,7 @@ import {
 import { fetchUnits, queryDistances } from '../map/api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { ProviderType } from 'lib-common/generated/enums'
 
 export type MapAddress = {
   coordinates: Coordinate
