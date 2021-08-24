@@ -21,7 +21,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from 'lib-common/types'
 import { Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
+import { Attachment } from 'lib-common/api-types/attachment'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 

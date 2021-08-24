@@ -46,6 +46,8 @@ const DayPickerDiv = styled.div`
 type DatePickerProps = {
   date: string
   onChange: (date: string) => void
+  onFocus?: () => void
+  onBlur?: () => void
   locale: 'fi' | 'sv' | 'en'
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
@@ -59,6 +61,8 @@ type DatePickerProps = {
 function DatePicker({
   date,
   onChange,
+  onFocus = () => undefined,
+  onBlur = () => undefined,
   locale,
   info,
   hideErrorsBeforeTouched,
@@ -136,8 +140,14 @@ function DatePicker({
           onChange(date)
         }}
         disabled={disabled}
-        onFocus={() => setShow(true)}
-        onBlur={onInputBlur}
+        onFocus={() => {
+          setShow(true)
+          onFocus()
+        }}
+        onBlur={(e) => {
+          onInputBlur(e)
+          onBlur()
+        }}
         info={info}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         data-qa={props['data-qa']}

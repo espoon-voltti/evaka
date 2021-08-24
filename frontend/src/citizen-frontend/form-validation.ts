@@ -81,6 +81,9 @@ export const email = (
 ): ErrorKey | undefined =>
   val.length > 0 && !EMAIL_REGEXP.test(val) ? err : undefined
 
+export const validInt = (val: string, err: ErrorKey = 'format') =>
+  regexp(val, /^[0-9]+$/, err)
+
 export const validDate = (
   val: string,
   err: ErrorKey = 'validDate'
@@ -92,6 +95,7 @@ export const emailVerificationCheck =
     val === verification ? undefined : err
 
 type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
+
 export const validate = (
   val: string,
   ...validators: StandardValidator[]
@@ -103,18 +107,24 @@ export const validate = (
   return undefined
 }
 
+export const validateIf = (
+  condition: boolean,
+  val: string,
+  ...validators: StandardValidator[]
+): ErrorKey | undefined => {
+  if (condition) return validate(val, ...validators)
+  return undefined
+}
+
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number]
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type ErrorsOfArray<T extends object[]> = {
+type ErrorsOfArray<T extends unknown[]> = {
   arrayErrors: ErrorKey | undefined
   itemErrors: ErrorsOf<ArrayElement<T>>[]
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type ErrorsOf<T extends object> = {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  [key in keyof T]?: T[key] extends object[]
+export type ErrorsOf<T> = {
+  [key in keyof T]?: T[key] extends unknown[]
     ? ErrorsOfArray<T[key]>
     : ErrorKey | undefined
 }
@@ -131,15 +141,13 @@ export function errorToInputInfo(
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-function isArrayErrors<T extends object[]>(
+function isArrayErrors<T extends unknown[]>(
   e: ErrorKey | undefined | ErrorsOfArray<T>
 ): e is ErrorsOfArray<T> {
   return e !== undefined && typeof e !== 'string'
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-function getArrayErrorCount<T extends object[]>(
+function getArrayErrorCount<T extends unknown[]>(
   errors: ErrorsOfArray<T>
 ): number {
   const arrayErrors = errors.arrayErrors ? 1 : 0
@@ -150,8 +158,7 @@ function getArrayErrorCount<T extends object[]>(
   return arrayErrors + itemErrors
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function getErrorCount<T extends object>(errors: ErrorsOf<T>): number {
+export function getErrorCount<T>(errors: ErrorsOf<T>): number {
   return Object.keys(errors).reduce<number>((acc, key) => {
     const isArr = isArrayErrors(errors[key])
     return acc + (isArr ? getArrayErrorCount(errors[key]) : errors[key] ? 1 : 0)

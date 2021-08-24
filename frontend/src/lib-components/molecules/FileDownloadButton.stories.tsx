@@ -6,7 +6,7 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
 import FileDownloadButton from './FileDownloadButton'
-import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
+import { Attachment } from 'lib-common/api-types/attachment'
 import { Failure, Result, Success } from 'lib-common/api'
 
 const file: Attachment = {

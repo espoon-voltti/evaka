@@ -57,7 +57,9 @@ class AttachmentsController(
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
-        val id = handleFileUpload(db, user, applicationId, file, type)
+        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
+        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
+
         return ResponseEntity.ok(id)
     }
 
@@ -73,18 +75,41 @@ class AttachmentsController(
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
-        if (db.read { it.userAttachmentCount(user.id) } >= maxAttachmentsPerUser) throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
+        checkAttachmentCount(db, user)
 
-        val id = handleFileUpload(db, user, applicationId, file, type)
+        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
+        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
+
         return ResponseEntity.ok(id)
+    }
+
+    @PostMapping("/citizen", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadAttachmentCitizen(
+        db: Database,
+        user: AuthenticatedUser,
+        @RequestPart("file") file: MultipartFile
+    ): ResponseEntity<AttachmentId> {
+        Audit.AttachmentsUpload.log(targetId = "nothing")
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        checkAttachmentCount(db, user)
+
+        val id = handleFileUpload(db, user, AttachToNothing, file, null)
+        return ResponseEntity.ok(id)
+    }
+
+    private fun checkAttachmentCount(db: Database, user: AuthenticatedUser) {
+        if (db.read { it.userAttachmentCount(user.id) } >= maxAttachmentsPerUser) {
+            throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
+        }
     }
 
     private fun handleFileUpload(
         db: Database,
         user: AuthenticatedUser,
-        applicationId: ApplicationId,
+        attachTo: AttachTo,
         file: MultipartFile,
-        type: AttachmentType
+        type: AttachmentType?
     ): AttachmentId {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
@@ -99,7 +124,7 @@ class AttachmentsController(
                 id,
                 name,
                 contentType,
-                applicationId,
+                attachTo,
                 uploadedByEnduser = user.id.takeIf { user.isEndUser },
                 uploadedByEmployee = user.id.takeUnless { user.isEndUser },
                 type = type
@@ -113,7 +138,6 @@ class AttachmentsController(
                 contentType
             )
         }
-        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
 
         return id
     }

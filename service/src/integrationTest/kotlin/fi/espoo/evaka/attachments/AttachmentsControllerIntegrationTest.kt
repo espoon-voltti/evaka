@@ -6,14 +6,12 @@ package fi.espoo.evaka.attachments
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.application.deleteApplication
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_5
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -32,13 +30,6 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
             it.insertGeneralTestFixtures()
         }
         user = AuthenticatedUser.Citizen(testAdult_5.id)
-    }
-
-    @AfterEach
-    protected fun tearDown() {
-        db.transaction {
-            it.deleteApplication(applicationId)
-        }
     }
 
     @Test

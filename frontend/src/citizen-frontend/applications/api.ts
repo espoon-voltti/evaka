@@ -20,16 +20,12 @@ import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
 } from 'lib-common/api-types/application/ApplicationsOfChild'
-import {
-  ApplicationType,
-  AttachmentType
-} from 'lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
 import {
   deserializePublicUnit,
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
-import { UUID } from 'lib-common/types'
 import {
   PlacementType,
   ServiceNeedOptionPublicInfo
@@ -170,59 +166,6 @@ export async function getActivePlacementsByApplicationType(
       `/citizen/applications/active-placements/${childId}`
     )
     return Success.of(data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function saveAttachment(
-  applicationId: UUID,
-  file: File,
-  attachmentType: AttachmentType,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
-): Promise<Result<UUID>> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    interface AttachmentResult {
-      data: string
-    }
-    const { data }: AttachmentResult = await client.post(
-      `/attachments/citizen/applications/${applicationId}?type=${attachmentType}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress
-      }
-    )
-    return Success.of(data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function deleteAttachment(id: UUID): Promise<Result<void>> {
-  try {
-    await client.delete(`/attachments/citizen/${id}`)
-    return Success.of(void 0)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function getAttachmentBlob(
-  attachmentId: UUID
-): Promise<Result<BlobPart>> {
-  try {
-    const result = await client({
-      url: `/attachments/${attachmentId}/download`,
-      method: 'GET',
-      responseType: 'blob'
-    })
-    return Success.of(result.data)
   } catch (e) {
     return Failure.fromError(e)
   }

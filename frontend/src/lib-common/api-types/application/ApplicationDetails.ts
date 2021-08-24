@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  AttachmentType,
   ApplicationGuardianAgreementStatus,
   ApplicationOrigin,
   ApplicationStatus,
-  ApplicationType
+  ApplicationType,
+  AttachmentType
 } from './enums'
 import { JsonOf } from '../../json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { ServiceNeedOptionSummary } from '../serviceNeed/common'
+import { Attachment } from '../attachment'
 
 export interface GuardianApplications {
   childId: string
@@ -213,12 +214,6 @@ export interface ApplicationServiceNeed {
 export interface ApplicationClubDetails {
   wasOnDaycare: boolean
   wasOnClubCare: boolean
-}
-
-export interface Attachment {
-  id: UUID
-  name: string
-  contentType: string
 }
 
 export interface ApplicationAttachment extends Attachment {

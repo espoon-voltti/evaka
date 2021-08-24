@@ -139,6 +139,7 @@ export const H3LikeLabel = styled.label`
 
 type ParagraphProps = {
   fitted?: boolean
+  noMargin?: boolean
   centered?: boolean
   width?: string
 }
@@ -146,8 +147,8 @@ type ParagraphProps = {
 export const P = styled.p<ParagraphProps>`
   ${(p) => (p.centered ? 'text-align: center;' : '')};
   max-width: ${(p) => p.width || '960px'};
-  margin-block-start: ${(p) => (p.fitted ? `0` : '1.5em')};
-  margin-block-end: ${(p) => (p.fitted ? `0` : '1.5em')};
+  ${(p) =>
+    p.noMargin ? `margin: 0` : `margin-block: ${p.fitted ? `0` : '1.5em'}`};
 
   strong {
     font-weight: 600;
