@@ -126,6 +126,7 @@ export interface UnitBackupCare {
     lastName: string
     birthDate: LocalDate
   }
+  serviceNeeds: ServiceNeed[]
 }
 
 export interface ChildBackupPickup {

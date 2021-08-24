@@ -97,6 +97,7 @@ interface BaseFeatureFlags {
     dailyTimesEnabled: boolean
     serviceNeedOptionsEnabled: boolean
   }
+  groupsTableServiceNeedsEnabled: boolean
   evakaLogin: boolean
   financeBasicsPage: boolean
   preschoolEnabled: boolean

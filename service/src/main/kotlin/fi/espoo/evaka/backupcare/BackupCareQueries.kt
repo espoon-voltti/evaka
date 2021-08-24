@@ -47,6 +47,7 @@ SELECT
   group_id,
   daycare_group.name AS group_name,
   daterange(backup_care.start_date, backup_care.end_date, '[]') AS period,
+  '[]' AS service_needs,
   days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need AS missingServiceNeedDays
 FROM backup_care
 JOIN (

@@ -23,7 +23,7 @@ import {
   UnitTypes,
   VisitingAddress
 } from '../types/unit'
-import { UnitBackupCare } from '../types/child'
+import { ServiceNeed, UnitBackupCare } from '../types/child'
 import { AdRole, DayOfWeek, UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -116,11 +116,13 @@ interface MissingGroupPlacementCommon {
 interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
   placementType: PlacementType
   backup: false
+  serviceNeeds: ServiceNeed[]
 }
 
 interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
   placementType: null
   backup: true
+  serviceNeeds: ServiceNeed[]
 }
 
 export type MissingGroupPlacement =
@@ -226,6 +228,7 @@ function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
     },
     startDate: LocalDate.parseIso(data.startDate),
     endDate: LocalDate.parseIso(data.endDate),
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     groupPlacements: data.groupPlacements.map((groupPlacement) => ({
       ...groupPlacement,
       startDate: LocalDate.parseIso(groupPlacement.startDate),
@@ -242,6 +245,7 @@ function mapBackupCareJson(data: JsonOf<UnitBackupCare>): UnitBackupCare {
       ...data.child,
       birthDate: LocalDate.parseIso(data.child.birthDate)
     },
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     period: FiniteDateRange.parseJson(data.period)
   }
 }
@@ -253,8 +257,21 @@ function mapMissingGroupPlacementJson(
     ...data,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     gap: FiniteDateRange.parseJson(data.gap)
   }
+}
+
+function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
+  return data.map((serviceNeed) => ({
+    ...serviceNeed,
+    startDate: LocalDate.parseIso(serviceNeed.startDate),
+    endDate: LocalDate.parseIso(serviceNeed.endDate),
+    confirmed: {
+      ...serviceNeed.confirmed,
+      at: new Date(serviceNeed.confirmed.at)
+    }
+  }))
 }
 
 function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {

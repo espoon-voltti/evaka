@@ -18,6 +18,7 @@ import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { careTypesFromPlacementType } from '../common/CareTypeLabel'
 import { isPartDayPlacement } from '../../utils/placements'
+import { featureFlags } from 'lib-customizations/employee'
 
 function TabApplications() {
   const { i18n } = useTranslation()
@@ -79,8 +80,9 @@ function TabApplications() {
                         : 'full'
                     }
                     label={
-                      row?.serviceNeed?.name ??
-                      i18n.placement.type[row.requestedPlacementType]
+                      featureFlags.daycareApplication.serviceNeedOptionsEnabled
+                        ? row?.serviceNeed?.name ?? ''
+                        : i18n.placement.type[row.requestedPlacementType]
                     }
                   />
                 </Td>

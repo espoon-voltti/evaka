@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -370,6 +371,8 @@ fun getMissingGroupPlacements(
         val placementType: PlacementType?,
         val placementRange: FiniteDateRange,
         val childId: UUID,
+        @Json
+        val serviceNeeds: Set<ServiceNeed>,
         val gapRange: FiniteDateRange
     )
 
@@ -380,6 +383,8 @@ fun getMissingGroupPlacements(
         val type: PlacementType,
         val range: FiniteDateRange,
         val childId: UUID,
+        @Json
+        val serviceNeeds: Set<ServiceNeed>,
         val groupPlacementRanges: List<FiniteDateRange>
     )
     val placements = tx.createQuery(
@@ -390,9 +395,31 @@ fun getMissingGroupPlacements(
             pl.type,
             daterange(greatest(pl.start_date, :launch), pl.end_date, '[]') AS range,
             pl.child_id,
+            coalesce(jsonb_agg(jsonb_build_object(
+                'id', sn.id,
+                'placementId', sn.placement_id,
+                'startDate', sn.start_date,
+                'endDate', sn.end_date,
+                'option', jsonb_build_object(
+                    'id', sno.id,
+                    'name', sno.name,
+                    'updated', date_part('epoch', sno.updated)
+                ),
+                'shiftCare', sn.shift_care,
+                'confirmed', jsonb_build_object(
+                    'employeeId', e.id,
+                    'firstName', e.first_name,
+                    'lastName', e.last_name,
+                    'at', date_part('epoch', sn.confirmed_at)
+                ),
+                'updated', date_part('epoch', sn.updated)
+            )) FILTER (WHERE sn.id IS NOT NULL), '[]') AS service_needs,
             coalesce(array_agg(daterange(greatest(dgp.start_date, :launch), dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL), '{}') AS group_placement_ranges
         FROM placement pl
         LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') && daterange(:launch, NULL)
+        LEFT JOIN service_need sn ON sn.placement_id = pl.id
+        LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+        LEFT JOIN employee e ON e.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange(:launch, NULL)
         GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
         --exclude simple cases where there is only one group placement and it matches the placement range
@@ -410,6 +437,7 @@ fun getMissingGroupPlacements(
                 placementType = placement.type,
                 placementRange = placement.range,
                 childId = placement.childId,
+                serviceNeeds = placement.serviceNeeds,
                 gapRange = gap
             )
         }
@@ -423,6 +451,7 @@ fun getMissingGroupPlacements(
             NULL AS placement_type,
             daterange(start_date, end_date, '[]') AS placement_range,
             child_id,
+            '[]' AS service_needs,
             daterange(start_date, end_date, '[]') AS gap_range
         FROM backup_care bc
         WHERE bc.unit_id = :unitId AND bc.group_id IS NULL 
@@ -454,6 +483,7 @@ fun getMissingGroupPlacements(
             firstName = child.firstName,
             lastName = child.lastName,
             dateOfBirth = child.dateOfBirth,
+            serviceNeeds = gap.serviceNeeds,
             gap = gap.gapRange
         )
     }
@@ -509,6 +539,7 @@ data class MissingGroupPlacement(
     val firstName: String?,
     val lastName: String?,
     val dateOfBirth: LocalDate,
+    val serviceNeeds: Set<ServiceNeed>,
     val gap: FiniteDateRange
 )
 

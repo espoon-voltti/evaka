@@ -65,6 +65,8 @@ import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { RequireRole } from 'employee-frontend/utils/roles'
+import { featureFlags } from 'lib-customizations/employee'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 interface Props {
   unit: Unit
@@ -592,7 +594,24 @@ function Group({
                                   ? 'half'
                                   : 'full'
                               }
-                              label={i18n.placement.type[placement.type]}
+                              label={
+                                featureFlags.groupsTableServiceNeedsEnabled
+                                  ? placement.serviceNeeds
+                                      .filter((sn) =>
+                                        new FiniteDateRange(
+                                          placement.startDate,
+                                          placement.endDate
+                                        ).overlaps(
+                                          new FiniteDateRange(
+                                            sn.startDate,
+                                            sn.endDate
+                                          )
+                                        )
+                                      )
+                                      .map((sn) => sn.option.name)
+                                      .join(' / ')
+                                  : i18n.placement.type[placement.type]
+                              }
                             />
                           ) : null}
                         </Td>

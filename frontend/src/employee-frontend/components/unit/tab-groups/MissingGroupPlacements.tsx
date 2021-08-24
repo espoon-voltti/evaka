@@ -13,7 +13,7 @@ import { useTranslation } from '../../../state/i18n'
 import { DaycareGroup } from '../../../types/unit'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { UIContext } from '../../../state/ui'
-import { Translations } from 'lib-customizations/employee'
+import { featureFlags, Translations } from 'lib-customizations/employee'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
@@ -23,6 +23,7 @@ import { formatName } from '../../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '../../../api/unit'
 import { isPartDayPlacement } from '../../../utils/placements'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
@@ -38,6 +39,7 @@ function renderMissingGroupPlacementRow(
     dateOfBirth,
     placementPeriod,
     gap,
+    serviceNeeds,
     placementType
   } = missingPlacement
 
@@ -63,7 +65,18 @@ function renderMissingGroupPlacementRow(
         {placementType && (
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
-            label={i18n.placement.type[placementType]}
+            label={
+              featureFlags.groupsTableServiceNeedsEnabled
+                ? serviceNeeds
+                    .filter((sn) =>
+                      gap.overlaps(
+                        new FiniteDateRange(sn.startDate, sn.endDate)
+                      )
+                    )
+                    .map((sn) => sn.option.name)
+                    .join(' / ')
+                : i18n.placement.type[placementType]
+            }
           />
         )}
       </Td>

@@ -19,6 +19,7 @@ const features: Features = {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false
     },
+    groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
     preschoolEnabled: true,
@@ -36,6 +37,7 @@ const features: Features = {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false
     },
+    groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
     preschoolEnabled: true,
@@ -52,6 +54,7 @@ const features: Features = {
       dailyTimesEnabled: true,
       serviceNeedOptionsEnabled: false
     },
+    groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
     preschoolEnabled: true,
