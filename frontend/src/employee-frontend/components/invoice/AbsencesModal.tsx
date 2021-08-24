@@ -11,7 +11,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { faAbacus } from 'lib-icons'
-import { Absence, AbsenceType } from 'lib-common/api-types/child/Absences'
+import { Absence } from 'lib-common/api-types/child/Absences'
 
 import { formatName } from '../../utils'
 import { getAbsencesByChild } from '../../api/invoicing'
@@ -22,6 +22,7 @@ import { UUID } from '../../types'
 import ColourInfoItem from '../../components/common/ColourInfoItem'
 import Tooltip from '../../components/common/Tooltip'
 import PeriodPicker from '../../components/absences/PeriodPicker'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 const Section = styled.section``
 

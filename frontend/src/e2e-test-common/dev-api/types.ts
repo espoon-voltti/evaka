@@ -8,7 +8,7 @@ import { JsonOf } from 'lib-common/json'
 import {
   ApplicationOrigin,
   ApplicationStatus
-} from 'lib-common/api-types/application/enums'
+} from 'lib-common/generated/enums'
 
 export type UUID = string
 type ISODate = string

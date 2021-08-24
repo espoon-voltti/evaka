@@ -11,13 +11,13 @@ import { ApplicationDataGridLabelWidth } from '../../../applications/editor/veri
 import { Gap } from 'lib-components/white-space'
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import {
   ServiceNeedUrgency,
   ServiceNeedShiftCare
 } from './ServiceNeedAttachments'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
 import styled from 'styled-components'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData

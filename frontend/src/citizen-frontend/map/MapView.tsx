@@ -24,8 +24,7 @@ import {
 } from '../map/distances'
 import { fetchUnits, queryDistances } from '../map/api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
-import { ProviderType } from 'lib-common/generated/enums'
+import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 
 export type MapAddress = {
   coordinates: Coordinate

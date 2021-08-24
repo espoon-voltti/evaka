@@ -4,8 +4,7 @@
 
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
-
-export type MessageType = 'MESSAGE' | 'BULLETIN'
+import { MessageType } from 'lib-common/generated/enums'
 
 export interface MessageAccount {
   id: UUID

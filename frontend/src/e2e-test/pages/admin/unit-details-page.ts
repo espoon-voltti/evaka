@@ -4,8 +4,8 @@
 
 import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { Checkbox } from '../../utils/helpers'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
 

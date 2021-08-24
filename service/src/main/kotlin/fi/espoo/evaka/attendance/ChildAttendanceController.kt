@@ -6,8 +6,8 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.helsinkiZone
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
@@ -201,7 +201,7 @@ class ChildAttendanceController(
     }
 
     data class DepartureInfoResponse(
-        val absentFrom: Set<CareType>
+        val absentFrom: Set<AbsenceCareType>
     )
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
@@ -507,33 +507,33 @@ private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<
     return getCareTypes(placementBasics.placementType).all { type -> absences.map { it.careType }.contains(type) }
 }
 
-private fun getCareTypes(placementType: PlacementType): List<CareType> =
+private fun getCareTypes(placementType: PlacementType): List<AbsenceCareType> =
     when (placementType) {
         PlacementType.SCHOOL_SHIFT_CARE ->
-            listOf(CareType.SCHOOL_SHIFT_CARE)
+            listOf(AbsenceCareType.SCHOOL_SHIFT_CARE)
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
-            listOf(CareType.PRESCHOOL)
+            listOf(AbsenceCareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
-            listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
+            listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE)
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-            listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+            listOf(AbsenceCareType.DAYCARE_5YO_FREE, AbsenceCareType.DAYCARE)
         PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-            listOf(CareType.DAYCARE)
+            listOf(AbsenceCareType.DAYCARE)
         PlacementType.CLUB ->
-            listOf(CareType.CLUB)
+            listOf(AbsenceCareType.CLUB)
     }
 
-private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Set<CareType> {
+private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Set<AbsenceCareType> {
     return listOfNotNull(
-        CareType.PRESCHOOL.takeIf {
+        AbsenceCareType.PRESCHOOL.takeIf {
             wasAbsentFromPreschool(placementBasics.placementType, arrived, departed)
         },
-        CareType.PRESCHOOL_DAYCARE.takeIf {
+        AbsenceCareType.PRESCHOOL_DAYCARE.takeIf {
             wasAbsentFromPreschoolDaycare(placementBasics.placementType, arrived, departed)
         },
-        CareType.DAYCARE.takeIf {
+        AbsenceCareType.DAYCARE.takeIf {
             wasAbsentFrom5yoPaidDaycare(placementBasics.placementType, arrived, departed)
         }
     ).toSet()

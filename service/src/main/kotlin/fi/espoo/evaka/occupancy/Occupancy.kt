@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
@@ -580,5 +580,5 @@ private data class AssistanceNeed(
 private data class Absence(
     val childId: UUID,
     val date: LocalDate,
-    val careType: CareType
+    val careType: AbsenceCareType
 )

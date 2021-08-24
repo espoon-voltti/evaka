@@ -18,7 +18,6 @@ import {
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes,
   TimeRange,
-  DailyServiceTimesType,
   isVariableTime,
   VariableDailyServiceTimes
 } from 'lib-common/api-types/child/common'
@@ -43,6 +42,7 @@ import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { DailyServiceTimesType } from 'lib-common/generated/enums'
 
 const weekdays = [
   'monday',

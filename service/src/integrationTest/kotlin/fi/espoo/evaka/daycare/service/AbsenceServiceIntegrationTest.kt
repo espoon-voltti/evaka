@@ -113,8 +113,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(daysInMonth, placements.size)
         assertEquals(2, careTypes.size)
-        assertTrue(careTypes.contains(CareType.PRESCHOOL))
-        assertTrue(careTypes.contains(CareType.PRESCHOOL_DAYCARE))
+        assertTrue(careTypes.contains(AbsenceCareType.PRESCHOOL))
+        assertTrue(careTypes.contains(AbsenceCareType.PRESCHOOL_DAYCARE))
     }
 
     @Test
@@ -129,7 +129,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(daysInMonth, placements.size)
         assertEquals(1, careTypes.size)
-        assertEquals(true, careTypes.contains(CareType.PRESCHOOL))
+        assertEquals(true, careTypes.contains(AbsenceCareType.PRESCHOOL))
     }
 
     @Test
@@ -144,7 +144,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(daysInMonth, placements.size)
         assertEquals(1, careTypes.size)
-        assertTrue(careTypes.contains(CareType.DAYCARE))
+        assertTrue(careTypes.contains(AbsenceCareType.DAYCARE))
     }
 
     @Test
@@ -159,8 +159,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(daysInMonth, placements.size)
         assertEquals(2, careTypes.size)
-        assertTrue(careTypes.contains(CareType.DAYCARE))
-        assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
+        assertTrue(careTypes.contains(AbsenceCareType.DAYCARE))
+        assertTrue(careTypes.contains(AbsenceCareType.DAYCARE_5YO_FREE))
     }
 
     @Test
@@ -176,8 +176,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(daysInMonth, placements.size)
         assertEquals(2, careTypes.size)
-        assertTrue(careTypes.contains(CareType.DAYCARE))
-        assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
+        assertTrue(careTypes.contains(AbsenceCareType.DAYCARE))
+        assertTrue(careTypes.contains(AbsenceCareType.DAYCARE_5YO_FREE))
     }
 
     @Test
@@ -203,7 +203,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
@@ -237,7 +237,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
@@ -259,8 +259,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, CareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
@@ -284,7 +284,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacements(children, PlacementType.PRESCHOOL_DAYCARE)
 
         val initialAbsenceList = children.map {
-            createAbsence(it.id, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+            createAbsence(it.id, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
         }
 
         assertEquals(4, initialAbsenceList.size)
@@ -310,8 +310,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
@@ -328,7 +328,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
         var result = db.transaction { tx ->
@@ -356,8 +356,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, CareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
@@ -380,8 +380,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         }
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, CareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
@@ -398,8 +398,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, CareType.DAYCARE, AbsenceType.SICKLEAVE, LocalDate.of(2019, 9, 1))
-        val initialAbsence2 = createAbsence(childId, CareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence = createAbsence(childId, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, LocalDate.of(2019, 9, 1))
+        val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
@@ -444,7 +444,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.children.size)
         assertEquals(2, result.children.first().placements[placementDate]?.size)
         assertEquals(
-            setOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE),
+            setOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE),
             result.children.first().placements[placementDate]?.toSet()
         )
     }
@@ -545,7 +545,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createAbsence(childId: UUID, careType: CareType, absenceType: AbsenceType, date: LocalDate): Absence {
+    private fun createAbsence(childId: UUID, careType: AbsenceCareType, absenceType: AbsenceType, date: LocalDate): Absence {
         return Absence(
             id = null,
             childId = childId,

@@ -5,8 +5,8 @@
 import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/api-types/child/Absences'
 import { UnitProviderType } from 'lib-customizations/types'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 export interface InvoiceReportRow {
   areaCode: number

@@ -4,7 +4,17 @@
 
 package evaka.codegen
 
+import fi.espoo.evaka.application.ApplicationOrigin
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.AttachmentType
+import fi.espoo.evaka.application.OtherGuardianAgreementStatus
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.security.Action
 import java.nio.file.Path
@@ -37,6 +47,16 @@ val generatedFiles = listOf(
     ),
     defineFile(
         "enums.d.ts",
+        generateEnum<AbsenceCareType>(),
+        generateEnum<AbsenceType>(),
+        generateEnum<ApplicationOrigin>(),
+        generateEnum<ApplicationStatus>(),
+        generateEnum<ApplicationType>(),
+        generateEnum<AttachmentType>(),
+        generateEnum<CareType>(),
+        generateEnum<DailyServiceTimesType>(),
+        generateEnum<MessageType>(),
+        generateEnum<OtherGuardianAgreementStatus>(),
         generateEnum<PlacementType>(),
         generateEnum<ProviderType>(),
     )

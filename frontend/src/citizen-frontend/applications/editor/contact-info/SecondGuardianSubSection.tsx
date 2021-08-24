@@ -7,10 +7,6 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../localization'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label, P } from 'lib-components/typography'
-import {
-  ApplicationGuardianAgreementStatus,
-  ApplicationType
-} from 'lib-common/api-types/application/enums'
 import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from '../validations'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -19,6 +15,10 @@ import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import {
+  ApplicationType,
+  OtherGuardianAgreementStatus
+} from 'lib-common/generated/enums'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType
@@ -39,7 +39,7 @@ export default React.memo(function SecondGuardianSubSection({
 }: SecondGuardianSubSectionProps) {
   const t = useTranslation()
 
-  const agreementStatuses: ApplicationGuardianAgreementStatus[] = [
+  const agreementStatuses: OtherGuardianAgreementStatus[] = [
     'AGREED',
     'NOT_AGREED',
     'RIGHT_TO_GET_NOTIFIED'

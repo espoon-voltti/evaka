@@ -41,7 +41,6 @@ import { flow, set } from 'lodash/fp'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { AttachmentType } from 'lib-common/api-types/application/enums'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { getAttachmentBlob } from '../../api/applications'
 import { deleteAttachment, saveAttachment } from '../../api/attachments'
@@ -54,6 +53,7 @@ import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { featureFlags } from 'lib-customizations/citizen'
+import { AttachmentType } from 'lib-common/generated/enums'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails

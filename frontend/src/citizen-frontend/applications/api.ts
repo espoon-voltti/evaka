@@ -20,14 +20,13 @@ import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
 } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
 import {
   deserializePublicUnit,
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
-import { PlacementType } from 'lib-common/generated/enums'
+import { ApplicationType, PlacementType } from 'lib-common/generated/enums'
 
 export type ApplicationUnitType =
   | 'CLUB'

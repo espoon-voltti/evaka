@@ -8,11 +8,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import {
-  MessageType,
-  Message,
-  MessageThread
-} from 'lib-common/api-types/messaging/message'
+import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { useTranslation } from '../localization'
@@ -22,6 +18,7 @@ import { MessageContext } from './state'
 import { formatDate } from 'lib-common/date'
 import { faReply } from '@fortawesome/free-solid-svg-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { MessageType } from 'lib-common/generated/enums'
 
 const TitleRow = styled.div`
   display: flex;

@@ -22,11 +22,11 @@ import {
   getActivePlacementsByApplicationType,
   getDuplicateApplications
 } from '../applications/api'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import Footer from '../Footer'
 import useTitle from '../useTitle'
 import { featureFlags } from 'lib-customizations/citizen'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()

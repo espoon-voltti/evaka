@@ -24,7 +24,6 @@ import colors from 'lib-customizations/common'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
 import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
@@ -32,6 +31,7 @@ import { removeUnprocessedApplication } from '../applications/api'
 import { OverlayContext } from '../overlay/state'
 import { isEqual } from 'date-fns'
 import { formatDate } from 'lib-common/date'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};

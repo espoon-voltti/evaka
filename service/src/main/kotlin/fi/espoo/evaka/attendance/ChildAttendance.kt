@@ -5,7 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
@@ -112,7 +112,7 @@ data class ChildAttendance(
 data class ChildAbsence(
     val id: AbsenceId,
     val childId: UUID,
-    val careType: CareType
+    val careType: AbsenceCareType
 )
 
 data class Staff(

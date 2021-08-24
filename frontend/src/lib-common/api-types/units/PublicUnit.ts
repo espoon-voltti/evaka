@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../../types'
-import { CareType, UnitLanguage } from './enums'
+import { UnitLanguage } from './enums'
 import { Coordinate } from './Coordinate'
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
-import { ProviderType } from 'lib-common/generated/enums'
+import { CareType, ProviderType } from 'lib-common/generated/enums'
 
 export function deserializePublicUnit(unit: JsonOf<PublicUnit>): PublicUnit {
   return {

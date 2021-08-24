@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -14,6 +13,7 @@ import { getErrorCount } from '../../../form-validation'
 import { useTranslation } from '../../../localization'
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from '../validations'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData
