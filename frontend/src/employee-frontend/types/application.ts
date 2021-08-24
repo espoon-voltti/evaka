@@ -16,11 +16,9 @@ import {
   ApplicationOrigin,
   ApplicationStatus
 } from 'lib-common/api-types/application/enums'
-import {
-  PlacementType,
-  ServiceNeedOptionSummary
-} from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface ApplicationSummary {
   applicationId: UUID

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 import {
@@ -14,6 +13,7 @@ import {
   Lang as LangEmployee,
   Translations as TranslationsEmployee
 } from './employee'
+import { PlacementType } from 'lib-common/generated/enums'
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]

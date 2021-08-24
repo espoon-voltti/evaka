@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Loading, Result } from 'lib-common/api'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -24,6 +23,7 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UUID } from '../../../types'
 import { Unit } from '../../../types/unit'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface Props {
   childId: UUID

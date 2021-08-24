@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import LocalDate from 'lib-common/local-date'
 import { Translations } from '../state/i18n'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface User {
   id: string

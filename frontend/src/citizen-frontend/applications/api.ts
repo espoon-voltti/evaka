@@ -26,10 +26,8 @@ import {
   deserializePublicUnit,
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
-import {
-  PlacementType,
-  ServiceNeedOptionPublicInfo
-} from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export type ApplicationUnitType =
   | 'CLUB'
