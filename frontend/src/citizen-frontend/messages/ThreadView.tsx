@@ -45,7 +45,7 @@ const MessageContent = styled.div`
   white-space: pre-line;
 `
 
-const ReplyToThreadContainer = styled.span`
+const ReplyToThreadButton = styled(InlineButton)`
   padding-left: 28px;
 `
 
@@ -155,14 +155,12 @@ export default React.memo(function ThreadView({
         ) : (
           <>
             <Gap size={'s'} />
-            <ReplyToThreadContainer>
-              <InlineButton
-                icon={faReply}
-                onClick={() => setReplyEditorVisible(true)}
-                data-qa="message-reply-editor-btn"
-                text={i18n.messages.replyToThread}
-              />
-            </ReplyToThreadContainer>
+            <ReplyToThreadButton
+              icon={faReply}
+              onClick={() => setReplyEditorVisible(true)}
+              data-qa="message-reply-editor-btn"
+              text={i18n.messages.replyToThread}
+            />
           </>
         ))}
     </ThreadContainer>
