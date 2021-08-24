@@ -38,6 +38,11 @@ export const Truncated = styled.div`
 export const Title = styled.span<{ unread?: boolean }>`
   font-weight: ${(p) => (p.unread ? 600 : 400)};
 `
+export const Hyphen = styled.span<{ unread?: boolean }>`
+  font-weight: ${(p) => (p.unread ? 600 : 400)};
+  margin-left: 10px;
+  margin-right: 10px;
+`
 export const ParticipantsAndPreview = styled.div`
   display: flex;
   flex-direction: column;

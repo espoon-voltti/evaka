@@ -9,6 +9,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import React from 'react'
 import { UUID } from '../../types'
 import {
+  Hyphen,
   MessageRow,
   Participants,
   ParticipantsAndPreview,
@@ -69,7 +70,7 @@ export function ReceivedMessages({
                   </Participants>
                   <Truncated>
                     <Title unread={unread}>{t.title}</Title>
-                    {' - '}
+                    <Hyphen>{' ― '}</Hyphen>
                     {lastMessage.content}
                   </Truncated>
                 </ParticipantsAndPreview>

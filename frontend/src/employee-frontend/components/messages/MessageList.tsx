@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import EmptyMessageFolder from 'employee-frontend/components/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
@@ -43,6 +44,27 @@ export default React.memo(function MessagesList({
     [account.id, selectThread, view]
   )
 
+  const [messageCount, setMessageCount] = useState<number>(0)
+
+  useEffect(() => {
+    if (view === 'RECEIVED' && receivedMessages.isSuccess) {
+      setMessageCount(receivedMessages.value.length)
+    } else if (view === 'SENT' && sentMessages.isSuccess) {
+      setMessageCount(sentMessages.value.length)
+    } else if (view === 'DRAFTS' && messageDrafts.isSuccess) {
+      setMessageCount(messageDrafts.value.length)
+    } else {
+      setMessageCount(0)
+    }
+  }, [
+    view,
+    messageCount,
+    setMessageCount,
+    receivedMessages,
+    sentMessages,
+    messageDrafts
+  ])
+
   if (selectedThread) {
     return (
       <SingleThreadView
@@ -53,7 +75,7 @@ export default React.memo(function MessagesList({
     )
   }
 
-  return (
+  return messageCount > 0 ? (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
@@ -73,5 +95,7 @@ export default React.memo(function MessagesList({
         label={i18n.common.page}
       />
     </MessagesContainer>
+  ) : (
+    <EmptyMessageFolder />
   )
 })

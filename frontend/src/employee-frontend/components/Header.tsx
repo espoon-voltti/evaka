@@ -73,6 +73,14 @@ const UnreadCount = styled.span`
   color: ${colors.blues.medium};
   font-weight: 500;
   margin-left: ${defaultMargins.xs};
+  border: 1px solid ${colors.blues.medium};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 100%;
+  width: ${defaultMargins.m};
+  height: ${defaultMargins.m};
 `
 
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
