@@ -73,13 +73,13 @@ export default React.forwardRef(function IncomeStatementForm(
 
   React.useImperativeHandle(ref, () => ({
     scrollToErrors() {
-      if (!scrollTarget.current) return
-      const top =
-        window.pageYOffset + scrollTarget.current.getBoundingClientRect().top
-      window.scrollTo({
-        top,
-        left: 0,
-        behavior: 'smooth'
+      // Use requestAnimationFrame to make sure that the scroll target has been
+      // added to the DOM
+      requestAnimationFrame(() => {
+        if (!scrollTarget.current) return
+        const top =
+          window.pageYOffset + scrollTarget.current.getBoundingClientRect().top
+        window.scrollTo({ top, left: 0, behavior: 'smooth' })
       })
     }
   }))
