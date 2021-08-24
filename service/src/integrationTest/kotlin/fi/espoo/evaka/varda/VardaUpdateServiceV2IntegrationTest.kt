@@ -697,11 +697,13 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
         assertFailedVardaUpdates(1)
+        assertEquals(1, getVardaServiceNeedError(snId).size)
         assertVardaElementCounts(1, 1, 0)
         assertVardaServiceNeedIds(snId, 1, 1)
 
         updateChildData(db, vardaClient, since, feeDecisionMinDate)
         assertFailedVardaUpdates(0)
+        assertEquals(0, getVardaServiceNeedError(snId).size)
         assertVardaElementCounts(1, 1, 2)
         assertVardaServiceNeedIds(snId, 2, 2)
 
@@ -740,6 +742,15 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     private fun assertFailedVardaUpdates(n: Int) {
         val failures = db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }
         assertEquals(n, failures.size)
+    }
+
+    private fun getVardaServiceNeedError(snId: ServiceNeedId): List<String> {
+        return db.read {
+            it.createQuery("SELECT errors[0] FROM varda_service_need WHERE evaka_service_need_id = :snId AND array_length(errors, 1) > 0")
+                .bind("snId", snId)
+                .mapTo<String>()
+                .toList()
+        }
     }
 
     private fun assertVardaServiceNeedIds(evakaServiceNeedId: ServiceNeedId, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
