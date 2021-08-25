@@ -365,6 +365,24 @@ class VardaClient(
         }
     }
 
+    fun createPlacementV2(newPlacement: VardaPlacement): VardaPlacementResponse {
+        logger.info { "VardaUpdate: creating a new placement to Varda (body: $newPlacement)" }
+        val (request, _, result) = fuel.post(placementUrl)
+            .jsonBody(objectMapper.writeValueAsString(newPlacement))
+            .authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating a new placement to Varda succeeded (body: $newPlacement)" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to create a new placement to Varda: ${result.error}")
+            }
+        }
+    }
+
     fun updatePlacement(
         vardaPlacementId: Long,
         updatedPlacement: VardaPlacement
