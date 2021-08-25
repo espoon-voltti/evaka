@@ -11,9 +11,12 @@ import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.ResponseResultOf
 import com.github.kittinunf.fuel.core.extensions.AuthenticatedRequest
 import com.github.kittinunf.result.Result
+import mu.KotlinLogging
 import java.util.concurrent.TimeUnit
 
 typealias ErrorResponseResultOf = Triple<Request, Response, Result.Failure<FuelError>>
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Collection of miscellaneous extensions to Fuel core classes.
@@ -61,6 +64,7 @@ fun Request.responseStringWithRetries(
     errorCallback: (r: ErrorResponseResultOf, remainingTries: Int) -> ResponseResultOf<String> = { r, _ -> r }
 ): ResponseResultOf<String> {
     val maxWaitSeconds = 600L
+    val retryWaitLoggingThresholdSeconds = 10L
     val responseResult = responseString()
     val (request, response, result) = responseResult
 
@@ -79,6 +83,9 @@ fun Request.responseStringWithRetries(
                         ?: throw IllegalStateException("Failed to find a valid Retry-After header with throttle response")
 
                     if (retryAfter > maxWaitSeconds) throw IllegalStateException("Aborting fuel request after too big Retry-After value: $retryAfter seconds")
+
+                    if (retryAfter > retryWaitLoggingThresholdSeconds)
+                        logger.warn("Waiting for a large RETRY_AFTER as requested: $retryAfter seconds")
 
                     TimeUnit.SECONDS.sleep(retryAfter)
                     this.responseStringWithRetries(remainingTries - 1)
