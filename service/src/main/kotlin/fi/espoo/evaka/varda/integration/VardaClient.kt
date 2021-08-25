@@ -296,7 +296,7 @@ class VardaClient(
         }
     }
 
-    fun createDecision2(newDecision: VardaDecision): VardaDecisionResponse {
+    fun createDecisionV2(newDecision: VardaDecision): VardaDecisionResponse {
         logger.info { "VardaUpdate: creating a new decision to Varda (body: $newDecision)" }
         val (request, _, result) = fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()

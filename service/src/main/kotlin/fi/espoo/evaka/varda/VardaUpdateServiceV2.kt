@@ -394,7 +394,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
     if (vardaChildId == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
     val res = try {
-        client.createDecision2(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
+        client.createDecisionV2(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
     } catch (e: Exception) {
         error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
@@ -507,7 +507,7 @@ fun sendFeeDecisionToVarda(
     guardians: List<VardaGuardianWithId>
 ): Long {
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
-        ?: error("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
+        ?: error("VardaUpdate: could not create fee data for service need ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
 
     val requestPayload = VardaFeeData(
         huoltajat = guardians.map { it.toVardaGuardian() },
@@ -524,7 +524,7 @@ fun sendFeeDecisionToVarda(
     val res = try {
         client.createFeeDataV2(requestPayload)
     } catch (e: Exception) {
-        error("VardaUpdate: cannot send fee data for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
+        error("VardaUpdate: cannot send fee data for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
     return res.id
 }
@@ -551,7 +551,7 @@ fun sendVoucherDecisionToVarda(
     val res = try {
         client.createFeeDataV2(requestPayload)
     } catch (e: Exception) {
-        error("VardaUpdate: cannot send voucher data for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
+        error("VardaUpdate: cannot send voucher data for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
     return res.id
