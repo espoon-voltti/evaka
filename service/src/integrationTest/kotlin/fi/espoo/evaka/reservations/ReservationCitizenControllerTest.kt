@@ -27,7 +27,6 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     val monday = LocalDate.of(2021, 8, 23)
     val startTime = LocalTime.of(9, 0)
     val endTime = LocalTime.of(17, 0)
-    val queryRange = FiniteDateRange(monday, monday.plusDays(2))
 
     @BeforeEach
     fun before() {
@@ -53,7 +52,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             )
         )
 
-        val res = getReservations()
+        val res = getReservations(FiniteDateRange(monday, monday.plusDays(2)))
+
         assertEquals(3, res.size)
 
         assertEquals(monday, res[0].date)
@@ -87,8 +87,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
-    private fun getReservations(): List<DailyReservationData> {
-        val (_, res, result) = http.get("/citizen/reservations?from=${queryRange.start.format(DateTimeFormatter.ISO_DATE)}&to=${queryRange.end.format(DateTimeFormatter.ISO_DATE)}")
+    private fun getReservations(range: FiniteDateRange): List<DailyReservationData> {
+        val (_, res, result) = http.get("/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${range.end.format(DateTimeFormatter.ISO_DATE)}")
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id))
             .responseObject<List<DailyReservationData>>(objectMapper)
 
