@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -67,7 +67,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, LocalTime.ofInstant(child.attendance!!.arrived, europeHelsinki))
+        assertEquals(arrived, child.attendance?.arrived?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertNull(child.attendance!!.departed)
         assertTrue(child.absences.isEmpty())
     }
@@ -224,7 +224,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertTrue(child.absences.isEmpty())
     }
 
@@ -239,7 +239,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(1, child.absences.size)
         assertEquals(AbsenceCareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
     }
@@ -255,7 +255,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(1, child.absences.size)
         assertEquals(AbsenceCareType.PRESCHOOL, child.absences.first().careType)
     }
@@ -271,7 +271,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(2, child.absences.size)
         assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
         assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
@@ -327,8 +327,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.now(europeHelsinki).minusDays(1).minusHours(1).toInstant(),
-                departed = ZonedDateTime.now(europeHelsinki).minusDays(1).minusMinutes(1).toInstant()
+                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(1),
+                departed = HelsinkiDateTime.now().minusDays(1).minusMinutes(1)
             )
         }
         givenChildPlacement(PlacementType.PRESCHOOL)
@@ -465,7 +465,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
+                arrived = HelsinkiDateTime.now().withTime(arrived),
                 departed = null
             )
         }
@@ -481,8 +481,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
-                departed = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(departed), europeHelsinki).toInstant()
+                arrived = HelsinkiDateTime.now().withTime(arrived),
+                departed = HelsinkiDateTime.now().withTime(departed)
             )
         }
         val child = expectOneChild()

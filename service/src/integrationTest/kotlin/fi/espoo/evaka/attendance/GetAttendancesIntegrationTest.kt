@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -33,7 +34,6 @@ import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -91,8 +91,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
-                departed = OffsetDateTime.now().minusDays(1).toInstant()
+                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(8),
+                departed = HelsinkiDateTime.now().minusDays(1)
             )
         }
         val child = expectOneChild()
@@ -137,7 +137,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child is present`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
+        val arrived = HelsinkiDateTime.now().minusHours(3)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -157,8 +157,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child has departed`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
+        val arrived = HelsinkiDateTime.now().minusHours(3)
+        val departed = HelsinkiDateTime.now().minusMinutes(1)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,

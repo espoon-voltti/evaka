@@ -120,8 +120,8 @@ private fun Database.Read.getUnitAttendanceReservations(unitId: DaycareId, dateR
         group_res.last_name,
         group_res.date_of_birth,
         group_res.start_date AS date,
-        to_char(group_res.start_time::time, 'HH24:MI') AS start_time,
-        to_char(group_res.end_time::time, 'HH24:MI') AS end_time
+        to_char((group_res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS start_time,
+        to_char((group_res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS end_time
     FROM unit_group
     LEFT JOIN group_res ON unit_group.group_id = group_res.group_id OR (unit_group.group_id IS NULL AND group_res.group_id IS NULL)
     """.trimIndent()

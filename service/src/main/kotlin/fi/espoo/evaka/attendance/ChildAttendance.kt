@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -94,7 +94,8 @@ data class Child(
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: DaycareDailyNote?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val reservation: AttendanceReservation?
 )
 
 enum class AttendanceStatus {
@@ -105,8 +106,8 @@ data class ChildAttendance(
     val id: AttendanceId,
     val childId: UUID,
     val unitId: DaycareId,
-    val arrived: Instant,
-    val departed: Instant?
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?
 )
 
 data class ChildAbsence(
@@ -122,3 +123,5 @@ data class Staff(
     val pinSet: Boolean = false,
     val groups: List<UUID>
 )
+
+data class AttendanceReservation(val startTime: String, val endTime: String)

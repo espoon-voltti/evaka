@@ -15,8 +15,8 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -64,10 +63,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
     @Test
     fun `null departures are set to 2359 of arrival day`() {
         // test with daylight saving time change on 25.10.2020
-        val arrived = ZonedDateTime.of(
-            LocalDate.of(2020, 10, 25).atTime(LocalTime.of(9, 0)),
-            europeHelsinki
-        ).toInstant()
+        val arrived = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(9, 0))
 
         db.transaction {
             it.insertTestChildAttendance(
@@ -91,10 +87,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         }
 
         assertEquals(1, attendances.size)
-        val expectedDeparted = ZonedDateTime.of(
-            LocalDate.of(2020, 10, 25).atTime(LocalTime.of(23, 59)),
-            europeHelsinki
-        ).toInstant()
+        val expectedDeparted = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(23, 59))
         assertEquals(expectedDeparted, attendances.first().departed)
     }
 }

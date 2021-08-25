@@ -60,6 +60,7 @@ export interface AttendanceChild {
   dailyServiceTimes: DailyServiceTimes | null
   dailyNote: DailyNote | null
   imageUrl: string | null
+  reservation: AttendanceReservation | null
 }
 
 interface Attendance {
@@ -98,6 +99,11 @@ interface ArrivalInfoResponse {
 }
 
 export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
+
+export interface AttendanceReservation {
+  startTime: string
+  endTime: string
+}
 
 export interface Child {
   id: string
