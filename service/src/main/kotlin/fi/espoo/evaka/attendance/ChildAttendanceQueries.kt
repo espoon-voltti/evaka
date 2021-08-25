@@ -8,8 +8,8 @@ import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
@@ -45,7 +45,7 @@ fun Database.Transaction.insertAttendance(childId: UUID, unitId: DaycareId, arri
         .first()
 }
 
-fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: CareType, absenceType: AbsenceType): Absence {
+fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: AbsenceCareType, absenceType: AbsenceType): Absence {
     // language=sql
     val sql =
         """

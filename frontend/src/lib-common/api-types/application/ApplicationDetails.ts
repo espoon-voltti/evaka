@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ApplicationGuardianAgreementStatus,
-  ApplicationOrigin,
-  ApplicationStatus,
-  ApplicationType,
-  AttachmentType
-} from './enums'
 import { JsonOf } from '../../json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { ServiceNeedOptionSummary } from '../serviceNeed/common'
 import { Attachment } from '../attachment'
+import {
+  ApplicationOrigin,
+  ApplicationStatus,
+  ApplicationType,
+  AttachmentType,
+  OtherGuardianAgreementStatus
+} from 'lib-common/generated/enums'
 
 export interface GuardianApplications {
   childId: string
@@ -186,7 +186,7 @@ export interface ApplicationGuardianUpdate {
 export interface ApplicationSecondGuardian {
   phoneNumber: string
   email: string
-  agreementStatus: ApplicationGuardianAgreementStatus
+  agreementStatus: OtherGuardianAgreementStatus
 }
 
 export interface ApplicationPreferences {

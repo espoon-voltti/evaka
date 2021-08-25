@@ -12,15 +12,13 @@ import {
   ApplicationAttachment,
   ApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import {
   ApplicationOrigin,
-  ApplicationStatus
-} from 'lib-common/api-types/application/enums'
-import {
-  PlacementType,
-  ServiceNeedOptionSummary
-} from 'lib-common/api-types/serviceNeed/common'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
+  ApplicationStatus,
+  PlacementType
+} from 'lib-common/generated/enums'
 
 export interface ApplicationSummary {
   applicationId: UUID

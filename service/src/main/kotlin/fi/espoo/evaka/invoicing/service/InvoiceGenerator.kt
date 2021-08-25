@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByPeriod
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.upsertInvoices
@@ -57,7 +57,7 @@ fun Database.Transaction.createAllDraftInvoices(period: DateRange = getPreviousM
     val daycareCodes = getDaycareCodes()
     val operationalDays = operationalDays(period.start.year, period.start.month)
 
-    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
+    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
 
     val freeChildren: List<UUID> =
         if (period.start.month == Month.JULY && (period.end != null && period.end.month == Month.JULY && period.start.year == period.end.year)) {
@@ -521,14 +521,14 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<UUID> {
 data class AbsenceStub(
     val childId: UUID,
     val date: LocalDate,
-    var careType: CareType,
+    var careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
 
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
 private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
 
-fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<AbsenceCareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type

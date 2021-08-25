@@ -36,7 +36,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import fi.espoo.evaka.daycare.service.CareType as AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCareType as AbsenceCareType
 
 class OccupancyTest : PureJdbiTest() {
     val today = LocalDate.of(2020, 1, 16) // Thursday

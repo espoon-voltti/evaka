@@ -9,8 +9,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.TimeRange
 import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
@@ -181,13 +181,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = CareType.PRESCHOOL,
+                careType = AbsenceCareType.PRESCHOOL,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = CareType.PRESCHOOL_DAYCARE,
+                careType = AbsenceCareType.PRESCHOOL_DAYCARE,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
@@ -196,8 +196,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
         assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
     }
 
     @Test

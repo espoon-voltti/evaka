@@ -5,8 +5,8 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -135,12 +135,12 @@ class FixtureBuilder(
     ) {
         private var date: LocalDate = today
         private var type: AbsenceType? = null
-        private var careTypes: List<CareType>? = null
+        private var careTypes: List<AbsenceCareType>? = null
 
         fun onDay(date: LocalDate) = this.apply { this.date = date }
         fun onDay(relativeDays: Int) = this.apply { this.date = today.plusDays(relativeDays.toLong()) }
         fun ofType(type: AbsenceType) = this.apply { this.type = type }
-        fun forCareTypes(vararg careTypes: CareType) = this.apply { this.careTypes = careTypes.asList() }
+        fun forCareTypes(vararg careTypes: AbsenceCareType) = this.apply { this.careTypes = careTypes.asList() }
 
         fun save(): ChildFixture {
             careTypes?.forEach { careType ->

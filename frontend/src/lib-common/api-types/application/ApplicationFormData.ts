@@ -8,9 +8,9 @@ import {
   ApplicationDetails,
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationGuardianAgreementStatus } from 'lib-common/api-types/application/enums'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { OtherGuardianAgreementStatus } from 'lib-common/generated/enums'
 
 export type ServiceNeedFormData = {
   preferredStartDate: string
@@ -62,7 +62,7 @@ export type ContactInfoFormData = {
   guardianFutureStreet: string
   guardianFuturePostalCode: string
   guardianFuturePostOffice: string
-  otherGuardianAgreementStatus: ApplicationGuardianAgreementStatus | null
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null
   otherGuardianPhone: string
   otherGuardianEmail: string
   otherPartnerExists: boolean

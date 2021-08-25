@@ -8,7 +8,7 @@ import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 import { fi } from './espoo/employee/assets/i18n/fi'
 import { isArray, mergeWith } from 'lodash'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {

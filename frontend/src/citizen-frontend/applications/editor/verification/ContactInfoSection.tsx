@@ -9,9 +9,9 @@ import { H2, H3, Label } from 'lib-components/typography'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Gap } from 'lib-components/white-space'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
 import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type ContactInfoProps = {
   formData: ContactInfoFormData

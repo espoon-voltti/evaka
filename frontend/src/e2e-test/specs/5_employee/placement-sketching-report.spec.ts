@@ -23,7 +23,7 @@ import { format, sub } from 'date-fns'
 import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 import ReportsPage from '../../pages/reports'
 import { employeeLogin, seppoAdmin } from '../../config/users'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 let fixtures: AreaAndPersonFixtures
 

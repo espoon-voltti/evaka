@@ -1,3 +1,5 @@
+import { PlacementType } from 'lib-common/generated/enums'
+
 {
   /*
 SPDX-FileCopyrightText: 2017-2021 City of Espoo
@@ -18,7 +20,6 @@ import { faPhone } from 'lib-icons'
 
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 interface Props {
   child: Child | null

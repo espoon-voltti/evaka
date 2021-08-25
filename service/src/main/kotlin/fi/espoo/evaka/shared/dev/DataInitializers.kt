@@ -11,8 +11,8 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
@@ -710,7 +710,7 @@ fun Database.Transaction.insertTestAbsence(
     id: UUID = UUID.randomUUID(),
     childId: UUID,
     date: LocalDate,
-    careType: CareType,
+    careType: AbsenceCareType,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
     modifiedBy: String = "Someone"
 ) {

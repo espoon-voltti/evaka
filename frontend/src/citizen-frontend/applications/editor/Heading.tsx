@@ -14,7 +14,7 @@ import {
 } from '../../applications/editor/validations'
 import { getErrorCount } from '../../form-validation'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type HeadingProps = {
   type: ApplicationType

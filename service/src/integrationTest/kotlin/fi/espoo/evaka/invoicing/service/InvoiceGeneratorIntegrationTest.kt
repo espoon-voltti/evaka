@@ -6,9 +6,9 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.Absence
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -1898,7 +1898,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 5),
-                        careType = CareType.DAYCARE
+                        careType = AbsenceCareType.DAYCARE
                     )
                 ),
                 testDecisionMaker_1.id
@@ -1956,7 +1956,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 3),
-                        careType = CareType.DAYCARE
+                        careType = AbsenceCareType.DAYCARE
                     )
                 ),
                 testDecisionMaker_1.id
@@ -2016,7 +2016,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                             absenceType = AbsenceType.FORCE_MAJEURE,
                             childId = testChild_1.id,
                             date = it,
-                            careType = CareType.DAYCARE
+                            careType = AbsenceCareType.DAYCARE
                         )
                     }
                     .toList(),
@@ -2406,7 +2406,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                             absenceType = type,
                             childId = child.id,
                             date = date,
-                            careType = CareType.DAYCARE
+                            careType = AbsenceCareType.DAYCARE
                         )
                     },
                     testDecisionMaker_1.id

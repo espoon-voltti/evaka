@@ -7,10 +7,8 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroupPlacement } from './unit'
 import { AssistanceMeasure, UnitProviderType } from 'lib-customizations/types'
-import {
-  ServiceNeedOptionSummary,
-  PlacementType
-} from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface AssistanceNeed {
   id: UUID

@@ -127,7 +127,7 @@ class AbsenceService {
     private fun composePlacementMap(
         period: FiniteDateRange,
         placementListByChild: List<AbsencePlacement>
-    ): Map<LocalDate, List<CareType>> = period.dates()
+    ): Map<LocalDate, List<AbsenceCareType>> = period.dates()
         .map {
             it to placementListByChild
                 .filter { placement -> DateRange(placement.startDate, placement.endDate).includes(it) }
@@ -146,22 +146,22 @@ class AbsenceService {
         .toMap()
 }
 
-fun getAbsenceCareTypes(placementType: PlacementType): List<CareType> = when (placementType) {
-    PlacementType.CLUB -> listOf(CareType.CLUB)
-    PlacementType.SCHOOL_SHIFT_CARE -> listOf(CareType.SCHOOL_SHIFT_CARE)
+fun getAbsenceCareTypes(placementType: PlacementType): List<AbsenceCareType> = when (placementType) {
+    PlacementType.CLUB -> listOf(AbsenceCareType.CLUB)
+    PlacementType.SCHOOL_SHIFT_CARE -> listOf(AbsenceCareType.SCHOOL_SHIFT_CARE)
     PlacementType.PRESCHOOL,
-    PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
+    PlacementType.PREPARATORY -> listOf(AbsenceCareType.PRESCHOOL)
     PlacementType.PRESCHOOL_DAYCARE,
-    PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-    PlacementType.DAYCARE -> listOf(CareType.DAYCARE)
-    PlacementType.DAYCARE_PART_TIME -> listOf(CareType.DAYCARE)
+    PlacementType.PREPARATORY_DAYCARE -> listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE)
+    PlacementType.DAYCARE -> listOf(AbsenceCareType.DAYCARE)
+    PlacementType.DAYCARE_PART_TIME -> listOf(AbsenceCareType.DAYCARE)
     PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(AbsenceCareType.DAYCARE_5YO_FREE, AbsenceCareType.DAYCARE)
     PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-        listOf(CareType.DAYCARE)
+        listOf(AbsenceCareType.DAYCARE)
 }
 
-enum class CareType {
+enum class AbsenceCareType {
     SCHOOL_SHIFT_CARE,
     PRESCHOOL,
     PRESCHOOL_DAYCARE,
@@ -183,7 +183,7 @@ data class AbsenceChild(
     val firstName: String,
     val lastName: String,
     val dob: LocalDate,
-    val placements: Map<LocalDate, List<CareType>>,
+    val placements: Map<LocalDate, List<AbsenceCareType>>,
     val absences: Map<LocalDate, List<Absence>>,
     val backupCares: Map<LocalDate, AbsenceBackupCare?>
 )
@@ -200,7 +200,7 @@ data class Absence(
     val id: UUID? = null,
     val childId: UUID,
     val date: LocalDate,
-    var careType: CareType,
+    var careType: AbsenceCareType,
     val absenceType: AbsenceType,
     val modifiedAt: String? = null,
     val modifiedBy: String? = null
@@ -264,7 +264,7 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
 data class AbsenceDelete(
     val childId: UUID,
     val date: LocalDate,
-    var careType: CareType
+    var careType: AbsenceCareType
 )
 fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     //language=SQL

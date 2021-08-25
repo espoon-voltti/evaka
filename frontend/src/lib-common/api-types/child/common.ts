@@ -7,8 +7,6 @@ export interface TimeRange {
   end: string
 }
 
-export type DailyServiceTimesType = 'REGULAR' | 'IRREGULAR' | 'VARIABLE_TIME'
-
 export interface RegularDailyServiceTimes {
   type: 'REGULAR'
   regularTimes: TimeRange

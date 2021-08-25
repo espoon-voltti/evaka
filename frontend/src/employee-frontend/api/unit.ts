@@ -29,12 +29,9 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
-import {
-  PlacementType,
-  ServiceNeedOptionSummary
-} from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { UnitProviderType } from 'lib-customizations/types'
+import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {

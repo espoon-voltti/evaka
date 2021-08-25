@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -30,6 +29,7 @@ import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 

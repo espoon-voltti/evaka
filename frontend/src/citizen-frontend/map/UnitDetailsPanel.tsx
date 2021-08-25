@@ -8,7 +8,6 @@ import { addDays, isSaturday, isSunday } from 'date-fns'
 import { Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { CareType } from 'lib-common/api-types/units/enums'
 import { H2, Label } from 'lib-components/typography'
 import { ContentArea } from 'lib-components/layout/Container'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -21,6 +20,7 @@ import { MapAddress } from '../map/MapView'
 import { queryDistance } from '../map/api'
 import { formatDistance } from '../map/distances'
 import { routeLinkRootUrl } from 'lib-customizations/citizen'
+import { CareType } from 'lib-common/generated/enums'
 
 type Props = {
   unit: PublicUnit

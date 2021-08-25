@@ -22,7 +22,6 @@ import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import {
   ClubTerm,
   deserializeClubTerm,
@@ -30,6 +29,7 @@ import {
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export async function getApplication(
   id: UUID

@@ -950,6 +950,9 @@ jobs:
           command: ./gradlew lintKotlin
       - run:
           working_directory: *workspace_service
+          command: ./gradlew codegenCheck
+      - run:
+          working_directory: *workspace_service
           command: ./circle-check-migrations.sh
       - owasp/generate_cache_keys:
           cache_key: gradle-v1-cache-key

@@ -5,9 +5,9 @@
 import { Page } from 'playwright'
 
 import LocalDate from 'lib-common/local-date'
-import { AbsenceType } from 'lib-common/api-types/child/Absences'
 
 import { RawElement } from 'e2e-playwright/utils/element'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 export default class MobileAbsencesPage {
   constructor(private readonly page: Page) {}

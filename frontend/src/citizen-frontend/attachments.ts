@@ -1,7 +1,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/api-types/application/enums'
 import { UUID } from 'lib-common/types'
 import { client } from './api-client'
+import { AttachmentType } from 'lib-common/generated/enums'
 
 async function doSaveAttachment(
   url: string,

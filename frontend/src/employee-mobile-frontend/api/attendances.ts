@@ -14,7 +14,7 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]

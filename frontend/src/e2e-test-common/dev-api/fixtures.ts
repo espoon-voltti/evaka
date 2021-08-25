@@ -39,7 +39,7 @@ import {
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
