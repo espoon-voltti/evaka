@@ -2537,6 +2537,7 @@ export const fi = {
   },
   messages: {
     inboxTitle: 'Viestit',
+    emptyInbox: 'Tämä kansio on tyhjä',
     unitList: {
       title: 'Yksiköt'
     },
