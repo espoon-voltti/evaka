@@ -393,14 +393,12 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
 fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
     if (vardaChildId == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
-    val res: VardaDecisionResponse?
-    try {
-        res = client.createDecision(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
+    val res = try {
+        client.createDecision2(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
     } catch (e: Exception) {
         error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
-    if (res == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: create varda decision response is null")
     return res.vardaDecisionId
 }
 

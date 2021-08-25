@@ -279,6 +279,23 @@ class VardaClient(
         }
     }
 
+    fun createDecision2(newDecision: VardaDecision): VardaDecisionResponse {
+        logger.info { "VardaUpdate: creating a new decision to Varda (body: $newDecision)" }
+        val (request, _, result) = fuel.post(decisionUrl)
+            .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating a new decision to Varda succeeded (body: $newDecision)" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to create a new decision to Varda: ${result.error}")
+            }
+        }
+    }
+
     fun updateDecision(vardaDecisionId: Long, updatedDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Updating a decision to Varda (vardaId: $vardaDecisionId, body: $updatedDecision)" }
         val (request, _, result) = fuel.put(getDecisionUrl(vardaDecisionId))
