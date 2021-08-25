@@ -107,7 +107,9 @@ val testDecisionChild1 =
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
-        feeAlterations = listOf(),
+        feeAlterations = listOf(
+            FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)
+        ),
         finalFee = 28900
     )
 val testDecisionChild2 =
@@ -118,7 +120,9 @@ val testDecisionChild2 =
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
-        feeAlterations = listOf(),
+        feeAlterations = listOf(
+            FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)
+        ),
         finalFee = 28900
     )
 

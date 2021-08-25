@@ -94,12 +94,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </tr>
         <tr th:each="alteration: ${part.feeAlterations}">
             <td></td>
-            <td th:switch="${alteration.first.name}">
+            <td th:switch="${alteration.type.name}">
                 <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
                 <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
                 <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
             </td>
-            <td class="text-right" th:text="${alteration.second}"></td>
+            <td class="text-right" th:text="${alteration.effectFormatted}"></td>
         </tr>
         <tr>
             <td></td>
