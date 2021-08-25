@@ -144,7 +144,8 @@ val testGhostUnitDaycare = DevDaycare(
     uploadToVarda = false,
     uploadChildrenToVarda = false,
     uploadToKoski = false,
-    ghostUnit = true
+    ghostUnit = true,
+    invoicedByMunicipality = false
 )
 
 val testRoundTheClockDaycare = DevDaycare(

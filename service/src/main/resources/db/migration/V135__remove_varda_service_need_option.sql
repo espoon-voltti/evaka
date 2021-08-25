@@ -1,0 +1,2 @@
+ALTER TABLE varda_service_need DROP COLUMN evaka_service_need_option_updated;
+ALTER TABLE varda_service_need DROP COLUMN evaka_service_need_option_id;

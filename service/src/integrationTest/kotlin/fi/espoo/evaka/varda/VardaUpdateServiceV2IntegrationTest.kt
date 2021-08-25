@@ -115,37 +115,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             val changes = it.getEvakaServiceNeedChanges(earliestIncludedTime)
             assertEquals(1, changes.size)
             assertEquals(includedServiceNeedId, changes.get(0).evakaServiceNeedId)
-            assertEquals(shouldBeIncluded, changes.get(0).evakaLastUpdated)
-        }
-    }
-
-    @Test
-    fun `calculateServiceNeedsChanges finds changed service need option since given moment`() {
-        val earliestIncludedTime = HelsinkiDateTime.now()
-        val startDate = earliestIncludedTime.minusDays(20).toLocalDate()
-        val endDate = startDate.plusDays(10)
-        val shouldBeIncluded = earliestIncludedTime.plusHours(1)
-        val shouldBeExcluded = earliestIncludedTime.plusHours(-1)
-        val includedServiceNeedId = createServiceNeed(
-            db, shouldBeExcluded,
-            snDefaultDaycare.copy(
-                updated = shouldBeIncluded
-            ),
-            testChild_1, startDate, endDate
-        )
-        createServiceNeed(
-            db, shouldBeExcluded,
-            snDefaultPartDayDaycare.copy(
-                updated = shouldBeExcluded
-            ),
-            testChild_1, endDate.plusDays(1)
-        )
-
-        db.read {
-            val changes = it.getEvakaServiceNeedChanges(earliestIncludedTime)
-            assertEquals(1, changes.size)
-            assertEquals(includedServiceNeedId, changes.get(0).evakaServiceNeedId)
-            assertEquals(shouldBeIncluded, changes.get(0).evakaLastUpdated)
+            assertEquals(shouldBeIncluded, changes.get(0).evakaServiceNeedUpdated)
         }
     }
 
@@ -163,17 +133,6 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `calculateEvakaVsVardaServiceNeedChangesByChild does not add service need to varda if child old varda info is not reset`() {
-        val since = HelsinkiDateTime.now()
-        val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, since, option, testChild_2)
-        val childId = db.read { it.getChildIdByServiceNeedId(snId) }
-
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
-        assertEquals(0, diffs.keys.size)
-    }
-
-    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
@@ -184,9 +143,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = snId,
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100), // Evaka and varda timestamps differ, thus sn has changed
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100) // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -208,9 +165,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = changedServiceNeedId,
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100), // Evaka and varda timestamps differ, thus sn has changed
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100) // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -222,9 +177,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100),
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
         }
@@ -254,9 +207,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100),
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
         }
@@ -686,6 +637,22 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `updateChildData does not send fee decisions related to service need if daycare is not a varda daycare`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+
+        val child = testChild_1
+        val adult = testAdult_1
+        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testGhostUnitDaycare.id!!)
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testGhostUnitDaycare.id!!)
+
+        updateChildData(db, vardaClient, since, feeDecisionMinDate)
+        assertVardaElementCounts(0, 0, 0)
+    }
+
+    @Test
     fun `updateChildData retries failed service need addition`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
@@ -833,7 +800,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): FeeDecisionId {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -843,7 +810,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     child.id,
                     child.dateOfBirth,
-                    testDaycare.id,
+                    daycareId,
                     PlacementType.DAYCARE,
                     snDefaultDaycare.toFeeDecisionServiceNeed()
                 )
