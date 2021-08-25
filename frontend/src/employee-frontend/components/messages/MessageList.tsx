@@ -96,6 +96,12 @@ export default React.memo(function MessagesList({
       />
     </MessagesContainer>
   ) : (
-    <EmptyMessageFolder />
+    <EmptyMessageFolder
+      loading={
+        receivedMessages.isLoading ||
+        sentMessages.isLoading ||
+        messageDrafts.isLoading
+      }
+    />
   )
 })
