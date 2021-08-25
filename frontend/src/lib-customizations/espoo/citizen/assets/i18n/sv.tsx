@@ -143,6 +143,7 @@ const sv: Translations = {
     emptyInbox: 'Din inkorg är tom.',
     recipients: 'Mottagare',
     send: 'Skicka',
+    sender: 'Avsändare',
     sending: 'Skickas',
     messagePlaceholder:
       'Meddelandeinnehåll... Obs! Ange inte känslig information här.',

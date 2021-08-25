@@ -142,6 +142,7 @@ export default {
     noSelectedMessage: 'Ei valittua viestiä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
+    sender: 'Lähettäjä',
     sending: 'Lähetetään',
     messagePlaceholder:
       'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',

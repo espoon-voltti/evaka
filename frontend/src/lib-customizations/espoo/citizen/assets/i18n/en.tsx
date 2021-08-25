@@ -143,6 +143,7 @@ const en: Translations = {
     emptyInbox: 'Your inbox is empty',
     recipients: 'Recipients',
     send: 'Send',
+    sender: 'Sender',
     sending: 'Sending',
     messagePlaceholder:
       'Content... Note! Do not enter sensitive information here.',
