@@ -98,9 +98,9 @@ export default React.memo(function MessagesList({
   ) : (
     <EmptyMessageFolder
       loading={
-        receivedMessages.isLoading ||
-        sentMessages.isLoading ||
-        messageDrafts.isLoading
+        (view === 'RECEIVED' && receivedMessages.isLoading) ||
+        (view === 'SENT' && sentMessages.isLoading) ||
+        (view === 'DRAFTS' && messageDrafts.isLoading)
       }
     />
   )
