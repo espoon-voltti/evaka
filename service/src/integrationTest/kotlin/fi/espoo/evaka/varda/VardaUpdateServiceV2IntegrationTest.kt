@@ -163,17 +163,6 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `calculateEvakaVsVardaServiceNeedChangesByChild does not add service need to varda if child old varda info is not reset`() {
-        val since = HelsinkiDateTime.now()
-        val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, since, option, testChild_2)
-        val childId = db.read { it.getChildIdByServiceNeedId(snId) }
-
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
-        assertEquals(0, diffs.keys.size)
-    }
-
-    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
@@ -686,6 +675,22 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `updateChildData does not send fee decisions related to service need if daycare is not a varda daycare`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+
+        val child = testChild_1
+        val adult = testAdult_1
+        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testGhostUnitDaycare.id!!)
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testGhostUnitDaycare.id!!)
+
+        updateChildData(db, vardaClient, since, feeDecisionMinDate)
+        assertVardaElementCounts(0, 0, 0)
+    }
+
+    @Test
     fun `updateChildData retries failed service need addition`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
@@ -833,7 +838,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): FeeDecisionId {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -843,7 +848,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     child.id,
                     child.dateOfBirth,
-                    testDaycare.id,
+                    daycareId,
                     PlacementType.DAYCARE,
                     snDefaultDaycare.toFeeDecisionServiceNeed()
                 )

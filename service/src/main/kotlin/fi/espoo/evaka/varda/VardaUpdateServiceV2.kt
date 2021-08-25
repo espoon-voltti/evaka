@@ -221,8 +221,16 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client, feeDecisionMinDate).toMutableSet()
     logger.info { "VardaUpdate: successfully processed ${processedServiceNeedIds.size} unsuccessful service needs" }
 
+    // This is used to control which children are ready for the new varda update service
+    // (e.g. old bogus info has been removed from varda and historical info has been successfully uploaded)
+    val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
+
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
-    val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }.groupBy { it.serviceNeedId }
+        .filter { includedChildIds.contains(it.key) }
+
+    val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }
+        .filter { includedChildIds.contains(it.evakaChildId) }
+        .groupBy { it.serviceNeedId }
 
     logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
 
@@ -555,12 +563,8 @@ private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDa
 fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, startingFrom: HelsinkiDateTime): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
     val evakaServiceNeedDeletionsByChild = calculateDeletedChildServiceNeeds(db)
 
-    // This is used to control which children are ready for the new varda update service
-    // (e.g. old bogus info has been removed from varda and historical info has been successfully uploaded)
-    val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
     val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(startingFrom) }
         .groupBy { it.evakaChildId }
-        .filter { includedChildIds.contains(it.key) }
 
     val additionsAndChangesToVardaByChild = evakaServiceNeedChangesByChild.entries.associate { evakaServiceNeedChangesForChild ->
         val vardaServiceNeedsForChild = db.read { it.getChildVardaServiceNeeds(evakaServiceNeedChangesForChild.key) }
@@ -819,8 +823,10 @@ WITH child_fees AS (
     p.child_id AS child_id,
     array_agg(child_fees.fee_decision_id) AS fee_decision_ids
   FROM service_need sn JOIN placement p ON p.id = sn.placement_id
+    JOIN daycare d ON d.id = p.unit_id
     JOIN child_fees ON p.child_id = child_fees.child_id 
       AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
+  WHERE d.upload_children_to_varda = true AND d.invoiced_by_municipality = true
   GROUP BY service_need_id, p.child_id
 ), service_need_vouchers AS (
 SELECT
@@ -828,10 +834,12 @@ SELECT
     p.child_id AS child_id,
     array_agg(vvd.id) AS voucher_value_decision_ids
 FROM service_need sn JOIN placement p ON p.id = sn.placement_id
+  JOIN daycare d ON d.id = p.unit_id  
   JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
     AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-${if (startingFrom != null) " WHERE vvd.sent_at >= :startingFrom" else ""}      
-${if (voucherValueDecisionStatus != null) " WHERE vvd.status = :voucherValueDecisionStatus" else ""}  
+WHERE d.upload_children_to_varda = true AND d.invoiced_by_municipality = true
+${if (startingFrom != null) " AND vvd.sent_at >= :startingFrom" else ""}      
+${if (voucherValueDecisionStatus != null) " AND vvd.status = :voucherValueDecisionStatus" else ""}  
 GROUP BY service_need_id, p.child_id
 )
 SELECT
