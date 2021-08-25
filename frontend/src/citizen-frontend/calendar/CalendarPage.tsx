@@ -13,12 +13,14 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
+import ReservationModal from './ReservationModal'
 
 export default React.memo(function CalendarPage() {
   const i18n = useTranslation()
   const user = useUser()
 
   const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
+  const [reservationViewOpen, setReservationViewOpen] = useState(false)
 
   const loadData = useRestApi(getReservations, setData)
   useEffect(
@@ -43,11 +45,31 @@ export default React.memo(function CalendarPage() {
             failure() {
               return <div>{i18n.common.errors.genericGetError}</div>
             },
-            success(dallyReservations) {
+            success(response) {
               return (
-                <CalendarListView
-                  dailyReservations={dallyReservations.dailyData}
-                />
+                <>
+                  <CalendarListView
+                    dailyReservations={response.dailyData}
+                    onCreateReservationClicked={() =>
+                      setReservationViewOpen(true)
+                    }
+                  />
+                  {reservationViewOpen && (
+                    <ReservationModal
+                      onClose={() => setReservationViewOpen(false)}
+                      availableChildren={response.children}
+                      onReload={() =>
+                        loadData(
+                          LocalDate.today().startOfWeek(),
+                          LocalDate.today()
+                            .addMonths(2)
+                            .startOfWeek()
+                            .subDays(1)
+                        )
+                      }
+                    />
+                  )}
+                </>
               )
             }
           })}

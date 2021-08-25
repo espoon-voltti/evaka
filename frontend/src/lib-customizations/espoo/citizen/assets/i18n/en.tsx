@@ -14,6 +14,7 @@ const en: Translations = {
     return: 'Return',
     ok: 'Ok',
     save: 'Save',
+    confirm: 'Confirm',
     add: 'Add',
     unit: {
       providerTypes: {
@@ -134,7 +135,17 @@ const en: Translations = {
     backToSearch: 'Back to search'
   },
   calendar: {
-    holiday: 'Holiday'
+    holiday: 'Holiday',
+    newReservationBtn: 'Create reservation',
+    reservationModal: {
+      title: 'Create reservation',
+      selectChildren: 'Select children',
+      dateRange: 'Reservation valid during',
+      dateRangeLabel: 'Make reservation for days',
+      times: 'Times',
+      businessDays: 'Mon-Fri',
+      postError: 'Creating reservation failed'
+    }
   },
   messages: {
     inboxTitle: 'Inbox',
@@ -1460,6 +1471,7 @@ const en: Translations = {
     phone: 'Invalid telephone number',
     email: 'Invalid email',
     validDate: 'Valid date format is pp.kk.vvvv',
+    dateTooEarly: 'Pick a later date',
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Valid time format is hh:mm',
     unitNotSelected: 'Pick at least one choice',

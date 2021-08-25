@@ -72,7 +72,7 @@ const HistoryOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 99;
+  z-index: 1;
   opacity: 0.3;
   background-color: ${colors.blues.lighter};
 `

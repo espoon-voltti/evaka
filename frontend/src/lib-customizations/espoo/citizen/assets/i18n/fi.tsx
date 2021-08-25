@@ -13,6 +13,7 @@ export default {
     return: 'Palaa',
     ok: 'Ok',
     save: 'Tallenna',
+    confirm: 'Vahvista',
     add: 'Lisää',
     unit: {
       providerTypes: {
@@ -133,7 +134,17 @@ export default {
     backToSearch: 'Takaisin hakuun'
   },
   calendar: {
-    holiday: 'Pyhäpäivä'
+    holiday: 'Pyhäpäivä',
+    newReservationBtn: 'Tee varaus',
+    reservationModal: {
+      title: 'Tee varaus',
+      selectChildren: 'Valitse lapset',
+      dateRange: 'Varauksen voimassaolo',
+      dateRangeLabel: 'Tee varaus päiville',
+      times: 'Kellonaika',
+      businessDays: 'Ma-Pe',
+      postError: 'Varauksen luominen ei onnistunut'
+    }
   },
   messages: {
     inboxTitle: 'Viestit',
@@ -1393,6 +1404,7 @@ export default {
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
     validDate: 'Anna muodossa pp.kk.vvvv',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Anna muodossa hh:mm',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',

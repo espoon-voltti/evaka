@@ -23,6 +23,7 @@ export type ErrorKey =
   | 'phone'
   | 'email'
   | 'validDate'
+  | 'dateTooEarly'
   | 'timeFormat'
   | 'unitNotSelected'
   | 'preferredStartDate'
