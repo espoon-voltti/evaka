@@ -1249,24 +1249,16 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{i18n.unitEditor.label.decisionCustomization.handler}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {([0, 1, 2, 3] as const).map((index) => (
-              <Radio
-                key={index}
-                label={
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
-                }
-                checked={
-                  form.decisionCustomization.handler ===
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
-                }
-                onChange={() =>
-                  updateDecisionCustomization({
-                    handler:
-                      i18n.unitEditor.field.decisionCustomization.handler[index]
-                  })
-                }
-              />
-            ))}
+            {i18n.unitEditor.field.decisionCustomization.handler.map(
+              (handler, index) => (
+                <Radio
+                  key={index}
+                  label={handler}
+                  checked={form.decisionCustomization.handler === handler}
+                  onChange={() => updateDecisionCustomization({ handler })}
+                />
+              )
+            )}
           </FixedSpaceColumn>
         ) : (
           form.decisionCustomization.handler
