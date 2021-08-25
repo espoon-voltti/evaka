@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.isWeekend
+import fi.espoo.evaka.shared.security.AccessControl
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -21,7 +22,9 @@ import java.time.LocalTime
 import java.util.UUID
 
 @RestController
-class ReservationControllerCitizen {
+class ReservationControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
         db: Database.Connection,
@@ -43,6 +46,7 @@ class ReservationControllerCitizen {
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.children.joinToString())
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
+        accessControl.requireGuardian(user, body.children)
 
         val reservations = body.children.flatMap { childId ->
             body.reservations.map { res ->

@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 import java.util.UUID
 
@@ -129,6 +130,18 @@ WHERE employee_id = :userId
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
         return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
             .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR)
+    }
+
+    fun requireGuardian(user: AuthenticatedUser, childIds: Set<UUID>) {
+        val dependants = Database(jdbi).read {
+            it.createQuery(
+                "SELECT child_id FROM guardian g WHERE g.guardian_id = :userId"
+            ).bind("userId", user.id).mapTo<UUID>().list()
+        }
+
+        if (childIds.any { !dependants.contains(it) }) {
+            throw Forbidden("Not a guardian of a child")
+        }
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
