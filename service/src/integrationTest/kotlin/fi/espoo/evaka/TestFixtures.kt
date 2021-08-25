@@ -410,7 +410,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             id = testDaycare.id,
             name = testDaycare.name,
             ophOrganizerOid = defaultMunicipalOrganizerOid,
-            enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS)
         )
     )
     insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
