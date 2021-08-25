@@ -791,7 +791,7 @@ export const fi = {
           confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'
         },
         overlapWarning: {
-          title: 'Palveluntarpeet meneevät päällekkäin',
+          title: 'Palveluntarpeet menevät päällekkäin',
           message:
             'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
         }
