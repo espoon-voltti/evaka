@@ -187,11 +187,17 @@ class PDFService(
     }
 
     fun getFeeDecisionPdfVariables(data: FeeDecisionPdfData): Map<String, Any?> {
+        data class FeeAlterationPdfPart(
+            val type: FeeAlteration.Type,
+            val amount: Int,
+            val isAbsolute: Boolean,
+            val effectFormatted: String
+        )
         data class FeeDecisionPdfPart(
             val childName: String,
             val placementType: PlacementType,
             val serviceNeedDescription: String,
-            val feeAlterations: List<Pair<FeeAlteration.Type, String>>,
+            val feeAlterations: List<FeeAlterationPdfPart>,
             val finalFeeFormatted: String,
             val feeFormatted: String
         )
@@ -228,7 +234,9 @@ class PDFService(
                     "${it.child.firstName} ${it.child.lastName}",
                     it.placementType,
                     if (lang == "sv") it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
-                    it.feeAlterations.map { fa -> fa.type to formatCents(fa.effect)!! },
+                    it.feeAlterations.map { fa ->
+                        FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
+                    },
                     formatCents(it.finalFee)!!,
                     formatCents(it.fee)!!
                 )
