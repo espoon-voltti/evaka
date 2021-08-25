@@ -213,6 +213,23 @@ class VardaClient(
         }
     }
 
+    fun createFeeDataV2(feeData: VardaFeeData): VardaFeeDataResponse {
+        logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda" }
+        val (request, _, result) = fuel.post(feeDataUrl)
+            .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda succeeded" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to send fee data to Varda: ${result.error}")
+            }
+        }
+    }
+
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
         logger.info { "Updating fee data $vardaFeeDataId to Varda" }
         val (request, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
