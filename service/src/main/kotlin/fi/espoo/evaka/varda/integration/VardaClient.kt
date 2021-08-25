@@ -213,6 +213,23 @@ class VardaClient(
         }
     }
 
+    fun createFeeDataV2(feeData: VardaFeeData): VardaFeeDataResponse {
+        logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda" }
+        val (request, _, result) = fuel.post(feeDataUrl)
+            .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda succeeded" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to send fee data to Varda: ${result.error}")
+            }
+        }
+    }
+
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
         logger.info { "Updating fee data $vardaFeeDataId to Varda" }
         val (request, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
@@ -275,6 +292,23 @@ class VardaClient(
             is Result.Failure -> {
                 logRequestError(request, result.error)
                 null
+            }
+        }
+    }
+
+    fun createDecisionV2(newDecision: VardaDecision): VardaDecisionResponse {
+        logger.info { "VardaUpdate: creating a new decision to Varda (body: $newDecision)" }
+        val (request, _, result) = fuel.post(decisionUrl)
+            .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating a new decision to Varda succeeded (body: $newDecision)" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to create a new decision to Varda: ${result.error}")
             }
         }
     }
@@ -344,6 +378,24 @@ class VardaClient(
             is Result.Failure -> {
                 logRequestError(request, result.error)
                 null
+            }
+        }
+    }
+
+    fun createPlacementV2(newPlacement: VardaPlacement): VardaPlacementResponse {
+        logger.info { "VardaUpdate: creating a new placement to Varda (body: $newPlacement)" }
+        val (request, _, result) = fuel.post(placementUrl)
+            .jsonBody(objectMapper.writeValueAsString(newPlacement))
+            .authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: creating a new placement to Varda succeeded (body: $newPlacement)" }
+                objectMapper.readValue(result.get())
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                error("VardaUpdate: failed to create a new placement to Varda: ${result.error}")
             }
         }
     }
