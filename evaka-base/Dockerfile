@@ -7,7 +7,7 @@ FROM ubuntu:20.04
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
 # Increment this if we ever explicitly want to e.g. run apt-get upgrade
-ARG CACHE_BUST=2021-07-22
+ARG CACHE_BUST=2021-08-25
 
 # Use bash instead of dash
 SHELL ["/bin/bash", "-c"]
