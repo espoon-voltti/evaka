@@ -68,7 +68,7 @@ export default React.memo(function SearchSection({
   return (
     <Wrapper opaque>
       <H1>{t.map.title}</H1>
-      <P>
+      <P data-qa="map-main-info">
         {t.map.mainInfo}
         <PrivateUnitInfo>{t.map.privateUnitInfo()}</PrivateUnitInfo>
       </P>
