@@ -115,37 +115,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             val changes = it.getEvakaServiceNeedChanges(earliestIncludedTime)
             assertEquals(1, changes.size)
             assertEquals(includedServiceNeedId, changes.get(0).evakaServiceNeedId)
-            assertEquals(shouldBeIncluded, changes.get(0).evakaLastUpdated)
-        }
-    }
-
-    @Test
-    fun `calculateServiceNeedsChanges finds changed service need option since given moment`() {
-        val earliestIncludedTime = HelsinkiDateTime.now()
-        val startDate = earliestIncludedTime.minusDays(20).toLocalDate()
-        val endDate = startDate.plusDays(10)
-        val shouldBeIncluded = earliestIncludedTime.plusHours(1)
-        val shouldBeExcluded = earliestIncludedTime.plusHours(-1)
-        val includedServiceNeedId = createServiceNeed(
-            db, shouldBeExcluded,
-            snDefaultDaycare.copy(
-                updated = shouldBeIncluded
-            ),
-            testChild_1, startDate, endDate
-        )
-        createServiceNeed(
-            db, shouldBeExcluded,
-            snDefaultPartDayDaycare.copy(
-                updated = shouldBeExcluded
-            ),
-            testChild_1, endDate.plusDays(1)
-        )
-
-        db.read {
-            val changes = it.getEvakaServiceNeedChanges(earliestIncludedTime)
-            assertEquals(1, changes.size)
-            assertEquals(includedServiceNeedId, changes.get(0).evakaServiceNeedId)
-            assertEquals(shouldBeIncluded, changes.get(0).evakaLastUpdated)
+            assertEquals(shouldBeIncluded, changes.get(0).evakaServiceNeedUpdated)
         }
     }
 
@@ -173,9 +143,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = snId,
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100), // Evaka and varda timestamps differ, thus sn has changed
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100) // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -197,9 +165,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = changedServiceNeedId,
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100), // Evaka and varda timestamps differ, thus sn has changed
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100) // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -211,9 +177,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100),
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
         }
@@ -243,9 +207,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId = deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedOptionId = snDefaultDaycare.id,
-                    evakaServiceNeedUpdated = since.minusHours(100),
-                    evakaServiceNeedOptionUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
         }

@@ -18,7 +18,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdateV2
@@ -615,12 +614,7 @@ private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<
 private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.filter { newServiceNeedChange ->
         val match = vardaServiceNeedsForChild.find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }
-        match != null && (
-            (
-                newServiceNeedChange.evakaServiceNeedUpdated != match.evakaServiceNeedUpdated ||
-                    newServiceNeedChange.evakaServiceNeedOptionUpdated != match.evakaServiceNeedOptionUpdated
-                )
-            )
+        match != null && newServiceNeedChange.evakaServiceNeedUpdated != match.evakaServiceNeedUpdated
     }.map {
         it.evakaServiceNeedId
     }
@@ -654,9 +648,7 @@ fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNe
     """
 INSERT INTO varda_service_need (
     evaka_service_need_id, 
-    evaka_service_need_option_id, 
     evaka_service_need_updated, 
-    evaka_service_need_option_updated, 
     evaka_child_id, 
     varda_child_id, 
     varda_decision_id, 
@@ -666,9 +658,7 @@ INSERT INTO varda_service_need (
     errors) 
 VALUES (
     :evakaServiceNeedId, 
-    :evakaServiceNeedOptionId, 
     :evakaServiceNeedUpdated, 
-    :evakaServiceNeedOptionUpdated, 
     :evakaChildId, 
     :vardaChildId, 
     :vardaDecisionId, 
@@ -677,9 +667,7 @@ VALUES (
     :errorsNotEmpty, 
     :upsertErrors
 ) ON CONFLICT (evaka_service_need_id) DO UPDATE 
-    SET evaka_service_need_option_id = :evakaServiceNeedOptionId, 
-        evaka_service_need_updated = :evakaServiceNeedUpdated, 
-        evaka_service_need_option_updated = :evakaServiceNeedOptionUpdated, 
+    SET evaka_service_need_updated = :evakaServiceNeedUpdated, 
         evaka_child_id = :evakaChildId, 
         varda_child_id = :vardaChildId,
         varda_decision_id = :vardaDecisionId, 
@@ -738,18 +726,14 @@ GROUP BY evaka_child_id"""
 data class VardaServiceNeed(
     val evakaChildId: UUID,
     val evakaServiceNeedId: ServiceNeedId,
-    val evakaServiceNeedOptionId: ServiceNeedOptionId,
     val evakaServiceNeedUpdated: HelsinkiDateTime,
-    val evakaServiceNeedOptionUpdated: HelsinkiDateTime,
     var vardaChildId: Long? = null,
     var vardaDecisionId: Long? = null,
     var vardaPlacementId: Long? = null,
     var vardaFeeDataIds: List<Long> = listOf(),
     var updateFailed: Boolean = false,
     val errors: MutableList<String> = mutableListOf()
-) {
-    val evakaLastUpdated = if (evakaServiceNeedUpdated.isAfter(evakaServiceNeedOptionUpdated)) evakaServiceNeedUpdated else evakaServiceNeedOptionUpdated
-}
+)
 
 fun Database.Read.getEvakaServiceNeedChanges(startingFrom: HelsinkiDateTime): List<VardaServiceNeed> =
     createQuery(
@@ -757,14 +741,11 @@ fun Database.Read.getEvakaServiceNeedChanges(startingFrom: HelsinkiDateTime): Li
 SELECT 
     placement.child_id AS evakaChildId,
     sn.id AS evakaServiceNeedId,
-    option.id AS evakaServiceNeedOptionId,
-    sn.updated AS evakaServiceNeedUpdated,
-    option.updated AS evakaServiceNeedOptionUpdated
+    sn.updated AS evakaServiceNeedUpdated
 FROM service_need sn
-LEFT JOIN service_need_option option ON sn.option_id = option.id
 LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
-WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
+WHERE sn.updated >= :startingFrom
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
 AND daycare.upload_children_to_varda = true
 """
@@ -871,9 +852,7 @@ data class FeeDataByServiceNeed(
 
 data class EvakaServiceNeedInfoForVarda(
     val id: ServiceNeedId,
-    val optionId: ServiceNeedOptionId,
     val serviceNeedUpdated: Instant,
-    val serviceNeedOptionUpdated: Instant,
     val childId: UUID,
     val applicationDate: LocalDate,
     val startDate: LocalDate,
@@ -917,9 +896,7 @@ data class EvakaServiceNeedInfoForVarda(
         VardaServiceNeed(
             evakaChildId = this.childId,
             evakaServiceNeedId = this.id,
-            evakaServiceNeedOptionId = this.optionId,
-            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated),
-            evakaServiceNeedOptionUpdated = HelsinkiDateTime.from(this.serviceNeedOptionUpdated)
+            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated)
         )
 }
 
@@ -943,9 +920,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             d.provider_type,
             d.oph_organizer_oid,
             d.oph_unit_oid,
-            sn.updated AS service_need_updated,
-            sno.updated AS service_need_option_updated,
-            sno.id AS option_id
+            sn.updated AS service_need_updated
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
         JOIN employee e on e.id = sn.confirmed_by
