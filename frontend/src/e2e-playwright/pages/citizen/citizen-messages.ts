@@ -9,6 +9,7 @@ import { Page } from 'playwright'
 
 export default class CitizenMessagesPage {
   constructor(private readonly page: Page) {}
+  replyButtonTag = 'message-reply-editor-btn'
 
   #messageReplyContent = new RawTextInput(
     this.page,
@@ -19,6 +20,10 @@ export default class CitizenMessagesPage {
   #threadContent = new RawElement(
     this.page,
     '[data-qa="thread-reader-content"]'
+  )
+  #openReplyEditorButton = new RawElement(
+    this.page,
+    `[data-qa="${this.replyButtonTag}"]`
   )
   #sendReplyButton = new RawElement(this.page, '[data-qa="message-send-btn"]')
   #newMessageButton = new RawElement(this.page, '[data-qa="new-message-btn"]')
@@ -47,17 +52,18 @@ export default class CitizenMessagesPage {
     )
   }
 
-  async replyToFirstThread(content: string) {
-    await this.#threadListItem.click()
-    await this.#messageReplyContent.fill(content)
-    await this.#sendReplyButton.click()
-  }
-
   async isEditorVisible() {
     return this.page.$$eval(
       '[data-qa="input-content"]',
       (contentInput) => contentInput.length > 0
     )
+  }
+
+  async replyToFirstThread(content: string) {
+    await this.#threadListItem.click()
+    await this.#openReplyEditorButton.click()
+    await this.#messageReplyContent.fill(content)
+    await this.#sendReplyButton.click()
   }
 
   async sendNewMessage(title: string, content: string, receivers: string[]) {

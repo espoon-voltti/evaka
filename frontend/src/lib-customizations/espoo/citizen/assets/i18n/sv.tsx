@@ -138,7 +138,9 @@ const sv: Translations = {
   },
   messages: {
     inboxTitle: 'Inkorg',
-    noMessages: 'Inga meddelanden',
+    noMessagesInfo: 'Skickade och mottagna meddelanden visas här.',
+    noSelectedMessage: 'Inget valt meddelande',
+    emptyInbox: 'Din inkorg är tom.',
     recipients: 'Mottagare',
     send: 'Skicka',
     sending: 'Skickas',
@@ -148,6 +150,7 @@ const sv: Translations = {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'
     },
+    replyToThread: 'Svar',
     messageEditor: {
       newMessage: 'Nytt Meddelande',
       receivers: 'Mottagare',

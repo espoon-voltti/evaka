@@ -11,7 +11,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 import React, { useContext } from 'react'
@@ -55,8 +55,14 @@ export default React.memo(function ThreadList({
         </MobileOnly>
       )}
       <Container className={selectedThread ? 'desktop-only' : undefined}>
+        <Gap size={'s'} />
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
+        </HeaderContainer>
+        <Gap size={'xs'} />
+        <DottedLine />
+        <Gap size={'s'} />
+        <HeaderContainer>
           <Button
             text={t.messages.messageEditor.newMessage}
             onClick={() => setEditorVisible(true)}
@@ -64,10 +70,20 @@ export default React.memo(function ThreadList({
             data-qa="new-message-btn"
             disabled={!newMessageButtonEnabled}
           />
-          {threadLoadingResult.isSuccess && threads.length === 0 && (
-            <span>{t.messages.noMessages}</span>
-          )}
         </HeaderContainer>
+        <Gap size={'s'} />
+
+        {threadLoadingResult.isSuccess && threads.length === 0 && (
+          <>
+            <SolidLine />
+            <ThreadListContainer>
+              <Gap size={'s'} />
+              <span style={{ color: `${colors.greyscale.dark}` }}>
+                {t.messages.noMessagesInfo}
+              </span>
+            </ThreadListContainer>
+          </>
+        )}
 
         {threads.map((thread) => (
           <ThreadListItem
@@ -102,6 +118,18 @@ const MobileOnly = styled.div`
   }
 `
 
+const DottedLine = styled.hr`
+  width: 100%;
+  border: 1px dashed ${colors.greyscale.medium};
+  border-top-width: 0px;
+`
+
+const SolidLine = styled.hr`
+  width: 100%;
+  border: 1px solid ${colors.greyscale.lighter};
+  border-top-width: 0px;
+`
+
 const Return = styled(IconButton)`
   margin-left: ${defaultMargins.xs};
 `
@@ -130,7 +158,11 @@ const Container = styled.div`
 `
 
 const HeaderContainer = styled.div`
-  padding: ${defaultMargins.m};
+  padding-left: 5%;
+`
+
+const ThreadListContainer = styled.div`
+  padding-left: 5%;
 `
 
 const OnEnterView = React.memo(function IsInView({

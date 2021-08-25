@@ -138,7 +138,9 @@ const en: Translations = {
   },
   messages: {
     inboxTitle: 'Inbox',
-    noMessages: 'No messages',
+    noMessagesInfo: 'Sent and received messages are displayed here.',
+    noSelectedMessage: 'A message is not selected',
+    emptyInbox: 'Your inbox is empty',
     recipients: 'Recipients',
     send: 'Send',
     sending: 'Sending',
@@ -148,6 +150,7 @@ const en: Translations = {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'
     },
+    replyToThread: 'Reply',
     messageEditor: {
       newMessage: 'New message',
       receivers: 'Receivers',
