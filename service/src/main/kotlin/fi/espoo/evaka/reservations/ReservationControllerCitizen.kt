@@ -31,11 +31,17 @@ class ReservationControllerCitizen(
         user: AuthenticatedUser,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-    ): List<DailyReservationData> {
+    ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
-        return db.read { it.getReservations(user.id, FiniteDateRange(from, to)) }
+        val range = FiniteDateRange(from, to)
+        return db.read {
+            ReservationsResponse(
+                dailyData = it.getReservations(user.id, range),
+                children = it.getReservationChildren(user.id, range)
+            )
+        }
     }
 
     @PostMapping("/citizen/reservations")
@@ -133,6 +139,11 @@ data class DailyReservationRequest(
     val endTime: LocalTime,
 )
 
+data class ReservationsResponse(
+    val dailyData: List<DailyReservationData>,
+    val children: List<ReservationChild>
+)
+
 data class DailyReservationData(
     val date: LocalDate,
     val isHoliday: Boolean,
@@ -145,6 +156,11 @@ data class Reservation(
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
     val childId: UUID
+)
+
+data class ReservationChild(
+    val id: UUID,
+    val firstName: String
 )
 
 fun Database.Read.getReservations(guardianId: UUID, range: FiniteDateRange): List<DailyReservationData> {
@@ -173,4 +189,22 @@ GROUP BY date, is_holiday
         .mapTo<DailyReservationData>()
         .list()
         .filter { !it.date.isWeekend() }
+}
+
+private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
+    return createQuery(
+        """
+SELECT ch.id, ch.first_name
+FROM guardian g
+JOIN person ch ON ch.id = g.child_id
+JOIN placement pl ON pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') && :range
+JOIN daycare u ON u.id = pl.unit_id AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+WHERE g.guardian_id = :guardianId
+ORDER BY first_name
+        """.trimIndent()
+    )
+        .bind("guardianId", guardianId)
+        .bind("range", range)
+        .mapTo<ReservationChild>()
+        .list()
 }

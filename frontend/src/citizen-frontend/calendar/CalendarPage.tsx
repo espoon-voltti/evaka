@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
-import { DailyReservationData, getReservations } from './api'
+import { getReservations, ReservationsResponse } from './api'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -18,7 +18,7 @@ export default React.memo(function CalendarPage() {
   const i18n = useTranslation()
   const user = useUser()
 
-  const [data, setData] = useState<Result<DailyReservationData[]>>(Loading.of())
+  const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
 
   const loadData = useRestApi(getReservations, setData)
   useEffect(
@@ -44,7 +44,11 @@ export default React.memo(function CalendarPage() {
               return <div>{i18n.common.errors.genericGetError}</div>
             },
             success(dallyReservations) {
-              return <CalendarListView dailyReservations={dallyReservations} />
+              return (
+                <CalendarListView
+                  dailyReservations={dallyReservations.dailyData}
+                />
+              )
             }
           })}
         </ContentArea>

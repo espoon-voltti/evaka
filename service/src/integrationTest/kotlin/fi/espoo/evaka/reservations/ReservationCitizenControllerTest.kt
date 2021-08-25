@@ -54,28 +54,37 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
         val res = getReservations(FiniteDateRange(monday, monday.plusDays(2)))
 
-        assertEquals(3, res.size)
+        assertEquals(
+            listOf(
+                ReservationChild(testChild_1.id, testChild_1.firstName),
+                ReservationChild(testChild_2.id, testChild_2.firstName)
+            ).sortedBy { it.firstName },
+            res.children
+        )
 
-        assertEquals(monday, res[0].date)
+        val dailyData = res.dailyData
+        assertEquals(3, dailyData.size)
+
+        assertEquals(monday, dailyData[0].date)
         assertEquals(
             setOf(
                 Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime), testChild_1.id),
                 Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime), testChild_2.id),
             ),
-            res[0].reservations.toSet()
+            dailyData[0].reservations.toSet()
         )
 
-        assertEquals(monday.plusDays(1), res[1].date)
+        assertEquals(monday.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
                 Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime), testChild_1.id),
                 Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime), testChild_2.id),
             ),
-            res[1].reservations.toSet()
+            dailyData[1].reservations.toSet()
         )
 
-        assertEquals(monday.plusDays(2), res[2].date)
-        assertEquals(0, res[2].reservations.size)
+        assertEquals(monday.plusDays(2), dailyData[2].date)
+        assertEquals(0, dailyData[2].reservations.size)
     }
 
     private fun postReservatios(request: ReservationRequest) {
@@ -87,10 +96,10 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
-    private fun getReservations(range: FiniteDateRange): List<DailyReservationData> {
+    private fun getReservations(range: FiniteDateRange): ReservationsResponse {
         val (_, res, result) = http.get("/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${range.end.format(DateTimeFormatter.ISO_DATE)}")
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id))
-            .responseObject<List<DailyReservationData>>(objectMapper)
+            .responseObject<ReservationsResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
