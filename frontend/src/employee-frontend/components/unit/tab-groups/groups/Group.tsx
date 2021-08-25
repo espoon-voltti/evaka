@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
-
 import { useTranslation } from '../../../../state/i18n'
 import {
   DaycareDailyNote,
@@ -14,7 +13,7 @@ import {
   Stats,
   Unit
 } from '../../../../types/unit'
-import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -64,9 +63,12 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { RequireRole } from 'employee-frontend/utils/roles'
 import { featureFlags } from 'lib-customizations/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
+import { requireRole } from 'employee-frontend/utils/roles'
+import { UserContext } from 'employee-frontend/state/user'
+import { Action } from 'lib-common/generated/action'
 
 interface Props {
   unit: Unit
@@ -75,14 +77,15 @@ interface Props {
   caretakers?: Stats
   confirmedOccupancy?: OccupancyResponse
   realizedOccupancy?: OccupancyResponse
-  canManageGroups: boolean
-  canManageChildren: boolean
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
   reload: () => void
   open: boolean
   toggleOpen: () => void
+  permittedActions: Set<Action.Group>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.Placement>>
 }
 
 export interface GroupWithDetails extends DaycareGroupWithPlacements {
@@ -138,15 +141,17 @@ function Group({
   caretakers,
   confirmedOccupancy,
   realizedOccupancy,
-  canManageGroups,
-  canManageChildren,
   reload,
   onTransferRequested,
   open,
-  toggleOpen
+  toggleOpen,
+  permittedActions,
+  permittedBackupCareActions,
+  permittedGroupPlacementActions
 }: Props) {
   const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
+  const { roles } = useContext(UserContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const [selectedDaycareDailyNote, setSelectedDaycareDailyNote] =
     useState<DaycareDailyNoteAndChildInfo>({
@@ -220,8 +225,9 @@ function Group({
         </span>
       )
   }
-
-  const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
+  const showServiceNeed =
+    !unit.type.includes('CLUB') &&
+    requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
 
   const getChildNote = (childId: string): DaycareDailyNote | undefined =>
     groupDaycareDailyNotes.isSuccess
@@ -249,6 +255,11 @@ function Group({
       .filter((s) => s !== null)
       .join(',')
   }
+
+  const canManageCaretakers =
+    permittedActions.has('UPDATE_CARETAKERS') ||
+    permittedActions.has('CREATE_CARETAKERS') ||
+    permittedActions.has('DELETE_CARETAKERS')
 
   const renderDaycareDailyNote = (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
@@ -398,7 +409,7 @@ function Group({
         </TitleContainer>
         <Gap size="L" horizontal />
         <Toolbar>
-          {canManageGroups ? (
+          {permittedActions.has('UPDATE') && (
             <>
               <InlineButton
                 icon={faPen}
@@ -407,6 +418,10 @@ function Group({
                 data-qa="btn-update-group"
               />
               <Gap size="s" horizontal />
+            </>
+          )}
+          {permittedActions.has('DELETE') && (
+            <>
               <InlineButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
@@ -416,17 +431,8 @@ function Group({
               />
               <Gap size="s" horizontal />
             </>
-          ) : null}
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR',
-              'STAFF',
-              'SPECIAL_EDUCATION_TEACHER'
-            ]}
-          >
+          )}
+          {permittedActions.has('READ_ABSENCES') && (
             <Link to={`/absences/${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
@@ -435,7 +441,7 @@ function Group({
                 data-qa="open-absence-diary-button"
               />
             </Link>
-          </RequireRole>
+          )}
         </Toolbar>
       </TitleBar>
       {open ? (
@@ -456,7 +462,7 @@ function Group({
               <label>{i18n.unit.groups.caretakers}</label>
               <FixedSpaceRow>
                 {renderCaretakerCount()}
-                {canManageGroups ? (
+                {canManageCaretakers ? (
                   <Link to={`/units/${unit.id}/groups/${group.id}/caretakers`}>
                     <InlineButton
                       icon={faPen}
@@ -499,15 +505,8 @@ function Group({
               <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
-                    {mobileEnabled && (
-                      <RequireRole
-                        oneOf={[
-                          'ADMIN',
-                          'UNIT_SUPERVISOR',
-                          'STAFF',
-                          'SPECIAL_EDUCATION_TEACHER'
-                        ]}
-                      >
+                    {mobileEnabled &&
+                      permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                         <Th>
                           <IconContainer>
                             <Tooltip
@@ -525,8 +524,7 @@ function Group({
                             </Tooltip>
                           </IconContainer>
                         </Th>
-                      </RequireRole>
-                    )}
+                      )}
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
                     <Th>{i18n.unit.groups.placementType}</Th>
@@ -535,7 +533,7 @@ function Group({
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
                     <Th>{i18n.unit.groups.placementDuration}</Th>
-                    {canManageChildren ? <Th /> : null}
+                    <Th />
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -544,26 +542,38 @@ function Group({
                       'type' in placement
                         ? placement.daycarePlacementMissingServiceNeedDays
                         : placement.missingServiceNeedDays
+                    const canTransfer = !!(
+                      placement.id &&
+                      ('type' in placement
+                        ? permittedGroupPlacementActions[placement.id]?.has(
+                            'UPDATE'
+                          )
+                        : permittedBackupCareActions[placement.id]?.has(
+                            'UPDATE'
+                          ))
+                    )
+                    const canDelete = !!(
+                      placement.id &&
+                      ('type' in placement
+                        ? permittedGroupPlacementActions[placement.id]?.has(
+                            'DELETE'
+                          )
+                        : permittedBackupCareActions[placement.id]?.has(
+                            'DELETE'
+                          ))
+                    )
                     return (
                       <Tr
                         key={placement.id || ''}
                         className={'group-placement-row'}
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
-                        {mobileEnabled && (
-                          <RequireRole
-                            oneOf={[
-                              'ADMIN',
-                              'UNIT_SUPERVISOR',
-                              'STAFF',
-                              'SPECIAL_EDUCATION_TEACHER'
-                            ]}
-                          >
+                        {mobileEnabled &&
+                          permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                             <Td data-qa="daily-note">
                               {renderDaycareDailyNote(placement)}
                             </Td>
-                          </RequireRole>
-                        )}
+                          )}
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
                             {formatName(
@@ -651,22 +661,30 @@ function Group({
                             ? `${placement.startDate.format()}- ${placement.endDate.format()}`
                             : `${placement.period.start.format()}- ${placement.period.end.format()}`}
                         </Td>
-                        {canManageChildren ? (
+                        {canTransfer || canDelete ? (
                           <Td align="right">
                             <RowActionContainer>
-                              <InlineButton
-                                onClick={() => onTransferRequested(placement)}
-                                data-qa="transfer-btn"
-                                icon={faExchange}
-                                text={i18n.unit.groups.transferBtn}
-                              />
-                              <Gap size="s" horizontal />
-                              <InlineButton
-                                onClick={() => onDeletePlacement(placement)}
-                                data-qa="remove-btn"
-                                icon={faUndo}
-                                text={i18n.unit.groups.returnBtn}
-                              />
+                              {canTransfer && (
+                                <>
+                                  <InlineButton
+                                    onClick={() =>
+                                      onTransferRequested(placement)
+                                    }
+                                    data-qa="transfer-btn"
+                                    icon={faExchange}
+                                    text={i18n.unit.groups.transferBtn}
+                                  />
+                                  <Gap size="s" horizontal />
+                                </>
+                              )}
+                              {canDelete && (
+                                <InlineButton
+                                  onClick={() => onDeletePlacement(placement)}
+                                  data-qa="remove-btn"
+                                  icon={faUndo}
+                                  text={i18n.unit.groups.returnBtn}
+                                />
+                              )}
                             </RowActionContainer>
                           </Td>
                         ) : null}
@@ -675,15 +693,8 @@ function Group({
                   })}
                 </Tbody>
               </Table>
-              {mobileEnabled && (
-                <RequireRole
-                  oneOf={[
-                    'ADMIN',
-                    'UNIT_SUPERVISOR',
-                    'STAFF',
-                    'SPECIAL_EDUCATION_TEACHER'
-                  ]}
-                >
+              {mobileEnabled &&
+                permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                   <GroupNoteLinkContainer>
                     <InlineButton
                       icon={
@@ -709,8 +720,7 @@ function Group({
                       data-qa="btn-create-group-note"
                     />
                   </GroupNoteLinkContainer>
-                </RequireRole>
-              )}
+                )}
             </div>
           ) : (
             <p data-qa="no-children-placeholder">

@@ -282,7 +282,7 @@ class ApplicationControllerV2(
 
             accessControl.requirePermissionFor(
                 user = user,
-                action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHHOUT_ASSISTANCE_NEED,
+                action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHOUT_ASSISTANCE_NEED,
                 id = applicationId
             )
 

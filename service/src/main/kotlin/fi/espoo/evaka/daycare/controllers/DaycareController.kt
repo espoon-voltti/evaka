@@ -7,7 +7,6 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
-import fi.espoo.evaka.daycare.DaycareGroupSummary
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
@@ -31,6 +30,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -51,7 +52,8 @@ import java.util.UUID
 class DaycareController(
     private val daycareService: DaycareService,
     private val caretakerService: CaretakerService,
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
     @GetMapping
     fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
@@ -72,7 +74,16 @@ class DaycareController(
         return db.read { tx ->
             tx.getDaycare(daycareId)?.let { daycare ->
                 val groups = tx.getDaycareGroupSummaries(daycareId)
-                ResponseEntity.ok(DaycareResponse(daycare, groups, currentUserRoles.roles))
+                val permittedActions = accessControl.getPermittedGroupActions(user, groups.map { it.id })
+                ResponseEntity.ok(
+                    DaycareResponse(
+                        daycare,
+                        groups.map {
+                            DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
+                        },
+                        accessControl.getPermittedUnitActions(user, listOf(daycareId)).values.first()
+                    )
+                )
             }
         } ?: ResponseEntity.notFound().build()
     }
@@ -106,8 +117,7 @@ class DaycareController(
         @RequestBody body: CreateGroupRequest
     ): ResponseEntity<DaycareGroup> {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.CREATE_GROUP, daycareId)
 
         return db.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
@@ -127,8 +137,7 @@ class DaycareController(
         @RequestBody body: GroupUpdateRequest
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Group.UPDATE, groupId)
 
         db.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) }
 
@@ -143,8 +152,7 @@ class DaycareController(
         @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsDelete.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Group.DELETE, groupId)
 
         db.transaction { daycareService.deleteGroup(it, groupId) }
         return noContent()
@@ -158,8 +166,7 @@ class DaycareController(
         @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<CaretakersResponse> {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Group.READ_CARETAKERS, groupId)
 
         return db.read {
             val daycareStub = it.getDaycareStub(daycareId)
@@ -182,8 +189,7 @@ class DaycareController(
         @RequestBody body: CaretakerRequest
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Group.CREATE_CARETAKERS, groupId)
 
         db.transaction {
             caretakerService.insert(
@@ -207,8 +213,7 @@ class DaycareController(
         @RequestBody body: CaretakerRequest
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Group.UPDATE_CARETAKERS, groupId)
 
         db.transaction {
             caretakerService.update(
@@ -232,8 +237,7 @@ class DaycareController(
         @PathVariable("id") id: UUID
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Group.DELETE_CARETAKERS, groupId)
 
         db.transaction {
             caretakerService.delete(
@@ -271,7 +275,7 @@ class DaycareController(
         @RequestBody fields: DaycareFields
     ): ResponseEntity<Daycare> {
         Audit.UnitUpdate.log(targetId = daycareId)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE, daycareId)
         fields.validate()
         return ResponseEntity.ok(
             db.transaction {
@@ -322,6 +326,7 @@ class DaycareController(
         val groupName: String,
         val caretakers: List<CaretakerAmount>
     )
-}
 
-data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupSummary>, val currentUserRoles: Set<UserRole>)
+    data class DaycareGroupResponse(val id: GroupId, val name: String, val permittedActions: Set<Action.Group>)
+    data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
+}

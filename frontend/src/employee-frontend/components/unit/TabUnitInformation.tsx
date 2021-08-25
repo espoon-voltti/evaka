@@ -16,7 +16,7 @@ import UnitInformation from '../../components/unit/tab-unit-information/UnitInfo
 import { UnitContext } from '../../state/unit'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { requireRole, RequireRole } from '../../utils/roles'
+import { requireRole } from '../../utils/roles'
 import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
 import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
 import { H2, H3, Label } from 'lib-components/typography'
@@ -112,18 +112,22 @@ function TabUnitInformation() {
       </ContentArea>
 
       <ContentArea opaque>
-        <UnitInformation unit={unitInformation.value.daycare} />
+        <UnitInformation
+          unit={unitInformation.value.daycare}
+          permittedActions={unitInformation.value.permittedActions}
+        />
       </ContentArea>
 
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+      {unitInformation.value.permittedActions.has('READ_ACL') && (
         <UnitAccessControl
           unitId={unitInformation.value.daycare.id}
+          permittedActions={unitInformation.value.permittedActions}
           groups={groups}
           mobileEnabled={unitInformation.value.daycare.enabledPilotFeatures.includes(
             'MOBILE'
           )}
         />
-      </RequireRole>
+      )}
     </FixedSpaceColumn>
   )
 }

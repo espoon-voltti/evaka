@@ -15,13 +15,13 @@ import fi.espoo.evaka.daycare.removeUnitSupervisor
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class UnitAclController(private val acl: AccessControlList) {
+class UnitAclController(private val accessControl: AccessControl) {
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
         db: Database.Connection,
@@ -39,8 +39,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable daycareId: DaycareId
     ): ResponseEntity<DaycareAclResponse> {
         Audit.UnitAclRead.log()
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_ACL, daycareId)
         val acls = getDaycareAclRows(db, daycareId)
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
@@ -53,8 +52,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_UNIT_SUPERVISOR, daycareId)
         addUnitSupervisor(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -67,8 +65,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_UNIT_SUPERVISOR, daycareId)
         removeUnitSupervisor(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -81,8 +78,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
         addSpecialEducationTeacher(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -95,8 +91,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
         removeSpecialEducationTeacher(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -109,8 +104,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_STAFF, daycareId)
         addStaffMember(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -123,8 +117,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_STAFF, daycareId)
         removeStaffMember(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
@@ -138,8 +131,7 @@ class UnitAclController(private val acl: AccessControlList) {
         @RequestBody update: GroupAclUpdate
     ) {
         Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_GROUP_ACL, daycareId)
 
         db.transaction {
             it.clearDaycareGroupAcl(daycareId, employeeId)

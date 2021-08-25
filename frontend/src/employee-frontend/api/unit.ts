@@ -32,6 +32,8 @@ import DateRange from 'lib-common/date-range'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { UnitProviderType } from 'lib-customizations/types'
 import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
+import { Action } from 'lib-common/generated/action'
+import { mapValues } from 'lodash'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -67,19 +69,28 @@ export async function getDaycares(): Promise<Result<Unit[]>> {
 export interface DaycareGroupSummary {
   id: UUID
   name: string
+  permittedActions: Set<Action.Group>
 }
 
 export interface UnitResponse {
   daycare: Unit
   groups: DaycareGroupSummary[]
-  currentUserRoles: AdRole[]
+  permittedActions: Set<Action.Unit>
 }
 
 export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
     .then(({ data }) =>
-      Success.of({ ...data, daycare: convertUnitJson(data.daycare) })
+      Success.of({
+        daycare: convertUnitJson(data.daycare),
+        groups: data.groups.map(({ id, name, permittedActions }) => ({
+          id,
+          name,
+          permittedActions: new Set(permittedActions)
+        })),
+        permittedActions: new Set(data.permittedActions)
+      })
     )
     .catch((e) => Failure.fromError(e))
 }
@@ -153,6 +164,9 @@ export type UnitData = {
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
   applications?: ApplicationUnitSummary[]
+  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
 }
 
 export async function getUnitData(
@@ -200,7 +214,19 @@ export async function getUnitData(
                 'fi',
                 { ignorePunctuation: true }
               )
-        })
+        }),
+      permittedPlacementActions: mapValues(
+        response.data.permittedPlacementActions,
+        (actions) => new Set(actions)
+      ),
+      permittedBackupCareActions: mapValues(
+        response.data.permittedBackupCareActions,
+        (actions) => new Set(actions)
+      ),
+      permittedGroupPlacementActions: mapValues(
+        response.data.permittedGroupPlacementActions,
+        (actions) => new Set(actions)
+      )
     })
   } catch (e) {
     console.error(e)

@@ -9,7 +9,6 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.controllers.DaycareController
-import fi.espoo.evaka.daycare.controllers.DaycareResponse
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.resetDatabase
@@ -121,7 +120,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
         val (_, _, body) = http.get("/daycares/$daycareId")
             .asUser(admin)
-            .responseObject<DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(objectMapper)
         val daycare = body.get().daycare
 
         assertEquals(fields.name, daycare.name)
