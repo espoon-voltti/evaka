@@ -21,7 +21,7 @@ fun getOrCreateVardaChildByOrganizer(
         val municipalOrganizerOid = getMunicipalOrganizerOid(tx)
         val isPaosChild = organizerOid != municipalOrganizerOid
 
-        val rowsByChild = getVardaOrganizationChildRows(tx, evakaPersonId)
+        val rowsByChild = getVardaOrganizerChildRows(tx, evakaPersonId)
         if (rowsByChild.isEmpty()) {
             return@transaction createVardaPersonAndChild(tx, client, evakaPersonId, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
         }
@@ -45,7 +45,7 @@ data class VardaChildOrganizerRow(
     val organizerOid: String
 )
 
-private fun getVardaOrganizationChildRows(
+private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
     evakaPersonId: UUID,
 ): List<VardaChildOrganizerRow> {
