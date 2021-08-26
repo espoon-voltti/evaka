@@ -144,7 +144,12 @@ const en: Translations = {
       dateRangeLabel: 'Make reservation for days',
       times: 'Times',
       businessDays: 'Mon-Fri',
-      postError: 'Creating reservation failed'
+      postError: 'Creating reservation failed',
+      repeats: 'Repeats',
+      repetitions: {
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly'
+      }
     }
   },
   messages: {
