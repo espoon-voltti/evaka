@@ -143,7 +143,12 @@ export default {
       dateRangeLabel: 'Tee varaus päiville',
       times: 'Kellonaika',
       businessDays: 'Ma-Pe',
-      postError: 'Varauksen luominen ei onnistunut'
+      postError: 'Varauksen luominen ei onnistunut',
+      repeats: 'Toistuu',
+      repetitions: {
+        DAILY: 'Päivittäin',
+        WEEKLY: 'Viikoittain'
+      }
     }
   },
   messages: {

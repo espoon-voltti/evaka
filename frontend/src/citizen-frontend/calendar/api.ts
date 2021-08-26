@@ -51,7 +51,7 @@ export async function getReservations(
     .catch((e) => Failure.fromError(e))
 }
 
-interface DailyReservationRequest {
+export interface DailyReservationRequest {
   date: LocalDate
   startTime: string
   endTime: string
