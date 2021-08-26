@@ -92,22 +92,11 @@ class PersonController(
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun findBySearchTerms(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(
-            value = "searchTerm",
-            required = true
-        ) searchTerm: String,
-        @RequestParam(
-            value = "orderBy",
-            required = true
-        ) orderBy: String,
-        @RequestParam(
-            value = "sortDirection",
-            required = true
-        ) sortDirection: String
+        @RequestBody body: SearchPersonBody
     ): ResponseEntity<List<PersonJSON>>? {
         Audit.PersonDetailsSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -116,9 +105,9 @@ class PersonController(
                 db.read {
                     it.searchPeople(
                         user,
-                        searchTerm,
-                        orderBy,
-                        sortDirection
+                        body.searchTerm,
+                        body.orderBy,
+                        body.sortDirection
                     )
                 }.map { personDTO -> PersonJSON.from(personDTO) }
             )
@@ -184,24 +173,23 @@ class PersonController(
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 
-    @GetMapping("/details/ssn/{ssn}")
+    @PostMapping("/details/ssn")
     fun getOrCreatePersonBySsn(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("ssn") ssn: String,
-        @RequestParam("readonly", required = false) readonly: Boolean = false
+        @RequestBody body: GetOrCreatePersonBySsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
-        if (!isValidSSN(ssn)) throw BadRequest("Invalid SSN")
+        if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
         val person = db.transaction {
             personService.getOrCreatePerson(
                 it,
                 user,
-                ExternalIdentifier.SSN.getInstance(ssn),
-                readonly
+                ExternalIdentifier.SSN.getInstance(body.ssn),
+                body.readonly
             )
         }
 
@@ -274,6 +262,12 @@ class PersonController(
     }
 }
 
+data class SearchPersonBody(
+    val searchTerm: String,
+    val orderBy: String,
+    val sortDirection: String
+)
+
 data class CreatePersonBody(
     val firstName: String,
     val lastName: String,
@@ -283,4 +277,9 @@ data class CreatePersonBody(
     val postOffice: String,
     val phone: String?,
     val email: String?
+)
+
+data class GetOrCreatePersonBySsnRequest(
+    val ssn: String,
+    val readonly: Boolean = false
 )

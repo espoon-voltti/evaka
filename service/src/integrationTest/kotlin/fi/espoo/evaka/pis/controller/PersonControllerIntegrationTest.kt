@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PersonController
+import fi.espoo.evaka.pis.controllers.SearchPersonBody
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -68,9 +69,11 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val response = controller.findBySearchTerms(
             db,
             user,
-            searchTerm = "${person.firstName} ${person.lastName}",
-            orderBy = "first_name",
-            sortDirection = "DESC"
+            SearchPersonBody(
+                searchTerm = "${person.firstName} ${person.lastName}",
+                orderBy = "first_name",
+                sortDirection = "DESC"
+            )
         )
 
         assertEquals(HttpStatus.OK, response?.statusCode)
@@ -88,9 +91,11 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val response = controller.findBySearchTerms(
             db,
             user,
-            searchTerm = "${person.firstName}\t${person.lastName}",
-            orderBy = "first_name",
-            sortDirection = "DESC"
+            SearchPersonBody(
+                searchTerm = "${person.firstName}\t${person.lastName}",
+                orderBy = "first_name",
+                sortDirection = "DESC"
+            )
         )
 
         assertEquals(HttpStatus.OK, response?.statusCode)
@@ -108,9 +113,11 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val response = controller.findBySearchTerms(
             db,
             user,
-            searchTerm = "${person.firstName}\u00A0${person.lastName}",
-            orderBy = "first_name",
-            sortDirection = "DESC"
+            SearchPersonBody(
+                searchTerm = "${person.firstName}\u00A0${person.lastName}",
+                orderBy = "first_name",
+                sortDirection = "DESC"
+            )
         )
 
         assertEquals(HttpStatus.OK, response?.statusCode)
@@ -130,9 +137,11 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val response = controller.findBySearchTerms(
             db,
             user,
-            searchTerm = "${person.firstName}\u3000${person.lastName}",
-            orderBy = "first_name",
-            sortDirection = "DESC"
+            SearchPersonBody(
+                searchTerm = "${person.firstName}\u3000${person.lastName}",
+                orderBy = "first_name",
+                sortDirection = "DESC"
+            )
         )
 
         assertEquals(HttpStatus.OK, response?.statusCode)

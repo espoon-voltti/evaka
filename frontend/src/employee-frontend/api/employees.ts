@@ -59,8 +59,10 @@ export function searchEmployees(
   searchTerm?: string
 ): Promise<Result<Paged<EmployeeUser>>> {
   return client
-    .get<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
-      params: { page, pageSize, searchTerm }
+    .post<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
+      page,
+      pageSize,
+      searchTerm
     })
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))

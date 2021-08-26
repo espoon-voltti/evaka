@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,7 +48,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
@@ -169,37 +167,17 @@ class ApplicationControllerV2(
         return ResponseEntity.status(HttpStatus.CREATED).body(id)
     }
 
-    @GetMapping
+    @PostMapping("/search")
     fun getApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam(required = false) page: Int?,
-        @RequestParam(required = false) pageSize: Int?,
-        @RequestParam(required = false) sortBy: ApplicationSortColumn?,
-        @RequestParam(required = false) sortDir: ApplicationSortDirection?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) units: String?,
-        @RequestParam(required = false) basis: String?,
-        @RequestParam(required = true) type: ApplicationTypeToggle,
-        @RequestParam(required = false) preschoolType: String?,
-        @RequestParam(required = true) status: String?,
-        @RequestParam(required = false) dateType: String?,
-        @RequestParam(required = false) distinctions: String?,
-        @RequestParam(
-            "periodStart",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) periodStart: LocalDate?,
-        @RequestParam(
-            "periodEnd",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) periodEnd: LocalDate?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) transferApplications: TransferApplicationFilter?,
-        @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
+        @RequestBody body: SearchApplicationRequest
     ): ResponseEntity<Paged<ApplicationSummary>> {
         Audit.ApplicationSearch.log()
-        if (periodStart != null && periodEnd != null && periodStart > periodEnd)
-            throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
+        if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
+            throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
+        val maxPageSize = 5000
+        if (body.pageSize != null && body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
 
         val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
             user = user,
@@ -217,24 +195,24 @@ class ApplicationControllerV2(
         return db.read { tx ->
             tx.fetchApplicationSummaries(
                 user = user,
-                page = page ?: 1,
-                pageSize = pageSize ?: 100,
-                sortBy = sortBy ?: ApplicationSortColumn.CHILD_NAME,
-                sortDir = sortDir ?: ApplicationSortDirection.ASC,
-                areas = area?.split(",") ?: listOf(),
-                units = units?.split(",")?.map { parseUUID(it) } ?: listOf(),
-                basis = basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
-                type = type,
-                preschoolType = preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
+                page = body.page ?: 1,
+                pageSize = body.pageSize ?: 100,
+                sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
+                sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
+                areas = body.area?.split(",") ?: listOf(),
+                units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
+                basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
+                type = body.type,
+                preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
                     ?: listOf(),
-                statuses = status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
-                dateType = dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                distinctions = distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
-                periodStart = periodStart,
-                periodEnd = periodEnd,
-                searchTerms = searchTerms ?: "",
-                transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
-                voucherApplications = voucherApplications,
+                statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
+                dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
+                distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
+                periodStart = body.periodStart,
+                periodEnd = body.periodEnd,
+                searchTerms = body.searchTerms ?: "",
+                transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
+                voucherApplications = body.voucherApplications,
                 authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
                 authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed
             )
@@ -559,6 +537,26 @@ data class PaperApplicationCreateRequest(
     val sentDate: LocalDate,
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean
+)
+
+data class SearchApplicationRequest(
+    val page: Int?,
+    val pageSize: Int?,
+    val sortBy: ApplicationSortColumn?,
+    val sortDir: ApplicationSortDirection?,
+    val area: String?,
+    val units: String?,
+    val basis: String?,
+    val type: ApplicationTypeToggle,
+    val preschoolType: String?,
+    val status: String?,
+    val dateType: String?,
+    val distinctions: String?,
+    val periodStart: LocalDate?,
+    val periodEnd: LocalDate?,
+    val searchTerms: String?,
+    val transferApplications: TransferApplicationFilter?,
+    val voucherApplications: VoucherApplicationFilter?
 )
 
 data class ApplicationResponse(

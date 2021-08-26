@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
@@ -54,43 +53,32 @@ class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun search(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) page: Int,
-        @RequestParam(required = true) pageSize: Int,
-        @RequestParam(required = false) sortBy: VoucherValueDecisionSortParam?,
-        @RequestParam(required = false) sortDirection: SortDirection?,
-        @RequestParam(required = false) status: String?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) financeDecisionHandlerId: UUID?,
-        @RequestParam(required = false) startDate: String?,
-        @RequestParam(required = false) endDate: String?,
-        @RequestParam(required = false) searchByStartDate: Boolean = false
+        @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
-        if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db
             .read { tx ->
                 tx.searchValueDecisions(
-                    page,
-                    pageSize,
-                    sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                    sortDirection ?: SortDirection.DESC,
-                    status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
                         ?: throw BadRequest("Status is a mandatory parameter"),
-                    area?.split(",") ?: listOf(),
-                    unit?.let { parseUUID(it) },
-                    searchTerms ?: "",
-                    startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
-                    endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
-                    searchByStartDate,
-                    financeDecisionHandlerId
+                    body.area?.split(",") ?: listOf(),
+                    body.unit?.let { parseUUID(it) },
+                    body.searchTerms ?: "",
+                    body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
+                    body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                    body.searchByStartDate,
+                    body.financeDecisionHandlerId
                 )
             }
             .let { ResponseEntity.ok(it) }
@@ -207,3 +195,18 @@ enum class VoucherValueDecisionSortParam {
     HEAD_OF_FAMILY,
     STATUS
 }
+
+data class SearchVoucherValueDecisionRequest(
+    val page: Int,
+    val pageSize: Int,
+    val sortBy: VoucherValueDecisionSortParam?,
+    val sortDirection: SortDirection?,
+    val status: String?,
+    val area: String?,
+    val unit: String?,
+    val searchTerms: String?,
+    val financeDecisionHandlerId: UUID?,
+    val startDate: String?,
+    val endDate: String?,
+    val searchByStartDate: Boolean = false
+)

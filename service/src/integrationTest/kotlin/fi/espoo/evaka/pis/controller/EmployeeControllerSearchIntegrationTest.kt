@@ -8,6 +8,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
+import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.testDaycare
@@ -36,7 +37,7 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin searches employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.searchEmployees(db, user, page = 1, pageSize = 3, searchTerm = null)
+        val response = controller.searchEmployees(db, user, SearchEmployeeRequest(page = 1, pageSize = 3, searchTerm = null))
         assertEquals(HttpStatus.OK, response.statusCode)
         val body = response.body ?: fail("missing body")
         assertEquals(3, body.total)
@@ -57,7 +58,7 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin searches employees with free text`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.searchEmployees(db, user, page = 1, pageSize = 10, searchTerm = "super")
+        val response = controller.searchEmployees(db, user, SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"))
         assertEquals(HttpStatus.OK, response.statusCode)
         val body = response.body ?: fail("missing body")
         assertEquals(1, body.data.size)
