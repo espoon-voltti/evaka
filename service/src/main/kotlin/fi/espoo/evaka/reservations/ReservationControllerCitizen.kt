@@ -160,7 +160,8 @@ data class Reservation(
 
 data class ReservationChild(
     val id: UUID,
-    val firstName: String
+    val firstName: String,
+    val preferredName: String?
 )
 
 fun Database.Read.getReservations(guardianId: UUID, range: FiniteDateRange): List<DailyReservationData> {
@@ -194,9 +195,10 @@ GROUP BY date, is_holiday
 private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name
+SELECT ch.id, ch.first_name, child.preferred_name
 FROM guardian g
 JOIN person ch ON ch.id = g.child_id
+LEFT JOIN child ON ch.id = child.id
 JOIN placement pl ON pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') && :range
 JOIN daycare u ON u.id = pl.unit_id AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
 WHERE g.guardian_id = :guardianId

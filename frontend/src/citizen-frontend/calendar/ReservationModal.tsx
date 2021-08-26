@@ -208,7 +208,7 @@ export default React.memo(function ReservationModal({
         {availableChildren.map((child) => (
           <Checkbox
             key={child.id}
-            label={child.firstName.split(' ')[0]}
+            label={child.preferredName || child.firstName.split(' ')[0]}
             checked={formData.selectedChildren.includes(child.id)}
             onChange={(selected) => {
               if (selected) {

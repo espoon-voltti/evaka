@@ -19,6 +19,7 @@ export interface DailyReservationData {
 export interface ReservationChild {
   id: UUID
   firstName: string
+  preferredName?: string
 }
 
 export interface ReservationsResponse {

@@ -47,7 +47,16 @@ const sv: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
-      weekShort: 'Veckan'
+      weekShort: 'Veckan',
+      weekdays: [
+        'Måndag',
+        'Tisdag',
+        'Onsdag',
+        'Torsdag',
+        'Fredag',
+        'Lördag',
+        'Söndag'
+      ]
     }
   },
   header: {

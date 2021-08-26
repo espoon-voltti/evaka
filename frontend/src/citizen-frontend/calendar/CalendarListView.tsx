@@ -4,6 +4,7 @@
 
 import React from 'react'
 import _ from 'lodash'
+import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DailyReservationData } from './api'
 import WeekElem, { WeekProps } from './WeekElem'
@@ -14,11 +15,13 @@ import Button from 'lib-components/atoms/buttons/Button'
 export interface Props {
   dailyReservations: DailyReservationData[]
   onCreateReservationClicked: () => void
+  selectDate: (date: LocalDate) => void
 }
 
 export default React.memo(function CalendarListView({
   dailyReservations,
-  onCreateReservationClicked
+  onCreateReservationClicked,
+  selectDate
 }: Props) {
   const weeklyData = dailyReservations.reduce((weekly, daily) => {
     const last = _.last(weekly)
@@ -39,10 +42,10 @@ export default React.memo(function CalendarListView({
   }, [] as WeekProps[])
 
   return (
-    <div>
+    <>
       <FixedSpaceColumn spacing={'zero'}>
         {weeklyData.map((w) => (
-          <WeekElem {...w} key={w.weekNumber} />
+          <WeekElem {...w} key={w.weekNumber} selectDate={selectDate} />
         ))}
       </FixedSpaceColumn>
       <HoverButton
@@ -51,7 +54,7 @@ export default React.memo(function CalendarListView({
         primary
         type="button"
       />
-    </div>
+    </>
   )
 })
 
