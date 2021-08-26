@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
@@ -23,7 +23,7 @@ export default React.memo(function CalendarPage() {
   const [reservationViewOpen, setReservationViewOpen] = useState(false)
 
   const loadData = useRestApi(getReservations, setData)
-  useEffect(
+  const loadDefaultRange = useCallback(
     () =>
       loadData(
         LocalDate.today().startOfWeek(),
@@ -31,6 +31,8 @@ export default React.memo(function CalendarPage() {
       ),
     [loadData]
   )
+
+  useEffect(loadDefaultRange, [loadDefaultRange])
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
@@ -58,15 +60,7 @@ export default React.memo(function CalendarPage() {
                     <ReservationModal
                       onClose={() => setReservationViewOpen(false)}
                       availableChildren={response.children}
-                      onReload={() =>
-                        loadData(
-                          LocalDate.today().startOfWeek(),
-                          LocalDate.today()
-                            .addMonths(2)
-                            .startOfWeek()
-                            .subDays(1)
-                        )
-                      }
+                      onReload={loadDefaultRange}
                     />
                   )}
                 </>
