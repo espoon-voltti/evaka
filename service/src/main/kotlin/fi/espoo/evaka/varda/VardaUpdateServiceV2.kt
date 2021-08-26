@@ -686,7 +686,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.toTypedArray())
+    .bind("upsertErrors", upsertErrors.map { it.take(300) }.toTypedArray())
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -713,7 +713,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.toTypedArray())
+    .bind("errors", errors.map { it.take(300) }.toTypedArray())
     .execute()
 
 private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
