@@ -78,8 +78,12 @@ export async function getApplications(
   params: ApplicationSearchParams
 ): Promise<Result<Paged<ApplicationListSummary>>> {
   return client
-    .get<JsonOf<Paged<ApplicationListSummary>>>('v2/applications', {
-      params: { page: page, pageSize, sortBy, sortDir, ...params }
+    .post<JsonOf<Paged<ApplicationListSummary>>>('v2/applications/search', {
+      page: page,
+      pageSize,
+      sortBy,
+      sortDir,
+      ...params
     })
     .then(({ data }) => ({
       ...data,

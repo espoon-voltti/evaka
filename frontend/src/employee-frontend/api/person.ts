@@ -69,10 +69,9 @@ export async function getOrCreatePersonBySsn(
   readonly = false
 ): Promise<Result<PersonDetails>> {
   return client
-    .get<JsonOf<PersonDetails>>(`/person/details/ssn/${ssn}`, {
-      params: {
-        readonly
-      }
+    .post<JsonOf<PersonDetails>>(`/person/details/ssn`, {
+      ssn,
+      readonly
     })
     .then(({ data }) => deserializePersonDetails(data))
     .then((v) => Success.of(v))
@@ -85,12 +84,10 @@ export async function findByNameOrAddress(
   sortDirection: SearchOrder
 ): Promise<Result<PersonDetails[]>> {
   return client
-    .get<JsonOf<PersonDetails[]>>('/person/search', {
-      params: {
-        searchTerm,
-        orderBy,
-        sortDirection
-      }
+    .post<JsonOf<PersonDetails[]>>('/person/search', {
+      searchTerm,
+      orderBy,
+      sortDirection
     })
     .then((res) => res.data)
     .then((results) => results.map(deserializePersonDetails))

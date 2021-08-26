@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
@@ -291,16 +292,16 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
-        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to status, "searchTerms" to searchTerms)
-        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+        val (_, _, data) = http.post("/value-decisions/search")
+            .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms"}""")
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
         return data.get()
     }
 
     private fun sendAllValueDecisions() {
-        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to "DRAFT")
-        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+        val (_, _, data) = http.post("/value-decisions/search")
+            .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
             .also { (_, res, _) ->
