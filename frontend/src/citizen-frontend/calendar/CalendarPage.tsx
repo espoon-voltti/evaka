@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
@@ -14,8 +15,11 @@ import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
+import DayView from './DayView'
 
 export default React.memo(function CalendarPage() {
+  const history = useHistory()
+  const location = useLocation()
   const i18n = useTranslation()
   const user = useUser()
 
@@ -34,10 +38,25 @@ export default React.memo(function CalendarPage() {
 
   useEffect(loadDefaultRange, [loadDefaultRange])
 
+  const dateParam = new URLSearchParams(location.search).get('day')
+  const selectedDate = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
+  const selectDate = useCallback(
+    (date: LocalDate) =>
+      void history.replace(`calendar?day=${date.formatIso()}`),
+    [history]
+  )
+
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
     <>
+      {selectedDate && data.isSuccess ? (
+        <DayView
+          date={selectedDate}
+          data={data.value}
+          selectDate={selectDate}
+        />
+      ) : null}
       <Container>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
           {data.mapAll({
@@ -55,6 +74,7 @@ export default React.memo(function CalendarPage() {
                     onCreateReservationClicked={() =>
                       setReservationViewOpen(true)
                     }
+                    selectDate={selectDate}
                   />
                   {reservationViewOpen && (
                     <ReservationModal

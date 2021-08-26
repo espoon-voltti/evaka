@@ -13,15 +13,21 @@ import { defaultMargins } from 'lib-components/white-space'
 
 export interface DayProps {
   dailyReservations: DailyReservationData
+  selectDate: (date: LocalDate) => void
 }
 
 export default React.memo(function DayElem({
-  dailyReservations: { date, isHoliday, reservations }
+  dailyReservations: { date, isHoliday, reservations },
+  selectDate
 }: DayProps) {
   const i18n = useTranslation()
 
   return (
-    <DayDiv alignItems="center" today={date.isToday()}>
+    <DayDiv
+      alignItems="center"
+      today={date.isToday()}
+      onClick={() => selectDate(date)}
+    >
       <DayColumn spacing="xxs" holiday={isHoliday}>
         <div>
           {i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]}
@@ -53,6 +59,7 @@ const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   border-bottom: 1px solid ${colors.greyscale.lighter};
   border-left: 6px solid
     ${(p) => (p.today ? colors.brandEspoo.espooTurquoise : 'transparent')};
+  cursor: pointer;
 `
 
 const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`

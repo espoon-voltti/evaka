@@ -47,7 +47,16 @@ const en: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      weekShort: 'Week'
+      weekShort: 'Week',
+      weekdays: [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ]
     }
   },
   header: {

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import LocalDate from 'lib-common/local-date'
 import colors from 'lib-customizations/common'
 import { DailyReservationData } from './api'
 import DayElem from './DayElem'
@@ -11,10 +12,15 @@ export interface WeekProps {
   dailyReservations: DailyReservationData[]
 }
 
+interface Props extends WeekProps {
+  selectDate: (date: LocalDate) => void
+}
+
 export default React.memo(function WeekElem({
   weekNumber,
-  dailyReservations
-}: WeekProps) {
+  dailyReservations,
+  selectDate
+}: Props) {
   const i18n = useTranslation()
   return (
     <div>
@@ -23,7 +29,11 @@ export default React.memo(function WeekElem({
       </WeekDiv>
       <div>
         {dailyReservations.map((d) => (
-          <DayElem dailyReservations={d} key={d.date.formatIso()} />
+          <DayElem
+            dailyReservations={d}
+            key={d.date.formatIso()}
+            selectDate={selectDate}
+          />
         ))}
       </div>
     </div>

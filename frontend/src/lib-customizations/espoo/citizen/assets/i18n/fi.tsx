@@ -46,7 +46,16 @@ export default {
     },
     datetime: {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
-      weekShort: 'Vk'
+      weekShort: 'Vk',
+      weekdays: [
+        'Maanantai',
+        'Tiistai',
+        'Keskiviikko',
+        'Torstai',
+        'Perjantai',
+        'Lauantai',
+        'Sunnuntai'
+      ]
     }
   },
   header: {
