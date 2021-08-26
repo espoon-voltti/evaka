@@ -56,8 +56,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                ReservationChild(testChild_1.id, testChild_1.firstName),
-                ReservationChild(testChild_2.id, testChild_2.firstName)
+                ReservationChild(testChild_1.id, testChild_1.firstName, ""),
+                ReservationChild(testChild_2.id, testChild_2.firstName, "")
             ).sortedBy { it.firstName },
             res.children
         )

@@ -61,7 +61,9 @@ export default React.memo(function DayView({ date, data, selectDate }: Props) {
       {childrenWithReservations.map(({ child, reservation }, index) => (
         <Fragment key={child.id}>
           {index !== 0 ? <Separator /> : null}
-          <H3 noMargin>{child.firstName}</H3>
+          <H3 noMargin>
+            {child.preferredName || child.firstName.split(' ')[0]}
+          </H3>
           <Gap size="s" />
           <Grid>
             <Label>Varaus</Label>
