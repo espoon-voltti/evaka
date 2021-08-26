@@ -203,16 +203,33 @@ WITH min_voucher_decision_date AS (
     SELECT
         extract(year from t) AS year,
         extract(month from t) AS month,
-        daterange(t::date, (t + interval '1 month')::date) AS period
+        daterange(t::date, (t + interval '1 month')::date) AS period,
+        op.operational_days,
+        array_length(op.operational_days, 1) AS operational_days_count
     FROM generate_series((SELECT month FROM min_change_month), :reportDate, '1 month') t
     JOIN include_corrections ON should_include OR t = :reportDate
+    JOIN LATERAL (
+        SELECT array_agg(d::date) operational_days FROM generate_series(t, (t + interval '1 month' - interval '1 day'), '1 day') d
+        WHERE date_part('isodow', d) = ANY('{1,2,3,4,5}') AND NOT EXISTS (SELECT 1 FROM holiday WHERE holiday.date = d)
+    ) op ON true
 ), original AS (
-    SELECT p.period, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period, decision.id AS decision_id
+    SELECT
+        p.period,
+        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
+        decision.id AS decision_id,
+        p.operational_days,
+        p.operational_days_count
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) AND lower(p.period) = :reportDate
 ), correction_targets AS (
-    SELECT DISTINCT decision.child_id, p.year, p.month, p.period
+    SELECT DISTINCT
+        decision.child_id,
+        p.year,
+        p.month,
+        p.period,
+        p.operational_days,
+        p.operational_days_count
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
@@ -226,6 +243,8 @@ WITH min_voucher_decision_date AS (
 ), refunds AS (
     SELECT
         ct.period,
+        ct.operational_days,
+        ct.operational_days_count,
         decision.id AS decision_id,
         sn_decision.realized_amount,
         sn_decision.realized_period,
@@ -241,7 +260,11 @@ WITH min_voucher_decision_date AS (
         decision_id,
         period,
         realized_period,
-        upper(realized_period) - lower(realized_period) AS number_of_days,
+        (CASE
+            WHEN period = realized_period THEN operational_days_count
+            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
+        END) AS number_of_days,
+        operational_days_count,
         -realized_amount AS realized_amount,
         'REFUND' AS type,
         1 AS type_sort
@@ -254,7 +277,11 @@ WITH min_voucher_decision_date AS (
         decision_id,
         period,
         realized_period,
-        upper(realized_period) - lower(realized_period) AS number_of_days,
+        (CASE
+            WHEN period = realized_period THEN operational_days_count
+            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
+        END) AS number_of_days,
+        operational_days_count,
         NULL AS realized_amount,
         'CORRECTION' AS type,
         2 AS type_sort
@@ -266,7 +293,11 @@ WITH min_voucher_decision_date AS (
         decision_id,
         period,
         realized_period,
-        upper(realized_period) - lower(realized_period) AS number_of_days,
+        (CASE
+            WHEN period = realized_period THEN operational_days_count
+            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
+        END) AS number_of_days,
+        operational_days_count,
         NULL AS realized_amount,
         'ORIGINAL' AS type,
         3 AS type_sort
@@ -288,7 +319,7 @@ SELECT
     decision.service_need_voucher_value_description_fi AS service_need_description,
     coalesce(
         row.realized_amount,
-        round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
+        round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / row.operational_days_count::numeric(10, 8)))
     ) AS realized_amount,
     row.realized_period,
     row.number_of_days,
