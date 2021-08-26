@@ -14,6 +14,7 @@ const sv: Translations = {
     return: 'Tillbaka',
     ok: 'Ok',
     save: 'Spar',
+    confirm: 'Bekräfta',
     add: 'Lägg till',
     unit: {
       providerTypes: {
@@ -134,7 +135,17 @@ const sv: Translations = {
     backToSearch: 'Tillbaka till sökning'
   },
   calendar: {
-    holiday: 'Helgdag'
+    holiday: 'Helgdag',
+    newReservationBtn: 'Tee varaus',
+    reservationModal: {
+      title: 'Tee varaus',
+      selectChildren: 'Valitse lapset',
+      dateRange: 'Varauksen voimassaolo',
+      dateRangeLabel: 'Tee varaus päiville',
+      times: 'Kellonaika',
+      businessDays: 'Ma-Pe',
+      postError: 'Varauksen luominen ei onnistunut'
+    }
   },
   messages: {
     inboxTitle: 'Inkorg',
@@ -1406,6 +1417,7 @@ const sv: Translations = {
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
     validDate: 'Ange i format dd.mm.åååå',
+    dateTooEarly: 'Välj ett senare datum',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Ange i format hh:mm',
     unitNotSelected: 'Välj minst en enhet',

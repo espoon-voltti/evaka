@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
@@ -13,15 +13,17 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
+import ReservationModal from './ReservationModal'
 
 export default React.memo(function CalendarPage() {
   const i18n = useTranslation()
   const user = useUser()
 
   const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
+  const [reservationViewOpen, setReservationViewOpen] = useState(false)
 
   const loadData = useRestApi(getReservations, setData)
-  useEffect(
+  const loadDefaultRange = useCallback(
     () =>
       loadData(
         LocalDate.today().startOfWeek(),
@@ -29,6 +31,8 @@ export default React.memo(function CalendarPage() {
       ),
     [loadData]
   )
+
+  useEffect(loadDefaultRange, [loadDefaultRange])
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
@@ -43,11 +47,23 @@ export default React.memo(function CalendarPage() {
             failure() {
               return <div>{i18n.common.errors.genericGetError}</div>
             },
-            success(dallyReservations) {
+            success(response) {
               return (
-                <CalendarListView
-                  dailyReservations={dallyReservations.dailyData}
-                />
+                <>
+                  <CalendarListView
+                    dailyReservations={response.dailyData}
+                    onCreateReservationClicked={() =>
+                      setReservationViewOpen(true)
+                    }
+                  />
+                  {reservationViewOpen && (
+                    <ReservationModal
+                      onClose={() => setReservationViewOpen(false)}
+                      availableChildren={response.children}
+                      onReload={loadDefaultRange}
+                    />
+                  )}
+                </>
               )
             }
           })}

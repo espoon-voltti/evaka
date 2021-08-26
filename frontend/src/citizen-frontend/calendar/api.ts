@@ -16,7 +16,7 @@ export interface DailyReservationData {
   reservations: Reservation[]
 }
 
-interface ReservationChild {
+export interface ReservationChild {
   id: UUID
   firstName: string
 }
@@ -48,5 +48,27 @@ export async function getReservations(
         }))
       })
     )
+    .catch((e) => Failure.fromError(e))
+}
+
+interface DailyReservationRequest {
+  date: LocalDate
+  startTime: string
+  endTime: string
+}
+
+interface ReservationRequest {
+  children: UUID[]
+  reservations: DailyReservationRequest[]
+}
+
+export async function postReservations(
+  children: UUID[],
+  reservations: DailyReservationRequest[]
+): Promise<Result<null>> {
+  const body: ReservationRequest = { children, reservations }
+  return client
+    .post('/citizen/reservations', body)
+    .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

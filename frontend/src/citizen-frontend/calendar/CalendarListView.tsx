@@ -7,13 +7,18 @@ import _ from 'lodash'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DailyReservationData } from './api'
 import WeekElem, { WeekProps } from './WeekElem'
+import styled from 'styled-components'
+import { defaultMargins } from 'lib-components/white-space'
+import Button from 'lib-components/atoms/buttons/Button'
 
 export interface Props {
   dailyReservations: DailyReservationData[]
+  onCreateReservationClicked: () => void
 }
 
 export default React.memo(function CalendarListView({
-  dailyReservations
+  dailyReservations,
+  onCreateReservationClicked
 }: Props) {
   const weeklyData = dailyReservations.reduce((weekly, daily) => {
     const last = _.last(weekly)
@@ -34,10 +39,25 @@ export default React.memo(function CalendarListView({
   }, [] as WeekProps[])
 
   return (
-    <FixedSpaceColumn spacing={'zero'}>
-      {weeklyData.map((w) => (
-        <WeekElem {...w} key={w.weekNumber} />
-      ))}
-    </FixedSpaceColumn>
+    <div>
+      <FixedSpaceColumn spacing={'zero'}>
+        {weeklyData.map((w) => (
+          <WeekElem {...w} key={w.weekNumber} />
+        ))}
+      </FixedSpaceColumn>
+      <HoverButton
+        onClick={onCreateReservationClicked}
+        text={'Luo varaus'}
+        primary
+        type="button"
+      />
+    </div>
   )
 })
+
+const HoverButton = styled(Button)`
+  position: fixed;
+  bottom: ${defaultMargins.s};
+  right: ${defaultMargins.s};
+  border-radius: 40px;
+`
