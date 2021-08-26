@@ -12,7 +12,6 @@ import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
@@ -247,99 +246,99 @@ export default React.memo(function MessageEditor({
 
   return (
     <Container data-qa="message-editor" data-status={draftState}>
-      <TopBar>
-        <Title>{title}</Title>
-        <IconButton
-          icon={faTimes}
-          onClick={onCloseHandler}
-          white
-          data-qa="close-message-editor-btn"
-        />
-      </TopBar>
-      <FormArea>
-        <div>
+      <InnerScroll>
+        <TopBar>
+          <Title>{title}</Title>
+          <IconButton
+            icon={faTimes}
+            onClick={onCloseHandler}
+            white
+            data-qa="close-message-editor-btn"
+          />
+        </TopBar>
+        <FormArea>
+          <Bold>{i18n.messages.messageEditor.sender}</Bold>
           <Gap size={'xs'} />
-          <div>{i18n.messages.messageEditor.sender}</div>
-        </div>
-        <Select
-          items={senderOptions}
-          onChange={(sender) =>
-            sender ? updateMessage({ sender }) : undefined
-          }
-          selectedItem={message.sender}
-          data-qa="select-sender"
-        />
-        <div>
+          <Select
+            items={senderOptions}
+            onChange={(sender) =>
+              sender ? updateMessage({ sender }) : undefined
+            }
+            selectedItem={message.sender}
+            data-qa="select-sender"
+            fullWidth
+          />
+          <div>
+            <Gap size={'s'} />
+            <Bold>{i18n.messages.messageEditor.receivers}</Bold>
+            <Gap size={'xs'} />
+          </div>
+          <MultiSelect
+            placeholder={i18n.common.search}
+            value={selectedReceivers}
+            options={receiverOptions}
+            onChange={updateReceiverTree}
+            noOptionsMessage={i18n.common.noResults}
+            getOptionId={({ value }) => value}
+            getOptionLabel={({ label }) => label}
+            data-qa="select-receiver"
+          />
+          <Gap size={'s'} />
+          <Bold>{i18n.messages.messageEditor.type.label}</Bold>
           <Gap size={'xs'} />
-          <div>{i18n.messages.messageEditor.receivers}</div>
-        </div>
-        <MultiSelect
-          placeholder={i18n.common.search}
-          value={selectedReceivers}
-          options={receiverOptions}
-          onChange={updateReceiverTree}
-          noOptionsMessage={i18n.common.noResults}
-          getOptionId={({ value }) => value}
-          getOptionLabel={({ label }) => label}
-          data-qa="select-receiver"
-        />
-        <Gap size={'xs'} />
-        <div>{i18n.messages.messageEditor.type.label}</div>
-        <Gap size={'xs'} />
-        <FixedSpaceRow>
-          <Radio
-            label={i18n.messages.messageEditor.type.message}
-            checked={message.type === 'MESSAGE'}
-            onChange={() => updateMessage({ type: 'MESSAGE' })}
+          <FixedSpaceRow>
+            <Radio
+              label={i18n.messages.messageEditor.type.message}
+              checked={message.type === 'MESSAGE'}
+              onChange={() => updateMessage({ type: 'MESSAGE' })}
+            />
+            <Radio
+              label={i18n.messages.messageEditor.type.bulletin}
+              checked={message.type === 'BULLETIN'}
+              onChange={() => updateMessage({ type: 'BULLETIN' })}
+            />
+          </FixedSpaceRow>
+          <Gap size={'s'} />
+          <Bold>{i18n.messages.messageEditor.title}</Bold>
+          <InputField
+            value={message.title ?? ''}
+            onChange={(title) => updateMessage({ title })}
+            data-qa={'input-title'}
           />
-          <Radio
-            label={i18n.messages.messageEditor.type.bulletin}
-            checked={message.type === 'BULLETIN'}
-            onChange={() => updateMessage({ type: 'BULLETIN' })}
+          <Gap size={'m'} />
+          <Bold>{i18n.messages.messageEditor.message}</Bold>
+          <Gap size={'s'} />
+          <StyledTextArea
+            value={message.content}
+            onChange={(e) => updateMessage({ content: e.target.value })}
+            data-qa={'input-content'}
           />
-        </FixedSpaceRow>
-        <Gap size={'xs'} />
-        <div>{i18n.messages.messageEditor.title}</div>
-        <Gap size={'xs'} />
-        <InputField
-          value={message.title ?? ''}
-          onChange={(title) => updateMessage({ title })}
-          data-qa={'input-title'}
-        />
-        <Gap size={'s'} />
-
-        <Label>{i18n.messages.messageEditor.message}</Label>
-        <Gap size={'xs'} />
-        <StyledTextArea
-          value={message.content}
-          onChange={(e) => updateMessage({ content: e.target.value })}
-          data-qa={'input-content'}
-        />
-        <Gap size={'s'} />
-        <BottomRow>
-          <InlineButton
-            onClick={() => onDiscard(message.sender.value, draftId)}
-            text={i18n.messages.messageEditor.deleteDraft}
-            icon={faTrash}
-            data-qa="discard-draft-btn"
-          />
-          <Button
-            text={i18n.messages.messageEditor.send}
-            primary
-            disabled={!sendEnabled}
-            onClick={sendHandler}
-            data-qa="send-message-btn"
-          />
-        </BottomRow>
-      </FormArea>
+          <Gap size={'L'} />
+          <BottomRow>
+            <InlineButton
+              onClick={() => onDiscard(message.sender.value, draftId)}
+              text={i18n.messages.messageEditor.deleteDraft}
+              icon={faTrash}
+              data-qa="discard-draft-btn"
+            />
+            <Button
+              text={i18n.messages.messageEditor.send}
+              primary
+              disabled={!sendEnabled}
+              onClick={sendHandler}
+              data-qa="send-message-btn"
+            />
+          </BottomRow>
+        </FormArea>
+      </InnerScroll>
     </Container>
   )
 })
 
 const Container = styled.div`
   width: 680px;
-  height: 100%;
-  max-height: 700px;
+  max-height: 900px;
+  height: 105%;
   position: absolute;
   z-index: 100;
   right: 0;
@@ -348,6 +347,11 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
+  overflow: scroll;
+`
+
+const InnerScroll = styled.div`
+  min-height: 800px;
 `
 
 const TopBar = styled.div`
@@ -380,6 +384,7 @@ const StyledTextArea = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
+  min-height: 300px;
 `
 
 const BottomRow = styled.div`
@@ -387,4 +392,8 @@ const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`
+
+const Bold = styled.span`
+  font-weight: 600;
 `

@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useUser } from 'citizen-frontend/auth'
 import { SendMessageParams } from 'citizen-frontend/messages/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import { Label } from 'lib-components/typography'
+import { P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
@@ -39,6 +40,7 @@ export default React.memo(function MessageEditor({
   displaySendError
 }: Props) {
   const i18n = useTranslation()
+  const user = useUser()
 
   const [message, setMessage] = useState<SendMessageParams>(emptyMessage)
 
@@ -58,8 +60,16 @@ export default React.memo(function MessageEditor({
         />
       </TopBar>
       <FormArea>
+        {user && (
+          <>
+            <Bold>{i18n.messages.sender}</Bold>
+            <Gap size={'xs'} />
+            <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
+          </>
+        )}
         <div>
-          <div>{i18n.messages.messageEditor.receivers}</div>
+          <Bold>{i18n.messages.messageEditor.receivers}</Bold>
+          <Gap size={'xs'} />
         </div>
         <MultiSelect
           placeholder={i18n.messages.messageEditor.search}
@@ -76,9 +86,8 @@ export default React.memo(function MessageEditor({
           getOptionLabel={({ name }) => name}
           data-qa="select-receiver"
         />
-        <Gap size={'xs'} />
-        <div>{i18n.messages.messageEditor.title}</div>
-        <Gap size={'xs'} />
+        <Gap size={'s'} />
+        <Bold>{i18n.messages.messageEditor.title}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(updated) =>
@@ -88,8 +97,8 @@ export default React.memo(function MessageEditor({
         />
         <Gap size={'s'} />
 
-        <Label>{i18n.messages.messageEditor.message}</Label>
-        <Gap size={'xs'} />
+        <Bold>{i18n.messages.messageEditor.message}</Bold>
+        <Gap size={'s'} />
         <StyledTextArea
           value={message.content}
           onChange={(updated) =>
@@ -178,4 +187,8 @@ const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`
+
+const Bold = styled.span`
+  font-weight: 600;
 `
