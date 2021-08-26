@@ -16,12 +16,18 @@ export const FooterContent = React.memo(function FooterContent() {
     <>
       <FooterItem data-qa="footer-citylabel">{t.footer.cityLabel}</FooterItem>
       <FooterItem>
-        <FooterLink href={t.footer.privacyPolicyLink} data-qa={'footer-policy-link'}>
+        <FooterLink
+          href={t.footer.privacyPolicyLink}
+          data-qa={'footer-policy-link'}
+        >
           {t.footer.privacyPolicy}
         </FooterLink>
       </FooterItem>
       <FooterItem>
-        <FooterLink href={t.footer.sendFeedbackLink} data-qa={'footer-feedback-link'}>
+        <FooterLink
+          href={t.footer.sendFeedbackLink}
+          data-qa={'footer-feedback-link'}
+        >
           {t.footer.sendFeedback}
         </FooterLink>
       </FooterItem>
