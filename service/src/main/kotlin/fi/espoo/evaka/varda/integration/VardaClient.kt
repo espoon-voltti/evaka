@@ -103,12 +103,24 @@ class VardaClient(
         }
     }
 
+    val slowRequestTresholdSeconds = 10
+
+    private fun logSlowVardaRequest(info: String, started: Long, stopped: Long) {
+        val elapsedSeconds = (stopped - started) / 1000
+        if (elapsedSeconds >= slowRequestTresholdSeconds)
+            logger.warn("VardaUpdate: request $info was slow, took $elapsedSeconds seconds")
+    }
+
     fun updateOrganizer(organizer: VardaUpdateOrganizer): Boolean {
         logger.info { "Updating organizer to Varda" }
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
             .header(Headers.CONTENT_TYPE, "application/json")
             .jsonBody(objectMapper.writeValueAsString(organizer))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("updateOrganizer", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -124,8 +136,13 @@ class VardaClient(
 
     fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
         logger.info { "Creating a new person ${newPerson.id} to Varda" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("createPerson", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -156,8 +173,12 @@ class VardaClient(
 
     fun getPersonFromVardaBySsnOrOid(body: VardaPersonSearchRequest): VardaPersonResponse? {
         logger.info { "Fetching person from Varda" }
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(personSearchUrl)
             .jsonBody(objectMapper.writeValueAsString(body)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("getPersonFromVardaBySsnOrOid", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -177,8 +198,13 @@ class VardaClient(
 
     fun createChild(child: VardaChildRequest): VardaChildResponse? {
         logger.info { "Creating child to Varda (body: $child)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(childUrl)
             .jsonBody(objectMapper.writeValueAsString(child)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("createChild", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -196,8 +222,13 @@ class VardaClient(
 
     fun createFeeData(feeData: VardaFeeData): VardaFeeDataResponse? {
         logger.info { "Creating fee data for child ${feeData.lapsi} to Varda" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(feeDataUrl)
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("createFeeData", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -232,8 +263,13 @@ class VardaClient(
 
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
         logger.info { "Updating fee data $vardaFeeDataId to Varda" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("updateFeeData", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -249,7 +285,12 @@ class VardaClient(
 
     fun deleteFeeData(vardaId: Long): Boolean {
         logger.info { "Deleting fee data $vardaId from Varda" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deleteFeeData", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -265,7 +306,12 @@ class VardaClient(
 
     fun deleteFeeDataV2(vardaId: Long): Boolean {
         logger.info { "VardaUpdate: Deleting fee data $vardaId from Varda" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deleteFeeDataV2", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -281,8 +327,13 @@ class VardaClient(
 
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("createDecision", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -315,8 +366,13 @@ class VardaClient(
 
     fun updateDecision(vardaDecisionId: Long, updatedDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Updating a decision to Varda (vardaId: $vardaDecisionId, body: $updatedDecision)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.put(getDecisionUrl(vardaDecisionId))
             .jsonBody(objectMapper.writeValueAsString(updatedDecision)).authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("updateDecision", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -332,8 +388,13 @@ class VardaClient(
 
     fun deleteDecision(vardaDecisionId: Long): Boolean {
         logger.info { "Deleting decision from Varda (id: $vardaDecisionId)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deleteDecision", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -349,8 +410,13 @@ class VardaClient(
 
     fun deleteDecisionV2(vardaDecisionId: Long): Boolean {
         logger.info { "VardaUpdate: Deleting decision from Varda (id: $vardaDecisionId)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deleteDecisionV2", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -366,9 +432,14 @@ class VardaClient(
 
     fun createPlacement(newPlacement: VardaPlacement): VardaPlacementResponse? {
         logger.info { "Creating a new placement to Varda (body: $newPlacement)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.post(placementUrl)
             .jsonBody(objectMapper.writeValueAsString(newPlacement))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("createPlacement", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -405,9 +476,14 @@ class VardaClient(
         updatedPlacement: VardaPlacement
     ): VardaPlacementResponse? {
         logger.info { "Updating a placement to Varda (body: $updatedPlacement)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.put(getPlacementUrl(vardaPlacementId))
             .jsonBody(objectMapper.writeValueAsString(updatedPlacement))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("updatePlacement", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -423,8 +499,13 @@ class VardaClient(
 
     fun deletePlacement(vardaPlacementId: Long): Boolean {
         logger.info { "Deleting placement from Varda (id: $vardaPlacementId)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deletePlacement", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -440,8 +521,13 @@ class VardaClient(
 
     fun deletePlacementV2(vardaPlacementId: Long): Boolean {
         logger.info { "VardaUpdate: Deleting placement from Varda (id: $vardaPlacementId)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deletePlacementV2", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -456,8 +542,14 @@ class VardaClient(
     }
 
     fun deleteChild(vardaChildId: Long): Boolean {
+        logger.info { "VardaUpdate: Deleting child (id: $vardaChildId)" }
+
+        val t1 = System.currentTimeMillis()
+
         val (request, _, result) = fuel.delete(getChildUrl(vardaChildId))
             .authenticatedResponseStringWithRetries()
+
+        logSlowVardaRequest("deleteChild", t1, System.currentTimeMillis())
 
         return when (result) {
             is Result.Success -> {
@@ -537,7 +629,13 @@ class VardaClient(
             }
         }
 
-        return fetchNext(listOf(), initialUrl)
+        val t1 = System.currentTimeMillis()
+
+        val result = fetchNext(listOf(), initialUrl)
+
+        logSlowVardaRequest("getAllPages $initialUrl", t1, System.currentTimeMillis())
+
+        return result
     }
 
     /**
