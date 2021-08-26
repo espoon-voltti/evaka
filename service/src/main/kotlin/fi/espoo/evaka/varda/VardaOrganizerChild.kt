@@ -152,7 +152,7 @@ private fun createVardaChildWhenPersonExists(
         val vardaChildPayload = VardaChildPayload(
             personUrl = client.getPersonUrl(vardaPersonId.toLong()),
             personOid = vardaPersonOid,
-            organizerOid = organizerOid,
+            organizerOid = municipalOrganizerOid,
             sourceSystem = sourceSystem
         )
 
