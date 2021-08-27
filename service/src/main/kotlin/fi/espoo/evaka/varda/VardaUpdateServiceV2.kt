@@ -915,13 +915,13 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         SELECT
             sn.id,
             p.child_id AS child_id,
-            LEAST(COALESCE(a.sentdate, a.created::date), sn.start_date) AS application_date,
             sn.start_date,
             sn.end_date,
-            COALESCE(a.urgent, false) AS urgent,
+            LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date) AS application_date,            
+            COALESCE((af.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
             sno.daycare_hours_per_week AS hours_per_week,
             CASE 
-                WHEN sno.valid_placement_type = 'TEMPORARY_DAYCARE' OR sno.valid_placement_type = 'TEMPORARY_DAYCARE_PART_DAY' THEN true
+                WHEN sno.valid_placement_type = ANY(:vardaTemporaryPlacementTypes::placement_type[]) THEN true
                 ELSE false
             END AS temporary,
             NOT(sno.part_week) AS daily,
@@ -935,13 +935,28 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         JOIN employee e on e.id = sn.confirmed_by
         JOIN placement p ON p.id = sn.placement_id
         JOIN daycare d ON p.unit_id = d.id
-        LEFT JOIN application_view a ON daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate AND a.preferredstartdate=(select max(preferredstartdate) from application_view a where daterange(sn.start_date, sn.end_date, '[]') @> a.preferredstartdate)
+        LEFT JOIN LATERAL (
+            SELECT a.id, a.sentdate, a.created
+            FROM application a
+            WHERE child_id = p.child_id
+              AND a.status IN ('ACTIVE')
+              AND EXISTS (
+                    SELECT 1
+                    FROM placement_plan pp
+                    WHERE pp.unit_id = p.unit_id AND pp.application_id = a.id
+                      AND daterange(pp.start_date, pp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+                      AND unit_confirmation_status = 'ACCEPTED'
+                )
+            ORDER BY a.sentdate, a.id
+            LIMIT 1
+            ) application_match ON true
+        LEFT JOIN application_form af ON af.application_id = application_match.id AND af.latest IS TRUE        
         WHERE sn.id = :id
     """.trimIndent()
 
     return createQuery(sql)
         .bind("id", id)
-        .bind("vardaPlacementTypes", vardaPlacementTypes)
+        .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .mapTo<EvakaServiceNeedInfoForVarda>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
