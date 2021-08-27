@@ -24,6 +24,7 @@ export type ErrorKey =
   | 'email'
   | 'validDate'
   | 'dateTooEarly'
+  | 'dateTooLate'
   | 'timeFormat'
   | 'unitNotSelected'
   | 'preferredStartDate'

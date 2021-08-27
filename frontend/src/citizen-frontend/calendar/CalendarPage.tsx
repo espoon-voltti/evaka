@@ -81,6 +81,7 @@ export default React.memo(function CalendarPage() {
                       onClose={() => setReservationViewOpen(false)}
                       availableChildren={response.children}
                       onReload={loadDefaultRange}
+                      reservableDays={response.reservableDays}
                     />
                   )}
                 </>

@@ -3,7 +3,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
 import {
@@ -33,6 +33,7 @@ interface Props {
   onClose: () => void
   onReload: () => void
   availableChildren: ReservationChild[]
+  reservableDays: FiniteDateRange
 }
 
 type Repetition = 'DAILY' | 'WEEKLY'
@@ -55,15 +56,15 @@ type ReservationErrors = ErrorsOf<ReservationFormData>
 export default React.memo(function ReservationModal({
   onClose,
   onReload,
-  availableChildren
+  availableChildren,
+  reservableDays
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
-  const minDate = useMemo(() => LocalDate.today(), []) // TODO: use deadline
 
   const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: minDate.format(),
+    startDate: reservableDays.start.format(),
     endDate: '',
     repetition: 'DAILY',
     startTime: '',
@@ -98,7 +99,9 @@ export default React.memo(function ReservationModal({
       startDate:
         startDate === null
           ? 'validDate'
-          : LocalDate.parseFiOrThrow(formData.startDate).isBefore(minDate)
+          : LocalDate.parseFiOrThrow(formData.startDate).isBefore(
+              reservableDays.start
+            )
           ? 'dateTooEarly'
           : undefined,
       endDate:
@@ -107,6 +110,10 @@ export default React.memo(function ReservationModal({
           : startDate &&
             LocalDate.parseFiOrThrow(formData.endDate).isBefore(startDate)
           ? 'dateTooEarly'
+          : LocalDate.parseFiOrThrow(formData.endDate).isAfter(
+              reservableDays.end
+            )
+          ? 'dateTooLate'
           : undefined,
       startTime:
         formData.repetition !== 'DAILY'
@@ -144,7 +151,7 @@ export default React.memo(function ReservationModal({
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
-  useEffect(validate, [formData, minDate])
+  useEffect(validate, [formData, reservableDays])
 
   const [postResult, setPostResult] = useState<Result<null>>()
 
@@ -234,7 +241,7 @@ export default React.memo(function ReservationModal({
           date={formData.startDate}
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
-          isValidDate={(date) => !date.isBefore(minDate)}
+          isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
         />
@@ -243,7 +250,7 @@ export default React.memo(function ReservationModal({
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
-          isValidDate={(date) => !date.isBefore(minDate)}
+          isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
         />
