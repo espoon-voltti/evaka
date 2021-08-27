@@ -180,8 +180,11 @@ export default React.memo(function PlacementProposals({
             text={i18n.unit.placementProposals.acceptAllButton}
             primary
             disabled={
-              !!Object.values(confirmationStates).find(
-                (state) => state.confirmation != 'ACCEPTED' || state.submitting
+              Object.values(confirmationStates).some(
+                (state) => state.submitting
+              ) ||
+              !Object.values(confirmationStates).some(
+                (state) => state.confirmation === 'ACCEPTED'
               )
             }
           />
