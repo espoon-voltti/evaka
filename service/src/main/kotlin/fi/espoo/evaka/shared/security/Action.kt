@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -107,7 +108,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Child(private val roles: EnumSet<UserRole>) : Action {
+    enum class Child(private val roles: EnumSet<UserRole>) : ScopedAction<ChildId> {
         READ_APPLICATION(SERVICE_WORKER),
 
         CREATE_ASSISTANCE_ACTION(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),

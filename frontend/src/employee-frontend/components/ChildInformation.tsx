@@ -17,7 +17,7 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { getParentshipsByChild } from '../api/parentships'
-import { getPersonDetails } from '../api/person'
+import { getChildDetails } from '../api/person'
 import Assistance from '../components/child-information/Assistance'
 import BackupCare from '../components/child-information/BackupCare'
 import ChildApplications from '../components/child-information/ChildApplications'
@@ -151,14 +151,26 @@ const ChildInformation = React.memo(function ChildInformation({
   const { id } = match.params
 
   const { roles } = useContext(UserContext)
-  const { person, setPerson, parentships, setParentships } =
-    useContext<ChildState>(ChildContext)
+  const {
+    person,
+    setPerson,
+    parentships,
+    setParentships,
+    setPermittedActions
+  } = useContext<ChildState>(ChildContext)
+
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {
     setPerson(Loading.of())
     setParentships(Loading.of())
-    void getPersonDetails(id).then(setPerson)
+    setPermittedActions(new Set())
+    void getChildDetails(id).then((result) => {
+      setPerson(result.map((details) => details.person))
+      if (result.isSuccess) {
+        setPermittedActions(result.value.permittedActions)
+      }
+    })
 
     if (
       requireRole(roles, 'SERVICE_WORKER', 'UNIT_SUPERVISOR', 'FINANCE_ADMIN')
