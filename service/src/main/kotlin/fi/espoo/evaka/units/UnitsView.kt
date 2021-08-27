@@ -73,6 +73,10 @@ class UnitsView(private val accessControl: AccessControl) {
                 unitCaretakers = tx.getUnitStats(unitId, from, to),
                 groupCaretakers = tx.getGroupStats(unitId, from, to)
             )
+            val backupCareIds = backupCares.map { it.id }.toSet() +
+                missingGroupPlacements.mapNotNull { if (it.backup) { BackupCareId(it.placementId.raw) } else null }.toSet()
+            val placementIds = placements.map { it.id }.toSet() +
+                missingGroupPlacements.mapNotNull { if (!it.backup) { it.placementId } else null }.toSet()
 
             val basicData = UnitDataResponse(
                 groups = groups,
@@ -80,11 +84,8 @@ class UnitsView(private val accessControl: AccessControl) {
                 backupCares = backupCares,
                 missingGroupPlacements = missingGroupPlacements,
                 caretakers = caretakers,
-                permittedBackupCareActions = accessControl.getPermittedBackupCareActions(
-                    user,
-                    backupCares.map { it.id }
-                ),
-                permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placements.map { it.id }),
+                permittedBackupCareActions = accessControl.getPermittedBackupCareActions(user, backupCareIds),
+                permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
                 permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
                     user,
                     placements.flatMap { placement ->
