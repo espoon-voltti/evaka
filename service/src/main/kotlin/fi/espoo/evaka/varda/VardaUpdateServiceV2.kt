@@ -921,7 +921,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             COALESCE((af.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
             sno.daycare_hours_per_week AS hours_per_week,
             CASE 
-                WHEN sno.valid_placement_type = 'TEMPORARY_DAYCARE' OR sno.valid_placement_type = 'TEMPORARY_DAYCARE_PART_DAY' THEN true
+                WHEN sno.valid_placement_type = ANY(:vardaTemporaryPlacementTypes::placement_type[]) THEN true
                 ELSE false
             END AS temporary,
             NOT(sno.part_week) AS daily,
@@ -956,7 +956,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
 
     return createQuery(sql)
         .bind("id", id)
-        .bind("vardaPlacementTypes", vardaPlacementTypes)
+        .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .mapTo<EvakaServiceNeedInfoForVarda>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
