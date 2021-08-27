@@ -1231,6 +1231,89 @@ export const fi = {
       status: 'Status'
     }
   },
+  incomeStatement: {
+    title: 'Tuloselvityslomake',
+    startDate: 'Voimassa alkaen',
+    feeBasis: 'Asiakasmaksun peruste',
+    highestFee: 'Suostumus korkeimpaan maksuluokkaan',
+    incomeInfo: 'Huoltajan toimittamat tulotiedot',
+
+    grossTitle: 'Bruttotulot',
+    incomeSource: 'Tietojen toimitus',
+    incomesRegister:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+    attachmentsAndKela:
+      'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+    grossEstimatedIncome: 'Arvio bruttotuloista',
+    otherIncome: 'Muut tulot',
+    otherIncomeTypes: {
+      PENSION: 'Eläke',
+      ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
+      SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+      PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+      HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+      FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+        'Joustava tai osittainen hoitoraha',
+      ALIMONY: 'Elatusapu tai -tuki',
+      INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+      RENTAL_INCOME: 'Vuokratulot',
+      UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+      LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+      ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+      JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+      REWARD_OR_BONUS: 'Palkkio tai bonus',
+      RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+      BASIC_INCOME: 'Perustulo',
+      FOREST_INCOME: 'Metsätulo',
+      FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+      REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+      EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+      GRANT: 'Apuraha',
+      APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+      ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+      OTHER_INCOME: 'Muut tulot'
+    },
+
+    entrepreneurTitle: 'Yrittäjän tulotiedot',
+    fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
+    fullTime: 'Päätoimista',
+    partTime: 'Sivutoimista',
+    startOfEntrepreneurship: 'Yrittäjyys alkanut',
+    spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
+    startupGrant: 'Starttiraha',
+    kelaInspectionConsent: 'Tiedot saa tarkastaa Kelasta',
+    companyInfoTitle: 'Yrityksen tiedot',
+    companyType: 'Toimintamuoto',
+    selfEmployed: 'Toiminimi',
+    selfEmployedAttachments:
+      'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+    selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
+    limitedCompany: 'Osakeyhtiö',
+    limitedCompanyIncomesRegister:
+      'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+    limitedCompanyAttachments:
+      'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
+    partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+    lightEntrepreneur: 'Kevytyrittäjyys',
+    attachments: 'Liitteet',
+
+    estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+    timeRange: 'Aikavälillä',
+
+    accountantTitle: 'Kirjanpitäjän tiedot',
+    accountant: 'Kirjanpitäjä',
+    email: 'Sähköpostiosoite',
+    phone: 'Puhelinnumero',
+    address: 'Postiosoite',
+
+    otherInfoTitle: 'Muita tuloihin liittyviä tietoja',
+    student: 'Opiskelija',
+    alimonyPayer: 'Maksaa elatusmaksuja',
+    otherInfo: 'Lisätietoja tulotietoihin liittyen',
+
+    attachmentsTitle: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+    noAttachments: 'Ei liitteitä'
+  },
   units: {
     name: 'Nimi',
     area: 'Alue',

@@ -30,6 +30,7 @@ import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import FinancePage from './components/FinancePage'
 import GroupCaretakers from './components/GroupCaretakers'
 import Header from './components/Header'
+import IncomeStatementPage from './components/IncomeStatementPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import LoginPage from './components/LoginPage'
 import MessagesPage from './components/messages/MessagesPage'
@@ -176,6 +177,11 @@ export default function App() {
               exact
               path="/profile/:id"
               component={ensureAuthenticated(PersonProfile)}
+            />
+            <Route
+              exact
+              path="/profile/:personId/income-statement/:incomeStatementId"
+              component={ensureAuthenticated(IncomeStatementPage)}
             />
             <RouteWithTitle
               exact
