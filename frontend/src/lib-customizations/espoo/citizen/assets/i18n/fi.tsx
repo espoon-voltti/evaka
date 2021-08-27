@@ -1420,6 +1420,7 @@ export default {
     email: 'Virheellinen sähköpostiosoite',
     validDate: 'Anna muodossa pp.kk.vvvv',
     dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Anna muodossa hh:mm',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',

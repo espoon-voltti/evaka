@@ -1,4 +1,5 @@
 import LocalDate from 'lib-common/local-date'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
@@ -25,6 +26,7 @@ export interface ReservationChild {
 export interface ReservationsResponse {
   dailyData: DailyReservationData[]
   children: ReservationChild[]
+  reservableDays: FiniteDateRange
 }
 
 export async function getReservations(
@@ -46,7 +48,8 @@ export async function getReservations(
             startTime: new Date(r.startTime),
             endTime: new Date(r.endTime)
           }))
-        }))
+        })),
+        reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)
       })
     )
     .catch((e) => Failure.fromError(e))

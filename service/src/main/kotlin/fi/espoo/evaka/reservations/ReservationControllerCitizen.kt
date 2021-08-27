@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -39,7 +40,8 @@ class ReservationControllerCitizen(
         return db.read {
             ReservationsResponse(
                 dailyData = it.getReservations(user.id, range),
-                children = it.getReservationChildren(user.id, range)
+                children = it.getReservationChildren(user.id, range),
+                reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate())
             )
         }
     }
@@ -141,7 +143,8 @@ data class DailyReservationRequest(
 
 data class ReservationsResponse(
     val dailyData: List<DailyReservationData>,
-    val children: List<ReservationChild>
+    val children: List<ReservationChild>,
+    val reservableDays: FiniteDateRange
 )
 
 data class DailyReservationData(
@@ -209,4 +212,23 @@ ORDER BY first_name
         .bind("range", range)
         .mapTo<ReservationChild>()
         .list()
+}
+
+fun getReservableDays(today: LocalDate): FiniteDateRange {
+    // Start of the next week if it's currently Monday, otherwise start of the week after next
+    val start = if (today.dayOfWeek == DayOfWeek.MONDAY) {
+        today.plusWeeks(1)
+    } else {
+        today.plusWeeks(2).minusDays(today.dayOfWeek.value - 1L)
+    }
+
+    // Take the first end of July that satisfies the condition that the date range is at least one full week
+    val nextSunday = start.plusDays(6)
+    val end = if (nextSunday <= nextSunday.withMonth(7).withDayOfMonth(31)) {
+        nextSunday.withMonth(7).withDayOfMonth(31)
+    } else {
+        nextSunday.plusYears(1).withMonth(7).withDayOfMonth(31)
+    }
+
+    return FiniteDateRange(start, end)
 }
