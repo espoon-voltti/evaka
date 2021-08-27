@@ -4,7 +4,7 @@ import IncomeStatementForm, {
 } from './IncomeStatementForm'
 import * as Form from './types/form'
 import { empty } from './types/form'
-import { IncomeStatement } from './types/income-statement'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { fromBody } from './types/body'
 import {
   createIncomeStatement,
