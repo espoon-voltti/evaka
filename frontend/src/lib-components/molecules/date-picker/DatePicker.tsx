@@ -56,6 +56,7 @@ type DatePickerProps = {
   'data-qa'?: string
   id?: string
   required?: boolean
+  initialMonth?: LocalDate
 }
 
 function DatePicker({
@@ -70,6 +71,7 @@ function DatePicker({
   isValidDate,
   id,
   required,
+  initialMonth,
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
@@ -162,6 +164,7 @@ function DatePicker({
             inputValue={date}
             handleDayClick={handleDayClick}
             isValidDate={isValidDate}
+            initialMonth={initialMonth}
           />
         </DayPickerDiv>
       </DayPickerPositioner>

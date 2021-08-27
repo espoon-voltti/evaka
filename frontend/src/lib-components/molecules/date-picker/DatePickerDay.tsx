@@ -18,13 +18,15 @@ interface Props {
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
   isValidDate?: (date: LocalDate) => boolean
+  initialMonth?: LocalDate
 }
 
 function DatePickerDay({
   handleDayClick,
   inputValue,
   locale,
-  isValidDate
+  isValidDate,
+  initialMonth
 }: Props) {
   const dateI18n = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
 
@@ -61,7 +63,7 @@ function DatePickerDay({
         const localDate = LocalDate.fromSystemTzDate(date)
         return isValidDate ? !isValidDate(localDate) : false
       }}
-      initialMonth={convertToDate(inputValue) ?? undefined}
+      initialMonth={convertToDate(inputValue) ?? initialMonth?.toSystemTzDate()}
     />
   )
 }

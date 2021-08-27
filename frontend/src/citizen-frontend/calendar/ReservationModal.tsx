@@ -253,6 +253,7 @@ export default React.memo(function ReservationModal({
           isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
+          initialMonth={reservableDays.start}
         />
       </FixedSpaceRow>
 
