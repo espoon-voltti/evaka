@@ -4,11 +4,14 @@ import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllAttachments
 import fi.espoo.evaka.daycare.controllers.utils.notFound
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,79 +20,37 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
-@RequestMapping("/citizen/income-statements")
-class IncomeStatementController {
-    @GetMapping
+@RequestMapping("/income-statements")
+class IncomeStatementController(
+    private val accessControl: AccessControl,
+) {
+    @GetMapping("/{personId}")
     fun getIncomeStatements(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId
     ): ResponseEntity<List<IncomeStatement>> {
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.read { tx ->
-            ResponseEntity.ok(tx.readIncomeStatementsForPerson(user.id))
+            ResponseEntity.ok(tx.readIncomeStatementsForPerson(personId.raw))
         }
     }
 
-    @GetMapping("/{incomeStatementId}")
+    @GetMapping("/{personId}/{incomeStatementId}")
     fun getIncomeStatement(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): ResponseEntity<IncomeStatement> {
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.read { tx ->
-            val incomeStatement = tx.readIncomeStatementForPerson(user.id, incomeStatementId)
+            val incomeStatement = tx.readIncomeStatementForPerson(personId.raw, incomeStatementId)
             if (incomeStatement == null) throw NotFound("No such income statement")
             else ResponseEntity.ok(incomeStatement)
-        }
-    }
-
-    @PostMapping
-    fun createIncomeStatement(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestBody body: IncomeStatementBody
-    ): ResponseEntity<Unit> {
-        user.requireOneOfRoles(UserRole.END_USER)
-        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
-        db.transaction { tx ->
-            val incomeStatementId = tx.createIncomeStatement(user.id, body)
-            when (body) {
-                is IncomeStatementBody.Income ->
-                    tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                else ->
-                    Unit
-            }
-        }
-        return ResponseEntity.noContent().build()
-    }
-
-    @PutMapping("/{incomeStatementId}")
-    fun updateIncomeStatement(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: IncomeStatementBody
-    ): ResponseEntity<Unit> {
-        user.requireOneOfRoles(UserRole.END_USER)
-        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
-        return db.transaction { tx ->
-            tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
-                if (success) {
-                    tx.dissociateAllAttachments(user.id, incomeStatementId)
-                    when (body) {
-                        is IncomeStatementBody.Income ->
-                            tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                        else ->
-                            Unit
-                    }
-                }
-            }
-        }.let { success ->
-            if (success) ResponseEntity.noContent().build()
-            else notFound()
         }
     }
 }

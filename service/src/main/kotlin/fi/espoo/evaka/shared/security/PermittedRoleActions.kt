@@ -26,6 +26,7 @@ interface PermittedRoleActions {
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice>
     fun pairingActions(role: UserRole): Set<Action.Pairing>
+    fun personActions(role: UserRole): Set<Action.Person>
     fun placementActions(role: UserRole): Set<Action.Placement>
     fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed>
     fun unitActions(role: UserRole): Set<Action.Unit>
@@ -52,6 +53,7 @@ class StaticPermittedRoleActions(
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val mobileDevice: ActionsByRole<Action.MobileDevice> = getDefaults(),
     val pairing: ActionsByRole<Action.Pairing> = getDefaults(),
+    val person: ActionsByRole<Action.Person> = getDefaults(),
     val placement: ActionsByRole<Action.Placement> = getDefaults(),
     val serviceNeed: ActionsByRole<Action.ServiceNeed> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
@@ -71,6 +73,7 @@ class StaticPermittedRoleActions(
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice> = mobileDevice[role] ?: emptySet()
     override fun pairingActions(role: UserRole): Set<Action.Pairing> = pairing[role] ?: emptySet()
+    override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun placementActions(role: UserRole): Set<Action.Placement> = placement[role] ?: emptySet()
     override fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed> = serviceNeed[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()

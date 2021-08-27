@@ -20,7 +20,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
+class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
 
     @BeforeEach
