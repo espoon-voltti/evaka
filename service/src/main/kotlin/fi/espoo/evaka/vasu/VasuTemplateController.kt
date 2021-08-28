@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
+@ExcludeCodeGen
 @RestController
 @RequestMapping("/vasu/templates")
 class VasuTemplateController(

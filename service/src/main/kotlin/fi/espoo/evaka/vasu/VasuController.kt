@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
+@ExcludeCodeGen
 @RestController
 class VasuController(
     private val accessControl: AccessControl

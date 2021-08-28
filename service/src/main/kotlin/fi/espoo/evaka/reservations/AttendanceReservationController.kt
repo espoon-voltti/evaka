@@ -9,6 +9,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -156,6 +157,7 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
         .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
 }
 
+@ExcludeCodeGen
 data class UnitAttendanceReservations(
     val unit: String,
     val operationalDays: List<OperationalDay>,

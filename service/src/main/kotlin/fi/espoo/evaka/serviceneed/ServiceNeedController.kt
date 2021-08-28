@@ -138,19 +138,18 @@ class ServiceNeedController(
     fun getServiceNeedOptions(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<List<ServiceNeedOption>> {
+    ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
         user.requireAnyEmployee()
 
-        return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
+        return db.read { it.getServiceNeedOptions() }
     }
 
     @GetMapping("/public/service-needs/options")
     fun getServiceNeedOptionPublicInfos(
         db: Database.Connection,
         @RequestParam(required = true) placementTypes: List<PlacementType>
-    ): ResponseEntity<List<ServiceNeedOptionPublicInfo>> {
+    ): List<ServiceNeedOptionPublicInfo> {
         return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
-            .let { ResponseEntity.ok(it) }
     }
 }

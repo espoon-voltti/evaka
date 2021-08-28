@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
@@ -109,6 +110,7 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 @Profile("enable_dev_api")
 @RestController
 @RequestMapping("/dev-api")
+@ExcludeCodeGen
 class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,

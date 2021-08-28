@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import java.math.BigDecimal
@@ -14,6 +15,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
+@ExcludeCodeGen
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Income(
     val id: IncomeId? = null,
@@ -54,6 +56,7 @@ data class Income(
     )
 }
 
+@ExcludeCodeGen
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
     val effect: IncomeEffect,
