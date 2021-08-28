@@ -91,7 +91,7 @@ export interface ContactInfo {
 
 export interface Staff {
     firstName: string
-    groups: string
+    groups: string[]
     id: string
     lastName: string
     pinSet: boolean
@@ -199,7 +199,7 @@ export interface DailyReservationRequest {
 export interface DailyReservationData {
     date: LocalDate
     isHoliday: boolean
-    reservations: Reservation
+    reservations: Reservation[]
 }
 
 export interface ReservationChild {
@@ -383,14 +383,14 @@ export interface MessageReceiver {
     childFirstName: string
     childId: string
     childLastName: string
-    receiverPersons: MessageReceiverPerson
+    receiverPersons: MessageReceiverPerson[]
 }
 
 export interface Message {
     content: string
     id: string
     readAt: Date | null
-    recipients: MessageAccount
+    recipients: MessageAccount[]
     senderId: string
     senderName: string
     sentAt: Date
@@ -492,7 +492,7 @@ export type Type = 'DISCOUNT' | 'INCREASE' | 'RELIEF'
 
 export interface DaycareAclRow {
     employee: DaycareAclRowEmployee
-    groupIds: string
+    groupIds: string[]
     role: UserRole
 }
 
@@ -574,7 +574,7 @@ export interface UnitBackupCare {
     id: string
     missingServiceNeedDays: number
     period: FiniteDateRange
-    serviceNeeds: ServiceNeed
+    serviceNeeds: ServiceNeed[]
 }
 
 export interface ChildBackupCare {
@@ -590,15 +590,15 @@ export type ChildResultStatus = 'SUCCESS' | 'WRONG_PIN' | 'PIN_LOCKED' | 'NOT_FO
 
 export interface ChildSensitiveInformation {
     allergies: string
-    backupPickups: ContactInfo
+    backupPickups: ContactInfo[]
     childAddress: string
-    contacts: ContactInfo
+    contacts: ContactInfo[]
     diet: string
     firstName: string
     id: string
     lastName: string
     medication: string
-    placementTypes: PlacementType
+    placementTypes: PlacementType[]
     preferredName: string
     ssn: string
 }
@@ -606,14 +606,14 @@ export interface ChildSensitiveInformation {
 export type AbsenceCareType = 'SCHOOL_SHIFT_CARE' | 'PRESCHOOL' | 'PRESCHOOL_DAYCARE' | 'DAYCARE_5YO_FREE' | 'DAYCARE' | 'CLUB'
 
 export interface UnitInfo {
-    groups: GroupInfo
+    groups: GroupInfo[]
     id: string
     name: string
-    staff: Staff
+    staff: Staff[]
 }
 
 export interface Child {
-    absences: ChildAbsence
+    absences: ChildAbsence[]
     attendance: ChildAttendance | null
     backup: boolean
     dailyNote: DaycareDailyNote | null
@@ -710,7 +710,7 @@ export interface SecondGuardian {
 
 export interface Preferences {
     preferredStartDate: LocalDate | null
-    preferredUnits: PreferredUnit
+    preferredUnits: PreferredUnit[]
     preparatory: boolean
     serviceNeed: ServiceNeed | null
     siblingBasis: SiblingBasis | null
@@ -743,7 +743,7 @@ export interface ChildDetailsUpdate {
 }
 
 export interface CitizenApplicationSummary {
-    allPreferredUnitNames: string
+    allPreferredUnitNames: string[]
     applicationId: string
     applicationStatus: ApplicationStatus
     childId: string
@@ -778,7 +778,7 @@ export interface ApplicationForm {
     clubDetails: ClubDetails | null
     guardian: Guardian
     maxFeeAccepted: boolean
-    otherChildren: PersonBasics
+    otherChildren: PersonBasics[]
     otherInfo: string
     otherPartner: PersonBasics | null
     preferences: Preferences
@@ -800,7 +800,7 @@ export type ApplicationType = 'CLUB' | 'DAYCARE' | 'PRESCHOOL'
 
 export interface CitizenUserDetails {
     accessibleFeatures: CitizenFeatures
-    children: Child
+    children: Child[]
     firstName: string
     id: string
     lastName: string
@@ -821,9 +821,9 @@ export interface DecisionPeriod {
 
 export interface VardaUnitRequest {
     alkamis_pvm: string | null
-    asiointikieli_koodi: string
+    asiointikieli_koodi: string[]
     id: number | null
-    jarjestamismuoto_koodi: string
+    jarjestamismuoto_koodi: string[]
     kasvatusopillinen_jarjestelma_koodi: string | null
     kayntiosoite: string | null
     kayntiosoite_postinumero: string | null
@@ -865,7 +865,7 @@ export interface VardaPersonRequest {
 export interface VardaFeeData {
     alkamis_pvm: LocalDate
     asiakasmaksu: number
-    huoltajat: VardaGuardian
+    huoltajat: VardaGuardian[]
     lahdejarjestelma: string
     lapsi: string
     maksun_peruste_koodi: string
@@ -943,13 +943,13 @@ export interface ServiceNeedOptionPublicInfo {
 }
 
 export interface ReservationRequest {
-    children: string
-    reservations: DailyReservationRequest
+    children: string[]
+    reservations: DailyReservationRequest[]
 }
 
 export interface ReservationsResponse {
-    children: ReservationChild
-    dailyData: DailyReservationData
+    children: ReservationChild[]
+    dailyData: DailyReservationData[]
     reservableDays: FiniteDateRange
 }
 
@@ -965,13 +965,13 @@ export interface StartingPlacementsRow {
 
 export interface ServiceVoucherUnitReport {
     locked: LocalDate | null
-    rows: ServiceVoucherValueRow
+    rows: ServiceVoucherValueRow[]
     voucherTotal: number
 }
 
 export interface ServiceVoucherReport {
     locked: LocalDate | null
-    rows: ServiceVoucherValueUnitAggregate
+    rows: ServiceVoucherValueUnitAggregate[]
 }
 
 export interface ServiceNeedReportRow {
@@ -1042,7 +1042,7 @@ export interface PlacementSketchingReportRow {
     currentUnitName: string | null
     guardianEmail: string | null
     guardianPhoneNumber: string | null
-    otherPreferredUnits: string
+    otherPreferredUnits: string[]
     preferredStartDate: LocalDate
     preparatoryEducation: boolean | null
     requestedUnitId: string
@@ -1086,7 +1086,7 @@ export interface MissingHeadOfFamilyReportRow {
 }
 
 export interface InvoiceReport {
-    reportRows: InvoiceReportRow
+    reportRows: InvoiceReportRow[]
     totalAmountOfInvoices: number
     totalAmountWithZeroPrice: number
     totalAmountWithoutAddress: number
@@ -1136,7 +1136,7 @@ export interface DuplicatePeopleReportRow {
     groupIndex: number
     id: string
     lastName: string | null
-    referenceCounts: ReferenceCount
+    referenceCounts: ReferenceCount[]
     socialSecurityNumber: string | null
     streetAddress: string | null
 }
@@ -1265,11 +1265,11 @@ export interface DaycarePlacementWithDetails {
     child: ChildBasics
     daycare: DaycareBasics
     endDate: LocalDate
-    groupPlacements: DaycareGroupPlacement
+    groupPlacements: DaycareGroupPlacement[]
     id: string
     isRestrictedFromUser: boolean
     missingServiceNeedDays: number
-    serviceNeeds: ServiceNeed
+    serviceNeeds: ServiceNeed[]
     startDate: LocalDate
     type: PlacementType
 }
@@ -1309,17 +1309,17 @@ export interface PersonIdentityRequest {
 
 export interface EmployeeUserResponse {
     accessibleFeatures: EmployeeFeatures
-    allScopedRoles: UserRole
+    allScopedRoles: UserRole[]
     firstName: string
-    globalRoles: UserRole
+    globalRoles: UserRole[]
     id: string
     lastName: string
 }
 
 export interface EmployeeUser {
-    allScopedRoles: UserRole
+    allScopedRoles: UserRole[]
     firstName: string
-    globalRoles: UserRole
+    globalRoles: UserRole[]
     id: string
     lastName: string
 }
@@ -1348,14 +1348,14 @@ export interface MergeRequest {
 }
 
 export interface PersonWithChildrenDTO {
-    addresses: PersonAddressDTO
-    children: PersonWithChildrenDTO
+    addresses: PersonAddressDTO[]
+    children: PersonWithChildrenDTO[]
     dateOfBirth: LocalDate
     dateOfDeath: LocalDate | null
     firstName: string
     id: string
     lastName: string
-    nationalities: Nationality
+    nationalities: Nationality[]
     nativeLanguage: NativeLanguage | null
     residenceCode: string | null
     restrictedDetails: RestrictedDetails
@@ -1414,13 +1414,13 @@ export interface Partnership {
     conflict: boolean
     endDate: LocalDate | null
     id: string
-    partners: PersonJSON
+    partners: PersonJSON[]
     startDate: LocalDate
 }
 
 export interface PartnershipRequest {
     endDate: LocalDate | null
-    personIds: string
+    personIds: string[]
     startDate: LocalDate
 }
 
@@ -1468,7 +1468,7 @@ export interface FamilyContact {
 }
 
 export interface FamilyOverview {
-    children: FamilyOverviewPerson
+    children: FamilyOverviewPerson[]
     headOfFamily: FamilyOverviewPerson
     partner: FamilyOverviewPerson | null
     totalIncome: number | null
@@ -1480,15 +1480,15 @@ export interface PinCode {
 }
 
 export interface EmployeeUpdate {
-    globalRoles: UserRole
+    globalRoles: UserRole[]
 }
 
 export interface EmployeeWithDaycareRoles {
     created: Date
-    daycareRoles: DaycareRole
+    daycareRoles: DaycareRole[]
     email: string | null
     firstName: string
-    globalRoles: UserRole
+    globalRoles: UserRole[]
     id: string
     lastName: string
     updated: Date | null
@@ -1509,7 +1509,7 @@ export interface NewEmployee {
     externalId: ExternalId | null
     firstName: string
     lastName: string
-    roles: UserRole
+    roles: UserRole[]
 }
 
 export interface MobileDeviceIdentity {
@@ -1567,17 +1567,17 @@ export interface OccupancyResponseGroupLevel {
 export interface OccupancyResponse {
     max: OccupancyPeriod | null
     min: OccupancyPeriod | null
-    occupancies: OccupancyPeriod
+    occupancies: OccupancyPeriod[]
 }
 
 export interface ReplyToMessageBody {
     content: string
-    recipientAccountIds: string
+    recipientAccountIds: string[]
 }
 
 export interface CitizenMessageBody {
     content: string
-    recipients: MessageAccount
+    recipients: MessageAccount[]
     title: string
 }
 
@@ -1588,8 +1588,8 @@ export interface MessageAccount {
 
 export interface UpsertableDraftContent {
     content: string
-    recipientIds: string
-    recipientNames: string
+    recipientIds: string[]
+    recipientNames: string[]
     title: string
     type: MessageType
 }
@@ -1601,7 +1601,7 @@ export interface ThreadReply {
 
 export interface ReplyToMessageBody {
     content: string
-    recipientAccountIds: string
+    recipientAccountIds: string[]
 }
 
 export interface UnreadMessagesResponse {
@@ -1611,8 +1611,8 @@ export interface UnreadMessagesResponse {
 export interface SentMessage {
     content: string
     contentId: string
-    recipientNames: string
-    recipients: MessageAccount
+    recipientNames: string[]
+    recipients: MessageAccount[]
     sentAt: Date
     threadTitle: string
     type: MessageType
@@ -1621,12 +1621,12 @@ export interface SentMessage {
 export interface MessageReceiversResponse {
     groupId: string
     groupName: string
-    receivers: MessageReceiver
+    receivers: MessageReceiver[]
 }
 
 export interface MessageThread {
     id: string
-    messages: Message
+    messages: Message[]
     title: string
     type: MessageType
 }
@@ -1635,8 +1635,8 @@ export interface DraftContent {
     content: string
     created: Date
     id: string
-    recipientIds: string
-    recipientNames: string
+    recipientIds: string[]
+    recipientNames: string[]
     title: string
     type: MessageType
 }
@@ -1651,8 +1651,8 @@ export interface DetailedMessageAccount {
 
 export interface PostMessageBody {
     content: string
-    recipientAccountIds: string
-    recipientNames: string
+    recipientAccountIds: string[]
+    recipientNames: string[]
     title: string
     type: MessageType
 }
@@ -1680,7 +1680,7 @@ export interface DaycareDailyNote {
     modifiedBy: string | null
     note: string | null
     reminderNote: string | null
-    reminders: DaycareDailyNoteReminder
+    reminders: DaycareDailyNoteReminder[]
     sleepingMinutes: number | null
     sleepingNote: DaycareDailyNoteLevelInfo | null
 }
@@ -1701,7 +1701,7 @@ export interface VoucherValueDecisionSummary {
 }
 
 export interface InvoicePayload {
-    areas: string
+    areas: string[]
     dueDate: LocalDate | null
     from: LocalDate
     invoiceDate: LocalDate | null
@@ -1715,17 +1715,17 @@ export interface InvoiceSummary {
     id: string
     periodEnd: LocalDate
     periodStart: LocalDate
-    rows: InvoiceRowSummary
+    rows: InvoiceRowSummary[]
     sentAt: Date | null
     sentBy: string | null
     status: InvoiceStatus
 }
 
 export interface InvoiceCodes {
-    agreementTypes: number
-    costCenters: string
-    products: Product
-    subCostCenters: string
+    agreementTypes: number[]
+    costCenters: string[]
+    products: Product[]
+    subCostCenters: string[]
 }
 
 export interface InvoiceDetailed {
@@ -1738,7 +1738,7 @@ export interface InvoiceDetailed {
     number: number | null
     periodEnd: LocalDate
     periodStart: LocalDate
-    rows: InvoiceRowDetailed
+    rows: InvoiceRowDetailed[]
     sentAt: Date | null
     sentBy: string | null
     status: InvoiceStatus
@@ -1753,7 +1753,7 @@ export interface Invoice {
     number: number | null
     periodEnd: LocalDate
     periodStart: LocalDate
-    rows: InvoiceRow
+    rows: InvoiceRow[]
     sentAt: Date | null
     sentBy: string | null
     status: InvoiceStatus
@@ -1790,7 +1790,7 @@ export interface FeeThresholds {
 
 export interface GenerateDecisionsBody {
     starting: string
-    targetHeads: string
+    targetHeads: string[]
 }
 
 export interface FeeDecisionTypeRequest {
@@ -1799,7 +1799,7 @@ export interface FeeDecisionTypeRequest {
 
 export interface FeeDecisionSummary {
     approvedAt: Date | null
-    children: Basic
+    children: Basic[]
     created: Date
     decisionNumber: number | null
     finalPrice: number
@@ -1828,7 +1828,7 @@ export interface FeeAlteration {
 }
 
 export interface DecisionListResponse {
-    decisions: Decision
+    decisions: Decision[]
 }
 
 export interface DecisionUnit {
@@ -1847,11 +1847,11 @@ export interface DecisionUnit {
 }
 
 export interface GroupAclUpdate {
-    groupIds: string
+    groupIds: string[]
 }
 
 export interface DaycareAclResponse {
-    rows: DaycareAclRow
+    rows: DaycareAclRow[]
 }
 
 export interface PreschoolTerm {
@@ -1877,7 +1877,7 @@ export interface UnitStaffAttendance {
     count: number
     countOther: number
     date: LocalDate
-    groups: GroupStaffAttendance
+    groups: GroupStaffAttendance[]
     updated: Date | null
 }
 
@@ -1902,7 +1902,7 @@ export interface PublicUnit {
     providerType: ProviderType
     roundTheClock: boolean
     streetAddress: string
-    type: CareType
+    type: CareType[]
     url: string | null
 }
 
@@ -1922,7 +1922,7 @@ export interface Daycare {
     daycareApplyPeriod: DateRange | null
     decisionCustomization: DaycareDecisionCustomization
     email: string | null
-    enabledPilotFeatures: PilotFeature
+    enabledPilotFeatures: PilotFeature[]
     financeDecisionHandler: FinanceDecisionHandler | null
     ghostUnit: boolean
     id: string
@@ -1932,7 +1932,7 @@ export interface Daycare {
     mailingAddress: MailingAddress
     name: string
     openingDate: LocalDate | null
-    operationDays: number
+    operationDays: number[]
     ophOrganizationOid: string | null
     ophOrganizerOid: string | null
     ophUnitOid: string | null
@@ -1940,7 +1940,7 @@ export interface Daycare {
     preschoolApplyPeriod: DateRange | null
     providerType: ProviderType
     roundTheClock: boolean
-    type: CareType
+    type: CareType[]
     unitManager: UnitManager
     uploadChildrenToVarda: boolean
     uploadToKoski: boolean
@@ -1950,7 +1950,7 @@ export interface Daycare {
 }
 
 export interface CaretakersResponse {
-    caretakers: CaretakerAmount
+    caretakers: CaretakerAmount[]
     groupName: string
     unitName: string
 }
@@ -1992,7 +1992,7 @@ export interface DaycareFields {
     mailingAddress: MailingAddress
     name: string
     openingDate: LocalDate | null
-    operationDays: number | null
+    operationDays: number[] | null
     ophOrganizationOid: string | null
     ophOrganizerOid: string | null
     ophUnitOid: string | null
@@ -2000,7 +2000,7 @@ export interface DaycareFields {
     preschoolApplyPeriod: DateRange | null
     providerType: ProviderType
     roundTheClock: boolean
-    type: CareType
+    type: CareType[]
     unitManager: UnitManager
     uploadChildrenToVarda: boolean
     uploadToKoski: boolean
@@ -2065,11 +2065,11 @@ export interface BackupCareUpdateRequest {
 }
 
 export interface UnitBackupCaresResponse {
-    backupCares: UnitBackupCare
+    backupCares: UnitBackupCare[]
 }
 
 export interface ChildBackupCaresResponse {
-    backupCares: ChildBackupCare
+    backupCares: ChildBackupCare[]
 }
 
 export interface BackupCareCreateResponse {
@@ -2112,11 +2112,11 @@ export interface GetChildSensitiveInfoRequest {
 }
 
 export interface DepartureInfoResponse {
-    absentFrom: AbsenceCareType
+    absentFrom: AbsenceCareType[]
 }
 
 export interface AttendanceResponse {
-    children: Child
+    children: Child[]
     unit: UnitInfo
 }
 
@@ -2127,7 +2127,7 @@ export interface AssistanceBasisOption {
 }
 
 export interface AssistanceNeed {
-    bases: string
+    bases: string[]
     capacityFactor: number
     childId: string
     description: string
@@ -2138,7 +2138,7 @@ export interface AssistanceNeed {
 }
 
 export interface AssistanceNeedRequest {
-    bases: string
+    bases: string[]
     capacityFactor: number
     description: string
     endDate: LocalDate
@@ -2152,29 +2152,29 @@ export interface AssistanceActionOption {
 }
 
 export interface AssistanceAction {
-    actions: string
+    actions: string[]
     childId: string
     endDate: LocalDate
     id: string
-    measures: AssistanceMeasure
+    measures: AssistanceMeasure[]
     otherAction: string
     startDate: LocalDate
 }
 
 export interface AssistanceActionRequest {
-    actions: string
+    actions: string[]
     endDate: LocalDate
-    measures: AssistanceMeasure
+    measures: AssistanceMeasure[]
     otherAction: string
     startDate: LocalDate
 }
 
 export interface NotesWrapperJSON {
-    notes: NoteJSON
+    notes: NoteJSON[]
 }
 
 export interface NoteSearchDTO {
-    applicationIds: string
+    applicationIds: string[]
 }
 
 export interface NoteJSON {
@@ -2207,7 +2207,7 @@ export interface ApplicationUpdate {
 }
 
 export interface SimpleBatchRequest {
-    applicationIds: string
+    applicationIds: string[]
 }
 
 export interface PlacementProposalConfirmationUpdate {
@@ -2220,15 +2220,15 @@ export interface PlacementPlanDraft {
     child: PlacementDraftChild
     guardianHasRestrictedDetails: boolean
     period: FiniteDateRange
-    placements: PlacementDraftPlacement
-    preferredUnits: PlacementDraftUnit
+    placements: PlacementDraftPlacement[]
+    preferredUnits: PlacementDraftUnit[]
     preschoolDaycarePeriod: FiniteDateRange | null
     type: PlacementType
 }
 
 export interface DecisionDraftJSON {
     child: ChildInfo
-    decisions: DecisionDraft
+    decisions: DecisionDraft[]
     guardian: GuardianInfo
     otherGuardian: GuardianInfo | null
     placementUnitName: string
@@ -2270,7 +2270,7 @@ export interface ApplicationSummary {
     placementProposalStatus: PlacementProposalStatus | null
     placementProposalUnitName: string | null
     placementType: PlacementType
-    preferredUnits: PreferredUnit
+    preferredUnits: PreferredUnit[]
     serviceNeed: ServiceNeedOption | null
     siblingBasis: boolean
     socialSecurityNumber: string | null
@@ -2285,9 +2285,9 @@ export interface ApplicationSummary {
 
 export interface ApplicationResponse {
     application: ApplicationDetails
-    attachments: Attachment
-    decisions: Decision
-    guardians: PersonJSON
+    attachments: Attachment[]
+    decisions: Decision[]
+    guardians: PersonJSON[]
 }
 
 export interface DaycarePlacementPlan {
@@ -2312,7 +2312,7 @@ export interface ApplicationFormUpdate {
     clubDetails: ClubDetails | null
     guardian: GuardianUpdate
     maxFeeAccepted: boolean
-    otherChildren: PersonBasics
+    otherChildren: PersonBasics[]
     otherInfo: string
     otherPartner: PersonBasics | null
     preferences: Preferences
@@ -2324,7 +2324,7 @@ export interface RejectDecisionRequest {
 }
 
 export interface ApplicationsOfChild {
-    applicationSummaries: CitizenApplicationSummary
+    applicationSummaries: CitizenApplicationSummary[]
     childId: string
     childName: string
 }
@@ -2332,7 +2332,7 @@ export interface ApplicationsOfChild {
 export interface ApplicationDecisions {
     applicationId: string
     childName: string
-    decisions: DecisionSummary
+    decisions: DecisionSummary[]
 }
 
 export interface Decision {
@@ -2356,7 +2356,7 @@ export interface Decision {
 
 export interface ApplicationDetails {
     additionalDaycareApplication: boolean
-    attachments: Attachment
+    attachments: Attachment[]
     checkedByAdmin: boolean
     childId: string
     childRestricted: boolean

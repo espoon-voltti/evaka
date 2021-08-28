@@ -117,11 +117,18 @@ private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedPropert
 }
 
 private fun isCollection(type: KType): Boolean {
-    return type.jvmErasure == Collection::class || type.jvmErasure.isSubclassOf(Collection::class)
+    return type.jvmErasure.isSubclassOf(Collection::class) || type.jvmErasure.isSubclassOf(Array::class) ||
+        type.jvmErasure.isSubclassOf(IntArray::class) || type.jvmErasure.isSubclassOf(DoubleArray::class) ||
+        type.jvmErasure.isSubclassOf(BooleanArray::class)
 }
 
 private fun unwrapCollection(type: KType): KClass<*> {
-    return type.arguments.first().type!!.jvmErasure
+    return when (type) {
+        IntArray::class -> Int::class
+        DoubleArray::class -> Double::class
+        BooleanArray::class -> Boolean::class
+        else -> type.arguments.first().type!!.jvmErasure
+    }
 }
 
 private sealed class AnalyzedClass(
@@ -158,6 +165,7 @@ private data class AnalyzedProperty(
 ) {
     fun toTs(): String {
         return "$name: ${tsMapping[type.qualifiedName] ?: type.simpleName}"
+            .let { if (collection) "$it[]" else it }
             .let { if (nullable) "$it | null" else it }
     }
 }
