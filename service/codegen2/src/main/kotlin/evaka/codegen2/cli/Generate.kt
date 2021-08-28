@@ -28,6 +28,8 @@ val header = """// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 /* eslint-disable prettier/prettier */
 
 import LocalDate from "../local-date";
+import FiniteDateRange from "../finite-date-range";
+import DateRange from "../date-range";
 import {DailyServiceTimes} from "../api-types/child/common";
 
 """
@@ -38,6 +40,8 @@ val tsMapping = mapOf(
     "fi.espoo.evaka.shared.Id" to "string",
     "java.time.LocalDate" to "string",
     "java.time.LocalTime" to "string",
+    "fi.espoo.evaka.shared.domain.FiniteDateRange" to "FiniteDateRange",
+    "fi.espoo.evaka.shared.domain.DateRange" to "DateRange",
     "kotlin.Int" to "number",
     "kotlin.Long" to "number",
     "kotlin.Double" to "number",

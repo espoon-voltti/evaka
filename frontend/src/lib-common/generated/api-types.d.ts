@@ -6,6 +6,8 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from "../local-date";
+import FiniteDateRange from "../finite-date-range";
+import DateRange from "../date-range";
 import {DailyServiceTimes} from "../api-types/child/common";
 
 export interface Address {
@@ -563,11 +565,6 @@ export interface DaycareDecisionCustomization {
     preschoolName: string
 }
 
-export interface DateRange {
-    end: LocalDate | null
-    start: LocalDate
-}
-
 export interface UnitBackupCare {
     child: BackupCareChild
     group: BackupCareGroup | null
@@ -695,11 +692,6 @@ export interface PlacementProposalStatus {
 export interface PreferredUnit {
     id: string
     name: string
-}
-
-export interface FiniteDateRange {
-    end: LocalDate
-    start: LocalDate
 }
 
 export interface SecondGuardian {
