@@ -62,6 +62,14 @@ class VardaClient(
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
     val sourceSystem: String = env.sourceSystem
 
+    fun gatherErrorData(request: Request, error: FuelError) = mapOf(
+        "method" to request.method.toString(),
+        "url" to request.url.toString(),
+        "body" to request.body.asString("application/json"),
+        "errorMessage" to error.errorData.decodeToString(),
+        "statusCode" to error.response.statusCode.toString()
+    )
+
     fun createUnit(unit: VardaUnitRequest): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.nimi} to Varda" }
         val (request, _, result) = fuel.post(unitUrl)
@@ -245,18 +253,18 @@ class VardaClient(
     }
 
     fun createFeeDataV2(feeData: VardaFeeData): VardaFeeDataResponse {
-        logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda" }
+        logger.info { "VardaUpdate: client sending fee data for child ${feeData.lapsi}" }
         val (request, _, result) = fuel.post(feeDataUrl)
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: creating fee data for child ${feeData.lapsi} to Varda succeeded" }
+                logger.info { "VardaUpdate: client successfully sent fee data for child ${feeData.lapsi}" }
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error("VardaUpdate: failed to send fee data to Varda: ${result.error}")
+                error("VardaUpdate: client failed to send fee data for child ${feeData.lapsi}: ${gatherErrorData(request, result.error)}")
             }
         }
     }
@@ -348,18 +356,18 @@ class VardaClient(
     }
 
     fun createDecisionV2(newDecision: VardaDecision): VardaDecisionResponse {
-        logger.info { "VardaUpdate: creating a new decision to Varda (body: $newDecision)" }
+        logger.info { "VardaUpdate: client sending new decision (body: $newDecision)" }
         val (request, _, result) = fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: creating a new decision to Varda succeeded (body: $newDecision)" }
+                logger.info { "VardaUpdate: client successfully sent new decision (body: $newDecision)" }
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error("VardaUpdate: failed to create a new decision to Varda: ${result.error}")
+                error("VardaUpdate: client failed to send new decision: ${gatherErrorData(request, result.error)}")
             }
         }
     }
@@ -409,7 +417,7 @@ class VardaClient(
     }
 
     fun deleteDecisionV2(vardaDecisionId: Long): Boolean {
-        logger.info { "VardaUpdate: Deleting decision from Varda (id: $vardaDecisionId)" }
+        logger.info { "VardaUpdate: client deleting decision (id: $vardaDecisionId)" }
 
         val t1 = System.currentTimeMillis()
 
@@ -420,12 +428,12 @@ class VardaClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: Deleting decision from Varda succeeded (id: $vardaDecisionId)" }
+                logger.info { "VardaUpdate: client successfully deleted decision (id: $vardaDecisionId)" }
                 true
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error(result.error)
+                error("VardaUpdate: client failed to delete decision $vardaDecisionId: ${gatherErrorData(request, result.error)}")
             }
         }
     }
@@ -454,19 +462,19 @@ class VardaClient(
     }
 
     fun createPlacementV2(newPlacement: VardaPlacement): VardaPlacementResponse {
-        logger.info { "VardaUpdate: creating a new placement to Varda (body: $newPlacement)" }
+        logger.info { "VardaUpdate: client sending new placement (body: $newPlacement)" }
         val (request, _, result) = fuel.post(placementUrl)
             .jsonBody(objectMapper.writeValueAsString(newPlacement))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: creating a new placement to Varda succeeded (body: $newPlacement)" }
+                logger.info { "VardaUpdate: client successfully sent new placement (body: $newPlacement)" }
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error("VardaUpdate: failed to create a new placement to Varda: ${result.error}")
+                error("VardaUpdate: client failed to send new placement: ${gatherErrorData(request, result.error)}")
             }
         }
     }
@@ -520,7 +528,7 @@ class VardaClient(
     }
 
     fun deletePlacementV2(vardaPlacementId: Long): Boolean {
-        logger.info { "VardaUpdate: Deleting placement from Varda (id: $vardaPlacementId)" }
+        logger.info { "VardaUpdate: client deleting placement (id: $vardaPlacementId)" }
 
         val t1 = System.currentTimeMillis()
 
@@ -531,12 +539,12 @@ class VardaClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: Deleting placement from Varda succeeded (id: $vardaPlacementId)" }
+                logger.info { "VardaUpdate: client successfully deleted placement (id: $vardaPlacementId)" }
                 true
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error(result.error)
+                error("VardaUpdate: client failed to delete placement $vardaPlacementId: ${gatherErrorData(request, result.error)}")
             }
         }
     }
@@ -623,7 +631,7 @@ class VardaClient(
                     }
                     is Result.Failure -> {
                         logRequestError(request, result.error)
-                        error("VardaUpdate: failed to get paginated results: ${result.error}")
+                        error("VardaUpdate: client failed to get paginated results: ${gatherErrorData(request, result.error)}")
                     }
                 }
             }

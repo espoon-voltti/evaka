@@ -375,15 +375,21 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
         else {
-            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
-            newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
-            newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
+            val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
+            newVardaServiceNeed.vardaChildId = vardaChildId
+
+            val vardaDecisionId = sendDecisionToVarda(vardaClient, vardaChildId, evakaServiceNeed)
+            newVardaServiceNeed.vardaDecisionId = vardaDecisionId
+
+            val vardaPlacementId = sendPlacementToVarda(vardaClient, vardaDecisionId, evakaServiceNeed)
+            newVardaServiceNeed.vardaPlacementId = vardaPlacementId
+
             if (hasFeeData) newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData.first())
         }
 
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
     } catch (e: Exception) {
-        val errors = listOf("VardaUpdate: error creating a new varda decision for service need ${evakaServiceNeed.id}: ${e.message}")
+        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed, errors) }
         // TODO: remove once everything works
         logger.error("VardaUpdate: new varda decision errored with: ".plus(e.stackTrace.joinToString(",")))
@@ -391,24 +397,13 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     }
 }
 
-fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    if (vardaChildId == null) error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
-    val res = try {
-        client.createDecisionV2(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
+fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
+    val res = client.createDecisionV2(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
     return res.vardaDecisionId
 }
 
 fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    val res = try {
-        client.createPlacementV2(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
+    val res = client.createPlacementV2(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
     return res.vardaPlacementId
 }
 
@@ -426,7 +421,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
     val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
 
     if (guardians.isEmpty()) {
-        logger.info("VardaUpdate: will not create fee data for service need ${evakaServiceNeed.id}: child has no guardians")
+        logger.info("VardaUpdate: refusing to create fee data for service need ${evakaServiceNeed.id}: child has no guardians")
         return emptyList()
     }
 
@@ -507,7 +502,10 @@ fun sendFeeDecisionToVarda(
     guardians: List<VardaGuardianWithId>
 ): Long {
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
-        ?: error("VardaUpdate: could not create fee data for service need ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
+
+    check(childPart != null) {
+        "VardaUpdate: fee decision ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}, service need ${evakaServiceNeedInfoForVarda.id}"
+    }
 
     val requestPayload = VardaFeeData(
         huoltajat = guardians.map { it.toVardaGuardian() },
@@ -521,12 +519,7 @@ fun sendFeeDecisionToVarda(
         lahdejarjestelma = client.sourceSystem
     )
 
-    val res = try {
-        client.createFeeDataV2(requestPayload)
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot send fee data for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-    return res.id
+    return client.createFeeDataV2(requestPayload).id
 }
 
 fun sendVoucherDecisionToVarda(
@@ -548,13 +541,7 @@ fun sendVoucherDecisionToVarda(
         lahdejarjestelma = client.sourceSystem
     )
 
-    val res = try {
-        client.createFeeDataV2(requestPayload)
-    } catch (e: Exception) {
-        error("VardaUpdate: cannot send voucher data for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
-
-    return res.id
+    return client.createFeeDataV2(requestPayload).id
 }
 
 private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
@@ -686,7 +673,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.map { it.take(300) }.toTypedArray())
+    .bind("upsertErrors", upsertErrors.map { it.take(500) }.toTypedArray())
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -713,7 +700,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.map { it.take(300) }.toTypedArray())
+    .bind("errors", errors.map { it.take(500) }.toTypedArray())
     .execute()
 
 private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
