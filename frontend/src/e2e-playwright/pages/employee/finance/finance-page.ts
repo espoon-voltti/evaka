@@ -179,13 +179,8 @@ export class ValueDecisionsPage {
     await this.#dateCheckbox.click()
   }
 
-  async toggleAllValueDecisions(toggledOn: boolean) {
-    await waitUntilEqual(
-      () => this.#allValueDecisionsToggle.checked,
-      !toggledOn
-    )
-    await this.#allValueDecisionsToggle.click()
-    await waitUntilEqual(() => this.#allValueDecisionsToggle.checked, toggledOn)
+  async toggleAllValueDecisions() {
+    await this.#allValueDecisionsToggle.check()
   }
 
   async sendValueDecisions() {

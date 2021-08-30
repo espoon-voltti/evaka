@@ -120,7 +120,7 @@ describe('Value decisions', () => {
   })
 
   test('Voucher value decisions are toggled and sent', async () => {
-    await valueDecisionsPage.toggleAllValueDecisions(true)
+    await valueDecisionsPage.toggleAllValueDecisions()
     await valueDecisionsPage.sendValueDecisions()
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })

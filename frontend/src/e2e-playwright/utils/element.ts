@@ -78,6 +78,14 @@ export const WithChecked = <T extends Constructor<RawElement>>(
     get checked(): Promise<boolean> {
       return this.page.isChecked(this.#input)
     }
+
+    check(): Promise<void> {
+      return this.page.check(this.#input)
+    }
+
+    uncheck(): Promise<void> {
+      return this.page.uncheck(this.#input)
+    }
   }
 
 export const WithTextInput = <T extends Constructor<RawElement>>(
