@@ -226,10 +226,7 @@ class PlacementPlanService(
             logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }
             return null
         }
-        return ApplicationServiceNeed(
-            serviceNeedOptionId, application.form.preferences.serviceNeed.shiftCare,
-            confirmedBy = null, confirmedAt = null
-        )
+        return ApplicationServiceNeed(serviceNeedOptionId, application.form.preferences.serviceNeed.shiftCare)
     }
 
     fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {

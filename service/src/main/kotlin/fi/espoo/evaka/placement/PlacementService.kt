@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
@@ -34,9 +33,7 @@ import java.util.UUID
 
 data class ApplicationServiceNeed(
     val optionId: ServiceNeedOptionId,
-    val shiftCare: Boolean,
-    val confirmedBy: UUID?,
-    val confirmedAt: HelsinkiDateTime?
+    val shiftCare: Boolean
 )
 
 fun createPlacement(
@@ -62,7 +59,7 @@ fun createPlacement(
         if (serviceNeed != null) {
             tx.insertServiceNeed(
                 placement.id, period.start, period.end,
-                serviceNeed.optionId, serviceNeed.shiftCare, serviceNeed.confirmedBy, serviceNeed.confirmedAt
+                serviceNeed.optionId, serviceNeed.shiftCare, confirmedBy = null, confirmedAt = null
             )
         }
         placement
