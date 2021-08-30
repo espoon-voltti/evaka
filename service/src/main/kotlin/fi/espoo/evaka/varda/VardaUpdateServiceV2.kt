@@ -715,10 +715,12 @@ SELECT
     sn.id AS evakaServiceNeedId,
     sn.updated AS evakaServiceNeedUpdated
 FROM service_need sn
+LEFT JOIN service_need_option sno ON sn.option_id = sno.id
 LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
 LEFT JOIN varda_service_need vsn ON vsn.evaka_service_need_id = sn.id
 WHERE sn.updated >= :startingFrom
+AND sno.daycare_hours_per_week > 0
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
 AND daycare.upload_children_to_varda = true
 AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)

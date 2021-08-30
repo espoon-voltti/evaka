@@ -133,6 +133,16 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `calculateEvakaVsVardaServiceNeedChangesByChild excludes if hours per week is 0`() {
+        val since = HelsinkiDateTime.now()
+        val option = snDefaultPreschool.copy(updated = since)
+        createServiceNeed(db, since, option)
+
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        assertEquals(0, diffs.keys.size)
+    }
+
+    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
