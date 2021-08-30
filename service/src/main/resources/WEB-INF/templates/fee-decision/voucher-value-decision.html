@@ -55,7 +55,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </tr>
         <tr>
             <td th:text="#{decision.coPayment}"></td>
-            <td class="text-right">– <span th:text="${coPayment}"></span></td>
+            <td class="text-right">
+                <strong>-</strong>
+                <strong th:text="${coPayment}"></strong>
+            </td>
         </tr>
 
 
@@ -100,7 +103,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tbody>
             <tr>
                 <td th:text="#{decision.amountOfVoucherForProvider}"></td>
-                <td class="text-right"><strong th:text="${serviceProviderValue}"></strong></td>
+                <td class="text-right"><span th:text="${serviceProviderValue}"></span></td>
             </tr>
         </tbody>
 
