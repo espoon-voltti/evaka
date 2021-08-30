@@ -73,11 +73,11 @@ export interface ServiceNeed {
   option: ServiceNeedOptionSummary
   shiftCare: boolean
   confirmed: {
-    employeeId: UUID | null
-    firstName: string | null
-    lastName: string | null
+    employeeId: UUID
+    firstName: string
+    lastName: string
     at: Date | null
-  }
+  } | null
 }
 
 export interface Placement {
