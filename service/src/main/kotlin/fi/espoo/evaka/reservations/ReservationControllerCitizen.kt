@@ -94,6 +94,7 @@ fun Database.Transaction.clearOldCitizenReservations(reservations: List<Reservat
         batch
             .bind("childId", res.childId)
             .bind("date", res.startTime.toLocalDate())
+            .add()
     }
 
     batch.execute()
