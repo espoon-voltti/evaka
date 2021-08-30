@@ -92,7 +92,7 @@ class VardaUpdateServiceV2(
                     logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
                     successfulResets.plus(childId)
                 } catch (e: Exception) {
-                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.message}")
+                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.localizedMessage}")
                     successfulResets
                 }
             } else successfulResets
@@ -395,10 +395,8 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
         }
     } catch (e: Exception) {
-        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
+        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.localizedMessage}")
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
-        // TODO: remove once everything works
-        logger.error("VardaUpdate: new varda decision errored with: ".plus(e.stackTrace.joinToString(",")))
         error(errors)
     }
 }
@@ -679,7 +677,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.map { it.take(500) }.toTypedArray())
+    .bind("upsertErrors", upsertErrors.toTypedArray())
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -706,7 +704,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.map { it.take(500) }.toTypedArray())
+    .bind("errors", errors.toTypedArray())
     .execute()
 
 private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
