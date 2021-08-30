@@ -45,6 +45,10 @@ export default React.memo(function CalendarPage() {
       void history.replace(`calendar?day=${date.formatIso()}`),
     [history]
   )
+  const closeDayView = useCallback(
+    () => void history.replace('/calendar'),
+    [history]
+  )
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
@@ -55,6 +59,8 @@ export default React.memo(function CalendarPage() {
           date={selectedDate}
           data={data.value}
           selectDate={selectDate}
+          reloadData={loadDefaultRange}
+          close={closeDayView}
         />
       ) : null}
       <Container>

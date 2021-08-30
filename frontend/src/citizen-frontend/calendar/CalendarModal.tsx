@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 import { faTimes } from 'lib-icons'
 import { defaultMargins } from 'lib-components/white-space'
@@ -12,16 +11,15 @@ import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 
 interface Props {
   highlight: boolean
+  close: () => void
   children: ReactNode | ReactNode[]
 }
 
 export default React.memo(function CalendarModal({
   highlight,
+  close,
   children
 }: Props) {
-  const history = useHistory()
-  const close = useCallback(() => void history.replace('/calendar'), [history])
-
   return (
     <Modal>
       <TopBar>
