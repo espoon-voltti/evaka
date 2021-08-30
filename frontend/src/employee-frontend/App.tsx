@@ -74,6 +74,7 @@ import { useTranslation } from './state/i18n'
 import StateProvider from './state/StateProvider'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
+import VardaErrors from './components/reports/VardaErrors'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -348,6 +349,12 @@ export default function App() {
               exact
               path="/reports/voucher-service-providers/:unitId"
               component={ensureAuthenticated(VoucherServiceProviderUnit)}
+              title={i18n.titles.reports}
+            />
+            <RouteWithTitle
+              exact
+              path="/reports/varda-errors"
+              component={ensureAuthenticated(VardaErrors)}
               title={i18n.titles.reports}
             />
             <RouteWithTitle

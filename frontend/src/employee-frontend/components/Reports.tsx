@@ -414,6 +414,24 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
+          <RequireRole oneOf={['ADMIN']}>
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={colors.accents.orange}
+                  content={faDiagnoses}
+                />
+                <LinkTitle
+                  to="/reports/varda-errors"
+                  data-qa={'report-varda-errors'}
+                >
+                  {i18n.reports.vardaErrors.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>{i18n.reports.vardaErrors.description}</Description>
+            </ReportItem>
+          </RequireRole>
         </ReportItems>
       </ContentArea>
     </Container>

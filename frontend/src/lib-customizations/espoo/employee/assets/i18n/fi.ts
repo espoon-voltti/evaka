@@ -2381,6 +2381,15 @@ export const fi = {
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä',
       otherPreferredUnits: 'Muut hakutoiveet'
+    },
+    vardaErrors: {
+      title: 'Vardavirheet',
+      description:
+        'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
+      updated: 'Muokattu',
+      child: 'Lapsi',
+      serviceNeed: 'Palveluntarve',
+      error: 'Virhe'
     }
   },
   unitEditor: {
