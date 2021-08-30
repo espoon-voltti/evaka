@@ -5,6 +5,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
@@ -47,6 +48,8 @@ SELECT
     student,
     alimony_payer,
     other_info,
+    created,
+    updated,
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
@@ -67,12 +70,16 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
     val id = row.mapColumn<IncomeStatementId>("id")
     val startDate = row.mapColumn<LocalDate>("start_date")
     val endDate = row.mapColumn<LocalDate?>("end_date")
+    val created = row.mapColumn<HelsinkiDateTime>("created")
+    val updated = row.mapColumn<HelsinkiDateTime>("updated")
     return when (row.mapColumn<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
                 id = id,
                 startDate = startDate,
                 endDate = endDate,
+                created = created,
+                updated = updated,
             )
 
         IncomeStatementType.INCOME -> {
@@ -135,6 +142,8 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 student = row.mapColumn("student"),
                 alimonyPayer = row.mapColumn("alimony_payer"),
                 otherInfo = row.mapColumn("other_info"),
+                created = created,
+                updated = updated,
                 attachments = row.mapJsonColumn("attachments")
             )
         }

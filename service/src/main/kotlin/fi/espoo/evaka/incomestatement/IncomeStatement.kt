@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 enum class OtherGrossIncome {
@@ -130,13 +131,17 @@ sealed class IncomeStatement(
     open val id: IncomeStatementId,
     open val startDate: LocalDate,
     open val endDate: LocalDate?,
+    open val created: HelsinkiDateTime,
+    open val updated: HelsinkiDateTime,
 ) {
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
         override val id: IncomeStatementId,
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
-    ) : IncomeStatement(id, startDate, endDate)
+        override val created: HelsinkiDateTime,
+        override val updated: HelsinkiDateTime,
+    ) : IncomeStatement(id, startDate, endDate, created, updated)
 
     @JsonTypeName("INCOME")
     data class Income(
@@ -148,6 +153,8 @@ sealed class IncomeStatement(
         val student: Boolean,
         val alimonyPayer: Boolean,
         val otherInfo: String,
-        val attachments: List<Attachment>
-    ) : IncomeStatement(id, startDate, endDate)
+        override val created: HelsinkiDateTime,
+        override val updated: HelsinkiDateTime,
+        val attachments: List<Attachment>,
+    ) : IncomeStatement(id, startDate, endDate, created, updated)
 }

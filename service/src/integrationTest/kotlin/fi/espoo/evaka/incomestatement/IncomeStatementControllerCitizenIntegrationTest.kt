@@ -19,6 +19,7 @@ import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
@@ -47,6 +48,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     id = incomeStatements[0].id,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
+                    created = incomeStatements[0].created,
+                    updated = incomeStatements[0].updated,
                 )
             ),
             incomeStatements,
@@ -94,7 +97,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf()
+                attachmentIds = listOf(),
             )
         )
 
@@ -140,7 +143,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
-                    attachments = listOf()
+                    created = incomeStatements[0].created,
+                    updated = incomeStatements[0].updated,
+                    attachments = listOf(),
                 )
             ),
             incomeStatements,
@@ -302,6 +307,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
+                    created = incomeStatements[0].created,
+                    updated = incomeStatements[0].updated,
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -407,10 +414,10 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             ),
         )
 
-        val incomeStatementId = getIncomeStatements()[0].id
+        val incomeStatement = getIncomeStatements()[0]
 
         updateIncomeStatement(
-            incomeStatementId,
+            incomeStatement.id,
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = null,
@@ -438,9 +445,12 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             )
         )
 
+        val updated = getIncomeStatement(incomeStatement.id).updated
+        assertNotEquals(incomeStatement.updated, updated)
+
         assertEquals(
             IncomeStatement.Income(
-                id = incomeStatementId,
+                id = incomeStatement.id,
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = null,
                 gross = null,
@@ -463,9 +473,11 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 student = true,
                 alimonyPayer = false,
                 otherInfo = "",
+                created = incomeStatement.created,
+                updated = updated,
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
-            getIncomeStatement(incomeStatementId),
+            getIncomeStatement(incomeStatement.id),
         )
     }
 
