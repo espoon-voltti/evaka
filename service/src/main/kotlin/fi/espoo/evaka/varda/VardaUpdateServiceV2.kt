@@ -92,7 +92,7 @@ class VardaUpdateServiceV2(
                     logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
                     successfulResets.plus(childId)
                 } catch (e: Exception) {
-                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.message}")
+                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.localizedMessage}")
                     successfulResets
                 }
             } else successfulResets
@@ -280,38 +280,28 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     logger.info("VardaUpdate: processed ${processedServiceNeedIds.size} service needs")
 }
 
-fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId) {
+fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId) {
     try {
-        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
-        if (vardaServiceNeed != null) {
-            val errors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
-            if (errors.isNotEmpty()) {
-                logger.error(errors.joinToString(","))
-                db.transaction { it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors) }
-            } else {
-                db.transaction { it.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId) }
-            }
-        }
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
+            ?: error("VardaUpdate: cannot handle deleted service need $evakaServiceNeedId: varda service need missing")
+        deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
+        db.transaction { it.deleteVardaServiceNeedByEvakaServiceNeed(evakaServiceNeedId) }
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went wrong while trying to delete varda service need $serviceNeedId data: ${e.localizedMessage}")
+        db.transaction { it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage)) }
+        logger.error("VardaUpdate: error while processing deleted service need $evakaServiceNeedId: ${e.localizedMessage}")
     }
 }
 
 fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate) {
     try {
-        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) } ?: error("VardaUpdate: cannot update service need $evakaServiceNeedId: varda service need missing")
-        val deleteErrors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
-        if (deleteErrors.isNotEmpty()) {
-            logger.error(deleteErrors.joinToString(","))
-            db.transaction {
-                it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, deleteErrors)
-            }
-        } else {
-            val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
-            addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed, feeDecisionMinDate)
-        }
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
+            ?: error("VardaUpdate: cannot handle updated service need $evakaServiceNeedId: varda service need missing")
+        deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
+        val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
+        addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed, feeDecisionMinDate)
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $evakaServiceNeedId data: ${e.localizedMessage}")
+        db.transaction { it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage)) }
+        logger.error("VardaUpdate: error while processing updated service need $evakaServiceNeedId: ${e.localizedMessage}")
     }
 }
 
@@ -348,15 +338,13 @@ fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClien
     }
 }
 
-// Delete varda decision, placement and related varda fee decisions
-fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed): List<String> {
-    val errors = mutableListOf<String>()
-    try {
-        errors.addAll(deleteServiceNeedAndRelatedDataFromVarda(vardaClient, vardaServiceNeed))
-    } catch (e: Exception) {
-        errors.add("VardaUpdate: error deleting varda service need ${vardaServiceNeed.evakaServiceNeedId} related data: ${e.localizedMessage}")
+// Delete decision, placement and related fee data from Varda by stored id's
+fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed) {
+    vardaServiceNeed.vardaFeeDataIds.forEach { feeDataId ->
+        vardaClient.deleteFeeDataV2(feeDataId)
     }
-    return errors
+    vardaServiceNeed.vardaPlacementId?.let { vardaClient.deletePlacementV2(it) }
+    vardaServiceNeed.vardaDecisionId?.let { vardaClient.deleteDecisionV2(it) }
 }
 
 // Add child if missing, service need, placement and mandatory fee decision(s)
@@ -395,10 +383,8 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
         }
     } catch (e: Exception) {
-        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
+        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.localizedMessage}")
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
-        // TODO: remove once everything works
-        logger.error("VardaUpdate: new varda decision errored with: ".plus(e.stackTrace.joinToString(",")))
         error(errors)
     }
 }
@@ -622,28 +608,12 @@ private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: L
     }
 }
 
-private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed): List<String> {
-    val errors = mutableListOf<String>()
-    try {
-        vardaServiceNeed.vardaFeeDataIds.forEach { feeDataId ->
-            if (!vardaClient.deleteFeeData(feeDataId)) {
-                errors.add("VardaUpdate: deleting fee data $feeDataId failed, continuing (maybe this is a retry?)")
-            }
-        }
-        if (vardaServiceNeed.vardaPlacementId != null) {
-            if (!vardaClient.deletePlacement(vardaServiceNeed.vardaPlacementId!!)) {
-                errors.add("VardaUpdate: deleting placement ${vardaServiceNeed.vardaPlacementId} failed, continuing (maybe this is a retry?)")
-            }
-        }
-        if (vardaServiceNeed.vardaDecisionId != null) {
-            if (!vardaClient.deleteDecision(vardaServiceNeed.vardaDecisionId!!)) {
-                errors.add("VardaUpdate: deleting decision ${vardaServiceNeed.vardaDecisionId} failed, continuing (maybe this is a retry?)")
-            }
-        }
-    } catch (e: Exception) {
-        errors.add("VardaUpdate: could not delete varda service need $vardaServiceNeed related data: ${e.localizedMessage}")
+private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed) {
+    vardaServiceNeed.vardaFeeDataIds.forEach { feeDataId ->
+        vardaClient.deleteFeeDataV2(feeDataId)
     }
-    return errors
+    vardaServiceNeed.vardaPlacementId?.let { vardaClient.deletePlacementV2(it) }
+    vardaServiceNeed.vardaDecisionId?.let { vardaClient.deleteDecision(it) }
 }
 
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed, upsertErrors: List<String> = listOf()) = createUpdate(
@@ -679,7 +649,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.map { it.take(500) }.toTypedArray())
+    .bind("upsertErrors", upsertErrors.toTypedArray())
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -706,7 +676,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.map { it.take(500) }.toTypedArray())
+    .bind("errors", errors.toTypedArray())
     .execute()
 
 private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
@@ -745,10 +715,12 @@ SELECT
     sn.id AS evakaServiceNeedId,
     sn.updated AS evakaServiceNeedUpdated
 FROM service_need sn
+LEFT JOIN service_need_option sno ON sn.option_id = sno.id
 LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
 LEFT JOIN varda_service_need vsn ON vsn.evaka_service_need_id = sn.id
 WHERE sn.updated >= :startingFrom
+AND sno.daycare_hours_per_week > 0
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
 AND daycare.upload_children_to_varda = true
 AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
