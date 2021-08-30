@@ -229,6 +229,7 @@ enum class Audit(
     UnitUpdate("evaka.unit.update"),
     UnitStatisticsCreate("evaka.unit.statistics.create"),
     UnitView("evaka.unit.view"),
+    VardaReportRead("evaka.varda-report.read"),
     VasuDocumentCreate("evaka.vasu-document.create"),
     VasuDocumentRead("evaka.vasu-document.read"),
     VasuDocumentUpdate("evaka.vasu-document.update"),

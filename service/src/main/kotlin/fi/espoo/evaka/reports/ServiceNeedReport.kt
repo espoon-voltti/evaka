@@ -21,7 +21,7 @@ import java.time.LocalDate
 @RestController
 class ServiceNeedReport(private val acl: AccessControlList) {
     @GetMapping("/reports/service-need")
-    fun getChildAgeLanguageReport(
+    fun getServiceNeedReport(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
