@@ -147,7 +147,12 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
-        assertGlobalPermission(user, action, permittedRoleActions::globalActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForAnyUnit(user).roles },
+            action = action,
+            mapping = permittedRoleActions::globalActions
+        )
     }
 
     fun getPermittedRoles(action: Action.Global): Set<UserRole> {
@@ -314,7 +319,12 @@ WHERE employee_id = :userId
         @Suppress("UNUSED_PARAMETER") id: VasuTemplateId
     ) {
         // VasuTemplate actions in Espoo are global so the id parameter is ignored
-        assertGlobalPermission(user, action, permittedRoleActions::vasuTemplateActions)
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForAnyUnit(user).roles },
+            action = action,
+            mapping = permittedRoleActions::vasuTemplateActions
+        )
     }
 
     private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
@@ -322,7 +332,7 @@ WHERE employee_id = :userId
         ids: Collection<I>
     ): Map<I, Set<A>> where A : Action.ScopedAction<I>, A : Enum<A> {
         val globalActions = enumValues<A>().asSequence()
-            .filter { action -> hasGlobalPermission(user, action) }.toEnumSet()
+            .filter { action -> hasPermissionThroughGlobalRole(user, action) }.toEnumSet()
 
         val result = ids.associateTo(linkedMapOf()) { (it to enumSetOf(*globalActions.toTypedArray())) }
         if (user is AuthenticatedUser.Employee) {
@@ -343,7 +353,7 @@ WHERE employee_id = :userId
         return result
     }
 
-    private inline fun <reified A, reified I> ActionConfig<A>.hasGlobalPermission(
+    private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(
         user: AuthenticatedUser,
         action: A
     ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
@@ -359,7 +369,7 @@ WHERE employee_id = :userId
         action: A,
         id: I
     ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
-        if (hasGlobalPermission(user, action)) return true
+        if (hasPermissionThroughGlobalRole(user, action)) return true
         return Database(jdbi).read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) }
     }
 
@@ -383,43 +393,24 @@ WHERE employee_id = :userId
         else -> ids.associate { (it to enumSetOf(*user.roles.toTypedArray())) }
     }
 
-    private inline fun <reified A> hasGlobalPermission(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> {
-        val globalRoles = user.roles - UserRole.SCOPED_ROLES
-        return (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
-    }
-
-    private inline fun <reified A> assertGlobalPermission(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ) where A : Action, A : Enum<A> {
-        if (!hasGlobalPermission(user, action, mapping))
-            throw Forbidden("Permission denied")
-    }
-
-    private inline fun <reified A> hasPermission(
-        user: AuthenticatedUser,
-        getAclRoles: () -> Set<UserRole>,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> {
-        if (hasGlobalPermission(user, action, mapping)) return true
-
-        return (getAclRoles().any { it == UserRole.ADMIN || mapping(it).contains(action) })
-    }
-
     private inline fun <reified A> assertPermission(
         user: AuthenticatedUser,
         getAclRoles: () -> Set<UserRole>,
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        if (!hasPermission(user, getAclRoles, action, mapping))
-            throw Forbidden("Permission denied")
+        val globalRoles = user.roles - UserRole.SCOPED_ROLES
+        if (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
+            return
+
+        if (UserRole.SCOPED_ROLES.any { mapping(it).contains(action) }) {
+            // the outer if-clause avoids unnecessary db query if no scoped role gives permission anyway
+            if (getAclRoles().any { mapping(it).contains(action) }) {
+                return
+            }
+        }
+
+        throw Forbidden("Permission denied")
     }
 }
 

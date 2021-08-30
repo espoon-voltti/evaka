@@ -56,6 +56,19 @@ class AccessControlList(private val jdbi: Jdbi) {
             AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user, roles) })
         }
 
+    fun getRolesForAnyUnit(user: AuthenticatedUser): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM daycare_acl_view
+WHERE employee_id = :userId
+                """.trimIndent()
+            ).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: DaycareId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
