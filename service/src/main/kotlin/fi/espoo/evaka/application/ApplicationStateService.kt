@@ -401,7 +401,7 @@ class ApplicationStateService(
 
         placementPlanService.applyPlacementPlan(
             tx,
-            application.childId,
+            application,
             plan,
             allowPreschool = decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION),
             allowPreschoolDaycare = decision.type in listOf(DecisionType.PRESCHOOL_DAYCARE),

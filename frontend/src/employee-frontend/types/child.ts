@@ -73,10 +73,10 @@ export interface ServiceNeed {
   option: ServiceNeedOptionSummary
   shiftCare: boolean
   confirmed: {
-    employeeId: UUID
-    firstName: string
-    lastName: string
-    at: Date
+    employeeId: UUID | null
+    firstName: string | null
+    lastName: string | null
+    at: Date | null
   }
 }
 

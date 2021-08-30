@@ -12,18 +12,22 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class PlacementPlanService(
@@ -120,12 +124,14 @@ class PlacementPlanService(
 
     fun applyPlacementPlan(
         tx: Database.Transaction,
-        childId: UUID,
+        application: ApplicationDetails,
         plan: PlacementPlan,
         allowPreschool: Boolean = true,
         allowPreschoolDaycare: Boolean = false,
         requestedStartDate: LocalDate? = null
     ) {
+        val childId = application.childId
+        val serviceNeed = resolveServiceNeedFromApplication(tx, application)
         var effectivePeriod: FiniteDateRange? = null
         if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)) {
             if (allowPreschool) {
@@ -137,7 +143,8 @@ class PlacementPlanService(
                     unitId = plan.unitId,
                     startDate = period.start,
                     endDate = period.end,
-                    useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                    useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                    serviceNeed
                 )
                 effectivePeriod = period
             }
@@ -162,7 +169,8 @@ class PlacementPlanService(
                         unitId = plan.unitId,
                         startDate = period.start,
                         endDate = exactTerm.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                        serviceNeed
                     )
                     createPlacement(
                         tx,
@@ -171,7 +179,8 @@ class PlacementPlanService(
                         unitId = plan.unitId,
                         startDate = exactTerm.end.plusDays(1),
                         endDate = period.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                        serviceNeed
                     )
                 } else {
                     createPlacement(
@@ -181,7 +190,8 @@ class PlacementPlanService(
                         unitId = plan.unitId,
                         startDate = period.start,
                         endDate = period.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                        serviceNeed
                     )
                 }
                 effectivePeriod = effectivePeriod?.let {
@@ -200,13 +210,26 @@ class PlacementPlanService(
                 unitId = plan.unitId,
                 startDate = period.start,
                 endDate = period.end,
-                useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                serviceNeed
             )
             effectivePeriod = period
         }
         effectivePeriod?.also {
             asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(childId, it.asDateRange())))
         }
+    }
+
+    private fun resolveServiceNeedFromApplication(tx: Database.Transaction, application: ApplicationDetails): ApplicationServiceNeed? {
+        val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id?.let(::ServiceNeedOptionId) ?: return null
+        if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
+            logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }
+            return null
+        }
+        return ApplicationServiceNeed(
+            serviceNeedOptionId, application.form.preferences.serviceNeed.shiftCare,
+            confirmedBy = null, confirmedAt = null
+        )
     }
 
     fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {

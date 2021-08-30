@@ -292,7 +292,10 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
     endDate: LocalDate.parseIso(serviceNeed.endDate),
     confirmed: {
       ...serviceNeed.confirmed,
-      at: new Date(serviceNeed.confirmed.at)
+      at:
+        serviceNeed.confirmed.at != null
+          ? new Date(serviceNeed.confirmed.at)
+          : null
     }
   }))
 }

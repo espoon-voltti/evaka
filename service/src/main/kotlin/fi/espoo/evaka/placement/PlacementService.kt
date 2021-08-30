@@ -12,10 +12,12 @@ import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
+import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -23,11 +25,19 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
+
+data class ApplicationServiceNeed(
+    val optionId: ServiceNeedOptionId,
+    val shiftCare: Boolean,
+    val confirmedBy: UUID?,
+    val confirmedAt: HelsinkiDateTime?
+)
 
 fun createPlacement(
     tx: Database.Transaction,
@@ -36,7 +46,8 @@ fun createPlacement(
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
-    useFiveYearsOldDaycare: Boolean
+    useFiveYearsOldDaycare: Boolean,
+    serviceNeed: ApplicationServiceNeed? = null
 ): List<Placement> {
     tx.clearOldPlacements(childId, startDate, endDate)
 
@@ -47,7 +58,14 @@ fun createPlacement(
     }
 
     return placementTypePeriods.map { (period, type) ->
-        tx.insertPlacement(type, childId, unitId, period.start, period.end)
+        val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
+        if (serviceNeed != null) {
+            tx.insertServiceNeed(
+                placement.id, period.start, period.end,
+                serviceNeed.optionId, serviceNeed.shiftCare, serviceNeed.confirmedBy, serviceNeed.confirmedAt
+            )
+        }
+        placement
     }
 }
 

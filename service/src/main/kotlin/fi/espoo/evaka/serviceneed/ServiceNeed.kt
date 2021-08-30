@@ -47,10 +47,10 @@ data class ServiceNeedOptionSummary(
 )
 
 data class ServiceNeedConfirmation(
-    val employeeId: UUID,
-    val firstName: String,
-    val lastName: String,
-    val at: HelsinkiDateTime
+    val employeeId: UUID?,
+    val firstName: String?,
+    val lastName: String?,
+    val at: HelsinkiDateTime?
 )
 
 data class ServiceNeedOptionPublicInfo(
