@@ -83,7 +83,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     spouseWorksInCompany,
     startupGrant,
     partnership,
-    lightEntrepreneur
+    lightEntrepreneur,
+    checkupConsent
   } = formData
   const startOfEntrepreneurship =
     LocalDate.parseFiOrNull(formData.startOfEntrepreneurship) ?? invalid
@@ -92,6 +93,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
 
   if (
+    !checkupConsent ||
     fullTime === null ||
     startOfEntrepreneurship === invalid ||
     spouseWorksInCompany === null ||
