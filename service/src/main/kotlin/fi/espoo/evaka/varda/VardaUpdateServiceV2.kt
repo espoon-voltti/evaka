@@ -200,11 +200,16 @@ fun updateAllVardaData(
     organizer: String,
     feeDecisionMinDate: LocalDate
 ) {
-    val since = HelsinkiDateTime.now().minusHours(24)
+    val since = calculateStartingFrom(db)
     logger.info("VardaUpdate: running varda update for data modified since $since")
     updateOrganizer(db, client, organizer)
     updateUnits(db, client, organizer)
     updateChildData(db, client, since, feeDecisionMinDate)
+}
+
+private fun calculateStartingFrom(db: Database.Connection): HelsinkiDateTime {
+    return db.read { it.createQuery("SELECT COALESCE(MAX(evaka_service_need_updated), now()) - INTERVAL '1 day' FROM varda_service_need") }
+        .mapTo<HelsinkiDateTime>().one()
 }
 
 /*
@@ -355,7 +360,7 @@ fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: V
 }
 
 // Add child if missing, service need, placement and mandatory fee decision(s)
-fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, newVardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
+fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, vardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
     try {
         check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
             "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
@@ -375,22 +380,23 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
         else {
+            vardaServiceNeed.evakaServiceNeedUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedUpdated)
+
             val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
-            newVardaServiceNeed.vardaChildId = vardaChildId
+            vardaServiceNeed.vardaChildId = vardaChildId
 
             val vardaDecisionId = sendDecisionToVarda(vardaClient, vardaChildId, evakaServiceNeed)
-            newVardaServiceNeed.vardaDecisionId = vardaDecisionId
+            vardaServiceNeed.vardaDecisionId = vardaDecisionId
 
             val vardaPlacementId = sendPlacementToVarda(vardaClient, vardaDecisionId, evakaServiceNeed)
-            newVardaServiceNeed.vardaPlacementId = vardaPlacementId
+            vardaServiceNeed.vardaPlacementId = vardaPlacementId
 
-            if (hasFeeData) newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData.first())
+            if (hasFeeData) vardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, vardaServiceNeed, evakaServiceNeed, serviceNeedFeeData.first())
+            db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
         }
-
-        db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
     } catch (e: Exception) {
         val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
-        db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed, errors) }
+        db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
         // TODO: remove once everything works
         logger.error("VardaUpdate: new varda decision errored with: ".plus(e.stackTrace.joinToString(",")))
         error(errors)
@@ -722,7 +728,7 @@ GROUP BY evaka_child_id"""
 data class VardaServiceNeed(
     val evakaChildId: UUID,
     val evakaServiceNeedId: ServiceNeedId,
-    val evakaServiceNeedUpdated: HelsinkiDateTime,
+    var evakaServiceNeedUpdated: HelsinkiDateTime? = null,
     var vardaChildId: Long? = null,
     var vardaDecisionId: Long? = null,
     var vardaPlacementId: Long? = null,
@@ -741,9 +747,11 @@ SELECT
 FROM service_need sn
 LEFT JOIN placement ON sn.placement_id = placement.id
 LEFT JOIN daycare ON daycare.id = placement.unit_id
+LEFT JOIN varda_service_need vsn ON vsn.evaka_service_need_id = sn.id
 WHERE sn.updated >= :startingFrom
 AND placement.type = ANY(:vardaPlacementTypes::placement_type[])
 AND daycare.upload_children_to_varda = true
+AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
 """
     )
         .bind("startingFrom", startingFrom)
