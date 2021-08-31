@@ -34,7 +34,7 @@ export default React.memo(function CalendarGridView({
         <div>
           <InlineButton
             onClick={onCreateReservationClicked}
-            text={'Tee varaus'}
+            text={i18n.calendar.newReservationBtn}
             icon={faCalendarPlus}
           />
         </div>
@@ -67,7 +67,9 @@ export default React.memo(function CalendarGridView({
                     (d.isHoliday ? (
                       <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
                     ) : (
-                      <NoReservation>Ei varausta</NoReservation>
+                      <NoReservation>
+                        {i18n.calendar.noReservation}
+                      </NoReservation>
                     ))}
                   {d.reservations
                     .map(

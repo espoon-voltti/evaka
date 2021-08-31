@@ -10,6 +10,7 @@ import WeekElem, { WeekProps } from './WeekElem'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
+import { useTranslation } from '../localization'
 
 export interface Props {
   weeklyData: WeekProps[]
@@ -22,6 +23,8 @@ export default React.memo(function CalendarListView({
   onCreateReservationClicked,
   selectDate
 }: Props) {
+  const i18n = useTranslation()
+
   return (
     <>
       <FixedSpaceColumn spacing={'zero'}>
@@ -31,7 +34,7 @@ export default React.memo(function CalendarListView({
       </FixedSpaceColumn>
       <HoverButton
         onClick={onCreateReservationClicked}
-        text={'Tee varaus'}
+        text={i18n.calendar.newReservationBtn}
         primary
         type="button"
       />

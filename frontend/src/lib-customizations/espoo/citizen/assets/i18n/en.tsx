@@ -146,6 +146,7 @@ const en: Translations = {
     title: 'Calendar',
     holiday: 'Holiday',
     newReservationBtn: 'Create reservation',
+    noReservation: 'No reservation',
     reservationModal: {
       title: 'Create reservation',
       selectChildren: 'Select children',

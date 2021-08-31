@@ -146,6 +146,7 @@ const sv: Translations = {
     title: 'Kalender',
     holiday: 'Helgdag',
     newReservationBtn: 'Tee varaus',
+    noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Valitse lapset',

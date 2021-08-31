@@ -78,29 +78,32 @@ export default React.memo(function CalendarPage() {
             return <div>{i18n.common.errors.genericGetError}</div>
           },
           success(response) {
-            const weeklyData = response.dailyData.reduce((weekly, daily) => {
-              const last = _.last(weekly)
-              if (
-                last === undefined ||
-                daily.date.getIsoWeek() !== last.weekNumber
-              ) {
-                return [
-                  ...weekly,
-                  {
-                    weekNumber: daily.date.getIsoWeek(),
-                    dailyReservations: [daily]
-                  }
-                ]
-              } else {
-                return [
-                  ..._.dropRight(weekly),
-                  {
-                    ...last,
-                    dailyReservations: [...last.dailyReservations, daily]
-                  }
-                ]
-              }
-            }, [] as WeekProps[])
+            const weeklyData = response.dailyData.reduce<WeekProps[]>(
+              (weekly, daily) => {
+                const last = _.last(weekly)
+                if (
+                  last === undefined ||
+                  daily.date.getIsoWeek() !== last.weekNumber
+                ) {
+                  return [
+                    ...weekly,
+                    {
+                      weekNumber: daily.date.getIsoWeek(),
+                      dailyReservations: [daily]
+                    }
+                  ]
+                } else {
+                  return [
+                    ..._.dropRight(weekly),
+                    {
+                      ...last,
+                      dailyReservations: [...last.dailyReservations, daily]
+                    }
+                  ]
+                }
+              },
+              []
+            )
 
             return (
               <>

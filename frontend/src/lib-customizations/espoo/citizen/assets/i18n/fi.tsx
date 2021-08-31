@@ -145,6 +145,7 @@ export default {
     title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
     newReservationBtn: 'Tee varaus',
+    noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Valitse lapset',
