@@ -11,6 +11,8 @@ import { WeekProps } from './WeekElem'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { formatDate } from 'lib-common/date'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faCalendarPlus } from 'lib-icons'
 
 export interface Props {
   weeklyData: WeekProps[]
@@ -20,6 +22,7 @@ export interface Props {
 
 export default React.memo(function CalendarGridView({
   weeklyData,
+  onCreateReservationClicked,
   selectDate
 }: Props) {
   const i18n = useTranslation()
@@ -28,6 +31,13 @@ export default React.memo(function CalendarGridView({
     <>
       <PageHeaderRow>
         <H1 noMargin>{i18n.calendar.title}</H1>
+        <div>
+          <InlineButton
+            onClick={onCreateReservationClicked}
+            text={'Tee varaus'}
+            icon={faCalendarPlus}
+          />
+        </div>
       </PageHeaderRow>
       <CalendarHeader>
         <HeadingCell>{i18n.common.datetime.weekShort}</HeadingCell>

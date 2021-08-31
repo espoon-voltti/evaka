@@ -31,7 +31,7 @@ export default React.memo(function CalendarListView({
       </FixedSpaceColumn>
       <HoverButton
         onClick={onCreateReservationClicked}
-        text={'Luo varaus'}
+        text={'Tee varaus'}
         primary
         type="button"
       />
