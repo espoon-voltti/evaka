@@ -608,14 +608,6 @@ private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: L
     }
 }
 
-private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed) {
-    vardaServiceNeed.vardaFeeDataIds.forEach { feeDataId ->
-        vardaClient.deleteFeeDataV2(feeDataId)
-    }
-    vardaServiceNeed.vardaPlacementId?.let { vardaClient.deletePlacementV2(it) }
-    vardaServiceNeed.vardaDecisionId?.let { vardaClient.deleteDecision(it) }
-}
-
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed, upsertErrors: List<String> = listOf()) = createUpdate(
     """
 INSERT INTO varda_service_need (
