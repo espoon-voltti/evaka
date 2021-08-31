@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID, SearchOrder } from '../types'
+import { SearchOrder, UUID } from '../types'
 import {
   ApplicationListSummary,
-  SortByApplications,
-  ApplicationSearchParams,
+  ApplicationNote,
   ApplicationResponse,
-  ApplicationNote
+  ApplicationSearchParams,
+  SortByApplications
 } from '../types/application'
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { client } from './client'
@@ -344,18 +344,6 @@ export async function updateNote(id: UUID, text: string): Promise<void> {
 
 export async function deleteNote(id: UUID): Promise<void> {
   return client.delete(`/note/${id}`)
-}
-
-export async function getAttachmentBlob(
-  attachmentId: UUID
-): Promise<Result<BlobPart>> {
-  return client({
-    url: `/attachments/${attachmentId}/download`,
-    method: 'GET',
-    responseType: 'blob'
-  })
-    .then((result) => Success.of(result.data))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function getClubTerms(): Promise<Result<ClubTerm[]>> {

@@ -3,8 +3,8 @@ import { RouteComponentProps } from 'react-router'
 import { UUID } from '../types'
 import { Translations, useTranslation } from '../state/i18n'
 import {
-  FixedSpaceRow,
-  FixedSpaceColumn
+  FixedSpaceColumn,
+  FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -17,8 +17,8 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  IncomeStatement,
-  Income
+  Income,
+  IncomeStatement
 } from 'lib-common/api-types/incomeStatement'
 import { combine, Loading, Result } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
@@ -27,6 +27,8 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { PersonContext } from '../state/person'
 import { getPersonDetails } from '../api/person'
+import { getAttachmentBlob } from '../api/attachments'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 
 export default React.memo(function IncomeStatementPage({
   match
@@ -302,9 +304,17 @@ function Attachments({ attachments }: { attachments: Attachment[] }) {
       {attachments.length === 0 ? (
         <p>{i18n.incomeStatement.noAttachments}</p>
       ) : (
-        attachments.map((attachment) => (
-          <div key={attachment.id}>{attachment.name}</div>
-        ))
+        <Row
+          label={`${i18n.incomeStatement.attachments}:`}
+          value={attachments.map((attachment) => (
+            <FileDownloadButton
+              key={attachment.id}
+              file={attachment}
+              fileFetchFn={getAttachmentBlob}
+              onFileUnavailable={() => undefined}
+            />
+          ))}
+        />
       )}
     </>
   )

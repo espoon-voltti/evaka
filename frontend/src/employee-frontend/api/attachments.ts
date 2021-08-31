@@ -37,3 +37,15 @@ export const deleteAttachment = (id: UUID): Promise<Result<void>> =>
     .delete(`/attachments/${id}`)
     .then(() => Success.of(void 0))
     .catch((e) => Failure.fromError(e))
+
+export async function getAttachmentBlob(
+  attachmentId: UUID
+): Promise<Result<BlobPart>> {
+  return client({
+    url: `/attachments/${attachmentId}/download`,
+    method: 'GET',
+    responseType: 'blob'
+  })
+    .then((result) => Success.of(result.data))
+    .catch((e) => Failure.fromError(e))
+}

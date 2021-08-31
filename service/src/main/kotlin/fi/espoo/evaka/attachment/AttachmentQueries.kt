@@ -65,9 +65,15 @@ fun Database.Transaction.insertAttachment(
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
-    .createQuery("SELECT * FROM attachment WHERE id = :id")
+    .createQuery(
+        """
+        SELECT id, name, content_type, updated, received_at, type, uploaded_by_employee, uploaded_by_person
+        FROM attachment
+        WHERE id = :id
+        """
+    )
     .bind("id", id).mapTo<Attachment>()
-    .first()
+    .firstOrNull()
 
 fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
     val sql =
