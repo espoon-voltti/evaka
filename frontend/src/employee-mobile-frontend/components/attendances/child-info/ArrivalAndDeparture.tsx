@@ -6,8 +6,8 @@ import React from 'react'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { useTranslation } from 'employee-mobile-frontend/state/i18n'
 import { AttendanceChild } from 'employee-mobile-frontend/api/attendances'
+import { formatTime } from 'lib-common/date'
 import { ArrivalTime } from '../components'
-import { getTimeString } from './ChildInfo'
 
 interface Props {
   child: AttendanceChild
@@ -30,7 +30,7 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
           <span>{i18n.attendances.arrivalTime}</span>
           <span>
             {child.attendance?.arrived
-              ? getTimeString(child.attendance.arrived)
+              ? formatTime(child.attendance.arrived)
               : 'xx:xx'}
           </span>
         </ArrivalTime>
@@ -40,7 +40,7 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
           <span>{i18n.attendances.departureTime}</span>
           <span>
             {child.attendance?.departed
-              ? getTimeString(child.attendance.departed)
+              ? formatTime(child.attendance.departed)
               : 'xx:xx'}
           </span>
         </ArrivalTime>

@@ -391,20 +391,6 @@ export default React.memo(function AttendanceChildPage() {
   )
 })
 
-export function getCurrentTime() {
-  return getTimeString(new Date())
-}
-
-export function getTimeString(date: Date) {
-  return date.getHours() < 10
-    ? date.getMinutes() < 10
-      ? `0${date.getHours()}:0${date.getMinutes()}`
-      : `0${date.getHours()}:${date.getMinutes()}`
-    : date.getMinutes() < 10
-    ? `${date.getHours()}:0${date.getMinutes()}`
-    : `${date.getHours()}:${date.getMinutes()}`
-}
-
 function getColorByStatus(status: AttendanceStatus) {
   return status === 'ABSENT'
     ? colors.greyscale.dark

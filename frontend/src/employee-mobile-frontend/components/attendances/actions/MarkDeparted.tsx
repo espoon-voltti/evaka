@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
+import { formatTime, isValidTime } from 'lib-common/date'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
@@ -23,7 +24,7 @@ import { Result, Loading } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { TallContentArea } from '../../../components/mobile/components'
+import { TallContentArea } from '../../mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childDeparts,
@@ -33,7 +34,6 @@ import {
   postDeparture
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { getCurrentTime } from '../child-info/ChildInfo'
 import DailyNote from '../notes/DailyNote'
 import { isBefore, parse } from 'date-fns'
 import AbsenceSelector from '../AbsenceSelector'
@@ -53,7 +53,7 @@ export default React.memo(function MarkDeparted() {
   const { attendanceResponse, setAttendanceResponse } =
     useContext(AttendanceUIContext)
 
-  const [time, setTime] = useState<string>(getCurrentTime())
+  const [time, setTime] = useState<string>(formatTime(new Date()))
   const [timeError, setTimeError] = useState<boolean>(false)
   const [childDepartureInfo, setChildDepartureInfo] = useState<
     Result<DepartureInfoResponse>
@@ -203,7 +203,7 @@ export default React.memo(function MarkDeparted() {
                     onClick={() => markDeparted()}
                     onSuccess={() => history.go(-2)}
                     data-qa="mark-departed-btn"
-                    disabled={timeError}
+                    disabled={timeError || !isValidTime(time)}
                   />
                 </FixedSpaceRow>
               </Actions>
