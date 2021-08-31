@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
 
 export interface Props {
   id: UUID
@@ -17,6 +18,7 @@ export interface Props {
 
 function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
+  const { permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -30,9 +32,13 @@ function Assistance({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="assistance-collapsible"
       >
-        <AssistanceNeed id={id} />
+        {permittedActions.has('READ_ASSISTANCE_NEED') && (
+          <AssistanceNeed id={id} />
+        )}
         <div className="separator large" />
-        <AssistanceAction id={id} />
+        {permittedActions.has('READ_ASSISTANCE_ACTION') && (
+          <AssistanceAction id={id} />
+        )}
       </CollapsibleContentArea>
     </div>
   )

@@ -20,7 +20,6 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { UIContext } from 'employee-frontend/state/ui'
-import { UserContext } from 'employee-frontend/state/user'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
 interface Props {
@@ -34,9 +33,9 @@ const MessageBlocklist = React.memo(function ChildDetails({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const { roles } = useContext(UserContext)
   const { setErrorMessage } = useContext(UIContext)
-  const { recipients, setRecipients } = useContext(ChildContext)
+  const { recipients, setRecipients, permittedActions } =
+    useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -112,15 +111,7 @@ const MessageBlocklist = React.memo(function ChildDetails({
                       hiddenLabel
                       checked={!recipient.blocklisted}
                       data-qa={'blocklist-checkbox'}
-                      disabled={
-                        !roles.find((r) =>
-                          [
-                            'ADMIN',
-                            'SERVICE_WORKER',
-                            'UNIT_SUPERVISOR'
-                          ].includes(r)
-                        )
-                      }
+                      disabled={!permittedActions.has('UPDATE_CHILD_RECIPIENT')}
                       onChange={(checked: boolean) => {
                         setRecipients(Loading.of())
                         void updateChildRecipient(

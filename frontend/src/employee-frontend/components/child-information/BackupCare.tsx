@@ -14,7 +14,6 @@ import { UIContext } from '../../state/ui'
 import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
 import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { RequireRole } from '../../utils/roles'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
@@ -23,9 +22,10 @@ export interface Props {
   startOpen: boolean
 }
 
-export default function BackupCare({ id, startOpen }: Props): JSX.Element {
+export default function BackupCare({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { backupCares, setBackupCares } = useContext(ChildContext)
+  const { backupCares, setBackupCares, permittedActions } =
+    useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
@@ -52,21 +52,14 @@ export default function BackupCare({ id, startOpen }: Props): JSX.Element {
       {backupCares.isFailure && <div>{i18n.common.loadingFailed}</div>}
       {backupCares.isSuccess && (
         <div data-qa="backup-cares">
-          <RequireRole
-            oneOf={[
-              'SERVICE_WORKER',
-              'UNIT_SUPERVISOR',
-              'FINANCE_ADMIN',
-              'ADMIN'
-            ]}
-          >
+          {permittedActions.has('CREATE_BACKUP_CARE') && (
             <AddButtonRow
               text={i18n.childInformation.backupCares.create}
               onClick={() => toggleUiMode('create-new-backup-care')}
               disabled={uiMode === 'create-new-backup-care'}
               data-qa="backup-care-create-btn"
             />
-          </RequireRole>
+          )}
           {uiMode === 'create-new-backup-care' && (
             <BackupCareForm childId={id} />
           )}

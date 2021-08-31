@@ -19,7 +19,8 @@ interface Props {
 
 const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
   const { i18n } = useTranslation()
-  const { person, setPerson } = useContext<ChildState>(ChildContext)
+  const { person, setPerson, permittedActions } =
+    useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(true)
 
@@ -41,9 +42,11 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
             />
           )}
         </UnwrapResult>
-        <div className="additional-information">
-          <AdditionalInformation id={id} />
-        </div>
+        {permittedActions.has('READ_ADDITIONAL_INFO') && (
+          <div className="additional-information">
+            <AdditionalInformation id={id} />
+          </div>
+        )}
       </CollapsibleContentArea>
     </div>
   )

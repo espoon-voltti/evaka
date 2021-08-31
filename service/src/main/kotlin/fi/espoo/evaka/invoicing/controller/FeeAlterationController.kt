@@ -15,9 +15,10 @@ import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,15 +33,13 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/fee-alterations")
-class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
+class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val parsedId = personId?.let { parseUUID(personId) }
-            ?: throw BadRequest("Query parameter personId is mandatory")
+        accessControl.requirePermissionFor(user, Action.Child.READ_FEE_ALTERATIONS, personId)
 
-        val feeAlterations = db.read { it.getFeeAlterationsForPerson(parsedId) }
+        val feeAlterations = db.read { it.getFeeAlterationsForPerson(personId) }
         return ResponseEntity.ok(Wrapper(feeAlterations))
     }
 

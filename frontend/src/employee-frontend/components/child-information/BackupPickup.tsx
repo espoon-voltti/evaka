@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -18,7 +17,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import InputField from 'lib-components/atoms/form/InputField'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
-
 import { UUID } from '../../types'
 import {
   createBackupPickup,
@@ -34,6 +32,7 @@ import { H3, Label } from 'lib-components/typography'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { RequireRole } from '../../utils/roles'
 import { FlexRow } from '../common/styled/containers'
+import { ChildContext } from '../../state'
 
 interface BackupPickupProps {
   id: UUID
@@ -42,6 +41,7 @@ interface BackupPickupProps {
 function BackupPickup({ id }: BackupPickupProps) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { permittedActions } = useContext(ChildContext)
 
   const [result, setResult] = useState<Result<ChildBackupPickup[]>>(
     Loading.of()
@@ -181,13 +181,13 @@ function BackupPickup({ id }: BackupPickupProps) {
         <>
           <FlexRow justifyContent="space-between">
             <H3 noMargin>{i18n.childInformation.backupPickups.title}</H3>
-            <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+            {permittedActions.has('CREATE_BACKUP_PICKUP') && (
               <AddButton
                 text={i18n.childInformation.backupPickups.add}
                 onClick={() => toggleUiMode('create-backup-pickup')}
                 data-qa="create-backup-pickup-btn"
               />
-            </RequireRole>
+            )}
           </FlexRow>
           {result.value.length > 0 && (
             <Table>

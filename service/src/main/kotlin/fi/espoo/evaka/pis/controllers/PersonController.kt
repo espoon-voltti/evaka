@@ -25,6 +25,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -45,7 +47,8 @@ import java.util.UUID
 class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    private val accessControl: AccessControl
 ) {
     @PostMapping
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
@@ -84,11 +87,11 @@ class PersonController(
     fun getPersonGuardians(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID
+        @PathVariable(value = "personId") childId: UUID
     ): ResponseEntity<List<PersonJSON>> {
-        Audit.PersonGuardianRead.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { personService.getGuardians(it, user, personId) }
+        Audit.PersonGuardianRead.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_GUARDIANS, childId)
+        return db.transaction { personService.getGuardians(it, user, childId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
     }
 
