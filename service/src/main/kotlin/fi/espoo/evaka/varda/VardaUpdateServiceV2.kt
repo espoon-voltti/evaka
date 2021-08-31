@@ -350,13 +350,6 @@ fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: V
 // Add child if missing, service need, placement and mandatory fee decision(s)
 fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, vardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
     try {
-        check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
-            "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
-        }
-        check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
-            "VardaUpdate: service need daycare oph unit oid is null or blank"
-        }
-
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
@@ -368,6 +361,13 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
         else {
+            check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
+                "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
+            }
+            check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
+                "VardaUpdate: service need daycare oph unit oid is null or blank"
+            }
+
             vardaServiceNeed.evakaServiceNeedUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedUpdated)
 
             val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
