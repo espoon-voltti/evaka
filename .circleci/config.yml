@@ -8,8 +8,8 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@4.4.2
-  owasp: entur/owasp@0.0.15
+  slack: circleci/slack@4.4.4
+  owasp: entur/owasp@0.0.16
 
 parameters:
   workspace_root:
@@ -17,7 +17,7 @@ parameters:
     default: /home/circleci/repo
   builder_aws_version:
     type: string
-    default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+    default: bullseye-slim-a5a07c25c46622d35ac60836c5d5b0117f00b026
   nodejs_image:
     type: string
     default: cimg/node:14.15
@@ -41,15 +41,15 @@ aliases:
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
 
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
-  - &remote_docker_version "20.10.6"
+  - &remote_docker_version "20.10.7"
   - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
-  - &ubuntu_machine_image ubuntu-2004:202104-01
-  - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_docker_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_terraform_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
+  - &ubuntu_machine_image ubuntu-2004:202107-02
+  - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
 
   - &default_contexts
     context:
