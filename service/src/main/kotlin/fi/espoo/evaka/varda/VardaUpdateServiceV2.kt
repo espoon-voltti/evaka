@@ -100,25 +100,6 @@ class VardaUpdateServiceV2(
 
         logger.info("VardaUpdate: successfully reset ${successfulResets.size} children (failed ${resetChildIds.size - successfulResets.size} children)")
     }
-
-    fun clearAllExistingVardaChildDataFromVarda(db: Database.Connection, vardaChildId: Long) {
-        val vardaClient = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-
-        try {
-            val feeDataIds = vardaClient.getFeeDataByChild(vardaChildId)
-            deleteFeeData(db, vardaClient, feeDataIds)
-
-            val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
-            val placementIds = decisionIds.flatMap {
-                vardaClient.getPlacementsByDecision(it)
-            }
-            deletePlacements(db, vardaClient, placementIds)
-            deleteDecisions(db, vardaClient, decisionIds)
-            deleteChild(db, vardaClient, vardaChildId)
-        } catch (e: Exception) {
-            logger.error("VardaUpdate: could not delete old varda data for child $vardaChildId: ${e.localizedMessage}")
-        }
-    }
 }
 
 fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
