@@ -167,7 +167,7 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class IncomeStatement(private val roles: EnumSet<UserRole>) : Action {
-        READ(FINANCE_ADMIN),
+        UPDATE_HANDLED(FINANCE_ADMIN),
         UPLOAD_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN),
         DELETE_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN);
 

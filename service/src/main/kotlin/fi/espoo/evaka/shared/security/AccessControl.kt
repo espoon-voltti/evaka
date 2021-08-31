@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PersonId
@@ -250,6 +251,11 @@ WHERE employee_id = :userId
         user: AuthenticatedUser,
         ids: Collection<GroupPlacementId>
     ): Map<GroupPlacementId, Set<Action.GroupPlacement>> = this.groupPlacement.getPermittedActions(user, ids)
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.IncomeStatement, @Suppress("UNUSED_PARAMETER") id: IncomeStatementId) {
+        // Person actions in Espoo are global so the id parameter is ignored
+        assertGlobalPermission(user, action, permittedRoleActions::incomeStatementActions)
+    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(

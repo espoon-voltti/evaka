@@ -1,5 +1,6 @@
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -21,7 +22,7 @@ private fun selectQuery(single: Boolean): String {
     // language=SQL
     return """
 SELECT
-    id,
+    ist.id,
     start_date,
     end_date,
     type,
@@ -48,8 +49,9 @@ SELECT
     student,
     alimony_payer,
     other_info,
-    created,
-    updated,
+    ist.created,
+    ist.updated,
+    e.first_name || ' ' || e.last_name as handler_name,
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
@@ -60,8 +62,9 @@ SELECT
         ORDER BY a.created
     ) s) AS attachments
 FROM income_statement ist
+LEFT JOIN employee e on ist.handler_id = e.id
 WHERE person_id = :personId
-${if (single) "AND id = :id" else ""}
+${if (single) "AND ist.id = :id" else ""}
 ORDER BY start_date DESC
         """
 }
@@ -72,6 +75,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
     val endDate = row.mapColumn<LocalDate?>("end_date")
     val created = row.mapColumn<HelsinkiDateTime>("created")
     val updated = row.mapColumn<HelsinkiDateTime>("updated")
+    val handlerName = row.mapColumn<String?>("handler_name")
     return when (row.mapColumn<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
@@ -80,6 +84,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 endDate = endDate,
                 created = created,
                 updated = updated,
+                handlerName = handlerName,
             )
 
         IncomeStatementType.INCOME -> {
@@ -144,6 +149,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 otherInfo = row.mapColumn("other_info"),
                 created = created,
                 updated = updated,
+                handlerName = handlerName,
                 attachments = row.mapJsonColumn("attachments")
             )
         }
@@ -364,4 +370,11 @@ WHERE id = :id
         .execute()
 
     return rowCount == 1
+}
+
+fun Database.Transaction.setIncomeStatementHandler(handlerId: EmployeeId?, incomeStatementId: IncomeStatementId) {
+    createUpdate("UPDATE income_statement SET handler_id = :handlerId WHERE id = :id")
+        .bindNullable("handlerId", handlerId)
+        .bind("id", incomeStatementId)
+        .execute()
 }
