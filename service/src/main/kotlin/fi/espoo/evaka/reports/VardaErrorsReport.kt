@@ -5,6 +5,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,15 +36,15 @@ SELECT
     updated,
     errors
 FROM varda_service_need
-WHERE updated > :since
+WHERE updated > :errorsSince AND update_failed = true
     """.trimIndent()
-).bind("since", errorsSince)
+).bind("errorsSince", errorsSince)
     .mapTo<VardaErrorReportRow>()
-    .list()
+    .toList()
 
 data class VardaErrorReportRow(
     val serviceNeedId: UUID,
     val childId: UUID,
-    val updated: LocalDate,
+    val updated: HelsinkiDateTime,
     val errors: String
 )
