@@ -311,7 +311,7 @@ class VardaClient(
     }
 
     fun deleteFeeDataV2(vardaId: Long): Boolean {
-        logger.info { "VardaUpdate: Deleting fee data $vardaId from Varda" }
+        logger.info { "VardaUpdate: client deleting fee data $vardaId" }
 
         val t1 = System.currentTimeMillis()
 
@@ -321,12 +321,12 @@ class VardaClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "VardaUpdate: Deleting fee data $vardaId from Varda succeeded" }
+                logger.info { "VardaUpdate: client successfully deleted fee data $vardaId" }
                 true
             }
             is Result.Failure -> {
                 logRequestError(request, result.error)
-                error(result.error)
+                error("VardaUpdate: client failed to delete fee data $vardaId: ${gatherErrorData(request, result.error)}")
             }
         }
     }
