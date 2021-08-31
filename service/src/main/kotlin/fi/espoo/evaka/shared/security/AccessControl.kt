@@ -147,12 +147,14 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForAnyUnit(user).roles },
-            action = action,
-            mapping = permittedRoleActions::globalActions
-        )
+        if (user is AuthenticatedUser.Employee) {
+            val userRoles = user.globalRoles + user.allScopedRoles
+            if (userRoles.any { it == UserRole.ADMIN || permittedRoleActions.globalActions(it).contains(action) }) {
+                return
+            }
+        }
+
+        throw Forbidden("Permission denied")
     }
 
     fun getPermittedRoles(action: Action.Global): Set<UserRole> {
@@ -319,12 +321,14 @@ WHERE employee_id = :userId
         @Suppress("UNUSED_PARAMETER") id: VasuTemplateId
     ) {
         // VasuTemplate actions in Espoo are global so the id parameter is ignored
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForAnyUnit(user).roles },
-            action = action,
-            mapping = permittedRoleActions::vasuTemplateActions
-        )
+        if (user is AuthenticatedUser.Employee) {
+            val userRoles = user.globalRoles + user.allScopedRoles
+            if (userRoles.any { it == UserRole.ADMIN || permittedRoleActions.vasuTemplateActions(it).contains(action) }) {
+                return
+            }
+        }
+
+        throw Forbidden("Permission denied")
     }
 
     private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
@@ -399,7 +403,10 @@ WHERE employee_id = :userId
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        val globalRoles = user.roles - UserRole.SCOPED_ROLES
+        val globalRoles = when (user) {
+            is AuthenticatedUser.Employee -> user.globalRoles
+            else -> user.roles
+        }
         if (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
             return
 
