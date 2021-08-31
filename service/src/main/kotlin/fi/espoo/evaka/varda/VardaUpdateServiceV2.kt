@@ -311,7 +311,7 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
         val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
         addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: error while processing new service need $serviceNeedId data: ${e.localizedMessage}")
         return false
     }
 
