@@ -18,7 +18,7 @@ export interface Props {
   selectDate: (date: LocalDate) => void
 }
 
-export default React.memo(function CalendarListView({
+export default React.memo(function CalendarGridView({
   dailyReservations,
   onCreateReservationClicked,
   selectDate

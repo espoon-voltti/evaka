@@ -142,6 +142,7 @@ export default {
     backToSearch: 'Takaisin hakuun'
   },
   calendar: {
+    title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
     newReservationBtn: 'Tee varaus',
     reservationModal: {
