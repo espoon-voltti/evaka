@@ -180,7 +180,7 @@ class VardaClient(
     }
 
     fun getPersonFromVardaBySsnOrOid(body: VardaPersonSearchRequest): VardaPersonResponse? {
-        logger.info { "Fetching person from Varda" }
+        logger.info { "VardaUpdate: client finding person by $body" }
         val t1 = System.currentTimeMillis()
 
         val (request, _, result) = fuel.post(personSearchUrl)
@@ -190,16 +190,14 @@ class VardaClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Fetching person from Varda succeeded" }
-                objectMapper.readValue<VardaPersonResponse>(
-                    objectMapper.readTree(result.get()).toString()
-                )
+                logger.info { "VardaUpdate: client successfully found person matching $body" }
+                objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 // TODO: once everything works, remove this debug logging
                 logger.error { "VardaUpdate: Fetching person from Varda failed for ${body.henkilotunnus?.slice(0..4)}" }
                 logRequestError(request, result.error)
-                null
+                error("VardaUpdate: client failed to find person by $body: ${gatherErrorData(request, result.error)}")
             }
         }
     }
