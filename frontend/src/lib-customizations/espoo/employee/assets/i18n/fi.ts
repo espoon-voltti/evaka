@@ -1225,6 +1225,15 @@ export const fi = {
         deleteButton: 'Poista'
       }
     },
+    incomeStatement: {
+      title: 'Tuloselvitykset',
+      noIncomeStatements: 'Ei tuloselvityksiä',
+      incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
+      createdHeading: 'Saapumispäivä',
+      handleHeading: 'Kuittaa käsitellyksi',
+      open: 'Avaa lomake',
+      handled: 'Tuloselvitys käsitelty'
+    },
     invoice: {
       validity: 'Aikaväli',
       price: 'Summa',

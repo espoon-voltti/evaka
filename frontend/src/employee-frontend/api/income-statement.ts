@@ -11,7 +11,7 @@ export async function getIncomeStatements(
   personId: UUID
 ): Promise<Result<IncomeStatement[]>> {
   return client
-    .get<JsonOf<IncomeStatement[]>>(`/income-statements/${personId}`)
+    .get<JsonOf<IncomeStatement[]>>(`/income-statements/person/${personId}`)
     .then((res) => res.data.map(deserializeIncomeStatement))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -23,9 +23,19 @@ export async function getIncomeStatement(
 ): Promise<Result<IncomeStatement>> {
   return client
     .get<JsonOf<IncomeStatement>>(
-      `/income-statements/${personId}/${incomeStatementId}`
+      `/income-statements/person/${personId}/${incomeStatementId}`
     )
     .then((res) => deserializeIncomeStatement(res.data))
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function setIncomeStatementHandled(
+  incomeStatementId: UUID,
+  handled: boolean
+): Promise<Result<void>> {
+  return client
+    .post(`/income-statements/${incomeStatementId}/handled`, { data: handled })
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

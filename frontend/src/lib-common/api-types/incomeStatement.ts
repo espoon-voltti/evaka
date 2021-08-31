@@ -38,6 +38,9 @@ interface Base {
   id: UUID
   startDate: LocalDate
   endDate: LocalDate | null
+  created: Date
+  updated: Date
+  handlerName: string | null
 }
 
 export interface HighestFee extends Base {
@@ -107,16 +110,20 @@ export function deserializeIncomeStatement(
 ): IncomeStatement {
   const startDate = LocalDate.parseIso(data.startDate)
   const endDate = data.endDate ? LocalDate.parseIso(data.endDate) : null
+  const created = new Date(data.created)
+  const updated = new Date(data.updated)
   switch (data.type) {
     case 'HIGHEST_FEE':
-      return { ...data, startDate, endDate }
+      return { ...data, startDate, endDate, created, updated }
     case 'INCOME':
       return {
         ...data,
         startDate,
         endDate,
         gross: deserializeGross(data.gross),
-        entrepreneur: deserializeEntrepreneur(data.entrepreneur)
+        entrepreneur: deserializeEntrepreneur(data.entrepreneur),
+        created,
+        updated
       }
   }
 }

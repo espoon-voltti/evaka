@@ -4,9 +4,12 @@ import { UUID } from 'lib-common/types'
 import { HighestFee, Income } from 'lib-common/api-types/incomeStatement'
 import * as Form from './form'
 
-export type HighestFeeBody = Omit<HighestFee, 'id'>
+type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handlerName'
 
-export interface IncomeBody extends Omit<Income, 'id' | 'attachments'> {
+export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
+
+export interface IncomeBody
+  extends Omit<Income, ReadOnlyFields | 'attachments'> {
   attachmentIds: UUID[]
 }
 
