@@ -8,7 +8,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { useTranslation } from '../localization'
-import { DailyReservationData } from './api'
+import { DailyReservationData, Reservation } from './api'
 import { defaultMargins } from 'lib-components/white-space'
 
 export interface DayProps {
@@ -38,7 +38,7 @@ export default React.memo(function DayElem({
         {reservations.length === 0 && isHoliday && (
           <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
         )}
-        {reservations
+        {uniqueReservations(reservations)
           .map(
             (reservation) =>
               `${formatDate(reservation.startTime, 'HH:mm')} - ${formatDate(
@@ -52,6 +52,21 @@ export default React.memo(function DayElem({
     </DayDiv>
   )
 })
+
+const uniqueReservations = (reservations: Reservation[]) =>
+  reservations.reduce<Reservation[]>(
+    (uniq, reservation) =>
+      uniq.some(
+        ({ startTime, endTime }) =>
+          formatDate(startTime, 'HH:mm') ===
+            formatDate(reservation.startTime, 'HH:mm') &&
+          formatDate(endTime, 'HH:mm') ===
+            formatDate(reservation.endTime, 'HH:mm')
+      )
+        ? uniq
+        : [...uniq, reservation],
+    []
+  )
 
 const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   position: relative;
