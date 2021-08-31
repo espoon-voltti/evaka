@@ -2242,6 +2242,7 @@ export const fi = {
         'Tarkista ettei henkilöillä ole esimerkiksi päällekäisiä sijoituksia, palveluntarpeita tai muita päällekkäisyyksiä, jotka voisivat estää yhdistämisen.',
       columns: {
         'absence.child_id': 'Poissa- oloja',
+        'absence.modified_by_guardian_id': 'Itse merkittyjä poissa -oloja',
         'application.child_id': 'Hakemuksia (lapsena)',
         'application.guardian_id': 'Hakemuksia (huoltajana)',
         'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',

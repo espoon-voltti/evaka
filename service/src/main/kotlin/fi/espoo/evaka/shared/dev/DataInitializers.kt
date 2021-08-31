@@ -736,7 +736,7 @@ fun Database.Transaction.insertTestAbsence(
     //language=sql
     val sql =
         """
-        INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by)
+        INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by_deprecated)
         VALUES (:id, :childId, :date, :careType, :absenceType, :modifiedBy)
         """.trimIndent()
     createUpdate(sql)
