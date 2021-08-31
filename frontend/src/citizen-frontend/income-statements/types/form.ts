@@ -118,7 +118,11 @@ export function fromIncomeStatement(
     ...(incomeStatement.type === 'INCOME'
       ? {
           gross: mapGross(incomeStatement.gross),
-          entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur)
+          entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur),
+          student: incomeStatement.student,
+          alimonyPayer: incomeStatement.alimonyPayer,
+          otherInfo: incomeStatement.otherInfo,
+          attachments: incomeStatement.attachments
         }
       : undefined)
   }
