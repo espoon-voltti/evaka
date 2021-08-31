@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import _ from 'lodash'
 import LocalDate from 'lib-common/local-date'
-import { DailyReservationData } from './api'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import colors from 'lib-customizations/common'
@@ -15,49 +13,34 @@ import { defaultMargins } from 'lib-components/white-space'
 import { formatDate } from 'lib-common/date'
 
 export interface Props {
-  dailyReservations: DailyReservationData[]
+  weeklyData: WeekProps[]
   onCreateReservationClicked: () => void
   selectDate: (date: LocalDate) => void
 }
 
-export default React.memo(function CalendarListView({
-  dailyReservations,
+export default React.memo(function CalendarGridView({
+  weeklyData,
   selectDate
 }: Props) {
   const i18n = useTranslation()
-  const weeklyData = dailyReservations.reduce((weekly, daily) => {
-    const last = _.last(weekly)
-    if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
-      return [
-        ...weekly,
-        { weekNumber: daily.date.getIsoWeek(), dailyReservations: [daily] }
-      ]
-    } else {
-      return [
-        ..._.dropRight(weekly),
-        {
-          ...last,
-          dailyReservations: [...last.dailyReservations, daily]
-        }
-      ]
-    }
-  }, [] as WeekProps[])
 
   return (
     <>
       <PageHeaderRow>
         <H1 noMargin>{i18n.calendar.title}</H1>
       </PageHeaderRow>
-      <Grid>
+      <CalendarHeader>
         <HeadingCell>{i18n.common.datetime.weekShort}</HeadingCell>
         {[0, 1, 2, 3, 4].map((d) => (
           <HeadingCell key={d}>
             {i18n.common.datetime.weekdaysShort[d]}
           </HeadingCell>
         ))}
+      </CalendarHeader>
+      <Grid>
         {weeklyData.map((w) => (
           <>
-            <HeadingCell>{w.weekNumber}</HeadingCell>
+            <WeekNumber>{w.weekNumber}</WeekNumber>
             {w.dailyReservations.map((d) => (
               <DayCell
                 key={d.date.formatIso()}
@@ -103,6 +86,11 @@ const PageHeaderRow = styled.div`
   margin-bottom: ${defaultMargins.m};
 `
 
+const CalendarHeader = styled.div`
+  display: grid;
+  grid-template-columns: 40px repeat(5, 1fr);
+`
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 40px repeat(5, 1fr);
@@ -113,25 +101,37 @@ const HeadingCell = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-style: normal;
   font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
   text-align: center;
   padding: ${defaultMargins.xs};
+`
+
+const WeekNumber = styled(HeadingCell)`
+  padding-top: ${defaultMargins.s};
 `
 
 const DayCell = styled.div<{ today: boolean }>`
   position: relative;
   min-height: 150px;
   padding: ${defaultMargins.s};
-  border: 1px solid ${colors.greyscale.lighter};
-
+  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-right: 1px solid ${colors.greyscale.lighter};
   ${(p) =>
     p.today
       ? `
     border-left: 4px solid ${colors.brandEspoo.espooTurquoise};
     padding-left: calc(${defaultMargins.s} - 3px);
   `
-      : ''}
+      : `
+    /* left border for second cell (first day cell) of each row */
+    &:nth-child(6n+2) {
+      border-left: 1px solid ${colors.greyscale.lighter};
+    }
+      `}
+
+  /* top border for every day cell of first row */
+  &:nth-child(-n + 7) {
+    border-top: 1px solid ${colors.greyscale.lighter};
+  }
 `
 
 const DayCellHeader = styled.div`
@@ -145,18 +145,17 @@ const DayCellDate = styled.div<{ holiday: boolean }>`
   font-style: normal;
   color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
   font-weight: 600;
-  font-size: 20px;
-  line-height: 30px;
+  font-size: 1.25rem;
 `
 
 const DayCellReservations = styled.div``
 
 const HistoryOverlay = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 1px;
+  left: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
   z-index: 1;
   opacity: 0.6;
   background-color: ${colors.greyscale.white};

@@ -20,6 +20,8 @@ import DayView from './DayView'
 import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
+import _ from 'lodash'
+import { WeekProps } from './WeekElem'
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
@@ -76,6 +78,30 @@ export default React.memo(function CalendarPage() {
             return <div>{i18n.common.errors.genericGetError}</div>
           },
           success(response) {
+            const weeklyData = response.dailyData.reduce((weekly, daily) => {
+              const last = _.last(weekly)
+              if (
+                last === undefined ||
+                daily.date.getIsoWeek() !== last.weekNumber
+              ) {
+                return [
+                  ...weekly,
+                  {
+                    weekNumber: daily.date.getIsoWeek(),
+                    dailyReservations: [daily]
+                  }
+                ]
+              } else {
+                return [
+                  ..._.dropRight(weekly),
+                  {
+                    ...last,
+                    dailyReservations: [...last.dailyReservations, daily]
+                  }
+                ]
+              }
+            }, [] as WeekProps[])
+
             return (
               <>
                 <MobileOnly>
@@ -85,7 +111,7 @@ export default React.memo(function CalendarPage() {
                     paddingHorizontal="zero"
                   >
                     <CalendarListView
-                      dailyReservations={response.dailyData}
+                      weeklyData={weeklyData}
                       onCreateReservationClicked={() =>
                         setReservationViewOpen(true)
                       }
@@ -97,7 +123,7 @@ export default React.memo(function CalendarPage() {
                   <Gap size="s" />
                   <ContentArea opaque>
                     <CalendarGridView
-                      dailyReservations={response.dailyData}
+                      weeklyData={weeklyData}
                       onCreateReservationClicked={() =>
                         setReservationViewOpen(true)
                       }
