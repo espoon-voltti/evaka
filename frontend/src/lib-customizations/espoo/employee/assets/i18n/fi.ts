@@ -2383,7 +2383,7 @@ export const fi = {
       otherPreferredUnits: 'Muut hakutoiveet'
     },
     vardaErrors: {
-      title: 'Vardavirheet',
+      title: 'Varda-virheet',
       description:
         'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
       updated: 'Muokattu',
