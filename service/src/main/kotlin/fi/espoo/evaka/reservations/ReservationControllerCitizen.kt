@@ -50,26 +50,24 @@ class ReservationControllerCitizen(
     fun postReservations(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: ReservationRequest
+        @RequestBody body: List<DailyReservationRequest>
     ) {
-        Audit.AttendanceReservationCitizenCreate.log(targetId = body.children.joinToString())
+        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.joinToString())
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
-        accessControl.requireGuardian(user, body.children)
+        accessControl.requireGuardian(user, body.map { it.childId }.toSet())
 
-        val reservations = body.children.flatMap { childId ->
-            body.reservations.map { res ->
-                Reservation(
-                    childId = childId,
-                    startTime = HelsinkiDateTime.of(
-                        date = res.date,
-                        time = res.startTime
-                    ),
-                    endTime = HelsinkiDateTime.of(
-                        date = if (res.endTime.isAfter(res.startTime)) res.date else res.date.plusDays(1),
-                        time = res.endTime
-                    )
+        val reservations = body.map { res ->
+            Reservation(
+                childId = res.childId,
+                startTime = HelsinkiDateTime.of(
+                    date = res.date,
+                    time = res.startTime
+                ),
+                endTime = HelsinkiDateTime.of(
+                    date = if (res.endTime.isAfter(res.startTime)) res.date else res.date.plusDays(1),
+                    time = res.endTime
                 )
-            }
+            )
         }
 
         db.transaction { createReservations(it, user.id, reservations) }
@@ -94,6 +92,7 @@ fun Database.Transaction.clearOldCitizenReservations(reservations: List<Reservat
         batch
             .bind("childId", res.childId)
             .bind("date", res.startTime.toLocalDate())
+            .add()
     }
 
     batch.execute()
@@ -130,12 +129,8 @@ fun Database.Transaction.insertValidReservations(userId: UUID, reservations: Lis
     batch.execute()
 }
 
-data class ReservationRequest(
-    val children: Set<UUID>,
-    val reservations: List<DailyReservationRequest>
-)
-
 data class DailyReservationRequest(
+    val childId: UUID,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,

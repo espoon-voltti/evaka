@@ -42,14 +42,13 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
     @Test
     fun `adding reservations works in a basic case`() {
-        postReservatios(
-            ReservationRequest(
-                children = setOf(testChild_1.id, testChild_2.id),
-                reservations = listOf(
-                    DailyReservationRequest(monday, startTime, endTime),
-                    DailyReservationRequest(monday.plusDays(1), startTime, endTime)
+        postReservations(
+            listOf(testChild_1.id, testChild_2.id).flatMap { child ->
+                listOf(
+                    DailyReservationRequest(child, monday, startTime, endTime),
+                    DailyReservationRequest(child, monday.plusDays(1), startTime, endTime)
                 )
-            )
+            },
         )
 
         val res = getReservations(FiniteDateRange(monday, monday.plusDays(2)))
@@ -87,7 +86,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(0, dailyData[2].reservations.size)
     }
 
-    private fun postReservatios(request: ReservationRequest) {
+    private fun postReservations(request: List<DailyReservationRequest>) {
         val (_, res, _) = http.post("/citizen/reservations")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id))

@@ -56,23 +56,17 @@ export async function getReservations(
 }
 
 export interface DailyReservationRequest {
+  childId: string
   date: LocalDate
   startTime: string
   endTime: string
 }
 
-interface ReservationRequest {
-  children: UUID[]
-  reservations: DailyReservationRequest[]
-}
-
 export async function postReservations(
-  children: UUID[],
   reservations: DailyReservationRequest[]
 ): Promise<Result<null>> {
-  const body: ReservationRequest = { children, reservations }
   return client
-    .post('/citizen/reservations', body)
+    .post('/citizen/reservations', reservations)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

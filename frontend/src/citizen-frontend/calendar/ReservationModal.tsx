@@ -169,20 +169,26 @@ export default React.memo(function ReservationModal({
     )
     switch (formData.repetition) {
       case 'DAILY':
-        return [...range.dates()].map((date) => ({
-          date,
-          startTime: formData.startTime,
-          endTime: formData.endTime
-        }))
+        return [...range.dates()].flatMap((date) =>
+          formData.selectedChildren.map((childId) => ({
+            childId,
+            date,
+            startTime: formData.startTime,
+            endTime: formData.endTime
+          }))
+        )
       case 'WEEKLY':
         return [...range.dates()]
           .filter((d) => !d.isWeekend())
-          .map((date) => ({
-            date,
-            startTime:
-              formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime,
-            endTime: formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
-          }))
+          .flatMap((date) =>
+            formData.selectedChildren.map((childId) => ({
+              childId,
+              date,
+              startTime:
+                formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime,
+              endTime: formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
+            }))
+          )
     }
   }
 
@@ -196,10 +202,9 @@ export default React.memo(function ReservationModal({
             setShowAllErrors(true)
             return
           }
-          void postReservations(
-            formData.selectedChildren,
-            getDailyReservations()
-          ).then((result) => setPostResult(result))
+          void postReservations(getDailyReservations()).then((result) =>
+            setPostResult(result)
+          )
         },
         label: i18n.common.confirm,
         disabled:
@@ -253,6 +258,7 @@ export default React.memo(function ReservationModal({
           isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
+          initialMonth={reservableDays.start}
         />
       </FixedSpaceRow>
 
