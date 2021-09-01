@@ -25,10 +25,10 @@ class IncomeStatementControllerCitizen {
     fun getIncomeStatements(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<List<IncomeStatement>> {
+    ): List<IncomeStatement> {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            ResponseEntity.ok(tx.readIncomeStatementsForPerson(user.id))
+            tx.readIncomeStatementsForPerson(user.id)
         }
     }
 
@@ -37,12 +37,10 @@ class IncomeStatementControllerCitizen {
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
-    ): ResponseEntity<IncomeStatement> {
+    ): IncomeStatement {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            val incomeStatement = tx.readIncomeStatementForPerson(user.id, incomeStatementId)
-            if (incomeStatement == null) throw NotFound("No such income statement")
-            else ResponseEntity.ok(incomeStatement)
+            tx.readIncomeStatementForPerson(user.id, incomeStatementId) ?: throw NotFound("No such income statement")
         }
     }
 
