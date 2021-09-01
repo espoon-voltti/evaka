@@ -78,8 +78,7 @@ const sv: Translations = {
   footer: {
     cityLabel: '© Esbo stad',
     privacyPolicy: 'Dataskyddsbeskrivningar',
-    privacyPolicyLink:
-      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
+    privacyPolicyLink: 'https://www.esbo.fi/esbo-stad/dataskydd',
     sendFeedback: 'Skicka feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -94,7 +93,7 @@ const sv: Translations = {
           För information om privata daghem,{' '}
           <ExternalLink
             text="klicka här."
-            href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik"
+            href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik"
             newTab
           />
         </span>
@@ -139,7 +138,7 @@ const sv: Translations = {
       list: 'Lista på enheter'
     },
     serviceVoucherLink:
-      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
+      'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning'
   },
@@ -853,7 +852,7 @@ const sv: Translations = {
           },
           mapLink: 'Enheter på kartan',
           serviceVoucherLink:
-            'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
+            'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
           languageFilter: {
             label: 'Enhetens språk:',
             fi: 'finska',
@@ -928,7 +927,7 @@ const sv: Translations = {
               tilläggspris och blanketten för inkomstutredning finns här:
               <br />
               <a
-                href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik"
+                href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/klientavgifter-i-smabarnspedagogik"
                 target="_blank"
                 rel="noopener noreferrer"
               >

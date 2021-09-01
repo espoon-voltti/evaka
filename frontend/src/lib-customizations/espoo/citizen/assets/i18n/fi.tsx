@@ -77,8 +77,7 @@ export default {
   footer: {
     cityLabel: '© Espoon kaupunki',
     privacyPolicy: 'Tietosuojaselosteet',
-    privacyPolicyLink:
-      'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
+    privacyPolicyLink: 'https://www.espoo.fi/fi/espoon-kaupunki/tietosuoja',
     sendFeedback: 'Lähetä palautetta',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -93,7 +92,7 @@ export default {
           Tietoa yksityisistä päiväkodeista löydät{' '}
           <ExternalLink
             text="täältä."
-            href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus"
+            href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit"
             newTab
           />
         </span>
@@ -138,7 +137,7 @@ export default {
       list: 'Lista yksiköistä'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
+      'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun'
   },
@@ -842,7 +841,7 @@ export default {
           },
           mapLink: 'Yksiköt kartalla',
           serviceVoucherLink:
-            'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
+            'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
           languageFilter: {
             label: 'Yksikön kieli',
             fi: 'suomi',
@@ -916,7 +915,7 @@ export default {
               lisämaksusta ja tuloselvityslomakkeen löydät täältä:
               <br />
               <a
-                href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa"
+                href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa"
                 target="_blank"
                 rel="noopener noreferrer"
               >

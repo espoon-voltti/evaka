@@ -2472,7 +2472,7 @@ export const fi = {
         'Voit kirjoittaa lisätietoja yksiköstä (ei näy kuntalaiselle)',
       phone: 'esim. +358 40 555 5555',
       email: 'etunimi.sukunimi@espoo.fi',
-      url: 'esim. https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/.../Suvelan_paivakoti',
+      url: 'esim. https://www.espoo.fi/fi/toimipisteet/15585',
       streetAddress: 'Kadunnimi esim. Koivu-Mankkaan tie 22 B 24',
       postalCode: 'Postinumero',
       postOffice: 'Toimipaikka',
