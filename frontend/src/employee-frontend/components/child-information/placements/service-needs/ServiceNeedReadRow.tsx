@@ -35,11 +35,11 @@ function ServiceNeedReadRow({
         <Tooltip
           tooltip={
             <span>
-              {serviceNeed.confirmed.lastName} {serviceNeed.confirmed.firstName}
+              {serviceNeed.confirmed?.lastName} {serviceNeed.confirmed?.firstName}
             </span>
           }
         >
-          {formatDate(serviceNeed.confirmed.at, DATE_FORMAT_DATE_TIME)}
+          {formatDate(serviceNeed.confirmed?.at, DATE_FORMAT_DATE_TIME)}
         </Tooltip>
       </Td>
       <Td>
