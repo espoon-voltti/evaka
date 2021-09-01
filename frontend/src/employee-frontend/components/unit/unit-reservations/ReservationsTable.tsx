@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { H4 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
@@ -36,10 +36,10 @@ export default React.memo(function ReservationsTable({
                   i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek()]
                 } ${date.format('dd.MM.')}`}
               </Date>
-              <TimeWrapper>
+              <TimesRow>
                 <Time>{i18n.unit.attendanceReservations.startTime}</Time>
                 <Time>{i18n.unit.attendanceReservations.endTime}</Time>
-              </TimeWrapper>
+              </TimesRow>
             </DateTh>
           ))}
         </Tr>
@@ -50,7 +50,7 @@ export default React.memo(function ReservationsTable({
 
           return (
             <Tr key={childName}>
-              <Td>
+              <StyledTd>
                 <ChildName>
                   <Link to={`/child-information/${childReservations.child.id}`}>
                     {childName}
@@ -59,26 +59,41 @@ export default React.memo(function ReservationsTable({
                     dateOfBirth={childReservations.child.dateOfBirth}
                   />
                 </ChildName>
-              </Td>
+              </StyledTd>
               {operationalDays.map(({ date, isHoliday }) => (
-                <Td key={date.formatIso()}>
+                <StyledTd key={date.formatIso()}>
                   {!isHoliday ? (
-                    <TimeWrapper>
-                      <Time>
-                        {
-                          childReservations.reservations[date.formatIso()]
-                            ?.startTime
-                        }
-                      </Time>
-                      <Time>
-                        {
-                          childReservations.reservations[date.formatIso()]
-                            ?.endTime
-                        }
-                      </Time>
-                    </TimeWrapper>
+                    <DateCell>
+                      <AttendanceTimesRow>
+                        <Time>
+                          {childReservations.attendances[date.formatIso()]
+                            ?.startTime ?? '–'}
+                        </Time>
+                        <Time>
+                          {childReservations.attendances[date.formatIso()]
+                            ?.endTime ?? '–'}
+                        </Time>
+                      </AttendanceTimesRow>
+                      <Gap size="xxs" />
+                      <ReservationTimesRow>
+                        {childReservations.reservations[date.formatIso()] ? (
+                          <>
+                            <Time>
+                              {childReservations.reservations[date.formatIso()]
+                                ?.startTime ?? '–'}
+                            </Time>
+                            <Time>
+                              {childReservations.reservations[date.formatIso()]
+                                ?.endTime ?? '–'}
+                            </Time>
+                          </>
+                        ) : (
+                          <div>Ei varausta</div>
+                        )}
+                      </ReservationTimesRow>
+                    </DateCell>
                   ) : null}
-                </Td>
+                </StyledTd>
               ))}
             </Tr>
           )
@@ -96,6 +111,10 @@ const CustomTh = styled(Th)`
 const DateTh = styled(CustomTh)<{ faded: boolean }>`
   width: 0; // causes the column to take as little space as possible
   ${({ faded }) => (faded ? `color: ${colors.greyscale.medium};` : '')}
+`
+
+const StyledTd = styled(Td)`
+  border-right: 1px solid ${colors.greyscale.medium};
 `
 
 const ChildName = styled.div`
@@ -116,12 +135,25 @@ const Date = styled(H4)`
   margin-bottom: ${defaultMargins.s};
 `
 
-const TimeWrapper = styled.div`
+const DateCell = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+`
+
+const TimesRow = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: space-between;
+  justify-content: space-evenly;
 `
+
+const AttendanceTimesRow = styled(TimesRow)`
+  font-weight: 600;
+`
+
+const ReservationTimesRow = styled(TimesRow)``
 
 const Time = styled.div`
   width: 54px;

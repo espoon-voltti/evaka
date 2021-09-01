@@ -869,6 +869,10 @@ export interface ChildReservations {
     JsonOf<LocalDate>,
     { startTime: string; endTime: string }
   >
+  attendances: Record<
+    JsonOf<LocalDate>,
+    { startTime: string; endTime: string | null }
+  >
 }
 
 const mapChildReservationJson = ({
