@@ -331,7 +331,6 @@ fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: V
 // Add child if missing, service need, placement and mandatory fee decision(s)
 fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, vardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
     try {
-        // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
         // Service need should have fee data if unit is invoiced by evaka, and if so, if service need is in effect after evaka started invoicing
