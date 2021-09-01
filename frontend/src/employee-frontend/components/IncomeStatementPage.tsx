@@ -136,7 +136,7 @@ function GrossIncome({ gross }: { gross: Gross }) {
             : i18n.incomeStatement.attachmentsAndKela
         }
       />
-      {gross.estimatedIncome !== null && (
+      {gross.estimatedIncome && (
         <Row
           label={i18n.incomeStatement.grossEstimatedIncome}
           value={<EstimatedIncome estimatedIncome={gross.estimatedIncome} />}
@@ -217,23 +217,23 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
         label={i18n.incomeStatement.companyType}
         value={
           <>
-            {entrepreneur.selfEmployed !== null && (
+            {entrepreneur.selfEmployed && (
               <Item>{i18n.incomeStatement.selfEmployed}</Item>
             )}
-            {entrepreneur.limitedCompany !== null && (
+            {entrepreneur.limitedCompany && (
               <Item>{i18n.incomeStatement.limitedCompany}</Item>
             )}
-            {entrepreneur.limitedCompany !== null && (
+            {entrepreneur.partnership && (
               <Item>{i18n.incomeStatement.partnership}</Item>
             )}
-            {entrepreneur.limitedCompany !== null && (
+            {entrepreneur.lightEntrepreneur && (
               <Item>{i18n.incomeStatement.lightEntrepreneur}</Item>
             )}
           </>
         }
       />
       <Row label={i18n.incomeStatement.incomeSource} value="" />
-      {entrepreneur.selfEmployed !== null && (
+      {entrepreneur.selfEmployed && (
         <Row
           light
           label={i18n.incomeStatement.selfEmployed}
@@ -242,7 +242,7 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
               {entrepreneur.selfEmployed.attachments && (
                 <Item>{i18n.incomeStatement.selfEmployedAttachments}</Item>
               )}
-              {entrepreneur.selfEmployed.estimatedIncome !== null && (
+              {entrepreneur.selfEmployed.estimatedIncome && (
                 <EstimatedIncome
                   estimatedIncome={entrepreneur.selfEmployed.estimatedIncome}
                 />
@@ -251,7 +251,7 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
           }
         />
       )}
-      {entrepreneur.limitedCompany !== null && (
+      {entrepreneur.limitedCompany && (
         <Row
           light
           label={i18n.incomeStatement.limitedCompany}
@@ -276,7 +276,7 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
           value={i18n.incomeStatement.attachments}
         />
       )}
-      {entrepreneur.accountant !== null && (
+      {entrepreneur.accountant && (
         <AccountantInfo accountant={entrepreneur.accountant} />
       )}
     </>
