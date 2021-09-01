@@ -17,6 +17,7 @@ import {
   isValid,
   isWeekend,
   lastDayOfMonth,
+  setMonth,
   startOfToday,
   subDays,
   subMonths,
@@ -55,7 +56,9 @@ export default class LocalDate {
     return LocalDate.of(year, this.month, this.date)
   }
   withMonth(month: number): LocalDate {
-    return LocalDate.of(this.year, month, this.date)
+    return LocalDate.fromSystemTzDate(
+      setMonth(this.toSystemTzDate(), month - 1)
+    )
   }
   withDate(date: number): LocalDate {
     return LocalDate.of(this.year, this.month, date)
