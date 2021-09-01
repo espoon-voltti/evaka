@@ -35,7 +35,8 @@ function ServiceNeedReadRow({
         <Tooltip
           tooltip={
             <span>
-              {serviceNeed.confirmed?.lastName} {serviceNeed.confirmed?.firstName}
+              {serviceNeed.confirmed?.lastName}{' '}
+              {serviceNeed.confirmed?.firstName}
             </span>
           }
         >
