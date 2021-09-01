@@ -65,4 +65,13 @@ class IncomeStatementController(
         }
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/awaiting-handler")
+    fun getIncomeStatementsAwaitingHandler(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): List<IncomeStatementAwaitingHandler> {
+        accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
+        return db.read { it.fetchIncomeStatementsAwaitingHandler() }
+    }
 }
