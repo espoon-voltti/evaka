@@ -13,10 +13,18 @@ import { DateFilters, getVardaErrorsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import styled from 'styled-components'
+import FiniteDateRange from 'lib-common/finite-date-range'
+
+const FlatList = styled.ul`
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+`
 
 function VardaErrors() {
   const { i18n } = useTranslation()
@@ -37,9 +45,14 @@ function VardaErrors() {
         <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
-            date={filters.date}
-            onChange={(date) => setFilters({ date })}
+          <DatePicker
+            id="start-date"
+            date={filters.date.toString()}
+            onChange={(date) => {
+              const parsed = LocalDate.parseFiOrNull(date)
+              if (parsed) setFilters({ date: parsed })
+            }}
+            locale={'fi'}
           />
         </FilterRow>
         {rows.isLoading && <Loader />}
@@ -86,9 +99,23 @@ function VardaErrors() {
                       </Link>
                     </Td>
 
-                    <Td>{row.errors}</Td>
-                    <Td>{row.serviceNeedId}</Td>
-                    <Td>{row.updated.toISOString()}</Td>
+                    <Td>{row.errors.join('\n')}</Td>
+                    <Td>
+                      <FlatList>
+                        <li>{row.serviceNeedOptionName}</li>
+                        <li>
+                          {FiniteDateRange.parseJson({
+                            start: row.serviceNeedStartDate,
+                            end: row.serviceNeedEndDate
+                          }).format()}
+                        </li>
+                        <li>{row.serviceNeedId}</li>
+                      </FlatList>
+                    </Td>
+                    <Td>
+                      {LocalDate.fromSystemTzDate(row.updated).format()}{' '}
+                      {row.updated.toLocaleTimeString()}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

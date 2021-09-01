@@ -402,7 +402,10 @@ export interface PlacementSketchingRow {
 
 export interface VardaErrorReportRow {
   serviceNeedId: UUID
+  serviceNeedStartDate: string
+  serviceNeedEndDate: string
+  serviceNeedOptionName: string
   childId: UUID
   updated: Date
-  errors: string
+  errors: string[]
 }

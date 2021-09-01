@@ -253,6 +253,16 @@ class ReportSmokeTests : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `varda errors report returns http 200`() {
+        assertOkResponse(
+            http.get(
+                "/reports/varda-errors",
+                listOf("errorsSince" to "2021-01-01")
+            )
+        )
+    }
+
     private fun assertOkResponse(req: Request) {
         val (_, response, _) = req.asUser(testUser).response()
         assertEquals(200, response.statusCode)

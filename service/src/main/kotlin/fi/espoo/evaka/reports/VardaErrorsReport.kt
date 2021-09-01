@@ -31,12 +31,17 @@ class VardaErrorReport(private val acl: AccessControlList) {
 private fun Database.Read.getVardaErrorsSince(errorsSince: LocalDate): List<VardaErrorReportRow> = createQuery(
     """
 SELECT
-    evaka_service_need_id AS service_need_id,
-    evaka_child_id AS child_id,
-    updated,
-    errors
-FROM varda_service_need
-WHERE updated > :errorsSince AND update_failed = true
+    vsn.evaka_service_need_id AS service_need_id,
+    sn.start_date as service_need_start_date,
+    sn.end_date as service_need_end_date,
+    sno.name as service_need_option_name,
+    vsn.evaka_child_id AS child_id,
+    vsn.updated,
+    vsn.errors
+FROM varda_service_need vsn
+JOIN service_need sn on vsn.evaka_service_need_id = sn.id
+JOIN service_need_option sno ON sn.option_id = sno.id
+WHERE vsn.updated > :errorsSince AND vsn.update_failed = true
     """.trimIndent()
 ).bind("errorsSince", errorsSince)
     .mapTo<VardaErrorReportRow>()
@@ -44,7 +49,10 @@ WHERE updated > :errorsSince AND update_failed = true
 
 data class VardaErrorReportRow(
     val serviceNeedId: UUID,
+    val serviceNeedStartDate: String,
+    val serviceNeedEndDate: String,
+    val serviceNeedOptionName: String,
     val childId: UUID,
     val updated: HelsinkiDateTime,
-    val errors: String
+    val errors: List<String>
 )
