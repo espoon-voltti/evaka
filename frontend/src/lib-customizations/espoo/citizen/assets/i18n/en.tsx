@@ -78,8 +78,7 @@ const en: Translations = {
   footer: {
     cityLabel: '© City of Espoo',
     privacyPolicy: 'Privacy Notices',
-    privacyPolicyLink:
-      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
+    privacyPolicyLink: 'https://www.espoo.fi/en/city-espoo/data-protection',
     sendFeedback: 'Give feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -94,7 +93,7 @@ const en: Translations = {
           For information on private units,{' '}
           <ExternalLink
             text="click here."
-            href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Private_early_childhood_education"
+            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers"
             newTab
           />
         </span>
@@ -139,7 +138,7 @@ const en: Translations = {
       list: 'List of units'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families',
+      'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search'
   },
@@ -896,7 +895,7 @@ const en: Translations = {
           },
           mapLink: 'Unit map view',
           serviceVoucherLink:
-            'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families',
+            'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
           languageFilter: {
             label: 'Language of the location:',
             fi: 'finnish',
@@ -973,7 +972,7 @@ const en: Translations = {
               statement form here:
               <br />
               <a
-                href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees"
+                href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
                 target="_blank"
                 rel="noopener noreferrer"
               >

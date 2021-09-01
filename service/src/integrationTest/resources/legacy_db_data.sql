@@ -55,7 +55,7 @@ INSERT INTO daycare (id, name, type, care_area_id, phone, url, created, updated,
                      email, schedule, additional_info, unit_manager_id, cost_center, street_address, postal_code, mailing_po_box, location)
 VALUES ('68851e10-eb86-443e-b28d-0f6ee9642a3c', 'Kauhutalon lastenkoti', '{CENTRE}',
         'f0243ab9-f393-477c-9df4-fd0defeb924f', null,
-        'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Varhaiskasvatuksen_toimipaikat/Kunnalliset_paivakodit/Espoon_keskus/Juvanpuiston_lastentalon_paivakoti',
+        'https://www.espoo.fi/fi/toimipisteet/15853',
         '2019-09-09 11:54:14.476602', '2019-09-09 11:54:14.476602', null, 'MUNICIPAL', 'fi', null, '2004-01-01', null, null,
         null, null, 'df3229bb-c48a-4bf4-b8d1-520cdfe520a6', null, 'Pohjoisentie 1', '02970', 'PL 97306, 02070 Espoon kaupunki', POINT(24.7378687, 60.3028715));
 
@@ -64,7 +64,7 @@ INSERT INTO daycare (id, name, type, care_area_id, phone, url, created, updated,
                      email, schedule, additional_info, unit_manager_id, cost_center, street_address, postal_code, mailing_po_box, location)
 VALUES ('ba6fa7cb-7dfa-4629-b0c1-ae3a721c8a91', 'Peilipuiston päiväkoti', '{CENTRE}',
         'f0243ab9-f393-477c-9df4-fd0defeb924f', null,
-        'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Varhaiskasvatuksen_toimipaikat/Kunnalliset_paivakodit/Espoon_keskus/Juvanpuiston_lastentalon_paivakoti',
+        'https://www.espoo.fi/fi/toimipisteet/15853',
         '2019-09-09 11:54:14.476602', '2019-09-09 11:54:14.476602', null, 'MUNICIPAL', 'fi', null, '2004-01-01', null, null,
         null, null, 'a7b8ee14-9b59-4afb-b157-37f9a45e5908', null, 'Pohjoisentie 1', '02970', 'PL 97306, 02070 Espoon kaupunki', POINT(24.7378687, 60.3028715));
 
