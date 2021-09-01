@@ -6,6 +6,8 @@ package fi.espoo.evaka.shared.auth
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.google.common.hash.HashCode
+import com.google.common.hash.Hashing
 import fi.espoo.evaka.pis.EmployeeUser
 import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
@@ -19,6 +21,9 @@ sealed class AuthenticatedUser : RoleContainer {
 
     abstract val id: UUID
     abstract val type: AuthenticatedUserType
+
+    val idHash: HashCode
+        get() = Hashing.sha256().hashString(id.toString(), Charsets.UTF_8)
 
     fun assertSystemInternalUser() {
         if (!this.isSystemInternalUser) {

@@ -266,6 +266,7 @@ class AsyncJobRunner(
             runningCount.decrementAndGet()
             MdcKey.SPAN_ID.unset()
             MdcKey.TRACE_ID.unset()
+            MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
         }
     }
@@ -275,7 +276,10 @@ class AsyncJobRunner(
         crossinline f: (db: Database, msg: T) -> Unit
     ): Boolean {
         val msg = startJob(job, T::class.java) ?: return false
-        msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+        msg.user?.let {
+            MdcKey.USER_ID.set(it.id.toString())
+            MdcKey.USER_ID_HASH.set(it.idHash.toString())
+        }
         f(Database(jdbi), msg)
         completeJob(job)
         return true
