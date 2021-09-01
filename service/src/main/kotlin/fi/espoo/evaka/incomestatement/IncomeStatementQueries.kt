@@ -382,8 +382,6 @@ fun Database.Transaction.setIncomeStatementHandler(handlerId: EmployeeId?, incom
 data class IncomeStatementAwaitingHandler(
     val id: UUID,
     val type: IncomeStatementType,
-    val startDate: LocalDate,
-    val endDate: LocalDate?,
     val personId: UUID,
     val personName: String
 )
@@ -393,8 +391,6 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAw
         """
         SELECT
             ist.id,
-            ist.start_date,
-            ist.end_date,
             ist.type,
             p.id AS personId,
             p.first_name || ' ' || p.last_name AS personName

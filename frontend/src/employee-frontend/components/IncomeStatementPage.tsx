@@ -70,11 +70,7 @@ export default React.memo(function IncomeStatementPage({
             />
             <Row
               label={i18n.incomeStatement.feeBasis}
-              value={
-                incomeStatement.type === 'HIGHEST_FEE'
-                  ? i18n.incomeStatement.highestFee
-                  : i18n.incomeStatement.incomeInfo
-              }
+              value={i18n.incomeStatement.statementTypes[incomeStatement.type]}
             />
             {incomeStatement.type === 'INCOME' && (
               <IncomeInfo incomeStatement={incomeStatement} />

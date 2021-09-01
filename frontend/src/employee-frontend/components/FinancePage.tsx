@@ -8,6 +8,7 @@ import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
+import IncomeStatementsPage from './income-statements/IncomeStatementsPage'
 import InvoicesPage from './invoices/InvoicesPage'
 import { RouteWithTitle } from './RouteWithTitle'
 import VoucherValueDecisionsPage from './voucher-value-decisions/VoucherValueDecisionsPage'
@@ -31,6 +32,11 @@ export default React.memo(function FinancePage() {
         id: 'invoices',
         link: '/finance/invoices',
         label: i18n.header.invoices
+      },
+      {
+        id: 'income-statements',
+        link: '/finance/income-statements',
+        label: i18n.header.incomeStatements
       }
     ],
     [i18n]
@@ -59,6 +65,12 @@ export default React.memo(function FinancePage() {
           path="/finance/invoices"
           component={InvoicesPage}
           title={i18n.titles.invoices}
+        />
+        <RouteWithTitle
+          exact
+          path="/finance/income-statements"
+          component={IncomeStatementsPage}
+          title={i18n.titles.incomeStatements}
         />
         <Route path="/" component={RedirectToFeeDecisions} />
       </Switch>

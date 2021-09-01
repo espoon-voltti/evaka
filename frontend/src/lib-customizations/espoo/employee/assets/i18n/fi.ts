@@ -15,6 +15,7 @@ export const fi = {
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
+    incomeStatements: 'Tuloselvitykset',
     valueDecisions: 'Arvopäätökset',
     valueDecision: 'Arvopäätös',
     valueDecisionDraft: 'Arvopäätösluonnos',
@@ -153,6 +154,7 @@ export const fi = {
     search: 'Asiakastiedot',
     finance: 'Talous',
     invoices: 'Laskut',
+    incomeStatements: 'Tuloselvitykset',
     feeDecisions: 'Maksupäätökset',
     valueDecisions: 'Arvopäätökset',
     reports: 'Raportit',
@@ -1244,8 +1246,6 @@ export const fi = {
     title: 'Tuloselvityslomake',
     startDate: 'Voimassa alkaen',
     feeBasis: 'Asiakasmaksun peruste',
-    highestFee: 'Suostumus korkeimpaan maksuluokkaan',
-    incomeInfo: 'Huoltajan toimittamat tulotiedot',
 
     grossTitle: 'Bruttotulot',
     incomeSource: 'Tietojen toimitus',
@@ -1321,7 +1321,14 @@ export const fi = {
     otherInfo: 'Lisätietoja tulotietoihin liittyen',
 
     attachmentsTitle: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-    noAttachments: 'Ei liitteitä'
+    noAttachments: 'Ei liitteitä',
+    statementTypes: {
+      HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
+      INCOME: 'Huoltajan toimittamat tulotiedot'
+    }
+  },
+  incomeStatements: {
+    title: 'Käsittelyä odottavat tuloselvitykset'
   },
   units: {
     name: 'Nimi',
