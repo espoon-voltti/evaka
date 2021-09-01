@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -54,18 +53,6 @@ class VardaDevController(
     ): ResponseEntity<Unit> {
         vardaUpdateServiceV2.scheduleVardaUpdate(db, runNow = true)
         return ResponseEntity.noContent().build()
-    }
-
-    @PostMapping("/delete-old-varda-data")
-    fun deleteOldVardaData(
-        db: Database.Connection
-    ) {
-        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
-            db.read { it.createQuery("SELECT varda_child_id FROM varda_child").mapTo<Long>().list() }.filterNotNull().forEach {
-                logger.info("VardaDevController: wiping out varda child $it from varda")
-                vardaUpdateServiceV2.clearAllExistingVardaChildDataFromVarda(db, it)
-            }
-        }
     }
 
     @PostMapping("/reset-children")

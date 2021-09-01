@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.convertToVardaChildRequest
 import org.jdbi.v3.core.kotlin.mapTo
+import java.lang.Exception
 import java.util.UUID
 
 fun getOrCreateVardaChildByOrganizer(
@@ -83,15 +84,18 @@ private fun createVardaPersonAndChild(
         "VardaUpdate: no ssn or oid for person $evakaPersonId"
     }
 
-    val vardaPerson = client.createPerson(personPayload)
-        ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
-        ?: error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
+    val vardaPerson = try {
+        client.createPerson(personPayload)
+            ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
+    } catch (e: Exception) {
+        error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
+    }
 
     return createVardaChildWhenPersonExists(
         tx = tx,
         client = client,
         evakaPersonId = evakaPersonId,
-        vardaPersonId = vardaPerson.vardaId,
+        vardaPersonId = vardaPerson!!.vardaId,
         vardaPersonOid = vardaPerson.personOid,
         municipalOrganizerOid = municipalOrganizerOid,
         organizerOid = organizerOid,

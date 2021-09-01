@@ -100,25 +100,6 @@ class VardaUpdateServiceV2(
 
         logger.info("VardaUpdate: successfully reset ${successfulResets.size} children (failed ${resetChildIds.size - successfulResets.size} children)")
     }
-
-    fun clearAllExistingVardaChildDataFromVarda(db: Database.Connection, vardaChildId: Long) {
-        val vardaClient = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-
-        try {
-            val feeDataIds = vardaClient.getFeeDataByChild(vardaChildId)
-            deleteFeeData(db, vardaClient, feeDataIds)
-
-            val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
-            val placementIds = decisionIds.flatMap {
-                vardaClient.getPlacementsByDecision(it)
-            }
-            deletePlacements(db, vardaClient, placementIds)
-            deleteDecisions(db, vardaClient, decisionIds)
-            deleteChild(db, vardaClient, vardaChildId)
-        } catch (e: Exception) {
-            logger.error("VardaUpdate: could not delete old varda data for child $vardaChildId: ${e.localizedMessage}")
-        }
-    }
 }
 
 fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
@@ -311,7 +292,7 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
         val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
         addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: error while processing new service need $serviceNeedId data: ${e.localizedMessage}")
         return false
     }
 
@@ -350,14 +331,6 @@ fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: V
 // Add child if missing, service need, placement and mandatory fee decision(s)
 fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, vardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
     try {
-        check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
-            "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
-        }
-        check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
-            "VardaUpdate: service need daycare oph unit oid is null or blank"
-        }
-
-        // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
         // Service need should have fee data if unit is invoiced by evaka, and if so, if service need is in effect after evaka started invoicing
@@ -368,6 +341,13 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
         else {
+            check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
+                "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
+            }
+            check(!evakaServiceNeed.ophUnitOid.isNullOrBlank()) {
+                "VardaUpdate: service need daycare oph unit oid is null or blank"
+            }
+
             vardaServiceNeed.evakaServiceNeedUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedUpdated)
 
             val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
@@ -606,14 +586,6 @@ private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: L
     }.map {
         it.evakaServiceNeedId
     }
-}
-
-private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed) {
-    vardaServiceNeed.vardaFeeDataIds.forEach { feeDataId ->
-        vardaClient.deleteFeeDataV2(feeDataId)
-    }
-    vardaServiceNeed.vardaPlacementId?.let { vardaClient.deletePlacementV2(it) }
-    vardaServiceNeed.vardaDecisionId?.let { vardaClient.deleteDecision(it) }
 }
 
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed, upsertErrors: List<String> = listOf()) = createUpdate(
