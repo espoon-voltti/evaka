@@ -35,7 +35,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultClub
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -45,6 +44,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testGhostUnitDaycare
+import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
@@ -90,43 +90,17 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     val VOUCHER_CO_PAYMENT = 5000
 
     @Test
-    fun `calculateServiceNeedsChanges finds changed service need since given moment`() {
-        val earliestIncludedTime = HelsinkiDateTime.now()
-        val startDate = earliestIncludedTime.minusDays(20).toLocalDate()
-        val endDate = startDate.plusDays(10)
-        val shouldBeIncluded = earliestIncludedTime.plusHours(1)
-        val shouldBeExcluded = earliestIncludedTime.plusHours(-1)
-        val includedServiceNeedId = createServiceNeed(
-            db, shouldBeIncluded,
-            snDefaultDaycare.copy(
-                updated = shouldBeIncluded
-            ),
-            testChild_1, startDate, endDate
-        )
-        createServiceNeed(
-            db, shouldBeExcluded,
-            snDefaultPartDayDaycare.copy(
-                updated = shouldBeExcluded
-            ),
-            testChild_1, endDate.plusDays(1)
-        )
-
-        db.read {
-            val changes = it.getEvakaServiceNeedChanges(earliestIncludedTime)
-            assertEquals(1, changes.size)
-            assertEquals(includedServiceNeedId, changes.get(0).evakaServiceNeedId)
-            assertEquals(shouldBeIncluded, changes.get(0).evakaServiceNeedUpdated)
-        }
-    }
-
-    @Test
-    fun `calculateEvakaVsVardaServiceNeedChangesByChild finds new evaka service need when varda has none`() {
+    fun `calculateEvakaVsVardaServiceNeedChangesByChild finds a new evaka service need with voucher value decision when varda has none`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, since, option)
+        val snStartDate = since.minusDays(10).toLocalDate()
+        val snEndDate = since.toLocalDate()
+        val snId = createServiceNeed(db, since, option, child = testChild_1, fromDays = snStartDate, toDays = snEndDate)
+        createVoucherDecision(db, snStartDate, snEndDate, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
+
         val childId = db.read { it.getChildIdByServiceNeedId(snId) }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 1, 0, 0)
         assertEquals(snId, diffs.get(childId)?.additions?.get(0))
@@ -138,15 +112,15 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val option = snDefaultPreschool.copy(updated = since)
         createServiceNeed(db, since, option)
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(0, diffs.keys.size)
     }
 
     @Test
-    fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need`() {
+    fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need from purchased daycare`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, since, option)
+        val snId = createServiceNeed(db, since, option, unitId = testPurchasedDaycare.id)
         val childId = db.read { it.getChildIdByServiceNeedId(snId) } ?: throw Exception("Created service need not found?!?")
         db.transaction {
             it.insertVardaServiceNeed(
@@ -158,7 +132,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 0)
         assertEquals(snId, diffs.get(childId)?.updates?.get(0))
@@ -168,7 +142,11 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds deleted evaka service need when there are also other changes`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
-        val changedServiceNeedId = createServiceNeed(db, since, option)
+        val snStartDate = since.minusDays(10).toLocalDate()
+        val snEndDate = since.toLocalDate()
+        val changedServiceNeedId = createServiceNeed(db, since, option, fromDays = snStartDate, toDays = snEndDate)
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(snStartDate, snEndDate), since.toInstant())
+
         val childId = db.read { it.getChildIdByServiceNeedId(changedServiceNeedId) } ?: throw Exception("Created service need not found?!?")
         db.transaction {
             it.insertVardaServiceNeed(
@@ -192,7 +170,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 1)
         assertEquals(changedServiceNeedId, diffs.get(childId)?.updates?.get(0))
@@ -222,7 +200,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 0, 1)
         assertEquals(deletedSnId, diffs.get(childId)?.deletes?.get(0))
