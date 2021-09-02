@@ -95,10 +95,11 @@ export interface Accountant {
 }
 
 export type IncomeStatement = HighestFee | Income
+type IncomeStatementType = IncomeStatement['type']
 
 export interface IncomeStatementAwaitingHandler {
   id: UUID
-  type: 'HIGHEST_FEE' | 'INCOME' // TODO replace with generated type
+  type: IncomeStatementType
   personId: UUID
   personName: string
 }
