@@ -399,3 +399,13 @@ export interface PlacementSketchingRow {
   guardianEmail: string | null
   otherPreferredUnits: string[] | null
 }
+
+export interface VardaErrorReportRow {
+  serviceNeedId: UUID
+  serviceNeedStartDate: string
+  serviceNeedEndDate: string
+  serviceNeedOptionName: string
+  childId: UUID
+  updated: Date
+  errors: string[]
+}
