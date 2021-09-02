@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
-import fi.espoo.evaka.application.AttachmentType
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser

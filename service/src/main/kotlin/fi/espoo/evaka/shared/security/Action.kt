@@ -166,6 +166,15 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class IncomeStatement(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE_HANDLED(FINANCE_ADMIN),
+        UPLOAD_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN),
+        DELETE_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class MobileDevice(private val roles: EnumSet<UserRole>) : Action {
         ;
 
@@ -175,6 +184,13 @@ sealed interface Action {
     }
     enum class Pairing(private val roles: EnumSet<UserRole>) : Action {
         ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class Person(private val roles: EnumSet<UserRole>) : Action {
+        READ_INCOME_STATEMENTS(FINANCE_ADMIN);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

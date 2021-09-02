@@ -1,12 +1,15 @@
 import LocalDate from 'lib-common/local-date'
 import { stringToInt } from 'lib-common/utils/number'
 import { UUID } from 'lib-common/types'
-import { HighestFee, Income } from './income-statement'
+import { HighestFee, Income } from 'lib-common/api-types/incomeStatement'
 import * as Form from './form'
 
-export type HighestFeeBody = Omit<HighestFee, 'id'>
+type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handlerName'
 
-export interface IncomeBody extends Omit<Income, 'id' | 'attachments'> {
+export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
+
+export interface IncomeBody
+  extends Omit<Income, ReadOnlyFields | 'attachments'> {
   attachmentIds: UUID[]
 }
 
@@ -83,7 +86,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     spouseWorksInCompany,
     startupGrant,
     partnership,
-    lightEntrepreneur
+    lightEntrepreneur,
+    checkupConsent
   } = formData
   const startOfEntrepreneurship =
     LocalDate.parseFiOrNull(formData.startOfEntrepreneurship) ?? invalid
@@ -92,6 +96,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
 
   if (
+    !checkupConsent ||
     fullTime === null ||
     startOfEntrepreneurship === invalid ||
     spouseWorksInCompany === null ||

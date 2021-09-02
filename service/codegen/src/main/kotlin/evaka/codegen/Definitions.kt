@@ -7,13 +7,15 @@ package evaka.codegen
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.application.OtherGuardianAgreementStatus
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.incomestatement.IncomeSource
+import fi.espoo.evaka.incomestatement.OtherIncome
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.security.Action
@@ -55,8 +57,10 @@ val generatedFiles = listOf(
         generateEnum<AttachmentType>(),
         generateEnum<CareType>(),
         generateEnum<DailyServiceTimesType>(),
+        generateEnum<IncomeSource>(),
         generateEnum<MessageType>(),
         generateEnum<OtherGuardianAgreementStatus>(),
+        generateEnum<OtherIncome>(),
         generateEnum<PlacementType>(),
         generateEnum<ProviderType>(),
     )

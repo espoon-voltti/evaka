@@ -17,7 +17,7 @@ import AsyncButton, {
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InputField from 'lib-components/atoms/form/InputField'
-import { AttachmentType, otherIncome } from './types/common'
+import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 import {
   errorToInputInfo,
@@ -42,6 +42,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'lib-icons'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import LocalDate from 'lib-common/local-date'
+import { otherIncome } from 'lib-common/api-types/incomeStatement'
 
 interface Props {
   formData: Form.IncomeStatementForm

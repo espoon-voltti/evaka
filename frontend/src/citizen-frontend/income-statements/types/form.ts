@@ -1,7 +1,7 @@
-import { IncomeSource, OtherIncome } from './common'
 import { Attachment } from 'lib-common/api-types/attachment'
-import * as IncomeStatement from './income-statement'
+import * as IncomeStatement from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
+import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
 
 export interface IncomeStatementForm {
   startDate: string
@@ -118,7 +118,11 @@ export function fromIncomeStatement(
     ...(incomeStatement.type === 'INCOME'
       ? {
           gross: mapGross(incomeStatement.gross),
-          entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur)
+          entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur),
+          student: incomeStatement.student,
+          alimonyPayer: incomeStatement.alimonyPayer,
+          otherInfo: incomeStatement.otherInfo,
+          attachments: incomeStatement.attachments
         }
       : undefined)
   }

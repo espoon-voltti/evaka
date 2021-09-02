@@ -7,6 +7,7 @@ package fi.espoo.evaka.application
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser

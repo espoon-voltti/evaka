@@ -42,8 +42,11 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import Combobox from 'lib-components/atoms/form/Combobox'
-import { getAttachmentBlob } from '../../api/applications'
-import { deleteAttachment, saveAttachment } from '../../api/attachments'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveAttachment
+} from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'

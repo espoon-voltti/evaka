@@ -14,6 +14,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
@@ -611,7 +612,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
                 dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()
+                attachments = row.mapJsonColumn<Array<ApplicationAttachment>>("attachments").toList()
             )
         }
         .firstOrNull()
@@ -926,13 +927,13 @@ RETURNING id
     .mapTo<ApplicationId>()
     .toList()
 
-fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<Attachment> =
+fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery("SELECT id, name, content_type, updated, received_at, type, uploaded_by_employee, uploaded_by_person FROM attachment WHERE application_id = :applicationId")
         .bind("applicationId", applicationId)
-        .mapTo<Attachment>()
+        .mapTo<ApplicationAttachment>()
         .toList()
 
-fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<Attachment> =
+fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery(
         """
 SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type, attachment.uploaded_by_employee, attachment.uploaded_by_person
@@ -945,5 +946,5 @@ WHERE application.id = :applicationId AND daycare.round_the_clock AND attachment
     )
         .bind("applicationId", applicationId)
         .bind("attachmentTypes", arrayOf(AttachmentType.EXTENDED_CARE))
-        .mapTo<Attachment>()
+        .mapTo<ApplicationAttachment>()
         .toList()

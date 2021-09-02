@@ -36,7 +36,7 @@ const Row = styled(FixedSpaceRow)`
 
 interface Props {
   title: string
-  toggled: boolean
+  isOpen: boolean
   toggle: () => void
   editable: boolean
   toggleable?: boolean
@@ -47,7 +47,7 @@ interface Props {
 
 const IncomeItemHeader = React.memo(function IncomeItemHeader({
   title: period,
-  toggled,
+  isOpen,
   toggle,
   editable,
   toggleable,
@@ -57,12 +57,12 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
   const elRef: RefObject<HTMLDivElement> = createRef()
 
   useEffect(() => {
-    if (toggled && elRef.current) {
+    if (isOpen && elRef.current) {
       elRef.current.scrollIntoView({
         behavior: 'smooth'
       })
     }
-  }, [toggled]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container ref={elRef}>
@@ -76,7 +76,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           icon={faPen}
           onClick={() => {
             startEditing()
-            !toggled && toggle()
+            !isOpen && toggle()
           }}
           disabled={!editable}
           data-qa="edit-income-item"
@@ -90,7 +90,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           data-qa="delete-income-item"
         />
         <ToggleButton
-          icon={toggled ? faChevronDown : faChevronLeft}
+          icon={isOpen ? faChevronDown : faChevronLeft}
           onClick={toggle}
           disabled={!toggleable}
           data-qa="toggle-income-item"

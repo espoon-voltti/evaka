@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.attachment
 
-import fi.espoo.evaka.application.Attachment
-import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -65,9 +63,16 @@ fun Database.Transaction.insertAttachment(
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
-    .createQuery("SELECT * FROM attachment WHERE id = :id")
-    .bind("id", id).mapTo<Attachment>()
-    .first()
+    .createQuery(
+        """
+        SELECT id, name, content_type
+        FROM attachment
+        WHERE id = :id
+        """
+    )
+    .bind("id", id)
+    .mapTo<Attachment>()
+    .firstOrNull()
 
 fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
     val sql =

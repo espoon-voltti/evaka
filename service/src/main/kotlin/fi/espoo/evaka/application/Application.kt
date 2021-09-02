@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
@@ -101,15 +102,10 @@ data class ApplicationDetails(
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
     val hideFromGuardian: Boolean,
-    val attachments: List<Attachment>
+    val attachments: List<ApplicationAttachment>
 )
 
-enum class AttachmentType {
-    URGENCY,
-    EXTENDED_CARE
-}
-
-data class Attachment(
+data class ApplicationAttachment(
     val id: UUID,
     val name: String,
     val contentType: String,

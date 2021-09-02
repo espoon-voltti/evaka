@@ -24,8 +24,10 @@ interface PermittedRoleActions {
     fun decisionActions(role: UserRole): Set<Action.Decision>
     fun groupActions(role: UserRole): Set<Action.Group>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
+    fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
     fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice>
     fun pairingActions(role: UserRole): Set<Action.Pairing>
+    fun personActions(role: UserRole): Set<Action.Person>
     fun placementActions(role: UserRole): Set<Action.Placement>
     fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed>
     fun unitActions(role: UserRole): Set<Action.Unit>
@@ -50,8 +52,10 @@ class StaticPermittedRoleActions(
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
     val group: ActionsByRole<Action.Group> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
+    val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
     val mobileDevice: ActionsByRole<Action.MobileDevice> = getDefaults(),
     val pairing: ActionsByRole<Action.Pairing> = getDefaults(),
+    val person: ActionsByRole<Action.Person> = getDefaults(),
     val placement: ActionsByRole<Action.Placement> = getDefaults(),
     val serviceNeed: ActionsByRole<Action.ServiceNeed> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
@@ -69,8 +73,10 @@ class StaticPermittedRoleActions(
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
+    override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
     override fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice> = mobileDevice[role] ?: emptySet()
     override fun pairingActions(role: UserRole): Set<Action.Pairing> = pairing[role] ?: emptySet()
+    override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun placementActions(role: UserRole): Set<Action.Placement> = placement[role] ?: emptySet()
     override fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed> = serviceNeed[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()
