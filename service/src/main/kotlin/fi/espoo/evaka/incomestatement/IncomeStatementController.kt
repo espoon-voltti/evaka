@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,12 +27,10 @@ class IncomeStatementController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId
-    ): ResponseEntity<List<IncomeStatement>> {
+    ): List<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { tx ->
-            ResponseEntity.ok(tx.readIncomeStatementsForPerson(personId.raw))
-        }
+        return db.read { it.readIncomeStatementsForPerson(personId.raw) }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
@@ -42,14 +39,10 @@ class IncomeStatementController(
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
-    ): ResponseEntity<IncomeStatement> {
+    ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { tx ->
-            val incomeStatement = tx.readIncomeStatementForPerson(personId.raw, incomeStatementId)
-            if (incomeStatement == null) throw NotFound("No such income statement")
-            else ResponseEntity.ok(incomeStatement)
-        }
+        return db.read { it.readIncomeStatementForPerson(personId.raw, incomeStatementId) } ?: throw NotFound("No such income statement")
     }
 
     @PostMapping("/{incomeStatementId}/handled")
@@ -58,7 +51,7 @@ class IncomeStatementController(
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: Wrapper<Boolean>
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
         db.transaction { tx ->
@@ -67,7 +60,6 @@ class IncomeStatementController(
                 incomeStatementId
             )
         }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/awaiting-handler")
