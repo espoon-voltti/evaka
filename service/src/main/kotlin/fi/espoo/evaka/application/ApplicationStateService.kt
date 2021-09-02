@@ -17,6 +17,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.attachment.deleteAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
@@ -642,7 +643,7 @@ class ApplicationStateService(
         sentDate: LocalDate,
         isUrgent: Boolean,
         isTransferApplication: Boolean,
-        attachments: List<Attachment>
+        attachments: List<ApplicationAttachment>
     ): LocalDate? {
         return if (isTransferApplication) {
             null

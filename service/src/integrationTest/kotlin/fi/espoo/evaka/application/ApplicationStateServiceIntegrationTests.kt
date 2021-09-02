@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft

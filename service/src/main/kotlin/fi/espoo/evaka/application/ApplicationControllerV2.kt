@@ -270,7 +270,7 @@ class ApplicationControllerV2(
 
             // todo: can this be refactored under Action model?
             val roles = acl.getRolesForApplication(user, applicationId)
-            val attachments: List<Attachment> = when {
+            val attachments: List<ApplicationAttachment> = when {
                 roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
                     tx.getApplicationAttachments(applicationId)
                 roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
@@ -563,7 +563,7 @@ data class ApplicationResponse(
     val application: ApplicationDetails,
     val decisions: List<Decision>,
     val guardians: List<PersonJSON>,
-    val attachments: List<Attachment>
+    val attachments: List<ApplicationAttachment>
 )
 
 data class SimpleBatchRequest(

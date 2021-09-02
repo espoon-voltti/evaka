@@ -7,7 +7,7 @@ package evaka.codegen
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.AttachmentType
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.application.OtherGuardianAgreementStatus
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
