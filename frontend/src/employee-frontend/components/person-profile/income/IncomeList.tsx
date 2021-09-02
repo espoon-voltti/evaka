@@ -15,8 +15,8 @@ import { faQuestion } from 'lib-icons'
 
 interface Props {
   incomes: Income[]
-  toggled: IncomeId[]
-  toggle: (v: IncomeId) => void
+  isRowOpen: (id: IncomeId) => boolean
+  toggleRow: (id: IncomeId) => void
   editing: string | undefined
   setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
   deleting: string | undefined
@@ -29,8 +29,8 @@ interface Props {
 
 const IncomeList = React.memo(function IncomeList({
   incomes,
-  toggled,
-  toggle,
+  isRowOpen,
+  toggleRow,
   editing,
   setEditing,
   deleting,
@@ -73,8 +73,8 @@ const IncomeList = React.memo(function IncomeList({
         <div key="new">
           <IncomeItemHeader
             title={i18n.personProfile.income.itemHeaderNew}
-            toggled={toggled.includes('new')}
-            toggle={() => toggle('new')}
+            isOpen={isRowOpen('new')}
+            toggle={() => toggleRow('new')}
             editable={!editing}
             startEditing={() => undefined}
             startDeleting={() => undefined}
@@ -96,14 +96,14 @@ const IncomeList = React.memo(function IncomeList({
             title={`${
               i18n.personProfile.income.itemHeader
             } ${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
-            toggled={toggled.includes(item.id)}
-            toggle={() => toggle(item.id)}
+            isOpen={isRowOpen(item.id)}
+            toggle={() => toggleRow(item.id)}
             editable={!editing}
             toggleable
             startEditing={() => setEditing(item.id)}
             startDeleting={() => setDeleting(item.id)}
           />
-          {toggled.includes(item.id) ? (
+          {isRowOpen(item.id) ? (
             <>
               <Gap size="m" />
               {editing === item.id ? (

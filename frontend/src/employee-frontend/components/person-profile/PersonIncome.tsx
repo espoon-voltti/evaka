@@ -46,6 +46,17 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const { incomes, setIncomes, reloadFamily } = useContext(PersonContext)
   const [incomeDataChanged, setIncomeDataChanged] = useState<boolean>(false)
 
+  const [openIncomeRows, setOpenIncomeRows] = useState<IncomeId[]>([])
+  const toggleIncomeRow = React.useCallback((id: IncomeId) => {
+    setOpenIncomeRows((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }, [])
+  const isIncomeRowOpen = React.useCallback(
+    (id: IncomeId) => openIncomeRows.includes(id),
+    [openIncomeRows]
+  )
+
   const loadData = React.useCallback(() => {
     setIncomes(Loading.of())
     void Promise.all([getIncomes(id), getIncomeStatements(id)])
@@ -109,6 +120,8 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
               <Incomes
                 personId={id}
                 incomes={incomes}
+                isIncomeRowOpen={isIncomeRowOpen}
+                toggleIncomeRow={toggleIncomeRow}
                 onSuccessfulUpdate={reload}
               />
             </>
@@ -211,31 +224,25 @@ function IncomeStatementRow({
 function Incomes({
   personId,
   incomes,
+  isIncomeRowOpen,
+  toggleIncomeRow,
   onSuccessfulUpdate
 }: {
   personId: UUID
   incomes: Income[]
+  isIncomeRowOpen: (id: IncomeId) => boolean
+  toggleIncomeRow: (id: IncomeId) => void
   onSuccessfulUpdate: () => void
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
-
-  const [toggledIncome, setToggledIncome] = useState<IncomeId[]>([])
-  const toggleIncome = (incomeId: IncomeId) =>
-    setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
-
-  function toggleIncomeItem(item: string, items: string[]): string[] {
-    return items.includes(item)
-      ? items.filter((el) => el !== item)
-      : [item, ...items]
-  }
 
   const [editing, setEditing] = useState<string>()
   const [deleting, setDeleting] = useState<string>()
 
   const toggleCreated = (res: Result<string>): Result<string> => {
     if (res.isSuccess) {
-      toggleIncome(res.value)
+      toggleIncomeRow(res.value)
     }
     return res
   }
@@ -264,7 +271,7 @@ function Incomes({
       <AddButtonRow
         text={i18n.personProfile.income.add}
         onClick={() => {
-          toggleIncome('new')
+          toggleIncomeRow('new')
           setEditing('new')
         }}
         disabled={!!editing}
@@ -273,8 +280,8 @@ function Incomes({
       <Gap size="m" />
       <IncomeList
         incomes={incomes}
-        toggled={toggledIncome}
-        toggle={toggleIncome}
+        isRowOpen={isIncomeRowOpen}
+        toggleRow={toggleIncomeRow}
         editing={editing}
         setEditing={setEditing}
         deleting={deleting}
