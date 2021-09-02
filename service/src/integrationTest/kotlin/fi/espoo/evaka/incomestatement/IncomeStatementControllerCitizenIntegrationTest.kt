@@ -501,7 +501,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .responseObject<IncomeStatement>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
-    private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 204) {
+    private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 200) {
         http.post("/citizen/income-statements")
             .asUser(citizen)
             .objectBody(body, mapper = objectMapper)
@@ -517,7 +517,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .objectBody(body, mapper = objectMapper)
             .response()
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
     }
 
