@@ -690,41 +690,41 @@ WITH potential_missing_varda_service_needs AS (
         p.child_id AS child_id,
         d.invoiced_by_municipality
     FROM service_need sn
-             JOIN placement p ON sn.placement_id = p.id
-             JOIN service_need_option sno ON sn.option_id = sno.id
-             JOIN daycare d ON p.unit_id = d.id
-             JOIN varda_reset_child vrc ON vrc.evaka_child_id = p.child_id
-             LEFT JOIN varda_service_need vsn ON sn.id = vsn.evaka_service_need_id
+    JOIN placement p ON sn.placement_id = p.id
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    JOIN daycare d ON p.unit_id = d.id
+    JOIN varda_reset_child vrc ON vrc.evaka_child_id = p.child_id
+    LEFT JOIN varda_service_need vsn ON sn.id = vsn.evaka_service_need_id
     WHERE
-      p.type = ANY(:vardaPlacementTypes::placement_type[])
-      AND d.upload_children_to_varda = true
-      AND sno.daycare_hours_per_week > 0
-      AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
-      AND sn.start_date <= current_date
+        p.type = ANY(:vardaPlacementTypes::placement_type[])
+        AND d.upload_children_to_varda = true
+        AND sno.daycare_hours_per_week > 0
+        AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
+        AND sn.start_date <= current_date
 ), service_need_fee_decision AS (
-         SELECT
-             sn.id service_need_id,
-             fdc.fee_decision_id,
-             fdc.updated
-         FROM service_need sn
-                  JOIN placement pl ON sn.placement_id = pl.id
-                  JOIN fee_decision_child fdc ON fdc.child_id = pl.child_id
-                  JOIN fee_decision fd ON fdc.fee_decision_id = fd.id
-         WHERE daterange(sn.start_date, sn.end_date, '[]') && fd.valid_during
-           AND fd.status = 'SENT'
+    SELECT
+        sn.id service_need_id,
+        fdc.fee_decision_id,
+        fdc.updated
+    FROM service_need sn
+        JOIN placement pl ON sn.placement_id = pl.id
+        JOIN fee_decision_child fdc ON fdc.child_id = pl.child_id
+        JOIN fee_decision fd ON fdc.fee_decision_id = fd.id
+    WHERE daterange(sn.start_date, sn.end_date, '[]') && fd.valid_during
+        AND fd.status = 'SENT'
+    ),
+    service_need_voucher_decision AS (
+        SELECT
+            sn.id service_need_id,
+            vvd.id voucher_decision_id,
+            vvd.updated
+        FROM service_need sn
+            JOIN placement pl ON sn.placement_id = pl.id
+            JOIN voucher_value_decision vvd ON vvd.child_id = pl.child_id
+        WHERE daterange(sn.start_date, sn.end_date, '[]') && daterange(vvd.valid_from, vvd.valid_to, '[]')
+            AND vvd.status = 'SENT'
      ),
-     service_need_voucher_decision AS (
-         SELECT
-             sn.id service_need_id,
-             vvd.id voucher_decision_id,
-             vvd.updated
-         FROM service_need sn
-                  JOIN placement pl ON sn.placement_id = pl.id
-                  JOIN voucher_value_decision vvd ON vvd.child_id = pl.child_id
-         WHERE daterange(sn.start_date, sn.end_date, '[]') && daterange(vvd.valid_from, vvd.valid_to, '[]')
-           AND vvd.status = 'SENT'
-     ),
-     existing_varda_service_needs_with_changed_fee_data AS (
+    existing_varda_service_needs_with_changed_fee_data AS (
         SELECT
             vsn.evaka_service_need_id,
             p.child_id AS evaka_child_id,
@@ -736,23 +736,21 @@ WITH potential_missing_varda_service_needs AS (
             LEFT JOIN service_need_fee_decision fd ON fd.service_need_id = vsn.evaka_service_need_id
             LEFT JOIN service_need_voucher_decision vd ON vd.service_need_id = vsn.evaka_service_need_id
         WHERE
-           vsn.updated < fd.updated OR vsn.updated < vd.updated
+            vsn.updated < fd.updated OR vsn.updated < vd.updated
      )   
 SELECT DISTINCT
     a.child_id AS evaka_child_id,
     a.service_need_id AS evaka_service_need_id,
     a.service_need_updated AS evaka_service_need_updated
 FROM potential_missing_varda_service_needs a
-         LEFT JOIN service_need_fee_decision fd on a.service_need_id = fd.service_need_id
-         LEFT JOIN service_need_voucher_decision vd on a.service_need_id = vd.service_need_id
+    LEFT JOIN service_need_fee_decision fd on a.service_need_id = fd.service_need_id
+    LEFT JOIN service_need_voucher_decision vd on a.service_need_id = vd.service_need_id
 WHERE invoiced_by_municipality = false
    OR a.service_need_end_date < :feeDecisionMinDate
    OR fd.fee_decision_id IS NOT NULL
    OR vd.voucher_decision_id IS NOT NULL
-   
-UNION   
-
-SELECT 
+UNION
+SELECT DISTINCT
     a.evaka_service_need_id,
     a.evaka_child_id,
     a.evaka_service_need_updated
