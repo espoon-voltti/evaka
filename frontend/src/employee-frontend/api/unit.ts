@@ -31,7 +31,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { UnitProviderType } from 'lib-customizations/types'
-import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
+import {AbsenceType, ApplicationStatus, PlacementType} from 'lib-common/generated/enums'
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
 
@@ -872,6 +872,10 @@ export interface ChildReservations {
   attendances: Record<
     JsonOf<LocalDate>,
     { startTime: string; endTime: string | null }
+  >
+  absences: Record<
+    JsonOf<LocalDate>,
+    { type: AbsenceType }
   >
 }
 
