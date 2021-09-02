@@ -64,6 +64,7 @@ SELECT
     ca.name AS care_area,
     u.type as unit_type,
     u.provider_type as unit_provider_type,
+    u.cost_center,
 
     dgp.daycare_group_id,
     dg.name as group_name,
@@ -135,6 +136,7 @@ data class RawReportRow(
     val careArea: String,
     val unitType: UnitType?,
     val unitProviderType: String,
+    val costCenter: String?,
     val daycareGroupId: GroupId?,
     val groupName: String?,
     val caretakersPlanned: Double?,

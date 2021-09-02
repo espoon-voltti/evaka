@@ -108,6 +108,7 @@ export interface RawReportRow {
   careArea: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
   unitProviderType: UnitProviderType
+  costCenter: string | null
   daycareGroupId: UUID | null
   groupName: string | null
   caretakersPlanned: number | null
