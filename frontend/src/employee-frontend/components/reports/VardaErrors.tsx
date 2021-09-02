@@ -11,7 +11,6 @@ import { Loading, Result } from 'lib-common/api'
 import { VardaErrorReportRow } from '../../types/reports'
 import { DateFilters, getVardaErrorsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ReportDownload from '../../components/reports/ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import LocalDate from 'lib-common/local-date'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -59,28 +58,6 @@ function VardaErrors() {
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (
           <>
-            <ReportDownload
-              data={rows.value.map((row) => ({
-                ...row
-              }))}
-              headers={[
-                {
-                  label: i18n.reports.vardaErrors.error,
-                  key: 'error'
-                },
-                {
-                  label: i18n.reports.vardaErrors.updated,
-                  key: 'updated'
-                },
-                {
-                  label: i18n.reports.vardaErrors.updated,
-                  key: 'updated'
-                }
-              ]}
-              filename={`${
-                i18n.reports.vardaErrors.title
-              }-${filters.date.formatIso()}.csv`}
-            />
             <TableScrollable>
               <Thead>
                 <Tr>
