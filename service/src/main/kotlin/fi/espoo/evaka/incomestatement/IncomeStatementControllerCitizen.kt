@@ -1,5 +1,6 @@
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllAttachments
 import fi.espoo.evaka.daycare.controllers.utils.notFound
@@ -26,6 +27,7 @@ class IncomeStatementControllerCitizen {
         db: Database.Connection,
         user: AuthenticatedUser
     ): List<IncomeStatement> {
+        Audit.IncomeStatementsOfPerson.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementsForPerson(user.id)
@@ -38,6 +40,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
+        Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementForPerson(user.id, incomeStatementId) ?: throw NotFound("No such income statement")
@@ -50,6 +53,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
+        Audit.IncomeStatementCreate.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
         db.transaction { tx ->
@@ -71,6 +75,7 @@ class IncomeStatementControllerCitizen {
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ): ResponseEntity<Unit> {
+        Audit.IncomeStatementUpdate.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->

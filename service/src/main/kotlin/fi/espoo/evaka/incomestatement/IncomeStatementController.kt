@@ -1,5 +1,6 @@
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -28,6 +29,7 @@ class IncomeStatementController(
         user: AuthenticatedUser,
         @PathVariable personId: PersonId
     ): ResponseEntity<List<IncomeStatement>> {
+        Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.read { tx ->
             ResponseEntity.ok(tx.readIncomeStatementsForPerson(personId.raw))
@@ -41,6 +43,7 @@ class IncomeStatementController(
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): ResponseEntity<IncomeStatement> {
+        Audit.IncomeStatementOfPerson.log(incomeStatementId, personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.read { tx ->
             val incomeStatement = tx.readIncomeStatementForPerson(personId.raw, incomeStatementId)
@@ -56,6 +59,7 @@ class IncomeStatementController(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: Wrapper<Boolean>
     ): ResponseEntity<Unit> {
+        Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
         db.transaction { tx ->
             tx.setIncomeStatementHandler(
@@ -71,6 +75,7 @@ class IncomeStatementController(
         db: Database.Connection,
         user: AuthenticatedUser
     ): List<IncomeStatementAwaitingHandler> {
+        Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
         return db.read { it.fetchIncomeStatementsAwaitingHandler() }
     }
