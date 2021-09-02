@@ -281,6 +281,15 @@ function VoucherServiceProviderUnit() {
                   })),
                   {
                     childFirstName: 'Yhteensä',
+                    childLastName: null,
+                    childGroupName: null,
+                    note: null,
+                    start: null,
+                    end: null,
+                    numberOfDays: null,
+                    serviceNeedDescription: null,
+                    serviceVoucherValue: null,
+                    serviceVoucherCoPayment: null,
                     realizedAmount: formatCents(
                       sortedReport.value.voucherTotal,
                       true
