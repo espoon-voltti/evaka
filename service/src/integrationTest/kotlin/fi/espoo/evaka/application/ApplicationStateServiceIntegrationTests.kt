@@ -31,6 +31,7 @@ import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -45,6 +46,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
@@ -56,6 +58,8 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1968,6 +1972,56 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
+    fun `daycare with unknown service need option`() {
+        // given
+        val serviceNeedOption = ServiceNeedOption(UUID.randomUUID(), "unknown service need option")
+        workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
+
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(serviceNeedOption, application.form.preferences.serviceNeed?.serviceNeedOption)
+            val serviceNeeds = it.getServiceNeedsByChild(application.childId)
+            assertThat(serviceNeeds).isEmpty()
+        }
+    }
+
+    @Test
+    fun `daycare with known service need option`() {
+        // given
+        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id.raw, snPreschoolDaycare45.name)
+        workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
+
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(serviceNeedOption, application.form.preferences.serviceNeed?.serviceNeedOption)
+            val serviceNeeds = it.getServiceNeedsByChild(application.childId)
+            assertThat(serviceNeeds).extracting({ sn -> sn.option.id.raw }).containsExactly(tuple(serviceNeedOption.id))
+        }
+    }
+
+    @Test
     fun `accept preschool daycare first throws`() {
         // given
         workflowForPreschoolDaycareDecisions()
@@ -2093,14 +2147,15 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private fun getDecision(r: Database.Read, type: DecisionType): Decision =
         r.getDecisionsByApplication(applicationId, AclAuthorization.All).first { it.type == type }
 
-    private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
+    private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1), serviceNeedOption: ServiceNeedOption? = null) {
         db.transaction { tx ->
             tx.insertApplication(
                 guardian = testAdult_5,
                 maxFeeAccepted = true,
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = preferredStartDate
+                preferredStartDate = preferredStartDate,
+                serviceNeedOption = serviceNeedOption
             )
             service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)

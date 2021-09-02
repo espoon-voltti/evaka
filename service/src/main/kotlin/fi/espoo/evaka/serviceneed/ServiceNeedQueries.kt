@@ -30,7 +30,7 @@ fun Database.Read.getServiceNeedsByChild(
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
-        JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN employee e on e.id = sn.confirmed_by
         WHERE pl.child_id = :childId
         """.trimIndent()
 
@@ -55,7 +55,7 @@ fun Database.Read.getServiceNeedsByUnit(
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
-        JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN employee e on e.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]')
         """.trimIndent()
 
@@ -76,7 +76,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
-        JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN employee e on e.id = sn.confirmed_by
         WHERE sn.id = :id
     """.trimIndent()
 
@@ -107,8 +107,8 @@ fun Database.Transaction.insertServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
-    confirmedBy: UUID,
-    confirmedAt: HelsinkiDateTime
+    confirmedBy: UUID?,
+    confirmedAt: HelsinkiDateTime?
 ): ServiceNeedId {
     // language=sql
     val sql = """
@@ -134,8 +134,8 @@ fun Database.Transaction.updateServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
-    confirmedBy: UUID,
-    confirmedAt: HelsinkiDateTime
+    confirmedBy: UUID?,
+    confirmedAt: HelsinkiDateTime?
 ) {
     // language=sql
     val sql = """
@@ -177,7 +177,7 @@ fun Database.Read.getOverlappingServiceNeeds(
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
-        JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN employee e on e.id = sn.confirmed_by
         WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
     """.trimIndent()
 
@@ -194,6 +194,13 @@ fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
     return createQuery("SELECT * FROM service_need_option ORDER BY display_order")
         .mapTo<ServiceNeedOption>()
         .list()
+}
+
+fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
+    return createQuery("SELECT * FROM service_need_option WHERE id = :id")
+        .bind("id", id)
+        .mapTo<ServiceNeedOption>()
+        .firstOrNull()
 }
 
 fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<PlacementType>): List<ServiceNeedOptionPublicInfo> {

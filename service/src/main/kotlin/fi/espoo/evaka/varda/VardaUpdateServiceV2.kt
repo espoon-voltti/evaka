@@ -871,7 +871,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             sn.updated AS service_need_updated
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
-        JOIN employee e on e.id = sn.confirmed_by
         JOIN placement p ON p.id = sn.placement_id
         JOIN daycare d ON p.unit_id = d.id
         LEFT JOIN LATERAL (
