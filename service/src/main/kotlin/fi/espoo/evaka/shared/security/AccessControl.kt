@@ -147,14 +147,7 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
-        if (user is AuthenticatedUser.Employee) {
-            val userRoles = user.globalRoles + user.allScopedRoles
-            if (userRoles.any { it == UserRole.ADMIN || permittedRoleActions.globalActions(it).contains(action) }) {
-                return
-            }
-        }
-
-        throw Forbidden("Permission denied")
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions)
     }
 
     fun getPermittedRoles(action: Action.Global): Set<UserRole> {
@@ -260,8 +253,8 @@ WHERE employee_id = :userId
     ): Map<GroupPlacementId, Set<Action.GroupPlacement>> = this.groupPlacement.getPermittedActions(user, ids)
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.IncomeStatement, @Suppress("UNUSED_PARAMETER") id: IncomeStatementId) {
-        // Person actions in Espoo are global so the id parameter is ignored
-        assertGlobalPermission(user, action, permittedRoleActions::incomeStatementActions)
+        // IncomeStatement actions in Espoo are global so the id parameter is ignored
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
@@ -284,7 +277,7 @@ WHERE employee_id = :userId
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Person, @Suppress("UNUSED_PARAMETER") id: PersonId) {
         // Person actions in Espoo are global so the id parameter is ignored
-        assertGlobalPermission(user, action, permittedRoleActions::personActions)
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::personActions)
     }
 
     fun getPermittedPlacementActions(
@@ -321,14 +314,7 @@ WHERE employee_id = :userId
         @Suppress("UNUSED_PARAMETER") id: VasuTemplateId
     ) {
         // VasuTemplate actions in Espoo are global so the id parameter is ignored
-        if (user is AuthenticatedUser.Employee) {
-            val userRoles = user.globalRoles + user.allScopedRoles
-            if (userRoles.any { it == UserRole.ADMIN || permittedRoleActions.vasuTemplateActions(it).contains(action) }) {
-                return
-            }
-        }
-
-        throw Forbidden("Permission denied")
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::vasuTemplateActions)
     }
 
     private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
@@ -413,6 +399,21 @@ WHERE employee_id = :userId
         if (UserRole.SCOPED_ROLES.any { mapping(it).contains(action) }) {
             // the outer if-clause avoids unnecessary db query if no scoped role gives permission anyway
             if (getAclRoles().any { mapping(it).contains(action) }) {
+                return
+            }
+        }
+
+        throw Forbidden("Permission denied")
+    }
+
+    private inline fun <reified A> assertPermissionUsingAllRoles(
+        user: AuthenticatedUser,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ) where A : Action, A : Enum<A> {
+        if (user is AuthenticatedUser.Employee) {
+            val userRoles = user.globalRoles + user.allScopedRoles
+            if (userRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
                 return
             }
         }
