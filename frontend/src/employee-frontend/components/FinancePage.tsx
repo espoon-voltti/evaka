@@ -6,6 +6,7 @@ import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
+import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../state/i18n'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
 import IncomeStatementsPage from './income-statements/IncomeStatementsPage'
@@ -33,11 +34,15 @@ export default React.memo(function FinancePage() {
         link: '/finance/invoices',
         label: i18n.header.invoices
       },
-      {
-        id: 'income-statements',
-        link: '/finance/income-statements',
-        label: i18n.header.incomeStatements
-      }
+      ...(featureFlags.experimental?.incomeStatements
+        ? [
+            {
+              id: 'income-statements',
+              link: '/finance/income-statements',
+              label: i18n.header.incomeStatements
+            }
+          ]
+        : [])
     ],
     [i18n]
   )
@@ -66,12 +71,14 @@ export default React.memo(function FinancePage() {
           component={InvoicesPage}
           title={i18n.titles.invoices}
         />
-        <RouteWithTitle
-          exact
-          path="/finance/income-statements"
-          component={IncomeStatementsPage}
-          title={i18n.titles.incomeStatements}
-        />
+        {featureFlags.experimental?.incomeStatements && (
+          <RouteWithTitle
+            exact
+            path="/finance/income-statements"
+            component={IncomeStatementsPage}
+            title={i18n.titles.incomeStatements}
+          />
+        )}
         <Route path="/" component={RedirectToFeeDecisions} />
       </Switch>
     </>
