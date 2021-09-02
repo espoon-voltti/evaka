@@ -2,10 +2,9 @@ import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { JsonOf } from '../json'
+import { IncomeSource, OtherIncome } from '../generated/enums'
 
-export type IncomeSource = 'INCOMES_REGISTER' | 'ATTACHMENTS'
-
-export const otherIncome = [
+export const otherIncome: OtherIncome[] = [
   'PENSION',
   'ADULT_EDUCATION_ALLOWANCE',
   'SICKNESS_ALLOWANCE',
@@ -30,9 +29,7 @@ export const otherIncome = [
   'APPRENTICESHIP_SALARY',
   'ACCIDENT_INSURANCE_COMPENSATION',
   'OTHER_INCOME'
-] as const
-
-export type OtherIncome = typeof otherIncome[number]
+]
 
 interface Base {
   id: UUID

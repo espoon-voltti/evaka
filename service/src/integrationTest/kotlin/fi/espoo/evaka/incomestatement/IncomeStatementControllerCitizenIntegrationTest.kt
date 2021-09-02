@@ -70,7 +70,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                         incomeStartDate = LocalDate.of(1992, 1, 2),
                         incomeEndDate = LocalDate.of(2099, 9, 9),
                     ),
-                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
+                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -116,7 +116,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                             incomeStartDate = LocalDate.of(1992, 1, 2),
                             incomeEndDate = LocalDate.of(2099, 9, 9),
                         ),
-                        otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
+                        otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -383,7 +383,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                         incomeStartDate = LocalDate.of(1992, 1, 2),
                         incomeEndDate = LocalDate.of(2099, 9, 9),
                     ),
-                    otherIncome = setOf(OtherGrossIncome.ALIMONY, OtherGrossIncome.RENTAL_INCOME),
+                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,

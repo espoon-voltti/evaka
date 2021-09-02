@@ -7,7 +7,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-enum class OtherGrossIncome {
+enum class OtherIncome {
     PENSION,
     ADULT_EDUCATION_ALLOWANCE,
     SICKNESS_ALLOWANCE,
@@ -17,6 +17,21 @@ enum class OtherGrossIncome {
     ALIMONY,
     INTEREST_AND_INVESTMENT_INCOME,
     RENTAL_INCOME,
+    UNEMPLOYMENT_ALLOWANCE,
+    LABOUR_MARKET_SUBSIDY,
+    ADJUSTED_DAILY_ALLOWANCE,
+    JOB_ALTERNATION_COMPENSATION,
+    REWARD_OR_BONUS,
+    RELATIVE_CARE_SUPPORT,
+    BASIC_INCOME,
+    FOREST_INCOME,
+    FAMILY_CARE_COMPENSATION,
+    REHABILITATION,
+    EDUCATION_ALLOWANCE,
+    GRANT,
+    APPRENTICESHIP_SALARY,
+    ACCIDENT_INSURANCE_COMPENSATION,
+    OTHER_INCOME,
 }
 
 enum class IncomeSource {
@@ -27,7 +42,7 @@ enum class IncomeSource {
 data class Gross(
     val incomeSource: IncomeSource,
     val estimatedIncome: EstimatedIncome?,
-    val otherIncome: Set<OtherGrossIncome>,
+    val otherIncome: Set<OtherIncome>,
 )
 
 data class SelfEmployed(

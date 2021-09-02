@@ -97,7 +97,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                     incomeStartDate = row.mapColumn("gross_income_start_date"),
                     incomeEndDate = row.mapColumn("gross_income_end_date")
                 ) else null,
-                otherIncome = row.mapColumn<Array<OtherGrossIncome>>("gross_other_income").toSet(),
+                otherIncome = row.mapColumn<Array<OtherIncome>>("gross_other_income").toSet(),
             ) else null
 
             val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
@@ -181,7 +181,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("grossEstimatedMonthlyIncome", null as Int?)
         .bindNullable("grossIncomeStartDate", null as LocalDate?)
         .bindNullable("grossIncomeEndDate", null as LocalDate?)
-        .bindNullable("grossOtherIncome", null as Array<OtherGrossIncome>?)
+        .bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
         .bindNullable("fullTime", null as Boolean?)
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
         .bindNullable("spouseWorksInCompany", null as Boolean?)
