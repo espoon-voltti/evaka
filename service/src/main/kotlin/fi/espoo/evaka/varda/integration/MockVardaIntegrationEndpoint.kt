@@ -45,6 +45,7 @@ class MockVardaIntegrationEndpoint {
     val placements = mutableMapOf<Long, VardaPlacement>()
     var feeDataId = 0L
     val feeData = mutableMapOf<Long, VardaFeeData>()
+    var feeDataCalls = 0
     var childId = 0L
     val children = mutableMapOf<Long, VardaChildRequest>()
 
@@ -60,6 +61,7 @@ class MockVardaIntegrationEndpoint {
             placementId = 0L
             placements.clear()
             feeDataId = 0L
+            feeDataCalls = 0
             feeData.clear()
             childId = 0L
             children.clear()
@@ -219,6 +221,7 @@ class MockVardaIntegrationEndpoint {
 
         this.feeDataId = feeDataId.inc()
         this.feeData[feeDataId] = body
+        this.feeDataCalls += 1
         logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
         ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body))
     }
