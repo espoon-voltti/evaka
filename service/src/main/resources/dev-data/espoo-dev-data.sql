@@ -849,7 +849,7 @@ VALUES
     ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', daterange('2000-01-01', '2020-07-31', '[]'), 210200, 271300, 308000, 344700, 381300, 210200 + 269700, 271300 + 269700, 308000 + 269700, 344700 + 269700, 381300 + 269700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28900, 2700),
     ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', daterange('2020-08-01', NULL), 213600, 275600, 312900, 350200, 387400, 213600 + 268700, 275600 + 268700, 312900 + 268700, 350200 + 268700, 387400 + 268700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28800, 2700);
 
-INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000);
+INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 1.55);
 
 
 
@@ -1921,3 +1921,18 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
     ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
     ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);
+
+INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
+    ('AUTISM', 'Autismin kirjo', NULL, 10),
+    ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
+    ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20),
+    ('FOCUS_CHALLENGE', 'Keskittymisen / tarkkaavaisuuden vaikeus', NULL, 25),
+    ('LINGUISTIC_CHALLENGE', 'Kielellinen vaikeus', NULL, 30),
+    ('DEVELOPMENT_MONITORING', 'Lapsen kehityksen seuranta', NULL, 35),
+    ('DEVELOPMENT_MONITORING_PENDING', 'Lapsen kehityksen seuranta, tutkimukset kesken', 'Lapsi on terveydenhuollon tutkimuksissa, diagnoosi ei ole vielä varmistunut.', 40),
+    ('MULTI_DISABILITY', 'Monivammaisuus', NULL, 45),
+    ('LONG_TERM_CONDITION', 'Pitkäaikaissairaus', NULL, 50),
+    ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
+    ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
+
+UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS}';

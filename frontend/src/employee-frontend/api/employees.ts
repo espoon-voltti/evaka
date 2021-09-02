@@ -4,10 +4,10 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import { client } from '../api/client'
+import { client } from './client'
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
-import { UUID } from '../../lib-common/types'
+import { UUID } from 'lib-common/types'
 import { GlobalRole } from '../types'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
@@ -59,8 +59,10 @@ export function searchEmployees(
   searchTerm?: string
 ): Promise<Result<Paged<EmployeeUser>>> {
   return client
-    .get<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
-      params: { page, pageSize, searchTerm }
+    .post<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
+      page,
+      pageSize,
+      searchTerm
     })
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))

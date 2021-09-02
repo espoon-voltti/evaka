@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { BoundingBox, toCssString } from '.'
+import {
+  BoundingBox,
+  toCssString,
+  waitUntilEqual,
+  waitUntilDefined,
+  waitUntilTrue
+} from '.'
 
 export class RawElement {
   constructor(public page: Page, public selector: string) {}
@@ -95,6 +101,7 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
     }
   }
 
+export class Checkbox extends WithChecked(RawElement, descendantInput) {}
 export class Radio extends WithChecked(RawElement, descendantInput) {}
 
 export class RawTextInput extends WithTextInput(RawElement) {}
@@ -105,5 +112,35 @@ export class SelectionChip extends WithChecked(RawElement, descendantInput) {}
 export class Combobox extends WithTextInput(RawElement, descendantInput) {
   findItem(label: string): RawElement {
     return this.find(`[data-qa="item"]:has-text(${toCssString(label)})`)
+  }
+}
+
+export class Collapsible extends RawElement {
+  #trigger = this.find('[data-qa="collapsible-trigger"]')
+
+  async isOpen() {
+    const status = await waitUntilDefined(() =>
+      this.getAttribute('data-status')
+    )
+    return status !== 'closed'
+  }
+
+  async open() {
+    await waitUntilTrue(async () => {
+      if (!(await this.isOpen())) {
+        await this.#trigger.click()
+      }
+      return this.isOpen()
+    })
+  }
+}
+
+export class AsyncButton extends RawElement {
+  async status() {
+    return this.getAttribute('data-status')
+  }
+
+  async waitUntilSuccessful() {
+    await waitUntilEqual(() => this.status(), 'success')
   }
 }

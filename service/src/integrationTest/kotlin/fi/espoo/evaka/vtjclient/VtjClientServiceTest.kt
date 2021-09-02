@@ -5,13 +5,14 @@
 package fi.espoo.evaka.vtjclient
 
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
+import fi.espoo.evaka.lookup
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.ASUKASMAARA
@@ -25,7 +26,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 import org.springframework.ws.client.core.WebServiceTemplate
@@ -46,7 +47,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
     lateinit var vtjClientService: IVtjClientService
 
     @Autowired
-    lateinit var mapper: IVtjHenkiloMapper
+    lateinit var mapper: VtjHenkiloMapper
 
     private val schemaResource: Resource = ClassPathResource("wsdl/query.xsd")
 
@@ -65,13 +66,13 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
 
     var mockServer: MockWebServiceServer? = null
 
-    @Value("\${fi.espoo.voltti.vtj.test.use_actual_vtj}")
-    lateinit var useVtj: String
+    @Autowired
+    protected lateinit var env: Environment
 
     @BeforeEach
     override fun beforeEach() {
         super.beforeEach()
-        if (useVtj != "true") {
+        if (!env.lookup<Boolean>("evaka.integration.vtj.test.use_actual_vtj", "fi.espoo.voltti.vtj.test.use_actual_vtj")) {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
         }
     }

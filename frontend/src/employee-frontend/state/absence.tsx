@@ -15,7 +15,7 @@ import {
   CareTypeCategory
 } from '../types/absence'
 import { UUID } from '../types'
-import { AbsenceType } from '../../lib-common/api-types/child/Absences'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 export interface AbsencesState {
   absences: Result<Group>
@@ -68,10 +68,8 @@ export const AbsencesContextProvider = React.memo(
     const [selectedAbsenceType, setSelectedAbsenceType] = useState(
       defaultState.selectedAbsenceType
     )
-    const [
-      selectedCareTypeCategories,
-      setSelectedCareTypeCategories
-    ] = useState(defaultState.selectedCareTypeCategories)
+    const [selectedCareTypeCategories, setSelectedCareTypeCategories] =
+      useState(defaultState.selectedCareTypeCategories)
     const [modalVisible, setModalVisible] = useState(defaultState.modalVisible)
 
     const updateSelectedCells = ({ id, parts }: Cell) =>

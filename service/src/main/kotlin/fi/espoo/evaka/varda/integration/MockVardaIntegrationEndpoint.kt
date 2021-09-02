@@ -79,7 +79,7 @@ class MockVardaIntegrationEndpoint {
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $unit" }
         unitId = unitId.inc()
-        units.put(unitId, unit)
+        units[unitId] = unit
         ResponseEntity.ok(getMockUnitResponse(unitId))
     }
 
@@ -89,7 +89,7 @@ class MockVardaIntegrationEndpoint {
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /toimipaikat/$vardaId recieved body: $unit" }
+        logger.info { "Mock varda integration endpoint PUT /toimipaikat/$vardaId received body: $unit" }
         val id = if (vardaId == null) {
             unitId = unitId.inc()
             unitId
@@ -106,7 +106,7 @@ class MockVardaIntegrationEndpoint {
         @RequestBody body: VardaUpdateOrganizer,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /vakajarjestaja/$vardaId recieved body: $body" }
+        logger.info { "Mock varda integration endpoint PUT /vakajarjestaja/$vardaId received body: $body" }
         val id = if (vardaId == null) {
             organizerId = organizerId.inc()
             organizerId
@@ -123,7 +123,7 @@ class MockVardaIntegrationEndpoint {
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint POST /henkilot received body: $body" }
         personId = personId.inc()
-        people.put(personId, body)
+        people[personId] = body
         ResponseEntity.ok(getMockPersonResponse(personId))
     }
 
@@ -134,7 +134,7 @@ class MockVardaIntegrationEndpoint {
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint POST /lapset received body: $body" }
         childId = childId.inc()
-        this.children.put(childId, body)
+        this.children[childId] = body
         ResponseEntity.ok(getMockChildResponse(childId))
     }
 
@@ -148,7 +148,7 @@ class MockVardaIntegrationEndpoint {
         if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
 
         decisionId = decisionId.inc()
-        decisions.put(decisionId, body)
+        decisions[decisionId] = body
         ResponseEntity.ok(getMockDecisionResponse(decisionId))
     }
 
@@ -184,7 +184,7 @@ class MockVardaIntegrationEndpoint {
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint POST /varhaiskasvatussuhteet received body: $body" }
         placementId = placementId.inc()
-        placements.put(placementId, body)
+        placements[placementId] = body
         ResponseEntity.ok(getMockPlacementResponse(placementId))
     }
 
@@ -218,7 +218,7 @@ class MockVardaIntegrationEndpoint {
         if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
         this.feeDataId = feeDataId.inc()
-        this.feeData.put(feeDataId, body)
+        this.feeData[feeDataId] = body
         logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
         ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body))
     }
@@ -432,7 +432,7 @@ class MockVardaIntegrationEndpoint {
         failResponseCode = failWithHttpCode
     }
 
-    private fun shouldFailRequest(type: VardaCallType) = type.equals(failNextRequest)
+    private fun shouldFailRequest(type: VardaCallType) = type == failNextRequest
 
     private fun failRequest(): ResponseEntity<String> {
         logger.info("MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode")

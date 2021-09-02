@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { formatCents, isValidCents, parseCents } from '../utils/money'
+import { formatCents, isValidCents, parseCents } from './money'
 
 describe('utils/money', () => {
   describe('formatCents', () => {

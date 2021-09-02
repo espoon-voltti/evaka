@@ -7,11 +7,13 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -21,27 +23,27 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private val userId = UUID.randomUUID()
     private val mobileUser = AuthenticatedUser.MobileDevice(userId)
-    private val groupId = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
-    private val daycarePlacementId = UUID.randomUUID()
+    private val daycarePlacementId = PlacementId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
@@ -65,7 +67,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, LocalTime.ofInstant(child.attendance!!.arrived, europeHelsinki))
+        assertEquals(arrived, child.attendance?.arrived?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertNull(child.attendance!!.departed)
         assertTrue(child.absences.isEmpty())
     }
@@ -94,7 +96,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `post return to coming - happy case when absent`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
+        givenChildAbsent(listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
 
         val child = returnToComingAssertOkOneChild()
 
@@ -129,7 +131,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
     }
 
     @Test
@@ -140,7 +142,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL), info.absentFrom)
     }
 
     @Test
@@ -151,7 +153,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
     }
 
     @Test
@@ -173,7 +175,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
     }
 
     @Test
@@ -184,7 +186,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL), info.absentFrom)
     }
 
     @Test
@@ -195,7 +197,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPresent(arrived)
 
         val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        assertEquals(setOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
     }
 
     @Test
@@ -222,7 +224,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertTrue(child.absences.isEmpty())
     }
 
@@ -237,9 +239,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(1, child.absences.size)
-        assertEquals(CareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
+        assertEquals(AbsenceCareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
     }
 
     @Test
@@ -253,9 +255,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(1, child.absences.size)
-        assertEquals(CareType.PRESCHOOL, child.absences.first().careType)
+        assertEquals(AbsenceCareType.PRESCHOOL, child.absences.first().careType)
     }
 
     @Test
@@ -269,10 +271,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, europeHelsinki))
+        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
         assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -314,7 +316,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `post return to present - error when absent`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
+        givenChildAbsent(listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
         returnToPresentAssertFail(409)
     }
 
@@ -325,8 +327,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.now(europeHelsinki).minusDays(1).minusHours(1).toInstant(),
-                departed = ZonedDateTime.now(europeHelsinki).minusDays(1).minusMinutes(1).toInstant()
+                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(1),
+                departed = HelsinkiDateTime.now().minusDays(1).minusMinutes(1)
             )
         }
         givenChildPlacement(PlacementType.PRESCHOOL)
@@ -336,7 +338,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
     }
 
     @Test
@@ -348,8 +350,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -361,11 +363,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
     }
 
     @Test
-    fun `post full day absence - happy case when coming to prepaatory_daycare`() {
+    fun `post full day absence - happy case when coming to preparatory_daycare`() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildComing()
 
@@ -373,8 +375,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -386,7 +388,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.DAYCARE })
     }
 
     @Test
@@ -398,7 +400,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.DAYCARE })
     }
 
     @Test
@@ -410,7 +412,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.CLUB })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.CLUB })
     }
 
     @Test
@@ -463,7 +465,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
+                arrived = HelsinkiDateTime.now().withTime(arrived),
                 departed = null
             )
         }
@@ -479,15 +481,15 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
-                departed = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(departed), europeHelsinki).toInstant()
+                arrived = HelsinkiDateTime.now().withTime(arrived),
+                departed = HelsinkiDateTime.now().withTime(departed)
             )
         }
         val child = expectOneChild()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
     }
 
-    private fun givenChildAbsent(absentFrom: List<CareType>, absenceType: AbsenceType) {
+    private fun givenChildAbsent(absentFrom: List<AbsenceCareType>, absenceType: AbsenceType) {
         absentFrom.forEach { careType ->
             db.transaction {
                 it.insertTestAbsence(childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())

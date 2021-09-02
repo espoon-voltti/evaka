@@ -5,7 +5,7 @@
 import { UpdateStateFn } from 'lib-common/form-state'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { ContactInfoFormData } from '../ApplicationFormData'
+import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import EditorSection from '../../../applications/editor/EditorSection'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ApplicationFormDataErrors } from '../validations'
@@ -15,7 +15,7 @@ import GuardianSubSection from '../../../applications/editor/contact-info/Guardi
 import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
 import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
 import OtherChildrenSubSection from '../../../applications/editor/contact-info/OtherChildrenSubSection'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export type ContactInfoSectionProps = {
   type: ApplicationType

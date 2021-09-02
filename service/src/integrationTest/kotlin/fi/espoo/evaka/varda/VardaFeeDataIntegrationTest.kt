@@ -24,6 +24,10 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VardaDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -49,14 +53,14 @@ import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -84,7 +88,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     private val testPeriod = FiniteDateRange(start = LocalDate.now().minusMonths(1), end = LocalDate.now())
 
     private val guardiansTestChild1 = listOf(testAdult_1, testAdult_2)
-        .map { VardaGuardian(it.ssn!!, it.firstName, it.lastName) }
+        .map { VardaGuardian(henkilotunnus = it.ssn!!, etunimet = it.firstName, sukunimi = it.lastName) }
 
     @Test
     fun `fee data is sent when a decision is sent to varda`() {
@@ -120,7 +124,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(feeDecision.id, row.evakaFeeDecisionId)
             assertEquals(mockEndpoint.feeData.keys.first(), row.vardaId)
             db.read {
-                val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<UUID>().first()
+                val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<VardaDecisionId>().first()
                 assertEquals(decisionId, row.vardaDecisionId)
                 val childId = it.createQuery("SELECT id FROM varda_child LIMIT 1").mapTo<UUID>().first()
                 assertEquals(childId, row.vardaChildId)
@@ -437,7 +441,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(2, newSentData.size)
         val originalData = newSentData[originalSentData.keys.first()]
         assertNotNull(originalData)
-        originalData!!.let { data ->
+        originalData.let { data ->
             assertEquals(originalFeeDecision.familySize, data.perheen_koko)
             assertEquals(testPeriod.start, data.alkamis_pvm)
             assertEquals(periodEndHalf.start.minusDays(1), data.paattymis_pvm)
@@ -573,7 +577,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(voucherValueDecisions.first().id, row.evakaVoucherValueDecisionId)
             assertEquals(mockEndpoint.feeData.keys.first(), row.vardaId)
             db.read {
-                val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<UUID>().first()
+                val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<VardaDecisionId>().first()
                 assertEquals(decisionId, row.vardaDecisionId)
                 val childId = it.createQuery("SELECT id FROM varda_child LIMIT 1").mapTo<UUID>().first()
                 assertEquals(childId, row.vardaChildId)
@@ -671,7 +675,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     private fun createDecisionsAndPlacements(
         period: FiniteDateRange,
         child: PersonData.Detailed = testChild_1,
-        daycareId: UUID = testDaycare.id
+        daycareId: DaycareId = testDaycare.id
     ) {
         insertDecisionWithApplication(db, child, period, unitId = daycareId)
         db.transaction {
@@ -692,10 +696,10 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     data class VardaFeeDataRow(
         val id: UUID,
-        val evakaFeeDecisionId: UUID?,
-        val evakaVoucherValueDecisionId: UUID?,
+        val evakaFeeDecisionId: FeeDecisionId?,
+        val evakaVoucherValueDecisionId: VoucherValueDecisionId?,
         val vardaId: Long?,
-        val vardaDecisionId: UUID?,
+        val vardaDecisionId: VardaDecisionId?,
         val vardaChildId: UUID?,
         val createdAt: Instant,
         val uploadedAt: Instant
@@ -712,7 +716,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
-        daycareId: UUID = testVoucherDaycare.id,
+        daycareId: DaycareId = testVoucherDaycare.id,
         guardian: UUID = testAdult_1.id
     ): FeeDecision = db.transaction {
         val feeDecision = createFeeDecisionFixture(
@@ -739,7 +743,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
-        unitId: UUID = testDaycare.id,
+        unitId: DaycareId = testDaycare.id,
         guardian: UUID = testAdult_1.id
     ): List<VoucherValueDecision> = db.transaction {
         val voucherValueDecisions = children.map { child ->

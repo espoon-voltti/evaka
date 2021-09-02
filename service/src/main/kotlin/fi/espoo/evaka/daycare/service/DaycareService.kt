@@ -13,7 +13,9 @@ import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
-import fi.espoo.evaka.placement.getDaycareGroupPlacements
+import fi.espoo.evaka.placement.hasGroupPlacements
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
@@ -22,13 +24,12 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class DaycareService {
     fun getDaycareCapacityStats(
         tx: Database.Read,
-        daycareId: UUID,
+        daycareId: DaycareId,
         startDate: LocalDate,
         endDate: LocalDate
     ): DaycareCapacityStats {
@@ -41,7 +42,7 @@ class DaycareService {
 
     fun createGroup(
         tx: Database.Transaction,
-        daycareId: UUID,
+        daycareId: DaycareId,
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
@@ -50,15 +51,8 @@ class DaycareService {
         tx.createDaycareGroupMessageAccount(it.id)
     }
 
-    fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {
-        val isEmpty = tx.getDaycareGroupPlacements(
-            daycareId = daycareId,
-            groupId = groupId,
-            startDate = null,
-            endDate = null
-        ).isEmpty()
-
-        if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
+    fun deleteGroup(tx: Database.Transaction, groupId: GroupId) = try {
+        if (tx.hasGroupPlacements(groupId)) throw Conflict("Cannot delete group which has children placed in it")
 
         tx.deleteDaycareGroupMessageAccount(groupId)
         tx.deleteDaycareGroup(groupId)
@@ -68,7 +62,7 @@ class DaycareService {
             ?: e
     }
 
-    fun getDaycareGroups(tx: Database.Read, daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> {
+    fun getDaycareGroups(tx: Database.Read, daycareId: DaycareId, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> {
         if (!tx.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
         return tx.getDaycareGroups(daycareId, startDate, endDate)
@@ -82,8 +76,8 @@ data class DaycareManager(
 )
 
 data class DaycareGroup(
-    val id: UUID,
-    val daycareId: UUID,
+    val id: GroupId,
+    val daycareId: DaycareId,
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
@@ -92,7 +86,7 @@ data class DaycareGroup(
 
 data class DaycareCapacityStats(
     val unitTotalCaretakers: Stats,
-    val groupCaretakers: Map<UUID, Stats>
+    val groupCaretakers: Map<GroupId, Stats>
 )
 
 data class Stats(

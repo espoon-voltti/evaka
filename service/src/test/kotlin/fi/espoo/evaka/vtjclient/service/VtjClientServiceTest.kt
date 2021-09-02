@@ -8,19 +8,20 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.Appender
 import com.fasterxml.jackson.core.JsonGenerator
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argumentCaptor
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
+import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
-import fi.espoo.evaka.vtjclient.mapper.IVTJResponseMapper
-import fi.espoo.evaka.vtjclient.properties.VtjClientProperties
+import fi.espoo.evaka.vtjclient.mapper.VTJResponseMapper
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
@@ -64,7 +65,7 @@ class VtjClientServiceTest {
     lateinit var mockWSTemplate: WebServiceTemplate
 
     @Mock
-    lateinit var mockVtjProps: VtjClientProperties
+    lateinit var mockVtjProps: VtjEnv
 
     @Mock
     lateinit var mockRequestAdapter: SoapRequestAdapter
@@ -73,7 +74,7 @@ class VtjClientServiceTest {
     lateinit var mockCallback: WebServiceMessageCallback
 
     @Mock
-    lateinit var responseMapper: IVTJResponseMapper
+    lateinit var responseMapper: VTJResponseMapper
 
     @InjectMocks
     lateinit var service: VtjClientService
@@ -132,27 +133,21 @@ class VtjClientServiceTest {
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(null)
 
-        try {
-            service.query(query)
-            fail<Exception>("Exception not thrown")
-        } catch (ex: IllegalStateException) {
+        service.query(query)
 
-            assertThat(ex.message).isEqualTo("No results received")
+        argumentCaptor<ILoggingEvent>().apply {
+            verify(mockAppender, times(2)).doAppend(capture())
 
-            argumentCaptor<ILoggingEvent>().apply {
-                verify(mockAppender, times(2)).doAppend(capture())
+            val queryLogEvent = firstValue
 
-                val queryLogEvent = firstValue
+            queryLogEvent.assertCreateQueryLogMessage(query)
+            queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
 
-                queryLogEvent.assertCreateQueryLogMessage(query)
-                queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
-
-                val responseLogEvent = secondValue
-                assertThat(responseLogEvent.message).isEqualTo(
-                    "Did not receive VTJ results"
-                )
-                responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_NO_RESPONSE_OR_PARSING_ERROR)
-            }
+            val responseLogEvent = secondValue
+            assertThat(responseLogEvent.message).isEqualTo(
+                "Did not receive VTJ results"
+            )
+            responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_NO_RESPONSE_OR_PARSING_ERROR)
         }
     }
 
@@ -260,7 +255,7 @@ class VtjClientServiceTest {
         whenever(mockVtjProps.username).thenReturn(userName)
 
         val password = "*/89+74563876t5123v bg12"
-        whenever(mockVtjProps.password).thenReturn(password)
+        whenever(mockVtjProps.password).thenReturn(Sensitive(password))
 
         service.query(query)
 
@@ -277,7 +272,6 @@ class VtjClientServiceTest {
 
     private fun createPerson(
         id: UUID = UUID.randomUUID(),
-        customerId: Long = 100123,
         externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",
         lastName: String = "Testing",
@@ -291,7 +285,6 @@ class VtjClientServiceTest {
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27)
     ) = PersonDTO(
         id = id,
-        customerId = customerId,
         identity = externalId,
         firstName = firstName,
         lastName = lastName,

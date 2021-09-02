@@ -22,8 +22,8 @@ import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/form/Combobox'
-import { Gap } from '../../../lib-components/white-space'
-import { InfoBox } from '../../../lib-components/molecules/MessageBoxes'
+import { Gap } from 'lib-components/white-space'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 
 interface DisplayFilters {
   careArea: string
@@ -47,9 +47,8 @@ function Applications() {
     to: LocalDate.today().addMonths(4)
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: ApplicationsReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

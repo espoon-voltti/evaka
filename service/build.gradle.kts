@@ -66,6 +66,10 @@ dependencies {
 
     // Kotlin + core
     api(kotlin("stdlib-jdk8"))
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
+    integrationTestImplementation(kotlin("test"))
+    integrationTestImplementation(kotlin("test-junit5"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm")
@@ -132,7 +136,7 @@ dependencies {
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("com.nhaarman:mockito-kotlin")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("net.logstash.logback:logstash-logback-encoder")
     testImplementation("org.jetbrains:annotations")

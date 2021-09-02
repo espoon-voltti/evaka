@@ -2,6 +2,27 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 ---
+evaka:
+  database:
+    maximum_pool_size: 20
+  email:
+    sender_address: "no-reply.evaka@espoo.fi"
+    sender_name:
+      fi: "Espoon Varhaiskasvatus"
+      sv: "Esbo småbarnspedagogik"
+  fee_decision:
+    min_date: "2020-03-01"
+  five_years_old_daycare:
+    enabled: true
+  integration:
+    message:
+      enabled: true
+  max_attachments_per_user: 100
+  redis:
+    port: 6379
+  s3mock:
+    url: "http://localhost:9876"
+
 spring:
   profiles:
     group:
@@ -20,8 +41,6 @@ spring:
     driver-class-name: "org.postgresql.Driver"
     sqlScriptEncoding: "UTF-8"
     type: "com.zaxxer.hikari.HikariDataSource"
-    hikari:
-      maximumPoolSize: 20
   servlet:
     multipart:
       max-file-size: "10MB"
@@ -38,24 +57,3 @@ management:
   endpoint:
     health:
       enabled: true
-
-redis:
-  port: 6379
-
-fi:
-  espoo:
-    evaka:
-      message:
-        enabled: true
-      five_years_old_daycare:
-        enabled: true
-      maxAttachmentsPerUser: 100
-      email:
-        reply_to_address: "no-reply.evaka@espoo.fi"
-        sender_name:
-          fi: "Espoon Varhaiskasvatus"
-          sv: "Esbo småbarnspedagogik"
-    voltti:
-      s3mock:
-        url: "http://localhost:9876"
-fee_decision_min_date: "2020-03-01"

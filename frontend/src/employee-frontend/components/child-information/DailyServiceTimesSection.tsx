@@ -18,7 +18,6 @@ import {
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes,
   TimeRange,
-  DailyServiceTimesType,
   isVariableTime,
   VariableDailyServiceTimes
 } from 'lib-common/api-types/child/common'
@@ -42,7 +41,8 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { DailyServiceTimesType } from 'lib-common/generated/enums'
 
 const weekdays = [
   'monday',
@@ -116,10 +116,8 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   )
   const [formData, setFormData] = useState<FormData | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [
-    validationResult,
-    setValidationResult
-  ] = useState<ValidationResult | null>(null)
+  const [validationResult, setValidationResult] =
+    useState<ValidationResult | null>(null)
 
   const loadData = useRestApi(getChildDailyServiceTimes, setApiData)
   useEffect(() => loadData(id), [id, loadData])

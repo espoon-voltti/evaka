@@ -25,7 +25,7 @@ import {
   apiDataToFormData,
   ApplicationFormData,
   formDataToApiData
-} from '../../applications/editor/ApplicationFormData'
+} from 'lib-common/api-types/application/ApplicationFormData'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
@@ -70,9 +70,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const history = useHistory()
   const user = useUser()
 
-  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
-    OverlayContext
-  )
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } =
+    useContext(OverlayContext)
 
   const [terms, setTerms] = useState<Term[]>()
   useEffect(() => {
@@ -99,9 +98,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData, user)
   )
-  const [verificationRequested, setVerificationRequested] = useState<boolean>(
-    false
-  )
+  const [verificationRequested, setVerificationRequested] =
+    useState<boolean>(false)
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
   const [submitting, setSubmitting] = useState<boolean>(false)

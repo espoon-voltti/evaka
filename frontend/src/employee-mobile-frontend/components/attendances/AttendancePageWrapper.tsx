@@ -65,9 +65,8 @@ export default React.memo(function AttendancePageWrapper({
     path: `${path}/:page`
   })?.params.page
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
   const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
     Result<UnitStaffAttendance>
   >(Loading.of())

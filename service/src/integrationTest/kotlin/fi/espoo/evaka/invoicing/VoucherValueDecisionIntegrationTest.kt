@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
@@ -18,7 +19,9 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -33,12 +36,11 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.util.UUID
+import kotlin.test.assertEquals
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -245,8 +247,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun createPlacement(
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: UUID = testVoucherDaycare.id
-    ): UUID {
+        unitId: DaycareId = testVoucherDaycare.id
+    ): PlacementId {
         val body = PlacementCreateRequestBody(
             type = PlacementType.DAYCARE,
             childId = testChild_1.id,
@@ -260,7 +262,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .objectBody(body, mapper = objectMapper)
             .response()
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
 
         val (_, _, data) = http.get("/placements", listOf("childId" to testChild_1.id))
@@ -272,7 +274,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         return data.get().first().id
     }
 
-    private fun updatePlacement(id: UUID, startDate: LocalDate, endDate: LocalDate) {
+    private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
         val body = PlacementUpdateRequestBody(
             startDate = startDate,
             endDate = endDate
@@ -283,23 +285,23 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .objectBody(body, mapper = objectMapper)
             .responseObject<Placement>(objectMapper)
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
 
         asyncJobRunner.runPendingJobsSync()
     }
 
     private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
-        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to status, "searchTerms" to searchTerms)
-        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+        val (_, _, data) = http.post("/value-decisions/search")
+            .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms"}""")
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
         return data.get()
     }
 
     private fun sendAllValueDecisions() {
-        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to "DRAFT")
-        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+        val (_, _, data) = http.post("/value-decisions/search")
+            .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
             .also { (_, res, _) ->

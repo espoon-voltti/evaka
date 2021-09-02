@@ -184,12 +184,10 @@ export const InvoicingUiContext = createContext<UiState>(defaultState)
 
 export const InvoicingUIContextProvider = React.memo(
   function InvoicingUIContextProvider({ children }: { children: JSX.Element }) {
-    const [
-      feeDecisionSearchFilters,
-      setFeeDecisionSearchFilters
-    ] = useState<FeeDecisionSearchFilters>(
-      defaultState.feeDecisions.searchFilters
-    )
+    const [feeDecisionSearchFilters, setFeeDecisionSearchFilters] =
+      useState<FeeDecisionSearchFilters>(
+        defaultState.feeDecisions.searchFilters
+      )
     const [feeDecisionFreeTextSearch, setFeeDecisionFreeTextSearch] = useState(
       defaultState.feeDecisions.searchTerms
     )
@@ -217,16 +215,12 @@ export const InvoicingUIContextProvider = React.memo(
     }
     const clearFeeDecisionChecked = () => setFeeDecisionChecked({})
 
-    const [
-      valueDecisionSearchFilters,
-      setValueDecisionSearchFilters
-    ] = useState<ValueDecisionSearchFilters>(
-      defaultState.valueDecisions.searchFilters
-    )
-    const [
-      valueDecisionFreeTextSearch,
-      setValueDecisionFreeTextSearch
-    ] = useState(defaultState.valueDecisions.searchTerms)
+    const [valueDecisionSearchFilters, setValueDecisionSearchFilters] =
+      useState<ValueDecisionSearchFilters>(
+        defaultState.valueDecisions.searchFilters
+      )
+    const [valueDecisionFreeTextSearch, setValueDecisionFreeTextSearch] =
+      useState(defaultState.valueDecisions.searchTerms)
     const valueDecisionDebouncedFreeText = useDebounce(
       valueDecisionFreeTextSearch,
       500
@@ -255,10 +249,8 @@ export const InvoicingUIContextProvider = React.memo(
     }
     const clearValueDecisionChecked = () => setValueDecisionChecked({})
 
-    const [
-      invoiceSearchFilters,
-      setInvoiceSearchFilters
-    ] = useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
+    const [invoiceSearchFilters, setInvoiceSearchFilters] =
+      useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
     const [invoiceFreeTextSearch, setInvoiceFreeTextSearch] = useState(
       defaultState.invoices.searchTerms
     )

@@ -12,10 +12,13 @@ import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,18 +31,17 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/absences")
-class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList) {
+class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Wrapper<AbsenceGroup>> {
         Audit.AbsenceRead.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Group.READ_ABSENCES, groupId)
         val absences = db.read { absenceService.getAbsencesByMonth(it, groupId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
@@ -49,7 +51,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -67,7 +69,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody deletions: List<AbsenceDelete>,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -90,7 +92,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
         Audit.AbsenceRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        val absences = db.read { absenceService.getAbscencesByChild(it, childId, year, month) }
+        val absences = db.read { absenceService.getAbsencesByChild(it, childId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
 

@@ -6,13 +6,16 @@ package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,19 +26,18 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class ServiceNeedController(
-    private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner
 ) {
 
     data class ServiceNeedCreateRequest(
-        val placementId: UUID,
+        val placementId: PlacementId,
         val startDate: LocalDate,
         val endDate: LocalDate,
-        val optionId: UUID,
+        val optionId: ServiceNeedOptionId,
         val shiftCare: Boolean
     )
 
@@ -46,7 +48,7 @@ class ServiceNeedController(
         @RequestBody body: ServiceNeedCreateRequest
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
-        acl.getRolesForPlacement(user, body.placementId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
         db.transaction { tx ->
             createServiceNeed(
@@ -70,7 +72,7 @@ class ServiceNeedController(
     data class ServiceNeedUpdateRequest(
         val startDate: LocalDate,
         val endDate: LocalDate,
-        val optionId: UUID,
+        val optionId: ServiceNeedOptionId,
         val shiftCare: Boolean
     )
 
@@ -78,11 +80,11 @@ class ServiceNeedController(
     fun putServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
-        acl.getRolesForServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.ServiceNeed.UPDATE, id)
 
         db.transaction { tx ->
             val oldRange = tx.getServiceNeedChildRange(id)
@@ -117,10 +119,10 @@ class ServiceNeedController(
     fun deleteServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: ServiceNeedId
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedDelete.log(targetId = id)
-        acl.getRolesForServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.ServiceNeed.DELETE, id)
 
         db.transaction { tx ->
             val childRange = tx.getServiceNeedChildRange(id)

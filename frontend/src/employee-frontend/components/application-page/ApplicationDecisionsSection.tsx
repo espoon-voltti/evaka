@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { Label } from 'lib-components/typography'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -19,6 +18,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { UUID } from '../../types'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'

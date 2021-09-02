@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -30,6 +31,8 @@ import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -53,10 +56,6 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -66,6 +65,10 @@ import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Autowired
@@ -82,7 +85,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
     private val mainPeriod = preschoolTerm2020
     private val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
 
@@ -145,7 +148,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
     }
 
-    private fun assertDueDate(applicationId: UUID, expected: Instant?) {
+    private fun assertDueDate(applicationId: ApplicationId, expected: Instant?) {
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
@@ -1289,7 +1292,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1329,7 +1332,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1369,7 +1372,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIndefiniteIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1409,7 +1412,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1451,7 +1454,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1491,7 +1494,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1529,7 +1532,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1568,7 +1571,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1608,7 +1611,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val dayBeforeIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1649,7 +1652,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val nextDayIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1689,7 +1692,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val incomeDayBefore = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1729,7 +1732,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnSameDay = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1769,7 +1772,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnNextDay = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
@@ -1809,7 +1812,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnDayBefore = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",

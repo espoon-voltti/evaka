@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
@@ -17,7 +18,7 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getPartnership(id: UUID): Partnership? {
+fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
     // language=SQL
     val sql =
         """
@@ -132,7 +133,7 @@ fun Database.Transaction.createPartnership(
         .first()
 }
 
-fun Database.Transaction.updatePartnershipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate?): Boolean {
+fun Database.Transaction.updatePartnershipDuration(id: PartnershipId, startDate: LocalDate, endDate: LocalDate?): Boolean {
     // language=SQL
     val sql =
         """
@@ -145,11 +146,11 @@ fun Database.Transaction.updatePartnershipDuration(id: UUID, startDate: LocalDat
         .bind("id", id)
         .bind("startDate", startDate)
         .bind("endDate", endDate ?: PGConstants.infinity)
-        .mapTo<UUID>()
+        .mapTo<PartnershipId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.retryPartnership(id: UUID) {
+fun Database.Transaction.retryPartnership(id: PartnershipId) {
     // language=SQL
     val sql = "UPDATE fridge_partner SET conflict = false WHERE partnership_id = :id"
 
@@ -158,13 +159,13 @@ fun Database.Transaction.retryPartnership(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deletePartnership(id: UUID): Boolean {
+fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<UUID>()
+        .mapTo<PartnershipId>()
         .firstOrNull() != null
 }
 
@@ -172,7 +173,7 @@ private val toPartnership: (String, String) -> (ResultSet, StatementContext) -> 
     { partner1Alias, partner2Alias ->
         { rs, _ ->
             Partnership(
-                id = rs.getUUID("partnership_id"),
+                id = PartnershipId(rs.getUUID("partnership_id")),
                 partners = setOf(
                     toPersonJSON(partner1Alias, rs),
                     toPersonJSON(partner2Alias, rs)
@@ -188,7 +189,7 @@ private val toPartnership: (String, String) -> (ResultSet, StatementContext) -> 
 private val toPartner: (String) -> (ResultSet, StatementContext) -> Partner = { tableAlias ->
     { rs, _ ->
         Partner(
-            partnershipId = rs.getUUID("partnership_id"),
+            partnershipId = PartnershipId(rs.getUUID("partnership_id")),
             person = toPersonJSON(tableAlias, rs),
             startDate = rs.getDate("start_date").toLocalDate(),
             endDate = rs.getDate("end_date").toLocalDate()

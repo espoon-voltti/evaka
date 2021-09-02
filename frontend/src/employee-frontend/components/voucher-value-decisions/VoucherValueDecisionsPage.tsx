@@ -27,9 +27,8 @@ export type PagedValueDecisions = {
 
 export default React.memo(function VoucherValueDecisionsPage() {
   const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState<SortByVoucherValueDecisions>(
-    'HEAD_OF_FAMILY'
-  )
+  const [sortBy, setSortBy] =
+    useState<SortByVoucherValueDecisions>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
   const [totalDecisions, setTotalDecisions] = useState<number>()
   const [totalPages, setTotalPages] = useState<number>()

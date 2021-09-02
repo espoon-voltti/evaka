@@ -2,29 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types/index'
+import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroupPlacement, ProviderType } from './unit'
-import { AssistanceMeasure } from 'lib-customizations/types'
-import {
-  ServiceNeedOptionSummary,
-  PlacementType
-} from 'lib-common/api-types/serviceNeed/common'
-
-export type AssistanceBasis =
-  | 'AUTISM'
-  | 'DEVELOPMENTAL_DISABILITY_1'
-  | 'DEVELOPMENTAL_DISABILITY_2'
-  | 'FOCUS_CHALLENGE'
-  | 'LINGUISTIC_CHALLENGE'
-  | 'DEVELOPMENT_MONITORING'
-  | 'DEVELOPMENT_MONITORING_PENDING'
-  | 'MULTI_DISABILITY'
-  | 'LONG_TERM_CONDITION'
-  | 'REGULATION_SKILL_CHALLENGE'
-  | 'DISABILITY'
-  | 'OTHER'
+import { DaycareGroupPlacement } from './unit'
+import { AssistanceMeasure, UnitProviderType } from 'lib-customizations/types'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface AssistanceNeed {
   id: UUID
@@ -33,7 +17,7 @@ export interface AssistanceNeed {
   endDate: LocalDate
   capacityFactor: number
   description: string
-  bases: Set<AssistanceBasis>
+  bases: Set<string>
   otherBasis: string
 }
 
@@ -52,6 +36,12 @@ export interface AssistanceAction {
 export interface AssistanceActionOption {
   value: string
   nameFi: string
+}
+
+export interface AssistanceBasisOption {
+  value: string
+  nameFi: string
+  descriptionFi: string | null
 }
 
 export interface AdditionalInformation {
@@ -99,7 +89,7 @@ export interface Placement {
     id: UUID
     name: string
     area: string
-    providerType: ProviderType
+    providerType: UnitProviderType
   }
   missingServiceNeedDays: number
   groupPlacements: DaycareGroupPlacement[]
@@ -134,6 +124,7 @@ export interface UnitBackupCare {
     lastName: string
     birthDate: LocalDate
   }
+  serviceNeeds: ServiceNeed[]
 }
 
 export interface ChildBackupPickup {

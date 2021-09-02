@@ -39,7 +39,10 @@ const InvoiceHeadOfFamilySection = React.memo(
             {
               label: i18n.invoice.form.headOfFamily.fullName,
               value: (
-                <Link to={`/profile/${id}`} data-qa="invoice-details-status">
+                <Link
+                  to={`/profile/${id}`}
+                  data-qa="invoice-details-head-of-family"
+                >
                   {fullName}
                 </Link>
               )

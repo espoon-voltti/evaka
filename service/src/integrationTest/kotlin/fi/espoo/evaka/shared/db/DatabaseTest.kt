@@ -8,11 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class DatabaseTest : PureJdbiTest() {
     @BeforeEach

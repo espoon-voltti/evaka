@@ -7,8 +7,8 @@ import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 export interface Props {
   id: UUID

@@ -4,15 +4,11 @@
 
 import { UUID } from 'lib-common/types'
 import { H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import {
-  MessageType,
-  Message,
-  MessageThread
-} from 'lib-common/api-types/messaging/message'
+import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { useTranslation } from '../localization'
@@ -20,6 +16,9 @@ import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
 import { formatDate } from 'lib-common/date'
+import { faReply } from '@fortawesome/free-solid-svg-icons'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { MessageType } from 'lib-common/generated/enums'
 
 const TitleRow = styled.div`
   display: flex;
@@ -41,6 +40,10 @@ const SentDate = styled.div`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
+`
+
+const ReplyToThreadButton = styled(InlineButton)`
+  padding-left: 28px;
 `
 
 function Message({
@@ -92,14 +95,11 @@ export default React.memo(function ThreadView({
   thread: { id: threadId, messages, title, type }
 }: Props) {
   const i18n = useTranslation()
-  const {
-    sendReply,
-    replyState,
-    setReplyContent,
-    getReplyContent
-  } = useContext(MessageContext)
+  const { sendReply, replyState, setReplyContent, getReplyContent } =
+    useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
+  const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
@@ -135,20 +135,31 @@ export default React.memo(function ThreadView({
           type={idx === 0 ? type : undefined}
         />
       ))}
-
-      {type === 'MESSAGE' && messages.length > 0 && (
-        <MessageContainer>
-          <MessageReplyEditor
-            replyState={replyState}
-            onSubmit={onSubmit}
-            onUpdateContent={onUpdateContent}
-            recipients={recipients}
-            onToggleRecipient={onToggleRecipient}
-            replyContent={replyContent}
-            i18n={editorLabels}
-          />
-        </MessageContainer>
-      )}
+      {type === 'MESSAGE' &&
+        messages.length > 0 &&
+        (replyEditorVisible ? (
+          <MessageContainer>
+            <MessageReplyEditor
+              replyState={replyState}
+              onSubmit={onSubmit}
+              onUpdateContent={onUpdateContent}
+              recipients={recipients}
+              onToggleRecipient={onToggleRecipient}
+              replyContent={replyContent}
+              i18n={editorLabels}
+            />
+          </MessageContainer>
+        ) : (
+          <>
+            <Gap size={'s'} />
+            <ReplyToThreadButton
+              icon={faReply}
+              onClick={() => setReplyEditorVisible(true)}
+              data-qa="message-reply-editor-btn"
+              text={i18n.messages.replyToThread}
+            />
+          </>
+        ))}
     </ThreadContainer>
   )
 })

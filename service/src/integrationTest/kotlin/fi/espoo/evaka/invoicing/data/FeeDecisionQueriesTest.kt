@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
@@ -27,13 +28,13 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class FeeDecisionQueriesTest : PureJdbiTest() {
     val objectMapper = defaultObjectMapper()
@@ -131,7 +132,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
             val decisions = listOf(
                 testDecisions[0],
                 testDecisions[0].copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = DateRange(testPeriod.start.minusYears(1), testPeriod.end!!.minusYears(1))
                 )
             )

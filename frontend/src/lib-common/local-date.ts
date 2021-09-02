@@ -17,12 +17,15 @@ import {
   isValid,
   isWeekend,
   lastDayOfMonth,
+  setMonth,
   startOfToday,
   subDays,
   subMonths,
   subWeeks,
   subYears,
-  differenceInDays
+  differenceInDays,
+  startOfWeek,
+  getISOWeek
 } from 'date-fns'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
@@ -46,11 +49,16 @@ export default class LocalDate {
   getIsoDayOfWeek(): number {
     return getISODay(this.toSystemTzDate())
   }
+  getIsoWeek(): number {
+    return getISOWeek(this.toSystemTzDate())
+  }
   withYear(year: number): LocalDate {
     return LocalDate.of(year, this.month, this.date)
   }
   withMonth(month: number): LocalDate {
-    return LocalDate.of(this.year, month, this.date)
+    return LocalDate.fromSystemTzDate(
+      setMonth(this.toSystemTzDate(), month - 1)
+    )
   }
   withDate(date: number): LocalDate {
     return LocalDate.of(this.year, this.month, date)
@@ -83,6 +91,11 @@ export default class LocalDate {
   }
   subDays(days: number): LocalDate {
     return LocalDate.fromSystemTzDate(subDays(this.toSystemTzDate(), days))
+  }
+  startOfWeek(): LocalDate {
+    return LocalDate.fromSystemTzDate(
+      startOfWeek(this.toSystemTzDate(), { weekStartsOn: 1 })
+    )
   }
   lastDayOfMonth(): LocalDate {
     return LocalDate.fromSystemTzDate(lastDayOfMonth(this.toSystemTzDate()))

@@ -5,7 +5,7 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from '../../../../lib-common/form-state'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
@@ -29,14 +29,14 @@ import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DivFitContent } from '../../../components/common/styled/containers'
+import { DivFitContent } from '../../common/styled/containers'
 import {
   AssistanceActionRequest,
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -117,9 +117,8 @@ function AssistanceActionForm(props: Props) {
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
-  const [formErrors, setFormErrors] = useState<AssistanceActionFormErrors>(
-    noErrors
-  )
+  const [formErrors, setFormErrors] =
+    useState<AssistanceActionFormErrors>(noErrors)
 
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 

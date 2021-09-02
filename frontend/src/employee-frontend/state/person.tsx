@@ -12,12 +12,13 @@ import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 
 export interface PersonState {
   person: Result<PersonDetails>
   parentships: Result<Parentship[]>
   partnerships: Result<Partnership[]>
-  incomes: Result<Income[]>
+  incomes: Result<[Income[], IncomeStatement[]]>
   applications: Result<ApplicationSummary[]>
   dependants: Result<PersonWithChildren[]>
   decisions: Result<Decision[]>
@@ -26,7 +27,7 @@ export interface PersonState {
   setPerson: (request: Result<PersonDetails>) => void
   setParentships: (request: Result<Parentship[]>) => void
   setPartnerships: (request: Result<Partnership[]>) => void
-  setIncomes: (r: Result<Income[]>) => void
+  setIncomes: (r: Result<[Income[], IncomeStatement[]]>) => void
   setApplications: (r: Result<ApplicationSummary[]>) => void
   setDependants: (r: Result<PersonWithChildren[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
@@ -76,7 +77,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   const [applications, setApplications] = useState<
     Result<ApplicationSummary[]>
   >(defaultState.applications)
-  const [incomes, setIncomes] = useState<Result<Income[]>>(defaultState.incomes)
+  const [incomes, setIncomes] = useState<Result<[Income[], IncomeStatement[]]>>(
+    defaultState.incomes
+  )
   const [dependants, setDependants] = useState<Result<PersonWithChildren[]>>(
     defaultState.dependants
   )
@@ -90,12 +93,10 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     defaultState.invoices
   )
 
-  // TODO: fix the deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const reloadFamily = (id: string) => {
+  const reloadFamily = React.useCallback((id: string) => {
     setFamily(Loading.of())
     void getFamilyOverview(id).then(setFamily)
-  }
+  }, [])
 
   const value = useMemo(
     () => ({

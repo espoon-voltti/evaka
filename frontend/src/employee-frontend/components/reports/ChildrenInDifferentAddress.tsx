@@ -16,12 +16,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { ChildrenInDifferentAddressReportRow } from '../../types/reports'
 import { getChildrenInDifferentAddressReport } from '../../api/reports'
-import {
-  FilterLabel,
-  FilterRow,
-  RowCountInfo,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { distinct } from '../../utils'
 import Combobox from 'lib-components/atoms/form/Combobox'
 
@@ -43,9 +38,8 @@ function ChildrenInDifferentAddress() {
     Result<ChildrenInDifferentAddressReportRow[]>
   >(Loading.of())
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: ChildrenInDifferentAddressReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

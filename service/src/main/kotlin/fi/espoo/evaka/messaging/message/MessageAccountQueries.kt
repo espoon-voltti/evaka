@@ -4,11 +4,12 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
+fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
@@ -67,8 +68,14 @@ FROM message_account acc
     LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
+    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND acl.role = 'UNIT_SUPERVISOR'
+    LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
 WHERE acc.id = ANY(:accountIds)
-GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_unitName
+AND (
+    'MESSAGING' = ANY(dc.enabled_pilot_features)
+    OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
+)
+GROUP BY acc.id, account_name, 3, group_id, group_name, group_unitId, group_unitName
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())
@@ -89,7 +96,7 @@ fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
         .list()
 }
 
-fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
+fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
     // language=SQL
     val sql = """
         INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
@@ -101,7 +108,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID):
         .one()
 }
 
-fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) {
+fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
     // language=SQL
     val sql = """
         DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId

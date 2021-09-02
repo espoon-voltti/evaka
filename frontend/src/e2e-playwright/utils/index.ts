@@ -22,37 +22,92 @@ const WAIT_LOOP_INTERVAL_MS = 100
 export class WaitTimeout extends BaseError {}
 
 /**
- * Waits until the given function returns a promise which resolves to the given expected value.
+ * Waits until the given async function returns a value that passes the given condition.
+ *
+ * The assertion function should otherwise have the same semantics as the condition function, but should throw an
+ * exception instead of returning false. The only purpose of the assertion function is to give better error messages:
+ *   "expected foo, got bar"
+ *   vs
+ *   "WaitTimeout"
  */
-export async function waitUntilEqual<T>(f: () => Promise<T>, expected: T) {
+export async function waitForCondition<T, O extends T>(
+  f: () => Promise<T>,
+  condition: (value: T) => value is O,
+  assertion: (value: T) => void
+): Promise<O>
+export async function waitForCondition<T>(
+  f: () => Promise<T>,
+  condition: (value: T) => boolean,
+  assertion: (value: T) => void
+): Promise<T>
+export async function waitForCondition<T>(
+  f: () => Promise<T>,
+  condition: (value: T) => boolean,
+  assertion: (value: T) => void
+): Promise<T> {
   const startTimestamp = new Date()
 
   let value = await f()
-  while (!isEqual(value, expected)) {
+  while (!condition(value)) {
     await delay(WAIT_LOOP_INTERVAL_MS)
     const now = new Date()
     if (differenceInSeconds(now, startTimestamp) > WAIT_TIMEOUT_SECONDS) {
-      expect(value).toEqual(expected)
-      // fallback in case isEqual/toEqual had different semantics for some reason
-      // and expect(...).toEqual did not throw
+      assertion(value)
+      // fallback in case condition/assertion had different semantics for some reason
+      // and assertion(...) did not throw
       throw new WaitTimeout()
     }
     value = await f()
   }
+  return value
+}
+
+export async function waitUntilDefined<T>(
+  f: () => Promise<T>
+): Promise<NonNullable<T>> {
+  return waitForCondition(
+    f,
+    (value): value is NonNullable<T> => value != null,
+    (value) => {
+      expect(value).toBeDefined()
+    }
+  )
+}
+
+/**
+ * Waits until the given function returns a promise which resolves to the given expected value.
+ */
+export async function waitUntilEqual<T>(
+  f: () => Promise<T>,
+  expected: T
+): Promise<T> {
+  return waitForCondition(
+    f,
+    (value) => isEqual(value, expected),
+    (value) => expect(value).toEqual(expected)
+  )
 }
 
 /**
  * Waits until the given function returns a promise which resolves to true
  */
 export async function waitUntilTrue(f: () => Promise<boolean>) {
-  await waitUntilEqual(f, true)
+  return waitForCondition(
+    f,
+    (value) => value,
+    (value) => expect(value).toStrictEqual(true)
+  )
 }
 
 /**
  * Waits until the given function returns a promise which resolves to false
  */
 export async function waitUntilFalse(f: () => Promise<boolean>) {
-  await waitUntilEqual(f, false)
+  return waitForCondition(
+    f,
+    (value) => !value,
+    (value) => expect(value).toStrictEqual(false)
+  )
 }
 
 /**

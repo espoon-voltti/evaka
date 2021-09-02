@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../../api/client'
+import { client } from '../client'
 import { Placement } from '../../types/child'
 import { UUID } from '../../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface PlacementCreate {
   childId: UUID

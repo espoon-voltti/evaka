@@ -18,7 +18,7 @@ import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'
-import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
+import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 
 interface Props {

@@ -6,7 +6,6 @@ import React, { useContext, useEffect, Fragment, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
 import { faLink } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from 'lib-common/local-date'
@@ -14,6 +13,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import Loader from 'lib-components/atoms/Loader'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 import {
   PlacementDraftState,
@@ -113,10 +113,8 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   const [additionalUnits, setAdditionalUnits] = useState<Unit[]>([])
-  const [
-    selectedUnitIsGhostUnit,
-    setSelectedUnitIsGhostUnit
-  ] = useState<boolean>(false)
+  const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
+    useState<boolean>(false)
 
   useEffect(() => {
     units.isSuccess &&
@@ -170,6 +168,11 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     }))
   }
 
+  function redirectToMainPage() {
+    history.push('/applications')
+    return null
+  }
+
   useEffect(() => {
     setPlacementDraft(Loading.of())
     void getPlacementDraft(id).then((placementDraft) => {
@@ -183,6 +186,11 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
             withoutOldPlacements.value.preschoolDaycarePeriod
         })
         calculateOverLaps(withoutOldPlacements)
+      }
+
+      // Application has already changed its status
+      if (placementDraft.isFailure && placementDraft.statusCode === 409) {
+        redirectToMainPage()
       }
     })
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -231,29 +239,26 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     return null
   }
 
-  const updatePlacementDate = (
-    periodType: 'period' | 'preschoolDaycarePeriod',
-    dateType: 'start' | 'end'
-  ) => (date: LocalDate) => {
-    const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
-    setPlacement({
-      ...placement,
-      [periodType]: fixedPeriod
-    })
-    if (placementDraft.isSuccess) {
-      const updatedPlacementDraft = placementDraft.map((draft) => ({
-        ...draft,
+  const updatePlacementDate =
+    (
+      periodType: 'period' | 'preschoolDaycarePeriod',
+      dateType: 'start' | 'end'
+    ) =>
+    (date: LocalDate) => {
+      const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
+      setPlacement({
+        ...placement,
         [periodType]: fixedPeriod
-      }))
-      setPlacementDraft(updatedPlacementDraft)
-      calculateOverLaps(updatedPlacementDraft)
+      })
+      if (placementDraft.isSuccess) {
+        const updatedPlacementDraft = placementDraft.map((draft) => ({
+          ...draft,
+          [periodType]: fixedPeriod
+        }))
+        setPlacementDraft(updatedPlacementDraft)
+        calculateOverLaps(updatedPlacementDraft)
+      }
     }
-  }
-
-  function redirectToMainPage() {
-    history.push('/applications')
-    return null
-  }
 
   function addUnit(unitId: UUID) {
     return (
@@ -336,24 +341,20 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
             />
             {placementDraft.value.placements && <Placements />}
             <SelectContainer>
-              <ReactSelect
+              <Combobox
                 placeholder={i18n.filters.unitPlaceholder}
-                value={null}
-                options={units
+                selectedItem={null}
+                items={units
                   .map((us) =>
                     us
-                      .map(({ id, name }) => ({ label: name, value: id }))
-                      .sort((a, b) => (a.label < b.label ? -1 : 1))
+                      .map(({ id, name }) => ({ name, id }))
+                      .sort((a, b) => (a.name < b.name ? -1 : 1))
                   )
                   .getOrElse([])}
-                onChange={(option) =>
-                  option && 'value' in option
-                    ? addUnit(option.value)
-                    : undefined
-                }
+                getItemLabel={({ name }) => name}
+                onChange={(option) => (option ? addUnit(option.id) : undefined)}
                 isLoading={units.isLoading}
-                loadingMessage={() => i18n.common.loading}
-                noOptionsMessage={() => i18n.common.loadingFailed}
+                menuEmptyLabel={i18n.common.noResults}
               />
             </SelectContainer>
             <UnitCards

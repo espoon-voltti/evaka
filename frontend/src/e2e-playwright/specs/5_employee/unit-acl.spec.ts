@@ -87,9 +87,10 @@ describe('Employee - unit ACL', () => {
     await unitInfo.staffAcl.addEmployeeAcl(staffId)
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
     await toggleGroups()
-    await waitUntilEqual(() => unitInfo.staffAcl.rows, [
-      { ...expectedRow, groups: ['Testailijat'] }
-    ])
+    await waitUntilEqual(
+      () => unitInfo.staffAcl.rows,
+      [{ ...expectedRow, groups: ['Testailijat'] }]
+    )
     await toggleGroups()
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
   })

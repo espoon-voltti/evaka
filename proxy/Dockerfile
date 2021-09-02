@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM nginx:1.21.0-alpine
+FROM nginx:1.21.1-alpine
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 

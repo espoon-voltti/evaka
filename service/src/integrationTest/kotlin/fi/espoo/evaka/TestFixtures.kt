@@ -26,6 +26,9 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -44,6 +47,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -54,11 +58,11 @@ import java.util.UUID
  Queries and data classes for initializing integration tests with person and unit data
  */
 
-val testAreaId = UUID.randomUUID()
+val testAreaId = AreaId(UUID.randomUUID())
 val testAreaCode = 200
-val testArea2Id = UUID.randomUUID()
+val testArea2Id = AreaId(UUID.randomUUID())
 val testArea2Code = 300
-val svebiTestId = UUID.randomUUID()
+val svebiTestId = AreaId(UUID.randomUUID())
 val svebiTestCode = 400
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
@@ -68,7 +72,7 @@ val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString(
 
 val testDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare",
         areaId = testAreaId,
         areaName = "Test Area",
@@ -76,16 +80,16 @@ val testDaycare =
     )
 val testDaycare2 =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare 2",
         areaId = testArea2Id,
         areaName = "Lwiz Foo",
         language = "fi"
     )
-val testDaycareNotInvoiced = UnitData.InvoicedByMunicipality(id = UUID.randomUUID(), invoicedByMunicipality = false)
+val testDaycareNotInvoiced = UnitData.InvoicedByMunicipality(id = DaycareId(UUID.randomUUID()), invoicedByMunicipality = false)
 val testSvebiDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Svebi Daycare",
         areaId = svebiTestId,
         areaName = "Svenska Bildningstjanster",
@@ -94,7 +98,7 @@ val testSvebiDaycare =
 
 val testPurchasedDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Purchased Daycare",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -103,7 +107,7 @@ val testPurchasedDaycare =
 
 val testVoucherDaycare =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Voucher Daycare",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -112,7 +116,7 @@ val testVoucherDaycare =
 
 val testVoucherDaycare2 =
     UnitData.Detailed(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test Voucher Daycare 2",
         areaId = testAreaId,
         areaName = "Lwiz Foo",
@@ -120,7 +124,7 @@ val testVoucherDaycare2 =
     )
 
 val testClub = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Club",
     areaId = testAreaId,
     type = setOf(CareType.CLUB),
@@ -128,21 +132,24 @@ val testClub = DevDaycare(
     daycareApplyPeriod = null,
     preschoolApplyPeriod = null,
     uploadToVarda = false,
+    uploadChildrenToVarda = false,
     uploadToKoski = false
 )
 
 val testGhostUnitDaycare = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
     areaId = testAreaId,
     type = setOf(CareType.CENTRE),
     uploadToVarda = false,
+    uploadChildrenToVarda = false,
     uploadToKoski = false,
-    ghostUnit = true
+    ghostUnit = true,
+    invoicedByMunicipality = false
 )
 
 val testRoundTheClockDaycare = DevDaycare(
-    id = UUID.randomUUID(),
+    id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
     areaId = testAreaId,
     type = setOf(CareType.CENTRE),
@@ -288,9 +295,9 @@ val testChild_3 = PersonData.Detailed(
     ssn = "120220A995L",
     firstName = "Hillary",
     lastName = "Foo",
-    streetAddress = "",
-    postalCode = "",
-    postOffice = "",
+    streetAddress = "Kankkulankaivo 1",
+    postalCode = "00340",
+    postOffice = "Espoo",
     restrictedDetailsEnabled = false
 )
 
@@ -394,7 +401,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaId = svebiTestId,
             id = testSvebiDaycare.id,
             name = testSvebiDaycare.name,
-            language = Language.sv
+            language = Language.sv,
         )
     )
     insertTestDaycare(
@@ -402,10 +409,11 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaId = testAreaId,
             id = testDaycare.id,
             name = testDaycare.name,
-            ophOrganizerOid = defaultMunicipalOrganizerOid
+            ophOrganizerOid = defaultMunicipalOrganizerOid,
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS)
         )
     )
-    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
+    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
     insertTestDaycare(
         DevDaycare(
             areaId = testArea2Id,
@@ -546,7 +554,12 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     )
 
     insertTestVoucherValue(
-        VoucherValue(id = UUID.randomUUID(), validity = DateRange(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
+        VoucherValue(
+            id = UUID.randomUUID(),
+            validity = DateRange(LocalDate.of(2000, 1, 1), null),
+            baseValue = 87000,
+            ageUnderThreeCoefficient = BigDecimal("1.55")
+        )
     )
 
     insertPreschoolTerms()
@@ -554,6 +567,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
 
     insertServiceNeedOptions()
     insertAssistanceActionOptions()
+    insertAssistanceBasisOptions()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
@@ -646,6 +660,26 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     createUpdate(sql).execute()
 }
 
+fun Database.Transaction.insertAssistanceBasisOptions() {
+    // language=sql
+    val sql = """
+INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
+    ('AUTISM', 'Autismin kirjo', NULL, 10),
+    ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
+    ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20),
+    ('FOCUS_CHALLENGE', 'Keskittymisen / tarkkaavaisuuden vaikeus', NULL, 25),
+    ('LINGUISTIC_CHALLENGE', 'Kielellinen vaikeus', NULL, 30),
+    ('DEVELOPMENT_MONITORING', 'Lapsen kehityksen seuranta', NULL, 35),
+    ('DEVELOPMENT_MONITORING_PENDING', 'Lapsen kehityksen seuranta, tutkimukset kesken', 'Lapsi on terveydenhuollon tutkimuksissa, diagnoosi ei ole vielä varmistunut.', 40),
+    ('MULTI_DISABILITY', 'Monivammaisuus', NULL, 45),
+    ('LONG_TERM_CONDITION', 'Pitkäaikaissairaus', NULL, 50),
+    ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
+    ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
+"""
+
+    createUpdate(sql).execute()
+}
+
 fun Database.Transaction.insertTestVardaOrganizer() {
     //language=SQL
     val sql =
@@ -676,7 +710,7 @@ fun Database.Transaction.insertApplication(
     hasAdditionalInfo: Boolean = false,
     maxFeeAccepted: Boolean = false,
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {

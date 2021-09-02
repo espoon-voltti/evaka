@@ -91,7 +91,8 @@ import {
   faFileAlt as farFileAlt,
   faGavel as farGavel,
   faMap as farMap,
-  faStickyNote as farStickyNote
+  faStickyNote as farStickyNote,
+  faUsers as farUsers
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
 } from '@fortawesome/pro-regular-svg-icons'
@@ -99,6 +100,8 @@ import {
 import {
   faCaretUp as fasCaretUp,
   faCaretDown as fasCaretDown,
+  faCaretLeft as fasCaretLeft,
+  faCaretRight as fasCaretRight,
   faCheckCircle as fasCheckCircle,
   faChevronDown as fasChevronDown,
   faChevronUp as fasChevronUp,
@@ -194,6 +197,8 @@ const icons: IconSet = {
   farMap,
   fasCaretUp,
   fasCaretDown,
+  fasCaretLeft,
+  fasCaretRight,
   fasCheckCircle,
   fasChevronDown,
   fasChevronUp,
@@ -204,6 +209,7 @@ const icons: IconSet = {
   fasArrowUp,
   farStickyNote,
   farUser: faUser,
+  farUsers,
   faComments,
   faTruck,
   faPhone,

@@ -40,11 +40,13 @@ import {
 import { flow, set } from 'lodash/fp'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
-import { AttachmentType } from '../../../lib-common/api-types/application/enums'
-import { getAttachmentBlob } from '../../api/applications'
-import { deleteAttachment, saveAttachment } from '../../api/attachments'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveAttachment
+} from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
@@ -54,6 +56,7 @@ import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { featureFlags } from 'lib-customizations/citizen'
+import { AttachmentType } from 'lib-common/generated/enums'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -143,31 +146,35 @@ export default React.memo(function ApplicationEditView({
   const formatAddress = (a: ApplicationAddress) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
-  const onUploadAttachment = (type: AttachmentType) => (
-    file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
-  ): Promise<Result<UUID>> =>
-    saveAttachment(application.id, file, type, onUploadProgress).then((res) => {
-      res.isSuccess &&
-        setApplication(
-          (prev) =>
-            prev && {
-              ...prev,
-              attachments: [
-                ...prev.attachments,
-                {
-                  contentType: file.type,
-                  id: res.value,
-                  name: file.name,
-                  type,
-                  updated: new Date(),
-                  receivedAt: new Date()
+  const onUploadAttachment =
+    (type: AttachmentType) =>
+    (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ): Promise<Result<UUID>> =>
+      saveAttachment(application.id, file, type, onUploadProgress).then(
+        (res) => {
+          res.isSuccess &&
+            setApplication(
+              (prev) =>
+                prev && {
+                  ...prev,
+                  attachments: [
+                    ...prev.attachments,
+                    {
+                      contentType: file.type,
+                      id: res.value,
+                      name: file.name,
+                      type,
+                      updated: new Date(),
+                      receivedAt: new Date()
+                    }
+                  ]
                 }
-              ]
-            }
-        )
-      return res
-    })
+            )
+          return res
+        }
+      )
 
   const onDeleteAttachment = (id: UUID) =>
     deleteAttachment(id).then((res) => {
@@ -512,35 +519,32 @@ export default React.memo(function ApplicationEditView({
         <ListGrid>
           <Label>{i18n.application.preferences.preferredUnits}</Label>
           <VerticalContainer data-qa="preferred-unit">
-            <ReactSelect
+            <Combobox
               placeholder={i18n.common.search}
               isLoading={units.isLoading}
-              value={null}
-              options={units
+              selectedItem={null}
+              items={units
                 .map((us) =>
                   us
                     .filter(
                       ({ id }) => !preferredUnits.some((unit) => unit.id === id)
                     )
-                    .map(({ id, name }) => ({
-                      value: id,
-                      label: name
-                    }))
+                    .map(({ id, name }) => ({ id, name }))
                 )
                 .getOrElse([])}
-              isDisabled={preferredUnits.length >= 3}
+              getItemLabel={({ name }) => name}
+              disabled={preferredUnits.length >= 3}
               onChange={(option) => {
-                if (option && 'value' in option) {
+                if (option) {
                   setApplication(
                     set('form.preferences.preferredUnits', [
                       ...preferredUnits,
-                      { id: option.value, name: option.label }
+                      { id: option.id, name: option.name }
                     ])
                   )
                 }
               }}
-              loadingMessage={() => i18n.common.loading}
-              noOptionsMessage={() => i18n.common.noResults}
+              menuEmptyLabel={i18n.common.noResults}
               data-qa="select-preferred-unit"
             />
             <Gap size="s" />
@@ -865,12 +869,14 @@ export default React.memo(function ApplicationEditView({
                       {i18n.application.person.agreementStatus}
                     </Label>
                     <div>
-                      {([
-                        'AGREED',
-                        'NOT_AGREED',
-                        'RIGHT_TO_GET_NOTIFIED',
-                        null
-                      ] as const).map((id, index) => (
+                      {(
+                        [
+                          'AGREED',
+                          'NOT_AGREED',
+                          'RIGHT_TO_GET_NOTIFIED',
+                          null
+                        ] as const
+                      ).map((id, index) => (
                         <React.Fragment key={id ?? 'NOT_SET'}>
                           {index !== 0 ? <Gap size="xxs" /> : null}
                           <Radio

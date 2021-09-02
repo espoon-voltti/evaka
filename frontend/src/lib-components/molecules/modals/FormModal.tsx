@@ -38,6 +38,7 @@ const FormModalLifter = styled.div<zIndexProps>`
 interface ModalContainerProps {
   size: ModalSize
   customSize?: string
+  mobileFullScreen?: boolean
 }
 
 export const ModalContainer = styled.div<ModalContainerProps>`
@@ -73,6 +74,20 @@ export const ModalContainer = styled.div<ModalContainerProps>`
     margin-left: ${defaultMargins.s};
     margin-right: ${defaultMargins.s};
   }
+
+  ${(p) =>
+    p.mobileFullScreen
+      ? `
+    @media (max-width: ${tabletMin}) {
+      margin-left: 0;
+      margin-right: 0;
+      max-width: 100%;
+      max-height: 100%;
+      width: 100%;
+      height: 100%;
+    }
+  `
+      : ''}
 `
 
 export const ModalWrapper = styled.div<zIndexProps>`
@@ -162,6 +177,7 @@ type CommonProps = {
   'data-qa'?: string
   children?: React.ReactNode
   iconColour?: IconColour
+  mobileFullScreen?: boolean
 }
 
 function ModalBase({
@@ -171,6 +187,7 @@ function ModalBase({
   className,
   icon,
   size = 'md',
+  mobileFullScreen,
   children,
   iconColour = 'blue',
   resolve,
@@ -183,7 +200,11 @@ function ModalBase({
         <FormModalLifter>
           <ModalWrapper className={className} data-qa={dataQa}>
             <ModalBackground />
-            <ModalContainer size={size} data-qa="form-modal">
+            <ModalContainer
+              size={size}
+              mobileFullScreen={mobileFullScreen}
+              data-qa="form-modal"
+            >
               {title && title.length > 0 ? (
                 <ModalTitle>
                   {icon && (

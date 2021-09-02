@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -40,15 +41,15 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class DecisionCreationIntegrationTest : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
@@ -305,7 +306,7 @@ WHERE id = :unitId
     }
 
     private fun checkDecisionDrafts(
-        applicationId: UUID,
+        applicationId: ApplicationId,
         unit: UnitData.Detailed = testDaycare,
         adult: PersonData.Detailed = testAdult_5,
         child: PersonData.Detailed = testChild_6,
@@ -352,7 +353,7 @@ WHERE id = :unitId
     }
 
     private fun createDecisions(
-        applicationId: UUID
+        applicationId: ApplicationId
     ): List<DecisionTableRow> {
         val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-decisions-without-proposal")
             .asUser(serviceWorker)
@@ -409,7 +410,7 @@ WHERE id = :unitId
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false
-    ): UUID = db.transaction { tx ->
+    ): ApplicationId = db.transaction { tx ->
         val applicationId = tx.insertTestApplication(
             status = ApplicationStatus.WAITING_PLACEMENT,
             guardianId = adult.id,

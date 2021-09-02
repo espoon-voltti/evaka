@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { UpdateStateFn } from 'lib-common/form-state'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -14,8 +13,9 @@ import styled from 'styled-components'
 import EditorSection from '../../applications/editor/EditorSection'
 import { getErrorCount } from '../../form-validation'
 import { useTranslation } from '../../localization'
-import { AdditionalDetailsFormData } from './ApplicationFormData'
+import { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from './validations'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type Props = {
   formData: AdditionalDetailsFormData

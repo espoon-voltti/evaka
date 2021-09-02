@@ -12,10 +12,10 @@ import { PresenceReportRow } from '../../types/reports'
 import { getPresenceReport, PeriodFilters } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow } from '../../components/reports/common'
+import { FilterLabel, FilterRow } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FlexRow } from '../common/styled/containers'
 
 function Presences() {
   const { i18n } = useTranslation()

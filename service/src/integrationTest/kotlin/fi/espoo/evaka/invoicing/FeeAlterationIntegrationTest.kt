@@ -18,12 +18,12 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class FeeAlterationIntegrationTest : FullApplicationTest() {
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
@@ -192,7 +192,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `delete does nothing with non existant id`() {
+    fun `delete does nothing with non-existent id`() {
         db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
 
         http.delete("/fee-alterations/${UUID.randomUUID()}")

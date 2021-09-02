@@ -10,10 +10,9 @@ import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
 import ReactSelect, { Props } from 'react-select'
 import classNames from 'classnames'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-interface MultiSelectProps<T extends object> {
-  value: T[]
-  options: T[]
+interface MultiSelectProps<T> {
+  value: readonly T[]
+  options: readonly T[]
   getOptionId: (value: T) => string
   getOptionLabel: (value: T) => string
   getOptionSecondaryText?: (value: T) => string
@@ -28,8 +27,7 @@ interface MultiSelectProps<T extends object> {
   'data-qa'?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export default function MultiSelect<T extends object>({
+export default function MultiSelect<T>({
   value,
   options,
   getOptionId,

@@ -8,7 +8,8 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { getDocumentState } from './vasu-events'
 import { VasuContent } from './vasu-content'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
 export type VasuDocumentEventType =
@@ -62,16 +63,34 @@ export interface EvaluationDiscussionContent {
   evaluation: string
 }
 
-interface VasuDocumentResponse {
-  id: UUID
-  events: VasuDocumentEvent[]
-  modifiedAt: Date
+export interface VasuBasics {
   child: {
     id: UUID
     firstName: string
     lastName: string
+    dateOfBirth: LocalDate
   }
+  guardians: {
+    id: UUID
+    firstName: string
+    lastName: string
+  }[]
+  placements: {
+    unitId: UUID
+    unitName: string
+    groupId: UUID
+    groupName: string
+    range: FiniteDateRange
+  }[]
+}
+
+interface VasuDocumentResponse {
+  id: UUID
+  events: VasuDocumentEvent[]
+  modifiedAt: Date
+  basics: VasuBasics
   templateName: string
+  templateRange: FiniteDateRange
   content: VasuContent
   authorsContent: AuthorsContent
   vasuDiscussionContent: VasuDiscussionContent
@@ -85,6 +104,8 @@ export interface VasuDocument extends VasuDocumentResponse {
 const mapVasuDocumentResponse = ({
   events,
   modifiedAt,
+  templateRange,
+  basics,
   vasuDiscussionContent,
   evaluationDiscussionContent,
   ...rest
@@ -93,6 +114,18 @@ const mapVasuDocumentResponse = ({
   events: events.map(mapVasuDocumentEvent),
   documentState: getDocumentState(events),
   modifiedAt: new Date(modifiedAt),
+  templateRange: FiniteDateRange.parseJson(templateRange),
+  basics: {
+    ...basics,
+    child: {
+      ...basics.child,
+      dateOfBirth: LocalDate.parseIso(basics.child.dateOfBirth)
+    },
+    placements: basics.placements.map((pl) => ({
+      ...pl,
+      range: FiniteDateRange.parseJson(pl.range)
+    }))
+  },
   vasuDiscussionContent: {
     ...vasuDiscussionContent,
     discussionDate: LocalDate.parseNullableIso(
@@ -112,7 +145,7 @@ export async function createVasuDocument(
   templateId: UUID
 ): Promise<Result<UUID>> {
   return client
-    .post<UUID>(`/vasu`, { childId, templateId })
+    .post<UUID>(`/children/${childId}/vasu`, { templateId })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

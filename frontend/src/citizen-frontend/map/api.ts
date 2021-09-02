@@ -15,8 +15,8 @@ import { client } from '../api-client'
 import { MapAddress } from '../map/MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from '../map/distances'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { mapConfig } from 'lib-customizations/citizen'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export async function fetchUnits(
   type: ApplicationType

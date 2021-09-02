@@ -14,14 +14,20 @@ export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()
   return (
     <>
-      <FooterItem>{t.footer.cityLabel}</FooterItem>
+      <FooterItem data-qa="footer-citylabel">{t.footer.cityLabel}</FooterItem>
       <FooterItem>
-        <FooterLink href={t.footer.privacyPolicyLink} data-qa={'nav-old-map'}>
+        <FooterLink
+          href={t.footer.privacyPolicyLink}
+          data-qa={'footer-policy-link'}
+        >
           {t.footer.privacyPolicy}
         </FooterLink>
       </FooterItem>
       <FooterItem>
-        <FooterLink href={t.footer.sendFeedbackLink} data-qa={'nav-old-map'}>
+        <FooterLink
+          href={t.footer.sendFeedbackLink}
+          data-qa={'footer-feedback-link'}
+        >
           {t.footer.sendFeedback}
         </FooterLink>
       </FooterItem>

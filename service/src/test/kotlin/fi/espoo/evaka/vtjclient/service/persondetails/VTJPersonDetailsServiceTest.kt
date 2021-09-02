@@ -4,12 +4,11 @@
 
 package fi.espoo.evaka.vtjclient.service.persondetails
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argumentCaptor
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -18,8 +17,7 @@ import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.mapper.IVtjHenkiloMapper
-import fi.espoo.evaka.vtjclient.mapper.VtjPersonNotFoundException
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
@@ -49,7 +47,7 @@ class VTJPersonDetailsServiceTest {
     lateinit var vtjCache: VtjCache
 
     @Mock
-    lateinit var henkiloMapper: IVtjHenkiloMapper
+    lateinit var henkiloMapper: VtjHenkiloMapper
 
     @Test
     fun `basic query should return results without dependants details with a successful query`() {
@@ -61,10 +59,10 @@ class VTJPersonDetailsServiceTest {
         whenever(vtjService.query(expectedVtjQuery)).thenReturn(expectedVtjResponse)
         whenever(henkiloMapper.mapToVtjPerson(expectedVtjResponse)).thenReturn(expectedResult)
 
-        val result = service.getBasicDetailsFor(query) as PersonDetails.Result
-        assertThat(result.vtjPerson.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
-        assertThat(result.vtjPerson.address).isEqualTo(expectedResult.address)
-        assertThat(result.vtjPerson.dependants).isEmpty()
+        val result = service.getBasicDetailsFor(query)
+        assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
+        assertThat(result.address).isEqualTo(expectedResult.address)
+        assertThat(result.dependants).isEmpty()
     }
 
     @Test
@@ -97,12 +95,12 @@ class VTJPersonDetailsServiceTest {
             .thenReturn(expectedResult)
             .thenReturn(expectedChildResult)
 
-        val result = service.getPersonWithDependants(query) as PersonDetails.Result
-        assertThat(result.vtjPerson.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
-        assertThat(result.vtjPerson.firstNames).isEqualTo(expectedResult.firstNames)
+        val result = service.getPersonWithDependants(query)
+        assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
+        assertThat(result.firstNames).isEqualTo(expectedResult.firstNames)
 
-        assertThat(result.vtjPerson.dependants).size().isEqualTo(1)
-        val childResult = result.vtjPerson.dependants[0]
+        assertThat(result.dependants).size().isEqualTo(1)
+        val childResult = result.dependants[0]
 
         assertThat(childResult.socialSecurityNumber).isEqualTo(expectedChildResult.socialSecurityNumber)
         assertThat(childResult.firstNames).isEqualTo(expectedChildResult.firstNames)
@@ -119,73 +117,6 @@ class VTJPersonDetailsServiceTest {
             assertThat(firstValue).isEqualTo(expectedVTJResponse)
             assertThat(secondValue).isEqualTo(expectedChildVtjResponse)
         }
-    }
-
-    @Test
-    fun `service should return not found when person is not found from VTJ`() {
-        val expectedResult = validPerson
-        val query = queryAboutSelf(vtjPerson = expectedResult)
-        val expectedVtjQuery = query.mapToVtjQuery(PERUSSANOMA3)
-
-        whenever(vtjService.query(expectedVtjQuery)).thenThrow(VtjPersonNotFoundException::class.java)
-        verifyZeroInteractions(henkiloMapper)
-
-        val result = service.getBasicDetailsFor(query) as PersonDetails.PersonNotFound
-        assertThat(result.message).isEqualTo("Person not found")
-    }
-
-    @Test
-    fun `service should return query error when VTJ query fails`() {
-        val expectedResult = validPerson
-        val query = queryAboutSelf(vtjPerson = expectedResult)
-        val expectedVtjQuery = query.mapToVtjQuery(PERUSSANOMA3)
-
-        val expectedErrorMessage = "some error 123 11"
-
-        whenever(vtjService.query(expectedVtjQuery)).thenThrow(IllegalStateException(expectedErrorMessage))
-        verifyZeroInteractions(henkiloMapper)
-
-        val result = service.getBasicDetailsFor(query) as PersonDetails.QueryError
-        assertThat(result.message).isEqualTo(expectedErrorMessage)
-    }
-
-    @Test
-    fun `service should only return results for dependants that are successfully mapped`() {
-
-        val expectedResult = validPerson.copy(
-            dependants = listOf(
-                validPerson.copy(socialSecurityNumber = "070115A9583"),
-                validPerson.copy(socialSecurityNumber = "020915A9878"),
-                validPerson.copy(socialSecurityNumber = "151014A968K")
-            )
-        )
-
-        val query = queryAboutSelf(vtjPerson = expectedResult)
-
-        val expectedVTJResponse = query.asMinimalVtjResponse()
-
-        val expectedChild = expectedResult.dependants[0]
-
-        whenever(vtjService.query(any()))
-            .thenReturn(expectedVTJResponse)
-            .thenReturn(minimalVtjResponse(expectedChild.socialSecurityNumber))
-            .thenReturn(null)
-            .thenThrow(IllegalStateException("some error 43"))
-        whenever(henkiloMapper.mapToVtjPerson(any()))
-            .thenReturn(expectedResult)
-            .thenReturn(expectedChild)
-
-        val result = service.getPersonWithDependants(query) as PersonDetails.Result
-        assertThat(result.vtjPerson.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
-
-        assertThat(result.vtjPerson.dependants).size().isEqualTo(1)
-        val childResult = result.vtjPerson.dependants[0]
-
-        assertThat(childResult.socialSecurityNumber).isEqualTo(expectedChild.socialSecurityNumber)
-
-        verify(vtjService, times(4)).query(any())
-
-        verify(henkiloMapper, times(2)).mapToVtjPerson(any())
     }
 
     private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
@@ -205,7 +136,6 @@ class VTJPersonDetailsServiceTest {
 
     private fun VtjPerson.toPersonDTO() = PersonDTO(
         id = randomUUID(),
-        customerId = 100123,
         identity = SSN.getInstance(socialSecurityNumber),
         firstName = firstNames,
         lastName = lastName,

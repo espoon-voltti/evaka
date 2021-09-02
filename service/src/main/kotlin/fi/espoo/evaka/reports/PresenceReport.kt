@@ -6,9 +6,11 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 const val MAX_NUMBER_OF_DAYS = 14
 
@@ -71,7 +72,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
             PresenceReportRow(
                 date = rs.getDate("date").toLocalDate(),
                 socialSecurityNumber = rs.getString("social_security_number"),
-                daycareId = rs.getString("daycare_id")?.let { UUID.fromString(it) },
+                daycareId = rs.getNullableUUID("daycare_id")?.let(::DaycareId),
                 daycareGroupName = rs.getString("name"),
                 present = rs.getBoolean("present").takeIf { rs.getString("daycare_id") != null }
             )
@@ -82,7 +83,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
 data class PresenceReportRow(
     val date: LocalDate,
     val socialSecurityNumber: String?,
-    val daycareId: UUID?,
+    val daycareId: DaycareId?,
     val daycareGroupName: String?,
     val present: Boolean?
 )

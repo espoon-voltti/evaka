@@ -33,9 +33,9 @@ function DraftRow({ draft }: RowProps) {
       <ParticipantsAndPreview>
         <Participants>{draft.recipientNames?.join(', ') ?? '–'}</Participants>
         <Truncated>
-          <Title>{draft.title}</Title>
+          <Title data-qa="draft-title">{draft.title}</Title>
           {' - '}
-          {draft.content}
+          <span data-qa="draft-content">{draft.content}</span>
         </Truncated>
       </ParticipantsAndPreview>
       <TypeAndDate>

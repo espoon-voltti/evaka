@@ -23,10 +23,12 @@ class JwtToAuthenticatedUser : HttpFilter() {
         if (user != null) {
             request.setAuthenticatedUser(user)
             MdcKey.USER_ID.set(user.id.toString())
+            MdcKey.USER_ID_HASH.set(user.idHash.toString())
         }
         try {
             chain.doFilter(request, response)
         } finally {
+            MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
         }
     }

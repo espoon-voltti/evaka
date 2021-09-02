@@ -7,7 +7,7 @@ import _ from 'lodash'
 import passport from 'passport'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
-import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
+import { adMock, gatewayRole, nodeEnv } from '../../../config'
 import { getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logAuditEvent, logDebug } from '../../../logging'
@@ -74,11 +74,11 @@ function createLoginHandler({
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err, req) ||
-            'Could not parse SAML error'
+            'Could not parse SAML message'
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in_failed`,
             req,
-            `Error authenticating user. Description: ${description}. Error: ${err}`
+            `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
           return res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
         }
@@ -205,7 +205,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
     loginHandler
   )
 
-  if (devLoginEnabled) {
+  if (adMock) {
     configureDevLogin(router)
   }
 

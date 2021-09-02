@@ -13,6 +13,8 @@ const en: Translations = {
     cancel: 'Cancel',
     return: 'Return',
     ok: 'Ok',
+    save: 'Save',
+    confirm: 'Confirm',
     add: 'Add',
     unit: {
       providerTypes: {
@@ -42,6 +44,19 @@ const en: Translations = {
     openExpandingInfo: 'Open the details',
     errors: {
       genericGetError: 'Error in fetching the requested information'
+    },
+    datetime: {
+      weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      weekShort: 'Week',
+      weekdays: [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ]
     }
   },
   header: {
@@ -49,7 +64,8 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
-      messages: 'Messages'
+      messages: 'Messages',
+      calendar: 'Calendar'
     },
     lang: {
       fi: 'Suomeksi',
@@ -62,8 +78,7 @@ const en: Translations = {
   footer: {
     cityLabel: '© City of Espoo',
     privacyPolicy: 'Privacy Notices',
-    privacyPolicyLink:
-      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
+    privacyPolicyLink: 'https://www.espoo.fi/en/city-espoo/data-protection',
     sendFeedback: 'Give feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -78,7 +93,7 @@ const en: Translations = {
           For information on private units,{' '}
           <ExternalLink
             text="click here."
-            href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Private_early_childhood_education"
+            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers"
             newTab
           />
         </span>
@@ -123,21 +138,54 @@ const en: Translations = {
       list: 'List of units'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families',
+      'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search'
   },
+  calendar: {
+    holiday: 'Holiday',
+    newReservationBtn: 'Create reservation',
+    reservationModal: {
+      title: 'Create reservation',
+      selectChildren: 'Select children',
+      dateRange: 'Reservation valid during',
+      dateRangeLabel: 'Make reservation for days',
+      times: 'Times',
+      businessDays: 'Mon-Fri',
+      postError: 'Creating reservation failed',
+      repeats: 'Repeats',
+      repetitions: {
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly'
+      }
+    }
+  },
   messages: {
     inboxTitle: 'Inbox',
-    noMessages: 'No messages',
+    noMessagesInfo: 'Sent and received messages are displayed here.',
+    noSelectedMessage: 'A message is not selected',
+    emptyInbox: 'Your inbox is empty',
     recipients: 'Recipients',
     send: 'Send',
+    sender: 'Sender',
     sending: 'Sending',
     messagePlaceholder:
       'Content... Note! Do not enter sensitive information here.',
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'
+    },
+    replyToThread: 'Reply',
+    messageEditor: {
+      newMessage: 'New message',
+      receivers: 'Receivers',
+      title: 'Title',
+      message: 'Message',
+      deleteDraft: 'Delete draft',
+      send: 'Send',
+      search: 'Search',
+      noResults: 'No results',
+      messageSendError: 'Failed to send the message'
     }
   },
   applications: {
@@ -475,8 +523,7 @@ const en: Translations = {
             title: 'Second guardian information',
             email: 'Email',
             tel: 'Phone number',
-            info:
-              'Second guardian information is automatically fetched from VTJ',
+            info: 'Second guardian information is automatically fetched from VTJ',
             agreed:
               'We have agreed with the other guardian about this application.',
             notAgreed:
@@ -663,12 +710,10 @@ const en: Translations = {
             'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
           message: {
             title: 'Evening and round-the-clock care',
-            text:
-              'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
+            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
           },
           attachmentsMessage: {
-            text:
-              'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
+            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
             subtitle:
               'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
           }
@@ -681,8 +726,7 @@ const en: Translations = {
         assistanceNeedInstructions: {
           DAYCARE:
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
-          CLUB:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
           PRESCHOOL:
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
         },
@@ -770,8 +814,7 @@ const en: Translations = {
               'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
             PRESCHOOL:
               'I primarily apply for a place in the same location attended by the child’s sibling.',
-            CLUB:
-              'I primarily apply for a place in the same club attended by the child’s sibling.'
+            CLUB: 'I primarily apply for a place in the same club attended by the child’s sibling.'
           },
           radioLabel: {
             DAYCARE: 'Choose the sibling',
@@ -852,7 +895,7 @@ const en: Translations = {
           },
           mapLink: 'Unit map view',
           serviceVoucherLink:
-            'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families',
+            'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
           languageFilter: {
             label: 'Language of the location:',
             fi: 'finnish',
@@ -868,8 +911,7 @@ const en: Translations = {
           preferences: {
             label: 'Application preferences you selected',
             noSelections: 'No selections',
-            info:
-              'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
+            info: 'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
             fi: 'finnish',
             sv: 'swedish',
             moveUp: 'Move up',
@@ -930,7 +972,7 @@ const en: Translations = {
               statement form here:
               <br />
               <a
-                href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees"
+                href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1052,20 +1094,17 @@ const en: Translations = {
       },
       draftPolicyInfo: {
         title: 'Your draft application was saved',
-        text:
-          'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
+        text: 'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
         ok: 'OK'
       },
       sentInfo: {
         title: 'Your application has been sent',
-        text:
-          'You can continue editing the application until processing starts',
+        text: 'You can continue editing the application until processing starts',
         ok: 'Ok!'
       },
       updateInfo: {
         title: 'Modifications saved',
-        text:
-          'If you wish, you can make further changes as long as the application has not been processed.',
+        text: 'If you wish, you can make further changes as long as the application has not been processed.',
         ok: 'Ok!'
       }
     }
@@ -1134,15 +1173,13 @@ const en: Translations = {
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'There is a decision without a response',
-          text:
-            'There is a decision without a response. Are you sure you want to return to the list without responding?',
+          text: 'There is a decision without a response. Are you sure you want to return to the list without responding?',
           resolveLabel: 'Return without responding',
           rejectLabel: 'Continue responding'
         },
         doubleRejectWarning: {
           title: 'Are you sure you want to reject the placement?',
-          text:
-            'You are rejecting an offer on pre-primary / preparatory education placement. The related early childhood education placement will also be rejected.',
+          text: 'You are rejecting an offer on pre-primary / preparatory education placement. The related early childhood education placement will also be rejected.',
           resolveLabel: 'Reject both',
           rejectLabel: 'Cancel'
         }
@@ -1226,6 +1263,220 @@ const en: Translations = {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later'
   },
+  income: {
+    title: 'Tulotietojen ilmoitus',
+    description: (
+      <>
+        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+        korkeimpaan maksuun.
+        <br />
+        <br />
+        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+        alkamispäivästä lähtien.
+        <br />
+        <br />
+        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
+        varhaiskasvatusmaksuja myös takautuvasti.
+        <br />
+        <br />* Tähdellä merkityt tiedot ovat pakollisia
+      </>
+    ),
+    addNew: 'Luo uusi tulotieto',
+    incomeInfo: 'Tulotiedot',
+    incomesRegisterConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+    incomeType: {
+      description: (
+        <>
+          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
+          <strong>Yrittäjän tulotiedot</strong>, että{' '}
+          <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
+        </>
+      ),
+      startDate: 'Voimassa alkaen',
+      endDate: 'Voimassaolo päättyy',
+      title: 'Asiakasmaksun perusteet',
+      agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
+      highestFeeInfo:
+        'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
+      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
+      entrepreneurIncome: 'Yrittäjän tulotiedot'
+    },
+    grossIncome: {
+      title: 'Bruttotulotietojen täyttäminen',
+      description:
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+      incomeSource: 'Tulotietojen toimitus',
+      provideAttachments:
+        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      estimate: 'Arvio bruttotuloistani',
+      otherIncome: 'Muut tulot',
+      otherIncomeInfo:
+        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+      choosePlaceholder: 'Valitse',
+      otherIncomeTypes: {
+        PENSION: 'Eläke',
+        ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
+        SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Joustava tai osittainen hoitoraha',
+        ALIMONY: 'Elatusapu tai -tuki',
+        INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+        RENTAL_INCOME: 'Vuokratulot',
+        UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+        JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Palkkio tai bonus',
+        RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+        BASIC_INCOME: 'Perustulo',
+        FOREST_INCOME: 'Metsätulo',
+        FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+        REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+        EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+        GRANT: 'Apuraha',
+        APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+        ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+        OTHER_INCOME: 'Muut tulot'
+      }
+    },
+    entrepreneurIncome: {
+      title: 'Yrittäjän tulotietojen täyttäminen',
+      description: (
+        <>
+          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
+          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
+          tarkemmat yrityskohtaiset tiedot liitteinä.
+          <br />
+          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
+          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
+        </>
+      ),
+      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
+      fullTime: 'Päätoimista',
+      partTime: 'Sivutoimista',
+      startOfEntrepreneurship: 'Yrittäjyys alkanut',
+      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
+      yes: 'Kyllä',
+      no: 'Ei',
+      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
+      startupGrant:
+        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
+      checkupLabel: 'Tietojen tarkastus',
+      checkupConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+      companyInfo: 'Yrityksen tiedot',
+      companyForm: 'Yrityksen toimintamuoto',
+      selfEmployed: 'Toiminimi',
+      limitedCompany: 'Osakeyhtiö',
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      lightEntrepreneur: 'Kevytyrittäjyys',
+      lightEntrepreneurInfo:
+        'Maksutositteet palkoista ja työkorvauksista tulee toimittaa liitteinä.',
+      partnershipInfo:
+        'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
+    },
+    selfEmployed: {
+      info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
+      attachments:
+        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+      estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
+      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+      timeRange: 'Aikavälillä'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
+          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
+        </>
+      ),
+      incomesRegister:
+        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      attachments:
+        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    accounting: {
+      title: 'Kirjanpitäjän yhteystiedot',
+      description:
+        'Kirjanpitäjän yhteystiedot tarvitaan jos toimit osakeyhtiössä, kommandiittiyhtiössä tai avoimessa yhtiössä.',
+      accountant: 'Kirjanpitäjä',
+      accountantPlaceholder: 'Kirjanpitäjän nimi / yhtiön nimi',
+      email: 'Sähköpostiosoite',
+      emailPlaceholder: 'Sähköposti',
+      address: 'Postiosoite',
+      addressPlaceholder: 'Katuosoite, postinumero, toimipaikka',
+      phone: 'Puhelinnumero',
+      phonePlaceholder: 'Puhelinnumero'
+    },
+    moreInfo: {
+      title: 'Muita maksuun liittyviä tietoja',
+      studentLabel: 'Oletko opiskelija?',
+      student: 'Olen opiskelija.',
+      studentInfo:
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+      deductions: 'Vähennykset',
+      alimony:
+        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
+      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
+    },
+    attachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      description:
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      required: {
+        title: 'Tarvittavat liitteet'
+      },
+      attachmentNames: {
+        PENSION: 'Päätös eläkkeestä',
+        ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
+        SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
+        PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
+        ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+        UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
+        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
+        RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
+        BASIC_INCOME: 'Päätös perustulosta',
+        FOREST_INCOME: 'Tosite metsätulosta',
+        FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
+        REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
+        EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
+        GRANT: 'Tosite apurahasta',
+        APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Tosite tapaturmavakuutuksen korvauksesta',
+        OTHER_INCOME: 'Liitteet muista tuloista',
+        ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
+        INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
+        RENTAL_INCOME: 'Tositteet vuokratuloista',
+        PAYSLIP: 'Viimeisin palkkakuitti',
+        STARTUP_GRANT: 'Starttirahapäätös',
+        ACCOUNTANT_REPORT:
+          'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
+        PROOF_OF_STUDIES:
+          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
+      }
+    },
+    assure: 'Vakuutan antamani tiedot oikeiksi.',
+    errors: {
+      invalidForm:
+        'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
+      choose: 'Valitse vaihtoehto',
+      chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
+      consentRequired:
+        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan'
+    }
+  },
   validationErrors: {
     required: 'Value missing',
     requiredSelection: 'Please select one of the options',
@@ -1234,6 +1485,8 @@ const en: Translations = {
     phone: 'Invalid telephone number',
     email: 'Invalid email',
     validDate: 'Valid date format is pp.kk.vvvv',
+    dateTooEarly: 'Pick a later date',
+    dateTooLate: 'Pick an earlier date',
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Valid time format is hh:mm',
     unitNotSelected: 'Pick at least one choice',

@@ -8,6 +8,8 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
@@ -24,15 +26,15 @@ import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class UnitAclControllerIntegrationTest : FullApplicationTest() {
     private val employee = DaycareAclRowEmployee(
-        id = UUID.randomUUID(),
+        id = EmployeeId(UUID.randomUUID()),
         firstName = "First",
         lastName = "Last",
         email = "test@example.com"
@@ -53,7 +55,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(
-                        id = it.id,
+                        id = it.id.raw,
                         firstName = it.firstName,
                         lastName = it.lastName,
                         email = it.email
@@ -111,14 +113,14 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         return body.get().rows
     }
 
-    private fun insertSupervisor(daycareId: UUID) {
+    private fun insertSupervisor(daycareId: DaycareId) {
         val (_, res, _) = http.put("/daycares/$daycareId/supervisors/${employee.id}")
             .asUser(admin)
             .response()
         assertTrue(res.isSuccessful)
     }
 
-    private fun deleteSupervisor(daycareId: UUID) {
+    private fun deleteSupervisor(daycareId: DaycareId) {
         val (_, res, _) = http.delete("/daycares/$daycareId/supervisors/${employee.id}")
             .asUser(admin)
             .response()

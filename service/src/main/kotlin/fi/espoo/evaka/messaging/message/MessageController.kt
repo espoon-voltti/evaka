@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -35,7 +36,7 @@ class MessageController(
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<DetailedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        requireAuthorizedMessagingRole(user)
+        user.requireAnyEmployee()
         return db.read { it.getEmployeeDetailedMessageAccounts(user.id) }
     }
 
@@ -199,7 +200,7 @@ class MessageController(
     fun getReceiversForNewMessage(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam unitId: UUID
+        @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(

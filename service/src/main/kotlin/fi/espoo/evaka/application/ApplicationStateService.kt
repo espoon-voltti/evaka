@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -16,6 +17,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.attachment.deleteAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
@@ -52,6 +54,10 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
@@ -59,7 +65,6 @@ import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -67,9 +72,10 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -79,6 +85,7 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ApplicationStateService(
     private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
@@ -86,14 +93,16 @@ class ApplicationStateService(
     private val asyncJobRunner: AsyncJobRunner,
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
-    private val env: Environment
+    env: BucketEnv
 ) {
+    private val filesBucket = env.attachments
+
     // STATE TRANSITIONS
 
     fun sendApplication(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         currentDate: LocalDate,
         isEnduser: Boolean = false,
     ) {
@@ -105,7 +114,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+            accessControl.requirePermissionFor(user, Action.Application.SEND, applicationId)
         }
 
         verifyStatus(application, CREATED)
@@ -125,9 +134,7 @@ class ApplicationStateService(
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
         tx.getPersonById(application.guardianId)?.let {
-            val email = if (!application.form.guardian.email.isNullOrBlank()) {
-                application.form.guardian.email
-            } else {
+            val email = application.form.guardian.email.ifBlank {
                 it.email
             }
 
@@ -159,17 +166,15 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT)
     }
 
-    fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationVerify.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.MOVE_TO_WAITING_PLACEMENT, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
         tx.getPersonById(application.guardianId)?.let {
-            val email = if (!application.form.guardian.email.isNullOrBlank()) {
-                application.form.guardian.email
-            } else {
+            val email = application.form.guardian.email.ifBlank {
                 it.email
             }
 
@@ -196,47 +201,47 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
-    fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.RETURN_TO_SENT, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.updateApplicationStatus(application.id, SENT)
     }
 
-    fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationCancel.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CANCEL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
         tx.updateApplicationStatus(application.id, CANCELLED)
     }
 
-    fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, true)
     }
 
-    fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, false)
     }
 
-    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, placementPlan: DaycarePlacementPlan) {
+    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, placementPlan: DaycarePlacementPlan) {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
-        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+        val guardian = tx.getPersonById(application.guardianId)
             ?: throw NotFound("Guardian not found")
         val secondDecisionTo = personService
             .getGuardians(tx, user, application.childId)
@@ -251,9 +256,9 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
     }
 
-    fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CANCEL_PLACEMENT_PLAN, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -262,27 +267,27 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
-    fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.SEND_DECISIONS_WITHOUT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         finalizeDecisions(tx, user, application)
     }
 
-    fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.PlacementProposalCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.SEND_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
     }
 
-    fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.WITHDRAW_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
@@ -292,13 +297,13 @@ class ApplicationStateService(
     fun respondToPlacementProposal(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         status: PlacementPlanConfirmationStatus,
         rejectReason: PlacementPlanRejectReason? = null,
         rejectOtherReason: String? = null
     ) {
         Audit.PlacementPlanRespond.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Application.RESPOND_TO_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
@@ -315,10 +320,9 @@ class ApplicationStateService(
         }
     }
 
-    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: UUID) {
+    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: DaycareId) {
         Audit.PlacementProposalAccept.log(targetId = unitId)
-        if (!acl.getAuthorizedUnits(user).isAuthorized(unitId))
-            throw Forbidden("Not authorized to accept placement proposal for unit $unitId")
+        accessControl.requirePermissionFor(user, Action.Unit.ACCEPT_PLACEMENT_PROPOSAL, unitId)
 
         // language=sql
         val sql =
@@ -331,7 +335,7 @@ class ApplicationStateService(
         val applicationStates = tx.createQuery(sql)
             .bind("unitId", unitId)
             .map { row ->
-                Pair<UUID, PlacementPlanConfirmationStatus>(
+                Pair<ApplicationId, PlacementPlanConfirmationStatus>(
                     row.mapColumn("application_id"),
                     row.mapColumn("unit_confirmation_status")
                 )
@@ -346,16 +350,16 @@ class ApplicationStateService(
             .forEach { finalizeDecisions(tx, user, it) }
     }
 
-    fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionConfirmMailed.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CONFIRM_DECISIONS_MAILED, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
     }
 
-    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
+    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
         Audit.DecisionAccept.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
@@ -363,7 +367,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            accessControl.requirePermissionFor(user, Action.Application.ACCEPT_DECISION, applicationId)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
@@ -412,7 +416,7 @@ class ApplicationStateService(
         }
     }
 
-    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, isEnduser: Boolean = false) {
+    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, isEnduser: Boolean = false) {
         Audit.DecisionReject.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
@@ -420,7 +424,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            accessControl.requirePermissionFor(user, Action.Application.REJECT_DECISION, applicationId)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))
@@ -452,7 +456,7 @@ class ApplicationStateService(
     fun updateOwnApplicationContentsCitizen(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         update: ApplicationFormUpdate,
         currentDate: LocalDate,
         asDraft: Boolean = false
@@ -463,7 +467,6 @@ class ApplicationStateService(
 
         val updatedForm = original.form.update(update)
 
-        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
             val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.id)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
@@ -496,7 +499,7 @@ class ApplicationStateService(
     fun updateApplicationContentsServiceWorker(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: UUID,
         currentDate: LocalDate
@@ -507,7 +510,6 @@ class ApplicationStateService(
         val updatedForm = original.form.update(update.form)
         validateApplication(tx, original.type, updatedForm, currentDate, strict = false)
 
-        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
             val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, userId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
@@ -541,7 +543,7 @@ class ApplicationStateService(
         }
     }
 
-    private fun Database.Transaction.updateManuallySetDueDate(applicationId: UUID, manuallySetDueDate: LocalDate) {
+    private fun Database.Transaction.updateManuallySetDueDate(applicationId: ApplicationId, manuallySetDueDate: LocalDate) {
         createUpdate("UPDATE application SET duedate = :dueDate, duedate_set_manually_at = :dueDateSetManuallyAt WHERE id = :id")
             .bind("id", applicationId)
             .bind("dueDate", manuallySetDueDate)
@@ -565,7 +567,7 @@ class ApplicationStateService(
             .execute()
     }
 
-    fun reCalculateDueDate(tx: Database.Transaction, applicationId: UUID) {
+    fun reCalculateDueDate(tx: Database.Transaction, applicationId: ApplicationId) {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
         tx.calculateAndUpdateDueDate(application, application.form.preferences.urgent)
@@ -573,7 +575,7 @@ class ApplicationStateService(
 
     // HELPERS
 
-    private fun getApplication(tx: Database.Read, applicationId: UUID): ApplicationDetails {
+    private fun getApplication(tx: Database.Read, applicationId: ApplicationId): ApplicationDetails {
         return tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
     }
@@ -641,7 +643,7 @@ class ApplicationStateService(
         sentDate: LocalDate,
         isUrgent: Boolean,
         isTransferApplication: Boolean,
-        attachments: List<Attachment>
+        attachments: List<ApplicationAttachment>
     ): LocalDate? {
         return if (isTransferApplication) {
             null
@@ -671,8 +673,8 @@ class ApplicationStateService(
 
     private fun canSendDecisionsBySfi(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails): Boolean {
         val hasSsn = (
-            personService.getUpToDatePerson(tx, user, application.guardianId)!!
-                .identity is ExternalIdentifier.SSN && personService.getUpToDatePerson(tx, user, application.childId)!!
+            tx.getPersonById(application.guardianId)!!
+                .identity is ExternalIdentifier.SSN && tx.getPersonById(application.childId)!!
                 .identity is ExternalIdentifier.SSN
             )
         val guardianIsVtjGuardian = personService.getGuardians(tx, user, application.childId)
@@ -702,7 +704,7 @@ class ApplicationStateService(
         } else {
             val period = DateRange(start = validFrom, end = null)
             val validIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.MAX_FEE_ACCEPTED,
                 notes = "created automatically from application",

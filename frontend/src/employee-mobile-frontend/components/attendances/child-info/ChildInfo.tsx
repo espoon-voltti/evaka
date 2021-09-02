@@ -31,12 +31,14 @@ import { BackButton, TallContentArea } from '../../mobile/components'
 import ChildButtons from './ChildButtons'
 import ImageEditor from './ImageEditor'
 import BottomModalMenu from '../../common/BottomModalMenu'
-import Button from '../../../../lib-components/atoms/buttons/Button'
+import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import InfoModal from '../../../../lib-components/molecules/modals/InfoModal'
-import colors from '../../../../lib-customizations/common'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import colors from 'lib-customizations/common'
 import { deleteChildImage } from '../../../api/childImages'
 import { IconBox } from '../ChildListItem'
+import Absences from '../Absences'
+import ArrivalAndDeparture from './ArrivalAndDeparture'
 
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -51,7 +53,8 @@ const RoundImage = styled.img`
   height: 128px;
 `
 
-const CustomTitle = styled.h1`
+const CustomTitle = styled.h2`
+  font-family: Montserrat, 'Arial', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
@@ -70,6 +73,7 @@ const GroupName = styled.div`
   line-height: 22px;
   text-transform: uppercase;
   color: ${colors.blues.dark};
+  letter-spacing: 0.05rem;
 `
 
 const Zindex = styled.div`
@@ -142,9 +146,8 @@ export default React.memo(function AttendanceChildPage() {
 
   const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
   const [group, setGroup] = useState<Group | undefined>(undefined)
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
   const [uiMode, setUiMode] = useState<
     'default' | 'img-modal' | 'img-crop' | 'img-delete'
   >('default')
@@ -231,6 +234,12 @@ export default React.memo(function AttendanceChildPage() {
                       {child.firstName} {child.lastName}
                     </CustomTitle>
 
+                    {child.preferredName && (
+                      <CustomTitle data-qa={'child-preferred-name'}>
+                        ({child.preferredName})
+                      </CustomTitle>
+                    )}
+
                     <GroupName>{group.name}</GroupName>
 
                     <ChildStatus>
@@ -253,7 +262,13 @@ export default React.memo(function AttendanceChildPage() {
               </Zindex>
 
               <FlexColumn paddingHorizontal={'s'}>
-                <AttendanceDailyServiceTimes times={child.dailyServiceTimes} />
+                <AttendanceDailyServiceTimes
+                  times={child.dailyServiceTimes}
+                  reservation={child.reservation}
+                />
+                <ArrivalAndDeparture child={child} />
+                <Absences attendanceChild={child} />
+                <Gap size="xs" />
                 {child.status === 'COMING' && (
                   <AttendanceChildComing
                     unitId={unitId}

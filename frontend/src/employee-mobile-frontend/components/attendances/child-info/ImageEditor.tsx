@@ -8,9 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useRef, useState } from 'react'
 import ReactCrop from 'react-image-crop'
-import { defaultMargins, Gap } from '../../../../lib-components/white-space'
-import { FixedSpaceRow } from '../../../../lib-components/layout/flex-helpers'
-import Button from '../../../../lib-components/atoms/buttons/Button'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import Button from 'lib-components/atoms/buttons/Button'
 import { uploadChildImage } from '../../../api/childImages'
 
 import 'react-image-crop/dist/ReactCrop.css'

@@ -35,9 +35,8 @@ export default React.memo(function MarkPresent() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
 
   const [time, setTime] = useState<string>(getCurrentTime())
 

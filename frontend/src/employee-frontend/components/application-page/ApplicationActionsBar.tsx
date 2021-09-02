@@ -11,8 +11,8 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { sendApplication, updateApplication } from '../../api/applications'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 type Props = {
   applicationStatus: ApplicationStatus

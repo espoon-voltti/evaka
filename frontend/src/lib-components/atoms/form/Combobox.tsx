@@ -1,18 +1,22 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCombobox, UseComboboxStateChange } from 'downshift'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  FocusEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
-import { faChevronDown, faTimes } from 'lib-icons'
+import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import computeScrollIntoView from 'compute-scroll-into-view'
 import classNames from 'classnames'
+import { SpinnerSegment } from '../state/Spinner'
 
 const borderRadius = '2px'
 
@@ -33,7 +37,7 @@ const Root = styled.div`
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   &.active {
     border-color: transparent;
   }
@@ -57,7 +61,7 @@ const Menu = styled.div`
   &.closed {
     display: none;
   }
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   border-radius: ${borderRadius};
   background-color: white;
   max-height: 300px;
@@ -77,11 +81,12 @@ const MenuItem = styled.div`
   &.clickable {
     cursor: pointer;
   }
+  white-space: pre-line;
 `
 
 const Input = styled.input`
   background: none;
-  padding: 5px 0 5px 10px;
+  padding: 8px 0 8px 12px;
   flex: 1 1 auto;
   border: 0;
   outline: 0;
@@ -94,7 +99,6 @@ const Separator = styled.div`
   width: 1px;
   margin: 5px 0 5px;
   border-left: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
-  cursor: pointer;
 `
 
 const Button = styled.button`
@@ -122,7 +126,8 @@ interface MenuItemProps<T> {
   highlighted: boolean
 }
 
-interface Props<T> {
+export interface ComboboxProps<T> {
+  id?: string
   items: T[]
   selectedItem: T | null
   onChange: (item: T | null) => void
@@ -132,7 +137,12 @@ interface Props<T> {
   filterItems?: (inputValue: string, items: T[]) => T[]
   getItemLabel?: (item: T) => string
   getItemDataQa?: (item: T) => string | undefined
+  getMenuItemLabel?: (item: T) => string
+  isLoading?: boolean
   menuEmptyLabel?: string
+  name?: string
+  onFocus?: FocusEventHandler<HTMLInputElement>
+  onInputChange?: (newValue: string) => void
   children?: {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
     menuEmptyItem?: (label: string) => React.ReactNode
@@ -149,10 +159,6 @@ function stopPropagation(e: React.SyntheticEvent) {
   e.stopPropagation()
 }
 
-function preventDefault(e: React.SyntheticEvent) {
-  e.preventDefault()
-}
-
 function ensureElementIsInView(element: HTMLElement) {
   computeScrollIntoView(element, {
     block: 'end',
@@ -164,8 +170,9 @@ function ensureElementIsInView(element: HTMLElement) {
   })
 }
 
-export default function Combobox<T>(props: Props<T>) {
+export default function Combobox<T>(props: ComboboxProps<T>) {
   const {
+    id,
     items,
     selectedItem,
     onChange,
@@ -173,8 +180,13 @@ export default function Combobox<T>(props: Props<T>) {
     disabled,
     placeholder,
     getItemLabel = defaultGetItemLabel,
+    getMenuItemLabel = getItemLabel,
     getItemDataQa,
+    isLoading,
     menuEmptyLabel,
+    name,
+    onFocus,
+    onInputChange,
     children,
     fullWidth,
     'data-qa': dataQa
@@ -193,19 +205,19 @@ export default function Combobox<T>(props: Props<T>) {
   const defaultRenderMenuItem = useCallback(
     ({ highlighted, item }: MenuItemProps<T>) => (
       <MenuItem
-        data-qa={getItemDataQa && getItemDataQa(item)}
+        data-qa={getItemDataQa?.(item)}
         className={classNames({ highlighted, clickable: true })}
       >
-        {getItemLabel(item)}
+        {getMenuItemLabel(item)}
       </MenuItem>
     ),
-    [getItemLabel, getItemDataQa]
+    [getMenuItemLabel, getItemDataQa]
   )
 
-  const filterItems = useMemo(() => props.filterItems ?? defaultFilterItems, [
-    props.filterItems,
-    defaultFilterItems
-  ])
+  const filterItems = useMemo(
+    () => props.filterItems ?? defaultFilterItems,
+    [props.filterItems, defaultFilterItems]
+  )
   const renderMenuItem = useMemo(
     () => children?.menuItem ?? defaultRenderMenuItem,
     [children?.menuItem, defaultRenderMenuItem]
@@ -222,11 +234,10 @@ export default function Combobox<T>(props: Props<T>) {
     [getItemLabel]
   )
   const [currentFilter, setCurrentFilter] = useState('')
-  const filteredItems = useMemo(() => filterItems(currentFilter, items), [
-    filterItems,
-    items,
-    currentFilter
-  ])
+  const filteredItems = useMemo(
+    () => filterItems(currentFilter, items),
+    [filterItems, items, currentFilter]
+  )
 
   const menuRef = useRef<HTMLElement>()
 
@@ -234,11 +245,12 @@ export default function Combobox<T>(props: Props<T>) {
     ({ isOpen, inputValue }: UseComboboxStateChange<T>) => {
       if (isOpen) {
         setCurrentFilter(inputValue ?? '')
+        onInputChange?.(inputValue ?? '')
       } else {
         setCurrentFilter('')
       }
     },
-    [setCurrentFilter]
+    [onInputChange, setCurrentFilter]
   )
   const onIsOpenChange = useCallback(
     ({ isOpen }: UseComboboxStateChange<T>) => {
@@ -301,26 +313,34 @@ export default function Combobox<T>(props: Props<T>) {
       >
         <Input
           {...getInputProps({
+            id,
+            name,
             disabled,
-            placeholder
+            placeholder,
+            onFocus
           })}
         />
         {clearable && selectedItem && (
-          <Button data-qa="clear" onClick={enabled ? onClickClear : undefined}>
-            <FontAwesomeIcon icon={faTimes} />
-          </Button>
+          <>
+            <Button
+              data-qa="clear"
+              onClick={enabled ? onClickClear : undefined}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </Button>
+            <Separator>&nbsp;</Separator>
+          </>
         )}
-        <Separator>&nbsp;</Separator>
         <Button
           data-qa="toggle"
           type="button"
           {...getToggleButtonProps({
             disabled,
             // avoid toggling the menu twice
-            onClick: preventDefault
+            onClick: stopPropagation
           })}
         >
-          <FontAwesomeIcon icon={faChevronDown} />
+          <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
         </Button>
       </InputWrapper>
       <MenuWrapper onClick={stopPropagation}>
@@ -334,23 +354,28 @@ export default function Combobox<T>(props: Props<T>) {
         >
           {isOpen && (
             <>
-              {filteredItems.length === 0 && (
+              {isLoading ? (
+                <MenuItemWrapper>
+                  <SpinnerSegment />
+                </MenuItemWrapper>
+              ) : filteredItems.length === 0 ? (
                 <MenuItemWrapper>
                   {renderEmptyResult(menuEmptyLabel ?? '')}
                 </MenuItemWrapper>
+              ) : (
+                filteredItems.map((item, index) => (
+                  <MenuItemWrapper
+                    data-qa="item"
+                    key={index}
+                    {...getItemProps({ item, index })}
+                  >
+                    {renderMenuItem({
+                      item,
+                      highlighted: highlightedIndex === index
+                    })}
+                  </MenuItemWrapper>
+                ))
               )}
-              {filteredItems.map((item, index) => (
-                <MenuItemWrapper
-                  data-qa="item"
-                  key={index}
-                  {...getItemProps({ item, index })}
-                >
-                  {renderMenuItem({
-                    item,
-                    highlighted: highlightedIndex === index
-                  })}
-                </MenuItemWrapper>
-              ))}
             </>
           )}
         </Menu>

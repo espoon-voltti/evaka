@@ -45,6 +45,10 @@ Files: *.gitignore
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
 
+Files: *.yarnrc.yml
+Copyright: 2017-2021 City of Espoo
+License: LGPL-2.1-or-later
+
 Files: */.sentryclirc
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later

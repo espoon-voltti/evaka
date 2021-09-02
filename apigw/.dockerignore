@@ -11,3 +11,4 @@
 !.yarn/releases
 !.yarn/plugins
 !.yarnrc.yml
+!xmldom-0.7.0.tgz

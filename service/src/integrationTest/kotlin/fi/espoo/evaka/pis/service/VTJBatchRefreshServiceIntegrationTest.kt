@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.pis.service
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,8 +77,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         children = emptyList(),
         nationalities = emptySet(),
         nativeLanguage = null,
-        restrictedDetails = RestrictedDetails(enabled = false),
-        source = PersonDataSource.VTJ
+        restrictedDetails = RestrictedDetails(enabled = false)
     )
 
     @Test
@@ -87,7 +85,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto = getDto(testAdult_1).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
@@ -113,7 +111,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
@@ -147,8 +145,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto2 = getDto(testAdult_2).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
@@ -191,8 +189,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val dto2 = getDto(testAdult_2).copy(
             children = listOf(getDto(testChild_1))
         )
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
         service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)

@@ -23,7 +23,6 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
 import mu.KotlinLogging
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -33,6 +32,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertNotNull
 
 val logger = KotlinLogging.logger { }
 
@@ -56,7 +56,7 @@ private val clubDecision = createValidDecision(applicationId = application.id, t
 private val voucherDecision = daycareDecision.copy(
     endDate = LocalDate.of(2019, 7, 31),
     unit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkodin esiopetus",
@@ -74,7 +74,6 @@ private val voucherDecision = daycareDecision.copy(
 private val child = PersonDTO(
     testChild_1.id,
     ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
-    null,
     "Kullervo Kyöstinpoika",
     "Pöysti",
     null,
@@ -91,7 +90,6 @@ private val child = PersonDTO(
 private val guardian = PersonDTO(
     testAdult_1.id,
     ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
-    null,
     "Kyösti Taavetinpoika",
     "Pöysti",
     "kyostipoysti@example.com",
@@ -176,13 +174,13 @@ class PDFServiceTest {
 }
 
 fun createValidDecision(
-    id: UUID = UUID.randomUUID(),
+    id: DecisionId = DecisionId(UUID.randomUUID()),
     createdBy: String = "John Doe",
     type: DecisionType = DecisionType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     unit: DecisionUnit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkodin esiopetus",
@@ -195,7 +193,7 @@ fun createValidDecision(
         "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL
     ),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: UUID = UUID.randomUUID(),
     documentKey: String? = null,
     otherGuardianDocumentKey: String? = null,

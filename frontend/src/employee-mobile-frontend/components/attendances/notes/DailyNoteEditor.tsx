@@ -74,9 +74,8 @@ export default React.memo(function DailyNoteEditor() {
     groupId: string
   }>()
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
 
   const [dirty, setDirty] = useState(false)
 

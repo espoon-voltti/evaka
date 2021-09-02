@@ -20,6 +20,8 @@ import fi.espoo.evaka.messaging.daycarydailynote.getChildDaycareDailyNotes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -36,16 +38,17 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class ScheduledJobsTest : FullApplicationTest() {
     @Autowired
@@ -66,8 +69,8 @@ class ScheduledJobsTest : FullApplicationTest() {
 
     @Test
     fun `Draft application and attachments older than 30 days is cleaned up`() {
-        val id_to_be_deleted = UUID.randomUUID()
-        val id_not_to_be_deleted = UUID.randomUUID()
+        val id_to_be_deleted = ApplicationId(UUID.randomUUID())
+        val id_not_to_be_deleted = ApplicationId(UUID.randomUUID())
         val user = AuthenticatedUser.Citizen(testAdult_5.id)
 
         db.transaction { tx ->
@@ -99,7 +102,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         }
     }
 
-    private fun setApplicationCreatedDate(db: Database.Transaction, applicationId: UUID, created: LocalDate) {
+    private fun setApplicationCreatedDate(db: Database.Transaction, applicationId: ApplicationId, created: LocalDate) {
         db.handle.createUpdate("""UPDATE application SET created = :created WHERE id = :id""")
             .bind("created", created)
             .bind("id", applicationId)
@@ -319,9 +322,9 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Test
     fun removeDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
-        val expiredNoteId = UUID.randomUUID()
-        val validNoteId = UUID.randomUUID()
+        val twelveHoursAgo = now - Duration.ofHours(12)
+        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
+        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {
             it.createDaycareDailyNote(
                 DaycareDailyNote(
@@ -377,9 +380,9 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Test
     fun removeOldBackupCareDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
-        val expiredNoteId = UUID.randomUUID()
-        val validNoteId = UUID.randomUUID()
+        val twelveHoursAgo = now - Duration.ofHours(12)
+        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
+        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {
             it.createDaycareDailyNote(
                 DaycareDailyNote(
@@ -442,7 +445,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         preschoolDaycare: Boolean = false,
         childId: UUID = testChild_1.id,
         status: ApplicationStatus = ApplicationStatus.SENT
-    ): UUID {
+    ): ApplicationId {
         return db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 status = status,
@@ -467,7 +470,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         preferredStartDate: LocalDate,
         preparatory: Boolean = false,
         childId: UUID = testChild_1.id
-    ): UUID {
+    ): ApplicationId {
         return db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 status = ApplicationStatus.SENT,
@@ -500,7 +503,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         }
     }
 
-    private fun getApplicationStatus(applicationId: UUID): ApplicationStatus {
+    private fun getApplicationStatus(applicationId: ApplicationId): ApplicationStatus {
         return db.read {
             it.createQuery("SELECT status FROM application WHERE id = :id")
                 .bind("id", applicationId)

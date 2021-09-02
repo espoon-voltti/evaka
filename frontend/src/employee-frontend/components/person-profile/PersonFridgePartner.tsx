@@ -27,7 +27,7 @@ import {
   removePartnership,
   retryPartnership
 } from '../../api/partnerships'
-import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
@@ -47,12 +47,10 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { partnerships, setPartnerships, reloadFamily } = useContext(
-    PersonContext
-  )
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { partnerships, setPartnerships, reloadFamily } =
+    useContext(PersonContext)
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
 
   const loadData = () => {

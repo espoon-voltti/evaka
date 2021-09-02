@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -16,7 +17,7 @@ import java.time.ZoneId
 import java.util.UUID
 
 data class VoucherValueDecision(
-    override val id: UUID,
+    override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
     @Nested("head_of_family")
@@ -54,7 +55,7 @@ data class VoucherValueDecision(
     val sentAt: Instant? = null,
     val created: Instant = Instant.now()
 ) : FinanceDecision<VoucherValueDecision> {
-    override fun withRandomId() = this.copy(id = UUID.randomUUID())
+    override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
         return this.headOfFamily == decision.headOfFamily &&
@@ -97,7 +98,7 @@ enum class VoucherValueDecisionStatus {
 }
 
 data class VoucherValueDecisionDetailed(
-    val id: UUID,
+    val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
@@ -167,7 +168,7 @@ data class VoucherValueDecisionDetailed(
 }
 
 data class VoucherValueDecisionSummary(
-    val id: UUID,
+    val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
@@ -202,20 +203,25 @@ data class VoucherValueDecisionServiceNeed(
     val voucherValueDescriptionSv: String
 )
 
-fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
-    val thirdBirthday = dateOfBirth.plusYears(3)
-    val birthdayInMiddleOfPeriod = period.includes(thirdBirthday) && thirdBirthday != period.start && thirdBirthday != period.end
+fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (dateOfBirth.dayOfMonth) {
+    1 -> dateOfBirth.plusYears(3)
+    else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
+}
 
-    check(!birthdayInMiddleOfPeriod) {
-        "Third birthday ($thirdBirthday) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
+fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: VoucherValue): BigDecimal {
+    val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
+    val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
+
+    check(!periodStartInMiddleOfTargetPeriod) {
+        "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
     }
 
     return when {
-        period.start < thirdBirthday -> BigDecimal("1.55")
+        period.start < thirdBirthdayPeriodStart -> voucherValues.ageUnderThreeCoefficient
         else -> BigDecimal("1.00")
     }
 }
 
-fun calculateVoucherValue(baseValue: Int, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
-    return (BigDecimal(baseValue) * ageCoefficient * serviceCoefficient).toInt()
+fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
+    return (BigDecimal(voucherValues.baseValue) * ageCoefficient * serviceCoefficient).toInt()
 }

@@ -5,11 +5,14 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -69,7 +72,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
         logger.info { "Varda: Deleting ${outdatedFeeData.size} outdated fee data" }
         deleteFeeData(db, client, outdatedFeeData)
 
-        val guardians = db.transaction { personService.getEvakaOrVtjGuardians(it, AuthenticatedUser.SystemInternalUser, childId) }
+        val guardians = db.transaction { personService.getGuardians(it, AuthenticatedUser.SystemInternalUser, childId) }
             .filter { (it.firstName + it.lastName).isNotBlank() }
         if (guardians.isEmpty()) return@forEach
 
@@ -112,8 +115,8 @@ fun getMarkedFeeData(tx: Database.Read): List<Long> {
 private fun insertFeeDataUpload(
     tx: Database.Transaction,
     vardaId: Long,
-    feeDecisionId: UUID?,
-    voucherValueDecisionId: UUID?,
+    feeDecisionId: FeeDecisionId?,
+    voucherValueDecisionId: VoucherValueDecisionId?,
     vardaDecisionId: Long,
     vardaChildId: Long
 ) {
@@ -329,14 +332,17 @@ enum class FeeBasisCode(val code: String) {
 }
 
 data class VardaGuardian(
-    val henkilotunnus: String,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val henkilotunnus: String?,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val henkilo_oid: String? = null,
     val etunimet: String,
     val sukunimi: String
 )
 
 data class VardaFeeDataBase(
-    val feeDecisionId: UUID?,
-    val voucherValueDecisionId: UUID?,
+    val feeDecisionId: FeeDecisionId?,
+    val voucherValueDecisionId: VoucherValueDecisionId?,
     val vardaChildId: Long,
     val vardaId: Long?,
     val startDate: LocalDate,

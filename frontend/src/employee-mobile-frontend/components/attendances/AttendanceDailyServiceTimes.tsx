@@ -11,6 +11,7 @@ import {
   isVariableTime,
   TimeRange
 } from 'lib-common/api-types/child/common'
+import { AttendanceReservation } from '../../api/attendances'
 import { ServiceTime } from './components'
 
 const dayNames = [
@@ -50,17 +51,24 @@ function getTodaysServiceTimes(
 
 interface Props {
   times: DailyServiceTimes | null
+  reservation: AttendanceReservation | null
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({
-  times
+  times,
+  reservation
 }: Props) {
   const { i18n } = useTranslation()
 
   const todaysTimes = getTodaysServiceTimes(times)
   return (
     <ServiceTime>
-      {todaysTimes === 'not_set' ? (
+      {reservation !== null ? (
+        i18n.attendances.serviceTime.reservation(
+          reservation.startTime,
+          reservation.endTime
+        )
+      ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (
         i18n.attendances.serviceTime.noServiceToday

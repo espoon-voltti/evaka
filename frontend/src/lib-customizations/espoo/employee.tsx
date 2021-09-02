@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { EmployeeCustomizations } from 'lib-customizations/types'
-import EspooLogo from './EspooLogo.png'
+import { employeeConfig } from './appConfigs'
+import EspooLogo from './assets/EspooLogo.png'
 import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
+  appConfig: employeeConfig,
   translations: {
     fi: {}
   },
@@ -34,7 +36,14 @@ const customizations: EmployeeCustomizations = {
     'CHILD_ACCULTURATION_SUPPORT',
     'TRANSPORT_BENEFIT'
   ],
-  placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER']
+  placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER'],
+  unitProviderTypes: [
+    'MUNICIPAL',
+    'PURCHASED',
+    'PRIVATE',
+    'MUNICIPAL_SCHOOL',
+    'PRIVATE_SERVICE_VOUCHER'
+  ]
 }
 
 export default customizations

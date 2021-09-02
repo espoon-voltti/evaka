@@ -19,7 +19,7 @@ class SfiAccountDetailsService(
 
     fun getAuthorityDetails(uniqueSfiMessageId: String): Viranomainen = Viranomainen().apply {
         // Should add trace parsing or create new trace, currently, there is none
-        sanomaTunniste = uniqueSfiMessageId.toString()
+        sanomaTunniste = uniqueSfiMessageId
         sanomaVarmenneNimi = messageProperties.certificateCommonName
         viranomaisTunnus = messageProperties.authorityIdentifier
         palveluTunnus = messageProperties.serviceIdentifier

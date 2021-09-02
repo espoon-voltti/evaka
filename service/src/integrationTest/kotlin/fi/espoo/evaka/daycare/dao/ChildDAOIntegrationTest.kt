@@ -11,11 +11,11 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID.randomUUID
+import kotlin.test.assertEquals
 
 class ChildDAOIntegrationTest : AbstractIntegrationTest() {
     private val childId = randomUUID()

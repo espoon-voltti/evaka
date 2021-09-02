@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,7 +24,7 @@ class FamilyContactReportController(private val acl: AccessControlList) {
     fun getFamilyContactsReport(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam unitId: UUID
+        @RequestParam unitId: DaycareId
     ): ResponseEntity<List<FamilyContactReportRow>> {
         Audit.FamilyContactReportRead.log()
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -31,7 +32,7 @@ class FamilyContactReportController(private val acl: AccessControlList) {
     }
 }
 
-private fun Database.Read.getFamilyContacts(unitId: UUID): List<FamilyContactReportRow> {
+private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyContactReportRow> {
     // language=sql
     val sql =
         """

@@ -11,12 +11,12 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import java.time.Instant
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 

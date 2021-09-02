@@ -37,6 +37,7 @@ aliases:
 
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
   - &remote_docker_version "20.10.6"
+  - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
@@ -59,6 +60,9 @@ aliases:
 
   - &node_config
     <<: *default_config
+    environment:
+      # this makes Playwright download browsers to node_modules/playwright instead of $HOME/.cache/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: 0
 
   - &jvm_config
     <<: *default_config
@@ -365,13 +369,6 @@ commands:
             ICONS=pro yarn build
             ls -lRa ./dist/bundle
 
-  build_maintenance_page:
-    steps:
-      - run:
-          name: yarn build-maintenance-page
-          working_directory: *workspace_frontend
-          command: yarn build-maintenance-page
-
   build_storybook:
     steps:
       - run:
@@ -385,6 +382,9 @@ commands:
 
   e2e_test:
     parameters:
+      yarn_version:
+        type: string
+        default: *yarn_version
       test_runner:
         type: enum
         enum:
@@ -453,7 +453,7 @@ commands:
           to: employee/mobile
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/dist/maintenance-page
+          from: frontend/src/maintenance-page-frontend
           to: maintenance-page
       - storybook_to_s3:
           target_env: << parameters.target_env >>
@@ -565,14 +565,26 @@ commands:
             - *ci_evaka_fingerprint
       - attach_root_workspace
       - run:
-          name: Deploy ECS services to << parameters.env >>
+          name: Initialize Terraform workspace
+          working_directory: evaka-infra/terraform/evaka-ecs
           command: |
-            cd evaka-infra/terraform/evaka-ecs
-
             . replace-credentials
 
             terraform init
             terraform workspace select << parameters.env >>
+      - run:
+          name: Log current ECS service versions
+          working_directory: evaka-infra/terraform/evaka-ecs
+          command: |
+            . replace-credentials
+
+            terraform output | grep _version
+      - run:
+          name: Deploy ECS services to << parameters.env >>
+          working_directory: evaka-infra/terraform/evaka-ecs
+          command: |
+            . replace-credentials
+
             terraform apply -auto-approve -lock-timeout=300s \
               -var enduser-api-gw_version="${CIRCLE_SHA1}" \
               -var internal-api-gw_version="${CIRCLE_SHA1}" \
@@ -580,6 +592,26 @@ commands:
               -var message-srv_version="${CIRCLE_SHA1}" \
               -var proxy_version="${CIRCLE_SHA1}" \
               -var ses-notification-processor_version="${CIRCLE_SHA1}"
+      - run:
+          name: Wait for ECS deploy to finish
+          environment:
+            AWS_PROFILE: voltti-<< parameters.env >>
+          command: |
+            . replace-credentials
+
+            aws ecs wait services-stable \
+              --cluster voltti-ecs-cluster-<< parameters.env >> \
+              --services \
+                  evaka-enduser-gw \
+                  evaka-internal-gw \
+                  evaka-srv \
+                  evaka-message-srv \
+                  evaka-proxy || {
+              echo 'ERROR: Deployment failed! At least one of the ECS tasks failed to stabilize in 10 minutes with the new versions.' &&
+              echo 'INFO: See output above for previous versions' &&
+              echo "WARN: Generally rollbacks aren't recommended as they can cause issues with DB migrations" &&
+              exit 1
+            }
 
   # Must be the last step in a job
   notify_slack:
@@ -746,13 +778,12 @@ jobs:
       - run:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
-      - build_maintenance_page
       - build_storybook
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
-            - frontend/dist/maintenance-page
             - frontend/storybook-build
+            - frontend/src/maintenance-page-frontend
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/frontend/test-results
       - notify_slack
@@ -836,6 +867,9 @@ jobs:
       - run:
           working_directory: *workspace_service
           command: ./gradlew lintKotlin
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew codegenCheck
       - run:
           working_directory: *workspace_service
           command: ./circle-check-migrations.sh

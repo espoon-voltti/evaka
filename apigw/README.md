@@ -16,8 +16,6 @@ Gateway between eVaka frontends and backend services
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  14.15+
   - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
-- (OPTIONAL) [Google Maps JavaScript API key](#google-maps-api-key)
-  - If you want to use the geocoding & autocomplete endpoints
 
 The service requires redis running on port 6379. Easiest way is to run it with [compose](../compose/README.md) command
 
@@ -50,30 +48,6 @@ Lint with auto-fix
 ```bash
 yarn lint
 yarn lint:fix
-```
-
-### Google Maps API key
-
-If you want to use the Google Maps geocoding and autocomplete endpoints,
-a [Google Maps JavaScript API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
-must be configured for the application. Unfortunately none can be provided for local development by default as backend
-API keys can only be restricted by IP addresses.
-
-The application can be run locally without an API key but the endpoints will respond with an error.
-
-When creating your own key, restrict it to the following APIs:
-
-- Geocoding API
-- Places API
-
-#### Instructions for Voltti Developers
-
-Fetch and export the **secret** API key from Parameter Store with:
-
-```sh
-aws --profile voltti-local ssm get-parameter \
-  --name /local/evaka/google/maps_backend_api_key \
-  --query 'Parameter.Value' --with-decryption --output text
 ```
 
 ## Generated JWTs for local testing

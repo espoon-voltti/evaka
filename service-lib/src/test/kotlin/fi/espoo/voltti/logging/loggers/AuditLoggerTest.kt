@@ -13,11 +13,11 @@ import fi.espoo.voltti.logging.utils.setupTestAppender
 import mu.KLogger
 import mu.KotlinLogging
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
-private val message = "audit message"
+private const val message = "audit message"
 
 class AuditLoggerTest {
     @AfterEach

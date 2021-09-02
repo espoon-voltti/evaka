@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState, Dispatch, SetStateAction } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
 import styled from 'styled-components'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 import _ from 'lodash'
 import { useTranslation } from '../../../state/i18n'
 import { Gap } from 'lib-components/white-space'
-import { H2 } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import {
@@ -31,18 +32,20 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Link } from 'react-router-dom'
 import { requireRole } from '../../../utils/roles'
 import { UserContext } from '../../../state/user'
-import { DataList } from '../../../components/common/DataList'
 import UnitDataFilters from '../../../components/unit/UnitDataFilters'
+import { UUID } from 'lib-common/types'
+import { Action } from 'lib-common/generated/action'
 
 function renderGroups(
   unit: Unit,
   filters: UnitFilters,
   groups: DaycareGroup[],
+  groupPermittedActions: Record<UUID, Set<Action.Group>>,
   placements: DaycarePlacement[],
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>,
+  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>,
   backupCares: UnitBackupCare[],
   groupCaretakers: Record<string, Stats>,
-  canManageGroups: boolean,
-  canManageChildren: boolean,
   reload: () => void,
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
@@ -74,8 +77,6 @@ function renderGroups(
           confirmedOccupancy={confirmedOccupancies?.[group.id]}
           realizedOccupancy={realizedOccupancies?.[group.id]}
           key={group.id}
-          canManageGroups={canManageGroups}
-          canManageChildren={canManageChildren}
           reload={reload}
           onTransferRequested={onTransferRequested}
           open={!!openGroups[group.id]}
@@ -85,6 +86,9 @@ function renderGroups(
               [group.id]: !current[group.id]
             }))
           }
+          permittedActions={groupPermittedActions[group.id] ?? new Set()}
+          permittedBackupCareActions={permittedBackupCareActions}
+          permittedGroupPlacementActions={permittedGroupPlacementActions}
         />
       ))}
     </div>
@@ -93,36 +97,40 @@ function renderGroups(
 
 type Props = {
   unit: Unit
-  canManageGroups: boolean
-  canManageChildren: boolean
+  permittedActions: Set<Action.Unit>
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
   backupCares: UnitBackupCare[]
+  groupPermittedActions: Record<UUID, Set<Action.Group>>
   groupCaretakers: Record<string, Stats>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
   reloadUnitData: () => void
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
 }
 
 export default React.memo(function Groups({
   unit,
-  canManageGroups,
-  canManageChildren,
+  permittedActions,
   filters,
   setFilters,
   groups,
   placements,
   backupCares,
+  groupPermittedActions,
   groupCaretakers,
   groupConfirmedOccupancies,
   groupRealizedOccupancies,
   reloadUnitData,
   openGroups,
-  setOpenGroups
+  setOpenGroups,
+  permittedBackupCareActions,
+  permittedGroupPlacementActions
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
@@ -143,6 +151,12 @@ export default React.memo(function Groups({
     }
   }
 
+  const canSeeFamilyContactsReport = requireRole(
+    roles,
+    'ADMIN',
+    'UNIT_SUPERVISOR'
+  )
+
   return (
     <>
       <TitleBar
@@ -159,8 +173,8 @@ export default React.memo(function Groups({
             data-qa="toggle-all-groups-collapsible"
           />
         </TitleContainer>
-        {canManageGroups && (
-          <div>
+        <FixedSpaceRow spacing="L" alignItems="center">
+          {canSeeFamilyContactsReport && (
             <Link to={`/units/${unit.id}/family-contacts`}>
               <InlineButton
                 text={i18n.unit.groups.familyContacts}
@@ -168,39 +182,41 @@ export default React.memo(function Groups({
                 data-qa="open-family-contacts-button"
               />
             </Link>
-          </div>
-        )}
-        {canManageGroups ? (
-          <>
-            <Gap size="L" horizontal />
+          )}
+          {unit.enabledPilotFeatures.includes('RESERVATIONS') ? (
+            <Link to={`/units/${unit.id}/attendance-reservations`}>
+              <InlineButton
+                text={i18n.unit.groups.attendanceReservations}
+                onClick={() => undefined}
+                data-qa="open-unit-attendance-reservations-button"
+              />
+            </Link>
+          ) : null}
+          {permittedActions.has('CREATE_GROUP') ? (
             <AddButton
               text={i18n.unit.groups.create}
               onClick={() => toggleUiMode('create-new-daycare-group')}
               disabled={uiMode === 'create-new-daycare-group'}
               flipped
             />
-          </>
-        ) : null}
+          ) : null}
+        </FixedSpaceRow>
       </TitleBar>
       <Gap size="s" />
-      <DataList>
-        <div>
-          <label>{i18n.unit.filters.title}</label>
-          <div>
-            <UnitDataFilters
-              canEdit={requireRole(
-                roles,
-                'ADMIN',
-                'SERVICE_WORKER',
-                'UNIT_SUPERVISOR',
-                'FINANCE_ADMIN'
-              )}
-              filters={filters}
-              setFilters={setFilters}
-            />
-          </div>
-        </div>
-      </DataList>
+      <FixedSpaceRow alignItems="center">
+        <Label>{i18n.unit.filters.title}</Label>
+        <UnitDataFilters
+          canEdit={requireRole(
+            roles,
+            'ADMIN',
+            'SERVICE_WORKER',
+            'UNIT_SUPERVISOR',
+            'FINANCE_ADMIN'
+          )}
+          filters={filters}
+          setFilters={setFilters}
+        />
+      </FixedSpaceRow>
       <Gap size="s" />
       {uiMode === 'create-new-daycare-group' && (
         <GroupModal unitId={unit.id} reload={reloadUnitData} />
@@ -226,11 +242,12 @@ export default React.memo(function Groups({
         unit,
         filters,
         groups,
+        groupPermittedActions,
         placements,
+        permittedBackupCareActions,
+        permittedGroupPlacementActions,
         backupCares,
         groupCaretakers,
-        canManageGroups,
-        canManageChildren,
         reloadUnitData,
         (placement) => {
           setTransferredPlacement(placement)

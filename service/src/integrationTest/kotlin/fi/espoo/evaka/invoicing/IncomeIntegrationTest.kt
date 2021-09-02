@@ -19,27 +19,28 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class IncomeIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var mapper: ObjectMapper
 
     private fun assertEqualEnough(expected: List<Income>, actual: List<Income>) {
-        val nullId = UUID.fromString("00000000-0000-0000-0000-000000000000")
+        val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
             expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
             actual.map { it.copy(id = nullId, updatedAt = null) }.toSet()
@@ -63,7 +64,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     }
 
     private fun testIncome() = Income(
-        id = UUID.randomUUID(),
+        id = IncomeId(UUID.randomUUID()),
         personId = testAdult_1.id,
         effect = IncomeEffect.INCOME,
         data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(500000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS)),
@@ -105,7 +106,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val testIncome = testIncome()
         val incomes = listOf(
             testIncome.copy(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 validFrom = testIncome.validFrom.plusYears(1),
                 validTo = testIncome.validTo!!.plusYears(1)
             ),
@@ -291,7 +292,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
         val anotherIncome = with(testIncome) {
             this.copy(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 validFrom = validFrom.plusYears(1),
                 validTo = validTo!!.plusYears(1)
             )
@@ -366,7 +367,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val testIncome = testIncome()
         val anotherIncome = with(testIncome) {
             this.copy(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 validFrom = validFrom.plusYears(1),
                 validTo = validTo!!.plusYears(1)
             )

@@ -6,25 +6,17 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
-import { Loading, Result } from '../../../../lib-common/api'
-import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
-import Container, {
-  ContentArea
-} from '../../../../lib-components/layout/Container'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '../../../../lib-components/layout/Table'
-import { Gap } from '../../../../lib-components/white-space'
-import { faCopy, faPen, faTrash } from '../../../../lib-icons'
+import { Link } from 'react-router-dom'
+import { Loading, Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Gap } from 'lib-components/white-space'
+import { faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import {
   deleteVasuTemplate,
@@ -32,7 +24,7 @@ import {
   VasuTemplateSummary
 } from './api'
 import CopyTemplateModal from './CopyTemplateModal'
-import CreateTemplateModal from './CreateTemplateModal'
+import CreateTemplateModal from './CreateOrEditTemplateModal'
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -45,6 +37,7 @@ export default React.memo(function VasuTemplatesPage() {
 
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [templateToCopy, setTemplateToCopy] = useState<VasuTemplateSummary>()
+  const [templateToEdit, setTemplateToEdit] = useState<VasuTemplateSummary>()
 
   const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
   useEffect(loadTemplates, [loadTemplates])
@@ -76,21 +69,19 @@ export default React.memo(function VasuTemplatesPage() {
               <Tbody>
                 {templates.value.map((template) => (
                   <Tr key={template.id}>
-                    <Td>{template.name}</Td>
+                    <Td>
+                      <Link to={`/vasu-templates/${template.id}`}>
+                        {template.name}
+                      </Link>
+                    </Td>
                     <Td>{template.valid.format()}</Td>
                     <Td>{t.languages[template.language]}</Td>
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
                         <IconButton
-                          icon={faCopy}
-                          onClick={() => setTemplateToCopy(template)}
-                        />
-                        <IconButton
                           icon={faPen}
-                          onClick={() =>
-                            h.push(`/vasu-templates/${template.id}`)
-                          }
+                          onClick={() => setTemplateToEdit(template)}
                         />
                         <IconButton
                           icon={faTrash}
@@ -110,10 +101,21 @@ export default React.memo(function VasuTemplatesPage() {
           </>
         )}
 
-        {createModalOpen && (
+        {(createModalOpen || templateToEdit) && (
           <CreateTemplateModal
-            onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
-            onCancel={() => setCreateModalOpen(false)}
+            onSuccess={(id) => {
+              if (createModalOpen) {
+                h.push(`/vasu-templates/${id}`)
+              } else {
+                loadTemplates()
+                setTemplateToEdit(undefined)
+              }
+            }}
+            onCancel={() => {
+              setCreateModalOpen(false)
+              setTemplateToEdit(undefined)
+            }}
+            template={templateToEdit}
           />
         )}
 

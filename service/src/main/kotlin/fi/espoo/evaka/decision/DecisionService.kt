@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -17,6 +18,8 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,32 +34,31 @@ import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import java.util.Locale
-import java.util.UUID
 
 val logger = KotlinLogging.logger { }
 
 @Service
 class DecisionService(
-    @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}")
-    private val decisionBucket: String,
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    env: BucketEnv,
 ) {
+    private val decisionBucket = env.decisions
+
     fun finalizeDecisions(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         sendAsMessage: Boolean
-    ): List<UUID> {
+    ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId)
         asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
@@ -65,15 +67,15 @@ class DecisionService(
     fun createDecisionPdfs(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        decisionId: UUID
+        decisionId: DecisionId
     ) {
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val decisionLanguage = determineDecisionLanguage(decision, tx)
         val application = tx.fetchApplicationDetails(decision.applicationId)
             ?: throw NotFound("Application ${decision.applicationId} was not found")
-        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+        val guardian = tx.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
-        val child = personService.getUpToDatePerson(tx, user, application.childId)
+        val child = tx.getPersonById(application.childId)
             ?: error("Child not found with id: ${application.childId}")
         val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
@@ -86,7 +88,7 @@ class DecisionService(
         if (application.otherGuardianId != null &&
             isDecisionForSecondGuardianRequired(decision, application, tx)
         ) {
-            val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
+            val otherGuardian = tx.getPersonById(application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
             val otherGuardianDecisionLocation = createAndUploadDecision(
@@ -169,7 +171,7 @@ class DecisionService(
             logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
 
-    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: UUID) {
+    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: DecisionId) {
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
@@ -242,7 +244,7 @@ class DecisionService(
         evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Document {
+    fun getDecisionPdf(tx: Database.Read, decisionId: DecisionId): Document {
         val decision = tx.getDecision(decisionId)
             ?: throw NotFound("No decision $decisionId found")
         val lang = tx.getDecisionLanguage(decisionId)

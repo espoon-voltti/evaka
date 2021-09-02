@@ -5,8 +5,8 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class VardaUnitModelTest {
     private val mapper = jacksonObjectMapper()

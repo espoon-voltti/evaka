@@ -4,7 +4,7 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
-import { AssistanceNeed } from '../../../types/child'
+import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
 import { UIContext } from '../../../state/ui'
 import InfoBall from '../../../components/common/InfoBall'
 import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
@@ -16,18 +16,24 @@ import { formatDecimal } from 'lib-common/utils/number'
 
 import { formatParagraphs } from '../../../utils/html-utils'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { ASSISTANCE_BASIS_LIST } from '../../../constants'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
+import { featureFlags } from 'lib-customizations/employee'
 
 export interface Props {
   assistanceNeed: AssistanceNeed
   onReload: () => undefined | void
+  assistanceBasisOptions: AssistanceBasisOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
-function AssistanceNeedRow({ assistanceNeed, onReload, refSectionTop }: Props) {
+function AssistanceNeedRow({
+  assistanceNeed,
+  onReload,
+  assistanceBasisOptions,
+  refSectionTop
+}: Props) {
   const { i18n } = useTranslation()
   const expandedAtStart = isActiveDateRange(
     assistanceNeed.startDate,
@@ -92,6 +98,7 @@ function AssistanceNeedRow({ assistanceNeed, onReload, refSectionTop }: Props) {
             <AssistanceNeedForm
               assistanceNeed={assistanceNeed}
               onReload={onReload}
+              assistanceBasisOptions={assistanceBasisOptions}
             />
           </div>
         ) : (
@@ -126,28 +133,22 @@ function AssistanceNeedRow({ assistanceNeed, onReload, refSectionTop }: Props) {
                 label: i18n.childInformation.assistanceNeed.fields.bases,
                 value: (
                   <ul>
-                    {ASSISTANCE_BASIS_LIST.filter(
-                      (basis) => basis != 'OTHER'
-                    ).map(
+                    {assistanceBasisOptions.map(
                       (basis) =>
-                        assistanceNeed.bases.has(basis) && (
-                          <li key={basis}>
-                            {
-                              i18n.childInformation.assistanceNeed.fields
-                                .basisTypes[basis]
-                            }
-                          </li>
+                        assistanceNeed.bases.has(basis.value) && (
+                          <li key={basis.value}>{basis.nameFi}</li>
                         )
                     )}
-                    {assistanceNeed.bases.has('OTHER') && (
-                      <li>
-                        {
-                          i18n.childInformation.assistanceNeed.fields.basisTypes
-                            .OTHER
-                        }
-                        : {assistanceNeed.otherBasis}
-                      </li>
-                    )}
+                    {featureFlags.assistanceBasisOtherEnabled &&
+                      assistanceNeed.otherBasis !== '' && (
+                        <li>
+                          {
+                            i18n.childInformation.assistanceNeed.fields
+                              .basisTypes.OTHER
+                          }
+                          : {assistanceNeed.otherBasis}
+                        </li>
+                      )}
                   </ul>
                 )
               }

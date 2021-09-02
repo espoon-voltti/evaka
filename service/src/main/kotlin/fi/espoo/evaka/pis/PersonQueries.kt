@@ -5,23 +5,22 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapNullableColumn
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -71,7 +70,6 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
     val sql = """
         SELECT DISTINCT
             id,
-            customer_id,
             social_security_number,
             first_name,
             last_name,
@@ -89,6 +87,8 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
             post_office,
             residence_code,
             updated_from_vtj,
+            vtj_guardians_queried,
+            vtj_dependants_queried,
             invoice_recipient_name,
             invoicing_street_address,
             invoicing_postal_code,
@@ -106,26 +106,6 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
         .applyIf(scopedRole) { bind("userId", user.id) }
         .map(toPersonDTO)
         .toList()
-}
-
-fun Database.Transaction.createPerson(person: PersonIdentityRequest): PersonDTO {
-    // language=SQL
-    val sql =
-        """
-        INSERT INTO person (first_name, last_name, date_of_birth, social_security_number, language, email)
-        VALUES (:firstName, :lastName, :dateOfBirth, :ssn, :language, :email)
-        RETURNING *
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("firstName", person.firstName)
-        .bind("lastName", person.lastName)
-        .bind("dateOfBirth", getDobFromSsn(person.identity.ssn))
-        .bind("ssn", person.identity.ssn)
-        .bind("language", person.language)
-        .bind("email", person.email)
-        .map(toPersonDTO)
-        .first()
 }
 
 fun Database.Transaction.createPerson(person: CreatePersonBody): UUID {
@@ -200,7 +180,7 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
         """
 
     return createQuery(sql)
-        .bindKotlin(person.copy(updatedFromVtj = Instant.now()))
+        .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .map(toPersonDTO)
         .first()
 }
@@ -212,6 +192,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         UPDATE person SET
             first_name = :firstName,
             last_name = :lastName,
+            social_security_number = :ssn,
             date_of_birth = :dateOfBirth,
             date_of_death = :dateOfDeath,
             language = :language,
@@ -228,7 +209,8 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         """
 
     return createQuery(sql)
-        .bindKotlin(person.copy(updatedFromVtj = Instant.now()))
+        .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
+        .bind("ssn", person.identity)
         .map(toPersonDTO)
         .first()
 }
@@ -325,10 +307,9 @@ fun Database.Read.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
         .toList()
 }
 
-private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
+private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx ->
     PersonDTO(
         id = rs.getUUID("id"),
-        customerId = rs.getLong("customer_id"),
         identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
             ?: ExternalIdentifier.NoID(),
         firstName = rs.getString("first_name"),
@@ -346,7 +327,9 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
         residenceCode = rs.getString("residence_code"),
-        updatedFromVtj = rs.getTimestamp("updated_from_vtj")?.toInstant(),
+        updatedFromVtj = ctx.mapNullableColumn(rs, "updated_from_vtj"),
+        vtjGuardiansQueried = ctx.mapNullableColumn(rs, "vtj_guardians_queried"),
+        vtjDependantsQueried = ctx.mapNullableColumn(rs, "vtj_guardians_queried"),
         invoiceRecipientName = rs.getString("invoice_recipient_name"),
         invoicingStreetAddress = rs.getString("invoicing_street_address"),
         invoicingPostalCode = rs.getString("invoicing_postal_code"),
@@ -385,3 +368,15 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
     """.trimIndent()
     return createQuery(sql).mapTo<PersonReference>().list()
 }
+
+fun Database.Read.getGuardianDependants(personId: UUID) =
+    createQuery("SELECT * FROM person WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)")
+        .bind("personId", personId)
+        .map(toPersonDTO)
+        .toList()
+
+fun Database.Read.getDependantGuardians(personId: UUID) =
+    createQuery("SELECT * FROM person WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)")
+        .bind("personId", personId)
+        .map(toPersonDTO)
+        .toList()

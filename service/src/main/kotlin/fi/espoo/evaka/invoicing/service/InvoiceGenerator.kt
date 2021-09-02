@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByPeriod
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.upsertInvoices
@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
@@ -56,7 +57,7 @@ fun Database.Transaction.createAllDraftInvoices(period: DateRange = getPreviousM
     val daycareCodes = getDaycareCodes()
     val operationalDays = operationalDays(period.start.year, period.start.month)
 
-    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
+    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
 
     val freeChildren: List<UUID> =
         if (period.start.month == Month.JULY && (period.end != null && period.end.month == Month.JULY && period.start.year == period.end.year)) {
@@ -82,21 +83,25 @@ internal fun generateDraftInvoices(
     decisions: Map<UUID, List<FeeDecision>>,
     placements: Map<UUID, List<Placements>>,
     period: DateRange,
-    daycareCodes: Map<UUID, DaycareCodes>,
+    daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<UUID> = listOf()
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
-        generateDraftInvoice(
-            decisions[headOfFamilyId] ?: listOf(),
-            placements[headOfFamilyId] ?: listOf(),
-            period,
-            daycareCodes,
-            operationalDays,
-            absences,
-            freeChildren
-        )
+        try {
+            generateDraftInvoice(
+                decisions[headOfFamilyId] ?: listOf(),
+                placements[headOfFamilyId] ?: listOf(),
+                period,
+                daycareCodes,
+                operationalDays,
+                absences,
+                freeChildren
+            )
+        } catch (e: Exception) {
+            error("Failed to generate invoice for head of family $headOfFamilyId: $e")
+        }
     }
 }
 
@@ -111,7 +116,7 @@ internal fun generateDraftInvoice(
     decisions: List<FeeDecision>,
     placements: List<Placements>,
     invoicePeriod: DateRange,
-    daycareCodes: Map<UUID, DaycareCodes>,
+    daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
     freeChildren: List<UUID>
@@ -466,7 +471,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
                 .map { it.finalFee }
                 .distinct()
 
-            val invoiceRowSum = rows.map { it.price() }.sum()
+            val invoiceRowSum = rows.sumOf { it.price() }
 
             val roundingRow = if (uniqueChildFees.size == 1) {
                 val difference = uniqueChildFees.first() - invoiceRowSum
@@ -498,7 +503,7 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
         .bind("dateRange", dateRange)
         .bind("effective", FeeDecisionStatus.effective)
         .mapTo<FeeDecision>()
-        .let { it.merge() }
+        .merge()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<UUID> {
@@ -516,14 +521,14 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<UUID> {
 data class AbsenceStub(
     val childId: UUID,
     val date: LocalDate,
-    var careType: CareType,
+    var careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
 
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
 private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
 
-fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<AbsenceCareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type
@@ -548,9 +553,9 @@ fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<Car
         .toList()
 }
 
-sealed class PlacementStub(open val unit: UUID) {
-    data class Temporary(override val unit: UUID, val partDay: Boolean) : PlacementStub(unit)
-    data class Permanent(override val unit: UUID) : PlacementStub(unit)
+sealed class PlacementStub(open val unit: DaycareId) {
+    data class Temporary(override val unit: DaycareId, val partDay: Boolean) : PlacementStub(unit)
+    data class Permanent(override val unit: DaycareId) : PlacementStub(unit)
 }
 
 data class Placements(
@@ -568,9 +573,11 @@ internal fun Database.Read.getInvoiceablePlacements(
             SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
+            AND p.type = ANY(:invoicedTypes::placement_type[])
         """.trimIndent()
     )
         .bind("period", spanningPeriod)
+        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
@@ -579,7 +586,7 @@ internal fun Database.Read.getInvoiceablePlacements(
                         rs.getObject("start_date", LocalDate::class.java),
                         rs.getObject("end_date", LocalDate::class.java)
                     ),
-                    rs.getUUID("unit_id"),
+                    DaycareId(rs.getUUID("unit_id")),
                     rs.getEnum<PlacementType>("type")
                 )
             )
@@ -698,7 +705,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
         .list()
 }
 
-fun Database.Read.getDaycareCodes(): Map<UUID, DaycareCodes> {
+fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
     val sql =
         """
         SELECT daycare.id, daycare.cost_center, area.area_code, area.sub_cost_center
@@ -706,7 +713,7 @@ fun Database.Read.getDaycareCodes(): Map<UUID, DaycareCodes> {
     """
     return createQuery(sql)
         .map { rs, _ ->
-            UUID.fromString(rs.getString("id")) to DaycareCodes(
+            DaycareId(rs.getUUID("id")) to DaycareCodes(
                 areaCode = rs.getObject("area_code") as Int?,
                 costCenter = rs.getString("cost_center"),
                 subCostCenter = rs.getString("sub_cost_center")
@@ -719,23 +726,26 @@ fun Database.Read.getFreeJulyChildren(year: Int): List<UUID> {
     val sql =
         //language=sql
         """
+WITH invoiced_placement AS (
+    SELECT * FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
+)
 SELECT
   distinct(p09.child_id)
 FROM
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 9)}) p09,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 10)}) p10,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 11)}) p11,
-  (SELECT child_id FROM placement WHERE ${placementOn(year - 1, 12)}) p12,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 1)}) p01,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 2)}) p02,
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 3)}) p03,
-   ${if (year != 2020) {
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 9)}) p09,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 10)}) p10,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 11)}) p11,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 12)}) p12,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 1)}) p01,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 2)}) p02,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 3)}) p03,
+${if (year != 2020) {
             """
-            (SELECT child_id FROM placement WHERE ${placementOn(year, 4)}) p04,
-            (SELECT child_id FROM placement WHERE ${placementOn(year, 5)}) p05,
-        """
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
+"""
         } else ""}
-  (SELECT child_id FROM placement WHERE ${placementOn(year, 6)}) p06
+  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
 WHERE
   p09.child_id = p10.child_id AND
   p09.child_id = p11.child_id AND
@@ -752,6 +762,7 @@ WHERE
     """
 
     return createQuery(sql)
+        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
         .mapTo(UUID::class.java)
         .list()
 }

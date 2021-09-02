@@ -8,27 +8,29 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
 import { UnitContext } from '../../state/unit'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { requireRole, RequireRole } from '../../utils/roles'
+import { requireRole } from '../../utils/roles'
 import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
 import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
-import { H2, H3 } from 'lib-components/typography'
+import { H2, H3, Label } from 'lib-components/typography'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
 import { UserContext } from '../../state/user'
-import { DataList } from '../../components/common/DataList'
+import { DataList } from '../common/DataList'
 import { useTranslation } from '../../state/i18n'
 import { Gap } from 'lib-components/white-space'
 
 function TabUnitInformation() {
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const { unitInformation, unitData, filters, setFilters } = useContext(
-    UnitContext
-  )
+  const { unitInformation, unitData, filters, setFilters } =
+    useContext(UnitContext)
 
   const groups = useMemo(
     () =>
@@ -75,24 +77,20 @@ function TabUnitInformation() {
         <Gap size="s" />
         <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
-        <DataList>
-          <div>
-            <label>{i18n.unit.filters.title}</label>
-            <span>
-              <UnitDataFilters
-                canEdit={requireRole(
-                  roles,
-                  'ADMIN',
-                  'SERVICE_WORKER',
-                  'UNIT_SUPERVISOR',
-                  'FINANCE_ADMIN'
-                )}
-                filters={filters}
-                setFilters={setFilters}
-              />
-            </span>
-          </div>
-        </DataList>
+        <FixedSpaceRow alignItems="center">
+          <Label>{i18n.unit.filters.title}</Label>
+          <UnitDataFilters
+            canEdit={requireRole(
+              roles,
+              'ADMIN',
+              'SERVICE_WORKER',
+              'UNIT_SUPERVISOR',
+              'FINANCE_ADMIN'
+            )}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </FixedSpaceRow>
         <Gap size="s" />
         <DataList>
           <div>
@@ -114,15 +112,22 @@ function TabUnitInformation() {
       </ContentArea>
 
       <ContentArea opaque>
-        <UnitInformation unit={unitInformation.value.daycare} />
+        <UnitInformation
+          unit={unitInformation.value.daycare}
+          permittedActions={unitInformation.value.permittedActions}
+        />
       </ContentArea>
 
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+      {unitInformation.value.permittedActions.has('READ_ACL') && (
         <UnitAccessControl
           unitId={unitInformation.value.daycare.id}
+          permittedActions={unitInformation.value.permittedActions}
           groups={groups}
+          mobileEnabled={unitInformation.value.daycare.enabledPilotFeatures.includes(
+            'MOBILE'
+          )}
         />
-      </RequireRole>
+      )}
     </FixedSpaceColumn>
   )
 }

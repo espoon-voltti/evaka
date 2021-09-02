@@ -21,6 +21,7 @@ import fi.espoo.evaka.messaging.message.insertRecipients
 import fi.espoo.evaka.messaging.message.insertThread
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -34,13 +35,14 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class MessageAccountQueriesTest : PureJdbiTest() {
 
@@ -65,7 +67,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.upsertEmployeeMessageAccount(randomUuid)
 
             val areaId = it.insertTestCareArea(DevCareArea())
-            val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+            val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
 
             val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId, name = "Testiläiset"))
             it.createDaycareGroupMessageAccount(groupId)
@@ -76,13 +78,13 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
 
             it.insertDaycareAclRow(daycareId, employee1Id, UserRole.STAFF)
-            it.insertDaycareGroupAcl(daycareId, employee1Id, listOf(groupId))
+            it.insertDaycareGroupAcl(daycareId, EmployeeId(employee1Id), listOf(groupId))
 
             // employee2 has no groups
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)
 
             // There should be no permissions to anything about this daycare
-            val daycare2Id = it.insertTestDaycare(DevDaycare(areaId = areaId, name = "Väärä päiväkoti"))
+            val daycare2Id = it.insertTestDaycare(DevDaycare(areaId = areaId, name = "Väärä päiväkoti", enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
             val group3Id = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
         }

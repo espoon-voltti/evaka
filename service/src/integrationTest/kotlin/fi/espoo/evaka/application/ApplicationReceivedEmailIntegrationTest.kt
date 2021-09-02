@@ -16,6 +16,7 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -30,13 +31,13 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -227,7 +228,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `email is sent after sending preschool application`() {
-        val applicationId = UUID.randomUUID()
+        val applicationId = ApplicationId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insertApplication(
                 guardian = guardian,
@@ -415,15 +416,15 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     }
 
     private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
-        Assertions.assertNotNull(email)
-        assertEquals(expectedToAddress, email?.toAddress)
-        assertEquals(expectedFromAddress, email?.fromAddress)
-        assertEquals(expectedSubject, email?.subject)
-        assert(email!!.htmlBody.contains(expectedHtmlPart, true))
+        assertNotNull(email)
+        assertEquals(expectedToAddress, email.toAddress)
+        assertEquals(expectedFromAddress, email.fromAddress)
+        assertEquals(expectedSubject, email.subject)
+        assert(email.htmlBody.contains(expectedHtmlPart, true))
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun assertApplicationIsSent(applicationId: UUID) {
+    private fun assertApplicationIsSent(applicationId: ApplicationId) {
         db.read {
             assertEquals(ApplicationStatus.SENT, it.fetchApplicationDetails(applicationId)!!.status)
         }

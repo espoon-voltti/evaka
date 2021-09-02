@@ -13,6 +13,8 @@ const sv: Translations = {
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     ok: 'Ok',
+    save: 'Spar',
+    confirm: 'Bekräfta',
     add: 'Lägg till',
     unit: {
       providerTypes: {
@@ -42,6 +44,19 @@ const sv: Translations = {
     openExpandingInfo: 'Öppna detaljer',
     errors: {
       genericGetError: 'Hämtning av information misslyckades'
+    },
+    datetime: {
+      weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
+      weekShort: 'Veckan',
+      weekdays: [
+        'Måndag',
+        'Tisdag',
+        'Onsdag',
+        'Torsdag',
+        'Fredag',
+        'Lördag',
+        'Söndag'
+      ]
     }
   },
   header: {
@@ -49,7 +64,8 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
-      messages: 'Meddelanden'
+      messages: 'Meddelanden',
+      calendar: 'Kalender'
     },
     lang: {
       fi: 'Suomeksi',
@@ -62,8 +78,7 @@ const sv: Translations = {
   footer: {
     cityLabel: '© Esbo stad',
     privacyPolicy: 'Dataskyddsbeskrivningar',
-    privacyPolicyLink:
-      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
+    privacyPolicyLink: 'https://www.esbo.fi/esbo-stad/dataskydd',
     sendFeedback: 'Skicka feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -78,7 +93,7 @@ const sv: Translations = {
           För information om privata daghem,{' '}
           <ExternalLink
             text="klicka här."
-            href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik"
+            href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik"
             newTab
           />
         </span>
@@ -123,21 +138,54 @@ const sv: Translations = {
       list: 'Lista på enheter'
     },
     serviceVoucherLink:
-      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
+      'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning'
   },
+  calendar: {
+    holiday: 'Helgdag',
+    newReservationBtn: 'Tee varaus',
+    reservationModal: {
+      title: 'Tee varaus',
+      selectChildren: 'Valitse lapset',
+      dateRange: 'Varauksen voimassaolo',
+      dateRangeLabel: 'Tee varaus päiville',
+      times: 'Kellonaika',
+      businessDays: 'Ma-Pe',
+      postError: 'Varauksen luominen ei onnistunut',
+      repeats: 'Toistuu',
+      repetitions: {
+        DAILY: 'Päivittäin',
+        WEEKLY: 'Viikoittain'
+      }
+    }
+  },
   messages: {
     inboxTitle: 'Inkorg',
-    noMessages: 'Inga meddelanden',
+    noMessagesInfo: 'Skickade och mottagna meddelanden visas här.',
+    noSelectedMessage: 'Inget valt meddelande',
+    emptyInbox: 'Din inkorg är tom.',
     recipients: 'Mottagare',
     send: 'Skicka',
+    sender: 'Avsändare',
     sending: 'Skickas',
     messagePlaceholder:
       'Meddelandeinnehåll... Obs! Ange inte känslig information här.',
     types: {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'
+    },
+    replyToThread: 'Svar',
+    messageEditor: {
+      newMessage: 'Nytt Meddelande',
+      receivers: 'Mottagare',
+      title: 'Titel',
+      message: 'Meddelande',
+      deleteDraft: 'Ta bort utkast',
+      send: 'Skicka',
+      search: 'Sök',
+      noResults: 'Inga resultat',
+      messageSendError: 'Misslyckades med att skicka meddelande'
     }
   },
   applications: {
@@ -462,8 +510,7 @@ const sv: Translations = {
             title: 'Uppgifter om den andra vårdnadshavaren',
             email: 'E-postadress',
             tel: 'Telefonnummer',
-            info:
-              'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
+            info: 'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
             agreed: 'Vi har tillsammans kommit överens att fylla i ansökan.',
             notAgreed: 'Vi har inte kunnat komma överens om ansökan.',
             rightToGetNotified:
@@ -624,12 +671,10 @@ const sv: Translations = {
             'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftvård, beskriv behovet i fältet för tilläggsuppgifter.',
           message: {
             title: 'Kvälls- och skiftvård',
-            text:
-              'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
+            text: 'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
           },
           attachmentsMessage: {
-            text:
-              'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
+            text: 'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
             subtitle:
               'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
           }
@@ -642,8 +687,7 @@ const sv: Translations = {
         assistanceNeedInstructions: {
           DAYCARE:
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
-          CLUB:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+          CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
           PRESCHOOL:
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
         },
@@ -736,8 +780,7 @@ const sv: Translations = {
               'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
             PRESCHOOL:
               'Jag ansöker om plats i en annan förskola än närförskolan med syskonprincipen',
-            CLUB:
-              'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
+            CLUB: 'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
           },
           radioLabel: {
             DAYCARE: 'Välj syskonet',
@@ -809,7 +852,7 @@ const sv: Translations = {
           },
           mapLink: 'Enheter på kartan',
           serviceVoucherLink:
-            'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
+            'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
           languageFilter: {
             label: 'Enhetens språk:',
             fi: 'finska',
@@ -824,8 +867,7 @@ const sv: Translations = {
           preferences: {
             label: 'Enheter som du har valt',
             noSelections: 'Inga val',
-            info:
-              'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
+            info: 'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
             fi: 'Finskspråkig',
             sv: 'Svenskspråkig',
             moveUp: 'Flytta uppåt',
@@ -885,7 +927,7 @@ const sv: Translations = {
               tilläggspris och blanketten för inkomstutredning finns här:
               <br />
               <a
-                href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik"
+                href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/klientavgifter-i-smabarnspedagogik"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1005,20 +1047,17 @@ const sv: Translations = {
       },
       draftPolicyInfo: {
         title: 'Utkastet till ansökan har sparats',
-        text:
-          'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
+        text: 'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
         ok: 'Klart'
       },
       sentInfo: {
         title: 'Ansökan har lämnats in',
-        text:
-          'Om du vill kan du göra ytterligare ändringar i ansökan så länge ansökan inte tagits till behandling.',
+        text: 'Om du vill kan du göra ytterligare ändringar i ansökan så länge ansökan inte tagits till behandling.',
         ok: 'Klart!'
       },
       updateInfo: {
         title: 'Ändringar i ansökan har sparats.',
-        text:
-          'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
+        text: 'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
         ok: 'Klart!'
       }
     }
@@ -1083,15 +1122,13 @@ const sv: Translations = {
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'Ett annat beslut väntar på ditt godkännande',
-          text:
-            'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
+          text: 'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
           resolveLabel: 'Gå tillbaka utan att svara',
           rejectLabel: 'Fortsätt att svara'
         },
         doubleRejectWarning: {
           title: 'Vill du avvisa platsen?',
-          text:
-            'Du tänker avvisa erbjuden förskoleplats. Den kompletterande småbarnspedagogiken markeras samtidigt annulerad.',
+          text: 'Du tänker avvisa erbjuden förskoleplats. Den kompletterande småbarnspedagogiken markeras samtidigt annulerad.',
           resolveLabel: 'Avvisa båda',
           rejectLabel: 'Gå tillbaka'
         }
@@ -1172,6 +1209,220 @@ const sv: Translations = {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
   },
+  income: {
+    title: 'Tulotietojen ilmoitus',
+    description: (
+      <>
+        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+        korkeimpaan maksuun.
+        <br />
+        <br />
+        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+        alkamispäivästä lähtien.
+        <br />
+        <br />
+        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
+        varhaiskasvatusmaksuja myös takautuvasti.
+        <br />
+        <br />* Tähdellä merkityt tiedot ovat pakollisia
+      </>
+    ),
+    addNew: 'Luo uusi tulotieto',
+    incomeInfo: 'Tulotiedot',
+    incomesRegisterConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+    incomeType: {
+      description: (
+        <>
+          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
+          <strong>Yrittäjän tulotiedot</strong>, että{' '}
+          <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
+        </>
+      ),
+      startDate: 'Voimassa alkaen',
+      endDate: 'Voimassaolo päättyy',
+      title: 'Asiakasmaksun perusteet',
+      agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
+      highestFeeInfo:
+        'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
+      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
+      entrepreneurIncome: 'Yrittäjän tulotiedot'
+    },
+    grossIncome: {
+      title: 'Bruttotulotietojen täyttäminen',
+      description:
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+      incomeSource: 'Tulotietojen toimitus',
+      provideAttachments:
+        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      estimate: 'Arvio bruttotuloistani',
+      otherIncome: 'Muut tulot',
+      otherIncomeInfo:
+        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+      choosePlaceholder: 'Valitse',
+      otherIncomeTypes: {
+        PENSION: 'Eläke',
+        ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
+        SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Joustava tai osittainen hoitoraha',
+        ALIMONY: 'Elatusapu tai -tuki',
+        INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+        RENTAL_INCOME: 'Vuokratulot',
+        UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+        JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Palkkio tai bonus',
+        RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+        BASIC_INCOME: 'Perustulo',
+        FOREST_INCOME: 'Metsätulo',
+        FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+        REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+        EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+        GRANT: 'Apuraha',
+        APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+        ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+        OTHER_INCOME: 'Muut tulot'
+      }
+    },
+    entrepreneurIncome: {
+      title: 'Yrittäjän tulotietojen täyttäminen',
+      description: (
+        <>
+          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
+          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
+          tarkemmat yrityskohtaiset tiedot liitteinä.
+          <br />
+          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
+          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
+        </>
+      ),
+      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
+      fullTime: 'Päätoimista',
+      partTime: 'Sivutoimista',
+      startOfEntrepreneurship: 'Yrittäjyys alkanut',
+      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
+      yes: 'Kyllä',
+      no: 'Ei',
+      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
+      startupGrant:
+        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
+      checkupLabel: 'Tietojen tarkastus',
+      checkupConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+      companyInfo: 'Yrityksen tiedot',
+      companyForm: 'Yrityksen toimintamuoto',
+      selfEmployed: 'Toiminimi',
+      limitedCompany: 'Osakeyhtiö',
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      lightEntrepreneur: 'Kevytyrittäjyys',
+      lightEntrepreneurInfo:
+        'Maksutositteet palkoista ja työkorvauksista tulee toimittaa liitteinä.',
+      partnershipInfo:
+        'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
+    },
+    selfEmployed: {
+      info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
+      attachments:
+        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+      estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
+      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+      timeRange: 'Aikavälillä'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
+          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
+        </>
+      ),
+      incomesRegister:
+        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      attachments:
+        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    accounting: {
+      title: 'Kirjanpitäjän yhteystiedot',
+      description:
+        'Kirjanpitäjän yhteystiedot tarvitaan jos toimit osakeyhtiössä, kommandiittiyhtiössä tai avoimessa yhtiössä.',
+      accountant: 'Kirjanpitäjä',
+      accountantPlaceholder: 'Kirjanpitäjän nimi / yhtiön nimi',
+      email: 'Sähköpostiosoite',
+      emailPlaceholder: 'Sähköposti',
+      address: 'Postiosoite',
+      addressPlaceholder: 'Katuosoite, postinumero, toimipaikka',
+      phone: 'Puhelinnumero',
+      phonePlaceholder: 'Puhelinnumero'
+    },
+    moreInfo: {
+      title: 'Muita maksuun liittyviä tietoja',
+      studentLabel: 'Oletko opiskelija?',
+      student: 'Olen opiskelija.',
+      studentInfo:
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+      deductions: 'Vähennykset',
+      alimony:
+        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
+      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
+    },
+    attachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      description:
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      required: {
+        title: 'Tarvittavat liitteet'
+      },
+      attachmentNames: {
+        PENSION: 'Päätös eläkkeestä',
+        ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
+        SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
+        PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
+        ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+        UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
+        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
+        RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
+        BASIC_INCOME: 'Päätös perustulosta',
+        FOREST_INCOME: 'Tosite metsätulosta',
+        FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
+        REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
+        EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
+        GRANT: 'Tosite apurahasta',
+        APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Tosite tapaturmavakuutuksen korvauksesta',
+        OTHER_INCOME: 'Liitteet muista tuloista',
+        ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
+        INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
+        RENTAL_INCOME: 'Tositteet vuokratuloista',
+        PAYSLIP: 'Viimeisin palkkakuitti',
+        STARTUP_GRANT: 'Starttirahapäätös',
+        ACCOUNTANT_REPORT:
+          'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
+        PROOF_OF_STUDIES:
+          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
+      }
+    },
+    assure: 'Vakuutan antamani tiedot oikeiksi.',
+    errors: {
+      invalidForm:
+        'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
+      choose: 'Valitse vaihtoehto',
+      chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
+      consentRequired:
+        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan'
+    }
+  },
   validationErrors: {
     required: 'Värde saknas',
     requiredSelection: 'Val saknas',
@@ -1180,6 +1431,8 @@ const sv: Translations = {
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
     validDate: 'Ange i format dd.mm.åååå',
+    dateTooEarly: 'Välj ett senare datum',
+    dateTooLate: 'Välj ett tidigare datum',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Ange i format hh:mm',
     unitNotSelected: 'Välj minst en enhet',

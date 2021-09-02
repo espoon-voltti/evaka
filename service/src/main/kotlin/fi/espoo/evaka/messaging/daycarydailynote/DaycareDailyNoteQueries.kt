@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.shared.DaycareDailyNoteId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
@@ -16,7 +19,7 @@ fun Database.Read.getChildDaycareDailyNotes(childId: UUID): List<DaycareDailyNot
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForChildrenPlacedInUnit(unitId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForChildrenPlacedInUnit(unitId: DaycareId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT note.* 
@@ -43,7 +46,7 @@ WHERE
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForDaycareGroups(unitId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForDaycareGroups(unitId: DaycareId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT note.* 
@@ -59,14 +62,14 @@ WHERE
         .list()
 }
 
-fun Database.Read.getGroupDaycareDailyNotes(groupId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getGroupDaycareDailyNotes(groupId: GroupId): List<DaycareDailyNote> {
     return createQuery("SELECT * FROM daycare_daily_note WHERE group_id = :id")
         .bind("id", groupId)
         .mapTo<DaycareDailyNote>()
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForChildrenInGroup(groupId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForChildrenInGroup(groupId: GroupId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT * FROM daycare_daily_note 
@@ -88,7 +91,7 @@ WHERE child_id IN (
         .list()
 }
 
-fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): UUID {
+fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): DaycareDailyNoteId {
     return createUpdate(
         """
 INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note, modified_by, modified_at)
@@ -96,7 +99,7 @@ VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :slee
 RETURNING id
         """.trimIndent()
     )
-        .bind("id", note.id ?: UUID.randomUUID())
+        .bind("id", note.id ?: DaycareDailyNoteId(UUID.randomUUID()))
         .bind("childId", note.childId)
         .bind("groupId", note.groupId)
         .bind("date", note.date)
@@ -109,7 +112,7 @@ RETURNING id
         .bind("modifiedBy", note.modifiedBy)
         .bind("modifiedAt", note.modifiedAt)
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
+        .mapTo<DaycareDailyNoteId>()
         .first()
 }
 
@@ -148,7 +151,7 @@ RETURNING *
         .first()
 }
 
-fun Database.Transaction.deleteDaycareDailyNote(noteId: UUID) {
+fun Database.Transaction.deleteDaycareDailyNote(noteId: DaycareDailyNoteId) {
     createUpdate("DELETE from daycare_daily_note WHERE id = :noteId")
         .bind("noteId", noteId)
         .execute()

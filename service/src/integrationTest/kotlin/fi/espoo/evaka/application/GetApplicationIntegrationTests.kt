@@ -8,9 +8,12 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.currentDateInFinland
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -33,14 +36,14 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GetApplicationIntegrationTests : FullApplicationTest() {
     @Autowired
@@ -219,7 +222,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             val data =
                 tx.createQuery("""select id from application""")
-                    .mapTo<UUID>()
+                    .mapTo<ApplicationId>()
                     .toList()
 
             assertEquals(3, data.size)
@@ -230,7 +233,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             val data =
                 tx.createQuery("""select id from application""")
-                    .mapTo<UUID>()
+                    .mapTo<ApplicationId>()
                     .toSet()
 
             assertEquals(setOf(id1, id2), data)
@@ -291,7 +294,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         assertEquals(2, endUserResult.get().attachments.size)
     }
 
-    private fun createPlacementProposalWithAttachments(unitId: UUID): UUID {
+    private fun createPlacementProposalWithAttachments(unitId: DaycareId): ApplicationId {
         val applicationId = db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,

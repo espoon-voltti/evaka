@@ -5,7 +5,7 @@
 import { UUID } from 'employee-frontend/types'
 import { Result, Success, Failure } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import FiniteDateRange from '../../../../lib-common/finite-date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { client } from '../../../api/client'
 import { VasuContent } from '../vasu-content'
 
@@ -23,19 +23,34 @@ export interface VasuTemplate {
   valid: FiniteDateRange
   language: VasuLanguage
   content: VasuContent
+  documentCount: number
 }
 
 export const vasuLanguages = ['FI', 'SV'] as const
 
 export type VasuLanguage = typeof vasuLanguages[number]
 
-export async function createVasuTemplate(
-  name: string,
-  valid: FiniteDateRange,
+export interface VasuTemplateParams {
+  name: string
+  valid: FiniteDateRange
   language: VasuLanguage
+}
+
+export async function createVasuTemplate(
+  params: VasuTemplateParams
 ): Promise<Result<UUID>> {
   return client
-    .post<UUID>(`/vasu/templates`, { name, valid, language })
+    .post<UUID>(`/vasu/templates`, params)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function editVasuTemplate(
+  id: UUID,
+  params: VasuTemplateParams
+): Promise<Result<UUID>> {
+  return client
+    .put<UUID>(`/vasu/templates/${id}`, params)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

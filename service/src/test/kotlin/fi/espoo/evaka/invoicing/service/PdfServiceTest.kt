@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
@@ -19,16 +19,19 @@ import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class PdfServiceTest {
     private val service: PDFService =
@@ -81,10 +84,10 @@ class PdfServiceTest {
                 ),
                 placementType = it.placement.type,
                 placementUnit = UnitData.Detailed(
-                    id = UUID.randomUUID(),
+                    id = DaycareId(UUID.randomUUID()),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = "fi",
-                    areaId = UUID.randomUUID(),
+                    areaId = AreaId(UUID.randomUUID()),
                     areaName = "Test Area"
                 ),
                 serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
@@ -105,7 +108,7 @@ class PdfServiceTest {
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
 
     private val normalVoucherValueDecision = VoucherValueDecisionDetailed(
-        id = testDecision1.id,
+        id = VoucherValueDecisionId(testDecision1.id.raw),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -152,10 +155,10 @@ class PdfServiceTest {
         childAge = 3,
         placement = VoucherValueDecisionPlacementDetailed(
             UnitData.Detailed(
-                id = UUID.randomUUID(),
+                id = DaycareId(UUID.randomUUID()),
                 name = "Test Daycare",
                 language = "fi",
-                areaId = UUID.randomUUID(),
+                areaId = AreaId(UUID.randomUUID()),
                 areaName = "Test Area"
             ),
             PlacementType.DAYCARE
@@ -189,10 +192,13 @@ class PdfServiceTest {
             it != "parts"
         }
 
-        val expectedSendAddress = MailAddress(
+        val expectedSendAddress = DecisionSendAddress(
             "Kamreerintie 2",
             "02770",
-            "Espoo"
+            "Espoo",
+            "Kamreerintie 2",
+            "02770 Espoo",
+            ""
         )
 
         val expected = mapOf(
@@ -201,7 +207,6 @@ class PdfServiceTest {
             "decisionType" to "NORMAL",
             "isReliefDecision" to false,
             "hasPartner" to true,
-            "hasPoBox" to false,
             "headFullName" to "John Doe",
             "headIncomeEffect" to "INCOME",
             "headIncomeTotal" to "2141,59",
@@ -212,6 +217,7 @@ class PdfServiceTest {
             "totalFee" to "434,00",
             "validFor" to "01.05.2019 - 31.05.2019",
             "validFrom" to "01.05.2019",
+            "validTo" to "31.05.2019",
             "totalIncome" to "6273,54",
             "feePercent" to "10,7",
             "familySize" to 3,
@@ -235,10 +241,13 @@ class PdfServiceTest {
             it != "parts"
         }
 
-        val expectedSendAddress = MailAddress(
+        val expectedSendAddress = DecisionSendAddress(
             "Kamreerintie 2",
             "02770",
-            "Espoo"
+            "Espoo",
+            "Kamreerintie 2",
+            "02770 Espoo",
+            ""
         )
 
         val expected = mapOf(
@@ -247,7 +256,6 @@ class PdfServiceTest {
             "decisionType" to "RELIEF_ACCEPTED",
             "isReliefDecision" to true,
             "hasPartner" to true,
-            "hasPoBox" to false,
             "headFullName" to "John Doe",
             "headIncomeEffect" to "INCOME",
             "headIncomeTotal" to "2141,59",
@@ -258,6 +266,7 @@ class PdfServiceTest {
             "totalFee" to "434,00",
             "validFor" to "01.05.2019 - 31.05.2019",
             "validFrom" to "01.05.2019",
+            "validTo" to "31.05.2019",
             "totalIncome" to "6273,54",
             "feePercent" to "10,7",
             "familySize" to 3,

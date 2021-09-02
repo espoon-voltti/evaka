@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -86,7 +87,7 @@ class ParentshipController(
     fun getParentship(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID
+        @PathVariable(value = "id") id: ParentshipId
     ): ResponseEntity<Parentship> {
         Audit.ParentShipsRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
@@ -102,7 +103,7 @@ class ParentshipController(
     fun updateParentship(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID,
+        @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
     ): ResponseEntity<Parentship> {
         Audit.ParentShipsUpdate.log(targetId = id)
@@ -124,7 +125,7 @@ class ParentshipController(
     fun retryPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") parentshipId: UUID
+        @PathVariable(value = "id") parentshipId: ParentshipId
     ): ResponseEntity<Unit> {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         user.requireOneOfRoles(
@@ -143,7 +144,7 @@ class ParentshipController(
     fun deleteParentship(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID
+        @PathVariable(value = "id") id: ParentshipId
     ): ResponseEntity<Unit> {
         Audit.ParentShipsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)

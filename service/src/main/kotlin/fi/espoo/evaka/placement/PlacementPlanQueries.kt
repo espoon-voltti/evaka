@@ -6,6 +6,9 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -13,14 +16,14 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Transaction.deletePlacementPlans(applicationIds: List<UUID>) {
+fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId>) {
     execute(
         "DELETE FROM placement_plan WHERE application_id = ANY(?)",
         applicationIds.toTypedArray()
     )
 }
 
-fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: UUID) {
+fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {
     createUpdate(
         // language=SQL
         """
@@ -37,7 +40,7 @@ AND NOT EXISTS (
 }
 
 fun Database.Transaction.createPlacementPlan(
-    applicationId: UUID,
+    applicationId: ApplicationId,
     type: PlacementType,
     plan: DaycarePlacementPlan
 ) {
@@ -65,11 +68,11 @@ VALUES (
         .execute()
 }
 
-fun Database.Read.getPlacementPlan(applicationId: UUID): PlacementPlan? {
+fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
-        val id: UUID,
-        val unitId: UUID,
-        val applicationId: UUID,
+        val id: PlacementPlanId,
+        val unitId: DaycareId,
+        val applicationId: ApplicationId,
         val type: PlacementType,
         val startDate: LocalDate,
         val endDate: LocalDate,
@@ -101,7 +104,7 @@ WHERE application_id = :applicationId AND deleted = false
         }
 }
 
-fun Database.Read.getPlacementPlanUnitName(applicationId: UUID): String {
+fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String {
     return createQuery(
         // language=SQL
         """
@@ -116,11 +119,11 @@ WHERE application_id = :applicationId AND deleted = false
         .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
 }
 
-fun Database.Read.getPlacementPlans(unitId: UUID, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
+fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
     data class QueryResult(
-        val id: UUID,
-        val unitId: UUID,
-        val applicationId: UUID,
+        val id: PlacementPlanId,
+        val unitId: DaycareId,
+        val applicationId: ApplicationId,
         val type: PlacementType,
         val startDate: LocalDate,
         val endDate: LocalDate,
@@ -179,7 +182,7 @@ WHERE unit_id = :unitId AND a.status = ANY(:statuses::application_status_type[])
 }
 
 fun Database.Transaction.updatePlacementPlanUnitConfirmation(
-    applicationId: UUID,
+    applicationId: ApplicationId,
     status: PlacementPlanConfirmationStatus,
     rejectReason: PlacementPlanRejectReason?,
     rejectOtherReason: String?

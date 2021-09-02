@@ -4,7 +4,10 @@
 
 import { Selector, t } from 'testcafe'
 import { formatCents } from 'employee-frontend/utils/money'
-import { selectFirstOption, waitUntilScrolled } from '../../../utils/helpers'
+import {
+  selectFirstComboboxOption,
+  waitUntilScrolled
+} from '../../../utils/helpers'
 
 interface VerifyFamilyPersonOpts {
   personId: string
@@ -225,7 +228,7 @@ export default class FridgeHeadInformationPage {
     }
     await t.click(collapsible.find('button'))
     const modal = Selector('[data-qa="form-modal"]')
-    await selectFirstOption(modal, searchWord)
+    await selectFirstComboboxOption(modal, searchWord)
     await t.typeText(
       modal.find('.react-datepicker__input-container').nth(0).find('input'),
       startDate,

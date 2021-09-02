@@ -4,7 +4,7 @@
 
 import React from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { H1, P } from 'lib-components/typography'
 import { useTranslation } from '../../../localization'
 import BasicsSection from '../../../applications/editor/verification/BasicsSection'
@@ -18,9 +18,9 @@ import styled from 'styled-components'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faInfo } from 'lib-icons'
 import ContactInfoSection from './ContactInfoSection'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import { featureFlags } from 'lib-customizations/citizen'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails

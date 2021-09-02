@@ -5,10 +5,14 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
-import java.time.Instant
+import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -52,14 +56,14 @@ data class AttendanceResponse(
 )
 
 data class UnitInfo(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val groups: List<GroupInfo>,
     val staff: List<Staff>
 )
 
 data class GroupInfo(
-    val id: UUID,
+    val id: GroupId,
     val name: String,
     val dailyNote: DaycareDailyNote?
 )
@@ -72,7 +76,7 @@ data class ChildBasics(
     val dateOfBirth: LocalDate,
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
-    val groupId: UUID,
+    val groupId: GroupId,
     val backup: Boolean,
     val imageUrl: String?
 )
@@ -83,14 +87,15 @@ data class Child(
     val lastName: String,
     val preferredName: String?,
     val placementType: PlacementType,
-    val groupId: UUID,
+    val groupId: GroupId,
     val backup: Boolean,
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: DaycareDailyNote?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val reservation: AttendanceReservation?
 )
 
 enum class AttendanceStatus {
@@ -98,17 +103,17 @@ enum class AttendanceStatus {
 }
 
 data class ChildAttendance(
-    val id: UUID,
+    val id: AttendanceId,
     val childId: UUID,
-    val unitId: UUID,
-    val arrived: Instant,
-    val departed: Instant?
+    val unitId: DaycareId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?
 )
 
 data class ChildAbsence(
-    val id: UUID,
+    val id: AbsenceId,
     val childId: UUID,
-    val careType: CareType
+    val careType: AbsenceCareType
 )
 
 data class Staff(
@@ -118,3 +123,5 @@ data class Staff(
     val pinSet: Boolean = false,
     val groups: List<UUID>
 )
+
+data class AttendanceReservation(val startTime: String, val endTime: String)

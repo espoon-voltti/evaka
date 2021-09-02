@@ -5,9 +5,9 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 
 class DbTest : PureJdbiTest() {
     private data class Foo(val value: String)
@@ -22,7 +22,8 @@ class DbTest : PureJdbiTest() {
                 row.mapJsonColumn<Array<Foo>>("json")
             }.single()
         }
-        assertArrayEquals(arrayOf(Foo("foo")), result)
+        assertContentEquals(arrayOf(Foo("foo")), result)
+        assertEquals(listOf(Foo("foo")), result.toList())
     }
 
     @Test

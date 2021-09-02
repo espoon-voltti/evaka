@@ -9,7 +9,7 @@ import {
   AssistanceActionOption,
   AssistanceMeasure
 } from '../../types/child'
-import { client } from '../../api/client'
+import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 

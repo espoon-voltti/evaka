@@ -2,12 +2,70 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export default {
-  daycareApplication: {
-    dailyTimesEnabled: true,
-    serviceNeedOptionsEnabled: false
-  },
-  urgencyAttachmentsEnabled: true,
-  preschoolEnabled: true,
-  assistanceActionOtherEnabled: true
+import { FeatureFlags } from 'lib-customizations/types'
+import { env, Env } from './env'
+
+type Features = {
+  default: FeatureFlags
+} & {
+  [k in Env]: FeatureFlags
 }
+
+const features: Features = {
+  default: {
+    assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
+    daycareApplication: {
+      dailyTimesEnabled: true,
+      serviceNeedOptionsEnabled: false
+    },
+    groupsTableServiceNeedsEnabled: false,
+    evakaLogin: true,
+    financeBasicsPage: true,
+    preschoolEnabled: true,
+    urgencyAttachmentsEnabled: true,
+    experimental: {
+      ai: true,
+      incomeStatements: true,
+      vasu: true
+    }
+  },
+  staging: {
+    assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
+    daycareApplication: {
+      dailyTimesEnabled: true,
+      serviceNeedOptionsEnabled: false
+    },
+    groupsTableServiceNeedsEnabled: false,
+    evakaLogin: true,
+    financeBasicsPage: true,
+    preschoolEnabled: true,
+    urgencyAttachmentsEnabled: true,
+    experimental: {
+      ai: true,
+      vasu: true
+    }
+  },
+  prod: {
+    assistanceActionOtherEnabled: true,
+    assistanceBasisOtherEnabled: true,
+    daycareApplication: {
+      dailyTimesEnabled: true,
+      serviceNeedOptionsEnabled: false
+    },
+    groupsTableServiceNeedsEnabled: false,
+    evakaLogin: true,
+    financeBasicsPage: true,
+    preschoolEnabled: true,
+    urgencyAttachmentsEnabled: true,
+    experimental: {
+      ai: false,
+      vasu: false
+    }
+  }
+}
+
+const featureFlags = features[env()]
+
+export default featureFlags

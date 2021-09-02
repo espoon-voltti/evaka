@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Message,
-  MessageThread,
-  MessageType
-} from 'lib-common/api-types/messaging/message'
+import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
@@ -22,6 +18,7 @@ import { UUID } from '../../types'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
+import { MessageType } from 'lib-common/generated/enums'
 
 const MessageContainer = styled.div`
   background-color: white;
@@ -61,11 +58,13 @@ const MessageContent = styled.div`
 function Message({
   title,
   type,
-  message
+  message,
+  index
 }: {
   message: Message
   type?: MessageType
   title?: string
+  index: number
 }) {
   return (
     <MessageContainer>
@@ -79,7 +78,9 @@ function Message({
         <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
       </TitleRow>
       <span>{message.recipients.map((r) => r.name).join(', ')}</span>
-      <MessageContent>{message.content}</MessageContent>
+      <MessageContent data-qa="message-content" data-index={index}>
+        {message.content}
+      </MessageContent>
     </MessageContainer>
   )
 }
@@ -105,12 +106,8 @@ export function SingleThreadView({
   thread: { id: threadId, messages, title, type }
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    getReplyContent,
-    sendReply,
-    replyState,
-    setReplyContent
-  } = useContext(MessageContext)
+  const { getReplyContent, sendReply, replyState, setReplyContent } =
+    useContext(MessageContext)
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(
@@ -158,6 +155,7 @@ export function SingleThreadView({
             message={message}
             title={idx === 0 ? title : undefined}
             type={idx === 0 ? type : undefined}
+            index={idx}
           />
         ))}
         {canReply && (

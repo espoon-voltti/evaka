@@ -58,40 +58,30 @@ enum class InvoiceSortParam {
 class InvoiceController(
     private val service: InvoiceService
 ) {
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun searchInvoices(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) page: Int,
-        @RequestParam(required = true) pageSize: Int,
-        @RequestParam(required = false) sortBy: InvoiceSortParam?,
-        @RequestParam(required = false) sortDirection: SortDirection?,
-        @RequestParam(required = false) status: String?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) distinctions: String?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) periodStart: String?,
-        @RequestParam(required = false) periodEnd: String?
+        @RequestBody body: SearchInvoicesRequest
     ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
-        if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db
             .read { tx ->
                 tx.paginatedSearch(
-                    page,
-                    pageSize,
-                    sortBy ?: InvoiceSortParam.STATUS,
-                    sortDirection ?: SortDirection.DESC,
-                    status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
-                    area?.split(",") ?: listOf(),
-                    unit?.let { parseUUID(it) },
-                    distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
-                    searchTerms ?: "",
-                    periodStart?.let { LocalDate.parse(periodStart, DateTimeFormatter.ISO_DATE) },
-                    periodEnd?.let { LocalDate.parse(periodEnd, DateTimeFormatter.ISO_DATE) }
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: InvoiceSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
+                    body.area?.split(",") ?: listOf(),
+                    body.unit?.let { parseUUID(it) },
+                    body.distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
+                    body.searchTerms ?: "",
+                    body.periodStart?.let { LocalDate.parse(body.periodStart, DateTimeFormatter.ISO_DATE) },
+                    body.periodEnd?.let { LocalDate.parse(body.periodEnd, DateTimeFormatter.ISO_DATE) }
                 )
             }
             .let { ResponseEntity.ok(it) }
@@ -200,3 +190,17 @@ class InvoiceController(
 }
 
 data class InvoicePayload(val from: LocalDate, val to: LocalDate, val areas: List<String>, val invoiceDate: LocalDate?, val dueDate: LocalDate?)
+
+data class SearchInvoicesRequest(
+    val page: Int,
+    val pageSize: Int,
+    val sortBy: InvoiceSortParam?,
+    val sortDirection: SortDirection?,
+    val status: String?,
+    val area: String?,
+    val unit: String?,
+    val distinctions: String?,
+    val searchTerms: String?,
+    val periodStart: String?,
+    val periodEnd: String?
+)

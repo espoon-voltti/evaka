@@ -6,13 +6,12 @@ package fi.espoo.evaka.shared.config
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.db.configureJdbi
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.env.Environment
-import org.springframework.core.env.getProperty
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
@@ -22,16 +21,13 @@ class DatabaseConfig {
     fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
     @Bean
-    fun dataSource(env: Environment): DataSource {
-        val dataSourceUrl = env.getRequiredProperty("spring.datasource.url")
-        val dataSourceUsername = env.getRequiredProperty("spring.datasource.username")
-        val flywayUsername = env.getRequiredProperty("flyway.username")
+    fun dataSource(env: DatabaseEnv): DataSource {
         Flyway.configure()
-            .dataSource(dataSourceUrl, flywayUsername, env.getRequiredProperty("flyway.password"))
+            .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .placeholders(
                 mapOf(
-                    "application_user" to dataSourceUsername,
-                    "migration_user" to flywayUsername
+                    "application_user" to env.username,
+                    "migration_user" to env.flywayUsername
                 )
             )
             .load()
@@ -40,11 +36,11 @@ class DatabaseConfig {
             }
         return HikariDataSource(
             HikariConfig().apply {
-                jdbcUrl = dataSourceUrl
-                username = dataSourceUsername
-                password = env.getRequiredProperty("spring.datasource.password")
-                maximumPoolSize = env.getProperty<Int>("spring.datasource.hikari.maximumPoolSize") ?: 10
-                leakDetectionThreshold = env.getProperty<Long>("spring.datasource.hikari.leak-detection-threshold") ?: 0
+                jdbcUrl = env.url
+                username = env.username
+                password = env.password.value
+                maximumPoolSize = env.maximumPoolSize
+                leakDetectionThreshold = env.leakDetectionThreshold
                 addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }
         )

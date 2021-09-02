@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.childimages
 
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
@@ -16,8 +16,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +26,8 @@ import java.io.File
 import java.io.InputStream
 import java.util.UUID
 import javax.xml.bind.DatatypeConverter
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class ChildImageTest : FullApplicationTest() {
 
@@ -150,8 +150,8 @@ class ChildImageTest : FullApplicationTest() {
             oldImageId
         )
 
-        assertEquals(file.inputStream.readAllBytes().asList(), response.body.inputStream.readAllBytes().asList())
-        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType)
+        assertEquals(file.inputStream.readAllBytes().asList(), response.body!!.inputStream.readAllBytes().asList())
+        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType!!)
 
         verify(documentService).stream(
             bucketName = "evaka-data-it",

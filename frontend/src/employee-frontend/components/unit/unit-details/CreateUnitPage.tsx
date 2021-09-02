@@ -19,10 +19,8 @@ export default function CreateUnitPage(): JSX.Element {
   const history = useHistory()
   const { i18n } = useTranslation()
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
-  const [
-    financeDecisionHandlerOptions,
-    setFinanceDecisionHandlerOptions
-  ] = useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
+  const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
+    useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(
     undefined
   )

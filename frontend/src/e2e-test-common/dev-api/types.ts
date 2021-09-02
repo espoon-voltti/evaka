@@ -8,7 +8,7 @@ import { JsonOf } from 'lib-common/json'
 import {
   ApplicationOrigin,
   ApplicationStatus
-} from 'lib-common/api-types/application/enums'
+} from 'lib-common/generated/enums'
 
 export type UUID = string
 type ISODate = string
@@ -16,6 +16,7 @@ type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
 export type Language = 'fi' | 'sv' | 'en'
+export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 
 export interface Coordinate {
   lat: number
@@ -185,6 +186,7 @@ export interface Daycare {
   roundTheClock: boolean
   language?: Language
   location?: Coordinate | null
+  enabledPilotFeatures: PilotFeature[]
 }
 
 export interface DaycareGroup {

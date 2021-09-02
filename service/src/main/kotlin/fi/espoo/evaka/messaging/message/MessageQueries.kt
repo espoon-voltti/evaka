@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
@@ -128,7 +130,7 @@ data class ReceivedMessageResultItem(
     val recipientName: String,
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {
+fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
     val params = mapOf(
         "accountId" to accountId,
         "offset" to (page - 1) * pageSize,
@@ -168,7 +170,8 @@ threads AS (
     WHERE EXISTS(
             SELECT 1
             FROM participated_messages rec
-            WHERE rec.thread_id = t.id AND rec.recipient_id = :accountId)
+            WHERE rec.thread_id = t.id
+            AND (rec.recipient_id = :accountId OR ${if (isCitizen) "rec.sender_id = :accountId" else "false"}))
     GROUP BY id, message_type, title, last_message
     ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
@@ -270,6 +273,113 @@ fun Database.Read.getMessage(id: UUID): Message {
         .single()
 }
 
+fun Database.Read.getCitizenReceivers(accountId: UUID): List<MessageAccount> {
+    val params = mapOf(
+        "accountId" to accountId,
+    )
+
+    // language=SQL
+    val sql = """
+WITH all_placement_ids AS (
+    SELECT pl.id, pl.unit_id
+    FROM guardian g
+    JOIN placement pl
+    ON g.child_id = pl.child_id
+    WHERE guardian_id = (
+        SELECT person_id AS id
+        FROM message_account
+        WHERE id = :accountId
+    )
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND NOT (
+        SELECT EXISTS (
+            SELECT 1
+            FROM messaging_blocklist
+            WHERE child_id = pl.child_id
+            AND blocked_recipient = guardian_id
+            )
+        )
+
+    UNION
+
+    SELECT pl.id, pl.unit_id
+    FROM fridge_child fg
+    JOIN placement pl
+    ON fg.child_id = pl.child_id
+    WHERE head_of_child = (
+        SELECT person_id AS id
+        FROM message_account
+        WHERE id = :accountId
+    )
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND Daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    AND fg.conflict = false
+    AND NOT (
+        SELECT EXISTS (
+            SELECT 1
+            FROM messaging_blocklist
+            WHERE child_id = pl.child_id
+            AND blocked_recipient = head_of_child
+            )
+        )
+
+),
+pilot_placement_ids AS (
+    SELECT pl.id
+    FROM all_placement_ids pl
+    JOIN daycare d
+    ON pl.unit_id = d.id
+    WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+),
+supervisors AS (
+    SELECT DISTINCT e.id AS id
+    FROM pilot_placement_ids
+    JOIN placement plt
+    ON pilot_placement_ids.id = plt.id
+    JOIN daycare d
+    ON plt.unit_id = d.id
+    JOIN daycare_acl_view acl
+    ON acl.daycare_id = d.id
+    JOIN employee e
+    ON acl.employee_id = e.id
+    WHERE acl.role = 'UNIT_SUPERVISOR'
+),
+groups AS (
+    SELECT DISTINCT gplt.daycare_group_id AS id
+    FROM pilot_placement_ids
+    JOIN daycare_group_placement gplt
+    ON pilot_placement_ids.id = gplt.daycare_placement_id
+)
+
+SELECT
+    msg.id AS id,
+    msg_name.account_name AS name
+FROM supervisors
+JOIN employee e
+ON e.id = supervisors.id
+JOIN message_account msg
+ON e.id = msg.employee_id
+JOIN message_account_name_view msg_name
+ON msg.id = msg_name.id
+
+UNION
+
+SELECT
+    msg.id AS id,
+    g.name AS name
+FROM groups
+JOIN daycare_group g
+ON groups.id = g.id
+JOIN message_account msg
+ON g.id = msg.daycare_group_id
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bindMap(params)
+        .mapTo<MessageAccount>()
+        .toList()
+}
+
 fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<SentMessage> {
     val params = mapOf(
         "accountId" to accountId,
@@ -355,7 +465,7 @@ fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants?
 
 data class MessageReceiversResult(
     val childId: UUID,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val childFirstName: String,
     val childLastName: String,
@@ -367,7 +477,7 @@ data class MessageReceiversResult(
 
 fun Database.Read.getReceiversForNewMessage(
     employeeId: UUID,
-    unitId: UUID
+    unitId: DaycareId
 ): List<MessageReceiversResponse> {
     // language=sql
     val sql = """
@@ -376,10 +486,12 @@ fun Database.Read.getReceiversForNewMessage(
             FROM daycare_group dg
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            JOIN daycare d ON pl.unit_id = d.id
             WHERE pl.unit_id = :unitId AND EXISTS (
                 SELECT 1 FROM child_acl_view a
                 WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
             )
+            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
             SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c
@@ -435,7 +547,7 @@ fun Database.Read.getReceiversForNewMessage(
                             childFirstName = receivers.first().childFirstName,
                             childLastName = receivers.first().childLastName,
                             childDateOfBirth = receivers.first().childDateOfBirth,
-                            receiverPersons = receivers.map { it ->
+                            receiverPersons = receivers.map {
                                 MessageReceiverPerson(
                                     accountId = it.accountId,
                                     receiverFirstName = it.receiverFirstName,

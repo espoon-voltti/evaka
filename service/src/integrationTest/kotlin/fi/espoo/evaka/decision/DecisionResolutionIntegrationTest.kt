@@ -18,6 +18,8 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -39,10 +41,6 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -50,13 +48,17 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
 import java.util.UUID
 import java.util.stream.Stream
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
     private fun beforeEach() {
@@ -320,7 +322,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate) {
+    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
@@ -339,7 +341,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: UUID, decisionId: UUID) {
+    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
@@ -436,7 +438,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
 }
 
 private data class DataIdentifiers(
-    val applicationId: UUID,
-    val primaryId: UUID?,
-    val preschoolDaycareId: UUID?
+    val applicationId: ApplicationId,
+    val primaryId: DecisionId?,
+    val preschoolDaycareId: DecisionId?
 )

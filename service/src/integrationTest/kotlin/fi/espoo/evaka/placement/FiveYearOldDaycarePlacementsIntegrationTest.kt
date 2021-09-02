@@ -9,10 +9,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
 

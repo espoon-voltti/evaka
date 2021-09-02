@@ -24,7 +24,6 @@ import colors from 'lib-customizations/common'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
 import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
@@ -32,6 +31,7 @@ import { removeUnprocessedApplication } from '../applications/api'
 import { OverlayContext } from '../overlay/state'
 import { isEqual } from 'date-fns'
 import { formatDate } from 'lib-common/date'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -50,7 +50,12 @@ const TitleContainer = styled.div`
   flex-flow: row wrap;
 `
 
-const StatusContainer = styled.div``
+const StatusContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+`
 
 const ConfirmationContainer = styled.div`
   display: flex;
@@ -86,9 +91,8 @@ export default React.memo(function ChildApplicationsBlock({
 }: ChildApplicationsBlockProps) {
   const history = useHistory()
   const t = useTranslation()
-  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
-    OverlayContext
-  )
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } =
+    useContext(OverlayContext)
 
   const onDeleteApplication = (
     applicationId: string,
@@ -229,25 +233,25 @@ export default React.memo(function ChildApplicationsBlock({
                 <StatusContainer
                   data-qa={`application-status-${applicationId}`}
                 >
-                  <RoundIcon
-                    content={
-                      applicationStatusIcon[
-                        applicationStatusToIcon(applicationStatus)
-                      ].icon
-                    }
-                    color={
-                      applicationStatusIcon[
-                        applicationStatusToIcon(applicationStatus)
-                      ].color
-                    }
-                    size="s"
-                  />
-
-                  <Gap size={'xs'} horizontal={true} />
-
-                  <Status data-qa={`application-status-${applicationId}`}>
-                    {t.applicationsList.status[applicationStatus]}
-                  </Status>
+                  <div>
+                    <RoundIcon
+                      content={
+                        applicationStatusIcon[
+                          applicationStatusToIcon(applicationStatus)
+                        ].icon
+                      }
+                      color={
+                        applicationStatusIcon[
+                          applicationStatusToIcon(applicationStatus)
+                        ].color
+                      }
+                      size="m"
+                    />
+                    <Gap size={'xs'} horizontal={true} />
+                    <Status data-qa={`application-status-${applicationId}`}>
+                      {t.applicationsList.status[applicationStatus]}
+                    </Status>
+                  </div>
 
                   {applicationStatus === 'WAITING_CONFIRMATION' && (
                     <ConfirmationContainer>

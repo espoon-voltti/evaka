@@ -4,7 +4,6 @@
 
 import React, { useContext, useState } from 'react'
 import _ from 'lodash'
-
 import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -13,7 +12,7 @@ import { useTranslation } from '../../../state/i18n'
 import { DaycareGroup } from '../../../types/unit'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { UIContext } from '../../../state/ui'
-import { Translations } from 'lib-customizations/employee'
+import { featureFlags, Translations } from 'lib-customizations/employee'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
@@ -23,13 +22,16 @@ import { formatName } from '../../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '../../../api/unit'
 import { isPartDayPlacement } from '../../../utils/placements'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
+import { Action } from 'lib-common/generated/action'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
   onAddToGroup: () => void,
   i18n: Translations,
   savePosition: () => void,
-  canManageChildren: boolean
+  canCreateGroupPlacement: boolean
 ) {
   const {
     childId,
@@ -38,6 +40,7 @@ function renderMissingGroupPlacementRow(
     dateOfBirth,
     placementPeriod,
     gap,
+    serviceNeeds,
     placementType
   } = missingPlacement
 
@@ -63,54 +66,63 @@ function renderMissingGroupPlacementRow(
         {placementType && (
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
-            label={i18n.placement.type[placementType]}
+            label={
+              featureFlags.groupsTableServiceNeedsEnabled
+                ? serviceNeeds
+                    .filter((sn) =>
+                      gap.overlaps(
+                        new FiniteDateRange(sn.startDate, sn.endDate)
+                      )
+                    )
+                    .map((sn) => sn.option.name)
+                    .join(' / ')
+                : i18n.placement.type[placementType]
+            }
           />
         )}
       </Td>
       <Td data-qa="placement-duration">
         {`${placementPeriod.start.format()} - ${placementPeriod.end.format()}`}
       </Td>
-      {canManageChildren ? (
-        <Td data-qa="group-missing-duration">
-          {`${gap.start.format()} - ${gap.end.format()}`}
-        </Td>
-      ) : null}
-      {canManageChildren ? (
-        <Td>
+      <Td data-qa="group-missing-duration">
+        {`${gap.start.format()} - ${gap.end.format()}`}
+      </Td>
+      <Td>
+        {canCreateGroupPlacement && (
           <InlineButton
             onClick={() => onAddToGroup()}
             icon={faArrowRight}
             data-qa="add-to-group-btn"
             text={i18n.unit.placements.addToGroup}
           />
-        </Td>
-      ) : null}
+        )}
+      </Td>
     </Tr>
   )
 }
 
 type Props = {
-  canManageChildren: boolean
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   backupCares: UnitBackupCare[]
   savePosition: () => void
   reloadUnitData: () => void
+  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
 }
 
 export default React.memo(function MissingGroupPlacements({
-  canManageChildren,
   groups,
   missingGroupPlacements,
   savePosition,
-  reloadUnitData
+  reloadUnitData,
+  permittedPlacementActions,
+  permittedBackupCareActions
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
-  const [
-    activeMissingPlacement,
-    setActiveMissingPlacement
-  ] = useState<MissingGroupPlacement | null>(null)
+  const [activeMissingPlacement, setActiveMissingPlacement] =
+    useState<MissingGroupPlacement | null>(null)
 
   const addPlacementToGroup = (missingPlacement: MissingGroupPlacement) => {
     setActiveMissingPlacement(missingPlacement)
@@ -143,10 +155,8 @@ export default React.memo(function MissingGroupPlacements({
               <Th>{i18n.unit.placements.type}</Th>
               <Th>{i18n.unit.placements.subtype}</Th>
               <Th>{i18n.unit.placements.placementDuration}</Th>
-              {canManageChildren ? (
-                <Th>{i18n.unit.placements.missingGroup}</Th>
-              ) : null}
-              {canManageChildren ? <Th /> : null}
+              <Th>{i18n.unit.placements.missingGroup}</Th>
+              <Th />
             </Tr>
           </Thead>
           <Tbody>
@@ -156,7 +166,11 @@ export default React.memo(function MissingGroupPlacements({
                 () => addPlacementToGroup(row),
                 i18n,
                 savePosition,
-                canManageChildren
+                row.backup
+                  ? permittedBackupCareActions[row.placementId]?.has('UPDATE')
+                  : permittedPlacementActions[row.placementId]?.has(
+                      'CREATE_GROUP_PLACEMENT'
+                    )
               )
             )}
           </Tbody>

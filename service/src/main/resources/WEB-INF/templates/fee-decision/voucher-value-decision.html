@@ -19,9 +19,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <div class="page first-page">
     <div class="address">
         <div th:text="${headFullName}"></div>
-        <div th:text="${sendAddress.streetAddress}"></div>
-        <div th:if="${hasPoBox}" th:text="${sendAddress.poBox}"></div>
-        <div th:text="${sendAddress.postalCode} + ' ' + ${sendAddress.postOffice}"></div>
+        <div th:text="${sendAddress.row1}"></div>
+        <div th:text="${sendAddress.row2}"></div>
+        <div th:if="${not #strings.isEmpty(sendAddress.row3)}" th:text="${sendAddress.row3}"></div>
     </div>
 
     <h1 th:text="#{text.title}"></h1>
@@ -55,7 +55,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </tr>
         <tr>
             <td th:text="#{decision.coPayment}"></td>
-            <td class="text-right">– <span th:text="${coPayment}"></span></td>
+            <td class="text-right">
+                <strong>-</strong>
+                <strong th:text="${coPayment}"></strong>
+            </td>
         </tr>
 
 
@@ -100,7 +103,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tbody>
             <tr>
                 <td th:text="#{decision.amountOfVoucherForProvider}"></td>
-                <td class="text-right"><strong th:text="${serviceProviderValue}"></strong></td>
+                <td class="text-right"><span th:text="${serviceProviderValue}"></span></td>
             </tr>
         </tbody>
 

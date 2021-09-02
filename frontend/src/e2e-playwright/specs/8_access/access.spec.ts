@@ -29,7 +29,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.serviceWorkerAad,
     externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@espoo.fi',
+    email: 'paula.palveluohjaaja@evaka.test',
     firstName: 'Paula',
     lastName: 'Palveluohjaaja',
     roles: ['SERVICE_WORKER']
@@ -37,7 +37,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.financeAdminAad,
     externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@espoo.fi',
+    email: 'lasse.laskuttaja@evaka.test',
     firstName: 'Lasse',
     lastName: 'Laskuttaja',
     roles: ['FINANCE_ADMIN']
@@ -45,7 +45,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.directorAad,
     externalId: `espoo-ad:${config.directorAad}`,
-    email: 'raisa.raportoija@espoo.fi',
+    email: 'raisa.raportoija@evaka.test',
     firstName: 'Raisa',
     lastName: 'Raportoija',
     roles: ['DIRECTOR']
@@ -53,7 +53,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.unitSupervisorAad,
     externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'essi.esimies@espoo.fi',
+    email: 'essi.esimies@evaka.test',
     firstName: 'Essi',
     lastName: 'Esimies',
     roles: []
@@ -65,7 +65,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.staffAad,
     externalId: `espoo-ad:${config.staffAad}`,
-    email: 'kaisa.kasvattaja@espoo.fi',
+    email: 'kaisa.kasvattaja@evaka.test',
     firstName: 'Kaisa',
     lastName: 'Kasvattaja',
     roles: []
@@ -78,7 +78,7 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.specialEducationTeacher,
     externalId: `espoo-ad:${config.specialEducationTeacher}`,
-    email: 'erkki.erityisopettaja@espoo.fi',
+    email: 'erkki.erityisopettaja@evaka.test',
     firstName: 'Erkki',
     lastName: 'Erityisopettaja',
     roles: []
@@ -99,7 +99,7 @@ afterEach(async () => {
 })
 
 describe('Child information page', () => {
-  test('Admin sees every tab', async () => {
+  test('Admin sees every tab, except messaging', async () => {
     await employeeLogin(page, 'ADMIN')
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
@@ -108,7 +108,7 @@ describe('Child information page', () => {
       search: true,
       finance: true,
       reports: true,
-      messages: true
+      messages: false
     })
   })
 
@@ -186,15 +186,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: true,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: true,
-      messageBlocklist: true,
-      backupPickup: true
+      messageBlocklist: true
     })
   })
 
@@ -205,15 +203,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: true,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 
@@ -224,15 +220,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: true,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: false,
       backupCare: true,
       familyContacts: false,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 
@@ -243,34 +237,30 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: false,
-      fridgeParents: false,
+      guardiansAndParents: false,
       placements: true,
       assistance: false,
       backupCare: true,
       familyContacts: true,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: true
+      messageBlocklist: false
     })
   })
 
-  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts, backup pickups sections', async () => {
+  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance and family contacts, backup pickups sections', async () => {
     await employeeLogin(page, 'UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: true,
-      fridgeParents: true,
+      guardiansAndParents: true,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
-      childApplications: true,
-      messageBlocklist: false,
-      backupPickup: true
+      childApplications: false,
+      messageBlocklist: false
     })
   })
 
@@ -281,15 +271,13 @@ describe('Child information page sections', () => {
     )
     await childInfo.childCollapsiblesVisible({
       feeAlterations: false,
-      guardians: false,
-      fridgeParents: false,
+      guardiansAndParents: false,
       placements: true,
       assistance: true,
       backupCare: true,
       familyContacts: true,
       childApplications: false,
-      messageBlocklist: false,
-      backupPickup: false
+      messageBlocklist: false
     })
   })
 })

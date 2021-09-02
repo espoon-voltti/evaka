@@ -20,14 +20,13 @@ export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
 `
 
 export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
-  min-height: 45px;
+  min-height: ${defaultMargins.XL};
   outline: none;
   cursor: pointer;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 16px;
   font-weight: 600;
-  text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;

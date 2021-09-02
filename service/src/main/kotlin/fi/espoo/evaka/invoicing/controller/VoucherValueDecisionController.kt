@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
+import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
@@ -20,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -38,7 +40,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
@@ -52,43 +53,32 @@ class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun search(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) page: Int,
-        @RequestParam(required = true) pageSize: Int,
-        @RequestParam(required = false) sortBy: VoucherValueDecisionSortParam?,
-        @RequestParam(required = false) sortDirection: SortDirection?,
-        @RequestParam(required = false) status: String?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) financeDecisionHandlerId: UUID?,
-        @RequestParam(required = false) startDate: String?,
-        @RequestParam(required = false) endDate: String?,
-        @RequestParam(required = false) searchByStartDate: Boolean = false
+        @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
-        if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db
             .read { tx ->
                 tx.searchValueDecisions(
-                    page,
-                    pageSize,
-                    sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                    sortDirection ?: SortDirection.DESC,
-                    status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
                         ?: throw BadRequest("Status is a mandatory parameter"),
-                    area?.split(",") ?: listOf(),
-                    unit?.let { parseUUID(it) },
-                    searchTerms ?: "",
-                    startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
-                    endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
-                    searchByStartDate,
-                    financeDecisionHandlerId
+                    body.area?.split(",") ?: listOf(),
+                    body.unit?.let { parseUUID(it) },
+                    body.searchTerms ?: "",
+                    body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
+                    body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                    body.searchByStartDate,
+                    body.financeDecisionHandlerId
                 )
             }
             .let { ResponseEntity.ok(it) }
@@ -98,7 +88,7 @@ class VoucherValueDecisionController(
     fun getDecision(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -107,8 +97,20 @@ class VoucherValueDecisionController(
         return ResponseEntity.ok(Wrapper(res))
     }
 
+    @GetMapping("/head-of-family/{headOfFamilyId}")
+    fun getHeadOfFamilyDecisions(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable headOfFamilyId: UUID
+    ): ResponseEntity<List<VoucherValueDecisionSummary>> {
+        Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        val res = db.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+        return ResponseEntity.ok(res)
+    }
+
     @PostMapping("/send")
-    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
@@ -125,7 +127,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<UUID>): ResponseEntity<Unit> {
+    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -138,7 +140,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
@@ -155,7 +157,7 @@ fun sendVoucherValueDecisions(
     asyncJobRunner: AsyncJobRunner,
     user: AuthenticatedUser,
     now: Instant,
-    ids: List<UUID>
+    ids: List<VoucherValueDecisionId>
 ) {
     tx.lockValueDecisions(ids)
     val decisions = tx.getValueDecisionsByIds(ids)
@@ -193,3 +195,18 @@ enum class VoucherValueDecisionSortParam {
     HEAD_OF_FAMILY,
     STATUS
 }
+
+data class SearchVoucherValueDecisionRequest(
+    val page: Int,
+    val pageSize: Int,
+    val sortBy: VoucherValueDecisionSortParam?,
+    val sortDirection: SortDirection?,
+    val status: String?,
+    val area: String?,
+    val unit: String?,
+    val searchTerms: String?,
+    val financeDecisionHandlerId: UUID?,
+    val startDate: String?,
+    val endDate: String?,
+    val searchByStartDate: Boolean = false
+)

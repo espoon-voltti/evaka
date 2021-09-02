@@ -2,14 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
-import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { desktopMin } from 'lib-components/breakpoints'
-import colors from 'lib-customizations/common'
-import { defaultMargins, Gap } from 'lib-components/white-space'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import {
   faCheck,
   faChevronDown,
@@ -17,10 +14,12 @@ import {
   faLockAlt,
   faSignIn
 } from 'lib-icons'
+import React, { useCallback, useState } from 'react'
+import { NavLink } from 'react-router-dom'
+import styled from 'styled-components'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
-import { featureFlags } from '../config'
 
 interface Props {
   unreadMessagesCount: number
@@ -47,7 +46,7 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/decisions" data-qa="nav-decisions">
               {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
-            {featureFlags.messaging && (
+            {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}
                 {unreadMessagesCount > 0 ? (
@@ -55,6 +54,11 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
                 ) : (
                   ''
                 )}
+              </StyledNavLink>
+            )}
+            {user.accessibleFeatures.reservations && (
+              <StyledNavLink to="/calendar" data-qa="nav-calendar">
+                {t.header.nav.calendar}
               </StyledNavLink>
             )}
           </>

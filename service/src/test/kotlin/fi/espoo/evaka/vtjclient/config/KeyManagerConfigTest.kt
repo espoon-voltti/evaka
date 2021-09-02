@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.vtjclient.config
 
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
+import fi.espoo.evaka.VtjXroadEnv
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -14,9 +14,9 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.core.env.Environment
 import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
 import org.springframework.ws.soap.security.support.KeyStoreFactoryBean
-import java.net.URI
 
 @ExtendWith(MockitoExtension::class)
 class KeyManagerConfigTest {
@@ -88,24 +88,10 @@ class KeyManagerConfigTest {
             }
     }
 
-    @Test
-    fun `private key bean factory and key should NOT be loaded with keystore location false`() {
-        contextRunner.withPropertyValues(
-            "spring.profiles.active=production",
-            "voltti.env=prod",
-            "fi.espoo.voltti.vtj.xroad.keyStore.location=false"
-        )
-            .run {
-                assertThat(it).doesNotHaveBean(KeyManagersFactoryBean::class.java)
-                assertThat(it).doesNotHaveBean(KeyStoreFactoryBean::class.java)
-            }
-    }
-
     @Configuration
     @Import(KeyManagerConfig::class)
     class KeyManagerTestConfig {
-
         @Bean
-        fun xroadProperties() = XRoadProperties().also { it.keyStore.location = URI.create("file://fake") }
+        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env).also { it.copy(keyStore = it.keyStore.copy(location = "file://fake")) }
     }
 }

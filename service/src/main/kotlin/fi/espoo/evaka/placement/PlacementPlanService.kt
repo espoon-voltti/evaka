@@ -4,18 +4,22 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
@@ -24,13 +28,17 @@ import java.util.UUID
 @Service
 class PlacementPlanService(
     private val asyncJobRunner: AsyncJobRunner,
-    env: Environment
+    env: EvakaEnv
 ) {
-    private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
+    private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
 
-    fun getPlacementPlanDraft(tx: Database.Read, applicationId: UUID): PlacementPlanDraft {
+    fun getPlacementPlanDraft(tx: Database.Read, applicationId: ApplicationId): PlacementPlanDraft {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
+
+        if (application.status !== ApplicationStatus.WAITING_PLACEMENT) {
+            throw Conflict("Cannot get placement plan drafts for application with status ${application.status}")
+        }
 
         val type = derivePlacementType(application)
         val form = application.form
@@ -104,7 +112,7 @@ class PlacementPlanService(
         }
     }
 
-    fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: UUID) =
+    fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: ApplicationId) =
         tx.softDeletePlacementPlanIfUnused(applicationId)
 
     fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
@@ -201,7 +209,7 @@ class PlacementPlanService(
         }
     }
 
-    fun isSvebiUnit(tx: Database.Read, unitId: UUID): Boolean {
+    fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
         return tx.createQuery(
             """
             SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi

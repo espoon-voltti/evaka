@@ -5,7 +5,7 @@
 import { UUID } from '../types'
 import { CaretakersResponse } from '../types/caretakers'
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 

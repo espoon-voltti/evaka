@@ -6,12 +6,10 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../client'
 import { ServiceNeedOption } from '../../types/child'
 import { JsonOf } from 'lib-common/json'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
-import {
-  PlacementType,
-  ServiceNeedOptionPublicInfo
-} from '../../../lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface ServiceNeedCreateRequest {
   placementId: UUID

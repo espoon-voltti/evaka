@@ -9,10 +9,10 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.controllers.DaycareController
-import fi.espoo.evaka.daycare.controllers.DaycareResponse
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -26,12 +26,11 @@ import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class DaycareEditIntegrationTest : FullApplicationTest() {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -49,6 +48,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         language = Language.fi,
         ghostUnit = false,
         uploadToVarda = false,
+        uploadChildrenToVarda = false,
         uploadToKoski = false,
         invoicedByMunicipality = false,
         costCenter = "123456",
@@ -101,7 +101,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(fields))
             .asUser(admin)
             .responseObject<DaycareController.CreateDaycareResponse>()
-        Assertions.assertTrue(res.isSuccessful)
+        assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(body.get().id, fields)
     }
@@ -112,15 +112,15 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(fields))
             .asUser(admin)
             .response()
-        Assertions.assertTrue(res.isSuccessful)
+        assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
 
-    private fun getAndAssertDaycareFields(daycareId: UUID, fields: DaycareFields) {
+    private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
         val (_, _, body) = http.get("/daycares/$daycareId")
             .asUser(admin)
-            .responseObject<DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(objectMapper)
         val daycare = body.get().daycare
 
         assertEquals(fields.name, daycare.name)
@@ -136,6 +136,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.language, daycare.language)
         assertEquals(fields.ghostUnit, daycare.ghostUnit)
         assertEquals(fields.uploadToVarda, daycare.uploadToVarda)
+        assertEquals(fields.uploadChildrenToVarda, daycare.uploadChildrenToVarda)
         assertEquals(fields.invoicedByMunicipality, daycare.invoicedByMunicipality)
         assertEquals(fields.costCenter, daycare.costCenter)
         assertEquals(fields.additionalInfo, daycare.additionalInfo)

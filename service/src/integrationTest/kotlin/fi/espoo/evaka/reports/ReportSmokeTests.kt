@@ -14,10 +14,10 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class ReportSmokeTests : FullApplicationTest() {
     private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
@@ -249,6 +249,16 @@ class ReportSmokeTests : FullApplicationTest() {
             http.get(
                 "/reports/placement-sketching",
                 listOf("placementStartDate" to "2021-01-01", "earliestPreferredStartDate" to "2021-08-13")
+            )
+        )
+    }
+
+    @Test
+    fun `varda errors report returns http 200`() {
+        assertOkResponse(
+            http.get(
+                "/reports/varda-errors",
+                listOf("errorsSince" to "2021-01-01")
             )
         )
     }

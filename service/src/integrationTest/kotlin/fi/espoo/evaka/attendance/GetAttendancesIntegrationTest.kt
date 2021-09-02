@@ -9,11 +9,13 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.TimeRange
 import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -24,28 +26,28 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class GetAttendancesIntegrationTest : FullApplicationTest() {
     private val userId = UUID.randomUUID()
     private val mobileUser = AuthenticatedUser.MobileDevice(userId)
-    private val groupId = UUID.randomUUID()
-    private val groupId2 = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
+    private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
-    private val daycarePlacementId = UUID.randomUUID()
+    private val daycarePlacementId = PlacementId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
@@ -89,8 +91,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
-                departed = OffsetDateTime.now().minusDays(1).toInstant()
+                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(8),
+                departed = HelsinkiDateTime.now().minusDays(1)
             )
         }
         val child = expectOneChild()
@@ -135,7 +137,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child is present`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
+        val arrived = HelsinkiDateTime.now().minusHours(3)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -155,8 +157,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child has departed`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
+        val arrived = HelsinkiDateTime.now().minusHours(3)
+        val departed = HelsinkiDateTime.now().minusMinutes(1)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -179,13 +181,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = CareType.PRESCHOOL,
+                careType = AbsenceCareType.PRESCHOOL,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = CareType.PRESCHOOL_DAYCARE,
+                careType = AbsenceCareType.PRESCHOOL_DAYCARE,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
@@ -194,8 +196,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
         assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
     }
 
     @Test

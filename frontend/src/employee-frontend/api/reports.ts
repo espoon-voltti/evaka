@@ -26,7 +26,8 @@ import {
   VoucherServiceProviderUnitReport,
   VoucherServiceProviderReport,
   InvalidServiceNeedReportRow,
-  DecisionsReportRow
+  DecisionsReportRow,
+  VardaErrorReportRow
 } from '../types/reports'
 import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
@@ -438,7 +439,8 @@ export async function getPlacementSketchingReport(
   return client
     .get<JsonOf<PlacementSketchingRow[]>>(`/reports/placement-sketching`, {
       params: {
-        earliestPreferredStartDate: filters.earliestPreferredStartDate.formatIso(),
+        earliestPreferredStartDate:
+          filters.earliestPreferredStartDate.formatIso(),
         placementStartDate: filters.placementStartDate.formatIso()
       }
     })
@@ -449,6 +451,25 @@ export async function getPlacementSketchingReport(
           childDob: LocalDate.parseIso(row.childDob),
           preferredStartDate: LocalDate.parseIso(row.preferredStartDate),
           sentDate: LocalDate.parseIso(row.sentDate)
+        }))
+      )
+    )
+}
+
+export async function getVardaErrorsReport(
+  filters: DateFilters
+): Promise<Result<VardaErrorReportRow[]>> {
+  return client
+    .get<JsonOf<VardaErrorReportRow[]>>(`/reports/varda-errors`, {
+      params: {
+        errorsSince: filters.date.formatIso()
+      }
+    })
+    .then((res) =>
+      Success.of(
+        res.data.map((row) => ({
+          ...row,
+          updated: new Date(row.updated)
         }))
       )
     )

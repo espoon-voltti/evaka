@@ -22,8 +22,8 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { UIContext } from '../../state/ui'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
 import { inferApplicationType } from '../person-profile/PersonApplications'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 interface Props {
   id: UUID
@@ -35,9 +35,8 @@ const ChildApplications = React.memo(function ChildApplications({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { applications, setApplications, person, guardians } = useContext(
-    ChildContext
-  )
+  const { applications, setApplications, person, guardians } =
+    useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)

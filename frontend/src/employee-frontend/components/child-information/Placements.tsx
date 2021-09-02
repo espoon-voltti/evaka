@@ -7,6 +7,7 @@ import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
 import { ChildState } from '../../state/child'
+import { Gap } from 'lib-components/white-space'
 import Loader from 'lib-components/atoms/Loader'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
 import { UIContext } from '../../state/ui'
@@ -17,10 +18,11 @@ import { RequireRole } from '../../utils/roles'
 import { DateRange, rangesOverlap } from '../../utils/date'
 import { Placement } from '../../types/child'
 import { getServiceNeedOptions } from '../../api/child/service-needs'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import _ from 'lodash'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2, H3 } from 'lib-components/typography'
+import { FlexRow } from '../common/styled/containers'
 
 interface Props {
   id: UUID
@@ -29,11 +31,8 @@ interface Props {
 
 const Placements = React.memo(function Placements({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const {
-    placements,
-    setPlacements,
-    setServiceNeedOptions
-  } = useContext<ChildState>(ChildContext)
+  const { placements, setPlacements, setServiceNeedOptions } =
+    useContext<ChildState>(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
@@ -91,20 +90,24 @@ const Placements = React.memo(function Placements({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="child-placements-collapsible"
       >
-        <RequireRole
-          oneOf={[
-            'SERVICE_WORKER',
-            'UNIT_SUPERVISOR',
-            'FINANCE_ADMIN',
-            'ADMIN'
-          ]}
-        >
-          <AddButtonRow
-            text={i18n.childInformation.placements.createPlacement.btn}
-            onClick={() => toggleUiMode('create-new-placement')}
-            disabled={uiMode === 'create-new-placement'}
-          />
-        </RequireRole>
+        <Gap size="m" />
+        <FlexRow justifyContent="space-between">
+          <H3 noMargin>{i18n.childInformation.placements.placements}</H3>
+          <RequireRole
+            oneOf={[
+              'SERVICE_WORKER',
+              'UNIT_SUPERVISOR',
+              'FINANCE_ADMIN',
+              'ADMIN'
+            ]}
+          >
+            <AddButtonRow
+              text={i18n.childInformation.placements.createPlacement.btn}
+              onClick={() => toggleUiMode('create-new-placement')}
+              disabled={uiMode === 'create-new-placement'}
+            />
+          </RequireRole>
+        </FlexRow>
         {renderContents()}
       </CollapsibleContentArea>
       {uiMode === 'create-new-placement' && (

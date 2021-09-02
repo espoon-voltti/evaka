@@ -25,7 +25,7 @@ import {
   removeParentship,
   retryParentship
 } from '../../api/parentships'
-import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import Toolbar from '../../components/common/Toolbar'
 import { getAge } from 'lib-common/utils/local-date'
@@ -39,12 +39,10 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { parentships, setParentships, reloadFamily } = useContext(
-    PersonContext
-  )
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { parentships, setParentships, reloadFamily } =
+    useContext(PersonContext)
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
   const loadData = () => {

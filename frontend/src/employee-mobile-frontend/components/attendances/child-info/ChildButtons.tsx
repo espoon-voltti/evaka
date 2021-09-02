@@ -52,17 +52,6 @@ export default React.memo(function ChildButtons({
           label={i18n.common.messages}
         />
         <Link
-          to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/pin`}
-          data-qa={'link-child-sensitive-info'}
-        >
-          <RoundIcon
-            content={faChild}
-            color={colors.main.primary}
-            size="XL"
-            label={i18n.common.information}
-          />
-        </Link>
-        <Link
           to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/note`}
           data-qa={'link-child-daycare-daily-note'}
         >
@@ -72,6 +61,17 @@ export default React.memo(function ChildButtons({
             size="XL"
             label={i18n.common.dailyNotes}
             bubble={noteFound}
+          />
+        </Link>
+        <Link
+          to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/pin`}
+          data-qa={'link-child-sensitive-info'}
+        >
+          <RoundIcon
+            content={faChild}
+            color={colors.main.primary}
+            size="XL"
+            label={i18n.common.information}
           />
         </Link>
       </FixedSpaceRow>

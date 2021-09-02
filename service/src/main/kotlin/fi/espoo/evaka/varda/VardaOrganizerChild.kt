@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.convertToVardaChildRequest
 import org.jdbi.v3.core.kotlin.mapTo
+import java.lang.Exception
 import java.util.UUID
 
 fun getOrCreateVardaChildByOrganizer(
@@ -21,7 +22,7 @@ fun getOrCreateVardaChildByOrganizer(
         val municipalOrganizerOid = getMunicipalOrganizerOid(tx)
         val isPaosChild = organizerOid != municipalOrganizerOid
 
-        val rowsByChild = getVardaOrganizationChildRows(tx, evakaPersonId)
+        val rowsByChild = getVardaOrganizerChildRows(tx, evakaPersonId)
         if (rowsByChild.isEmpty()) {
             return@transaction createVardaPersonAndChild(tx, client, evakaPersonId, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
         }
@@ -45,7 +46,7 @@ data class VardaChildOrganizerRow(
     val organizerOid: String
 )
 
-private fun getVardaOrganizationChildRows(
+private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
     evakaPersonId: UUID,
 ): List<VardaChildOrganizerRow> {
@@ -79,13 +80,22 @@ private fun createVardaPersonAndChild(
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
-    val vardaPerson = client.createPerson(personPayload, tryFetchOnFail = true) ?: error("VardaUpdate: Couldn't create or fetch Varda person $personPayload")
+    check(!personPayload.ssn.isNullOrBlank() || !personPayload.personOid.isNullOrBlank()) {
+        "VardaUpdate: no ssn or oid for person $evakaPersonId"
+    }
+
+    val vardaPerson = try {
+        client.createPerson(personPayload)
+            ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
+    } catch (e: Exception) {
+        error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
+    }
 
     return createVardaChildWhenPersonExists(
         tx = tx,
         client = client,
         evakaPersonId = evakaPersonId,
-        vardaPersonId = vardaPerson.vardaId,
+        vardaPersonId = vardaPerson!!.vardaId,
         vardaPersonOid = vardaPerson.personOid,
         municipalOrganizerOid = municipalOrganizerOid,
         organizerOid = organizerOid,
@@ -146,7 +156,7 @@ private fun createVardaChildWhenPersonExists(
         val vardaChildPayload = VardaChildPayload(
             personUrl = client.getPersonUrl(vardaPersonId.toLong()),
             personOid = vardaPersonOid,
-            organizerOid = organizerOid,
+            organizerOid = municipalOrganizerOid,
             sourceSystem = sourceSystem
         )
 
@@ -174,6 +184,7 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
                 p.first_name,
                 p.last_name,
                 p.social_security_number         AS ssn,
+                p.oph_person_oid                 AS person_oid,
                 split_part(p.first_name, ' ', 1) AS nick_name,
                 :organizerOid
             FROM person p

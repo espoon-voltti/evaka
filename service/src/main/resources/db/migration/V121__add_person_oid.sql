@@ -1,0 +1,1 @@
+ALTER TABLE person ADD COLUMN oph_person_oid text;

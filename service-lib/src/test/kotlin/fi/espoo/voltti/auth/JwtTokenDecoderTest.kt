@@ -6,9 +6,6 @@ package fi.espoo.voltti.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockFilterChain
@@ -16,6 +13,9 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import java.time.Instant
 import java.util.Date
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class JwtTokenDecoderTest {
     private val issuer = "test"
@@ -42,7 +42,7 @@ class JwtTokenDecoderTest {
 
         val decoded = req.getDecodedJwt()
         assertNotNull(decoded)
-        assertEquals(issuer, decoded?.issuer)
+        assertEquals(issuer, decoded.issuer)
     }
 
     @Test

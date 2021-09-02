@@ -15,7 +15,6 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
-import { featureFlags } from '../config'
 import { CircledChar } from './DesktopNav'
 
 type Props = {
@@ -32,9 +31,10 @@ export default React.memo(function MobileNav({
   const user = useUser()
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
-  const toggleMenu = useCallback(() => setShowMenu((show) => !show), [
-    setShowMenu
-  ])
+  const toggleMenu = useCallback(
+    () => setShowMenu((show) => !show),
+    [setShowMenu]
+  )
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
 
   return (
@@ -197,7 +197,7 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.decisions} {maybeLockElem}
           </StyledNavLink>
-          {featureFlags.messaging && (
+          {user.accessibleFeatures.messages && (
             <StyledNavLink to="/messages" onClick={close}>
               {t.header.nav.messages}{' '}
               {unreadMessagesCount > 0 ? (
@@ -205,6 +205,11 @@ const Navigation = React.memo(function Navigation({
               ) : (
                 ''
               )}
+            </StyledNavLink>
+          )}
+          {user.accessibleFeatures.reservations && (
+            <StyledNavLink to="/calendar" onClick={close}>
+              {t.header.nav.calendar}
             </StyledNavLink>
           )}
         </>

@@ -4,7 +4,7 @@
 
 import { ClientFunction, Selector, t } from 'testcafe'
 import { Daycare } from 'e2e-test-common/dev-api/types'
-import { selectFirstOption } from '../../../utils/helpers'
+import { selectFirstComboboxOption } from '../../../utils/helpers'
 
 export default class ChildInformationPage {
   readonly assistanceCollapsible = Selector(
@@ -15,8 +15,8 @@ export default class ChildInformationPage {
     '[data-qa="applications-collapsible"]'
   )
 
-  readonly backupPickupsCollapsible = Selector(
-    '[data-qa="backup-pickups-collapsible"]'
+  readonly familyContactsCollapsible = Selector(
+    '[data-qa="family-contacts-collapsible"]'
   )
 
   backupPickupRows(name: string): Selector {
@@ -126,8 +126,8 @@ export default class ChildInformationPage {
     await this.openCollapsible(this.messageBlocklistCollapsible)
   }
 
-  async openBackupPickupsCollapsible() {
-    await this.openCollapsible(this.backupPickupsCollapsible)
+  async openFamilyContactsCollapsible() {
+    await this.openCollapsible(this.familyContactsCollapsible)
   }
 
   async openCollapsible(collapsibleSelector: Selector) {
@@ -141,7 +141,7 @@ export default class ChildInformationPage {
     await t.click(this.backupCareSelectUnit)
     await t.typeText(this.backupCareSelectUnit.find('input'), daycare.name)
     await t.click(
-      this.backupCareSelectUnit.find(`[data-qa="value-${daycare.id}"]`)
+      this.backupCareSelectUnit.find(`[data-qa="unit-${daycare.id}"]`)
     )
     const startDateInput = this.backupCareForm
       .find('[data-qa="dates"] input')
@@ -219,7 +219,7 @@ export default class ChildInformationPage {
       await t.click(this.placementsCollapsible)
     }
     await t.click(this.newPlacementButton)
-    await selectFirstOption(
+    await selectFirstComboboxOption(
       this.placementModal.find('[data-qa="unit-select"]'),
       unitName
     )
@@ -239,12 +239,10 @@ export default class ChildInformationPage {
     await t.click(Selector('[data-qa="button-create-application"]'))
   }
 
-  public async selectGuardian(index: number) {
+  public async selectGuardian(name: string) {
     const selectGuardianSelector = Selector('[data-qa="select-guardian"]')
     await t.click(selectGuardianSelector)
-    await t.click(
-      selectGuardianSelector.find(`[id^="react-select-2-option-${index}"`)
-    )
+    await t.click(selectGuardianSelector.find(`[data-qa="guardian-${name}"`))
   }
 
   // For selecting application guardian from vtj in application creation modal
@@ -259,7 +257,7 @@ export default class ChildInformationPage {
     })
 
     await t.expect(selectVtjGuardianSelector.innerText).contains(expectedText)
-    await t.pressKey('enter')
+    await t.click(selectVtjGuardianSelector.find(`[data-qa="person-${ssn}"]`))
   }
 
   public async selectCreateNewPersonAsGuardian(

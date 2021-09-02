@@ -27,10 +27,12 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
+import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -98,17 +100,17 @@ private fun generateNewValueDecisions(
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
     prices: List<FeeThresholds>,
-    voucherValues: List<Pair<DateRange, Int>>,
+    voucherValues: List<VoucherValue>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<UUID>
+    serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.validDuring } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
-                DateRange(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
-                DateRange(child.dateOfBirth.plusYears(3), null)
+                DateRange(child.dateOfBirth, firstOfMonthAfterThirdBirthday(child.dateOfBirth).minusDays(1)),
+                DateRange(firstOfMonthAfterThirdBirthday(child.dateOfBirth), null)
             )
         } +
         feeAlterations.map { DateRange(it.validFrom, it.validTo) }
@@ -118,7 +120,7 @@ private fun generateNewValueDecisions(
             val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
-            val baseValue = voucherValues.find { it.first.contains(period) }?.second
+            val voucherValue = voucherValues.find { it.validity.contains(period) }
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
@@ -165,11 +167,11 @@ private fun generateNewValueDecisions(
                         toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
                     val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
-                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth)
-                    val value = calculateVoucherValue(baseValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
+                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
+                    val value = calculateVoucherValue(voucherValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
 
                     period to VoucherValueDecision(
-                        id = UUID.randomUUID(),
+                        id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
                         headOfFamily = headOfFamily,
                         partner = partner,
@@ -194,7 +196,7 @@ private fun generateNewValueDecisions(
                         coPayment = coPaymentBeforeAlterations,
                         feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
                         finalCoPayment = finalCoPayment,
-                        baseValue = baseValue,
+                        baseValue = voucherValue.baseValue,
                         ageCoefficient = ageCoefficient,
                         voucherValue = value
                     )
@@ -204,20 +206,19 @@ private fun generateNewValueDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
+private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
     // language=sql
     return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
-        .map { rs, _ -> rs.getUUID("id") }
+        .mapTo<DaycareId>()
         .toList()
 }
 
-private fun Database.Read.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
+private fun Database.Read.getVoucherValues(from: LocalDate): List<VoucherValue> {
     // language=sql
     val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
 
     return createQuery(sql)
         .bind("from", from)
         .mapTo<VoucherValue>()
-        .map { it.validity to it.voucherValue }
         .toList()
 }

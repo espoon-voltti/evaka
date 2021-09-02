@@ -22,9 +22,8 @@ interface Props {
 
 const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
   const { i18n } = useTranslation()
-  const { person, setPerson, reloadFamily } = useContext<PersonState>(
-    PersonContext
-  )
+  const { person, setPerson, reloadFamily } =
+    useContext<PersonState>(PersonContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   const loadData = () => {

@@ -4,7 +4,7 @@
 
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from '../../../../lib-common/form-state'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
@@ -13,7 +13,7 @@ import { UUID } from '../../../types'
 import { Loading, Result } from 'lib-common/api'
 import { faPen, faUser } from 'lib-icons'
 import { formatName } from '../../../utils'
-import PersonSearch from '../../../components/common/PersonSearch'
+import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated

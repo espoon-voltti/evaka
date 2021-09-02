@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import Tabs from 'lib-components/molecules/Tabs'
+import { Gap } from 'lib-components/white-space'
 import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
-import { featureFlags } from '../config'
 import { useTranslation } from '../state/i18n'
-import { RouteWithTitle } from '../components/RouteWithTitle'
-import { Gap } from 'lib-components/white-space'
-import Tabs from 'lib-components/molecules/Tabs'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
-import VoucherValueDecisionsPage from './voucher-value-decisions/VoucherValueDecisionsPage'
 import InvoicesPage from './invoices/InvoicesPage'
+import { RouteWithTitle } from './RouteWithTitle'
+import VoucherValueDecisionsPage from './voucher-value-decisions/VoucherValueDecisionsPage'
 
 export default React.memo(function FinancePage() {
   const { i18n } = useTranslation()
@@ -23,15 +22,11 @@ export default React.memo(function FinancePage() {
         link: '/finance/fee-decisions',
         label: i18n.header.feeDecisions
       },
-      ...(featureFlags.voucherValueDecisionsPage
-        ? [
-            {
-              id: 'value-decisions',
-              link: '/finance/value-decisions',
-              label: i18n.header.valueDecisions
-            }
-          ]
-        : []),
+      {
+        id: 'value-decisions',
+        link: '/finance/value-decisions',
+        label: i18n.header.valueDecisions
+      },
       {
         id: 'invoices',
         link: '/finance/invoices',
@@ -53,14 +48,12 @@ export default React.memo(function FinancePage() {
           component={FeeDecisionsPage}
           title={i18n.titles.feeDecisions}
         />
-        {featureFlags.voucherValueDecisionsPage ? (
-          <RouteWithTitle
-            exact
-            path="/finance/value-decisions"
-            component={VoucherValueDecisionsPage}
-            title={i18n.titles.valueDecisions}
-          />
-        ) : null}
+        <RouteWithTitle
+          exact
+          path="/finance/value-decisions"
+          component={VoucherValueDecisionsPage}
+          title={i18n.titles.valueDecisions}
+        />
         <RouteWithTitle
           exact
           path="/finance/invoices"

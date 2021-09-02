@@ -10,7 +10,8 @@ enum class MdcKey(val key: String) {
     SPAN_ID("spanId"),
     REQ_IP("userIp"),
     TRACE_ID("traceId"),
-    USER_ID("userId");
+    USER_ID("userId"),
+    USER_ID_HASH("userIdHash");
 
     fun get(): String? = MDC.get(this.key)
     fun set(value: String) = MDC.put(this.key, value)

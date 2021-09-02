@@ -18,7 +18,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getGuardianDecisions } from '../../api/person'
 import { Decision } from '../../types/decision'
-import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
+import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 
 interface Props {
   id: UUID

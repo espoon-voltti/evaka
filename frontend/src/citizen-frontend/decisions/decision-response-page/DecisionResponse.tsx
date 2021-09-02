@@ -54,14 +54,12 @@ export default React.memo(function DecisionResponse({
     type: decisionType
   } = decision
   const [acceptChecked, setAcceptChecked] = useState<boolean>(true)
-  const [requestedStartDate, setRequestedStartDate] = useState<string>(
-    startDate
-  )
+  const [requestedStartDate, setRequestedStartDate] =
+    useState<string>(startDate)
   const [parsedDate, setParsedDate] = useState<LocalDate | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const [displayCascadeWarning, setDisplayCascadeWarning] = useState<boolean>(
-    false
-  )
+  const [displayCascadeWarning, setDisplayCascadeWarning] =
+    useState<boolean>(false)
   const [dateErrorMessage, setDateErrorMessage] = useState<string>('')
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {

@@ -116,7 +116,7 @@ class AppenderTest {
 
     private fun defaultInfoAssertions(actual: Map<String, Any>) {
         assertThat(actual["logLevel"]).isEqualTo("INFO")
-        assertThat(actual["@timestamp"] as String).isNotBlank()
+        assertThat(actual["@timestamp"] as String).isNotBlank
         assertThat(actual["exception"]).isNull()
         assertThat(actual["stackTrace"]).isNull()
         assertThat(actual["meta"]).isNull()
@@ -124,9 +124,9 @@ class AppenderTest {
 
     private fun defaultErrorAssertions(actual: Map<String, Any>, meta: TestMeta, exception: RuntimeException) {
         assertThat(actual["logLevel"]).isEqualTo("ERROR")
-        assertThat(actual["@timestamp"] as String).isNotBlank()
+        assertThat(actual["@timestamp"] as String).isNotBlank
         assertThat(actual["exception"]).isEqualTo(exception::class.java.simpleName)
-        assertThat(actual["stackTrace"] as String).isNotBlank()
+        assertThat(actual["stackTrace"] as String).isNotBlank
         assertThat(actual["meta"]).isEqualTo(meta.asMap())
     }
 }

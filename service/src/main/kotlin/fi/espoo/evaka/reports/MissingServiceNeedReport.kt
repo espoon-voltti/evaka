@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -62,7 +63,11 @@ private fun Database.Read.getMissingServiceNeedRows(
             FROM (
               SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * daterange(:from, :to, '[]') AS period
               FROM placement
-              WHERE placement.type != 'CLUB'::placement_type
+              WHERE placement.type IN (
+                SELECT DISTINCT sno.valid_placement_type 
+                FROM service_need_option sno 
+                WHERE sno.default_option = FALSE
+              )
             ) AS pl
             LEFT JOIN (
               SELECT placement_id, daterange(start_date, end_date, '[]') * daterange(:from, :to, '[]') AS period
@@ -74,7 +79,7 @@ private fun Database.Read.getMissingServiceNeedRows(
           WHERE days - days_with_sn > 0
         ) results
         JOIN person ON person.id = child_id
-        JOIN daycare ON daycare.id = unit_id AND 'CLUB'::care_types != ANY(daycare.type) AND daycare.invoiced_by_municipality
+        JOIN daycare ON daycare.id = unit_id AND daycare.invoiced_by_municipality
         JOIN care_area ca ON ca.id = daycare.care_area_id
         ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
@@ -87,7 +92,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         .map { rs, _ ->
             MissingServiceNeedReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 childId = rs.getUUID("child_id"),
                 firstName = rs.getString("first_name"),
@@ -99,7 +104,7 @@ private fun Database.Read.getMissingServiceNeedRows(
 
 data class MissingServiceNeedReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val childId: UUID,
     val firstName: String?,

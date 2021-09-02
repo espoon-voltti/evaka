@@ -24,6 +24,7 @@ interface VasuQuestionCommon {
   type: VasuQuestionType
   name: string
   ophKey: string | null
+  info: string
 }
 
 export interface TextQuestion extends VasuQuestionCommon {

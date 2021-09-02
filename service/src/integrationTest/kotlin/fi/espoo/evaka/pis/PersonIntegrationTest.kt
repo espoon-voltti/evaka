@@ -7,14 +7,15 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class PersonIntegrationTest : PureJdbiTest() {
     @BeforeEach
@@ -27,22 +28,28 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `creating an empty person creates a message account`() {
         val person = db.transaction { createEmptyPerson(it) }
-        Assertions.assertTrue(personHasMessageAccount(person.id))
+        assertTrue(personHasMessageAccount(person.id))
     }
 
     @Test
     fun `creating a person creates a message account`() {
-        val validSSN = "080512A918W"
-        val req = PersonIdentityRequest(
-            identity = ExternalIdentifier.SSN.getInstance(validSSN),
-            firstName = "Matti",
-            lastName = "Meikäläinen",
-            email = "matti.meikalainen@example.com",
-            language = "fi"
-        )
-        val person = db.transaction { createPerson(it, req) }
+        val person = db.transaction {
+            createPersonFromVtj(
+                it,
+                PersonDTO(
+                    id = UUID.randomUUID(),
+                    identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
+                    dateOfBirth = LocalDate.of(2012, 5, 8),
+                    firstName = "Matti",
+                    lastName = "Meikäläinen",
+                    email = "matti.meikalainen@example.com",
+                    phone = "1234567890",
+                    language = "fi"
+                )
+            )
+        }
 
-        Assertions.assertTrue(personHasMessageAccount(person.id))
+        assertTrue(personHasMessageAccount(person.id))
     }
 
     @Test
@@ -59,7 +66,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         )
         val personId = db.transaction { createPerson(it, body) }
 
-        Assertions.assertTrue(personHasMessageAccount(personId))
+        assertTrue(personHasMessageAccount(personId))
     }
 
     /**
@@ -78,8 +85,8 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `getTransferablePersonReferences returns references to person and child tables`() {
         val references = db.read { it.getTransferablePersonReferences() }
-        Assertions.assertEquals(35, references.size)
-        Assertions.assertEquals(
+        assertEquals(38, references.size)
+        assertEquals(
             listOf(
                 PersonReference("absence", "child_id"),
                 PersonReference("application", "child_id"),
@@ -88,6 +95,8 @@ class PersonIntegrationTest : PureJdbiTest() {
                 PersonReference("assistance_action", "child_id"),
                 PersonReference("assistance_need", "child_id"),
                 PersonReference("attachment", "uploaded_by_person"),
+                PersonReference("attendance_reservation", "child_id"),
+                PersonReference("attendance_reservation", "created_by_guardian_id"),
                 PersonReference("backup_care", "child_id"),
                 PersonReference("backup_pickup", "child_id"),
                 PersonReference("child_attendance", "child_id"),
@@ -104,6 +113,7 @@ class PersonIntegrationTest : PureJdbiTest() {
                 PersonReference("fridge_child", "head_of_child"),
                 PersonReference("fridge_partner", "person_id"),
                 PersonReference("income", "person_id"),
+                PersonReference("income_statement", "person_id"),
                 PersonReference("invoice", "head_of_family"),
                 PersonReference("invoice_row", "child"),
                 PersonReference("koski_study_right", "child_id"),

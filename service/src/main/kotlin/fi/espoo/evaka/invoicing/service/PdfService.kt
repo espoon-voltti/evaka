@@ -5,14 +5,15 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.lowagie.text.pdf.BaseFont
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
@@ -133,11 +134,15 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang.name)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang.name) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
             "validFrom" to decision.validFrom,
+            "validTo" to decision.validTo,
             "placementUnit" to decision.placement.unit,
             "placementType" to decision.placement.type,
             "familySize" to decision.familySize,
@@ -157,7 +162,6 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
-            "hasPoBox" to (sendAddress.poBox != null),
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
@@ -183,11 +187,17 @@ class PDFService(
     }
 
     fun getFeeDecisionPdfVariables(data: FeeDecisionPdfData): Map<String, Any?> {
+        data class FeeAlterationPdfPart(
+            val type: FeeAlteration.Type,
+            val amount: Int,
+            val isAbsolute: Boolean,
+            val effectFormatted: String
+        )
         data class FeeDecisionPdfPart(
             val childName: String,
             val placementType: PlacementType,
             val serviceNeedDescription: String,
-            val feeAlterations: List<Pair<FeeAlteration.Type, String>>,
+            val feeAlterations: List<FeeAlterationPdfPart>,
             val finalFeeFormatted: String,
             val feeFormatted: String
         )
@@ -196,19 +206,23 @@ class PDFService(
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
+        val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
+
         return mapOf(
             "approvedAt" to instantFmt(decision.approvedAt),
             "decisionNumber" to decision.decisionNumber,
-            "isReliefDecision" to (decision.decisionType !== FeeDecisionType.NORMAL),
+            "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "hasPartner" to (decision.partner != null),
-            "hasPoBox" to (sendAddress.poBox != null),
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
@@ -220,7 +234,9 @@ class PDFService(
                     "${it.child.firstName} ${it.child.lastName}",
                     it.placementType,
                     if (lang == "sv") it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
-                    it.feeAlterations.map { fa -> fa.type to formatCents(fa.effect)!! },
+                    it.feeAlterations.map { fa ->
+                        FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
+                    },
                     formatCents(it.finalFee)!!,
                     formatCents(it.fee)!!
                 )
@@ -231,12 +247,16 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
             "validFrom" to dateFmt(decision.validDuring.start),
+            "validTo" to dateFmt(decision.validDuring.end),
             "feePercent" to (decision.feeThresholds.incomeMultiplier * BigDecimal(100))
                 .setScale(1, RoundingMode.HALF_UP)
                 .toDecimalString(),
             "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
             "familySize" to decision.familySize,
-            "showValidTo" to (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false),
+            "showValidTo" to (
+                (isReliefDecision && decision.validDuring.end != null) ||
+                    (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false)
+                ),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),

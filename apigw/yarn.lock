@@ -2920,7 +2920,7 @@ __metadata:
     nodemon: ^2.0.7
     passport: ^0.4.1
     passport-dummy: 0.0.1
-    passport-saml: 1.3.5
+    passport-saml: 1.5.0
     pino: ^6.7.0
     pino-http: ^5.3.0
     pino-pretty: ^4.3.0
@@ -2939,7 +2939,7 @@ __metadata:
     uuid: ^8.3.1
     xml-crypto: 2.1.2
     xml2js: ^0.4.23
-    xmldom: ^0.6.0
+    xmldom: ^0.7.0
   languageName: unknown
   linkType: soft
 
@@ -5865,19 +5865,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-saml@npm:1.3.5":
-  version: 1.3.5
-  resolution: "passport-saml@npm:1.3.5"
+"passport-saml@npm:1.5.0":
+  version: 1.5.0
+  resolution: "passport-saml@npm:1.5.0"
   dependencies:
     debug: ^3.1.0
     passport-strategy: "*"
-    q: ^1.5.0
-    xml-crypto: ^1.4.0
+    xml-crypto: ^2.0.0
     xml-encryption: 1.2.1
     xml2js: 0.4.x
     xmlbuilder: ^11.0.0
     xmldom: 0.1.x
-  checksum: a435d3a65cf8c4ad816fe067d1cb6572d9cf126d08bca7d32ef40b08e22d7bae9022442e66c8998e128f443ab8cc08ecbdf36c45bcdbb363d4a19d52e661cb9e
+  checksum: 54c81ec5ecd86e75e953aeffe4812f5dc995bf235aadcd5fbdfc760331b7f4271532a53c875df6e147f64cc88a93fbd61c83aadce7c97db7897cf720d7f03dab
   languageName: node
   linkType: hard
 
@@ -6205,13 +6204,6 @@ __metadata:
   dependencies:
     escape-goat: ^2.0.0
   checksum: b300d979e1bcc388b0aabe723e9bd7f6598f02a10e66b693b9dde6249f68ad95e93804a1511dbbafd172e404b837d60c49ebdd152e3e94909dc282ca4ba285e8
-  languageName: node
-  linkType: hard
-
-"q@npm:^1.5.0":
-  version: 1.5.1
-  resolution: "q@npm:1.5.1"
-  checksum: f610c1295a4f1b334affbe5333bc8c6160b907d011a62f1c6d05d4ca985535ea271fd8684e1e655b4659cc5b71f5be9ac4ccc84482d869b5a0576955598a7dca
   languageName: node
   linkType: hard
 
@@ -7686,7 +7678,7 @@ typescript@^4.1.3:
 
 "typescript@patch:typescript@^4.1.3#builtin<compat/typescript>":
   version: 4.1.3
-  resolution: "typescript@patch:typescript@npm%3A4.1.3#builtin<compat/typescript>::version=4.1.3&hash=a45b0e"
+  resolution: "typescript@patch:typescript@npm%3A4.1.3#builtin<compat/typescript>::version=4.1.3&hash=ddfc1b"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
@@ -8073,7 +8065,7 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:2.1.2":
+"xml-crypto@npm:2.1.2, xml-crypto@npm:^2.0.0":
   version: 2.1.2
   resolution: "xml-crypto@npm:2.1.2"
   dependencies:
@@ -8133,17 +8125,10 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xmldom@npm:0.1.x, xmldom@npm:~0.1.15":
-  version: 0.1.31
-  resolution: "xmldom@npm:0.1.31"
-  checksum: 69b741952c32338c915a74d3a6edc37bade58f93ff3722704cc6a10461c62cb5d6d1bcf2e7a3db6e3ff713f15c7e43089e54dfa369d471898905c489bd8e397b
-  languageName: node
-  linkType: hard
-
-"xmldom@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "xmldom@npm:0.6.0"
-  checksum: cca0cddf6f95e9bfa2432a9a819f97b840e6b36fad8017833f5c7d298b4fd69ef2e3e7b5dd68f1e53ec5dd4075bfc8f68e425b06928adc0a21c9bacf0af02b0c
+"xmldom@file:./xmldom-0.7.0.tgz::locator=evaka-api-gateways%40workspace%3A.":
+  version: 0.7.0
+  resolution: "xmldom@file:./xmldom-0.7.0.tgz::locator=evaka-api-gateways%40workspace%3A."
+  checksum: c70718f88cc796368e04fc9074a491d5bda77ddbae9c9f958bd708ec61ca3be13ec26c8a01f6995e06a6e80f3afc5b6cc3b5b8ec3aad596ec6bb308b861c47b5
   languageName: node
   linkType: hard
 

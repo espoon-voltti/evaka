@@ -7,10 +7,10 @@ package fi.espoo.evaka
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class ServerSmokeTest : FullApplicationTest() {
     @Test

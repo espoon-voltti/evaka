@@ -6,6 +6,8 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList) {
@@ -47,19 +48,19 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
             u.type as unit_type,
             u.provider_type as unit_provider_type,
             
-            count(DISTINCT pl.child_id) FILTER (WHERE 'AUTISM'::assistance_basis = ANY(an.bases)) AS autism,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1'::assistance_basis = ANY(an.bases)) AS developmental_disability_1,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2'::assistance_basis = ANY(an.bases)) AS developmental_disability_2,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'FOCUS_CHALLENGE'::assistance_basis = ANY(an.bases)) AS focus_challenge,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'LINGUISTIC_CHALLENGE'::assistance_basis = ANY(an.bases)) AS linguistic_challenge,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENT_MONITORING'::assistance_basis = ANY(an.bases)) AS development_monitoring,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENT_MONITORING_PENDING'::assistance_basis = ANY(an.bases)) AS development_monitoring_pending,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'MULTI_DISABILITY'::assistance_basis = ANY(an.bases)) AS multi_disability,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'LONG_TERM_CONDITION'::assistance_basis = ANY(an.bases)) AS long_term_condition,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'REGULATION_SKILL_CHALLENGE'::assistance_basis = ANY(an.bases)) AS regulation_skill_challenge,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'DISABILITY'::assistance_basis = ANY(an.bases)) AS disability,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'OTHER'::assistance_basis = ANY(an.bases)) AS other_assistance_need,
-            count(DISTINCT pl.child_id) FILTER (WHERE cardinality(an.bases) = 0) AS no_assistance_needs,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'AUTISM' = ANY(abo.bases)) AS autism,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1' = ANY(abo.bases)) AS developmental_disability_1,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2' = ANY(abo.bases)) AS developmental_disability_2,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'FOCUS_CHALLENGE' = ANY(abo.bases)) AS focus_challenge,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'LINGUISTIC_CHALLENGE' = ANY(abo.bases)) AS linguistic_challenge,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENT_MONITORING' = ANY(abo.bases)) AS development_monitoring,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'DEVELOPMENT_MONITORING_PENDING' = ANY(abo.bases)) AS development_monitoring_pending,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'MULTI_DISABILITY' = ANY(abo.bases)) AS multi_disability,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'LONG_TERM_CONDITION' = ANY(abo.bases)) AS long_term_condition,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'REGULATION_SKILL_CHALLENGE' = ANY(abo.bases)) AS regulation_skill_challenge,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'DISABILITY' = ANY(abo.bases)) AS disability,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'OTHER' = ANY(abo.bases)) AS other_assistance_need,
+            count(DISTINCT pl.child_id) FILTER (WHERE cardinality(abo.bases) = 0) AS no_assistance_needs,
             
             count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_CHILD' = ANY(aao.actions)) AS assistance_service_child,
             count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_UNIT' = ANY(aao.actions)) AS assistance_service_unit,
@@ -77,6 +78,12 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
         LEFT JOIN daycare_group_placement gpl ON gpl.daycare_group_id = g.id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :target_date
         LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
         LEFT JOIN assistance_need an on an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :target_date
+        LEFT JOIN (
+            SELECT r.need_id, array_remove(array_agg(o.value), null) AS bases
+            FROM assistance_basis_option_ref r
+            JOIN assistance_basis_option o ON o.id = r.option_id
+            GROUP BY r.need_id
+        ) abo ON abo.need_id = an.id
         LEFT JOIN assistance_action aa on aa.child_id = pl.child_id AND daterange(aa.start_date, aa.end_date, '[]') @> :target_date
         LEFT JOIN (
             SELECT r.action_id, array_remove(array_agg(o.value), null) AS actions
@@ -96,9 +103,9 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
         .map { rs, _ ->
             AssistanceNeedsAndActionsReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
-                groupId = rs.getUUID("group_id"),
+                groupId = GroupId(rs.getUUID("group_id")),
                 groupName = rs.getString("group_name"),
                 unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
                 unitProviderType = rs.getString("unit_provider_type"),
@@ -133,9 +140,9 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
 
 data class AssistanceNeedsAndActionsReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val unitType: UnitType?,
     val unitProviderType: String,

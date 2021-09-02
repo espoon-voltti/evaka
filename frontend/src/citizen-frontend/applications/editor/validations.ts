@@ -17,12 +17,12 @@ import {
   validate,
   validDate
 } from '../../form-validation'
-import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'
 import { DecisionType } from '../../decisions/types'
 import { featureFlags } from 'lib-customizations/citizen'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -104,20 +104,19 @@ export const isValidDecisionStartDate = (
   )
 }
 
-const preferredStartDateValidator = (
-  originalPreferredStartDate: LocalDate | null,
-  type: ApplicationType,
-  terms?: Term[]
-) => (
-  val: string,
-  err: ErrorKey = 'preferredStartDate'
-): ErrorKey | undefined => {
-  const date = LocalDate.parseFiOrNull(val)
-  return date &&
-    isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
-    ? undefined
-    : err
-}
+const preferredStartDateValidator =
+  (
+    originalPreferredStartDate: LocalDate | null,
+    type: ApplicationType,
+    terms?: Term[]
+  ) =>
+  (val: string, err: ErrorKey = 'preferredStartDate'): ErrorKey | undefined => {
+    const date = LocalDate.parseFiOrNull(val)
+    return date &&
+      isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
+      ? undefined
+      : err
+  }
 
 export const validateApplication = (
   apiData: ApplicationDetails,

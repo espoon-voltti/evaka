@@ -12,11 +12,11 @@ as a common logger and JWT authentication.
 ## Development
 
 Building and testing is done as a part of the using Kotlin service builds,
-i.e. evaka-service and evaka-message-service, using this project as a
+i.e., evaka-service and evaka-message-service, using this project as a
 sub-project dependency.
 
 ## Known issues
 
 - [ ] Multiple Logback `ConsoleAppender`s could theoretically corrupt
-    eachother's JSON logs if more than one of them output at the same time
+    each other's JSON logs if more than one of them output at the same time
     (w/ multiline content)

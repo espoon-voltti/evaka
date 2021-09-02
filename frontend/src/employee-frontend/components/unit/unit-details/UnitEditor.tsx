@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import {
   CareArea,
   Coordinate,
-  ProviderType,
   Unit,
   UnitLanguage,
   UnitTypes
@@ -38,6 +37,8 @@ import {
 import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
+import { UnitProviderType } from 'lib-customizations/types'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -52,12 +53,13 @@ interface FormData {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: string
   language: UnitLanguage
   ghostUnit: boolean
   uploadToVarda: boolean
+  uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
@@ -349,17 +351,6 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
-  if (form.uploadToVarda || form.uploadToKoski) {
-    if (!form.ophUnitOid) {
-      errors.push(i18n.unitEditor.error.ophUnitOid)
-    }
-    if (!form.ophOrganizerOid) {
-      errors.push(i18n.unitEditor.error.ophOrganizerOid)
-    }
-    if (!form.ophOrganizationOid) {
-      errors.push(i18n.unitEditor.error.ophOrganizationOid)
-    }
-  }
   if (form.invoicedByMunicipality && !form.financeDecisionHandlerId) {
     errors.push(i18n.unitEditor.error.financeDecisionHandler)
   }
@@ -384,6 +375,7 @@ function validateForm(
     ghostUnit,
     financeDecisionHandlerId,
     uploadToVarda,
+    uploadChildrenToVarda,
     uploadToKoski,
     invoicedByMunicipality,
     ophUnitOid,
@@ -414,6 +406,7 @@ function validateForm(
         language,
         ghostUnit,
         uploadToVarda,
+        uploadChildrenToVarda,
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
@@ -480,6 +473,7 @@ function toFormData(unit: Unit | undefined): FormData {
     language: unit?.language ?? 'fi',
     ghostUnit: unit?.ghostUnit ?? false,
     uploadToVarda: unit?.uploadToVarda ?? false,
+    uploadChildrenToVarda: unit?.uploadChildrenToVarda ?? false,
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
@@ -519,13 +513,38 @@ function toFormData(unit: Unit | undefined): FormData {
 
 export default function UnitEditor(props: Props): JSX.Element {
   const { i18n } = useTranslation()
-
-  const initialData = useMemo<FormData>(() => toFormData(props.unit), [
-    props.unit
-  ])
+  const initialData = useMemo<FormData>(
+    () => toFormData(props.unit),
+    [props.unit]
+  )
   const [form, setForm] = useState<FormData>(initialData)
   const [formErrors, setFormErrors] = useState<string[]>([])
   const { careTypes, decisionCustomization, unitManager } = form
+
+  const canApplyTypes = [
+    {
+      type: 'daycare',
+      checkboxI18n: 'canApplyDaycare',
+      field: 'daycareApplyPeriod',
+      period: form.daycareApplyPeriod
+    },
+    ...(featureFlags.preschoolEnabled
+      ? [
+          {
+            type: 'preschool',
+            checkboxI18n: 'canApplyPreschool',
+            field: 'preschoolApplyPeriod',
+            period: form.preschoolApplyPeriod
+          }
+        ]
+      : []),
+    {
+      type: 'club',
+      checkboxI18n: 'canApplyClub',
+      field: 'clubApplyPeriod',
+      period: form.clubApplyPeriod
+    }
+  ]
 
   const updateForm = (updates: Partial<FormData>) => {
     const newForm = { ...form, ...updates }
@@ -535,12 +554,11 @@ export default function UnitEditor(props: Props): JSX.Element {
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
     updateForm({ careTypes: { ...form.careTypes, ...updates } })
-  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> = (
-    updates
-  ) =>
-    updateForm({
-      decisionCustomization: { ...form.decisionCustomization, ...updates }
-    })
+  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> =
+    (updates) =>
+      updateForm({
+        decisionCustomization: { ...form.decisionCustomization, ...updates }
+      })
   const updateUnitManager: UpdateStateFn<UnitManager> = (updates) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
@@ -695,22 +713,26 @@ export default function UnitEditor(props: Props): JSX.Element {
               />
             )}
           </DaycareTypeSelectContainer>
-          <Checkbox
-            disabled={!props.editable}
-            checked={form.careTypes.PRESCHOOL}
-            label={i18n.common.types.PRESCHOOL}
-            onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
-            data-qa="care-type-checkbox-PRESCHOOL"
-          />
-          <Checkbox
-            disabled={!props.editable}
-            checked={form.careTypes.PREPARATORY_EDUCATION}
-            label={i18n.common.types.PREPARATORY_EDUCATION}
-            onChange={(checked) =>
-              updateCareTypes({ PREPARATORY_EDUCATION: checked })
-            }
-            data-qa="care-type-checkbox-PREPARATORY"
-          />
+          {featureFlags.preschoolEnabled && (
+            <>
+              <Checkbox
+                disabled={!props.editable}
+                checked={form.careTypes.PRESCHOOL}
+                label={i18n.common.types.PRESCHOOL}
+                onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
+                data-qa="care-type-checkbox-PRESCHOOL"
+              />
+              <Checkbox
+                disabled={!props.editable}
+                checked={form.careTypes.PREPARATORY_EDUCATION}
+                label={i18n.common.types.PREPARATORY_EDUCATION}
+                onChange={(checked) =>
+                  updateCareTypes({ PREPARATORY_EDUCATION: checked })
+                }
+                data-qa="care-type-checkbox-PREPARATORY"
+              />
+            </>
+          )}
           <Checkbox
             disabled={!props.editable}
             checked={form.careTypes.CLUB}
@@ -723,26 +745,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
         <FixedSpaceColumn>
-          {[
-            {
-              type: 'daycare',
-              checkboxI18n: 'canApplyDaycare',
-              field: 'daycareApplyPeriod',
-              period: form.daycareApplyPeriod
-            },
-            {
-              type: 'preschool',
-              checkboxI18n: 'canApplyPreschool',
-              field: 'preschoolApplyPeriod',
-              period: form.preschoolApplyPeriod
-            },
-            {
-              type: 'club',
-              checkboxI18n: 'canApplyClub',
-              field: 'clubApplyPeriod',
-              period: form.clubApplyPeriod
-            }
-          ].map(({ type, checkboxI18n, field, period }) => {
+          {canApplyTypes.map(({ type, checkboxI18n, field, period }) => {
             return (
               <div key={type}>
                 <Checkbox
@@ -830,13 +833,7 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{showRequired(i18n.unitEditor.label.providerType)}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {([
-              'MUNICIPAL',
-              'PURCHASED',
-              'MUNICIPAL_SCHOOL',
-              'PRIVATE',
-              'PRIVATE_SERVICE_VOUCHER'
-            ] as const).map((value) => (
+            {unitProviderTypes.map((value) => (
               <Radio
                 key={value}
                 label={i18n.common.providerType[value]}
@@ -945,10 +942,20 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
           <Checkbox
             disabled={!props.editable}
-            label={i18n.unitEditor.field.uploadToKoski}
-            checked={form.uploadToKoski}
-            onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
+            label={i18n.unitEditor.field.uploadChildrenToVarda}
+            checked={form.uploadChildrenToVarda}
+            onChange={(uploadChildrenToVarda) =>
+              updateForm({ uploadChildrenToVarda })
+            }
           />
+          {featureFlags.preschoolEnabled && (
+            <Checkbox
+              disabled={!props.editable}
+              label={i18n.unitEditor.field.uploadToKoski}
+              checked={form.uploadToKoski}
+              onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
+            />
+          )}
           <Checkbox
             disabled={!props.editable}
             label={i18n.unitEditor.field.invoicedByMunicipality}
@@ -1201,48 +1208,46 @@ export default function UnitEditor(props: Props): JSX.Element {
           decisionCustomization.daycareName
         )}
       </FormPart>
-      <FormPart>
-        <label htmlFor="unit-preschool-name">
-          {i18n.unitEditor.label.decisionCustomization.preschoolName}
-        </label>
-        {props.editable ? (
-          <InputField
-            id="unit-preschool-name"
-            placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
-            value={decisionCustomization.preschoolName}
-            width={'L'}
-            onChange={(value) =>
-              updateDecisionCustomization({
-                preschoolName: value
-              })
-            }
-          />
-        ) : (
-          decisionCustomization.preschoolName
-        )}
-      </FormPart>
+      {featureFlags.preschoolEnabled && (
+        <>
+          <FormPart>
+            <label htmlFor="unit-preschool-name">
+              {i18n.unitEditor.label.decisionCustomization.preschoolName}
+            </label>
+            {props.editable ? (
+              <InputField
+                id="unit-preschool-name"
+                placeholder={
+                  i18n.unitEditor.placeholder.decisionCustomization.name
+                }
+                value={decisionCustomization.preschoolName}
+                width={'L'}
+                onChange={(value) =>
+                  updateDecisionCustomization({
+                    preschoolName: value
+                  })
+                }
+              />
+            ) : (
+              decisionCustomization.preschoolName
+            )}
+          </FormPart>
+        </>
+      )}
       <FormPart>
         <div>{i18n.unitEditor.label.decisionCustomization.handler}</div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {([0, 1, 2, 3] as const).map((index) => (
-              <Radio
-                key={index}
-                label={
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
-                }
-                checked={
-                  form.decisionCustomization.handler ===
-                  i18n.unitEditor.field.decisionCustomization.handler[index]
-                }
-                onChange={() =>
-                  updateDecisionCustomization({
-                    handler:
-                      i18n.unitEditor.field.decisionCustomization.handler[index]
-                  })
-                }
-              />
-            ))}
+            {i18n.unitEditor.field.decisionCustomization.handler.map(
+              (handler, index) => (
+                <Radio
+                  key={index}
+                  label={handler}
+                  checked={form.decisionCustomization.handler === handler}
+                  onChange={() => updateDecisionCustomization({ handler })}
+                />
+              )
+            )}
           </FixedSpaceColumn>
         ) : (
           form.decisionCustomization.handler

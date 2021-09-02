@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class ApplicationsReportController {
@@ -78,7 +78,7 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
         .map { rs, _ ->
             ApplicationsReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 unitProviderType = rs.getString("provider_type"),
                 under3Years = rs.getInt("under_3_years_count"),
@@ -93,7 +93,7 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
 
 data class ApplicationsReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val unitProviderType: String,
     val under3Years: Int,

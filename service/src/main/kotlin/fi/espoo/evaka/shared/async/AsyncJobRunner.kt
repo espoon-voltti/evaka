@@ -32,6 +32,7 @@ private val noHandler = { _: Database, msg: Any -> logger.warn("No job handler c
 
 class AsyncJobRunner(
     private val jdbi: Jdbi,
+    private val disableRunner: Boolean = false,
     private val syncMode: Boolean = false
 ) : AutoCloseable {
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
@@ -163,17 +164,20 @@ class AsyncJobRunner(
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(maxCount: Int) = Database(jdbi).connect { db ->
-        var remaining = maxCount
-        do {
-            val job = db.transaction { it.claimJob() }
-            if (job != null) {
-                runPendingJob(db, job)
-            }
-            remaining -= 1
-        } while (job != null && remaining > 0)
-    }
+    private fun runPendingJobs(maxCount: Int) {
+        if (disableRunner) return
 
+        Database(jdbi).connect { db ->
+            var remaining = maxCount
+            do {
+                val job = db.transaction { it.claimJob() }
+                if (job != null) {
+                    runPendingJob(db, job)
+                }
+                remaining -= 1
+            } while (job != null && remaining > 0)
+        }
+    }
     @Suppress("DEPRECATION")
     private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef) {
         val logMeta = mapOf(
@@ -262,6 +266,7 @@ class AsyncJobRunner(
             runningCount.decrementAndGet()
             MdcKey.SPAN_ID.unset()
             MdcKey.TRACE_ID.unset()
+            MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
         }
     }
@@ -271,7 +276,10 @@ class AsyncJobRunner(
         crossinline f: (db: Database, msg: T) -> Unit
     ): Boolean {
         val msg = startJob(job, T::class.java) ?: return false
-        msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+        msg.user?.let {
+            MdcKey.USER_ID.set(it.id.toString())
+            MdcKey.USER_ID_HASH.set(it.idHash.toString())
+        }
         f(Database(jdbi), msg)
         completeJob(job)
         return true

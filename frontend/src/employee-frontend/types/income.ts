@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types'
+import { UUID } from './index'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 

@@ -54,12 +54,14 @@ export default class FinanceBasicsPage {
           await expectValueToBe('minFee', formatEuros(thresholds.minFee))
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+            const key =
+              `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
             return expectValueToBe(key, formatEuros(thresholds[key]))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {
             await promise
-            const key = `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+            const key =
+              `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
             return expectValueToBe(key, formatEuros(thresholds[key]))
           }, Promise.resolve())
           await ([2, 3, 4, 5, 6] as const).reduce(async (promise, n) => {

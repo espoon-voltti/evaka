@@ -23,7 +23,7 @@ const NumberInputContainer = styled.div`
   width: 150px;
 `
 
-const numberRegex = /^\d{1,2}((\.|,){1}(\d){1})?$/
+const numberRegex = /^\d{1,2}(([.,])(\d))?$/
 
 interface FormState {
   startDate: LocalDate

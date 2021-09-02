@@ -9,6 +9,7 @@ import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -21,15 +22,15 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -281,7 +282,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun insertTestVardaUnit(db: Database.Connection, id: UUID) = db.transaction {
+private fun insertTestVardaUnit(db: Database.Connection, id: DaycareId) = db.transaction {
     // language=sql
     val sql =
         """

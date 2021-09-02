@@ -38,7 +38,6 @@ import { getEmployees } from '../../../api/employees'
 import { Employee } from '../../../types/employee'
 import { UserContext } from '../../../state/user'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { RequireRole } from '../../../utils/roles'
 import { useTranslation } from '../../../state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
@@ -52,16 +51,17 @@ import { Gap } from 'lib-components/white-space'
 import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
-import { isNotProduction, isPilotUnit } from '../../../constants'
-import { AdRole } from '../../../types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { Action } from 'lib-common/generated/action'
 
 type Props = {
   unitId: string
   groups: Record<UUID, DaycareGroupSummary>
+  mobileEnabled: boolean
+  permittedActions: Set<Action.Unit>
 }
 
 interface FormattedRow {
@@ -166,20 +166,19 @@ function AclRowEditor({
 
 function AclRow({
   row,
+  isEditable,
   isDeletable,
   onClickDelete,
   onChangeGroups,
-  rolesAllowedToEdit,
   unitGroups
 }: {
   row: FormattedRow
+  isEditable: boolean
   isDeletable: boolean
   onClickDelete: () => void
   onChangeGroups: (ids: UUID[]) => void
-  rolesAllowedToEdit: AdRole[]
   unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
-  const isEditable = !!unitGroups
   const [editing, setEditing] = useState(false)
 
   const onClickEdit = useCallback(() => setEditing(true), [setEditing])
@@ -223,9 +222,7 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
-      <Td>
-        <RequireRole oneOf={rolesAllowedToEdit}>{buttons}</RequireRole>
-      </Td>
+      <Td>{(isEditable || isDeletable) && buttons}</Td>
     </Tr>
   )
 }
@@ -262,13 +259,15 @@ function AclTable({
   rows,
   onDeleteAclRow,
   onChangeAclGroups,
-  rolesAllowedToEdit
+  editPermitted,
+  deletePermitted
 }: {
   unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
   onChangeAclGroups?: (employeeId: UUID, groupIds: UUID[]) => void
-  rolesAllowedToEdit: AdRole[]
+  editPermitted?: boolean
+  deletePermitted: boolean
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -289,14 +288,14 @@ function AclTable({
             key={row.id}
             unitGroups={unitGroups}
             row={row}
-            isDeletable={row.id !== user?.id}
+            isDeletable={deletePermitted && row.id !== user?.id}
+            isEditable={!!(editPermitted && unitGroups)}
             onClickDelete={() => onDeleteAclRow(row.id)}
             onChangeGroups={
               onChangeAclGroups
                 ? (ids) => onChangeAclGroups(row.id, ids)
                 : () => undefined
             }
-            rolesAllowedToEdit={rolesAllowedToEdit}
           />
         ))}
       </Tbody>
@@ -448,7 +447,12 @@ interface RemoveState {
   removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
 }
 
-function UnitAccessControl({ unitId, groups }: Props) {
+function UnitAccessControl({
+  unitId,
+  groups,
+  mobileEnabled,
+  permittedActions
+}: Props) {
   const { i18n } = useTranslation()
 
   const { user } = useContext(UserContext)
@@ -662,96 +666,99 @@ function UnitAccessControl({ unitId, groups }: Props) {
           closeModal={closePairMobileDeviceModal}
         />
       )}
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <ContentArea opaque data-qa="daycare-acl-supervisors">
-          <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
-          {loading && <Loader />}
-          {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
-          {!failed && !loading && unitSupervisors && (
-            <AclTable
-              rows={unitSupervisors}
-              onDeleteAclRow={(employeeId) =>
-                openRemoveModal({
-                  employeeId,
-                  removeFn: removeDaycareAclSupervisor
-                })
-              }
-              rolesAllowedToEdit={['ADMIN']}
-            />
-          )}
-          <RequireRole oneOf={['ADMIN']}>
-            <AddAcl
-              employees={candidateEmployees}
-              onAddAclRow={addUnitSupervisor}
-            />
-          </RequireRole>
-        </ContentArea>
-        <ContentArea opaque data-qa="daycare-acl-set">
-          <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
-          {loading && <Loader />}
-          {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
-          {!failed && !loading && specialEducationTeachers && (
-            <AclTable
-              rows={specialEducationTeachers}
-              onDeleteAclRow={(employeeId) =>
-                openRemoveModal({
-                  employeeId,
-                  removeFn: removeDaycareAclSpecialEducationTeacher
-                })
-              }
-              rolesAllowedToEdit={['ADMIN']}
-            />
-          )}
-          <RequireRole oneOf={['ADMIN']}>
-            <AddAcl
-              employees={candidateEmployees}
-              onAddAclRow={addSpecialEducationTeacher}
-            />
-          </RequireRole>
-        </ContentArea>
-        <ContentArea opaque data-qa="daycare-acl-staff">
-          <H2>{i18n.unit.accessControl.staff}</H2>
+      <ContentArea opaque data-qa="daycare-acl-supervisors">
+        <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
+        {loading && <Loader />}
+        {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+        {!failed && !loading && unitSupervisors && (
+          <AclTable
+            rows={unitSupervisors}
+            onDeleteAclRow={(employeeId) =>
+              openRemoveModal({
+                employeeId,
+                removeFn: removeDaycareAclSupervisor
+              })
+            }
+            deletePermitted={permittedActions.has('DELETE_ACL_UNIT_SUPERVISOR')}
+          />
+        )}
+        {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
+          <AddAcl
+            employees={candidateEmployees}
+            onAddAclRow={addUnitSupervisor}
+          />
+        )}
+      </ContentArea>
+      <ContentArea opaque data-qa="daycare-acl-set">
+        <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
+        {loading && <Loader />}
+        {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+        {!failed && !loading && specialEducationTeachers && (
+          <AclTable
+            rows={specialEducationTeachers}
+            onDeleteAclRow={(employeeId) =>
+              openRemoveModal({
+                employeeId,
+                removeFn: removeDaycareAclSpecialEducationTeacher
+              })
+            }
+            deletePermitted={permittedActions.has(
+              'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+            )}
+          />
+        )}
+        {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
+          <AddAcl
+            employees={candidateEmployees}
+            onAddAclRow={addSpecialEducationTeacher}
+          />
+        )}
+      </ContentArea>
+      <ContentArea opaque data-qa="daycare-acl-staff">
+        <H2>{i18n.unit.accessControl.staff}</H2>
+        {loading && <Loader />}
+        {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+        {!failed && !loading && staff && (
+          <AclTable
+            rows={staff}
+            onDeleteAclRow={(employeeId) =>
+              openRemoveModal({
+                employeeId,
+                removeFn: removeDaycareAclStaff
+              })
+            }
+            unitGroups={groups}
+            onChangeAclGroups={updateStaffGroupAcls}
+            editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+            deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+          />
+        )}
+        {permittedActions.has('INSERT_ACL_STAFF') && (
+          <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
+        )}
+      </ContentArea>
+      {mobileEnabled && (
+        <ContentArea opaque data-qa="daycare-mobile-devices">
+          <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
           {loading && <Loader />}
           {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
           {!failed && !loading && staff && (
-            <AclTable
-              rows={staff}
-              onDeleteAclRow={(employeeId) =>
-                openRemoveModal({
-                  employeeId,
-                  removeFn: removeDaycareAclStaff
-                })
-              }
-              unitGroups={groups}
-              onChangeAclGroups={updateStaffGroupAcls}
-              rolesAllowedToEdit={['ADMIN', 'UNIT_SUPERVISOR']}
-            />
+            <Fragment>
+              <DevicesTable
+                rows={mobileDevices}
+                onEditDevice={(id) => openEditMobileDeviceModal(id)}
+                onDeleteDevice={(id) => openRemoveMobileDeviceModal(id)}
+              />
+              <Gap />
+              <AddButton
+                text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
+                onClick={() => openPairMobileDeviceModal()}
+                data-qa="start-mobile-pairing"
+              />
+            </Fragment>
           )}
-          <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
         </ContentArea>
-        {(isNotProduction() || isPilotUnit(unitId)) && (
-          <ContentArea opaque data-qa="daycare-mobile-devices">
-            <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
-            {loading && <Loader />}
-            {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
-            {!failed && !loading && staff && (
-              <Fragment>
-                <DevicesTable
-                  rows={mobileDevices}
-                  onEditDevice={(id) => openEditMobileDeviceModal(id)}
-                  onDeleteDevice={(id) => openRemoveMobileDeviceModal(id)}
-                />
-                <Gap />
-                <AddButton
-                  text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
-                  onClick={() => openPairMobileDeviceModal()}
-                  data-qa="start-mobile-pairing"
-                />
-              </Fragment>
-            )}
-          </ContentArea>
-        )}
-      </RequireRole>
+      )}
     </>
   )
 }

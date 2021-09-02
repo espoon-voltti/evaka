@@ -5,7 +5,7 @@
 import { UUID } from '../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { Parentship } from '../types/fridge'
-import { client } from '../api/client'
+import { client } from './client'
 import { deserializePersonDetails } from '../types/person'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'

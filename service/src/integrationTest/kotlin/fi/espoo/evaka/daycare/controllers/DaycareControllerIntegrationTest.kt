@@ -16,6 +16,8 @@ import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.insertMessageContent
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -34,15 +36,15 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class DaycareControllerIntegrationTest : FullApplicationTest() {
     private val childId = testChild_1.id
@@ -77,10 +79,9 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get daycare`() {
-        val (daycare, _, currentUserRoles) = getDaycare(daycareId)
+        val (daycare, _, _) = getDaycare(daycareId)
 
         db.read { assertEquals(it.getDaycare(daycareId), daycare) }
-        assertEquals(setOf(UserRole.STAFF), currentUserRoles)
     }
 
     @Test
@@ -188,16 +189,16 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(Stats(minimum = 8.5, maximum = 8.5), stats.unitTotalCaretakers)
     }
 
-    private fun getDaycare(daycareId: UUID): DaycareResponse {
+    private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         val (_, res, body) = http.get("/daycares/$daycareId")
             .asUser(staffMember)
-            .responseObject<DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()
     }
 
-    private fun getDaycareStats(daycareId: UUID, from: LocalDate, to: LocalDate): DaycareCapacityStats {
+    private fun getDaycareStats(daycareId: DaycareId, from: LocalDate, to: LocalDate): DaycareCapacityStats {
         val (_, res, body) = http.get("/daycares/$daycareId/stats?from=$from&to=$to")
             .asUser(staffMember)
             .responseObject<DaycareCapacityStats>(objectMapper)
@@ -207,7 +208,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     }
 
     private fun createDaycareGroup(
-        daycareId: UUID,
+        daycareId: DaycareId,
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
@@ -229,7 +230,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         return body.get()
     }
 
-    private fun deleteDaycareGroup(daycareId: UUID, groupId: UUID, expectedStatus: Int = 204) {
+    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId, expectedStatus: Int = 204) {
         val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
             .asUser(supervisor)
             .response()
@@ -237,7 +238,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun groupHasMessageAccount(groupId: UUID): Boolean {
+    private fun groupHasMessageAccount(groupId: GroupId): Boolean {
         // language=SQL
         val sql = """
             SELECT EXISTS(

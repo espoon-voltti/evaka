@@ -59,9 +59,8 @@ function Search() {
     sortDirection,
     sortToggle
   } = useContext(CustomersContext)
-  const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] = useState(
-    false
-  )
+  const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] =
+    useState(false)
   const [showCreatePersonModal, setShowCreatePersonModal] = useState(false)
 
   useCustomerSearch()
@@ -79,6 +78,7 @@ function Search() {
               onChange={(value) => {
                 setSearchTerm(value)
               }}
+              width="L"
               data-qa="search-input"
               icon={faSearch}
             />

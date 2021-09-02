@@ -6,10 +6,14 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -39,7 +43,7 @@ private val decisionSelector =
     """.trimIndent()
 
 private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
-    id = UUID.fromString(rs.getString("id")),
+    id = DecisionId(rs.getUUID("id")),
     createdBy = "${rs.getString("first_name")} ${rs.getString("last_name")}",
     type = DecisionType.valueOf(rs.getString("type")),
     startDate = rs.getDate("start_date").toLocalDate(),
@@ -52,7 +56,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     requestedStartDate = rs.getDate("requested_start_date")?.toLocalDate(),
     resolved = rs.getDate("resolved")?.toLocalDate(),
     unit = DecisionUnit(
-        id = UUID.fromString(rs.getString("unit_id")),
+        id = DaycareId(rs.getUUID("unit_id")),
         name = rs.getString("name"),
         daycareDecisionName = rs.getString("decision_daycare_name"),
         preschoolDecisionName = rs.getString("decision_preschool_name"),
@@ -65,12 +69,12 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
         decisionHandlerAddress = rs.getString("decision_handler_address"),
         providerType = rs.getEnum("provider_type")
     ),
-    applicationId = UUID.fromString(rs.getString("application_id")),
+    applicationId = ApplicationId(rs.getUUID("application_id")),
     childId = UUID.fromString(rs.getString("child_id")),
     childName = "${rs.getString("child_first_name")} ${rs.getString("child_last_name")}"
 )
 
-fun Database.Read.getDecision(decisionId: UUID): Decision? {
+fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
     return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
         .map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.first()
 }
@@ -83,7 +87,7 @@ fun Database.Read.getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthori
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
-fun Database.Read.getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
@@ -103,9 +107,9 @@ fun Database.Read.getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclA
 }
 
 data class ApplicationDecisionRow(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val childName: String,
-    val id: UUID,
+    val id: DecisionId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,
@@ -138,7 +142,7 @@ fun Database.Read.getOwnDecisions(guardianId: UUID): List<ApplicationDecisions> 
         }
 }
 
-fun Database.Read.fetchDecisionDrafts(applicationId: UUID): List<DecisionDraft> {
+fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> {
     // language=sql
     val sql =
         """
@@ -154,8 +158,8 @@ fun Database.Read.fetchDecisionDrafts(applicationId: UUID): List<DecisionDraft> 
 }
 
 fun Database.Transaction.finalizeDecisions(
-    applicationId: UUID
-): List<UUID> {
+    applicationId: ApplicationId
+): List<DecisionId> {
     // discard unplanned drafts
     createUpdate(
         //language=SQL
@@ -177,16 +181,16 @@ fun Database.Transaction.finalizeDecisions(
     )
         .bind("applicationId", applicationId)
         .bind("sentDate", LocalDate.now(ZoneId.of("Europe/Helsinki")))
-        .mapTo<UUID>()
+        .mapTo<DecisionId>()
         .list()
 }
 
 fun Database.Transaction.insertDecision(
-    decisionId: UUID,
+    decisionId: DecisionId,
     userId: UUID,
     sentDate: LocalDate,
-    applicationId: UUID,
-    unitId: UUID,
+    applicationId: ApplicationId,
+    unitId: DaycareId,
     decisionType: String,
     startDate: LocalDate,
     endDate: LocalDate
@@ -209,7 +213,7 @@ fun Database.Transaction.insertDecision(
         .execute()
 }
 
-fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: UUID, documentKey: String) {
+fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: DecisionId, documentKey: String) {
     // language=SQL
     createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
@@ -217,7 +221,7 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: UUID, doc
         .execute()
 }
 
-fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: UUID, documentKey: String) {
+fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: DecisionId, documentKey: String) {
     // language=SQL
     createUpdate("UPDATE decision SET other_guardian_document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
@@ -225,7 +229,7 @@ fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: UUID
         .execute()
 }
 
-fun Database.Read.isDecisionBlocked(decisionId: UUID): Boolean {
+fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean {
     return createQuery(
         // language=SQL
         """
@@ -238,7 +242,7 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         .map { rs: ResultSet, _: StatementContext -> rs.getBoolean("blocked") }.first() ?: false
 }
 
-fun Database.Read.getDecisionLanguage(decisionId: UUID): String {
+fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
     return createQuery(
         //language=SQL
         """
@@ -252,7 +256,7 @@ fun Database.Read.getDecisionLanguage(decisionId: UUID): String {
         .map { rs -> rs.getColumn("language", String::class.java) }.first()
 }
 
-fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) {
+fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, decisionId: DecisionId, requestedStartDate: LocalDate) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
@@ -275,7 +279,7 @@ AND status = 'PENDING'
         .execute()
 }
 
-fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) {
+fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, decisionId: DecisionId) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }

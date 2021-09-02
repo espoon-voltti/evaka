@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID, SearchOrder } from '../types'
+import { SearchOrder, UUID } from '../types'
 import {
   ApplicationListSummary,
-  SortByApplications,
-  ApplicationSearchParams,
+  ApplicationNote,
   ApplicationResponse,
-  ApplicationNote
+  ApplicationSearchParams,
+  SortByApplications
 } from '../types/application'
 import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { CreatePersonBody } from '../api/person'
+import { CreatePersonBody } from './person'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
 import { PlacementPlanConfirmationStatus } from '../types/unit'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -22,8 +22,14 @@ import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
+import {
+  ClubTerm,
+  deserializeClubTerm,
+  deserializePreschoolTerm,
+  PreschoolTerm
+} from 'lib-common/api-types/units/terms'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 export async function getApplication(
   id: UUID
@@ -72,8 +78,12 @@ export async function getApplications(
   params: ApplicationSearchParams
 ): Promise<Result<Paged<ApplicationListSummary>>> {
   return client
-    .get<JsonOf<Paged<ApplicationListSummary>>>('v2/applications', {
-      params: { page: page, pageSize, sortBy, sortDir, ...params }
+    .post<JsonOf<Paged<ApplicationListSummary>>>('v2/applications/search', {
+      page: page,
+      pageSize,
+      sortBy,
+      sortDir,
+      ...params
     })
     .then(({ data }) => ({
       ...data,
@@ -336,14 +346,22 @@ export async function deleteNote(id: UUID): Promise<void> {
   return client.delete(`/note/${id}`)
 }
 
-export async function getAttachmentBlob(
-  attachmentId: UUID
-): Promise<Result<BlobPart>> {
-  return client({
-    url: `/attachments/${attachmentId}/download`,
-    method: 'GET',
-    responseType: 'blob'
-  })
-    .then((result) => Success.of(result.data))
-    .catch((e) => Failure.fromError(e))
+export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
+    return Success.of(result.data.map(deserializeClubTerm))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<PreschoolTerm[]>>(
+      `/public/preschool-terms`
+    )
+    return Success.of(result.data.map(deserializePreschoolTerm))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }

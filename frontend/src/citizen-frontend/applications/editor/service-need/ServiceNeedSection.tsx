@@ -2,10 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ApplicationStatus,
-  ApplicationType
-} from 'lib-common/api-types/application/enums'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
@@ -18,8 +14,9 @@ import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-n
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import { getErrorCount } from '../../../form-validation'
 import { useTranslation } from '../../../localization'
-import { ServiceNeedFormData } from '../ApplicationFormData'
+import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors, Term } from '../validations'
+import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus

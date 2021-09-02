@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.pis.dao
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -22,7 +24,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
-        val partnershipId = UUID.randomUUID()
+        val partnershipId = PartnershipId(UUID.randomUUID())
         createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
         createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
     }
@@ -33,14 +35,14 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
 
         val startDate2 = endDate1.plusDays(1)
         val endDate2 = startDate2.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
@@ -52,7 +54,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
@@ -61,7 +63,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate2 = startDate2.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
@@ -76,7 +78,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 3, person3.id, startDate, endDate)
@@ -92,7 +94,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 0, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 1, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
@@ -108,7 +110,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
@@ -122,7 +124,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person1.id, startDate, endDate)
         }
@@ -137,7 +139,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate1.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate)
         }
@@ -152,7 +154,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate2 = endDate1.plusDays(1)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate2)
         }
@@ -166,14 +168,14 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.minusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
         }
     }
 
     @Test
-    fun `one child having two different head of childs not overlapping is ok`() {
+    fun `one child having two different heads of child not overlapping is ok`() {
         val child = testPerson1()
         val parent1 = testPerson2()
         val parent2 = testPerson3()
@@ -214,7 +216,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `one child having two head of childs at the same time is NOT ok`() {
+    fun `one child having two heads of child at the same time is NOT ok`() {
         val child = testPerson1()
         val parent1 = testPerson2()
         val parent2 = testPerson3()
@@ -226,7 +228,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPartnerRecord(
-        partnershipId: UUID,
+        partnershipId: PartnershipId,
         indx: Int,
         personId: UUID,
         startDate: LocalDate,
@@ -254,16 +256,18 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction {
-            it.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+        return db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
                     email = "${firstName.lowercase()}.meikalainen@example.com",
                     language = "fi"
                 )
             )
+                .let { tx.getPersonById(it)!! }
         }
     }
 

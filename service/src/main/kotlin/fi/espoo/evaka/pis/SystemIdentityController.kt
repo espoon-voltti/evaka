@@ -9,8 +9,12 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.EmployeeFeatures
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class SystemIdentityController {
+class SystemIdentityController(private val personService: PersonService, private val accessControl: AccessControl) {
     @PostMapping("/system/person-identity")
     fun personIdentity(
         db: Database.Connection,
@@ -30,16 +34,13 @@ class SystemIdentityController {
         Audit.PersonCreate.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
-            val p = tx.getPersonBySSN(person.socialSecurityNumber) ?: createPerson(
-                tx,
-                fi.espoo.evaka.pis.service.PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
-                    firstName = person.firstName,
-                    lastName = person.lastName,
-                    email = null,
-                    language = null
+            val p = tx.getPersonBySSN(person.socialSecurityNumber)
+                ?: personService.getOrCreatePerson(
+                    tx,
+                    user,
+                    ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber)
                 )
-            )
+                ?: error("No person found with ssn")
             tx.markPersonLastLogin(p.id)
             p
         }
@@ -74,10 +75,21 @@ class SystemIdentityController {
         user: AuthenticatedUser,
         @PathVariable
         id: UUID
-    ): EmployeeUser? {
+    ): EmployeeUserResponse? {
         Audit.EmployeeGetOrCreate.log(targetId = id)
         user.assertSystemInternalUser()
-        return db.read { it.getEmployeeUser(id) }
+        return db.read { tx ->
+            tx.getEmployeeUser(id)?.let { employeeUser ->
+                EmployeeUserResponse(
+                    id = employeeUser.id,
+                    firstName = employeeUser.firstName,
+                    lastName = employeeUser.lastName,
+                    globalRoles = employeeUser.globalRoles,
+                    allScopedRoles = employeeUser.allScopedRoles,
+                    accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser))
+                )
+            }
+        }
     }
 
     @GetMapping("/system/mobile-identity/{token}")
@@ -98,12 +110,22 @@ class SystemIdentityController {
         val lastName: String,
         val email: String?
     ) {
-        fun toNewEmployee(): NewEmployee = NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
+        fun toNewEmployee(): NewEmployee =
+            NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
     }
 
     data class PersonIdentityRequest(
         val socialSecurityNumber: String,
         val firstName: String,
         val lastName: String
+    )
+
+    data class EmployeeUserResponse(
+        val id: UUID,
+        val firstName: String,
+        val lastName: String,
+        val globalRoles: Set<UserRole> = setOf(),
+        val allScopedRoles: Set<UserRole> = setOf(),
+        val accessibleFeatures: EmployeeFeatures,
     )
 }

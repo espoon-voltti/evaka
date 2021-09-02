@@ -14,6 +14,8 @@ import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.messaging.daycarydailynote.deleteExpiredDaycareDailyNotes
+import fi.espoo.evaka.pis.cleanUpInactivePeople
+import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -40,6 +42,8 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
     RemoveOldDraftApplications(ScheduledJobs::removeOldDraftApplications),
     SendPendingDecisionReminderEmails(ScheduledJobs::sendPendingDecisionReminderEmails),
     VardaUpdate(ScheduledJobs::vardaUpdate),
+    InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
+    InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset)
 }
 
 private val logger = KotlinLogging.logger { }
@@ -131,5 +135,13 @@ class ScheduledJobs(
     fun removeOldAsyncJobs(db: Database.Connection) {
         val now = HelsinkiDateTime.now()
         db.removeOldAsyncJobs(now)
+    }
+
+    fun inactivePeopleCleanup(db: Database.Connection) {
+        db.transaction { cleanUpInactivePeople(it, LocalDate.now()) }
+    }
+
+    fun inactiveEmployeesRoleReset(db: Database.Connection) {
+        db.transaction { it.clearRolesForInactiveEmployees(Instant.now()) }
     }
 }

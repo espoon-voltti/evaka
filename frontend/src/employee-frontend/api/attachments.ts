@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/api-types/application/enums'
 import { UUID } from 'lib-common/types'
 import { client } from './client'
+import { AttachmentType } from 'lib-common/generated/enums'
 
 export async function saveAttachment(
   applicationId: UUID,
@@ -37,3 +37,15 @@ export const deleteAttachment = (id: UUID): Promise<Result<void>> =>
     .delete(`/attachments/${id}`)
     .then(() => Success.of(void 0))
     .catch((e) => Failure.fromError(e))
+
+export async function getAttachmentBlob(
+  attachmentId: UUID
+): Promise<Result<BlobPart>> {
+  return client({
+    url: `/attachments/${attachmentId}/download`,
+    method: 'GET',
+    responseType: 'blob'
+  })
+    .then((result) => Success.of(result.data))
+    .catch((e) => Failure.fromError(e))
+}

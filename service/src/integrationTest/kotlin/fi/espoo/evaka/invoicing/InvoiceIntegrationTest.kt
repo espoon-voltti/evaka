@@ -50,14 +50,14 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class InvoiceIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -176,7 +176,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val drafts = testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=DRAFT")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": "DRAFT"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -192,7 +193,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.filter { it.status === InvoiceStatus.SENT }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=SENT")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": "SENT"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -208,7 +210,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val canceled = testInvoices.filter { it.status === InvoiceStatus.CANCELED }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=CANCELED")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": "CANCELED"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -225,7 +228,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val sentAndCanceled =
             testInvoices.filter { it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=SENT,CANCELED")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": "SENT,CANCELED"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -242,9 +246,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoiceSubset) }
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=DRAFT,SENT,CANCELED")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": "DRAFT,SENT,CANCELED"}""")
             .asUser(testUser)
             .responseString()
+
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -258,7 +264,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=test_area")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": "test_area"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -274,7 +281,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=test_area&status=DRAFT")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": "test_area", "status": "DRAFT"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -286,10 +294,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with non existant area param`() {
+    fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=non_existent")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": "non_existent"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -304,12 +313,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple partial search terms`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get(
-            "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(
-                0,
-                2
-            )}"
-        )
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody(
+                """{"page": 1, "pageSize": 200,
+                          "searchTerms": "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"}"""
+            )
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -324,12 +332,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple more specific search terms`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get(
-            "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.lastName.substring(
-                0,
-                2
-            )} ${testAdult_1.firstName}"
-        )
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -344,7 +348,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple search terms where one does not match anything`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -359,7 +364,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with child name as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testChild_2.firstName}")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testChild_2.firstName}"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -374,7 +380,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.ssn}")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody(
+                """{"page": 1, "pageSize": 200,
+                          "searchTerms": "${testAdult_1.ssn}"}"""
+            )
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -389,12 +399,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     fun `search works as expected with date of birth as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.get(
-            "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.ssn!!.substring(
-                0,
-                6
-            )}"
-        )
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.ssn!!.substring(0, 6)}"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -410,7 +416,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).first())
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=1&sortBy=START&sortDirection=ASC")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -426,7 +433,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id }))[1])
 
-        val (_, response, result) = http.get("/invoices/search?page=2&pageSize=1&sortBy=START&sortDirection=ASC")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 2, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -442,7 +450,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).subList(0, 2)
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=2&sortBy=START&sortDirection=ASC")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 2, "sortBy": "START", "sortDirection": "ASC"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -461,7 +470,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .sortedBy { it.periodStart }
             .reversed()
 
-        val (_, response, result) = http.get("/invoices/search?page=1&pageSize=2&status=DRAFT&sortBy=START&sortDirection=DESC")
+        val (_, response, result) = http.post("/invoices/search")
+            .jsonBody("""{"page": 1, "pageSize": 2, "status": "DRAFT", "sortBy": "START", "sortDirection": "DESC"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -490,7 +500,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `getInvoice returns not found with non-existant invoice`() {
+    fun `getInvoice returns not found with non-existent invoice`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
         val (_, response, _) = http.get("/invoices/00000000-0000-0000-0000-000000000000")
@@ -573,7 +583,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         val sentInvoices = db.transaction { tx -> tx.getInvoicesByIds(drafts.map { it.id }) }
 
-        assertThat(sentInvoices.all { it.status == InvoiceStatus.SENT }).isTrue()
+        assertThat(sentInvoices.all { it.status == InvoiceStatus.SENT }).isTrue
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(4999999999L + drafts.size, maxInvoiceNumber)
@@ -850,10 +860,10 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response2.statusCode)
 
-        val sents = db.transaction { tx ->
+        val sent = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.SENT), listOf(), null, listOf())
         }
-        assertThat(sents).isNotEmpty
+        assertThat(sent).isNotEmpty
 
         val (_, response3, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)

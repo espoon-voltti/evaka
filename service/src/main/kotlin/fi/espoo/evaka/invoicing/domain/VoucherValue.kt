@@ -5,10 +5,12 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.shared.domain.DateRange
+import java.math.BigDecimal
 import java.util.UUID
 
 data class VoucherValue(
     val id: UUID,
     val validity: DateRange,
-    val voucherValue: Int
+    val baseValue: Int,
+    val ageUnderThreeCoefficient: BigDecimal,
 )

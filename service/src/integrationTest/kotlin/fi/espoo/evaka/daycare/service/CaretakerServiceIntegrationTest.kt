@@ -7,20 +7,21 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class CaretakerServiceIntegrationTest : PureJdbiTest() {
     val service = CaretakerService()
 
     private val daycareId = testDaycare.id
-    private val groupId = UUID.randomUUID()
+    private val groupId = GroupId(UUID.randomUUID())
     private val groupStart = LocalDate.of(2000, 1, 1)
 
     @BeforeEach

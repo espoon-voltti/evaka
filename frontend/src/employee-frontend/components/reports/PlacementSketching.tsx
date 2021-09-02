@@ -19,12 +19,7 @@ import {
 } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  RowCountInfo,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
 import { distinct } from '../../utils'
@@ -54,9 +49,8 @@ function PlacementSketching() {
     earliestPreferredStartDate: LocalDate.of(LocalDate.today().year, 8, 1)
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: PlacementSketchingRow): boolean => {
     return !(
       displayFilters.careArea && row.areaName !== displayFilters.careArea

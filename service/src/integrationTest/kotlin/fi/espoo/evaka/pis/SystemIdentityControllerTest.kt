@@ -9,6 +9,9 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
@@ -20,15 +23,15 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SystemIdentityControllerTest : FullApplicationTest() {
-    private lateinit var areaId: UUID
-    private lateinit var unitId: UUID
+    private lateinit var areaId: AreaId
+    private lateinit var unitId: DaycareId
 
     @BeforeEach
     protected fun beforeEach() {
@@ -58,8 +61,8 @@ class SystemIdentityControllerTest : FullApplicationTest() {
         assertEquals(404, res.statusCode)
     }
 
-    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): UUID {
-        val id = insertTestEmployee(DevEmployee())
+    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): MobileDeviceId {
+        val id = MobileDeviceId(insertTestEmployee(DevEmployee()))
         insertTestMobileDevice(
             DevMobileDevice(
                 id = id,

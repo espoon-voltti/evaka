@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -149,20 +148,24 @@ class EmployeeController {
         }
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun searchEmployees(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = false) page: Int?,
-        @RequestParam(required = false) pageSize: Int?,
-        @RequestParam(required = false) searchTerm: String?,
+        @RequestBody body: SearchEmployeeRequest
     ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(UserRole.ADMIN)
         return db.read { tx ->
-            getEmployeesPaged(tx, page ?: 1, (pageSize ?: 50).coerceAtMost(100), searchTerm ?: "")
+            getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
         }.let { ResponseEntity.ok(it) }
     }
 }
 
 data class PinCode(val pin: String)
+
+data class SearchEmployeeRequest(
+    val page: Int?,
+    val pageSize: Int?,
+    val searchTerm: String?,
+)

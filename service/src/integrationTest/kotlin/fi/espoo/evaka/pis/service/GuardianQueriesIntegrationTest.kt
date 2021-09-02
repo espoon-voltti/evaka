@@ -12,9 +12,10 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GuardianQueriesIntegrationTest : FullApplicationTest() {
     @BeforeEach
@@ -30,14 +31,14 @@ class GuardianQueriesIntegrationTest : FullApplicationTest() {
         db.transaction { insertGuardianTestFixtures(it) }
         db.read { tx ->
             val guardian1Children = tx.getGuardianChildIds(testAdult_1.id)
-            Assertions.assertEquals(2, guardian1Children.size)
-            Assertions.assertTrue(guardian1Children.contains(testChild_1.id))
-            Assertions.assertTrue(guardian1Children.contains(testChild_2.id))
+            assertEquals(2, guardian1Children.size)
+            assertTrue(guardian1Children.contains(testChild_1.id))
+            assertTrue(guardian1Children.contains(testChild_2.id))
 
             val child2Guardians = tx.getChildGuardians(testChild_2.id)
-            Assertions.assertEquals(2, child2Guardians.size)
-            Assertions.assertTrue(child2Guardians.contains(testAdult_1.id))
-            Assertions.assertTrue(child2Guardians.contains(testAdult_2.id))
+            assertEquals(2, child2Guardians.size)
+            assertTrue(child2Guardians.contains(testAdult_1.id))
+            assertTrue(child2Guardians.contains(testAdult_2.id))
         }
     }
 
@@ -49,8 +50,8 @@ class GuardianQueriesIntegrationTest : FullApplicationTest() {
         }
 
         db.read { tx ->
-            Assertions.assertEquals(0, tx.getGuardianChildIds(testAdult_1.id).size)
-            Assertions.assertEquals(1, tx.getGuardianChildIds(testAdult_2.id).size)
+            assertEquals(0, tx.getGuardianChildIds(testAdult_1.id).size)
+            assertEquals(1, tx.getGuardianChildIds(testAdult_2.id).size)
         }
     }
 

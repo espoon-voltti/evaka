@@ -5,17 +5,19 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
-import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
@@ -33,16 +35,16 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class KoskiIntegrationTest : FullApplicationTest() {
     private lateinit var koskiServer: MockKoskiServer
@@ -54,9 +56,10 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester = KoskiTester(
             jdbi,
             KoskiClient(
+                KoskiEnv.fromEnvironment(env).copy(
+                    url = "http://localhost:${koskiServer.port}",
+                ),
                 fuel = http,
-                env = env,
-                baseUrl = "http://localhost:${koskiServer.port}",
                 asyncJobRunner = null
             )
         )
@@ -318,7 +321,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchByExistingDaycare.size)
 
         val searchByRandomDaycare = db.read {
-            it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(UUID.randomUUID())))
+            it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID()))))
         }
         assertEquals(0, searchByRandomDaycare.size)
     }
@@ -327,12 +330,12 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `assistance needs are converted to Koski extra information`() {
         data class TestCase(
             val period: FiniteDateRange,
-            val basis: AssistanceBasis
+            val basis: String
         )
         insertPlacement(testChild_1)
         val testCases = listOf(
-            TestCase(testPeriod(0L to 1L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_1),
-            TestCase(testPeriod(2L to 3L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_2)
+            TestCase(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
+            TestCase(testPeriod(2L to 3L), "DEVELOPMENTAL_DISABILITY_2")
         )
         db.transaction { tx ->
             testCases.forEach {
@@ -678,7 +681,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `holidays longer than 7 days are included in preparatory study rights`() {
-        val holiday = FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1 + 8))
+        val holiday = FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1L + 8))
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
         insertAbsences(testChild_1.id, AbsenceType.PLANNED_ABSENCE, holiday)
 
@@ -749,10 +752,10 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     private fun insertPlacement(
         child: PersonData.Detailed = testChild_1,
-        daycareId: UUID = testDaycare.id,
+        daycareId: DaycareId = testDaycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
-    ): UUID = db.transaction {
+    ): PlacementId = db.transaction {
         it.insertTestPlacement(
             DevPlacement(
                 childId = child.id,
@@ -770,7 +773,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 for (date in period.dates()) {
                     tx.insertTestAbsence(
                         childId = childId,
-                        careType = CareType.PRESCHOOL,
+                        careType = AbsenceCareType.PRESCHOOL,
                         date = date,
                         absenceType = absenceType
                     )

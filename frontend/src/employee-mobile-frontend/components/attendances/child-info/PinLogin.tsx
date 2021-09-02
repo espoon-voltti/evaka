@@ -12,7 +12,6 @@ import React, {
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
 import { sortBy } from 'lodash'
 
 import {
@@ -20,14 +19,15 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ContentArea } from 'lib-components/layout/Container'
-import { Result } from '../../../../lib-common/api'
+import { Result } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
 
 import { TallContentArea } from '../../mobile/components'
 
@@ -46,11 +46,13 @@ import { BackButtonInline } from '../components'
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
 
-  const [selectedStaff, setSelectedStaff] = useState<string>()
+  const [selectedStaff, setSelectedStaff] = useState<{
+    name: string
+    id: string
+  }>()
   const [selectedPin, setSelectedPin] = useState<string>('')
   const [childResult, setChildResult] = useState<Result<ChildResult>>()
   const [loggingOut, setLoggingOut] = useState<boolean>(false)
@@ -67,7 +69,7 @@ export default React.memo(function PinLogin() {
     if (selectedStaff) {
       void getChildSensitiveInformation(
         childId,
-        selectedStaff,
+        selectedStaff.id,
         selectedPin
       ).then(setChildResult)
     }
@@ -95,8 +97,8 @@ export default React.memo(function PinLogin() {
         ({ lastName }) => lastName,
         ({ firstName }) => firstName
       ).map((staff) => ({
-        label: formatName(staff.firstName, staff.lastName),
-        value: staff.id
+        name: formatName(staff.firstName, staff.lastName),
+        id: staff.id
       }))
     } else {
       return []
@@ -110,7 +112,7 @@ export default React.memo(function PinLogin() {
   const loggedInStaffName = (): string => {
     const loggedInStaff = attendanceResponse.isSuccess
       ? attendanceResponse.value.unit.staff.find(
-          (staff) => staff.id === selectedStaff
+          (staff) => staff.id === selectedStaff?.id
         )
       : null
     return loggedInStaff
@@ -158,6 +160,7 @@ export default React.memo(function PinLogin() {
                     ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
                     : i18n.common.back
                 }
+                data-qa="go-back"
               />
               {childResult && (
                 <IconButton
@@ -199,15 +202,13 @@ export default React.memo(function PinLogin() {
               <FixedSpaceColumn spacing={'m'}>
                 <Key>{i18n.attendances.pin.staff}</Key>
                 <div data-qa={'select-staff'}>
-                  <ReactSelect
+                  <Combobox
+                    items={staffOptions}
+                    selectedItem={selectedStaff ?? null}
+                    onChange={(item) => setSelectedStaff(item ?? undefined)}
+                    getItemLabel={({ name }) => name}
+                    menuEmptyLabel={i18n.attendances.pin.noOptions}
                     placeholder={i18n.attendances.pin.selectStaff}
-                    options={staffOptions}
-                    noOptionsMessage={() => i18n.attendances.pin.noOptions}
-                    onChange={(option) =>
-                      setSelectedStaff(
-                        option && 'value' in option ? option.value : undefined
-                      )
-                    }
                   />
                 </div>
                 {selectedStaff && (

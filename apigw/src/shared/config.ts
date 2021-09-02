@@ -99,6 +99,10 @@ export const evakaServiceUrl = required(
   process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
 )
+export const evakaAIUrl =
+  process.env.EVAKA_AI_URL ??
+  ifNodeEnv(['local', 'test'], 'http://localhost:8889')
+
 export const cookieSecret = required(
   process.env.COOKIE_SECRET ??
     ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
@@ -142,15 +146,18 @@ const certificateNames = Object.keys(
   certificates
 ) as ReadonlyArray<TrustedCertificates>
 
-export const devLoginEnabled =
-  env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+export const adMock =
+  env('AD_MOCK', parseBoolean) ??
+  env('DEV_LOGIN', parseBoolean) ??
+  ifNodeEnv(['local', 'test'], true) ??
+  false
 
 const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
 const adEntryPointUrl = process.env.AD_SAML_ENTRYPOINT_URL
 const adLogoutUrl = process.env.AD_SAML_LOGOUT_URL
 
 export const adConfig: EvakaSamlConfig | undefined =
-  adCallbackUrl && !devLoginEnabled
+  adCallbackUrl && !adMock
     ? {
         callbackUrl: required(adCallbackUrl),
         entryPoint: required(adEntryPointUrl),
@@ -240,11 +247,7 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
           )
       ),
       issuer: required(
-        process.env.EVAKA_SAML_ISSUER ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka'
-          )
+        process.env.EVAKA_SAML_ISSUER ?? ifNodeEnv(['local', 'test'], 'evaka')
       ),
       publicCert: required(
         process.env.EVAKA_SAML_PUBLIC_CERT ??
@@ -278,10 +281,7 @@ export const evakaCustomerSamlConfig:
       ),
       issuer: required(
         process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka-customer'
-          )
+          ifNodeEnv(['local', 'test'], 'evaka-customer')
       ),
       publicCert: required(
         process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??

@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getAllApplicableUnits
 import fi.espoo.evaka.daycare.getApplicationUnits
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -120,7 +121,7 @@ WHERE (
     """.trimIndent()
 )
     .bind("now", LocalDate.now())
-    .reduceRows(mutableMapOf<UUID, Pair<CareArea, MutableList<Location>>>()) { map, row ->
+    .reduceRows(mutableMapOf<AreaId, Pair<CareArea, MutableList<Location>>>()) { map, row ->
         val (_, locations) = map.computeIfAbsent(row.mapColumn("care_area_id")) { id ->
             Pair(
                 CareArea(

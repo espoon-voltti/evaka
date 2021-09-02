@@ -56,7 +56,7 @@ export const fi = {
     starts: 'Alkaa',
     ends: 'Päättyy',
     information: 'Tiedot',
-    dailyNotes: 'Merkinnät',
+    dailyNotes: 'Muistiinpanot',
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
     minuteShort: 'min',
@@ -113,7 +113,7 @@ export const fi = {
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäoleviin',
-      markAbsentBeforehand: 'Merkitse tuleva poissaolo'
+      markAbsentBeforehand: 'Tulevat poissaolot'
     },
     timeLabel: 'Merkintä',
     departureTime: 'Lähtöaika',
@@ -125,7 +125,13 @@ export const fi = {
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
     missingFromPlural: 'Poissa seuraavista toimintamuodoista',
     timeError: 'Virheellinen aika',
+    listChildReservation: (start: string, end: string) =>
+      `Varaus ${start}-${end}`,
+    arrived: 'Saapui',
+    departed: 'Lähti',
     serviceTime: {
+      reservation: (start: string, end: string) =>
+        `Varaus tänään ${start}-${end}`,
       serviceToday: (start: string, end: string) =>
         `Varhaiskasvatusaika tänään ${start}-${end}`,
       noServiceToday: 'Ei varattua varhaiskasvatusaikaa tänään',

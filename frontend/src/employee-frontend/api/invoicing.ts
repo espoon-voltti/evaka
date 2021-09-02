@@ -6,7 +6,7 @@ import { JsonOf } from 'lib-common/json'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
-import { API_URL, client } from '../api/client'
+import { API_URL, client } from './client'
 import { SearchOrder, UUID } from '../types'
 import { deserializeIncome } from '../types/income'
 import {
@@ -241,8 +241,12 @@ export async function getFeeDecisions(
   params: FeeDecisionSearchParams
 ): Promise<Result<Paged<FeeDecisionSummary>>> {
   return client
-    .get<JsonOf<Paged<FeeDecisionSummary>>>('/fee-decisions/search', {
-      params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
+    .post<JsonOf<Paged<FeeDecisionSummary>>>('/fee-decisions/search', {
+      page: page - 1,
+      pageSize,
+      sortBy,
+      sortDirection,
+      ...params
     })
     .then(({ data }) => ({
       ...data,
@@ -289,29 +293,50 @@ export async function getVoucherValueDecisions(
   params: VoucherValueDecisionSearchParams
 ): Promise<Result<Paged<VoucherValueDecisionSummary>>> {
   return client
-    .get<JsonOf<Paged<VoucherValueDecisionSummary>>>(
+    .post<JsonOf<Paged<VoucherValueDecisionSummary>>>(
       '/value-decisions/search',
       {
-        params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
+        page: page - 1,
+        pageSize,
+        sortBy,
+        sortDirection,
+        ...params
       }
     )
     .then(({ data }) => ({
       ...data,
-      data: data.data.map((json) => ({
-        ...json,
-        validFrom: LocalDate.parseIso(json.validFrom),
-        validTo: LocalDate.parseNullableIso(json.validTo),
-        headOfFamily: deserializePersonBasic(json.headOfFamily),
-        child: {
-          ...json.child,
-          dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-        },
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-        created: new Date(json.created)
-      }))
+      data: data.data.map(parseVoucherValueDecisionSummaryJson)
     }))
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+const parseVoucherValueDecisionSummaryJson = (
+  json: JsonOf<VoucherValueDecisionSummary>
+) => ({
+  ...json,
+  validFrom: LocalDate.parseIso(json.validFrom),
+  validTo: LocalDate.parseNullableIso(json.validTo),
+  headOfFamily: deserializePersonBasic(json.headOfFamily),
+  child: {
+    ...json.child,
+    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
+  },
+  sentAt: json.sentAt ? new Date(json.sentAt) : null,
+  approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+  created: new Date(json.created)
+})
+
+export async function getPersonVoucherValueDecisions(
+  id: string
+): Promise<Result<VoucherValueDecisionSummary[]>> {
+  return client
+    .get<JsonOf<VoucherValueDecisionSummary[]>>(
+      `/value-decisions/head-of-family/${id}`
+    )
+    .then((res) =>
+      Success.of(res.data.map(parseVoucherValueDecisionSummaryJson))
+    )
     .catch((e) => Failure.fromError(e))
 }
 
@@ -360,8 +385,12 @@ export async function getInvoices(
   params: InvoiceSearchParams
 ): Promise<Result<Paged<InvoiceSummary>>> {
   return client
-    .get<JsonOf<Paged<InvoiceSummary>>>('/invoices/search', {
-      params: { page, pageSize, sortBy, sortDirection, ...params }
+    .post<JsonOf<Paged<InvoiceSummary>>>('/invoices/search', {
+      page,
+      pageSize,
+      sortBy,
+      sortDirection,
+      ...params
     })
     .then(({ data }) => ({
       ...data,

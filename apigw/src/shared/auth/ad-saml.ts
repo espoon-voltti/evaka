@@ -10,7 +10,7 @@ import {
 } from 'passport-saml'
 import DevPassportStrategy from './dev-passport-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
-import { devLoginEnabled, adConfig, adExternalIdPrefix } from '../config'
+import { adMock, adConfig, adExternalIdPrefix } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
@@ -65,7 +65,7 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
 }
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (devLoginEnabled) return {}
+  if (adMock) return {}
   if (!adConfig) throw Error('Missing AD SAML configuration')
   return {
     acceptedClockSkewMs: 0,
@@ -93,9 +93,10 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 export default function createAdStrategy(
   config: SamlConfig
 ): SamlStrategy | DevPassportStrategy {
-  if (devLoginEnabled) {
+  if (adMock) {
     const getter = async (userId: string) =>
       verifyProfile({
+        nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: [],
         [AD_GIVEN_NAME_KEY]: '',
@@ -119,6 +120,7 @@ export default function createAdStrategy(
         roles: roles as UserRole[]
       })
       return verifyProfile({
+        nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: roles,
         [AD_GIVEN_NAME_KEY]: firstName,

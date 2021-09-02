@@ -50,9 +50,8 @@ function MissingServiceNeed() {
     endDate: LocalDate.today().addMonths(2).lastDayOfMonth()
   })
 
-  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
-    emptyDisplayFilters
-  )
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: MissingServiceNeedReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea

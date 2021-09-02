@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '../../../lib-common/json'
+import { JsonOf } from 'lib-common/json'
 import { VasuDocumentEvent, VasuDocumentState } from './api'
 
 export const getLastPublished = (

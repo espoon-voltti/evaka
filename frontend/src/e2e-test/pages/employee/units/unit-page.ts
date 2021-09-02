@@ -196,10 +196,18 @@ export default class UnitPage {
 class AclTable {
   constructor(readonly root: Selector) {}
 
-  readonly table = this.root.find('[data-qa="acl-table"]')
-  readonly rows = this.root.find('[data-qa="acl-row"]')
-  readonly combobox = this.root.find('[data-qa="acl-combobox"]')
-  readonly addButton = this.root.find('[data-qa="acl-add-button"]')
+  public get table() {
+    return this.root.find('[data-qa="acl-table"]')
+  }
+  public get rows() {
+    return this.root.find('[data-qa="acl-row"]')
+  }
+  public get combobox() {
+    return this.root.find('[data-qa="acl-combobox"]')
+  }
+  public get addButton() {
+    return this.root.find('[data-qa="acl-add-button"]')
+  }
   readonly deleteModal = Selector('[data-qa="modal"]')
   readonly deleteModalOk = this.deleteModal.find('[data-qa="modal-okBtn"]')
   readonly employeeOptions = this.combobox.find('[data-qa^="value-"]')
@@ -221,7 +229,7 @@ class AclTable {
       () => {
         const rows = Array.from(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((table() as any) as HTMLElement).querySelectorAll(
+          (table() as any as HTMLElement).querySelectorAll(
             '[data-qa="acl-row"]'
           )
         )

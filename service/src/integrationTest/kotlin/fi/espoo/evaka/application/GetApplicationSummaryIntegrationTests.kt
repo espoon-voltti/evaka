@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -22,9 +23,9 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
@@ -42,26 +43,27 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `application summary with minimal parameters returns data`() {
-        val summary = getSummary(listOf("type" to "ALL", "status" to "SENT"))
+        val summary = getSummary("""{"type": "ALL", "status": "SENT"}""")
         assertEquals(3, summary.total)
     }
 
     @Test
     fun `application summary can be be filtered by attachments`() {
-        val summary = getSummary(listOf("type" to "ALL", "status" to "SENT", "basis" to "HAS_ATTACHMENTS"))
+        val summary = getSummary("""{"type": "ALL", "status": "SENT", "basis": "HAS_ATTACHMENTS"}""")
         assertEquals(1, summary.total)
         assertEquals(1, summary.data[0].attachmentCount)
     }
 
     @Test
     fun `application summary can be be filtered by urgency`() {
-        val summary = getSummary(listOf("type" to "ALL", "status" to "SENT", "basis" to "URGENT"))
+        val summary = getSummary("""{"type": "ALL", "status": "SENT", "basis": "URGENT"}""")
         assertEquals(1, summary.total)
         assertEquals(true, summary.data[0].urgent)
     }
 
-    private fun getSummary(params: List<Pair<String, String>>): Paged<ApplicationSummary> {
-        val (_, res, result) = http.get("/v2/applications", params)
+    private fun getSummary(payload: String): Paged<ApplicationSummary> {
+        val (_, res, result) = http.post("/v2/applications/search")
+            .jsonBody(payload)
             .asUser(serviceWorker)
             .responseObject<Paged<ApplicationSummary>>(objectMapper)
         assertEquals(200, res.statusCode)

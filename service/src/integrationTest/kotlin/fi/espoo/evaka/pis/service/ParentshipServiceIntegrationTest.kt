@@ -4,14 +4,16 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.AbstractIntegrationTest
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getParentships
-import org.junit.jupiter.api.Assertions.assertEquals
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
@@ -47,15 +49,17 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {
-            it.createPerson(
-                PersonIdentityRequest(
-                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+            val id = it.insertTestPerson(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
                     email = "",
                     language = "fi"
                 )
             )
+            it.getPersonById(id)!!
         }
     }
 

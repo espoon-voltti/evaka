@@ -8,6 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -22,13 +25,13 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class PlacementServiceIntegrationTest : FullApplicationTest() {
 
@@ -40,10 +43,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     val placementEnd = LocalDate.of(year, month, 20)
 
     lateinit var oldPlacement: Placement
-    lateinit var groupId1: UUID
-    lateinit var groupId2: UUID
-    lateinit var daycarePlacementId: UUID
-    lateinit var groupPlacementId: UUID
+    lateinit var groupId1: GroupId
+    lateinit var groupId2: GroupId
+    lateinit var daycarePlacementId: PlacementId
+    lateinit var groupPlacementId: GroupPlacementId
 
     @BeforeEach
     internal fun setUp() {
@@ -677,7 +680,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     fun `transferring splits the group placement`() {
         val transferDate = placementStart.plusDays(5)
         db.transaction {
-            it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate)
+            it.transferGroup(groupPlacementId, groupId2, transferDate)
         }
 
         val groupPlacements = db.read {
@@ -704,7 +707,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `transferring deletes old group placement if start dates match`() {
         val transferDate = placementStart
-        db.transaction { it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate) }
+        db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
         val groupPlacements = db.read {
             it.getDetailedDaycarePlacements(
@@ -726,7 +729,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `if no group placements then getDaycarePlacements shows full range without groupId`() {
-        val daycarePlacementId = UUID.randomUUID()
+        val daycarePlacementId = PlacementId(UUID.randomUUID())
         val daycarePlacementStartDate = placementStart
         val daycarePlacementEndDate = placementStart.plusDays(5)
         val daycarePlacementType = PlacementType.DAYCARE
@@ -781,7 +784,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     fun `if there are group placements then getDaycarePlacements also shows gaps without groupId`() {
         val date = { day: Int -> LocalDate.of(year, month, day) }
 
-        val daycarePlacementId = UUID.randomUUID()
+        val daycarePlacementId = PlacementId(UUID.randomUUID())
         val daycarePlacementStartDate = date(1)
         val daycarePlacementEndDate = date(20)
         val daycarePlacementType = PlacementType.DAYCARE
@@ -797,11 +800,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val groupPlacementId1 = UUID.randomUUID()
-        val groupPlacementId2 = UUID.randomUUID()
-        val groupPlacementId3 = UUID.randomUUID()
-        val groupPlacementId4 = UUID.randomUUID()
-        val groupPlacementId5 = UUID.randomUUID()
+        val groupPlacementId1 = GroupPlacementId(UUID.randomUUID())
+        val groupPlacementId2 = GroupPlacementId(UUID.randomUUID())
+        val groupPlacementId3 = GroupPlacementId(UUID.randomUUID())
+        val groupPlacementId4 = GroupPlacementId(UUID.randomUUID())
+        val groupPlacementId5 = GroupPlacementId(UUID.randomUUID())
         val groupPlacementIds =
             listOf(groupPlacementId1, groupPlacementId2, groupPlacementId3, groupPlacementId4, groupPlacementId5)
         val groupPlacementDays = listOf(3 to 5, 6 to 9, 12 to 12, 16 to 17, 19 to 20)

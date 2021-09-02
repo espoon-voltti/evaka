@@ -69,11 +69,15 @@ TABLE (
             array_agg(date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2' = ANY(bases)) AS developmental_disability_2
         FROM (
             SELECT
+                an.id,
                 daterange(an.start_date, an.end_date, '[]') AS date_interval,
-                an.bases
+                array_remove(array_agg(abo.value), null) AS bases
             FROM assistance_need an
+            LEFT JOIN assistance_basis_option_ref abor ON abor.need_id = an.id
+            LEFT JOIN assistance_basis_option abo ON abo.id = abor.option_id
             WHERE an.child_id = p.child_id
             AND daterange(an.start_date, an.end_date, '[]') && full_range
+            GROUP BY an.id, daterange(an.start_date, an.end_date, '[]')
             ORDER BY an.id
         ) matching_assistance_need
     ) an ON true

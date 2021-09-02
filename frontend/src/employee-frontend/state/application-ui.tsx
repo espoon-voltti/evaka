@@ -157,14 +157,10 @@ export const ApplicationUIContextProvider = React.memo(
     const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
       defaultState.distinctions
     )
-    const [
-      transferApplications,
-      setTransferApplications
-    ] = useState<TransferApplicationFilter>(defaultState.transferApplications)
-    const [
-      voucherApplications,
-      setVoucherApplications
-    ] = useState<VoucherApplicationFilter>(defaultState.voucherApplications)
+    const [transferApplications, setTransferApplications] =
+      useState<TransferApplicationFilter>(defaultState.transferApplications)
+    const [voucherApplications, setVoucherApplications] =
+      useState<VoucherApplicationFilter>(defaultState.voucherApplications)
     const debouncedSearchTerms = useDebounce(searchTerms, 500)
 
     const clearSearchFilters = useCallback(() => {

@@ -18,6 +18,7 @@ import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,13 +35,13 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -66,7 +67,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
-            val groupId = UUID.randomUUID()
+            val groupId = GroupId(UUID.randomUUID())
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = groupId,
@@ -75,10 +76,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val placementId = UUID.randomUUID()
-            tx.insertTestPlacement(
+            val placementId = tx.insertTestPlacement(
                 DevPlacement(
-                    id = placementId,
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementStart,

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
 import { H2, H3, Label } from 'lib-components/typography'
@@ -11,13 +11,13 @@ import { ApplicationDataGridLabelWidth } from '../../../applications/editor/veri
 import { Gap } from 'lib-components/white-space'
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
 import {
   ServiceNeedUrgency,
   ServiceNeedShiftCare
 } from './ServiceNeedAttachments'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
 import styled from 'styled-components'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData

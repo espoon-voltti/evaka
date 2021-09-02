@@ -5,10 +5,10 @@
 package fi.espoo.voltti.logging
 
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.slf4j.MDC
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class MdcKeyTest {
     @AfterEach

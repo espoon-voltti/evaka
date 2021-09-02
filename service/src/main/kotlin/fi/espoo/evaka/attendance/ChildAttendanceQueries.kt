@@ -8,24 +8,31 @@ import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getPlacementsForChild
+import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
-fun Database.Transaction.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
+fun Database.Transaction.insertAttendance(
+    childId: UUID,
+    unitId: DaycareId,
+    arrived: HelsinkiDateTime,
+    departed: HelsinkiDateTime? = null
+): ChildAttendance {
     // language=sql
     val sql =
         """
@@ -43,7 +50,13 @@ fun Database.Transaction.insertAttendance(childId: UUID, unitId: UUID, arrived: 
         .first()
 }
 
-fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: CareType, absenceType: AbsenceType): Absence {
+fun Database.Transaction.insertAbsence(
+    user: AuthenticatedUser,
+    childId: UUID,
+    date: LocalDate,
+    careType: AbsenceCareType,
+    absenceType: AbsenceType
+): Absence {
     // language=sql
     val sql =
         """
@@ -62,7 +75,7 @@ fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, d
         .first()
 }
 
-fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, date: LocalDate): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -76,13 +89,13 @@ fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): Chi
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("todayStart", LocalDate.now(europeHelsinki).atStartOfDay(europeHelsinki).toInstant())
-        .bind("todayEnd", LocalDate.now(europeHelsinki).plusDays(1).atStartOfDay(europeHelsinki).toInstant())
+        .bind("todayStart", HelsinkiDateTime.of(date, LocalTime.of(0, 0)))
+        .bind("todayEnd", HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<ChildAttendance>()
         .firstOrNull()
 }
 
-fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -98,9 +111,9 @@ fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: UUID): ChildA
         .firstOrNull()
 }
 
-fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
+fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     data class UnitBasics(
-        val id: UUID,
+        val id: DaycareId,
         val name: String
     )
     // language=sql
@@ -121,13 +134,13 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
         """
         SELECT g.id, g.name
         FROM daycare u
-        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :today
+        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
         WHERE u.id = :unitId
         """.trimIndent()
 
     val groups = createQuery(groupsSql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("date", date)
         .mapTo<GroupInfo>()
         .list()
 
@@ -165,7 +178,7 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
         }
 }
 
-fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<ChildBasics> {
     // language=sql
     val sql =
         """
@@ -178,13 +191,13 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             FROM daycare_group_placement gp
             JOIN placement p ON p.id = gp.daycare_placement_id
             WHERE
-                p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today AND
+                p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :date AND
                 NOT EXISTS (
                     SELECT 1
                     FROM backup_care bc
                     WHERE
                         bc.child_id = p.child_id AND
-                        daterange(bc.start_date, bc.end_date, '[]') @> :today
+                        daterange(bc.start_date, bc.end_date, '[]') @> :date
                 )
 
             UNION ALL
@@ -197,12 +210,12 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             FROM backup_care bc
             JOIN placement p ON (
                 p.child_id = bc.child_id AND
-                daterange(p.start_date, p.end_date, '[]') @> :today
+                daterange(p.start_date, p.end_date, '[]') @> :date
             )
             WHERE
                 bc.unit_id = :unitId AND
                 bc.group_id IS NOT NULL AND
-                daterange(bc.start_date, bc.end_date, '[]') @> :today
+                daterange(bc.start_date, bc.end_date, '[]') @> :date
         )
         SELECT
             pe.id,
@@ -236,7 +249,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("date", date)
         .map { row ->
             ChildBasics(
                 id = row.mapColumn("id"),
@@ -259,19 +272,19 @@ private val placedChildrenSql =
     """
     SELECT p.child_id
     FROM placement p
-    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') @> :today AND NOT EXISTS (
-        SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') @> :date AND NOT EXISTS (
+        SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
     )
     
     UNION ALL
     
     SELECT bc.child_id
     FROM backup_care bc
-    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-    WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today    
+    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :date
+    WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :date
     """.trimIndent()
 
-fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
+fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, date: LocalDate): List<ChildAttendance> {
     // language=sql
     val sql =
         """
@@ -282,17 +295,17 @@ fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> 
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        WHERE (ca.departed IS NULL OR ca.departed::date = :today) AND ca.child_id IN ($placedChildrenSql)
+        WHERE (ca.departed IS NULL OR ca.departed::date = :date) AND ca.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("date", date)
         .mapTo<ChildAttendance>()
         .list()
 }
 
-fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
+fun Database.Read.fetchChildrenAbsences(unitId: DaycareId, date: LocalDate): List<ChildAbsence> {
     // language=sql
     val sql =
         """
@@ -301,17 +314,21 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
             ab.child_id,
             ab.care_type
         FROM absence ab
-        WHERE ab.date = :today AND ab.child_id IN ($placedChildrenSql)
+        WHERE ab.date = :date AND ab.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("date", date)
         .mapTo<ChildAbsence>()
         .list()
 }
 
-fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
+fun Database.Transaction.updateAttendance(
+    attendanceId: AttendanceId,
+    arrived: HelsinkiDateTime,
+    departed: HelsinkiDateTime?
+) {
     // language=sql
     val sql =
         """
@@ -327,7 +344,7 @@ fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, 
         .execute()
 }
 
-fun Database.Transaction.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
+fun Database.Transaction.updateAttendanceEnd(attendanceId: AttendanceId, departed: HelsinkiDateTime?) {
     // language=sql
     val sql =
         """
@@ -342,7 +359,7 @@ fun Database.Transaction.updateAttendanceEnd(attendanceId: UUID, departed: Insta
         .execute()
 }
 
-fun Database.Transaction.deleteAttendance(id: UUID) {
+fun Database.Transaction.deleteAttendance(id: AttendanceId) {
     // language=sql
     val sql =
         """
@@ -382,6 +399,31 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
         .bind("dateRange", dateRange)
         .execute()
 }
+
+fun Database.Read.fetchAttendanceReservations(
+    unitId: DaycareId,
+    date: LocalDate
+): Map<UUID, AttendanceReservation> = createQuery(
+    """
+    SELECT
+        child.id AS child_id,
+        to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS start_time,
+        to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS end_time
+    FROM attendance_reservation res
+    JOIN person child ON res.child_id = child.id
+    JOIN placement ON child.id = placement.child_id AND res.start_date BETWEEN placement.start_date AND placement.end_date
+    WHERE res.start_date = :date AND placement.unit_id = :unitId
+    """.trimIndent()
+)
+    .bind("unitId", unitId)
+    .bind("date", date)
+    .map { ctx ->
+        ctx.mapColumn<UUID>("child_id") to AttendanceReservation(
+            ctx.mapColumn("start_time"),
+            ctx.mapColumn("end_time")
+        )
+    }
+    .toMap()
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = getPersonById(childId)

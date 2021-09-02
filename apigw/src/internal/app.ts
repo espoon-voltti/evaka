@@ -14,7 +14,7 @@ import createAdSamlStrategy, {
 import createEvakaSamlStrategy, {
   createSamlConfig as createEvakaSamlconfig
 } from '../shared/auth/keycloak-saml'
-import { cookieSecret, enableDevApi } from '../shared/config'
+import { cookieSecret, enableDevApi, evakaAIUrl } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -107,6 +107,9 @@ function internalApiRouter() {
     authStatus
   )
   router.all('/public/*', createProxy())
+  if (evakaAIUrl) {
+    router.all('/ai/*', createProxy({ url: evakaAIUrl }))
+  }
   router.use(requireAuthentication)
   router.use(csrf)
   router.post(

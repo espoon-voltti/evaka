@@ -18,8 +18,8 @@ import fi.espoo.evaka.application.persistence.daycare.DEFAULT_CHILD_NATIONALITY
 import fi.espoo.evaka.application.persistence.daycare.DaycareAdditionalDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
+import fi.espoo.evaka.shared.DaycareId
 import java.time.LocalDate
-import java.util.UUID
 
 sealed class FormJson {
     abstract val type: ApplicationType
@@ -122,7 +122,7 @@ data class ChildJSON(
 )
 
 data class ApplyJSON(
-    val preferredUnits: List<UUID> = emptyList(),
+    val preferredUnits: List<DaycareId> = emptyList(),
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
     val siblingSsn: String = ""

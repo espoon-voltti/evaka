@@ -52,22 +52,19 @@ class MockPersonDetailsService : IPersonDetailsService {
         fun deletePerson(ssn: String) = allPersons.remove(ssn)
     }
 
-    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): PersonDetails {
+    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson {
         return getMockPerson(query.targetIdentifier.ssn)
     }
 
-    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): PersonDetails {
+    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson {
         return getMockPerson(query.targetIdentifier.ssn)
     }
 
-    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): PersonDetails {
+    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson {
         return getMockPerson(query.targetIdentifier.ssn)
     }
 
-    private fun getMockPerson(ssn: String): PersonDetails {
-        return when (val result = allPersons[ssn]) {
-            null -> PersonDetails.PersonNotFound()
-            else -> PersonDetails.Result(result)
-        }
+    private fun getMockPerson(ssn: String): VtjPerson {
+        return allPersons[ssn] ?: error("Mock VTJ person with $ssn not found")
     }
 }

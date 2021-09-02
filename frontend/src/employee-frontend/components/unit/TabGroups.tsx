@@ -11,8 +11,6 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { UserContext } from '../../state/user'
-import { requireRole } from '../../utils/roles'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Groups from '../../components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
@@ -24,16 +22,8 @@ interface Props {
 }
 
 function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
-  const { roles } = useContext(UserContext)
-  const {
-    unitInformation,
-    unitData,
-    filters,
-    setFilters,
-    savePosition
-  } = useContext(UnitContext)
-
-  const isUnitSupervisor = requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
+  const { unitInformation, unitData, filters, setFilters, savePosition } =
+    useContext(UnitContext)
 
   if (unitInformation.isFailure || unitData.isFailure) {
     return <ErrorSegment />
@@ -43,32 +33,44 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
     return <SpinnerSegment />
   }
 
+  const groupPermittedActions = Object.fromEntries(
+    unitInformation.value.groups.map(({ id, permittedActions }) => [
+      id,
+      permittedActions
+    ])
+  )
+
   return (
     <FixedSpaceColumn>
       <ContentArea opaque>
         <MissingGroupPlacements
-          canManageChildren={isUnitSupervisor}
           groups={unitData.value.groups}
           missingGroupPlacements={unitData.value.missingGroupPlacements}
           backupCares={unitData.value.backupCares}
           savePosition={savePosition}
           reloadUnitData={reloadUnitData}
+          permittedPlacementActions={unitData.value.permittedPlacementActions}
+          permittedBackupCareActions={unitData.value.permittedBackupCareActions}
         />
       </ContentArea>
 
       <ContentArea opaque>
         <Groups
           unit={unitInformation.value.daycare}
-          canManageGroups={isUnitSupervisor}
-          canManageChildren={isUnitSupervisor}
+          permittedActions={unitInformation.value.permittedActions}
           filters={filters}
           setFilters={setFilters}
           groups={unitData.value.groups}
           placements={unitData.value.placements}
           backupCares={unitData.value.backupCares}
+          groupPermittedActions={groupPermittedActions}
           groupCaretakers={unitData.value.caretakers.groupCaretakers}
           groupConfirmedOccupancies={unitData.value.groupOccupancies?.confirmed}
           groupRealizedOccupancies={unitData.value.groupOccupancies?.realized}
+          permittedBackupCareActions={unitData.value.permittedBackupCareActions}
+          permittedGroupPlacementActions={
+            unitData.value.permittedGroupPlacementActions
+          }
           reloadUnitData={reloadUnitData}
           openGroups={openGroups}
           setOpenGroups={setOpenGroups}

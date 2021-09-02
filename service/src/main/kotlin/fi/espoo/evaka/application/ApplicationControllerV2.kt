@@ -17,6 +17,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -24,15 +25,21 @@ import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.format.annotation.DateTimeFormat
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -41,7 +48,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
@@ -107,6 +113,7 @@ enum class VoucherApplicationFilter {
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
     private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
@@ -117,12 +124,12 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PaperApplicationCreateRequest
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
         val id = db.transaction { tx ->
-            val child = personService.getUpToDatePerson(tx, user, body.childId)
+            val child = tx.getPersonById(body.childId)
                 ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
             val guardianId =
@@ -138,7 +145,7 @@ class ApplicationControllerV2(
                     else
                         throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 
-            val guardian = personService.getUpToDatePerson(tx, user, guardianId)
+            val guardian = tx.getPersonById(guardianId)
                 ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
             val id = tx.insertApplication(
@@ -160,62 +167,54 @@ class ApplicationControllerV2(
         return ResponseEntity.status(HttpStatus.CREATED).body(id)
     }
 
-    @GetMapping
+    @PostMapping("/search")
     fun getApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam(required = false) page: Int?,
-        @RequestParam(required = false) pageSize: Int?,
-        @RequestParam(required = false) sortBy: ApplicationSortColumn?,
-        @RequestParam(required = false) sortDir: ApplicationSortDirection?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) units: String?,
-        @RequestParam(required = false) basis: String?,
-        @RequestParam(required = true) type: ApplicationTypeToggle,
-        @RequestParam(required = false) preschoolType: String?,
-        @RequestParam(required = true) status: String?,
-        @RequestParam(required = false) dateType: String?,
-        @RequestParam(required = false) distinctions: String?,
-        @RequestParam(
-            "periodStart",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) periodStart: LocalDate?,
-        @RequestParam(
-            "periodEnd",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) periodEnd: LocalDate?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) transferApplications: TransferApplicationFilter?,
-        @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
+        @RequestBody body: SearchApplicationRequest
     ): ResponseEntity<Paged<ApplicationSummary>> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
-        if (periodStart != null && periodEnd != null && periodStart > periodEnd)
-            throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
+        if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
+            throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
+        val maxPageSize = 5000
+        if (body.pageSize != null && body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+
+        val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
+            user = user,
+            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITH_ASSISTANCE_NEED)
+        )
+        val authorizedUnitsForApplicationsWithoutAssistanceNeed = acl.getAuthorizedUnits(
+            user = user,
+            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED)
+        )
+
+        if (authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() && authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()) {
+            throw Forbidden("application search not allowed for any unit")
+        }
 
         return db.read { tx ->
             tx.fetchApplicationSummaries(
                 user = user,
-                page = page ?: 1,
-                pageSize = pageSize ?: 100,
-                sortBy = sortBy ?: ApplicationSortColumn.CHILD_NAME,
-                sortDir = sortDir ?: ApplicationSortDirection.ASC,
-                areas = area?.split(",") ?: listOf(),
-                units = units?.split(",")?.map { parseUUID(it) } ?: listOf(),
-                basis = basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
-                type = type,
-                preschoolType = preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
+                page = body.page ?: 1,
+                pageSize = body.pageSize ?: 100,
+                sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
+                sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
+                areas = body.area?.split(",") ?: listOf(),
+                units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
+                basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
+                type = body.type,
+                preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
                     ?: listOf(),
-                statuses = status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
-                dateType = dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                distinctions = distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
-                periodStart = periodStart,
-                periodEnd = periodEnd,
-                searchTerms = searchTerms ?: "",
-                transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
-                voucherApplications = voucherApplications,
-                authorizedUnits = acl.getAuthorizedUnits(user),
-                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+                statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
+                dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
+                distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
+                periodStart = body.periodStart,
+                periodEnd = body.periodEnd,
+                searchTerms = body.searchTerms ?: "",
+                transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
+                voucherApplications = body.voucherApplications,
+                authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
+                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -227,7 +226,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
 
         return db.read { it.fetchApplicationSummariesForGuardian(guardianId) }
             .let { ResponseEntity.ok().body(it) }
@@ -240,8 +239,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "childId") childId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
 
         return db.read { it.fetchApplicationSummariesForChild(childId) }
             .let { ResponseEntity.ok().body(it) }
@@ -251,21 +249,28 @@ class ApplicationControllerV2(
     fun getApplicationDetails(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<ApplicationResponse> {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
-        val roles = acl.getRolesForApplication(user, applicationId)
-        roles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
+
+            accessControl.requirePermissionFor(
+                user = user,
+                action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHOUT_ASSISTANCE_NEED,
+                id = applicationId
+            )
+
             val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
             val guardians =
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
-            val attachments: List<Attachment> = when {
+            // todo: can this be refactored under Action model?
+            val roles = acl.getRolesForApplication(user, applicationId)
+            val attachments: List<ApplicationAttachment> = when {
                 roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
                     tx.getApplicationAttachments(applicationId)
                 roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
@@ -288,11 +293,11 @@ class ApplicationControllerV2(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.UPDATE, applicationId)
 
         db.transaction {
             applicationStateService.updateApplicationContentsServiceWorker(
@@ -311,7 +316,7 @@ class ApplicationControllerV2(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) }
         return ResponseEntity.noContent().build()
@@ -321,10 +326,10 @@ class ApplicationControllerV2(
     fun getPlacementPlanDraft(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
         return db.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
@@ -333,28 +338,32 @@ class ApplicationControllerV2(
     fun getDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.READ_DECISION_DRAFT, applicationId)
 
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
+
+            if (application.status !== ApplicationStatus.WAITING_DECISION) {
+                throw Conflict("Cannot get decision drafts for application with status ${application.status}")
+            }
 
             val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
-            val applicationGuardian = personService.getUpToDatePerson(tx, user, application.guardianId)
+            val applicationGuardian = tx.getPersonById(application.guardianId)
                 ?: throw NotFound("Guardian ${application.guardianId} not found")
-            val child = personService.getUpToDatePerson(tx, user, application.childId)
+            val child = tx.getPersonById(application.childId)
                 ?: throw NotFound("Child ${application.childId} not found")
             val vtjGuardians = personService.getGuardians(tx, user, child.id)
 
             val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
-            val otherGuardian = application.otherGuardianId?.let { personService.getUpToDatePerson(tx, user, it) }
+            val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
             ok(
                 DecisionDraftJSON(
@@ -390,11 +399,11 @@ class ApplicationControllerV2(
     fun updateDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID,
+        @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ): ResponseEntity<Unit> {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
         return ResponseEntity.noContent().build()
@@ -404,7 +413,7 @@ class ApplicationControllerV2(
     fun acceptPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "unitId") unitId: UUID
+        @PathVariable(value = "unitId") unitId: DaycareId
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
         return ResponseEntity.noContent().build()
@@ -439,11 +448,11 @@ class ApplicationControllerV2(
     fun createPlacementPlan(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
         db.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
         return ResponseEntity.noContent().build()
@@ -453,7 +462,7 @@ class ApplicationControllerV2(
     fun respondToPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ): ResponseEntity<Unit> {
         db.transaction {
@@ -473,7 +482,7 @@ class ApplicationControllerV2(
     fun acceptDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction {
@@ -486,7 +495,7 @@ class ApplicationControllerV2(
     fun rejectDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
@@ -497,7 +506,7 @@ class ApplicationControllerV2(
     fun simpleAction(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
         val simpleActions = mapOf(
@@ -530,15 +539,35 @@ data class PaperApplicationCreateRequest(
     val transferApplication: Boolean
 )
 
+data class SearchApplicationRequest(
+    val page: Int?,
+    val pageSize: Int?,
+    val sortBy: ApplicationSortColumn?,
+    val sortDir: ApplicationSortDirection?,
+    val area: String?,
+    val units: String?,
+    val basis: String?,
+    val type: ApplicationTypeToggle,
+    val preschoolType: String?,
+    val status: String?,
+    val dateType: String?,
+    val distinctions: String?,
+    val periodStart: LocalDate?,
+    val periodEnd: LocalDate?,
+    val searchTerms: String?,
+    val transferApplications: TransferApplicationFilter?,
+    val voucherApplications: VoucherApplicationFilter?
+)
+
 data class ApplicationResponse(
     val application: ApplicationDetails,
     val decisions: List<Decision>,
     val guardians: List<PersonJSON>,
-    val attachments: List<Attachment>
+    val attachments: List<ApplicationAttachment>
 )
 
 data class SimpleBatchRequest(
-    val applicationIds: Set<UUID>
+    val applicationIds: Set<ApplicationId>
 )
 
 data class PlacementProposalConfirmationUpdate(
@@ -548,18 +577,18 @@ data class PlacementProposalConfirmationUpdate(
 )
 
 data class DaycarePlacementPlan(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange? = null
 )
 
 data class AcceptDecisionRequest(
-    val decisionId: UUID,
+    val decisionId: DecisionId,
     val requestedStartDate: LocalDate
 )
 
 data class RejectDecisionRequest(
-    val decisionId: UUID
+    val decisionId: DecisionId
 )
 
 data class DecisionDraftJSON(

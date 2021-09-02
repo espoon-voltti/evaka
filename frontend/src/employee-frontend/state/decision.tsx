@@ -16,9 +16,8 @@ const defaultState: DecisionDraftState = {
   setDecisionDraftGroup: () => undefined
 }
 
-export const DecisionDraftContext = createContext<DecisionDraftState>(
-  defaultState
-)
+export const DecisionDraftContext =
+  createContext<DecisionDraftState>(defaultState)
 
 export const DecisionDraftContextProvider = React.memo(
   function DecisionDraftContextProvider({

@@ -36,7 +36,7 @@ const StyledInput = styled.input`
   padding-top: calc(0.5em - 1px);
   position: relative;
   height: 2.5em;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   display: block;
   box-shadow: none;

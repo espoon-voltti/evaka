@@ -4,12 +4,16 @@
 
 package fi.espoo.evaka.backupcare
 
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -24,14 +28,15 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class BackupCareController(private val acl: AccessControlList) {
+class BackupCareController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/backup-cares")
     fun getForChild(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        Audit.ChildBackupCareRead.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
         val backupCares = db.read { it.getBackupCaresForChild(childId) }
         return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
     }
@@ -43,7 +48,8 @@ class BackupCareController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
     ): ResponseEntity<BackupCareCreateResponse> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
             val id = db.transaction { it.createBackupCare(childId, body) }
             return ResponseEntity.ok(BackupCareCreateResponse(id))
@@ -56,10 +62,11 @@ class BackupCareController(private val acl: AccessControlList) {
     fun update(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") backupCareId: UUID,
+        @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ): ResponseEntity<Unit> {
-        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
+        accessControl.requirePermissionFor(user, Action.BackupCare.UPDATE, backupCareId)
         try {
             db.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) }
             return ResponseEntity.noContent().build()
@@ -72,9 +79,10 @@ class BackupCareController(private val acl: AccessControlList) {
     fun delete(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") backupCareId: UUID
+        @PathVariable("id") backupCareId: BackupCareId
     ): ResponseEntity<Unit> {
-        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.BackupCareDelete.log(targetId = backupCareId)
+        accessControl.requirePermissionFor(user, Action.BackupCare.DELETE, backupCareId)
         db.transaction { it.deleteBackupCare(backupCareId) }
         return ResponseEntity.noContent().build()
     }
@@ -83,12 +91,12 @@ class BackupCareController(private val acl: AccessControlList) {
     fun getForDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): ResponseEntity<UnitBackupCaresResponse> {
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        Audit.DaycareBackupCareRead.log(targetId = daycareId)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
@@ -96,5 +104,5 @@ class BackupCareController(private val acl: AccessControlList) {
 
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCare>)
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
-data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: UUID?)
-data class BackupCareCreateResponse(val id: UUID)
+data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
+data class BackupCareCreateResponse(val id: BackupCareId)

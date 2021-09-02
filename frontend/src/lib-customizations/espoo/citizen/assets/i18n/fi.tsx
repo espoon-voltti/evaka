@@ -12,6 +12,8 @@ export default {
     cancel: 'Peruuta',
     return: 'Palaa',
     ok: 'Ok',
+    save: 'Tallenna',
+    confirm: 'Vahvista',
     add: 'Lisää',
     unit: {
       providerTypes: {
@@ -41,6 +43,19 @@ export default {
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
+    },
+    datetime: {
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      weekShort: 'Vk',
+      weekdays: [
+        'Maanantai',
+        'Tiistai',
+        'Keskiviikko',
+        'Torstai',
+        'Perjantai',
+        'Lauantai',
+        'Sunnuntai'
+      ]
     }
   },
   header: {
@@ -48,7 +63,8 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
-      messages: 'Viestit'
+      messages: 'Viestit',
+      calendar: 'Kalenteri'
     },
     lang: {
       fi: 'Suomeksi',
@@ -61,8 +77,7 @@ export default {
   footer: {
     cityLabel: '© Espoon kaupunki',
     privacyPolicy: 'Tietosuojaselosteet',
-    privacyPolicyLink:
-      'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
+    privacyPolicyLink: 'https://www.espoo.fi/fi/espoon-kaupunki/tietosuoja',
     sendFeedback: 'Lähetä palautetta',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
@@ -77,7 +92,7 @@ export default {
           Tietoa yksityisistä päiväkodeista löydät{' '}
           <ExternalLink
             text="täältä."
-            href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus"
+            href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit"
             newTab
           />
         </span>
@@ -122,21 +137,54 @@ export default {
       list: 'Lista yksiköistä'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
+      'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun'
   },
+  calendar: {
+    holiday: 'Pyhäpäivä',
+    newReservationBtn: 'Tee varaus',
+    reservationModal: {
+      title: 'Tee varaus',
+      selectChildren: 'Valitse lapset',
+      dateRange: 'Varauksen voimassaolo',
+      dateRangeLabel: 'Tee varaus päiville',
+      times: 'Kellonaika',
+      businessDays: 'Ma-Pe',
+      postError: 'Varauksen luominen ei onnistunut',
+      repeats: 'Toistuu',
+      repetitions: {
+        DAILY: 'Päivittäin',
+        WEEKLY: 'Viikoittain'
+      }
+    }
+  },
   messages: {
-    inboxTitle: 'Saapuneet viestit',
-    noMessages: 'Ei saapuneita viestejä',
+    inboxTitle: 'Viestit',
+    noMessagesInfo: 'Tässä näet saapuneet ja lähetetyt viestisi',
+    emptyInbox: 'Viestilaatikkosi on tyhjä',
+    noSelectedMessage: 'Ei valittua viestiä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
+    sender: 'Lähettäjä',
     sending: 'Lähetetään',
     messagePlaceholder:
       'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
+    },
+    replyToThread: 'Vastaa viestiin',
+    messageEditor: {
+      newMessage: 'Uusi viesti',
+      receivers: 'Vastaanottajat',
+      title: 'Otsikko',
+      message: 'Viesti',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä',
+      search: 'Haku',
+      noResults: 'Ei tuloksia',
+      messageSendError: 'Viestin lähetys epäonnistui'
     }
   },
   applications: {
@@ -433,8 +481,7 @@ export default {
             title: 'Toisen huoltajan tiedot',
             email: 'Sähköposti',
             tel: 'Puhelin',
-            info:
-              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+            info: 'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
             agreed:
               'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
             notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
@@ -612,12 +659,10 @@ export default {
             'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
           message: {
             title: 'Ilta- ja vuorohoito',
-            text:
-              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
+            text: 'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
           },
           attachmentsMessage: {
-            text:
-              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            text: 'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
             subtitle:
               'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
           }
@@ -629,8 +674,7 @@ export default {
         assistanceNeedInstructions: {
           DAYCARE:
             'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
-          CLUB:
-            'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
+          CLUB: 'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
           PRESCHOOL:
             'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.'
         },
@@ -716,8 +760,7 @@ export default {
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
             PRESCHOOL:
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on.',
-            CLUB:
-              'Haen ensisijaisesti paikkaa samasta kerhoryhmästä, jossa lapsen sisarus on.'
+            CLUB: 'Haen ensisijaisesti paikkaa samasta kerhoryhmästä, jossa lapsen sisarus on.'
           },
           radioLabel: {
             DAYCARE:
@@ -798,7 +841,7 @@ export default {
           },
           mapLink: 'Yksiköt kartalla',
           serviceVoucherLink:
-            'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
+            'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
           languageFilter: {
             label: 'Yksikön kieli',
             fi: 'suomi',
@@ -813,8 +856,7 @@ export default {
           preferences: {
             label: 'Valitsemasi hakutoiveet',
             noSelections: 'Ei valintoja',
-            info:
-              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            info: 'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
             fi: 'suomenkielinen',
             sv: 'ruotsinkielinen',
             moveUp: 'Siirrä ylöspäin',
@@ -873,7 +915,7 @@ export default {
               lisämaksusta ja tuloselvityslomakkeen löydät täältä:
               <br />
               <a
-                href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa"
+                href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -990,20 +1032,17 @@ export default {
       },
       draftPolicyInfo: {
         title: 'Hakemusluonnos on tallennettu',
-        text:
-          'Hakemus on tallennettu keskeneräisenä. Huom! Keskeneräistä hakemusta säilytetään palvelussa yhden kuukauden ajan viimeisimmästä tallennuksesta.',
+        text: 'Hakemus on tallennettu keskeneräisenä. Huom! Keskeneräistä hakemusta säilytetään palvelussa yhden kuukauden ajan viimeisimmästä tallennuksesta.',
         ok: 'Selvä!'
       },
       sentInfo: {
         title: 'Hakemus on lähetetty',
-        text:
-          'Halutessasi voit tehdä hakemukseen muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
+        text: 'Halutessasi voit tehdä hakemukseen muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
         ok: 'Selvä!'
       },
       updateInfo: {
         title: 'Muutokset hakemukseen on tallennettu',
-        text:
-          'Halutessasi voit tehdä lisää muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
+        text: 'Halutessasi voit tehdä lisää muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
         ok: 'Selvä!'
       }
     }
@@ -1069,15 +1108,13 @@ export default {
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'Toinen päätös odottaa vastaustasi',
-          text:
-            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
+          text: 'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
           resolveLabel: 'Palaa vastaamatta',
           rejectLabel: 'Jatka vastaamista'
         },
         doubleRejectWarning: {
           title: 'Haluatko hylätä paikan?',
-          text:
-            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
+          text: 'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
           resolveLabel: 'Hylkää molemmat',
           rejectLabel: 'Palaa takaisin'
         }
@@ -1159,6 +1196,220 @@ export default {
     modalMessage:
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
   },
+  income: {
+    title: 'Tulotietojen ilmoitus',
+    description: (
+      <>
+        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+        korkeimpaan maksuun.
+        <br />
+        <br />
+        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+        alkamispäivästä lähtien.
+        <br />
+        <br />
+        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
+        varhaiskasvatusmaksuja myös takautuvasti.
+        <br />
+        <br />* Tähdellä merkityt tiedot ovat pakollisia
+      </>
+    ),
+    addNew: 'Luo uusi tulotieto',
+    incomeInfo: 'Tulotiedot',
+    incomesRegisterConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+    incomeType: {
+      description: (
+        <>
+          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
+          <strong>Yrittäjän tulotiedot</strong>, että{' '}
+          <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
+        </>
+      ),
+      startDate: 'Voimassa alkaen',
+      endDate: 'Voimassaolo päättyy',
+      title: 'Asiakasmaksun perusteet',
+      agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
+      highestFeeInfo:
+        'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
+      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
+      entrepreneurIncome: 'Yrittäjän tulotiedot'
+    },
+    grossIncome: {
+      title: 'Bruttotulotietojen täyttäminen',
+      description:
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+      incomeSource: 'Tulotietojen toimitus',
+      provideAttachments:
+        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      estimate: 'Arvio bruttotuloistani',
+      otherIncome: 'Muut tulot',
+      otherIncomeInfo:
+        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+      choosePlaceholder: 'Valitse',
+      otherIncomeTypes: {
+        PENSION: 'Eläke',
+        ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
+        SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+        HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Joustava tai osittainen hoitoraha',
+        ALIMONY: 'Elatusapu tai -tuki',
+        INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+        RENTAL_INCOME: 'Vuokratulot',
+        UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+        JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Palkkio tai bonus',
+        RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+        BASIC_INCOME: 'Perustulo',
+        FOREST_INCOME: 'Metsätulo',
+        FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+        REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+        EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+        GRANT: 'Apuraha',
+        APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+        ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+        OTHER_INCOME: 'Muut tulot'
+      }
+    },
+    entrepreneurIncome: {
+      title: 'Yrittäjän tulotietojen täyttäminen',
+      description: (
+        <>
+          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
+          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
+          tarkemmat yrityskohtaiset tiedot liitteinä.
+          <br />
+          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
+          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
+        </>
+      ),
+      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
+      fullTime: 'Päätoimista',
+      partTime: 'Sivutoimista',
+      startOfEntrepreneurship: 'Yrittäjyys alkanut',
+      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
+      yes: 'Kyllä',
+      no: 'Ei',
+      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
+      startupGrant:
+        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
+      checkupLabel: 'Tietojen tarkastus',
+      checkupConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+      companyInfo: 'Yrityksen tiedot',
+      companyForm: 'Yrityksen toimintamuoto',
+      selfEmployed: 'Toiminimi',
+      limitedCompany: 'Osakeyhtiö',
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      lightEntrepreneur: 'Kevytyrittäjyys',
+      lightEntrepreneurInfo:
+        'Maksutositteet palkoista ja työkorvauksista tulee toimittaa liitteinä.',
+      partnershipInfo:
+        'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
+    },
+    selfEmployed: {
+      info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
+      attachments:
+        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+      estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
+      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+      timeRange: 'Aikavälillä'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
+          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
+        </>
+      ),
+      incomesRegister:
+        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      attachments:
+        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+    },
+    accounting: {
+      title: 'Kirjanpitäjän yhteystiedot',
+      description:
+        'Kirjanpitäjän yhteystiedot tarvitaan jos toimit osakeyhtiössä, kommandiittiyhtiössä tai avoimessa yhtiössä.',
+      accountant: 'Kirjanpitäjä',
+      accountantPlaceholder: 'Kirjanpitäjän nimi / yhtiön nimi',
+      email: 'Sähköpostiosoite',
+      emailPlaceholder: 'Sähköposti',
+      address: 'Postiosoite',
+      addressPlaceholder: 'Katuosoite, postinumero, toimipaikka',
+      phone: 'Puhelinnumero',
+      phonePlaceholder: 'Puhelinnumero'
+    },
+    moreInfo: {
+      title: 'Muita maksuun liittyviä tietoja',
+      studentLabel: 'Oletko opiskelija?',
+      student: 'Olen opiskelija.',
+      studentInfo:
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+      deductions: 'Vähennykset',
+      alimony:
+        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
+      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
+    },
+    attachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      description:
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      required: {
+        title: 'Tarvittavat liitteet'
+      },
+      attachmentNames: {
+        PENSION: 'Päätös eläkkeestä',
+        ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
+        SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
+        PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
+        ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+        UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
+        LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
+        ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
+        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
+        RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
+        BASIC_INCOME: 'Päätös perustulosta',
+        FOREST_INCOME: 'Tosite metsätulosta',
+        FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
+        REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
+        EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
+        GRANT: 'Tosite apurahasta',
+        APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Tosite tapaturmavakuutuksen korvauksesta',
+        OTHER_INCOME: 'Liitteet muista tuloista',
+        ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
+        INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
+        RENTAL_INCOME: 'Tositteet vuokratuloista',
+        PAYSLIP: 'Viimeisin palkkakuitti',
+        STARTUP_GRANT: 'Starttirahapäätös',
+        ACCOUNTANT_REPORT:
+          'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
+        PROOF_OF_STUDIES:
+          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
+      }
+    },
+    assure: 'Vakuutan antamani tiedot oikeiksi.',
+    errors: {
+      invalidForm:
+        'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
+      choose: 'Valitse vaihtoehto',
+      chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
+      consentRequired:
+        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan'
+    }
+  },
   validationErrors: {
     required: 'Pakollinen tieto',
     requiredSelection: 'Valinta puuttuu',
@@ -1167,6 +1418,8 @@ export default {
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
     validDate: 'Anna muodossa pp.kk.vvvv',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Anna muodossa hh:mm',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',

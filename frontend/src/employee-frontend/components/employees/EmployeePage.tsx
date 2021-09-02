@@ -12,13 +12,13 @@ import { getEmployeeDetails, updateEmployee } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser } from '../../types/employee'
 import { useParams } from 'react-router-dom'
-import { SpinnerSegment } from '../../../lib-components/atoms/state/Spinner'
-import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { GlobalRole, globalRoles } from '../../types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Checkbox from '../../../lib-components/atoms/form/Checkbox'
-import ReturnButton from '../../../lib-components/atoms/buttons/ReturnButton'
-import AsyncButton from '../../../lib-components/atoms/buttons/AsyncButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 
 interface FormData {
   globalRoles: GlobalRole[]

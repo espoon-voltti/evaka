@@ -19,5 +19,6 @@ router.delete('/attachments/citizen/:id', proxy)
 
 const multipartProxy = createProxy({ multipart: true })
 router.post('/attachments/citizen/applications/:applicationId', multipartProxy)
+router.post('/attachments/citizen', multipartProxy)
 
 export default router

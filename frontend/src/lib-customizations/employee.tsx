@@ -7,37 +7,51 @@
 import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 import { fi } from './espoo/employee/assets/i18n/fi'
-import { merge } from 'lodash'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { isArray, mergeWith } from 'lodash'
+import { ApplicationType } from 'lib-common/generated/enums'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
+  appConfig,
   cityLogo,
   featureFlags,
   assistanceMeasures,
   placementTypes,
-  placementPlanRejectReasons
+  placementPlanRejectReasons,
+  unitProviderTypes
 }: EmployeeCustomizations = customizations
 export {
+  appConfig,
   cityLogo,
   featureFlags,
   assistanceMeasures,
   placementTypes,
-  placementPlanRejectReasons
+  placementPlanRejectReasons,
+  unitProviderTypes
 }
 
 export type Lang = 'fi'
 
 export type Translations = typeof fi
 
-export const translations: { [K in Lang]: Translations } = {
-  fi: merge(fi, (customizations as EmployeeCustomizations).translations.fi)
+const customizer = <T extends any>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  origValue: T,
+  customizedValue: T | undefined
+): T | undefined => {
+  if (isArray(origValue) && customizedValue != undefined) {
+    return customizedValue
+  }
+  return undefined
 }
 
-export const applicationTypes: ApplicationType[] = ([
-  'DAYCARE',
-  'PRESCHOOL',
-  'CLUB'
-] as const).filter(
-  (type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL'
-)
+export const translations: { [K in Lang]: Translations } = {
+  fi: mergeWith(
+    fi,
+    (customizations as EmployeeCustomizations).translations.fi,
+    customizer
+  )
+}
+
+export const applicationTypes: ApplicationType[] = (
+  ['DAYCARE', 'PRESCHOOL', 'CLUB'] as const
+).filter((type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL')

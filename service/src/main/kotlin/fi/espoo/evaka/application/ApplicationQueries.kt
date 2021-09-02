@@ -14,8 +14,12 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -69,7 +73,7 @@ fun Database.Transaction.insertApplication(
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
     sentDate: LocalDate? = null
-): UUID {
+): ApplicationId {
     // language=sql
     val sql =
         """
@@ -85,7 +89,7 @@ fun Database.Transaction.insertApplication(
         .bind("hideFromGuardian", hideFromGuardian)
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
+        .mapTo<ApplicationId>()
         .first()
 }
 
@@ -162,15 +166,16 @@ fun Database.Read.fetchApplicationSummaries(
     searchTerms: String = "",
     transferApplications: TransferApplicationFilter,
     voucherApplications: VoucherApplicationFilter?,
-    authorizedUnits: AclAuthorization,
-    onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
+    authorizedUnitsForApplicationsWithoutAssistanceNeed: AclAuthorization,
+    authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization
 ): Paged<ApplicationSummary> {
     val params = mapOf(
         "page" to page,
         "pageSize" to pageSize,
         "area" to areas.toTypedArray(),
         "units" to units.toTypedArray(),
-        "authorizedUnits" to authorizedUnits.ids?.toTypedArray(),
+        "authorizedUnitsForApplicationsWithoutAssistanceNeed" to authorizedUnitsForApplicationsWithoutAssistanceNeed.ids?.toTypedArray(),
+        "authorizedUnitsForApplicationsWithAssistanceNeed" to authorizedUnitsForApplicationsWithAssistanceNeed.ids?.toTypedArray(),
         "documentType" to type.toString(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
@@ -186,7 +191,7 @@ fun Database.Read.fetchApplicationSummaries(
     val conditions = listOfNotNull(
         "a.status = ANY(:status::application_status_type[])",
         if (areas.isNotEmpty()) "ca.short_name = ANY(:area)" else null,
-        if (basis.isNotEmpty()) basis.map { applicationBasis ->
+        if (basis.isNotEmpty()) basis.joinToString("\nAND ") { applicationBasis ->
             when (applicationBasis) {
                 ApplicationBasis.ADDITIONAL_INFO -> """(
                             (f.document -> 'additionalDetails' ->> 'dietType') != '' OR 
@@ -202,7 +207,7 @@ fun Database.Read.fetchApplicationSummaries(
                 ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
                 ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
             }
-        }.joinToString("\nAND ") else null,
+        } else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
         if (type == ApplicationTypeToggle.PRESCHOOL)
             """
@@ -214,8 +219,8 @@ fun Database.Read.fetchApplicationSummaries(
             """.trimIndent()
         else null,
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
-        if (authorizedUnits != AclAuthorization.All) "f.preferredUnits && :authorizedUnits" else null,
-        if (onlyAuthorizedToViewApplicationsWithAssistanceNeed) "(f.document->'careDetails'->>'assistanceNeeded')::boolean = true" else null,
+        if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)" else null,
+        if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.ARRIVAL)) "daterange(:periodStart, :periodEnd, '[]') @> a.sentdate" else null,
@@ -325,11 +330,11 @@ fun Database.Read.fetchApplicationSummaries(
         """.trimIndent()
 
     val orderedSql = when (sortBy) {
-        ApplicationSortColumn.APPLICATION_TYPE -> "$sql ORDER BY type $sortDir"
+        ApplicationSortColumn.APPLICATION_TYPE -> "$sql ORDER BY type $sortDir, last_name, first_name"
         ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name, first_name $sortDir"
-        ApplicationSortColumn.DUE_DATE -> "$sql ORDER BY duedate $sortDir"
-        ApplicationSortColumn.START_DATE -> "$sql ORDER BY preferredStartDate $sortDir"
-        ApplicationSortColumn.STATUS -> "$sql ORDER BY application_status $sortDir"
+        ApplicationSortColumn.DUE_DATE -> "$sql ORDER BY duedate $sortDir, last_name, first_name"
+        ApplicationSortColumn.START_DATE -> "$sql ORDER BY preferredStartDate $sortDir, last_name, first_name"
+        ApplicationSortColumn.STATUS -> "$sql ORDER BY application_status $sortDir, last_name, first_name"
     }.exhaust()
 
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
@@ -354,7 +359,7 @@ fun Database.Read.fetchApplicationSummaries(
                     startDate = row.mapColumn("preferredStartDate"),
                     preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
                         PreferredUnit(
-                            id = UUID.fromString(it),
+                            id = DaycareId(UUID.fromString(it)),
                             name = "" // filled afterwards
                         )
                     },
@@ -381,7 +386,7 @@ fun Database.Read.fetchApplicationSummaries(
                             )
                         },
                     placementProposalUnitName = row.mapColumn("unit_name"),
-                    currentPlacementUnit = row.mapColumn<UUID?>("current_placement_unit_id")?.let {
+                    currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                         PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
                     }
                 )
@@ -399,7 +404,7 @@ fun Database.Read.fetchApplicationSummaries(
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
     val unitMap = createQuery(unitSql)
         .bind("unitIds", unitIds.toTypedArray())
-        .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
+        .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
         .toMap()
 
     return applicationSummaries.copy(
@@ -516,10 +521,10 @@ fun Database.Read.getCitizenChildren(citizenId: UUID): List<CitizenChildren> {
 
 private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
     PersonApplicationSummary(
-        applicationId = rs.getUUID("id"),
+        applicationId = ApplicationId(rs.getUUID("id")),
         childId = rs.getUUID("childId"),
         guardianId = rs.getUUID("guardianId"),
-        preferredUnitId = rs.getUUID("preferredUnit"),
+        preferredUnitId = DaycareId(rs.getUUID("preferredUnit")),
         preferredUnitName = rs.getString("daycareName"),
         childName = rs.getString("childName"),
         childSsn = rs.getString("childSsn"),
@@ -533,7 +538,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
     )
 }
 
-fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
+fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
     val attachmentWhereClause = if (includeCitizenAttachmentsOnly) "WHERE uploaded_by_person IS NOT NULL" else ""
     //language=sql
     val sql =
@@ -607,7 +612,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAtt
                 dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()
+                attachments = row.mapJsonColumn<Array<ApplicationAttachment>>("attachments").toList()
             )
         }
         .firstOrNull()
@@ -623,7 +628,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAtt
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap = createQuery(unitSql)
             .bind("unitIds", unitIds.toTypedArray())
-            .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
+            .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
             .toMap()
 
         return application.copy(
@@ -641,7 +646,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAtt
     } else return null
 }
 
-fun Database.Read.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
+fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<ApplicationUnitSummary> {
     //language=sql
     val sql =
         """
@@ -734,7 +739,7 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
     }
 
 fun Database.Transaction.updateForm(
-    id: UUID,
+    id: ApplicationId,
     form: ApplicationForm,
     formType: ApplicationType,
     childRestricted: Boolean,
@@ -768,7 +773,7 @@ VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM o
         .execute()
 }
 
-fun Database.Transaction.setCheckedByAdminToDefault(id: UUID, form: ApplicationForm) {
+fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
     // language=SQL
     val sql = "UPDATE application SET checkedbyadmin = :checked WHERE id = :applicationId"
 
@@ -783,7 +788,7 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: UUID, form: ApplicationF
         .execute()
 }
 
-fun Database.Transaction.updateApplicationStatus(id: UUID, status: ApplicationStatus) {
+fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: ApplicationStatus) {
     // language=SQL
     val sql = "UPDATE application SET status = :status WHERE id = :id"
 
@@ -793,7 +798,7 @@ fun Database.Transaction.updateApplicationStatus(id: UUID, status: ApplicationSt
         .execute()
 }
 
-fun Database.Transaction.updateApplicationDates(id: UUID, sentDate: LocalDate, dueDate: LocalDate?) {
+fun Database.Transaction.updateApplicationDates(id: ApplicationId, sentDate: LocalDate, dueDate: LocalDate?) {
     // language=SQL
     val sql = "UPDATE application SET sentdate = :sentDate, duedate = :dueDate WHERE id = :id"
 
@@ -804,7 +809,7 @@ fun Database.Transaction.updateApplicationDates(id: UUID, sentDate: LocalDate, d
         .execute()
 }
 
-fun Database.Transaction.updateApplicationFlags(id: UUID, applicationFlags: ApplicationFlags) {
+fun Database.Transaction.updateApplicationFlags(id: ApplicationId, applicationFlags: ApplicationFlags) {
     // language=SQL
     val sql =
         "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
@@ -816,7 +821,7 @@ fun Database.Transaction.updateApplicationFlags(id: UUID, applicationFlags: Appl
         .execute()
 }
 
-fun Database.Transaction.updateApplicationOtherGuardian(applicationId: UUID, otherGuardianId: UUID?) {
+fun Database.Transaction.updateApplicationOtherGuardian(applicationId: ApplicationId, otherGuardianId: UUID?) {
     // language=SQL
     val sql = "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
 
@@ -826,7 +831,7 @@ fun Database.Transaction.updateApplicationOtherGuardian(applicationId: UUID, oth
         .execute()
 }
 
-fun Database.Transaction.setApplicationVerified(id: UUID, verified: Boolean) {
+fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boolean) {
     // language=SQL
     val sql = "UPDATE application SET checkedByAdmin = :verified WHERE id = :id"
 
@@ -836,7 +841,7 @@ fun Database.Transaction.setApplicationVerified(id: UUID, verified: Boolean) {
         .execute()
 }
 
-fun Database.Transaction.deleteApplication(id: UUID) {
+fun Database.Transaction.deleteApplication(id: ApplicationId) {
     // language=SQL
     val sql =
         """
@@ -848,7 +853,7 @@ fun Database.Transaction.deleteApplication(id: UUID) {
     createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: UUID) -> Unit) {
+fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit) {
     val thresholdDays = 31
 
     // language=SQL
@@ -876,7 +881,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
                 createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
                     .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
-                    .mapTo<UUID>()
+                    .mapTo<AttachmentId>()
                     .toList()
 
             attachmentIds.forEach { attachmentId ->
@@ -891,7 +896,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
     }
 }
 
-fun Database.Transaction.cancelOutdatedTransferApplications(): List<UUID> = createUpdate(
+fun Database.Transaction.cancelOutdatedTransferApplications(): List<ApplicationId> = createUpdate(
     // only include applications that don't have decisions
     """
 UPDATE application SET status = :cancelled
@@ -919,16 +924,16 @@ RETURNING id
     .bind("cancelled", ApplicationStatus.CANCELLED)
     .bind("now", LocalDate.now())
     .executeAndReturnGeneratedKeys()
-    .mapTo<UUID>()
+    .mapTo<ApplicationId>()
     .toList()
 
-fun Database.Read.getApplicationAttachments(applicationId: UUID): List<Attachment> =
+fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery("SELECT id, name, content_type, updated, received_at, type, uploaded_by_employee, uploaded_by_person FROM attachment WHERE application_id = :applicationId")
         .bind("applicationId", applicationId)
-        .mapTo<Attachment>()
+        .mapTo<ApplicationAttachment>()
         .toList()
 
-fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: UUID): List<Attachment> =
+fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery(
         """
 SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type, attachment.uploaded_by_employee, attachment.uploaded_by_person
@@ -941,5 +946,5 @@ WHERE application.id = :applicationId AND daycare.round_the_clock AND attachment
     )
         .bind("applicationId", applicationId)
         .bind("attachmentTypes", arrayOf(AttachmentType.EXTENDED_CARE))
-        .mapTo<Attachment>()
+        .mapTo<ApplicationAttachment>()
         .toList()

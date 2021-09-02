@@ -12,14 +12,20 @@ import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -27,7 +33,7 @@ fun createPlacement(
     tx: Database.Transaction,
     type: PlacementType,
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
     useFiveYearsOldDaycare: Boolean
@@ -46,7 +52,7 @@ fun createPlacement(
 }
 
 fun Database.Transaction.updatePlacement(
-    id: UUID,
+    id: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     aclAuth: AclAuthorization = AclAuthorization.All,
@@ -93,16 +99,13 @@ fun Database.Transaction.updatePlacement(
 }
 
 fun Database.Transaction.checkAndCreateGroupPlacement(
-    daycarePlacementId: UUID,
-    groupId: UUID,
+    daycarePlacementId: PlacementId,
+    groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
-): UUID {
+): GroupPlacementId {
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
-
-    if (getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
-        throw BadRequest("Group placement must not overlap with existing group placement")
 
     val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
@@ -112,6 +115,8 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
 
     val group = getDaycareGroup(groupId)
         ?: throw NotFound("Group $groupId does not exist")
+    if (group.daycareId != daycarePlacement.daycare.id)
+        throw BadRequest("Group is in wrong unit")
     if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
         throw BadRequest("Group is not active for the full duration")
 
@@ -141,9 +146,12 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     }
 }
 
-fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementId: UUID, groupId: UUID, startDate: LocalDate) {
+fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
     val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
+
+    if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId)
+        throw BadRequest("Cannot transfer to a group in different unit")
 
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
@@ -167,10 +175,10 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
         }
     }
 
-    createGroupPlacement(daycarePlacementId, groupId, startDate, groupPlacement.endDate)
+    createGroupPlacement(groupPlacement.daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
-private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: UUID? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
+private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
     getPlacementsForChildDuring(childId, from, to)
@@ -248,7 +256,7 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
-    daycareId: UUID?,
+    daycareId: DaycareId?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
@@ -259,7 +267,7 @@ fun Database.Read.getDetailedDaycarePlacements(
 
     val groupPlacements =
         when {
-            daycareId != null -> getDaycareGroupPlacements(daycareId, minDate, maxDate, null)
+            daycareId != null -> getGroupPlacementsAtDaycare(daycareId, DateRange(minDate, maxDate))
             childId != null -> getChildGroupPlacements(childId)
             else -> listOf()
         }
@@ -355,24 +363,28 @@ private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, ty
 
 fun getMissingGroupPlacements(
     tx: Database.Read,
-    unitId: UUID
+    unitId: DaycareId
 ): List<MissingGroupPlacement> {
     data class GroupPlacementGap(
         val backup: Boolean,
-        val placementId: UUID,
+        val placementId: PlacementId,
         val placementType: PlacementType?,
         val placementRange: FiniteDateRange,
         val childId: UUID,
+        @Json
+        val serviceNeeds: Set<ServiceNeed>,
         val gapRange: FiniteDateRange
     )
 
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     data class PlacementResult(
-        val id: UUID,
+        val id: PlacementId,
         val type: PlacementType,
         val range: FiniteDateRange,
         val childId: UUID,
+        @Json
+        val serviceNeeds: Set<ServiceNeed>,
         val groupPlacementRanges: List<FiniteDateRange>
     )
     val placements = tx.createQuery(
@@ -383,9 +395,31 @@ fun getMissingGroupPlacements(
             pl.type,
             daterange(greatest(pl.start_date, :launch), pl.end_date, '[]') AS range,
             pl.child_id,
+            coalesce(jsonb_agg(jsonb_build_object(
+                'id', sn.id,
+                'placementId', sn.placement_id,
+                'startDate', sn.start_date,
+                'endDate', sn.end_date,
+                'option', jsonb_build_object(
+                    'id', sno.id,
+                    'name', sno.name,
+                    'updated', date_part('epoch', sno.updated)
+                ),
+                'shiftCare', sn.shift_care,
+                'confirmed', jsonb_build_object(
+                    'employeeId', e.id,
+                    'firstName', e.first_name,
+                    'lastName', e.last_name,
+                    'at', date_part('epoch', sn.confirmed_at)
+                ),
+                'updated', date_part('epoch', sn.updated)
+            )) FILTER (WHERE sn.id IS NOT NULL), '[]') AS service_needs,
             coalesce(array_agg(daterange(greatest(dgp.start_date, :launch), dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL), '{}') AS group_placement_ranges
         FROM placement pl
         LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') && daterange(:launch, NULL)
+        LEFT JOIN service_need sn ON sn.placement_id = pl.id
+        LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+        LEFT JOIN employee e ON e.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange(:launch, NULL)
         GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
         --exclude simple cases where there is only one group placement and it matches the placement range
@@ -403,6 +437,7 @@ fun getMissingGroupPlacements(
                 placementType = placement.type,
                 placementRange = placement.range,
                 childId = placement.childId,
+                serviceNeeds = placement.serviceNeeds,
                 gapRange = gap
             )
         }
@@ -416,6 +451,7 @@ fun getMissingGroupPlacements(
             NULL AS placement_type,
             daterange(start_date, end_date, '[]') AS placement_range,
             child_id,
+            '[]' AS service_needs,
             daterange(start_date, end_date, '[]') AS gap_range
         FROM backup_care bc
         WHERE bc.unit_id = :unitId AND bc.group_id IS NULL 
@@ -447,13 +483,14 @@ fun getMissingGroupPlacements(
             firstName = child.firstName,
             lastName = child.lastName,
             dateOfBirth = child.dateOfBirth,
+            serviceNeeds = gap.serviceNeeds,
             gap = gap.gapRange
         )
     }
 }
 
 data class DaycarePlacement(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -462,7 +499,7 @@ data class DaycarePlacement(
 )
 
 data class DaycarePlacementDetails(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -472,7 +509,7 @@ data class DaycarePlacementDetails(
 )
 
 data class DaycarePlacementWithDetails(
-    val id: UUID,
+    val id: PlacementId,
     val child: ChildBasics,
     val daycare: DaycareBasics,
     val startDate: LocalDate,
@@ -485,16 +522,16 @@ data class DaycarePlacementWithDetails(
 )
 
 data class DaycareGroupPlacement(
-    val id: UUID?,
-    val groupId: UUID?,
+    val id: GroupPlacementId?,
+    val groupId: GroupId?,
     val groupName: String?,
-    val daycarePlacementId: UUID,
+    val daycarePlacementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class MissingGroupPlacement(
-    val placementId: UUID,
+    val placementId: PlacementId,
     val placementType: PlacementType?, // null for backup care
     val backup: Boolean,
     val placementPeriod: FiniteDateRange,
@@ -502,6 +539,7 @@ data class MissingGroupPlacement(
     val firstName: String?,
     val lastName: String?,
     val dateOfBirth: LocalDate,
+    val serviceNeeds: Set<ServiceNeed>,
     val gap: FiniteDateRange
 )
 
@@ -514,7 +552,7 @@ data class ChildBasics(
 )
 
 data class DaycareBasics(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val area: String,
     val providerType: ProviderType

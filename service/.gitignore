@@ -9,6 +9,8 @@
 /build/
 /target/
 /lib/
+/codegen/build/
+/codegen/target/
 /buildSrc/build/
 /buildSrc/target/
 /vtjclient/build/

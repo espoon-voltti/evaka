@@ -4,13 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import {
-  faCheck,
-  fasArrowDown,
-  fasArrowUp,
-  faPaperclip,
-  faTimes
-} from 'lib-icons'
+import { faCheck, faPaperclip, faTimes } from 'lib-icons'
 import { Paged } from 'lib-common/api'
 import {
   Table,
@@ -43,11 +37,13 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import ActionBar from '../../components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
+import { careTypesFromPlacementType } from '../common/CareTypeLabel'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { featureFlags } from 'lib-customizations/employee'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -134,9 +130,8 @@ const ApplicationsList = React.memo(function Applications({
   const { data: applications, pages, total } = applicationsResult
 
   const { i18n } = useTranslation()
-  const { showCheckboxes, checkedIds, setCheckedIds, status } = useContext(
-    ApplicationUIContext
-  )
+  const { showCheckboxes, checkedIds, setCheckedIds, status } =
+    useContext(ApplicationUIContext)
 
   const { roles } = useContext(UserContext)
   const enableApplicationActions =
@@ -226,20 +221,11 @@ const ApplicationsList = React.memo(function Applications({
               </span>
             }
           >
-            <RoundIcon
-              content={
+            <AgeIndicatorIcon
+              isUnder3={
                 startDateOrDueDate.differenceInYears(application.dateOfBirth) <
                 3
-                  ? fasArrowDown
-                  : fasArrowUp
               }
-              color={
-                startDateOrDueDate.differenceInYears(application.dateOfBirth) <
-                3
-                  ? colors.accents.green
-                  : colors.blues.medium
-              }
-              size="s"
             />
           </Tooltip>
           <span>
@@ -279,8 +265,9 @@ const ApplicationsList = React.memo(function Applications({
         <PlacementCircle
           type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
           label={
-            application?.serviceNeed?.name ??
-            i18n.placement.type[application.placementType]
+            featureFlags.daycareApplication.serviceNeedOptionsEnabled
+              ? application?.serviceNeed?.name ?? ''
+              : i18n.placement.type[application.placementType]
           }
         />
       </Td>

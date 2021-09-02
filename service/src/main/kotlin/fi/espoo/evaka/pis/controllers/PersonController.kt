@@ -10,6 +10,7 @@ import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getDeceasedPeople
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.MergeService
@@ -61,9 +62,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        return db.transaction {
-            personService.getUpToDatePerson(it, user, personId)
-        }
+        return db.transaction { it.getPersonById(personId) }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
     }
@@ -76,7 +75,7 @@ class PersonController(
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
+        return db.transaction { personService.getPersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
     }
@@ -93,22 +92,11 @@ class PersonController(
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun findBySearchTerms(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(
-            value = "searchTerm",
-            required = true
-        ) searchTerm: String,
-        @RequestParam(
-            value = "orderBy",
-            required = true
-        ) orderBy: String,
-        @RequestParam(
-            value = "sortDirection",
-            required = true
-        ) sortDirection: String
+        @RequestBody body: SearchPersonBody
     ): ResponseEntity<List<PersonJSON>>? {
         Audit.PersonDetailsSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -117,9 +105,9 @@ class PersonController(
                 db.read {
                     it.searchPeople(
                         user,
-                        searchTerm,
-                        orderBy,
-                        sortDirection
+                        body.searchTerm,
+                        body.orderBy,
+                        body.sortDirection
                     )
                 }.map { personDTO -> PersonJSON.from(personDTO) }
             )
@@ -179,35 +167,30 @@ class PersonController(
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
-        db.transaction {
+        val person = db.transaction {
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
-        val person = db.transaction { personService.getUpToDatePerson(it, user, personId)!! }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 
-    @GetMapping("/details/ssn/{ssn}")
+    @PostMapping("/details/ssn")
     fun getOrCreatePersonBySsn(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("ssn") ssn: String,
-        @RequestParam("readonly", required = false) readonly: Boolean = false
+        @RequestBody body: GetOrCreatePersonBySsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
-        if (!isValidSSN(ssn)) throw BadRequest("Invalid SSN")
+        if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
-        val person = if (readonly) {
-            personService.getPersonFromVTJ(user, ExternalIdentifier.SSN.getInstance(ssn))
-        } else {
-            db.transaction {
-                personService.getOrCreatePerson(
-                    it,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(ssn)
-                )
-            }
+        val person = db.transaction {
+            personService.getOrCreatePerson(
+                it,
+                user,
+                ExternalIdentifier.SSN.getInstance(body.ssn),
+                body.readonly
+            )
         }
 
         return person
@@ -268,18 +251,22 @@ class PersonController(
 
     data class PersonIdentityResponseJSON(
         val id: UUID,
-        val socialSecurityNumber: String?,
-        val customerId: Long?
+        val socialSecurityNumber: String?
     ) {
         companion object {
             fun from(person: PersonDTO): PersonIdentityResponseJSON = PersonIdentityResponseJSON(
                 id = person.id,
-                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn,
-                customerId = person.customerId
+                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn
             )
         }
     }
 }
+
+data class SearchPersonBody(
+    val searchTerm: String,
+    val orderBy: String,
+    val sortDirection: String
+)
 
 data class CreatePersonBody(
     val firstName: String,
@@ -290,4 +277,9 @@ data class CreatePersonBody(
     val postOffice: String,
     val phone: String?,
     val email: String?
+)
+
+data class GetOrCreatePersonBySsnRequest(
+    val ssn: String,
+    val readonly: Boolean = false
 )

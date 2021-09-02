@@ -16,6 +16,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,8 +36,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,6 +45,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Autowired
@@ -112,15 +114,15 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         febReportNewArea.assertContainsSum(testDaycare2.id, 2 * 58200)
     }
 
-    private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: UUID, sum: Int) {
+    private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: DaycareId, sum: Int) {
         val row = this.find { it.unit.id == unitId }
         assertNotNull(row)
-        assertEquals(sum, row!!.monthlyPaymentSum)
+        assertEquals(sum, row.monthlyPaymentSum)
     }
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
-    private fun getAreaReport(areaId: UUID, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
+    private fun getAreaReport(areaId: AreaId, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
         val (_, response, data) = http.get(
             "/reports/service-voucher-value/units",
             listOf("areaId" to areaId, "year" to year, "month" to month)
@@ -146,7 +148,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         adultId: UUID,

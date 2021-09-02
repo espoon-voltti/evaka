@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.application.utils.helsinkiZone
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
@@ -23,9 +24,9 @@ import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -34,13 +35,13 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -51,7 +52,7 @@ class FeeDecisionService(
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient
 ) {
-    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: Instant): List<UUID> {
+    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<FeeDecisionId>, now: Instant): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
         if (decisions.isEmpty()) return listOf()
@@ -106,7 +107,7 @@ class FeeDecisionService(
         return if (youngestChildUnitLanguage == "sv") "sv" else defaultLanguage
     }
 
-    fun createFeeDecisionPdf(tx: Database.Transaction, id: UUID) {
+    fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
         val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with ID ($id)")
         if (!decision.documentKey.isNullOrBlank()) {
@@ -120,7 +121,7 @@ class FeeDecisionService(
         tx.updateFeeDecisionDocumentKey(decision.id, key)
     }
 
-    fun sendDecision(tx: Database.Transaction, id: UUID) {
+    fun sendDecision(tx: Database.Transaction, id: FeeDecisionId) {
         val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
@@ -139,7 +140,10 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-        val sendAddress = MailAddress.fromPerson(recipient, messageProvider, lang)
+        val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
+            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+        }
 
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
@@ -153,7 +157,7 @@ class FeeDecisionService(
             language = lang,
             firstName = recipient.firstName,
             lastName = recipient.lastName,
-            streetAddress = sendAddress.streetAddress,
+            streetAddress = sendAddress.street,
             postalCode = sendAddress.postalCode,
             postOffice = sendAddress.postOffice,
             ssn = recipient.ssn!!,
@@ -167,7 +171,7 @@ class FeeDecisionService(
         tx.setFeeDecisionSent(listOf(decision.id))
     }
 
-    fun setSent(tx: Database.Transaction, ids: List<UUID>) {
+    fun setSent(tx: Database.Transaction, ids: List<FeeDecisionId>) {
         val decisions = tx.getDetailedFeeDecisionsByIds(ids)
         if (decisions.any { it.status != FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
@@ -180,13 +184,13 @@ class FeeDecisionService(
         val pdfBytes: ByteArray
     )
 
-    fun getFeeDecisionPdf(tx: Database.Read, decisionId: UUID): PdfResult {
+    fun getFeeDecisionPdf(tx: Database.Read, decisionId: FeeDecisionId): PdfResult {
         val documentKey = tx.getFeeDecisionDocumentKey(decisionId)
             ?: throw NotFound("Document key not found for decision $decisionId")
         return PdfResult(documentKey, s3Client.getFeeDecisionPdf(documentKey))
     }
 
-    fun setType(tx: Database.Transaction, decisionId: UUID, type: FeeDecisionType) {
+    fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
         val decision = tx.getFeeDecision(decisionId)
             ?: throw BadRequest("Decision not found with id $decisionId")
         if (decision.status != FeeDecisionStatus.DRAFT) {

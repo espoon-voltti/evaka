@@ -10,6 +10,9 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -178,7 +181,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             testPlacement.id,
             GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
         )
-        Assertions.assertThat(res.statusCode).isEqualTo(201)
+        Assertions.assertThat(res.statusCode).isEqualTo(200)
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
@@ -313,7 +316,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd
             )
@@ -333,7 +336,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             )
         )
 
-        Assertions.assertThat(res.statusCode).isEqualTo(201)
+        Assertions.assertThat(res.statusCode).isEqualTo(200)
     }
 
     @Test
@@ -341,7 +344,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart.minusDays(1),
                 placementEnd
             )
@@ -355,7 +358,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd.plusDays(1)
             )
@@ -370,11 +373,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
         }
 
-        val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
+        val (_, res, _) = http.delete("/group-placements/$groupPlacementId")
             .asUser(unitSupervisor)
             .response()
 
-        Assertions.assertThat(res.statusCode).isEqualTo(204)
+        Assertions.assertThat(res.statusCode).isEqualTo(200)
 
         val (_, _, result) = http.get("/placements?daycareId=$daycareId")
             .asUser(unitSupervisor)
@@ -446,7 +449,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .asUser(unitSupervisor)
             .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(204, allowed.statusCode)
+        org.junit.jupiter.api.Assertions.assertEquals(200, allowed.statusCode)
 
         db.read { r ->
             val updated = r.getPlacementsForChild(childId).find { it.id == allowedId }!!
@@ -503,7 +506,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .asUser(unitSupervisor)
             .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(204, res.statusCode)
+        org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
         val placements = db.read { r ->
             r.getPlacementsForChild(childId)
@@ -538,7 +541,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
         }
 
-        val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
+        val (_, res, _) = http.delete("/group-placements/$groupPlacementId")
             .asUser(serviceWorker)
             .response()
 
@@ -546,7 +549,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     }
 
     private fun createGroupPlacement(
-        placementId: UUID,
+        placementId: PlacementId,
         groupPlacement: GroupPlacementRequestBody
     ): ResponseResultOf<ByteArray> {
         return http.post("/placements/$placementId/group-placements")
@@ -555,7 +558,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .response()
     }
 
-    private fun getGroupPlacements(childId: UUID, daycareId: UUID): List<DaycareGroupPlacement> {
+    private fun getGroupPlacements(childId: UUID, daycareId: DaycareId): List<DaycareGroupPlacement> {
         return http.get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)

@@ -25,7 +25,7 @@ import {
 } from 'lib-common/api-types/staffAttendances'
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
-import LocalDate from '../../../lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 
 export interface Props {
@@ -39,9 +39,8 @@ export default function StaffPage({ onNavigate }: Props) {
     groupId: string
   }>()
 
-  const { attendanceResponse, setAttendanceResponse } = useContext(
-    AttendanceUIContext
-  )
+  const { attendanceResponse, setAttendanceResponse } =
+    useContext(AttendanceUIContext)
   const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
     Result<UnitStaffAttendance>
   >(Loading.of())

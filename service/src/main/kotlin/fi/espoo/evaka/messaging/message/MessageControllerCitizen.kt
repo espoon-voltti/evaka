@@ -9,6 +9,8 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,6 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+
+data class CitizenMessageBody(
+    val recipients: Set<MessageAccount>,
+    val content: String,
+    val title: String
+)
 
 @RestController
 @RequestMapping("/citizen/messages")
@@ -64,7 +72,7 @@ class MessageControllerCitizen(
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
     }
 
     @GetMapping("/sent")
@@ -77,6 +85,16 @@ class MessageControllerCitizen(
         Audit.MessagingSentMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+    }
+
+    @GetMapping("/receivers")
+    fun getReceivers(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+    ): List<MessageAccount> {
+        Audit.MessagingCitizenFetchReceiversForAccount.log()
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.read { it.getCitizenReceivers(accountId) }
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
@@ -98,6 +116,39 @@ class MessageControllerCitizen(
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
+    }
+
+    @PostMapping
+    fun newMessage(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: CitizenMessageBody,
+    ): List<UUID> {
+        Audit.MessagingCitizenSendMessage.log()
+        val accountId = requireMessageAccountAccess(db, user)
+        val validReceivers = db.read { it.getCitizenReceivers(accountId) }
+        val allReceiversValid = body.recipients.all { validReceivers.contains(it) }
+        if (allReceiversValid) {
+            return db.transaction { tx ->
+                val contentId = tx.insertMessageContent(body.content, accountId)
+                val sentAt = HelsinkiDateTime.now()
+                val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
+                val messageId =
+                    tx.insertMessage(
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = accountId,
+                        sentAt = sentAt,
+                        recipientNames = body.recipients.map { it.name }
+                    )
+                body.recipients.map {
+                    tx.insertRecipients(setOf(it.id), messageId)
+                    threadId
+                }
+            }
+        } else {
+            throw Forbidden("Permission denied.")
+        }
     }
 
     private fun requireMessageAccountAccess(

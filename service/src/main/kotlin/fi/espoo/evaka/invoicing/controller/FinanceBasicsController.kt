@@ -38,7 +38,7 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
-        return db.read { it.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
+        return db.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
     }
 
     @PostMapping("/fee-thresholds")
@@ -78,7 +78,7 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
         @PathVariable id: UUID,
         @RequestBody thresholds: FeeThresholds
     ) {
-        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
+        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(thresholds)

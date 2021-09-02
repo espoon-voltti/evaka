@@ -8,9 +8,9 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 /*
 AA = absence

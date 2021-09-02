@@ -2,24 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import { H1, H2, H3 } from 'lib-components/typography'
-import Container, {
-  ContentArea
-} from '../../../../lib-components/layout/Container'
-import { Gap } from '../../../../lib-components/white-space'
-import { useRestApi } from '../../../../lib-common/utils/useRestApi'
 import {
-  getVasuTemplate,
-  updateVasuTemplateContents,
-  VasuTemplate
-} from './api'
-import { Loading, Result } from '../../../../lib-common/api'
-import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H1, H2, H3 } from 'lib-components/typography'
+import React, { Fragment, useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
-import { UUID } from '../../../../lib-common/types'
 import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
+import { useTranslation } from '../../../state/i18n'
+import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
@@ -31,23 +40,13 @@ import {
   TextQuestion,
   VasuQuestion
 } from '../vasu-content'
-import InputField from '../../../../lib-components/atoms/form/InputField'
-import TextArea from '../../../../lib-components/atoms/form/TextArea'
-import colors from '../../../../lib-customizations/common'
 import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import { faArrowDown, faArrowUp, faPlus, faTrash } from '../../../../lib-icons'
-import { Fragment } from 'react'
-import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
+  getVasuTemplate,
+  updateVasuTemplateContents,
+  VasuTemplate
+} from './api'
 import CreateQuestionModal from './CreateQuestionModal'
-import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
-import Radio from '../../../../lib-components/atoms/form/Radio'
-import Button from '../../../../lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../../state/i18n'
-import { useHistory } from 'react-router'
+import QuestionInfo from '../QuestionInfo'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
@@ -62,23 +61,9 @@ export default React.memo(function VasuTemplateEditor() {
 
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
+  useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
 
-  useEffect(() => {
-    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-      if (dirty) {
-        // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
-        e.preventDefault()
-        e.returnValue = i18n.vasuTemplates.unsavedWarning
-        return i18n.vasuTemplates.unsavedWarning
-      }
-      return
-    }
-
-    window.addEventListener('beforeunload', beforeUnloadHandler)
-    return () => {
-      window.removeEventListener('beforeunload', beforeUnloadHandler)
-    }
-  }, [dirty, i18n])
+  const readonly = !(template.isSuccess && template.value.documentCount === 0)
 
   function moveSection(index: number, dir: 'up' | 'down') {
     setDirty(true)
@@ -232,23 +217,27 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  const dynamicOffset = 2
+
   function renderTextQuestion(
     question: TextQuestion,
     sectionIndex: number,
     questionIndex: number
   ) {
     return (
-      <>
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+      <React.Fragment>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
 
         {question.multiline ? (
           <TextArea value={question.value} />
         ) : (
           <InputField value={question.value} width={'L'} />
         )}
-      </>
+      </React.Fragment>
     )
   }
 
@@ -258,10 +247,14 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number
   ) {
     return (
-      <Checkbox
-        checked={question.value}
-        label={`${sectionIndex + 1}.${questionIndex + 1}. ${question.name}`}
-      />
+      <QuestionInfo info={question.info}>
+        <Checkbox
+          checked={question.value}
+          label={`${sectionIndex + dynamicOffset + 1}.${questionIndex + 1}. ${
+            question.name
+          }`}
+        />
+      </QuestionInfo>
     )
   }
 
@@ -272,9 +265,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Radio checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -289,9 +284,11 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <FixedSpaceColumn spacing="s">
-        <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
-          question.name
-        }`}</H3>
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
         {question.options.map((opt) => (
           <Checkbox checked={false} label={opt.name} key={opt.key} />
         ))}
@@ -335,6 +332,14 @@ export default React.memo(function VasuTemplateEditor() {
             <Gap />
 
             <FixedSpaceColumn>
+              <SectionContainer>
+                <H2>1. {i18n.vasu.staticSections.basics.title}</H2>
+              </SectionContainer>
+
+              <SectionContainer>
+                <H2>2. {i18n.vasu.staticSections.authors.title}</H2>
+              </SectionContainer>
+
               {template.value.content.sections.map((section, sectionIndex) => (
                 <Fragment key={`section-${sectionIndex}`}>
                   <SectionContainer>
@@ -346,38 +351,46 @@ export default React.memo(function VasuTemplateEditor() {
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') setSectionNameEdit(null)
                         }}
+                        readonly={readonly}
+                        width={'L'}
                       />
                     ) : (
                       <H2
                         noMargin
-                        onClick={() => setSectionNameEdit(sectionIndex)}
+                        onClick={
+                          readonly
+                            ? undefined
+                            : () => setSectionNameEdit(sectionIndex)
+                        }
                         style={{ cursor: 'pointer' }}
                       >
-                        {`${sectionIndex + 1}. ${section.name}`}
+                        {`${sectionIndex + dynamicOffset + 1}. ${section.name}`}
                       </H2>
                     )}
-                    <div className="hover-toolbar">
-                      <FixedSpaceRow spacing="xs" className="hover-toolbar">
-                        <IconButton
-                          icon={faArrowUp}
-                          onClick={() => moveSection(sectionIndex, 'up')}
-                          disabled={sectionIndex === 0}
-                        />
-                        <IconButton
-                          icon={faArrowDown}
-                          onClick={() => moveSection(sectionIndex, 'down')}
-                          disabled={
-                            sectionIndex ===
-                            template.value.content.sections.length - 1
-                          }
-                        />
-                        <IconButton
-                          icon={faTrash}
-                          onClick={() => removeSection(sectionIndex)}
-                          disabled={section.questions.length > 0}
-                        />
-                      </FixedSpaceRow>
-                    </div>
+                    {!readonly && (
+                      <div className="hover-toolbar">
+                        <FixedSpaceRow spacing="xs" className="hover-toolbar">
+                          <IconButton
+                            icon={faArrowUp}
+                            onClick={() => moveSection(sectionIndex, 'up')}
+                            disabled={sectionIndex === 0}
+                          />
+                          <IconButton
+                            icon={faArrowDown}
+                            onClick={() => moveSection(sectionIndex, 'down')}
+                            disabled={
+                              sectionIndex ===
+                              template.value.content.sections.length - 1
+                            }
+                          />
+                          <IconButton
+                            icon={faTrash}
+                            onClick={() => removeSection(sectionIndex)}
+                            disabled={section.questions.length > 0}
+                          />
+                        </FixedSpaceRow>
+                      </div>
+                    )}
                     <Gap />
                     <FixedSpaceColumn>
                       {section.questions.map((question, questionIndex) => (
@@ -385,68 +398,74 @@ export default React.memo(function VasuTemplateEditor() {
                           key={`question-${sectionIndex}-${questionIndex}`}
                         >
                           <QuestionContainer>
-                            <FixedSpaceRow
-                              spacing="xs"
-                              className="hover-toolbar"
-                            >
-                              <IconButton
-                                icon={faArrowUp}
-                                onClick={() =>
-                                  moveQuestion(
-                                    sectionIndex,
-                                    questionIndex,
-                                    'up'
-                                  )
-                                }
-                                disabled={questionIndex === 0}
-                              />
-                              <IconButton
-                                icon={faArrowDown}
-                                onClick={() =>
-                                  moveQuestion(
-                                    sectionIndex,
-                                    questionIndex,
-                                    'down'
-                                  )
-                                }
-                                disabled={
-                                  questionIndex === section.questions.length - 1
-                                }
-                              />
-                              <IconButton
-                                icon={faTrash}
-                                disabled={question.ophKey !== null}
-                                onClick={() =>
-                                  removeQuestion(sectionIndex, questionIndex)
-                                }
-                              />
-                            </FixedSpaceRow>
+                            {!readonly && (
+                              <FixedSpaceRow
+                                spacing="xs"
+                                className="hover-toolbar"
+                              >
+                                <IconButton
+                                  icon={faArrowUp}
+                                  onClick={() =>
+                                    moveQuestion(
+                                      sectionIndex,
+                                      questionIndex,
+                                      'up'
+                                    )
+                                  }
+                                  disabled={questionIndex === 0}
+                                />
+                                <IconButton
+                                  icon={faArrowDown}
+                                  onClick={() =>
+                                    moveQuestion(
+                                      sectionIndex,
+                                      questionIndex,
+                                      'down'
+                                    )
+                                  }
+                                  disabled={
+                                    questionIndex ===
+                                    section.questions.length - 1
+                                  }
+                                />
+                                <IconButton
+                                  icon={faTrash}
+                                  disabled={question.ophKey !== null}
+                                  onClick={() =>
+                                    removeQuestion(sectionIndex, questionIndex)
+                                  }
+                                />
+                              </FixedSpaceRow>
+                            )}
                             {renderQuestion(
                               question,
                               sectionIndex,
                               questionIndex
                             )}
                           </QuestionContainer>
-                          <AddNewContainer
-                            showOnHover={
-                              questionIndex < section.questions.length - 1
-                            }
-                          >
-                            <InlineButton
-                              onClick={() =>
-                                setAddingQuestion([
-                                  sectionIndex,
-                                  questionIndex + 1
-                                ])
+                          {!readonly && (
+                            <AddNewContainer
+                              showOnHover={
+                                questionIndex < section.questions.length - 1
                               }
-                              text={i18n.vasuTemplates.addNewQuestion}
-                              icon={faPlus}
-                            />
-                          </AddNewContainer>
+                            >
+                              <InlineButton
+                                onClick={() =>
+                                  setAddingQuestion([
+                                    sectionIndex,
+                                    questionIndex + 1
+                                  ])
+                                }
+                                text={i18n.vasuTemplates.addNewQuestion}
+                                icon={faPlus}
+                                disabled={readonly}
+                              />
+                            </AddNewContainer>
+                          )}
                         </Fragment>
                       ))}
                     </FixedSpaceColumn>
-                    {section.questions.length === 0 && (
+                    {section.questions.length === 0 && !readonly && (
                       <AddNewContainer showOnHover={false}>
                         <InlineButton
                           onClick={() => setAddingQuestion([sectionIndex, 0])}
@@ -456,21 +475,25 @@ export default React.memo(function VasuTemplateEditor() {
                       </AddNewContainer>
                     )}
                   </SectionContainer>
-                  <AddNewContainer
-                    showOnHover={
-                      sectionIndex < template.value.content.sections.length - 1
-                    }
-                  >
-                    <InlineButton
-                      onClick={() => addSection(sectionIndex + 1)}
-                      text={i18n.vasuTemplates.addNewSection}
-                      icon={faPlus}
-                    />
-                  </AddNewContainer>
+                  {!readonly && (
+                    <AddNewContainer
+                      showOnHover={
+                        sectionIndex <
+                        template.value.content.sections.length - 1
+                      }
+                    >
+                      <InlineButton
+                        onClick={() => addSection(sectionIndex + 1)}
+                        text={i18n.vasuTemplates.addNewSection}
+                        icon={faPlus}
+                        disabled={readonly}
+                      />
+                    </AddNewContainer>
+                  )}
                 </Fragment>
               ))}
             </FixedSpaceColumn>
-            {template.value.content.sections.length === 0 && (
+            {template.value.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
                 <InlineButton
                   onClick={() => addSection(0)}
@@ -479,6 +502,20 @@ export default React.memo(function VasuTemplateEditor() {
                 />
               </AddNewContainer>
             )}
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 1}.{' '}
+                {i18n.vasu.staticSections.vasuDiscussion.title}
+              </H2>
+            </SectionContainer>
+
+            <SectionContainer>
+              <H2>
+                {dynamicOffset + template.value.content.sections.length + 2}.{' '}
+                {i18n.vasu.staticSections.evaluationDiscussion.title}
+              </H2>
+            </SectionContainer>
 
             <Gap />
 
@@ -496,9 +533,10 @@ export default React.memo(function VasuTemplateEditor() {
                   }
                 })
               }}
+              disabled={readonly}
             />
 
-            {addingQuestion !== null && (
+            {addingQuestion !== null && !readonly && (
               <CreateQuestionModal
                 onSave={(question) => {
                   if (addingQuestion === null) return

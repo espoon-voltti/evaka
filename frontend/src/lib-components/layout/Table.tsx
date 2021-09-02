@@ -43,19 +43,23 @@ export const Th = styled.th<ThProps>`
     p.sticky ? colors.greyscale.white : 'none'};
 `
 
-export const Td = styled.td<{ align?: 'right' | 'left' }>`
+export const Td = styled.td<{
+  align?: 'right' | 'left'
+  verticalAlign?: 'top' | 'middle' | 'bottom'
+}>`
   line-height: 1.3em;
   border-style: solid;
   border-color: ${({ theme: { colors } }) => colors.greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${defaultMargins.s};
-  vertical-align: top;
+  vertical-align: ${(p) => p.verticalAlign ?? 'top'};
   text-align: ${(p) => p.align ?? 'left'};
 `
 
 interface TrProps {
   onClick?: () => void
 }
+
 export const Tr = styled.tr<TrProps>`
   ${(p) =>
     p.onClick

@@ -5,6 +5,9 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,8 +23,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class ServiceNeed(
-    val id: UUID,
-    val placementId: UUID,
+    val id: ServiceNeedId,
+    val placementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     @Nested("option")
@@ -38,7 +41,7 @@ data class ServiceNeedChildRange(
 )
 
 data class ServiceNeedOptionSummary(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val updated: Instant
 )
@@ -51,13 +54,13 @@ data class ServiceNeedConfirmation(
 )
 
 data class ServiceNeedOptionPublicInfo(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val validPlacementType: PlacementType
 )
 
 data class ServiceNeedOption(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val validPlacementType: PlacementType,
     val defaultOption: Boolean,
@@ -76,10 +79,10 @@ data class ServiceNeedOption(
 
 fun validateServiceNeed(
     db: Database.Read,
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID
+    optionId: ServiceNeedOptionId
 ) {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Start date cannot be before end date.")
@@ -117,13 +120,13 @@ fun validateServiceNeed(
 fun createServiceNeed(
     tx: Database.Transaction,
     user: AuthenticatedUser,
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
-): UUID {
+): ServiceNeedId {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId)
     clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
     return tx.insertServiceNeed(
@@ -140,10 +143,10 @@ fun createServiceNeed(
 fun updateServiceNeed(
     tx: Database.Transaction,
     user: AuthenticatedUser,
-    id: UUID,
+    id: ServiceNeedId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
 ) {
@@ -167,7 +170,7 @@ fun updateServiceNeed(
     )
 }
 
-fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
+fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: PlacementId, periodToClear: FiniteDateRange, excluding: ServiceNeedId? = null) {
     tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
         val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
         when {

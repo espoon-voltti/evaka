@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
@@ -32,7 +33,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
@@ -67,53 +67,41 @@ class FeeDecisionController(
     private val generator: FinanceDecisionGenerator,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun search(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) page: Int,
-        @RequestParam(required = true) pageSize: Int,
-        @RequestParam(required = false) sortBy: FeeDecisionSortParam?,
-        @RequestParam(required = false) sortDirection: SortDirection?,
-        @RequestParam(required = false) status: String?,
-        @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) distinctions: String?,
-        @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) startDate: String?,
-        @RequestParam(required = false) endDate: String?,
-        @RequestParam(required = false) searchByStartDate: Boolean = false,
-        @RequestParam(required = false) financeDecisionHandlerId: UUID?
+        @RequestBody body: SearchFeeDecisionRequest
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
         Audit.FeeDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
-        if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        if (startDate != null && endDate != null && endDate < startDate)
+        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+        if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
             throw BadRequest("End date cannot be before start date")
         return db
             .read { tx ->
                 tx.searchFeeDecisions(
-                    page,
-                    pageSize,
-                    sortBy ?: FeeDecisionSortParam.STATUS,
-                    sortDirection ?: SortDirection.DESC,
-                    status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
-                    area?.split(",") ?: listOf(),
-                    unit?.let { parseUUID(it) },
-                    distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
-                    searchTerms ?: "",
-                    startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
-                    endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
-                    searchByStartDate,
-                    financeDecisionHandlerId
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: FeeDecisionSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
+                    body.area?.split(",") ?: listOf(),
+                    body.unit?.let { parseUUID(it) },
+                    body.distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
+                    body.searchTerms ?: "",
+                    body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
+                    body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                    body.searchByStartDate,
+                    body.financeDecisionHandlerId
                 )
             }
             .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -125,7 +113,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setSent(it, feeDecisionIds) }
@@ -133,7 +121,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
@@ -144,7 +132,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
+    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { it.getFeeDecision(uuid) }
@@ -187,7 +175,7 @@ class FeeDecisionController(
     fun setType(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable uuid: UUID,
+        @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
@@ -198,6 +186,22 @@ class FeeDecisionController(
 }
 
 data class CreateRetroactiveFeeDecisionsBody(val from: LocalDate)
+
+data class SearchFeeDecisionRequest(
+    val page: Int,
+    val pageSize: Int,
+    val sortBy: FeeDecisionSortParam?,
+    val sortDirection: SortDirection?,
+    val status: String?,
+    val area: String?,
+    val unit: String?,
+    val distinctions: String?,
+    val searchTerms: String?,
+    val startDate: String?,
+    val endDate: String?,
+    val searchByStartDate: Boolean = false,
+    val financeDecisionHandlerId: UUID?
+)
 
 data class FeeDecisionTypeRequest(
     val type: FeeDecisionType

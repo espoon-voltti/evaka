@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -17,12 +18,12 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AssistanceNeedIntegrationTest : FullApplicationTest() {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
@@ -62,20 +63,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post first assistance need, with bases`() {
-        val allBases = setOf(
-            AssistanceBasis.AUTISM,
-            AssistanceBasis.DEVELOPMENTAL_DISABILITY_1,
-            AssistanceBasis.DEVELOPMENTAL_DISABILITY_2,
-            AssistanceBasis.FOCUS_CHALLENGE,
-            AssistanceBasis.LINGUISTIC_CHALLENGE,
-            AssistanceBasis.DEVELOPMENT_MONITORING,
-            AssistanceBasis.DEVELOPMENT_MONITORING_PENDING,
-            AssistanceBasis.MULTI_DISABILITY,
-            AssistanceBasis.LONG_TERM_CONDITION,
-            AssistanceBasis.REGULATION_SKILL_CHALLENGE,
-            AssistanceBasis.DISABILITY,
-            AssistanceBasis.OTHER
-        )
+        val allBases = db.transaction { it.getAssistanceBasisOptions() }.map { it.value }.toSet()
 
         val assistanceNeed = whenPostAssistanceNeedThenExpectSuccess(
             AssistanceNeedRequest(
@@ -239,7 +227,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
     @Test
     fun `update assistance need, not found responds 404`() {
         whenPutAssistanceNeedThenExpectError(
-            UUID.randomUUID(),
+            AssistanceNeedId(UUID.randomUUID()),
             AssistanceNeedRequest(
                 startDate = testDate(9),
                 endDate = testDate(22),
@@ -279,12 +267,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete assistance need, not found responds 404`() {
-        whenDeleteAssistanceNeedThenExpectError(UUID.randomUUID(), 404)
+        whenDeleteAssistanceNeedThenExpectError(AssistanceNeedId(UUID.randomUUID()), 404)
     }
 
     private fun testDate(day: Int) = LocalDate.of(2000, 1, day)
 
-    private fun givenAssistanceNeed(start: Int, end: Int, childId: UUID = testChild_1.id): UUID {
+    private fun givenAssistanceNeed(start: Int, end: Int, childId: UUID = testChild_1.id): AssistanceNeedId {
         return db.transaction {
             it.insertTestAssistanceNeed(
                 DevAssistanceNeed(
@@ -325,7 +313,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun whenPutAssistanceNeedThenExpectSuccess(id: UUID, request: AssistanceNeedRequest): AssistanceNeed {
+    private fun whenPutAssistanceNeedThenExpectSuccess(id: AssistanceNeedId, request: AssistanceNeedRequest): AssistanceNeed {
         val (_, res, result) = http.put("/assistance-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
@@ -335,7 +323,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun whenPutAssistanceNeedThenExpectError(id: UUID, request: AssistanceNeedRequest, status: Int) {
+    private fun whenPutAssistanceNeedThenExpectError(id: AssistanceNeedId, request: AssistanceNeedRequest, status: Int) {
         val (_, res, _) = http.put("/assistance-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
@@ -344,7 +332,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenDeleteAssistanceNeedThenExpectSuccess(id: UUID) {
+    private fun whenDeleteAssistanceNeedThenExpectSuccess(id: AssistanceNeedId) {
         val (_, res, _) = http.delete("/assistance-needs/$id")
             .asUser(assistanceWorker)
             .response()
@@ -352,7 +340,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun whenDeleteAssistanceNeedThenExpectError(id: UUID, status: Int) {
+    private fun whenDeleteAssistanceNeedThenExpectError(id: AssistanceNeedId, status: Int) {
         val (_, res, _) = http.delete("/assistance-needs/$id")
             .asUser(assistanceWorker)
             .response()

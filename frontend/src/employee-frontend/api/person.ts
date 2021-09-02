@@ -11,12 +11,12 @@ import {
   SearchColumn
 } from '../types/person'
 import { SearchOrder, UUID } from '../types'
-import { client } from '../api/client'
+import { client } from './client'
 import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { Recipient } from '../../employee-frontend/components/messages/types'
+import { Recipient } from '../components/messages/types'
 
 export async function getPersonDetails(
   id: UUID
@@ -69,10 +69,9 @@ export async function getOrCreatePersonBySsn(
   readonly = false
 ): Promise<Result<PersonDetails>> {
   return client
-    .get<JsonOf<PersonDetails>>(`/person/details/ssn/${ssn}`, {
-      params: {
-        readonly
-      }
+    .post<JsonOf<PersonDetails>>(`/person/details/ssn`, {
+      ssn,
+      readonly
     })
     .then(({ data }) => deserializePersonDetails(data))
     .then((v) => Success.of(v))
@@ -85,12 +84,10 @@ export async function findByNameOrAddress(
   sortDirection: SearchOrder
 ): Promise<Result<PersonDetails[]>> {
   return client
-    .get<JsonOf<PersonDetails[]>>('/person/search', {
-      params: {
-        searchTerm,
-        orderBy,
-        sortDirection
-      }
+    .post<JsonOf<PersonDetails[]>>('/person/search', {
+      searchTerm,
+      orderBy,
+      sortDirection
     })
     .then((res) => res.data)
     .then((results) => results.map(deserializePersonDetails))

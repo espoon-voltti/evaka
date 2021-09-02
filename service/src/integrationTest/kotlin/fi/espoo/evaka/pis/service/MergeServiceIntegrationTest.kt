@@ -5,10 +5,10 @@
 package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageNotificationEmailService
@@ -35,13 +35,13 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService
@@ -262,7 +262,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         }
         assertEquals(
             listOf(0, 1),
-            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
         )
 
         db.transaction {
@@ -272,12 +272,12 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         assertEquals(
             listOf(1, 0),
-            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
         )
     }
 
-    private fun receivedMessageCounts(vararg accountIds: UUID): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1).total }
+    private fun receivedMessageCounts(accountIds: List<UUID>, isEmployee: Boolean): List<Int> = db.read { tx ->
+        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
     }
 
     @Test

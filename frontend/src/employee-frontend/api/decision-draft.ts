@@ -4,7 +4,7 @@
 
 import { UUID } from '../types'
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import {
   DecisionDraftGroup,
   DecisionDraftUpdate,

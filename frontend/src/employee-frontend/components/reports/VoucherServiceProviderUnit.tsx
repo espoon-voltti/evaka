@@ -2,14 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import styled from 'styled-components'
-import { range, sortBy } from 'lodash'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fi } from 'date-fns/locale'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Loading, Result } from 'lib-common/api'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
+import { H2, H3 } from 'lib-components/typography'
+import Tooltip, { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   SortableTh,
   Tbody,
@@ -18,43 +24,31 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faHomeAlt, faLockAlt } from 'lib-icons'
+import { range, sortBy } from 'lodash'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import {
+  getVoucherServiceProviderUnitReport,
+  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
+} from '../../api/reports'
+import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+import { UUID } from '../../types'
 import {
   VoucherReportRowType,
   VoucherServiceProviderUnitReport,
   VoucherServiceProviderUnitRow
 } from '../../types/reports'
-import {
-  getVoucherServiceProviderUnitReport,
-  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
-} from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
-import { UUID } from '../../types'
-import { SelectOptionProps } from '../../components/common/Select'
-
-import { defaultMargins } from 'lib-components/white-space'
-
-import { formatCents } from '../../utils/money'
 import { formatName } from '../../utils'
+import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import colors from 'lib-customizations/common'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import { SelectOption } from '../common/Select'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -74,33 +68,52 @@ const SumRow = styled.div`
   align-items: center;
 `
 
-const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
-  ${(p) => {
-    const color =
-      p.type === 'REFUND'
-        ? colors.accents.orange
-        : p.type === 'CORRECTION'
-        ? colors.accents.yellow
-        : p.type === 'NEW'
-        ? colors.blues.primary
-        : colors.greyscale.white
+const BlankTh = styled(Th)`
+  border-color: transparent;
+  padding: 0;
+`
 
-    return `border-left: 6px solid ${color};`
-  }}
+const BlankTd = styled(Td)`
+  border: 1px solid transparent;
+  padding: 0;
+  position: relative;
+  width: 6px;
+
+  &:not(:hover) {
+    .tooltip {
+      display: none;
+    }
+  }
+`
+
+const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
+  position: absolute;
+  top: -2px;
+  bottom: 1px;
+  left: -1px;
+  right: -1px;
+  background-color: ${(p) =>
+    p.type === 'REFUND'
+      ? colors.accents.orange
+      : p.type === 'CORRECTION'
+      ? colors.accents.yellow
+      : p.type === 'NEW'
+      ? colors.blues.primary
+      : colors.greyscale.white};
 `
 
 const StyledTh = styled(Th)`
   white-space: nowrap;
 `
 
-const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+const monthOptions: SelectOption[] = range(0, 12).map((num) => ({
   value: String(num + 1),
   label: String(fi.localize?.month(num))
 }))
 
 const minYear = new Date().getFullYear() - 4
 const maxYear = new Date().getFullYear()
-const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+const yearOptions: SelectOption[] = range(maxYear, minYear - 1, -1).map(
   (num) => ({
     value: String(num),
     label: String(num)
@@ -165,8 +178,15 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {sortedReport.isSuccess && <Title size={1}>{unitName}</Title>}
-        <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
+        <TitleContainer>
+          <H2 fitted>{unitName}</H2>
+          <LinkInCaps to={`/units/${unitId}`}>
+            <FontAwesomeIcon icon={faHomeAlt} />{' '}
+            {i18n.reports.voucherServiceProviderUnit.unitPageLink}
+          </LinkInCaps>
+        </TitleContainer>
+        <H3 noMargin>{i18n.reports.voucherServiceProviderUnit.title}</H3>
+        <Gap size="L" />
         <FilterRow>
           <FilterLabel>
             {i18n.reports.voucherServiceProviderUnit.month}
@@ -328,6 +348,7 @@ function VoucherServiceProviderUnit() {
             <TableScrollable>
               <Thead>
                 <Tr>
+                  <BlankTh />
                   <SortableTh
                     sorted={sort === 'child' ? 'ASC' : undefined}
                     onClick={sortOnClick('child')}
@@ -366,69 +387,80 @@ function VoucherServiceProviderUnit() {
               </Thead>
               <Tbody>
                 {sortedReport.value.rows.map(
-                  (row: VoucherServiceProviderUnitRow) => (
-                    <Tr
-                      key={`${
-                        row.serviceVoucherDecisionId
-                      }:${row.realizedPeriod.start.formatIso()}`}
-                    >
-                      <StyledTd
-                        type={
-                          row.isNew && row.type === 'ORIGINAL'
-                            ? 'NEW'
-                            : row.type
-                        }
-                      >
-                        <FixedSpaceColumn spacing="xs">
-                          <Link to={`/child-information/${row.childId}`}>
-                            {formatName(
-                              row.childFirstName,
-                              row.childLastName,
-                              i18n
-                            )}
-                          </Link>
+                  (row: VoucherServiceProviderUnitRow) => {
+                    const under3YearsOld =
+                      row.realizedPeriod.start.differenceInYears(
+                        row.childDateOfBirth
+                      ) < 3
 
-                          <FixedSpaceRow spacing="xs">
-                            <RoundIcon
-                              content={
-                                row.realizedPeriod.start.differenceInYears(
-                                  row.childDateOfBirth
-                                ) < 3
-                                  ? fasArrowDown
-                                  : fasArrowUp
+                    const rowType =
+                      row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
+
+                    return (
+                      <Tr
+                        key={`${
+                          row.serviceVoucherDecisionId
+                        }:${row.realizedPeriod.start.formatIso()}`}
+                      >
+                        <BlankTd>
+                          <TypeIndicator type={rowType} />
+                          {rowType !== 'ORIGINAL' ? (
+                            <TooltipWithoutAnchor
+                              tooltip={
+                                i18n.reports.voucherServiceProviderUnit.type[
+                                  rowType
+                                ]
                               }
-                              color={
-                                row.realizedPeriod.start.differenceInYears(
-                                  row.childDateOfBirth
-                                ) < 3
-                                  ? colors.accents.green
-                                  : colors.blues.medium
-                              }
-                              size="s"
+                              position="right"
                             />
-                            <span>{row.childDateOfBirth.format()}</span>
-                          </FixedSpaceRow>
-                        </FixedSpaceColumn>
-                      </StyledTd>
-                      <Td>{row.childGroupName}</Td>
-                      <Td>
-                        <Tooltip
-                          up
-                          tooltip={
-                            <div>
-                              {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
-                            </div>
-                          }
-                        >
-                          {row.numberOfDays}
-                        </Tooltip>
-                      </Td>
-                      <Td>{row.serviceNeedDescription}</Td>
-                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
-                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
-                      <Td>{formatCents(row.realizedAmount, true)}</Td>
-                    </Tr>
-                  )
+                          ) : null}
+                        </BlankTd>
+                        <Td>
+                          <FixedSpaceColumn spacing="xs">
+                            <Link to={`/child-information/${row.childId}`}>
+                              {formatName(
+                                row.childFirstName,
+                                row.childLastName,
+                                i18n
+                              )}
+                            </Link>
+                            <FixedSpaceRow spacing="xs">
+                              <Tooltip
+                                tooltip={
+                                  <div>
+                                    {
+                                      i18n.reports.voucherServiceProviderUnit[
+                                        under3YearsOld ? 'under3' : 'atLeast3'
+                                      ]
+                                    }
+                                  </div>
+                                }
+                                position="right"
+                              >
+                                <AgeIndicatorIcon isUnder3={under3YearsOld} />
+                              </Tooltip>
+                              <span>{row.childDateOfBirth.format()}</span>
+                            </FixedSpaceRow>
+                          </FixedSpaceColumn>
+                        </Td>
+                        <Td>{row.childGroupName}</Td>
+                        <Td>
+                          <Tooltip
+                            tooltip={<div>{row.numberOfDays}</div>}
+                            position="right"
+                          >
+                            {row.realizedPeriod.formatCompact()}
+                          </Tooltip>
+                        </Td>
+                        <Td>{row.serviceNeedDescription}</Td>
+                        <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
+                        <Td>
+                          {formatCents(row.serviceVoucherCoPayment, true)}
+                        </Td>
+                        <Td>{formatCents(row.realizedAmount, true)}</Td>
+                      </Tr>
+                    )
+                  }
                 )}
               </Tbody>
             </TableScrollable>
@@ -438,5 +470,16 @@ function VoucherServiceProviderUnit() {
     </Container>
   )
 }
+
+const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+`
+
+const LinkInCaps = styled(Link)`
+  text-transform: uppercase;
+`
 
 export default VoucherServiceProviderUnit

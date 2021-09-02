@@ -9,10 +9,10 @@ import {
   useEffect,
   useState
 } from 'react'
-import { Result } from '../../../lib-common/api'
-import { isAutomatedTest } from '../../../lib-common/utils/helpers'
-import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import { Result } from 'lib-common/api'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   AuthorsContent,
   EvaluationDiscussionContent,
@@ -80,23 +80,19 @@ export function useVasu(id: string): Vasu {
       }
     ]
   })
-  const [
-    vasuDiscussionContent,
-    setVasuDiscussionContent
-  ] = useState<VasuDiscussionContent>({
-    discussionDate: null,
-    participants: '',
-    guardianViewsAndCollaboration: ''
-  })
-  const [
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent
-  ] = useState<EvaluationDiscussionContent>({
-    discussionDate: null,
-    participants: '',
-    guardianViewsAndCollaboration: '',
-    evaluation: ''
-  })
+  const [vasuDiscussionContent, setVasuDiscussionContent] =
+    useState<VasuDiscussionContent>({
+      discussionDate: null,
+      participants: '',
+      guardianViewsAndCollaboration: ''
+    })
+  const [evaluationDiscussionContent, setEvaluationDiscussionContent] =
+    useState<EvaluationDiscussionContent>({
+      discussionDate: null,
+      participants: '',
+      guardianViewsAndCollaboration: '',
+      evaluation: ''
+    })
 
   useEffect(
     function loadVasuDocument() {

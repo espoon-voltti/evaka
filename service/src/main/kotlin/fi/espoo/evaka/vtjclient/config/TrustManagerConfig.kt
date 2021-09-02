@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.vtjclient.config
 
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
+import fi.espoo.evaka.VtjXroadEnv
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -17,19 +17,19 @@ import org.springframework.ws.soap.security.support.TrustManagersFactoryBean
 @Configuration
 @Profile("production", "vtj-dev", "integration-test")
 class TrustManagerConfig {
-
     @Bean
-    @ConditionalOnProperty(prefix = "fi.espoo.voltti.vtj.xroad", name = ["trust-store.location"])
-    fun trustManagers(@Qualifier("trustStore") trustStore: KeyStoreFactoryBean) = TrustManagersFactoryBean()
-        .apply { setKeyStore(trustStore.`object`) }
+    fun trustManagers(@Qualifier("trustStore") trustStore: ObjectProvider<KeyStoreFactoryBean>): TrustManagersFactoryBean? =
+        trustStore.ifAvailable?.let {
+            TrustManagersFactoryBean().apply { setKeyStore(it.`object`) }
+        }
 
     @Bean("trustStore")
-    @ConditionalOnProperty(prefix = "fi.espoo.voltti.vtj.xroad", name = ["trust-store.location"])
-    fun trustStore(xroadProps: XRoadProperties) = KeyStoreFactoryBean()
-        .apply {
-            val trustStore = checkNotNull(xroadProps.trustStore.location) { "Xroad security server trust store location is not set" }
-            setLocation(UrlResource(trustStore))
-            setPassword(xroadProps.trustStore.password)
-            setType(xroadProps.trustStore.type)
-        }
+    fun trustStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.trustStore.location?.let { location ->
+        KeyStoreFactoryBean()
+            .apply {
+                setLocation(UrlResource(location))
+                setPassword(xroadEnv.trustStore.password.value)
+                setType(xroadEnv.trustStore.type)
+            }
+    }
 }

@@ -2,44 +2,41 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo } from 'react'
-import styled from 'styled-components'
-import { featureFlags } from '../config'
-
-import { useTranslation } from '../state/i18n'
-import { Link, RouteComponentProps } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
-import { faUsers } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
-import ChildDetails from '../components/child-information/ChildDetails'
-import Assistance from '../components/child-information/Assistance'
-import FeeAlteration from '../components/child-information/FeeAlteration'
-import { UUID } from '../types'
-import { Parentship } from '../types/fridge'
-import Placements from '../components/child-information/Placements'
-import { getPersonDetails } from '../api/person'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
 import { Loading } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import Title from 'lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
+import { faUsers } from 'lib-icons'
+import React, { useContext, useEffect, useMemo } from 'react'
+import { Link, RouteComponentProps } from 'react-router-dom'
+import styled from 'styled-components'
+import { getParentshipsByChild } from '../api/parentships'
+import { getPersonDetails } from '../api/person'
+import Assistance from '../components/child-information/Assistance'
+import BackupCare from '../components/child-information/BackupCare'
+import ChildApplications from '../components/child-information/ChildApplications'
+import ChildDetails from '../components/child-information/ChildDetails'
+import FamilyContacts from '../components/child-information/FamilyContacts'
+import FeeAlteration from '../components/child-information/FeeAlteration'
+import GuardiansAndParents from './child-information/GuardiansAndParents'
+import Placements from '../components/child-information/Placements'
 import WarningLabel from '../components/common/WarningLabel'
 import { ChildContext, ChildState } from '../state/child'
-import FridgeParents from '../components/child-information/FridgeParents'
-import { getParentshipsByChild } from '../api/parentships'
-import { UserContext } from '../state/user'
+import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
+import { UserContext } from '../state/user'
+import { UUID } from '../types'
+import { Parentship } from '../types/fridge'
+import { requireRole } from '../utils/roles'
+import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
-import BackupCare from '../components/child-information/BackupCare'
-import BackupPickup from '../components/child-information/BackupPickup'
-import Guardians from '../components/child-information/Guardians'
-import FamilyContacts from '../components/child-information/FamilyContacts'
-import { requireRole } from '../utils/roles'
-import ChildApplications from '../components/child-information/ChildApplications'
-import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
-import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -72,8 +69,7 @@ const HeadOfFamilyLink = styled(Link)`
 
 const components = {
   'fee-alterations': FeeAlteration,
-  guardians: Guardians,
-  parents: FridgeParents,
+  guardiansAndParents: GuardiansAndParents,
   placements: Placements,
   'daily-service-times': DailyServiceTimesSection,
   vasuAndLeops: VasuAndLeops,
@@ -81,21 +77,18 @@ const components = {
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
   applications: ChildApplications,
-  'message-blocklist': MessageBlocklist,
-  'backup-pickup': BackupPickup
+  'message-blocklist': MessageBlocklist
 }
 
 const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    ...(featureFlags.vasu
+    ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : []),
     { component: 'assistance', open: false },
@@ -103,8 +96,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'fee-alterations', open: false }
   ],
   ['SERVICE_WORKER']: [
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -114,40 +106,35 @@ const layouts: Layouts<typeof components> = {
   ],
   ['FINANCE_ADMIN']: [
     { component: 'fee-alterations', open: true },
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
+    { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
-    { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false },
-    ...(featureFlags.vasu
+    ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : [])
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
-    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    ...(featureFlags.vasu
+    ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : [])
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
-    ...(featureFlags.vasu
+    ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : []),
     { component: 'backup-care', open: false },
@@ -163,12 +150,8 @@ const ChildInformation = React.memo(function ChildInformation({
   const { id } = match.params
 
   const { roles } = useContext(UserContext)
-  const {
-    person,
-    setPerson,
-    parentships,
-    setParentships
-  } = useContext<ChildState>(ChildContext)
+  const { person, setPerson, parentships, setParentships } =
+    useContext<ChildState>(ChildContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {

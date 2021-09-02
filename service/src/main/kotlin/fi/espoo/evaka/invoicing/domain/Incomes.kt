@@ -6,6 +6,8 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.IncomeId
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -14,7 +16,7 @@ import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Income(
-    val id: UUID? = null,
+    val id: IncomeId? = null,
     val personId: UUID,
     val effect: IncomeEffect,
     val data: Map<IncomeType, IncomeValue>,
@@ -25,21 +27,19 @@ data class Income(
     val notes: String,
     val updatedAt: Instant? = null,
     val updatedBy: String? = null,
-    val applicationId: UUID? = null
+    val applicationId: ApplicationId? = null
 ) {
     @JsonProperty("totalIncome")
     fun totalIncome(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value.monthlyAmount() }
-            .sum()
+            .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
 
     @JsonProperty("totalExpenses")
     fun totalExpenses(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
-            .sum()
+            .sumOf { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
 
     @JsonProperty("total")
     fun total(): Int = incomeTotal(data)
@@ -67,20 +67,17 @@ data class DecisionIncome(
     fun totalIncome(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value }
-            .sum()
+            .sumOf { (type, value) -> type.multiplier * value }
 
     @JsonProperty("totalExpenses")
     fun totalExpenses(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value }
-            .sum()
+            .sumOf { (type, value) -> -1 * type.multiplier * value }
 }
 
 fun incomeTotal(data: Map<IncomeType, IncomeValue>) = data.entries
-    .map { (type, value) -> type.multiplier * value.monthlyAmount() }
-    .sum()
+    .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient) {

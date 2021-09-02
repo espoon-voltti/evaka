@@ -6,9 +6,9 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.Absence
+import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -44,13 +45,14 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -401,7 +403,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
             )
         )
 
@@ -456,7 +458,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
             )
         )
 
@@ -512,7 +514,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
                 decision.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                     familySize = decision.familySize + 1,
                     children = decision.children + createFeeDecisionChildFixture(
@@ -812,7 +814,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
                 decision.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                     children = listOf(decision.children[0], decision.children[1].copy(fee = 10000, finalFee = 10000))
                 )
@@ -1067,7 +1069,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 endDate = period.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
@@ -1121,7 +1123,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 endDate = placementPeriod.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
@@ -1896,7 +1898,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 5),
-                        careType = CareType.DAYCARE
+                        careType = AbsenceCareType.DAYCARE
                     )
                 ),
                 testDecisionMaker_1.id
@@ -1954,7 +1956,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 3),
-                        careType = CareType.DAYCARE
+                        careType = AbsenceCareType.DAYCARE
                     )
                 ),
                 testDecisionMaker_1.id
@@ -2014,7 +2016,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                             absenceType = AbsenceType.FORCE_MAJEURE,
                             childId = testChild_1.id,
                             date = it,
-                            careType = CareType.DAYCARE
+                            careType = AbsenceCareType.DAYCARE
                         )
                     }
                     .toList(),
@@ -2162,6 +2164,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `free july 2021 if child has been placed in preparatory with daycare all the time`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            listOf(PlacementType.PREPARATORY_DAYCARE to DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
+        )
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `no free july 2020 if even one mandatory month has no placement`() {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
@@ -2174,6 +2186,34 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
                 DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
                 DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+            )
+        )
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `no free july 2020 if child has a mix of club and daycare placements`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            listOf(
+                PlacementType.CLUB to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+            )
+        )
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `no free july 2020 if child has a mix of preschool and preschool daycare placements`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            listOf(
+                PlacementType.PRESCHOOL to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.PRESCHOOL_DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
             )
         )
 
@@ -2201,7 +2241,88 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
     }
 
-    private fun initFreeJulyTestData(invoicingPeriod: DateRange, placementPeriods: List<DateRange>, placementType: PlacementType = PlacementType.DAYCARE) {
+    @Test
+    fun `plain preschool is not invoiced`() {
+        assertFalse(PlacementType.PRESCHOOL.isInvoiced())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `plain preparatory is not invoiced`() {
+        assertFalse(PlacementType.PREPARATORY.isInvoiced())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `plain club is not invoiced`() {
+        assertFalse(PlacementType.CLUB.isInvoiced())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.CLUB)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    private fun initByPeriodAndPlacementType(period: DateRange, placementType: PlacementType) {
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = placementType,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 28900
+                )
+            )
+        )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+            )
+        )
+    }
+
+    private fun initFreeJulyTestData(
+        invoicingPeriod: DateRange,
+        placementPeriods: List<DateRange>,
+        placementType: PlacementType = PlacementType.DAYCARE
+    ) = initFreeJulyTestData(
+        invoicingPeriod,
+        placementPeriods.map { placementType to it }
+    )
+
+    private fun initFreeJulyTestData(
+        invoicingPeriod: DateRange,
+        placementPeriods: List<Pair<PlacementType, DateRange>>
+    ) {
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -2228,7 +2349,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        placementPeriods.forEach { period -> db.transaction(insertPlacement(testChild_1.id, period, placementType)) }
+        placementPeriods.forEach { (type, period) -> db.transaction(insertPlacement(testChild_1.id, period, type)) }
         db.transaction { it.createAllDraftInvoices(invoicingPeriod) }
     }
 
@@ -2285,7 +2406,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                             absenceType = type,
                             childId = child.id,
                             date = date,
-                            careType = CareType.DAYCARE
+                            careType = AbsenceCareType.DAYCARE
                         )
                     },
                     testDecisionMaker_1.id

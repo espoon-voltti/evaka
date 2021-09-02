@@ -4,7 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdditionalInformation } from '../../types/child'
-import { client } from '../../api/client'
+import { client } from '../client'
 import { UUID } from '../../types'
 import { JsonOf } from 'lib-common/json'
 

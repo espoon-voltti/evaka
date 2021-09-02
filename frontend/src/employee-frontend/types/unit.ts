@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DayOfWeek, UUID } from '../types'
+import { DayOfWeek, UUID } from './index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import {
+  PlacementPlanRejectReason,
+  UnitProviderType
+} from 'lib-customizations/types'
+import { ServiceNeed } from './child'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface CareArea {
   id: UUID
@@ -23,13 +27,6 @@ export type UnitTypes =
   | 'PRESCHOOL'
   | 'PREPARATORY_EDUCATION'
 
-export type ProviderType =
-  | 'MUNICIPAL'
-  | 'PURCHASED'
-  | 'PRIVATE'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE_SERVICE_VOUCHER'
-
 export type UnitLanguage = 'fi' | 'sv'
 
 interface FinanceDecisionHandler {
@@ -37,6 +34,9 @@ interface FinanceDecisionHandler {
   firstName: string
   lastName: string
 }
+
+export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
+
 export interface Unit {
   id: UUID
   name: string
@@ -47,12 +47,13 @@ export interface Unit {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: number
   language: UnitLanguage
   ghostUnit: boolean
   uploadToVarda: boolean
+  uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
@@ -70,6 +71,7 @@ export interface Unit {
   ophOrganizerOid: string | null
   ophOrganizationOid: string | null
   operationDays: DayOfWeek[] | null
+  enabledPilotFeatures: PilotFeature[]
 }
 
 export interface DecisionCustomization {
@@ -118,6 +120,7 @@ export interface DaycarePlacement {
   groupPlacements: DaycareGroupPlacement[]
   type: PlacementType
   missingServiceNeedDays: number
+  serviceNeeds: ServiceNeed[]
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -163,6 +166,7 @@ export interface DaycareGroupPlacementDetailed extends DaycareGroupPlacement {
   daycarePlacementEndDate: LocalDate
   daycarePlacementMissingServiceNeedDays: number
   child: ChildBasics
+  serviceNeeds: ServiceNeed[]
 }
 
 export const flatMapGroupPlacements = (
@@ -173,6 +177,7 @@ export const flatMapGroupPlacements = (
       .map<DaycareGroupPlacementDetailed>((groupPlacement) => ({
         ...groupPlacement,
         child: daycarePlacement.child,
+        serviceNeeds: daycarePlacement.serviceNeeds,
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,

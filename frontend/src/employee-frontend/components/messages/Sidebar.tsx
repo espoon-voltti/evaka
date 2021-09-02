@@ -11,11 +11,11 @@ import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
-import colors from '../../../lib-customizations/common'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import Select from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
@@ -28,6 +28,7 @@ import {
   ReceiverGroup
 } from './types'
 import { messageBoxes } from './types-view'
+import { H1 } from 'lib-components/typography'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -42,10 +43,17 @@ const AccountContainer = styled.div`
   flex: 1;
   overflow-y: auto;
 `
-const ButtonContainer = styled.div`
-  flex: 0 1 auto;
-  margin-top: ${defaultMargins.s};
+
+const HeaderContainer = styled.div`
   padding: 12px ${defaultMargins.m};
+  padding-top: 0px;
+  padding-bottom: 0px;
+`
+
+const DashedLine = styled.hr`
+  width: 100%;
+  border: 1px dashed ${colors.greyscale.medium};
+  border-top-width: 0px;
 `
 
 const AccountSection = styled.section`
@@ -89,12 +97,8 @@ interface AccountsParams {
 
 function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
-  const {
-    setSelectedAccount,
-    selectedAccount,
-    selectedUnit,
-    setSelectedUnit
-  } = useContext(MessageContext)
+  const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
+    useContext(MessageContext)
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
     const personalAccount = accounts.find(isPersonalMessageAccount)
@@ -169,11 +173,9 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
           {unitSelectionEnabled && (
             <UnitSelection>
               <Select
-                options={unitOptions}
-                onChange={(val) =>
-                  val && 'value' in val && setSelectedUnit(val)
-                }
-                value={selectedUnit}
+                items={unitOptions}
+                onChange={(val) => (val ? setSelectedUnit(val) : undefined)}
+                selectedItem={selectedUnit ?? null}
               />
             </UnitSelection>
           )}
@@ -200,14 +202,28 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { accounts, selectedAccount, setSelectedAccount } = useContext(
-    MessageContext
-  )
+  const { accounts, selectedAccount, setSelectedAccount } =
+    useContext(MessageContext)
 
   const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (
     <Container>
       <AccountContainer>
+        <Gap size={'s'} />
+        <HeaderContainer>
+          <H1 noMargin>{i18n.messages.inboxTitle}</H1>
+        </HeaderContainer>
+        <DashedLine />
+        <Gap size={'s'} />
+        <HeaderContainer>
+          <Button
+            primary
+            disabled={!newMessageEnabled}
+            text={i18n.messages.messageBoxes.newMessage}
+            onClick={showEditor}
+            data-qa="new-message-btn"
+          />
+        </HeaderContainer>
         {accounts.mapAll({
           loading() {
             return <Loader />
@@ -235,15 +251,6 @@ export default React.memo(function Sidebar({
           {i18n.messages.receiverSelection.title}
         </Receivers>
       </AccountContainer>
-      <ButtonContainer>
-        <Button
-          primary
-          disabled={!newMessageEnabled}
-          text={i18n.messages.messageBoxes.newMessage}
-          onClick={showEditor}
-          data-qa="new-message-btn"
-        />
-      </ButtonContainer>
     </Container>
   )
 })

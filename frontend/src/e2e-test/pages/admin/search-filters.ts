@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { Checkbox } from '../../utils/helpers'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 export default class SearchFilter {
   readonly statusRadioAll: Selector = Selector(

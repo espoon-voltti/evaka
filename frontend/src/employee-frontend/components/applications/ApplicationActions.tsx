@@ -18,7 +18,7 @@ import {
   withdrawPlacementProposal
 } from '../../api/applications'
 import { ApplicationListSummary } from '../../types/application'
-import { ApplicationSummaryStatusOptions } from '../../components/common/Filters'
+import { ApplicationSummaryStatusOptions } from '../common/Filters'
 import ActionMenu from '../../components/applications/ActionsMenu'
 import PrimaryAction from '../../components/applications/PrimaryAction'
 import styled from 'styled-components'

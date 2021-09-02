@@ -5,7 +5,8 @@
 package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockitokotlin2.mock
+import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.FridgeFamilyService
@@ -17,7 +18,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -49,9 +49,9 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
         assert(httpPort > 0)
 
         fridgeFamilyService = FridgeFamilyService(personService, parentshipService, asyncJobRunner)
-        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv"
+        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api/v1"
         requestCustomizerMock = mock()
-        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), env, mockDvvBaseUrl)
+        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl))
         dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, personService, fridgeFamilyService, asyncJobRunner)
     }
 
@@ -71,7 +71,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
 }
 
 @Service
-class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService, personStorageService: PersonStorageService) : PersonService(personDetailsService, personStorageService) {
+class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsService) : PersonService(personDetailsService) {
     companion object {
         private val ssnUpdateCounts = mutableMapOf<String, Int>()
         private val ssnCustodianUpdateCounts = mutableMapOf<String, Int>()
@@ -106,17 +106,18 @@ class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsServic
         }
     }
 
-    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, updateStale: Boolean): PersonDTO? {
+    override fun getOrCreatePerson(tx: Database.Transaction, user: AuthenticatedUser, ssn: ExternalIdentifier.SSN, readonly: Boolean): PersonDTO? {
         recordSsnUpdate(ssn)
-        return super.getOrCreatePerson(tx, user, ssn, updateStale)
+        return super.getOrCreatePerson(tx, user, ssn, readonly)
     }
 
-    override fun getUpToDatePersonWithChildren(
+    override fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID
+        id: UUID,
+        forceRefresh: Boolean
     ): PersonWithChildrenDTO? {
-        return super.getUpToDatePersonWithChildren(tx, user, id)?.let {
+        return super.getPersonWithChildren(tx, user, id, forceRefresh)?.let {
             val ssn = it.socialSecurityNumber
             if (ssn != null)
                 recordSsnCustodianUpdate(ExternalIdentifier.SSN.getInstance(ssn))

@@ -8,9 +8,9 @@ import styled from 'styled-components'
 import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import { Unit } from '../../../types/unit'
-import { DataList } from '../../../components/common/DataList'
-import { RequireRole } from '../../../utils/roles'
+import { DataList } from '../../common/DataList'
 import { Gap } from 'lib-components/white-space'
+import { Action } from 'lib-common/generated/action'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;
@@ -18,9 +18,10 @@ const DetailsLink = styled(Link)`
 
 interface Props {
   unit: Unit
+  permittedActions: Set<Action.Unit>
 }
 
-function UnitInformation({ unit }: Props) {
+function UnitInformation({ unit, permittedActions }: Props) {
   const { i18n } = useTranslation()
 
   const renderDaycareManager = () => {
@@ -84,12 +85,14 @@ function UnitInformation({ unit }: Props) {
       <Title size={4}>{i18n.unit.manager.title}</Title>
       {renderDaycareManager()}
 
-      <RequireRole oneOf={['ADMIN']}>
-        <Gap size={'L'} />
-        <DetailsLink to={`/units/${unit.id}/details`}>
-          {i18n.unit.openDetails}
-        </DetailsLink>
-      </RequireRole>
+      {permittedActions.has('UPDATE') && (
+        <>
+          <Gap size={'L'} />
+          <DetailsLink to={`/units/${unit.id}/details`}>
+            {i18n.unit.openDetails}
+          </DetailsLink>
+        </>
+      )}
     </div>
   )
 }

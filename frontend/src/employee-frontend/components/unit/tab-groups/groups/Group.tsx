@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
-
 import { useTranslation } from '../../../../state/i18n'
 import {
   DaycareDailyNote,
@@ -14,7 +13,7 @@ import {
   Stats,
   Unit
 } from '../../../../types/unit'
-import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -30,7 +29,7 @@ import {
 } from 'lib-icons'
 import {
   deleteGroup,
-  deletePlacement,
+  deleteGroupPlacement,
   getGroupDaycareDailyNotes,
   OccupancyResponse
 } from '../../../../api/unit'
@@ -64,8 +63,12 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { isNotProduction, isPilotUnit } from '../../../../constants'
-import { RequireRole } from 'employee-frontend/utils/roles'
+import { featureFlags } from 'lib-customizations/employee'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
+import { requireRole } from 'employee-frontend/utils/roles'
+import { UserContext } from 'employee-frontend/state/user'
+import { Action } from 'lib-common/generated/action'
 
 interface Props {
   unit: Unit
@@ -74,14 +77,15 @@ interface Props {
   caretakers?: Stats
   confirmedOccupancy?: OccupancyResponse
   realizedOccupancy?: OccupancyResponse
-  canManageGroups: boolean
-  canManageChildren: boolean
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
   reload: () => void
   open: boolean
   toggleOpen: () => void
+  permittedActions: Set<Action.Group>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.Placement>>
 }
 
 export interface GroupWithDetails extends DaycareGroupWithPlacements {
@@ -137,25 +141,26 @@ function Group({
   caretakers,
   confirmedOccupancy,
   realizedOccupancy,
-  canManageGroups,
-  canManageChildren,
   reload,
   onTransferRequested,
   open,
-  toggleOpen
+  toggleOpen,
+  permittedActions,
+  permittedBackupCareActions,
+  permittedGroupPlacementActions
 }: Props) {
+  const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
+  const { roles } = useContext(UserContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [
-    selectedDaycareDailyNote,
-    setSelectedDaycareDailyNote
-  ] = useState<DaycareDailyNoteAndChildInfo>({
-    daycareDailyNote: null,
-    childId: null,
-    groupId: null,
-    childFirstName: '',
-    childLastName: ''
-  })
+  const [selectedDaycareDailyNote, setSelectedDaycareDailyNote] =
+    useState<DaycareDailyNoteAndChildInfo>({
+      daycareDailyNote: null,
+      childId: null,
+      groupId: null,
+      childFirstName: '',
+      childLastName: ''
+    })
   const [groupDaycareDailyNotes, setGroupDaycareDailyNotes] = useState<
     Result<DaycareDailyNote[]>
   >(Loading.of())
@@ -180,7 +185,7 @@ function Group({
   ) => {
     if ('type' in row) {
       if (!row.id) throw Error('deleting placement without id')
-      void deletePlacement(row.daycarePlacementId, row.id).then(reload)
+      void deleteGroupPlacement(row.id).then(reload)
     } else {
       const { id, period } = row
       void updateBackupCare(id, { period, groupId: undefined }).then(reload)
@@ -220,8 +225,9 @@ function Group({
         </span>
       )
   }
-
-  const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
+  const showServiceNeed =
+    !unit.type.includes('CLUB') &&
+    requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
 
   const getChildNote = (childId: string): DaycareDailyNote | undefined =>
     groupDaycareDailyNotes.isSuccess
@@ -250,91 +256,95 @@ function Group({
       .join(',')
   }
 
+  const canManageCaretakers =
+    permittedActions.has('UPDATE_CARETAKERS') ||
+    permittedActions.has('CREATE_CARETAKERS') ||
+    permittedActions.has('DELETE_CARETAKERS')
+
   const renderDaycareDailyNote = (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => {
+    if (!mobileEnabled) return null
+
     const childNote = getChildNote(placement.child.id)
     const groupNote = getGroupNote(group.id)
     return (
       <>
-        {groupDaycareDailyNotes.isLoading &&
-          (isNotProduction() || isPilotUnit(unit.id)) && <SpinnerSegment />}
-        {groupDaycareDailyNotes.isFailure &&
-          (isNotProduction() || isPilotUnit(unit.id)) && (
-            <ErrorSegment title={i18n.common.loadingFailed} compact />
-          )}
-        {groupDaycareDailyNotes.isSuccess &&
-          (isNotProduction() || isPilotUnit(unit.id)) && (
-            <Tooltip
-              data-qa={`daycare-daily-note-hover-${placement.child.id}`}
-              up
-              tooltip={
-                childNote ? (
-                  <div>
-                    <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
-                    <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
-                    <p>{childNote.note}</p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
-                    <p>
-                      {childNote.feedingNote
-                        ? i18n.unit.groups.daycareDailyNote.level[
-                            childNote.feedingNote
+        {groupDaycareDailyNotes.isLoading && <SpinnerSegment />}
+        {groupDaycareDailyNotes.isFailure && (
+          <ErrorSegment title={i18n.common.loadingFailed} compact />
+        )}
+        {groupDaycareDailyNotes.isSuccess && (
+          <Tooltip
+            data-qa={`daycare-daily-note-hover-${placement.child.id}`}
+            position="top"
+            tooltip={
+              childNote ? (
+                <div>
+                  <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+                  <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
+                  <p>{childNote.note}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+                  <p>
+                    {childNote.feedingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.feedingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+                  <p>{formatSleepingTooltipText(childNote)}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+                  <p>
+                    {childNote.reminders
+                      .map(
+                        (reminder) =>
+                          i18n.unit.groups.daycareDailyNote.reminderType[
+                            reminder
                           ]
-                        : ''}
-                    </p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
-                    <p>{formatSleepingTooltipText(childNote)}</p>
-                    <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
-                    <p>
-                      {childNote.reminders
-                        .map(
-                          (reminder) =>
-                            i18n.unit.groups.daycareDailyNote.reminderType[
-                              reminder
-                            ]
-                        )
-                        .join(',')}
-                    </p>
-                    <h5>
-                      {
-                        i18n.unit.groups.daycareDailyNote
-                          .otherThingsToRememberHeader
-                      }
-                    </h5>
-                    <p>{childNote.reminderNote}</p>
-                    {groupNote && (
-                      <>
-                        <h5>
-                          {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
-                        </h5>
-                        <p>{groupNote.note}</p>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
-                )
-              }
-            >
-              <RoundIcon
-                active={childNote != null || groupNote != null}
-                data-qa={`daycare-daily-note-icon-${placement.child.id}`}
-                content={faStickyNote}
-                color={colors.blues.primary}
-                size="m"
-                onClick={() => {
-                  setSelectedDaycareDailyNote({
-                    daycareDailyNote: childNote || null,
-                    groupId: null,
-                    childId: placement.child.id,
-                    childFirstName: placement.child.firstName || '',
-                    childLastName: placement.child.lastName || ''
-                  })
-                  toggleUiMode(`daycare-daily-note-edit-${group.id}`)
-                }}
-              />
-            </Tooltip>
-          )}
+                      )
+                      .join(',')}
+                  </p>
+                  <h5>
+                    {
+                      i18n.unit.groups.daycareDailyNote
+                        .otherThingsToRememberHeader
+                    }
+                  </h5>
+                  <p>{childNote.reminderNote}</p>
+                  {groupNote && (
+                    <>
+                      <h5>
+                        {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+                      </h5>
+                      <p>{groupNote.note}</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
+              )
+            }
+          >
+            <RoundIcon
+              active={childNote != null || groupNote != null}
+              data-qa={`daycare-daily-note-icon-${placement.child.id}`}
+              content={faStickyNote}
+              color={colors.blues.primary}
+              size="m"
+              onClick={() => {
+                setSelectedDaycareDailyNote({
+                  daycareDailyNote: childNote || null,
+                  groupId: null,
+                  childId: placement.child.id,
+                  childFirstName: placement.child.firstName || '',
+                  childLastName: placement.child.lastName || ''
+                })
+                toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+              }}
+            />
+          </Tooltip>
+        )}
       </>
     )
   }
@@ -399,7 +409,7 @@ function Group({
         </TitleContainer>
         <Gap size="L" horizontal />
         <Toolbar>
-          {canManageGroups ? (
+          {permittedActions.has('UPDATE') && (
             <>
               <InlineButton
                 icon={faPen}
@@ -408,6 +418,10 @@ function Group({
                 data-qa="btn-update-group"
               />
               <Gap size="s" horizontal />
+            </>
+          )}
+          {permittedActions.has('DELETE') && (
+            <>
               <InlineButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
@@ -417,17 +431,8 @@ function Group({
               />
               <Gap size="s" horizontal />
             </>
-          ) : null}
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR',
-              'STAFF',
-              'SPECIAL_EDUCATION_TEACHER'
-            ]}
-          >
+          )}
+          {permittedActions.has('READ_ABSENCES') && (
             <Link to={`/absences/${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
@@ -436,7 +441,7 @@ function Group({
                 data-qa="open-absence-diary-button"
               />
             </Link>
-          </RequireRole>
+          )}
         </Toolbar>
       </TitleBar>
       {open ? (
@@ -457,7 +462,7 @@ function Group({
               <label>{i18n.unit.groups.caretakers}</label>
               <FixedSpaceRow>
                 {renderCaretakerCount()}
-                {canManageGroups ? (
+                {canManageCaretakers ? (
                   <Link to={`/units/${unit.id}/groups/${group.id}/caretakers`}>
                     <InlineButton
                       icon={faPen}
@@ -500,19 +505,12 @@ function Group({
               <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
-                    {(isNotProduction() || isPilotUnit(unit.id)) && (
-                      <RequireRole
-                        oneOf={[
-                          'ADMIN',
-                          'UNIT_SUPERVISOR',
-                          'STAFF',
-                          'SPECIAL_EDUCATION_TEACHER'
-                        ]}
-                      >
+                    {mobileEnabled &&
+                      permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                         <Th>
                           <IconContainer>
                             <Tooltip
-                              up
+                              position="top"
                               tooltip={
                                 <span>
                                   {i18n.unit.groups.daycareDailyNote.header}
@@ -526,8 +524,7 @@ function Group({
                             </Tooltip>
                           </IconContainer>
                         </Th>
-                      </RequireRole>
-                    )}
+                      )}
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
                     <Th>{i18n.unit.groups.placementType}</Th>
@@ -536,7 +533,7 @@ function Group({
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
                     <Th>{i18n.unit.groups.placementDuration}</Th>
-                    {canManageChildren ? <Th /> : null}
+                    <Th />
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -545,26 +542,38 @@ function Group({
                       'type' in placement
                         ? placement.daycarePlacementMissingServiceNeedDays
                         : placement.missingServiceNeedDays
+                    const canTransfer = !!(
+                      placement.id &&
+                      ('type' in placement
+                        ? permittedGroupPlacementActions[placement.id]?.has(
+                            'UPDATE'
+                          )
+                        : permittedBackupCareActions[placement.id]?.has(
+                            'UPDATE'
+                          ))
+                    )
+                    const canDelete = !!(
+                      placement.id &&
+                      ('type' in placement
+                        ? permittedGroupPlacementActions[placement.id]?.has(
+                            'DELETE'
+                          )
+                        : permittedBackupCareActions[placement.id]?.has(
+                            'DELETE'
+                          ))
+                    )
                     return (
                       <Tr
                         key={placement.id || ''}
                         className={'group-placement-row'}
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
-                        {(isNotProduction() || isPilotUnit(unit.id)) && (
-                          <RequireRole
-                            oneOf={[
-                              'ADMIN',
-                              'UNIT_SUPERVISOR',
-                              'STAFF',
-                              'SPECIAL_EDUCATION_TEACHER'
-                            ]}
-                          >
+                        {mobileEnabled &&
+                          permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                             <Td data-qa="daily-note">
                               {renderDaycareDailyNote(placement)}
                             </Td>
-                          </RequireRole>
-                        )}
+                          )}
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
                             {formatName(
@@ -595,7 +604,24 @@ function Group({
                                   ? 'half'
                                   : 'full'
                               }
-                              label={i18n.placement.type[placement.type]}
+                              label={
+                                featureFlags.groupsTableServiceNeedsEnabled
+                                  ? placement.serviceNeeds
+                                      .filter((sn) =>
+                                        new FiniteDateRange(
+                                          placement.startDate,
+                                          placement.endDate
+                                        ).overlaps(
+                                          new FiniteDateRange(
+                                            sn.startDate,
+                                            sn.endDate
+                                          )
+                                        )
+                                      )
+                                      .map((sn) => sn.option.name)
+                                      .join(' / ')
+                                  : i18n.placement.type[placement.type]
+                              }
                             />
                           ) : null}
                         </Td>
@@ -635,22 +661,30 @@ function Group({
                             ? `${placement.startDate.format()}- ${placement.endDate.format()}`
                             : `${placement.period.start.format()}- ${placement.period.end.format()}`}
                         </Td>
-                        {canManageChildren ? (
+                        {canTransfer || canDelete ? (
                           <Td align="right">
                             <RowActionContainer>
-                              <InlineButton
-                                onClick={() => onTransferRequested(placement)}
-                                data-qa="transfer-btn"
-                                icon={faExchange}
-                                text={i18n.unit.groups.transferBtn}
-                              />
-                              <Gap size="s" horizontal />
-                              <InlineButton
-                                onClick={() => onDeletePlacement(placement)}
-                                data-qa="remove-btn"
-                                icon={faUndo}
-                                text={i18n.unit.groups.returnBtn}
-                              />
+                              {canTransfer && (
+                                <>
+                                  <InlineButton
+                                    onClick={() =>
+                                      onTransferRequested(placement)
+                                    }
+                                    data-qa="transfer-btn"
+                                    icon={faExchange}
+                                    text={i18n.unit.groups.transferBtn}
+                                  />
+                                  <Gap size="s" horizontal />
+                                </>
+                              )}
+                              {canDelete && (
+                                <InlineButton
+                                  onClick={() => onDeletePlacement(placement)}
+                                  data-qa="remove-btn"
+                                  icon={faUndo}
+                                  text={i18n.unit.groups.returnBtn}
+                                />
+                              )}
                             </RowActionContainer>
                           </Td>
                         ) : null}
@@ -659,15 +693,8 @@ function Group({
                   })}
                 </Tbody>
               </Table>
-              {(isNotProduction() || isPilotUnit(unit.id)) && (
-                <RequireRole
-                  oneOf={[
-                    'ADMIN',
-                    'UNIT_SUPERVISOR',
-                    'STAFF',
-                    'SPECIAL_EDUCATION_TEACHER'
-                  ]}
-                >
+              {mobileEnabled &&
+                permittedActions.has('READ_DAYCARE_DAILY_NOTES') && (
                   <GroupNoteLinkContainer>
                     <InlineButton
                       icon={
@@ -693,8 +720,7 @@ function Group({
                       data-qa="btn-create-group-note"
                     />
                   </GroupNoteLinkContainer>
-                </RequireRole>
-              )}
+                )}
             </div>
           ) : (
             <p data-qa="no-children-placeholder">

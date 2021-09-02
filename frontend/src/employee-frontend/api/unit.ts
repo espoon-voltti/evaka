@@ -16,7 +16,6 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
-  ProviderType,
   Stats,
   Unit,
   UnitLanguage,
@@ -24,17 +23,17 @@ import {
   UnitTypes,
   VisitingAddress
 } from '../types/unit'
-import { UnitBackupCare } from '../types/child'
+import { ServiceNeed, UnitBackupCare } from '../types/child'
 import { AdRole, DayOfWeek, UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
-import {
-  PlacementType,
-  ServiceNeedOptionSummary
-} from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { UnitProviderType } from 'lib-customizations/types'
+import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
+import { Action } from 'lib-common/generated/action'
+import { mapValues } from 'lodash'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -70,19 +69,28 @@ export async function getDaycares(): Promise<Result<Unit[]>> {
 export interface DaycareGroupSummary {
   id: UUID
   name: string
+  permittedActions: Set<Action.Group>
 }
 
 export interface UnitResponse {
   daycare: Unit
   groups: DaycareGroupSummary[]
-  currentUserRoles: AdRole[]
+  permittedActions: Set<Action.Unit>
 }
 
 export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
     .then(({ data }) =>
-      Success.of({ ...data, daycare: convertUnitJson(data.daycare) })
+      Success.of({
+        daycare: convertUnitJson(data.daycare),
+        groups: data.groups.map(({ id, name, permittedActions }) => ({
+          id,
+          name,
+          permittedActions: new Set(permittedActions)
+        })),
+        permittedActions: new Set(data.permittedActions)
+      })
     )
     .catch((e) => Failure.fromError(e))
 }
@@ -116,11 +124,13 @@ interface MissingGroupPlacementCommon {
 interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
   placementType: PlacementType
   backup: false
+  serviceNeeds: ServiceNeed[]
 }
 
 interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
   placementType: null
   backup: true
+  serviceNeeds: ServiceNeed[]
 }
 
 export type MissingGroupPlacement =
@@ -154,6 +164,9 @@ export type UnitData = {
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
   applications?: ApplicationUnitSummary[]
+  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
+  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
 }
 
 export async function getUnitData(
@@ -183,9 +196,8 @@ export async function getUnitData(
       groupOccupancies:
         response.data.groupOccupancies &&
         mapGroupOccupancyJson(response.data.groupOccupancies),
-      placementProposals: response.data.placementProposals?.map(
-        mapPlacementPlanJson
-      ),
+      placementProposals:
+        response.data.placementProposals?.map(mapPlacementPlanJson),
       placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson),
       applications: response.data.applications
         ?.map(mapApplicationsJson)
@@ -202,7 +214,19 @@ export async function getUnitData(
                 'fi',
                 { ignorePunctuation: true }
               )
-        })
+        }),
+      permittedPlacementActions: mapValues(
+        response.data.permittedPlacementActions,
+        (actions) => new Set(actions)
+      ),
+      permittedBackupCareActions: mapValues(
+        response.data.permittedBackupCareActions,
+        (actions) => new Set(actions)
+      ),
+      permittedGroupPlacementActions: mapValues(
+        response.data.permittedGroupPlacementActions,
+        (actions) => new Set(actions)
+      )
     })
   } catch (e) {
     console.error(e)
@@ -227,6 +251,7 @@ function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
     },
     startDate: LocalDate.parseIso(data.startDate),
     endDate: LocalDate.parseIso(data.endDate),
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     groupPlacements: data.groupPlacements.map((groupPlacement) => ({
       ...groupPlacement,
       startDate: LocalDate.parseIso(groupPlacement.startDate),
@@ -243,6 +268,7 @@ function mapBackupCareJson(data: JsonOf<UnitBackupCare>): UnitBackupCare {
       ...data.child,
       birthDate: LocalDate.parseIso(data.child.birthDate)
     },
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     period: FiniteDateRange.parseJson(data.period)
   }
 }
@@ -254,8 +280,21 @@ function mapMissingGroupPlacementJson(
     ...data,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
+    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     gap: FiniteDateRange.parseJson(data.gap)
   }
+}
+
+function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
+  return data.map((serviceNeed) => ({
+    ...serviceNeed,
+    startDate: LocalDate.parseIso(serviceNeed.startDate),
+    endDate: LocalDate.parseIso(serviceNeed.endDate),
+    confirmed: {
+      ...serviceNeed.confirmed,
+      at: new Date(serviceNeed.confirmed.at)
+    }
+  }))
 }
 
 function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
@@ -311,7 +350,7 @@ function mapApplicationsJson(
   }
 }
 
-export async function createPlacement(
+export async function createGroupPlacement(
   daycarePlacementId: UUID,
   groupId: UUID,
   startDate: LocalDate,
@@ -330,18 +369,27 @@ export async function createPlacement(
 }
 
 export async function transferGroup(
-  daycarePlacementId: UUID,
   groupPlacementId: UUID,
   groupId: UUID,
   startDate: LocalDate
 ): Promise<Result<null>> {
-  const url = `/placements/${daycarePlacementId}/group-placements/${groupPlacementId}/transfer`
+  const url = `/group-placements/${groupPlacementId}/transfer`
   const data = {
     groupId,
     startDate: startDate.formatIso()
   }
   return client
     .post(url, data)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteGroupPlacement(
+  groupPlacementId: UUID
+): Promise<Result<null>> {
+  const url = `/group-placements/${groupPlacementId}`
+  return client
+    .delete(url)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
@@ -373,17 +421,6 @@ export async function editGroup(
 export async function deleteGroup(daycareId: UUID, groupId: UUID) {
   const url = `/daycares/${daycareId}/groups/${groupId}`
   await client.delete(url)
-}
-
-export async function deletePlacement(
-  daycarePlacementId: UUID,
-  groupPlacementId: UUID
-): Promise<Result<null>> {
-  const url = `/placements/${daycarePlacementId}/group-placements/${groupPlacementId}`
-  return client
-    .delete(url)
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
 }
 
 export type OccupancyResponse = {
@@ -641,12 +678,13 @@ export interface DaycareFields {
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: ProviderType
+  providerType: UnitProviderType
   roundTheClock: boolean
   capacity: number
   language: UnitLanguage
   ghostUnit: boolean
   uploadToVarda: boolean
+  uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
@@ -713,15 +751,17 @@ export async function upsertChildDaycareDailyNote(
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/child/${childId}`
   if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
-      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-        Number(daycareDailyNote.sleepingHours) * 60
-      : 0
+    daycareDailyNote.sleepingMinutes = (
+      daycareDailyNote.sleepingMinutes
+        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+          Number(daycareDailyNote.sleepingHours) * 60
+        : 0
     ).toString()
   }
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then(({ data }) => Success.of(convertUnitJson(data)))
     .catch((e) => Failure.fromError(e))
@@ -733,15 +773,17 @@ export async function upsertGroupDaycareDailyNote(
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/group/${groupId}`
   if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
-      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-        Number(daycareDailyNote.sleepingHours) * 60
-      : 0
+    daycareDailyNote.sleepingMinutes = (
+      daycareDailyNote.sleepingMinutes
+        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+          Number(daycareDailyNote.sleepingHours) * 60
+        : 0
     ).toString()
   }
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then(({ data }) => Success.of(convertUnitJson(data)))
     .catch((e) => Failure.fromError(e))
@@ -771,3 +813,71 @@ export interface DaycareDailyNoteFormData {
   modifiedAt?: Date | null
   modifiedBy?: string
 }
+
+export async function getUnitAttendanceReservations(
+  unitId: UUID,
+  dateRange: FiniteDateRange
+): Promise<Result<UnitAttendanceReservations>> {
+  return client
+    .get<JsonOf<UnitAttendanceReservations>>('/attendance-reservations', {
+      params: {
+        unitId,
+        from: dateRange.start.formatIso(),
+        to: dateRange.end?.formatIso()
+      }
+    })
+    .then(({ data }) =>
+      Success.of({
+        unit: data.unit,
+        operationalDays: data.operationalDays.map(({ date, isHoliday }) => ({
+          date: LocalDate.parseIso(date),
+          isHoliday
+        })),
+        groups: data.groups.map(({ group, children }) => ({
+          group,
+          children: children.map(mapChildReservationJson)
+        })),
+        ungrouped: data.ungrouped.map(mapChildReservationJson)
+      })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface UnitAttendanceReservations {
+  unit: string
+  operationalDays: OperationalDay[]
+  groups: Array<{
+    group: string
+    children: Array<ChildReservations>
+  }>
+  ungrouped: Array<ChildReservations>
+}
+
+export interface OperationalDay {
+  date: LocalDate
+  isHoliday: boolean
+}
+
+export interface ChildReservations {
+  child: {
+    id: string
+    firstName: string
+    lastName: string
+    dateOfBirth: LocalDate
+  }
+  reservations: Record<
+    JsonOf<LocalDate>,
+    { startTime: string; endTime: string }
+  >
+}
+
+const mapChildReservationJson = ({
+  child,
+  ...json
+}: JsonOf<ChildReservations>): ChildReservations => ({
+  ...json,
+  child: {
+    ...child,
+    dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
+  }
+})

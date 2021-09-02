@@ -16,7 +16,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Label, LabelText } from '../../../components/common/styled/common'
+import { Label, LabelText } from '../../common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '../../../state/i18n'

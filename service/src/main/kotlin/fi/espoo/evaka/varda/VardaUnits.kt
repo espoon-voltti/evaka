@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
@@ -164,7 +165,7 @@ data class VardaUnit(
     @JsonProperty("organisaatio_oid")
     val ophUnitOid: String?,
     @JsonIgnore
-    val evakaDaycareId: UUID?,
+    val evakaDaycareId: DaycareId?,
     @JsonProperty("vakajarjestaja")
     var organizer: String?,
     @JsonProperty("nimi")

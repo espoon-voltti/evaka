@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.message
 
 import fi.espoo.evaka.decision.DecisionSendAddress
-import fi.espoo.evaka.invoicing.domain.MailAddress
 
 class EvakaMessageProvider() : IMessageProvider {
 
@@ -94,18 +93,22 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
         )
     }
 
-    override fun getDefaultFeeDecisionAddress(lang: MessageLanguage): MailAddress = when (lang) {
-        MessageLanguage.FI -> MailAddress(
+    override fun getDefaultFeeDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
+        MessageLanguage.FI -> DecisionSendAddress(
             "",
             "02700",
             "Espoon kaupunki",
-            "PL 30"
+            "PL 30",
+            "02700 Espoon kaupunki",
+            ""
         )
-        MessageLanguage.SV -> MailAddress(
+        MessageLanguage.SV -> DecisionSendAddress(
             "",
             "02700",
             "Esbo",
-            "PB 30"
+            "PB 30",
+            "02700 Esbo",
+            ""
         )
     }
 }

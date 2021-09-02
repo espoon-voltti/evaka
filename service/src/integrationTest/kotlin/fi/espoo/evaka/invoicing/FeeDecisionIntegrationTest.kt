@@ -5,7 +5,9 @@
 package fi.espoo.evaka.invoicing
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.extensions.jsonBody
+import com.github.kittinunf.result.Result
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
@@ -19,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -39,13 +42,15 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -204,6 +209,18 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     private fun deserializeListResult(json: String) = objectMapper.readValue<Paged<FeeDecisionSummary>>(json)
     private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<FeeDecisionDetailed>>(json)
 
+    private fun postJsonData(path: String, payload: String): Result<String, FuelError> {
+        val (_, _, result) = http.post(path)
+            .jsonBody(payload)
+            .asUser(user)
+            .responseString()
+        return result
+    }
+
+    private fun decisionSearch(payload: String): List<FeeDecisionSummary> {
+        return deserializeListResult(postJsonData("/decisions/search", payload).get()).data
+    }
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -220,7 +237,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with no data in DB`() {
-        val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50"))
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": 0, "pageSize": "50"}""")
             .asUser(user)
             .responseString()
 
@@ -234,7 +252,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works with test data in DB`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50"))
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50"}""")
             .asUser(user)
             .responseString()
 
@@ -245,14 +264,30 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `search works with strings and integers`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
+
+        val data1 = decisionSearch("""{"page": "0", "pageSize": "1"}""")
+        assertEquals(data1.size, 1)
+
+        val data2 = decisionSearch("""{"page": 1, "pageSize": 1}""")
+        assertEquals(data2.size, 1)
+
+        assertNotEquals(data1[0].id, data2[0].id)
+
+        val data3 = decisionSearch("""{"page": "1", "pageSize": "1"}""")
+        assertEquals(data3.size, 1)
+
+        assertEquals(data2[0].id, data3[0].id)
+    }
+
+    @Test
     fun `search works with draft status parameter`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val drafts = testDecisions.filter { it.status === FeeDecisionStatus.DRAFT }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "status" to "DRAFT")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
             .asUser(user)
             .responseString()
 
@@ -267,10 +302,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val sent = testDecisions.filter { it.status === FeeDecisionStatus.SENT }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "status" to "SENT")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": "SENT"}""")
             .asUser(user)
             .responseString()
 
@@ -284,10 +317,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works with multiple status parameters`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "status" to "DRAFT,SENT")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT,SENT"}""")
             .asUser(user)
             .responseString()
 
@@ -301,7 +332,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works with distinctions param UNCONFIRMED_HOURS`() {
         val testDecision = testDecisions[0]
         val testDecisionMissingServiceNeed = testDecisions[1].copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             children = testDecisions[1].children[0].let { part ->
                 listOf(part.copy(serviceNeed = part.serviceNeed.copy(missing = true)))
             }
@@ -309,10 +340,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecision, testDecisionMissingServiceNeed)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "distinctions" to "UNCONFIRMED_HOURS")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "UNCONFIRMED_HOURS"}""")
             .asUser(user)
             .responseString()
 
@@ -330,10 +359,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             tx.upsertFeeDecisions(listOf(testDecisions[0], testDecisions[3], testDecisionWithExtChild))
         }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "distinctions" to "EXTERNAL_CHILD")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "EXTERNAL_CHILD"}""")
             .asUser(user)
             .responseString()
 
@@ -351,10 +378,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "distinctions" to "RETROACTIVE")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "RETROACTIVE"}""")
             .asUser(user)
             .responseString()
 
@@ -368,10 +393,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with existing area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "area" to "test_area")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": "test_area"}""")
             .asUser(user)
             .responseString()
 
@@ -385,10 +408,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with area and status params`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "area" to "test_area", "status" to "DRAFT")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": "test_area", "status": "DRAFT"}""")
             .asUser(user)
             .responseString()
 
@@ -399,13 +420,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with non existant area param`() {
+    fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "area" to "non_existent")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": "non_existent"}""")
             .asUser(user)
             .responseString()
         assertEqualEnough(
@@ -418,10 +437,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with a unit param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "unit" to testDaycare.id.toString())
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "unit": "${testDaycare.id}"}""")
             .asUser(user)
             .responseString()
 
@@ -434,13 +451,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with a non-existant unit id param`() {
+    fun `search works as expected with a non-existent unit id param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "unit" to UUID.randomUUID().toString())
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "unit": "${UUID.randomUUID()}"}""")
             .asUser(user)
             .responseString()
 
@@ -454,14 +469,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple partial search terms`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "searchTerms" to "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -477,14 +489,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple more specific search terms`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "searchTerms" to "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -498,14 +507,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with multiple search terms where one does not match anything`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "searchTerms" to "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -519,10 +525,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with child name as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "searchTerms" to testChild_2.firstName, "sortBy" to "STATUS", "sortDirection" to "ASC")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testChild_2.firstName}",
+                          "sortBy": "STATUS", "sortDirection": "ASC"}"""
+            )
             .asUser(user)
             .responseString()
 
@@ -539,10 +547,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val otherDecision = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision, otherDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "searchTerms" to "123123123")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "searchTerms": "123123123"}""")
             .asUser(user)
             .responseString()
 
@@ -556,10 +562,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "searchTerms" to testAdult_1.ssn)
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testAdult_1.ssn}"}"""
+            )
             .asUser(user)
             .responseString()
 
@@ -573,10 +580,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `search works as expected with date of birth as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "searchTerms" to testAdult_1.ssn!!.substring(0, 6))
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "searchTerms": "${testAdult_1.ssn!!.substring(0, 6)}"}"""
+            )
             .asUser(user)
             .responseString()
 
@@ -602,7 +610,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `getDecision returns not found with non-existant decision`() {
+    fun `getDecision returns not found with non-existent decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, response, _) = http.get("/decisions/00000000-0000-0000-0000-000000000000")
@@ -622,12 +630,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val feeDecisions = objectMapper.readValue<Wrapper<List<FeeDecision>>>(result.get()).data
         assertEquals(2, feeDecisions.size)
         feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }.let { draft ->
-            assertEquals(testAdult_1.id, draft?.headOfFamily?.id)
-            assertEquals(28900 + 14500, draft?.totalFee())
+            assertNotNull(draft)
+            assertEquals(testAdult_1.id, draft.headOfFamily.id)
+            assertEquals(28900 + 14500, draft.totalFee())
         }
         feeDecisions.find { it.status == FeeDecisionStatus.SENT }.let { sent ->
-            assertEquals(testAdult_1.id, sent?.headOfFamily?.id)
-            assertEquals(28900, sent?.totalFee())
+            assertNotNull(sent)
+            assertEquals(testAdult_1.id, sent.headOfFamily.id)
+            assertEquals(28900, sent.totalFee())
         }
     }
 
@@ -938,7 +948,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting sent decision end date on confirm`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = draft.validDuring.copy(start = draft.validFrom.minusDays(30))
         )
@@ -964,7 +974,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting decisions with exactly same validity dates to annulled state`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
@@ -988,40 +998,40 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `confirmDrafts updates completely overlapped conflicting decisions to annulled state`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-        val conflict_1 = draft.copy(
-            id = UUID.randomUUID(),
+        val conflict1 = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(5), draft.validFrom.plusDays(10))
         )
-        val conflict_2 = draft.copy(
-            id = UUID.randomUUID(),
+        val conflict2 = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(11), draft.validFrom.plusDays(20))
         )
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict_1, conflict_2)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
-        val (_, _, result_1) = http.get("/decisions/${conflict_1.id}")
+        val (_, _, result_1) = http.get("/decisions/${conflict1.id}")
             .asUser(user)
             .responseString()
 
-        val updatedConflict_1 = conflict_1.copy(status = FeeDecisionStatus.ANNULLED)
+        val updatedConflict1 = conflict1.copy(status = FeeDecisionStatus.ANNULLED)
         assertEqualEnough(
-            updatedConflict_1.let(::toDetailed),
+            updatedConflict1.let(::toDetailed),
             deserializeResult(result_1.get()).data
         )
 
-        val (_, _, result_2) = http.get("/decisions/${conflict_2.id}")
+        val (_, _, result_2) = http.get("/decisions/${conflict2.id}")
             .asUser(user)
             .responseString()
 
-        val updatedConflict_2 = conflict_2.copy(status = FeeDecisionStatus.ANNULLED)
+        val updatedConflict2 = conflict2.copy(status = FeeDecisionStatus.ANNULLED)
         assertEqualEnough(
-            updatedConflict_2.let(::toDetailed),
+            updatedConflict2.let(::toDetailed),
             deserializeResult(result_2.get()).data
         )
     }
@@ -1030,7 +1040,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts updates conflicting sent decision to annulled even when the sent decision would end later`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val conflict = draft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT,
             validDuring = draft.validDuring.copy(end = draft.validTo!!.plusDays(10))
         )
@@ -1057,16 +1067,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val originalDraft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val splitDrafts = listOf(
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = originalDraft.validDuring.copy(end = originalDraft.validFrom.plusDays(7))
             ),
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = originalDraft.validDuring.copy(start = originalDraft.validFrom.plusDays(8))
             )
         )
         val conflict = originalDraft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
@@ -1092,16 +1102,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val originalDraft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         val splitDrafts = listOf(
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = DateRange(originalDraft.validFrom.minusDays(1), originalDraft.validFrom.plusDays(7))
             ),
             originalDraft.copy(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = DateRange(originalDraft.validFrom.plusDays(8), originalDraft.validTo!!.plusDays(1))
             )
         )
         val conflict = originalDraft.copy(
-            id = UUID.randomUUID(),
+            id = FeeDecisionId(UUID.randomUUID()),
             status = FeeDecisionStatus.SENT
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
@@ -1130,10 +1140,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "startDate" to "1900-01-01", "endDate" to "1901-01-01")
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "startDate": "1900-01-01", "endDate": "1901-01-01"}""")
             .asUser(user)
             .responseString()
 
@@ -1151,15 +1159,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "startDate" to now.minusMonths(3).toString(),
-                "endDate" to now.minusDays(1).toString()
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "startDate": "${now.minusMonths(3)}",
+                          "endDate": "${now.minusDays(1)}"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -1177,15 +1182,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "startDate" to now.plusDays(1).toString(),
-                "endDate" to now.plusMonths(8).toString()
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "startDate": "${now.plusDays(1)}",
+                          "endDate": "${now.plusMonths(8)}"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -1203,27 +1205,22 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, resultPast) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "startDate" to now.minusMonths(6).toString(),
-                "endDate" to now.minusMonths(1).toString()
+        val (_, _, resultPast) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "startDate": "${now.minusMonths(6)}",
+                          "endDate": "${now.minusMonths(1)}"}"""
             )
-        )
             .asUser(user)
             .responseString()
 
-        val (_, _, resultFuture) = http.get(
-            "/decisions/search",
-            listOf(
-                "page" to "0",
-                "pageSize" to "50",
-                "startDate" to now.plusMonths(2).toString(),
-                "endDate" to now.plusMonths(8).toString()
+        val (_, _, resultFuture) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0",
+                          "pageSize": "50",
+                          "startDate": "${now.plusMonths(2)}",
+                          "endDate": "${now.plusMonths(8)}" }"""
             )
-        )
             .asUser(user)
             .responseString()
 
@@ -1246,10 +1243,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "endDate" to now.plusYears(8).toString())
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "endDate": "${now.plusYears(8)}"}"""
+            )
             .asUser(user)
             .responseString()
 
@@ -1267,10 +1265,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "startDate" to now.minusYears(8).toString())
-        )
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody(
+                """{"page": "0", "pageSize": "50",
+                          "startDate": "${now.minusYears(8)}"}"""
+            )
             .asUser(user)
             .responseString()
 
@@ -1309,10 +1308,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `sorting works with different params`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, statusAsc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "STATUS", "sortDirection" to "ASC")
-        )
+        val (_, _, statusAsc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "STATUS", "sortDirection": "ASC"}""")
             .asUser(user)
             .responseString()
 
@@ -1321,10 +1318,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             deserializeListResult(statusAsc.get()).data
         )
 
-        val (_, _, statusDesc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "STATUS", "sortDirection" to "DESC")
-        )
+        val (_, _, statusDesc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "STATUS", "sortDirection": "DESC"}""")
             .asUser(user)
             .responseString()
 
@@ -1333,10 +1328,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             deserializeListResult(statusDesc.get()).data
         )
 
-        val (_, _, headAsc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "HEAD_OF_FAMILY", "sortDirection" to "ASC")
-        )
+        val (_, _, headAsc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "HEAD_OF_FAMILY", "sortDirection": "ASC"}""")
             .asUser(user)
             .responseString()
 
@@ -1345,10 +1338,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             deserializeListResult(headAsc.get()).data
         )
 
-        val (_, _, headDesc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "HEAD_OF_FAMILY", "sortDirection" to "DESC")
-        )
+        val (_, _, headDesc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "HEAD_OF_FAMILY", "sortDirection": "DESC"}""")
             .asUser(user)
             .responseString()
 
@@ -1358,10 +1349,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             deserializeListResult(headDesc.get()).data
         )
 
-        val (_, _, validityAsc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "VALIDITY", "sortDirection" to "ASC")
-        )
+        val (_, _, validityAsc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "VALIDITY", "sortDirection": "ASC"}""")
             .asUser(user)
             .responseString()
 
@@ -1370,10 +1359,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             deserializeListResult(validityAsc.get()).data
         )
 
-        val (_, _, validityDesc) = http.get(
-            "/decisions/search",
-            listOf("page" to "0", "pageSize" to "50", "sortBy" to "VALIDITY", "sortDirection" to "DESC")
-        )
+        val (_, _, validityDesc) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "VALIDITY", "sortDirection": "DESC"}""")
             .asUser(user)
             .responseString()
 

@@ -7,6 +7,7 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 import java.util.UUID
@@ -25,7 +26,7 @@ fun Database.Read.applicationFlags(
     childId: UUID,
     formType: ApplicationType,
     startDate: LocalDate,
-    preferredUnits: List<UUID>,
+    preferredUnits: List<DaycareId>,
     connectedDaycare: Boolean
 ): ApplicationFlags {
     return when (formType) {
@@ -70,7 +71,7 @@ fun Database.Read.applicationFlags(
 
 fun isAdditionalDaycareApplication(
     connectedDaycare: Boolean,
-    preferredUnits: List<UUID>,
+    preferredUnits: List<DaycareId>,
     existingPreschoolPlacements: List<Placement>
 ): Boolean {
     if (!connectedDaycare) {

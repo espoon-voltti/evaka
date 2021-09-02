@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -77,7 +78,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
         .map { rs, _ ->
             FamilyConflictReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 id = rs.getUUID("id"),
                 firstName = rs.getString("first_name"),
@@ -92,7 +93,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
 
 data class FamilyConflictReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val id: UUID,
     val firstName: String?,

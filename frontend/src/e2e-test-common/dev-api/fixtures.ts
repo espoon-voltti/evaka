@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format, getMonth, setMonth } from 'date-fns'
+import { format } from 'date-fns'
 import config from '../config'
 import {
   Application,
@@ -39,14 +39,14 @@ import {
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { ApplicationStatus } from 'lib-common/generated/enums'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
   externalId: config.supervisorExternalId,
   firstName: 'Eva',
   lastName: 'Esihenkilo',
-  email: 'eva.esihenkilo@espoo.fi',
+  email: 'eva.esihenkilo@evaka.test',
   roles: ['SERVICE_WORKER', 'ADMIN']
 }
 
@@ -84,7 +84,8 @@ export const clubFixture: Daycare = {
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
-  roundTheClock: true
+  roundTheClock: true,
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
 
 export const daycareFixture: Daycare = {
@@ -105,7 +106,8 @@ export const daycareFixture: Daycare = {
   location: {
     lat: 60.20377343765089,
     lon: 24.655715743526994
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
 
 export const daycare2Fixture: Daycare = {
@@ -126,7 +128,8 @@ export const daycare2Fixture: Daycare = {
   location: {
     lat: 60.20350901607783,
     lon: 24.669
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
 
 export const preschoolFixture: Daycare = {
@@ -147,7 +150,8 @@ export const preschoolFixture: Daycare = {
   location: {
     lat: 60.2040261560435,
     lon: 24.65517745652623
-  }
+  },
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
 
 export const enduserGuardianFixture: PersonDetail = {
@@ -155,7 +159,7 @@ export const enduserGuardianFixture: PersonDetail = {
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
   lastName: 'Karhula',
-  email: 'johannes.karhula@test.com',
+  email: 'johannes.karhula@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1944-07-07',
@@ -240,7 +244,7 @@ const twoGuardiansGuardian1 = {
   ssn: '220281-9456',
   firstName: 'Mikael Ilmari Juhani Johannes',
   lastName: 'Högfors',
-  email: 'mikael.hogfors@test.com',
+  email: 'mikael.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1981-02-22',
@@ -257,7 +261,7 @@ const twoGuardiansGuardian2 = {
   ssn: '170590-9540',
   firstName: 'Kaarina Marjatta Anna Liisa',
   lastName: 'Högfors',
-  email: 'kaarina.hogfors@test.com',
+  email: 'kaarina.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
   dateOfBirth: '1990-05-17',
@@ -278,7 +282,7 @@ const twoGuardiansChildren = [
     email: '',
     phone: '',
     language: 'fi',
-    dateOfBirth: '2014-07-07',
+    dateOfBirth: '2013-10-07',
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
     postOffice: 'Espoo',
@@ -508,15 +512,21 @@ const applicationForm = (
   connectedDaycare = false
 ): ApplicationForm => {
   // Try to make sure there's an active preschool term for the preferred start date
-  let startDate = new Date()
+  let startDate = LocalDate.today()
   if (
     type === 'PRESCHOOL' &&
     // May-Aug
-    [4, 5, 6, 7].includes(getMonth(startDate))
+    [5, 6, 7, 8].includes(startDate.month)
   ) {
     // => Sep
-    startDate = setMonth(startDate, 8)
+    startDate = startDate.withMonth(9)
   }
+
+  // Move daycare application start date to August if current date is in July
+  if (type === 'DAYCARE' && 7 === startDate.month) {
+    startDate = startDate.withMonth(8)
+  }
+
   return {
     type,
     additionalDetails: {
@@ -581,7 +591,7 @@ const applicationForm = (
     otherAdults: [],
     otherChildren: [],
     partTime: false,
-    preferredStartDate: startDate.toISOString(),
+    preferredStartDate: startDate.formatIso(),
     serviceEnd: '08:00',
     serviceStart: '16:00',
     urgent: false,
@@ -657,15 +667,16 @@ export const feeDecisionsFixture = (
   status: FeeDecisionStatus,
   adult: PersonDetail,
   child: PersonDetail,
-  daycareId: UUID
+  daycareId: UUID,
+  validDuring: DateRange = new DateRange(
+    LocalDate.today().subYears(1),
+    LocalDate.today().addYears(1)
+  )
 ): FeeDecision => ({
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
   status,
   decisionType: 'NORMAL',
-  validDuring: new DateRange(
-    LocalDate.today().subYears(1),
-    LocalDate.today().addYears(1)
-  ),
+  validDuring,
   headOfFamily: { id: adult.id },
   familySize: 2,
   feeThresholds: feeThresholds,
@@ -738,7 +749,7 @@ export const invoiceFixture = (
   periodStart = '2019-01-01',
   periodEnd = '2019-01-01'
 ): Invoice => ({
-  id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+  id: uuidv4(),
   status,
   headOfFamily: { id: adultId },
   agreementType: 200,
@@ -746,7 +757,7 @@ export const invoiceFixture = (
   periodEnd,
   rows: [
     {
-      id: '592ddd9b-a99a-44f7-bd84-adaa68891df4',
+      id: uuidv4(),
       child: { id: childId, dateOfBirth: '2017-06-30' },
       placementUnit: { id: daycareId },
       amount: 1,
@@ -754,8 +765,8 @@ export const invoiceFixture = (
       periodStart: periodStart,
       periodEnd: periodEnd,
       product: 'DAYCARE',
-      costCenter: 'cost center',
-      subCostCenter: 'sub cost center',
+      costCenter: '20000',
+      subCostCenter: '00',
       modifiers: []
     }
   ]
@@ -832,8 +843,8 @@ export function createBackupCareFixture(
     childId,
     unitId: unitId,
     period: {
-      start: '2021-02-01',
-      end: '2021-02-03'
+      start: '2022-02-01',
+      end: '2022-02-03'
     }
   }
 }
@@ -868,7 +879,8 @@ export class Fixture {
       decisionHandler: `decisionHandler_${id}`,
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
       providerType: 'MUNICIPAL',
-      roundTheClock: true
+      roundTheClock: true,
+      enabledPilotFeatures: ['MESSAGING', 'MOBILE']
     })
   }
 
@@ -899,7 +911,7 @@ export class Fixture {
       id: uuidv4(),
       dateOfBirth: '2020-05-05',
       ssn: '050520A999M',
-      email: `email_${id}@test.com`,
+      email: `email_${id}@evaka.test`,
       firstName: `firstName_${id}`,
       lastName: `lastName_${id}`,
       language: `fi`,
@@ -918,7 +930,7 @@ export class Fixture {
     const id = uniqueLabel()
     return new EmployeeBuilder({
       id: uuidv4(),
-      email: `email_${id}@espoo.fi`,
+      email: `email_${id}@evaka.test`,
       externalId: `e2etest:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,

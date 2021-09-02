@@ -28,7 +28,7 @@ import { InvoiceSummary } from '../../types/invoicing'
 import { Result } from 'lib-common/api'
 import { formatCents } from '../../utils/money'
 import Tooltip from '../../components/common/Tooltip'
-import { StatusIconContainer } from '../../components/common/StatusIconContainer'
+import { StatusIconContainer } from '../common/StatusIconContainer'
 import colors from 'lib-customizations/common'
 import { SearchOrder } from '../../types'
 import { SortByInvoices } from '../../api/invoicing'
@@ -300,7 +300,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             {item.createdAt &&
               LocalDate.fromSystemTzDate(item.createdAt).format()}
           </Td>
-          <Td>{formatCents(item.totalPrice)}</Td>
+          <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
           <Td>
             {item.headOfFamily.restrictedDetailsEnabled && (
               <Tooltip

@@ -76,6 +76,10 @@ export interface EmployeeUser {
   allScopedRoles: UserRole[]
 }
 
+export interface EmployeeUserResponse extends EmployeeUser {
+  accessibleFeatures: object
+}
+
 export interface PersonIdentityRequest {
   socialSecurityNumber: string
   firstName: string
@@ -99,7 +103,7 @@ export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
 ) {
-  const { data } = await client.get<EmployeeUser>(
+  const { data } = await client.get<EmployeeUserResponse>(
     `/system/employee/${employeeId}`,
     {
       headers: createServiceRequestHeaders(req, machineUser)

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from '../types'
+import { UUID } from './index'
 
 export type DecisionType =
   | 'CLUB'

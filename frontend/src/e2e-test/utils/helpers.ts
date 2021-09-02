@@ -42,7 +42,7 @@ export class Checkbox {
 
   get checked(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this._input.checked as unknown) as Promise<boolean>
+    return this._input.checked as unknown as Promise<boolean>
   }
 
   get disabled(): Promise<boolean> {
@@ -68,7 +68,7 @@ export class SelectionChip {
 
   get selected(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this._input.checked as unknown) as Promise<boolean>
+    return this._input.checked as unknown as Promise<boolean>
   }
 
   get exists(): Promise<boolean> {
@@ -84,4 +84,16 @@ export const selectFirstOption = async (
   const input = container.find('input')
   await t.typeText(input, searchString)
   await t.click(container.find('[id*="-option-"]'))
+}
+
+export const selectFirstComboboxOption = async (
+  container: Selector,
+  searchString?: string
+) => {
+  await scrollThenClick(t, container)
+  const input = container.find('input')
+  if (searchString) {
+    await t.typeText(input, searchString)
+  }
+  await t.click(container.find('[data-qa="item"]'))
 }

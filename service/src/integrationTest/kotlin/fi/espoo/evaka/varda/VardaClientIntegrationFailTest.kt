@@ -7,9 +7,9 @@ package fi.espoo.evaka.varda
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.FullApplicationTest
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import kotlin.test.fail
 
 class VardaClientIntegrationFailTest : FullApplicationTest() {
     private lateinit var httpsServer: VardaClientIntegrationMockHttpsServer
@@ -29,7 +29,7 @@ class VardaClientIntegrationFailTest : FullApplicationTest() {
         val (_, _, result) = http.get("https://localhost:${httpsServer.app.port()}").responseString()
         when (result) {
             !is Result.Failure -> {
-                fail<Any>("The request should fail for invalid certificate")
+                fail("The request should fail for invalid certificate")
             }
         }
     }

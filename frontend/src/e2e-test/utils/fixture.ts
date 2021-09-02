@@ -8,12 +8,8 @@ import TestController from 'testcafe'
 
 export async function logConsoleMessages(t: TestController): Promise<void> {
   try {
-    const {
-      warn,
-      log,
-      error,
-      ...messages
-    } = await t.getBrowserConsoleMessages()
+    const { warn, log, error, ...messages } =
+      await t.getBrowserConsoleMessages()
     const info = messages.info.filter(
       (msg) => !msg.includes('Download the React DevTools')
     )

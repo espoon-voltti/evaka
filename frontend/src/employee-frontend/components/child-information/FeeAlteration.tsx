@@ -23,8 +23,8 @@ import {
 } from '../../api/child/fee-alteration'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
-import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
-import { H2 } from '../../../lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
@@ -39,9 +39,8 @@ const FeeAlteration = React.memo(function FeeAlteration({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
+    useContext(UIContext)
   const { feeAlterations, setFeeAlterations } = useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)

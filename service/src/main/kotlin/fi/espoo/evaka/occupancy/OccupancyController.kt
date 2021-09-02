@@ -5,6 +5,8 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/occupancy")
@@ -28,7 +29,7 @@ class OccupancyController(private val acl: AccessControlList) {
     fun getOccupancyPeriods(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
@@ -53,7 +54,7 @@ class OccupancyController(private val acl: AccessControlList) {
     fun getOccupancyPeriodsOnGroups(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
@@ -84,7 +85,7 @@ class OccupancyController(private val acl: AccessControlList) {
 }
 
 data class OccupancyResponseGroupLevel(
-    val groupId: UUID,
+    val groupId: GroupId,
     val occupancies: OccupancyResponse
 )
 
@@ -103,7 +104,7 @@ data class OccupancyResponse(
  * - assistance need coefficient = X, or default = 1.0
  */
 fun Database.Read.calculateOccupancyPeriods(
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyPeriod> {
@@ -117,7 +118,7 @@ fun Database.Read.calculateOccupancyPeriods(
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyPeriodGroupLevel> {

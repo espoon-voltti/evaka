@@ -14,7 +14,7 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-common/generated/enums'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]
@@ -60,6 +60,7 @@ export interface AttendanceChild {
   dailyServiceTimes: DailyServiceTimes | null
   dailyNote: DailyNote | null
   imageUrl: string | null
+  reservation: AttendanceReservation | null
 }
 
 interface Attendance {
@@ -98,6 +99,11 @@ interface ArrivalInfoResponse {
 }
 
 export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
+
+export interface AttendanceReservation {
+  startTime: string
+  endTime: string
+}
 
 export interface Child {
   id: string
@@ -329,9 +335,10 @@ export async function createOrUpdateDaycareDailyNoteForChild(
   daycareDailyNote: DailyNote
 ): Promise<Result<void>> {
   const url = `/daycare-daily-note/child/${childId}`
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
@@ -351,9 +358,10 @@ export async function upsertGroupDaycareDailyNote(
   daycareDailyNote: DailyNote
 ): Promise<Result<void>> {
   const url = `/daycare-daily-note/group/${groupId}`
-  return (daycareDailyNote.id
-    ? client.put(url, daycareDailyNote)
-    : client.post(url, daycareDailyNote)
+  return (
+    daycareDailyNote.id
+      ? client.put(url, daycareDailyNote)
+      : client.post(url, daycareDailyNote)
   )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))

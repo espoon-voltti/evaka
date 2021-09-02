@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 ## Build and test
 
-Prequisites
+Prerequisites
 
 - Latest java 11 with JAVA_HOME pointing to it
 - Docker
@@ -210,7 +210,7 @@ chmod a+x .git/hooks/pre-commit
 ## OWASP dependency check
 
 Service dependencies are checked for security vulnerabilities with
-the [OWASP dependecy-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
+the [OWASP dependency-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
 plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default even
 minor vulnerabilities break the build, but they can
 be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression

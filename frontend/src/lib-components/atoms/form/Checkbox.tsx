@@ -18,7 +18,7 @@ const Wrapper = styled.div`
   cursor: pointer;
 
   label {
-    font-size: 15px;
+    font-size: 1rem;
     margin-top: 6px;
     margin-left: ${defaultMargins.s};
     cursor: pointer;

@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
@@ -46,4 +48,18 @@ data class DecisionSendAddress(
     val row1: String,
     val row2: String,
     val row3: String
-)
+) {
+    companion object {
+        fun fromPerson(person: PersonData.Detailed): DecisionSendAddress? {
+            person.let {
+                if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
+                    return DecisionSendAddress(
+                        person.streetAddress!!, person.postalCode!!, person.postOffice!!,
+                        person.streetAddress, "${person.postalCode} ${person.postOffice}", ""
+                    )
+                }
+            }
+            return null
+        }
+    }
+}

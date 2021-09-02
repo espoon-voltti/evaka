@@ -15,6 +15,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -26,13 +28,13 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -125,7 +127,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: UUID): UUID {
+    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,

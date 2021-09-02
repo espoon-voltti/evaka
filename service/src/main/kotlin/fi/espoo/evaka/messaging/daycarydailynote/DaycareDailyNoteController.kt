@@ -5,10 +5,14 @@
 package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareDailyNoteId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,22 +24,21 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@RestController()
+@RestController
 @RequestMapping("/daycare-daily-note")
 class DaycareDailyNoteController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
 
     @GetMapping("/daycare/group/{groupId}")
     fun getDaycareDailyNotesForGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<List<DaycareDailyNote>> {
         Audit.DaycareDailyNoteRead.log(user.id)
-
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Group.READ_DAYCARE_DAILY_NOTES, groupId)
 
         return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }
@@ -60,7 +63,7 @@ class DaycareDailyNoteController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<DaycareDailyNoteId> {
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForChild(user, childId)
@@ -88,9 +91,9 @@ class DaycareDailyNoteController(
     fun createDailyNoteForGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable groupId: UUID,
+        @PathVariable groupId: GroupId,
         @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<DaycareDailyNoteId> {
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
@@ -103,7 +106,7 @@ class DaycareDailyNoteController(
     fun updateDailyNoteForGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable groupId: UUID,
+        @PathVariable groupId: GroupId,
         @RequestBody body: DaycareDailyNote
     ): ResponseEntity<DaycareDailyNote> {
         Audit.DaycareDailyNoteUpdate.log(user.id)
@@ -118,7 +121,7 @@ class DaycareDailyNoteController(
     fun deleteDailyNote(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable noteId: UUID
+        @PathVariable noteId: DaycareDailyNoteId
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
 

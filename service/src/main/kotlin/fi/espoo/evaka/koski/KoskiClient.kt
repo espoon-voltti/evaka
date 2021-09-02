@@ -18,25 +18,19 @@ import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
+import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
-import org.springframework.stereotype.Component
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger { }
 
-@Component
 class KoskiClient(
+    private val env: KoskiEnv,
     private val fuel: FuelManager,
-    private val env: Environment,
-    private val baseUrl: String = env.getRequiredProperty("fi.espoo.integration.koski.url"),
-    private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),
-    private val koskiUser: String = env.getRequiredProperty("fi.espoo.integration.koski.user"),
-    private val koskiSecret: String = env.getRequiredProperty("fi.espoo.integration.koski.secret"),
     asyncJobRunner: AsyncJobRunner?
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
@@ -55,7 +49,7 @@ class KoskiClient(
 
     fun uploadToKoski(db: Database, msg: UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
-        val data = tx.beginKoskiUpload(sourceSystem, msg.key, today)
+        val data = tx.beginKoskiUpload(env.sourceSystem, msg.key, today)
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
             return@transaction
@@ -66,10 +60,10 @@ class KoskiClient(
         } else {
             val (request, _, result) = fuel.request(
                 method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
-                path = "$baseUrl/oppija"
+                path = "${env.url}/oppija"
             )
                 .authentication()
-                .basic(koskiUser, koskiSecret)
+                .basic(env.user, env.secret.value)
                 .header(Headers.ACCEPT, "application/json")
                 .header("Caller-Id", "${data.organizationOid}.espooevaka")
                 .jsonBody(payload)

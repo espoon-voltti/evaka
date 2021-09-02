@@ -18,6 +18,7 @@ import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -29,11 +30,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,7 +38,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Autowired
@@ -50,12 +49,12 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { it.resetDatabase() }
+        db.transaction {
+            it.resetDatabase()
+            it.insertGeneralTestFixtures()
+            it.execute("INSERT INTO holiday (date, description) VALUES (?, ?)", janFirst, "New Year")
+            it.execute("INSERT INTO holiday (date, description) VALUES (?, ?)", janFirst.plusDays(5), "Epiphany")
+        }
     }
 
     private val janFirst = LocalDate.of(2020, 1, 1)
@@ -72,17 +71,6 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
         janReport.assertContainsRow(ORIGINAL, janFirst, janFirst.toEndOfMonth(), 87000, 28800, 58200)
-    }
-
-    @Test
-    fun `unfrozen service voucher report includes value decisions that begin in the middle of reports month`() {
-        val middleOfMonth = LocalDate.of(2020, 1, 15)
-        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800)
-
-        val janReport = getUnitReport(testDaycare.id, middleOfMonth.year, middleOfMonth.monthValue)
-        assertEquals(1, janReport.size)
-        // 31916 is 17 / 31 * 58200 rounded to closest integer
-        janReport.assertContainsRow(ORIGINAL, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, 31916)
     }
 
     @Test
@@ -128,19 +116,42 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     }
 
     @Test
+    fun `service voucher report takes operational days into account`() {
+        // Jan 2nd is the first operational day of the month so the report should have the decision's whole value
+        val janSecond = janFirst.plusDays(1)
+        createVoucherDecision(janSecond, unitId = testDaycare.id, value = 87000, coPayment = 28800)
+
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        janReport.assertContainsRow(ORIGINAL, janSecond, janSecond.toEndOfMonth(), 87000, 28800, 58200)
+    }
+
+    @Test
+    fun `part month decisions are multiplied according to their portion of operational days`() {
+        // Jan 6th excludes first two operational days of the month, Jan 2nd and 3rd
+        val janSixth = janFirst.plusDays(5)
+        createVoucherDecision(janSixth, unitId = testDaycare.id, value = 87000, coPayment = 28800)
+
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        // multiplier is 19 / 21
+        janReport.assertContainsRow(ORIGINAL, janSixth, janSixth.toEndOfMonth(), 87000, 28800, 52657)
+    }
+
+    @Test
     fun `if there is a change on part of the month, the whole month gets refunded and corrected`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
-        val middleOfMonth = janFirst.plusDays(15)
+        val middleOfMonth = janFirst.plusDays(14)
         createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(4, febReport.size)
         febReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 0, -87000)
-        // 15 days -> (15/31) * 87000 = ~42097
-        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 42097)
-        // 16 days -> (16/31) * 77000 = ~39742
-        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 39742)
+        // 8 operational days -> (9/21) * 87000 = ~33143
+        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 33143)
+        // 13 operational days -> (12/21) * 77000 = ~47667
+        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 47667)
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
     }
 
@@ -190,15 +201,17 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `split old decisions are both refunded`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
-        val middleOfMonth = LocalDate.of(2020, 1, 15)
+        val middleOfMonth = janFirst.plusDays(14)
         createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(4, febReport.size)
-        febReport.assertContainsRow(REFUND, janFirst, middleOfMonth.minusDays(1), 87000, 0, -39290)
-        febReport.assertContainsRow(REFUND, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, -31916)
+        // 8 operational days -> (9/21) * 87000 = ~33143
+        febReport.assertContainsRow(REFUND, janFirst, middleOfMonth.minusDays(1), 87000, 0, -33143)
+        // 13 operational days -> (12/21) * 58200 = ~36029
+        febReport.assertContainsRow(REFUND, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, -36029)
         febReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 87000, 10000, 77000)
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
     }
@@ -208,14 +221,16 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0, approvedAt = janFreeze.plusSeconds(3600))
-        val middleOfMonth = LocalDate.of(2020, 1, 15)
+        val middleOfMonth = janFirst.plusDays(14)
         createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(4, febReport.size)
         febReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 10000, -77000)
-        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 39290)
-        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, 31916)
+        // 8 operational days -> (9/21) * 87000 = ~33143
+        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 33143)
+        // 13 operational days -> (12/21) * 58200 = ~36029
+        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, 36029)
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 28800, 58200)
     }
 
@@ -268,18 +283,16 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
             it.type == type && it.realizedPeriod.start == periodStart && it.realizedPeriod.end == periodEnd
         }
         assertNotNull(row)
-        row!!.let {
-            assertEquals(value, row.serviceVoucherValue)
-            assertEquals(coPayment, row.serviceVoucherCoPayment)
-            assertEquals(realizedValue, row.realizedAmount)
-        }
+        assertEquals(value, row.serviceVoucherValue)
+        assertEquals(coPayment, row.serviceVoucherCoPayment)
+        assertEquals(realizedValue, row.realizedAmount)
     }
 
     private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
-    private fun getUnitReport(unitId: UUID, year: Int, month: Int): List<ServiceVoucherValueRow> {
+    private fun getUnitReport(unitId: DaycareId, year: Int, month: Int): List<ServiceVoucherValueRow> {
         val (_, response, data) = http.get(
             "/reports/service-voucher-value/units/$unitId",
             listOf("year" to year, "month" to month)
@@ -295,7 +308,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), europeHelsinki).toInstant()

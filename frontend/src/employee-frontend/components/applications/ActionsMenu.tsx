@@ -8,7 +8,7 @@ import { faEllipsisVAlt } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import colors from 'lib-customizations/common'
-import { Action } from '../../components/applications/ApplicationActions'
+import { Action } from './ApplicationActions'
 
 type Props = {
   actions: Action[]

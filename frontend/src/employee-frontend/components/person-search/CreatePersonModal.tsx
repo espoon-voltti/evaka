@@ -13,26 +13,38 @@ import { Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { useTranslation } from '../../state/i18n'
 import { createPerson, CreatePersonBody } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
+
+type Form = Omit<CreatePersonBody, 'dateOfBirth'> & {
+  dateOfBirth: string
+}
 
 export default React.memo(function CreatePersonModal({
   closeModal
 }: {
   closeModal: () => void
 }) {
-  const { i18n } = useTranslation()
-  const [form, setForm] = useState<Partial<CreatePersonBody>>({})
+  const { i18n, lang } = useTranslation()
+  const [form, setForm] = useState<Form>({
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    streetAddress: '',
+    postalCode: '',
+    postOffice: ''
+  })
   const [requestInFlight, setRequestInFlight] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
   const onConfirm = () => {
-    if (formIsValid(form)) {
+    const validForm = validateForm(form)
+    if (validForm !== undefined) {
       setRequestInFlight(true)
       setSaveError(false)
-      createPerson(form)
+      createPerson(validForm)
         .then((result) => {
           if (result.isSuccess) {
             closeModal()
@@ -47,6 +59,11 @@ export default React.memo(function CreatePersonModal({
     }
   }
 
+  const isAdult = (dateOfBirth: string) => {
+    const parsedDateOfBirth = LocalDate.parseFiOrNull(dateOfBirth)
+    return parsedDateOfBirth && getAge(parsedDateOfBirth) >= CHILD_AGE
+  }
+
   return (
     <FormModal
       iconColour={'blue'}
@@ -55,7 +72,7 @@ export default React.memo(function CreatePersonModal({
       resolve={{
         action: onConfirm,
         label: i18n.personSearch.createNewPerson.modalConfirmLabel,
-        disabled: requestInFlight || !formIsValid(form)
+        disabled: requestInFlight || !validateForm(form)
       }}
       reject={{
         action: closeModal,
@@ -79,17 +96,19 @@ export default React.memo(function CreatePersonModal({
             data-qa="last-name-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
-          <DatePickerDeprecated
-            type="full-width"
+          <DatePicker
             date={form.dateOfBirth}
+            locale={lang}
             onChange={(value) => {
-              if (getAge(value) < CHILD_AGE) {
+              if (!isAdult(value)) {
                 setForm(set('phone', undefined))
                 setForm(set('email', undefined))
               }
               setForm(set('dateOfBirth', value))
             }}
-            maxDate={LocalDate.today()}
+            isValidDate={(date) => date.isEqualOrBefore(LocalDate.today())}
+            hideErrorsBeforeTouched
+            data-qa="date-of-birth-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>
           <AddressContainer>
@@ -126,7 +145,7 @@ export default React.memo(function CreatePersonModal({
               </PostOfficeContainer>
             </PostalCodeAndOfficeContainer>
           </AddressContainer>
-          {form.dateOfBirth && getAge(form.dateOfBirth) >= CHILD_AGE ? (
+          {isAdult(form.dateOfBirth) ? (
             <>
               <Label>{i18n.personSearch.createNewPerson.form.phone}*</Label>
               <InputField
@@ -185,16 +204,21 @@ const ErrorText = styled.div`
   text-align: center;
 `
 
-function formIsValid(
-  form: Partial<CreatePersonBody>
-): form is CreatePersonBody {
-  return (
-    !!form.firstName &&
-    !!form.lastName &&
-    !!form.dateOfBirth &&
-    !!form.streetAddress &&
-    !!form.postalCode &&
-    !!form.postOffice &&
-    (getAge(form.dateOfBirth) < CHILD_AGE || !!form.phone)
-  )
+function validateForm(form: Form): CreatePersonBody | undefined {
+  const parsedDateOfBirth =
+    form.dateOfBirth && LocalDate.parseFiOrNull(form.dateOfBirth)
+
+  if (
+    !form.firstName ||
+    !form.lastName ||
+    !parsedDateOfBirth ||
+    !form.streetAddress ||
+    !form.postalCode ||
+    !form.postOffice ||
+    (getAge(parsedDateOfBirth) >= CHILD_AGE && !form.phone)
+  ) {
+    return undefined
+  }
+
+  return { ...form, dateOfBirth: parsedDateOfBirth }
 }

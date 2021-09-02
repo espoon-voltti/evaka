@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.vtjclient.config
 
+import fi.espoo.evaka.VtjXroadEnv
 import fi.espoo.evaka.vtjclient.mapper.toClientHeader
 import fi.espoo.evaka.vtjclient.mapper.toServiceHeader
-import fi.espoo.evaka.vtjclient.properties.XRoadProperties
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
@@ -53,14 +53,14 @@ class XroadSoapClientConfig {
     @Bean
     fun wsTemplate(
         marshaller: Jaxb2Marshaller,
-        xRoadProperties: XRoadProperties,
+        xRoadEnv: VtjXroadEnv,
         messageSender: WebServiceMessageSender,
         faultMessageResolver: FaultMessageResolver
     ) = WebServiceTemplate()
         .apply {
             setMarshaller(marshaller)
             unmarshaller = marshaller
-            defaultUri = xRoadProperties.address
+            defaultUri = xRoadEnv.address
             // don't rely on HTTP status to indicate fault (will not work), check the message
             setCheckConnectionForFault(false)
             setMessageSender(messageSender)
@@ -120,7 +120,7 @@ class XroadSoapClientConfig {
         }
 
     @Bean
-    fun vtjSoapHeaderCallback(xRoadProperties: XRoadProperties, factory: ObjectFactory, marshaller: Jaxb2Marshaller): SoapRequestAdapter = object : SoapRequestAdapter {
+    fun vtjSoapHeaderCallback(xRoadEnv: VtjXroadEnv, factory: ObjectFactory, marshaller: Jaxb2Marshaller): SoapRequestAdapter = object : SoapRequestAdapter {
         override fun createCallback(query: VTJQuery) =
             WebServiceMessageCallback {
                 val marsh = marshaller.jaxbContext.createMarshaller()
@@ -130,9 +130,9 @@ class XroadSoapClientConfig {
                     marshal(factory.createId(MdcKey.TRACE_ID.get() ?: ""), headerResult)
                     marshal(factory.createIssue(""), headerResult)
                     marshal(factory.createUserId(query.requestingUserId.toString()), headerResult)
-                    marshal(factory.createProtocolVersion(xRoadProperties.protocolVersion), headerResult)
-                    marshal(xRoadProperties.client.toClientHeader(), headerResult)
-                    marshal(xRoadProperties.service.toServiceHeader(), headerResult)
+                    marshal(factory.createProtocolVersion(xRoadEnv.protocolVersion), headerResult)
+                    marshal(xRoadEnv.client.toClientHeader(), headerResult)
+                    marshal(xRoadEnv.service.toServiceHeader(), headerResult)
                 }
             }
     }

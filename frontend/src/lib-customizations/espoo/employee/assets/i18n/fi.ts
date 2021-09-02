@@ -6,6 +6,7 @@ export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
     login: 'Kirjaudu sisään',
+    ai: 'AI test',
     applications: 'Hakemukset',
     units: 'Yksiköt',
     customers: 'Asiakastiedot',
@@ -62,7 +63,8 @@ export const fi = {
       daycare5yo: 'Varhaiskasvatus',
       preparatory: 'Valmistava',
       'backup-care': 'Varasijoitus',
-      temporary: 'Tilapäinen'
+      temporary: 'Tilapäinen',
+      'school-shift-care': 'Koululaisten vuorohoito'
     },
     providerType: {
       MUNICIPAL: 'Kunnallinen',
@@ -176,7 +178,8 @@ export const fi = {
     ssn: 'Henkilötunnus on väärässä muodossa',
     time: 'Aika on väärässä muodossa',
     cents: 'Euromäärä on väärässä muodossa',
-    decimal: 'Desimaaliluku on väärässä muodossa'
+    decimal: 'Desimaaliluku on väärässä muodossa',
+    startDateNotOnTerm: 'Aloituspäivän pitää kohdistua jollekin kaudelle'
   },
   login: {
     title: 'Varhaiskasvatus',
@@ -474,7 +477,7 @@ export const fi = {
     title: 'Lapsen tiedot',
     restrictedDetails: 'Turvakielto',
     personDetails: {
-      title: 'Henkilö- ja yhteystiedot',
+      title: 'Henkilö-, yhteys- ja terveystiedot',
       name: 'Lapsen nimi',
       email: 'Sähköposti',
       socialSecurityNumber: 'Henkilötunnus',
@@ -484,7 +487,8 @@ export const fi = {
       familyLink: 'Perheen tiedot'
     },
     familyContacts: {
-      title: 'Perheen yhteystiedot',
+      title: 'Perheen yhteystiedot ja varahakijat',
+      contacts: 'Yhteystiedot',
       name: 'Nimi',
       role: 'Rooli',
       roles: {
@@ -534,8 +538,7 @@ export const fi = {
     },
     dailyServiceTimes: {
       title: 'Päivittäinen varhaiskasvatusaika',
-      info:
-        'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
+      info: 'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
       info2:
         'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
       types: {
@@ -732,7 +735,8 @@ export const fi = {
       }
     },
     placements: {
-      title: 'Sijoitukset',
+      title: 'Sijoitukset ja palveluntarpeet',
+      placements: 'Sijoitukset',
       restrictedName: '(Yksikön nimi piilotettu)',
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
@@ -755,8 +759,7 @@ export const fi = {
       createPlacement: {
         btn: 'Luo uusi sijoitus',
         title: 'Uusi sijoitus',
-        text:
-          'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
+        text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
         unitMissing: 'Yksikkö puuttuu'
       },
@@ -788,7 +791,7 @@ export const fi = {
           confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'
         },
         overlapWarning: {
-          title: 'Palveluntarpeet meneevät päällekkäin',
+          title: 'Palveluntarpeet menevät päällekkäin',
           message:
             'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
         }
@@ -804,8 +807,7 @@ export const fi = {
     },
     messaging: {
       title: 'Lapseen liittyvä viestintä (vastaanottajat)',
-      info:
-        'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
+      info: 'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
       name: 'Vastaanottajan nimi',
       role: 'Rooli',
       notBlocklisted: 'Saa Vastaanottaa',
@@ -910,6 +912,13 @@ export const fi = {
       }
     },
     staticSections: {
+      basics: {
+        title: 'Perustiedot',
+        name: 'Lapsen nimi',
+        dateOfBirth: 'Lapsen syntymäaika',
+        guardians: 'Huoltaja(t) tai muu laillinen edustaja',
+        placements: 'Varhaiskasvatusyksikkö ja ryhmä'
+      },
       authors: {
         title: 'Lapsen varhaiskasvatussuunnitelman laatijat',
         primaryAuthor: 'Laatimisesta vastaava henkilö',
@@ -944,7 +953,8 @@ export const fi = {
     confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     state: 'Suunnitelman tila',
     events: 'Varhaiskasvatussuunnitelman tapahtumat',
-    noRecord: 'Ei merkintää'
+    noRecord: 'Ei merkintää',
+    checkInPreview: 'Tarkista esikatselussa'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',
@@ -1006,7 +1016,9 @@ export const fi = {
       modalTitle: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
+    voucherValueDecisions: 'Päämiehen arvopäätökset',
     dependants: 'Päämiehen huollettavat',
+    guardiansAndParents: 'Huoltajat ja päämiehet',
     guardians: 'Huoltajat',
     name: 'Nimi',
     ssn: 'Hetu',
@@ -1213,11 +1225,103 @@ export const fi = {
         deleteButton: 'Poista'
       }
     },
+    incomeStatement: {
+      title: 'Tuloselvitykset',
+      noIncomeStatements: 'Ei tuloselvityksiä',
+      incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
+      createdHeading: 'Saapumispäivä',
+      handleHeading: 'Kuittaa käsitellyksi',
+      open: 'Avaa lomake',
+      handled: 'Tuloselvitys käsitelty'
+    },
     invoice: {
       validity: 'Aikaväli',
       price: 'Summa',
       status: 'Status'
     }
+  },
+  incomeStatement: {
+    title: 'Tuloselvityslomake',
+    startDate: 'Voimassa alkaen',
+    feeBasis: 'Asiakasmaksun peruste',
+    highestFee: 'Suostumus korkeimpaan maksuluokkaan',
+    incomeInfo: 'Huoltajan toimittamat tulotiedot',
+
+    grossTitle: 'Bruttotulot',
+    incomeSource: 'Tietojen toimitus',
+    incomesRegister:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+    attachmentsAndKela:
+      'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+    grossEstimatedIncome: 'Arvio bruttotuloista',
+    otherIncome: 'Muut tulot',
+    otherIncomeTypes: {
+      PENSION: 'Eläke',
+      ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
+      SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+      PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+      HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+      FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+        'Joustava tai osittainen hoitoraha',
+      ALIMONY: 'Elatusapu tai -tuki',
+      INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
+      RENTAL_INCOME: 'Vuokratulot',
+      UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
+      LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
+      ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
+      JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
+      REWARD_OR_BONUS: 'Palkkio tai bonus',
+      RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
+      BASIC_INCOME: 'Perustulo',
+      FOREST_INCOME: 'Metsätulo',
+      FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
+      REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
+      EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
+      GRANT: 'Apuraha',
+      APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
+      ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
+      OTHER_INCOME: 'Muut tulot'
+    },
+
+    entrepreneurTitle: 'Yrittäjän tulotiedot',
+    fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
+    fullTime: 'Päätoimista',
+    partTime: 'Sivutoimista',
+    startOfEntrepreneurship: 'Yrittäjyys alkanut',
+    spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
+    startupGrant: 'Starttiraha',
+    kelaInspectionConsent: 'Tiedot saa tarkastaa Kelasta',
+    companyInfoTitle: 'Yrityksen tiedot',
+    companyType: 'Toimintamuoto',
+    selfEmployed: 'Toiminimi',
+    selfEmployedAttachments:
+      'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+    selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
+    limitedCompany: 'Osakeyhtiö',
+    limitedCompanyIncomesRegister:
+      'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+    limitedCompanyAttachments:
+      'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
+    partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+    lightEntrepreneur: 'Kevytyrittäjyys',
+    attachments: 'Liitteet',
+
+    estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+    timeRange: 'Aikavälillä',
+
+    accountantTitle: 'Kirjanpitäjän tiedot',
+    accountant: 'Kirjanpitäjä',
+    email: 'Sähköpostiosoite',
+    phone: 'Puhelinnumero',
+    address: 'Postiosoite',
+
+    otherInfoTitle: 'Muita tuloihin liittyviä tietoja',
+    student: 'Opiskelija',
+    alimonyPayer: 'Maksaa elatusmaksuja',
+    otherInfo: 'Lisätietoja tulotietoihin liittyen',
+
+    attachmentsTitle: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+    noAttachments: 'Ei liitteitä'
   },
   units: {
     name: 'Nimi',
@@ -1380,6 +1484,7 @@ export const fi = {
     groups: {
       title: 'Toimipisteen ryhmät',
       familyContacts: 'Näytä yhteystietokooste',
+      attendanceReservations: 'Läsnäolovaraukset',
       create: 'Luo uusi ryhmä',
       createModal: {
         title: 'Uusi ryhmä',
@@ -1463,6 +1568,12 @@ export const fi = {
       duration: 'Sijoitettu yksikköön',
       birthDate: 'Syntymäaika'
     },
+    attendanceReservations: {
+      ungrouped: 'Lapset ilman ryhmää',
+      childName: 'Lapsen nimi',
+      startTime: 'Saapuu',
+      endTime: 'Lähtee'
+    },
     error: {
       placement: {
         create: 'Sijoitus ryhmään epäonnistui',
@@ -1472,8 +1583,7 @@ export const fi = {
   },
   groupCaretakers: {
     title: 'Henkilökunnan tarve ryhmässä',
-    info:
-      'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
+    info: 'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
     create: 'Luo uusi henkilökunnan tarve',
     edit: 'Muokkaa tietoja',
     editActiveWarning:
@@ -1657,6 +1767,7 @@ export const fi = {
     DAYCARE_DISCOUNT: 'Alennus (maksup.)',
     DAYCARE_INCREASE: 'Korotus (maksup.)',
     PRESCHOOL_WITH_DAYCARE: 'Varhaiskasvatus + Esiopetus',
+    SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
     PRESCHOOL_WITH_DAYCARE_DISCOUNT: 'Alennus (maksup.)',
     PRESCHOOL_WITH_DAYCARE_INCREASE: 'Korotus (maksup.)',
     TEMPORARY_CARE: 'Tilapäinen varhaiskasvatus',
@@ -2304,11 +2415,12 @@ export const fi = {
       reportFileName: 'alkavat_sijoitukset'
     },
     voucherServiceProviders: {
-      title: 'Palveluseteli',
+      title: 'Palveluseteliyksiköt',
       description:
         'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
+        allAreas: 'Kaikki alueet',
         unitPlaceholder: 'Hae yksikön nimellä'
       },
       locked: 'Raportti lukittu',
@@ -2319,6 +2431,7 @@ export const fi = {
     },
     voucherServiceProviderUnit: {
       title: 'Palvelusetelilapset yksikössä',
+      unitPageLink: 'Yksikön sivu',
       month: 'Kuukausi',
       total: 'Palvelusetelien summa valittuna kuukautena',
       child: 'Lapsen nimi / synt. aika',
@@ -2332,7 +2445,14 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
-      partTime: 'Osa/Koko'
+      partTime: 'Osa/Koko',
+      under3: 'Alle 3-vuotias',
+      atLeast3: 'Vähintään 3-vuotias',
+      type: {
+        NEW: 'Uusi päätös',
+        REFUND: 'Hyvitys',
+        CORRECTION: 'Korjaus'
+      }
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',
@@ -2353,6 +2473,15 @@ export const fi = {
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä',
       otherPreferredUnits: 'Muut hakutoiveet'
+    },
+    vardaErrors: {
+      title: 'Varda-virheet',
+      description:
+        'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
+      updated: 'Muokattu',
+      child: 'Lapsi',
+      serviceNeed: 'Palveluntarve',
+      error: 'Virhe'
     }
   },
   unitEditor: {
@@ -2419,16 +2548,17 @@ export const fi = {
       roundTheClock: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
       capacity: 'henkilöä',
       ghostUnit: 'Yksikkö on haamuyksikkö',
-      uploadToVarda: 'Lähetetään Vardaan',
+      uploadToVarda: 'Yksikön tiedot lähetetään Vardaan',
+      uploadChildrenToVarda: 'Yksikön lasten tiedot lähetetään Vardaan',
       uploadToKoski: 'Lähetetään Koski-palveluun',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       decisionCustomization: {
-        handler: {
-          0: 'Palveluohjaus',
-          1: 'Varhaiskasvatusyksikön johtaja',
-          2: 'Ledare inom småbarnspedagogik',
-          3: 'Svenska bildningstjänster / Småbarnspedagogik'
-        }
+        handler: [
+          'Palveluohjaus',
+          'Varhaiskasvatusyksikön johtaja',
+          'Ledare inom småbarnspedagogik',
+          'Svenska bildningstjänster / Småbarnspedagogik'
+        ]
       }
     },
     placeholder: {
@@ -2443,8 +2573,7 @@ export const fi = {
         'Voit kirjoittaa lisätietoja yksiköstä (ei näy kuntalaiselle)',
       phone: 'esim. +358 40 555 5555',
       email: 'etunimi.sukunimi@espoo.fi',
-      url:
-        'esim. https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/.../Suvelan_paivakoti',
+      url: 'esim. https://www.espoo.fi/fi/toimipisteet/15585',
       streetAddress: 'Kadunnimi esim. Koivu-Mankkaan tie 22 B 24',
       postalCode: 'Postinumero',
       postOffice: 'Toimipaikka',
@@ -2509,6 +2638,7 @@ export const fi = {
   },
   messages: {
     inboxTitle: 'Viestit',
+    emptyInbox: 'Tämä kansio on tyhjä',
     unitList: {
       title: 'Yksiköt'
     },
@@ -2625,15 +2755,13 @@ export const fi = {
       modals: {
         editRetroactive: {
           title: 'Haluatko varmasti muokata tietoja?',
-          text:
-            'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
+          text: 'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
           resolve: 'Muokkaa',
           reject: 'Älä muokkaa'
         },
         saveRetroactive: {
           title: 'Haluatko tallentaa maksuasetukset takautuvasti?',
-          text:
-            'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
+          text: 'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
           resolve: 'Tallenna',
           reject: 'Peruuta'
         }
@@ -2653,6 +2781,7 @@ export const fi = {
     addNewTemplate: 'Lisää uusi vasu-pohja',
     templateModal: {
       createTitle: 'Uusi vasu-pohja',
+      editTitle: 'Muokkaa vasu-pohjaa',
       copyTitle: 'Kopioi vasu-pohja',
       validStart: 'Toimintavuosi alkaa',
       validEnd: 'Toimintavuosi päättyy'
@@ -2664,6 +2793,7 @@ export const fi = {
       title: 'Uusi kysymys',
       type: 'Kysymyksen tyyppi',
       name: 'Kysymysteksti',
+      info: 'Ohjeteksti',
       options: 'Vaihtoehdot',
       addNewOption: 'Lisää vaihtoehto',
       multiline: 'Monirivinen',
@@ -2674,6 +2804,17 @@ export const fi = {
       CHECKBOX: 'Rasti',
       RADIO_GROUP: 'Valitse yksi',
       MULTISELECT: 'Monivalinta'
+    },
+    errorCodes: {
+      EXPIRED_START: 'Päättyneen pohjan alkupäivää ei voi muuttaa',
+      EXPIRED_END: 'Päättyneen pohjan loppupäivää ei voi aikaistaa',
+      FUTURE_START:
+        'Tulevaisuuden pohjan alkupäivää ei voi siirtää menneisyyteen',
+      CURRENT_START: 'Voimassa olevan pohjan alkupäivää ei voi vaihtaa',
+      CURRENT_END:
+        'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
+      TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa',
+      TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
     }
   },
   roles: {
@@ -2689,7 +2830,6 @@ export const fi = {
     }
   },
   welcomePage: {
-    text:
-      'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+    text: 'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
   }
 }
