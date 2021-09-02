@@ -378,3 +378,28 @@ fun Database.Transaction.setIncomeStatementHandler(handlerId: EmployeeId?, incom
         .bind("id", incomeStatementId)
         .execute()
 }
+
+data class IncomeStatementAwaitingHandler(
+    val id: UUID,
+    val type: IncomeStatementType,
+    val personId: UUID,
+    val personName: String
+)
+
+fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAwaitingHandler> =
+    createQuery(
+        """
+        SELECT
+            ist.id,
+            ist.type,
+            p.id AS personId,
+            p.first_name || ' ' || p.last_name AS personName
+        FROM income_statement ist
+        JOIN person p ON ist.person_id = p.id
+        WHERE handler_id IS NULL
+        ORDER BY start_date DESC
+        LIMIT 50
+        """.trimIndent()
+    )
+        .mapTo<IncomeStatementAwaitingHandler>()
+        .list()

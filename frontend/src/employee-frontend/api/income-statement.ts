@@ -1,11 +1,12 @@
-import { UUID } from '../types'
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from './client'
-import { JsonOf } from 'lib-common/json'
 import {
   deserializeIncomeStatement,
-  IncomeStatement
+  IncomeStatement,
+  IncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
+import { JsonOf } from 'lib-common/json'
+import { UUID } from '../types'
+import { client } from './client'
 
 export async function getIncomeStatements(
   personId: UUID
@@ -14,6 +15,17 @@ export async function getIncomeStatements(
     .get<JsonOf<IncomeStatement[]>>(`/income-statements/person/${personId}`)
     .then((res) => res.data.map(deserializeIncomeStatement))
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getIncomeStatementsAwaitingHandler(): Promise<
+  Result<IncomeStatementAwaitingHandler[]>
+> {
+  return client
+    .get<JsonOf<IncomeStatementAwaitingHandler[]>>(
+      '/income-statements/awaiting-handler'
+    )
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 

@@ -44,6 +44,7 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
+      incomeStatements: true,
       vasu: true
     }
   },
@@ -61,6 +62,7 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: false,
+      incomeStatements: false,
       vasu: false
     }
   }

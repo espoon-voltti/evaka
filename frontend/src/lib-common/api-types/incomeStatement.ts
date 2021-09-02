@@ -95,6 +95,14 @@ export interface Accountant {
 }
 
 export type IncomeStatement = HighestFee | Income
+type IncomeStatementType = IncomeStatement['type']
+
+export interface IncomeStatementAwaitingHandler {
+  id: UUID
+  type: IncomeStatementType
+  personId: UUID
+  personName: string
+}
 
 type IncomeJson = JsonOf<Income>
 type GrossJson = Exclude<IncomeJson['gross'], null>
