@@ -14,10 +14,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getNullableUUID
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -113,42 +111,14 @@ WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) 
 ORDER BY p.id, t
 """
 
-    @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("start_date", from)
         .bind("end_date", to)
-        .map { rs, _ ->
-            RawReportRow(
-                day = rs.getDate("day").toLocalDate(),
-                childId = rs.getUUID("child_id"),
-                dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                age = rs.getInt("age"),
-                language = rs.getString("language"),
-                postOffice = rs.getString("post_office"),
-                placementType = rs.getEnum("placement_type"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                careArea = rs.getString("care_area"),
-                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-                unitProviderType = rs.getString("unit_provider_type"),
-                daycareGroupId = rs.getNullableUUID("daycare_group_id")?.let(::GroupId),
-                groupName = rs.getString("group_name"),
-                caretakersPlanned = rs.getBigDecimal("caretakers_planned")?.toDouble(),
-                caretakersRealized = rs.getBigDecimal("caretakers_realized")?.toDouble(),
-                backupUnitId = rs.getNullableUUID("backup_unit_id")?.let(::DaycareId),
-                backupGroupId = rs.getNullableUUID("backup_group_id")?.let(::GroupId),
-                hasServiceNeed = rs.getBoolean("has_service_need"),
-                partDay = rs.getBoolean("part_day"),
-                partWeek = rs.getBoolean("part_week"),
-                shiftCare = rs.getBoolean("shift_care"),
-                hoursPerWeek = rs.getDouble("hours_per_week"),
-                hasAssistanceNeed = rs.getBoolean("has_assistance_need"),
-                capacityFactor = rs.getBigDecimal("capacity_factor").toDouble(),
-                capacity = rs.getBigDecimal("capacity").toDouble(),
-                absencePaid = rs.getString("absence_paid")?.let { AbsenceType.valueOf(it) },
-                absenceFree = rs.getString("absence_free")?.let { AbsenceType.valueOf(it) }
-            )
+        .registerColumnMapper(UnitType::class.java) { rs, columnNumber, _ ->
+            @Suppress("UNCHECKED_CAST")
+            (rs.getArray(columnNumber).array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType)
         }
+        .mapTo<RawReportRow>()
         .toList()
 }
 
