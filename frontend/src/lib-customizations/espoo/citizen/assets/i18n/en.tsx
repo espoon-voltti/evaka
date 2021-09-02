@@ -143,8 +143,10 @@ const en: Translations = {
     backToSearch: 'Back to search'
   },
   calendar: {
+    title: 'Calendar',
     holiday: 'Holiday',
     newReservationBtn: 'Create reservation',
+    noReservation: 'No reservation',
     reservationModal: {
       title: 'Create reservation',
       selectChildren: 'Select children',

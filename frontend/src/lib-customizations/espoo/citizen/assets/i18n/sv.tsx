@@ -143,8 +143,10 @@ const sv: Translations = {
     backToSearch: 'Tillbaka till sökning'
   },
   calendar: {
+    title: 'Kalender',
     holiday: 'Helgdag',
     newReservationBtn: 'Tee varaus',
+    noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Valitse lapset',

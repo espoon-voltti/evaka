@@ -7,6 +7,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
+import CalendarGridView from './CalendarGridView'
 import { getReservations, ReservationsResponse } from './api'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
@@ -16,6 +17,11 @@ import { useTranslation } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
 import DayView from './DayView'
+import styled from 'styled-components'
+import { desktopMin } from 'lib-components/breakpoints'
+import { Gap } from 'lib-components/white-space'
+import _ from 'lodash'
+import { WeekProps } from './WeekElem'
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
@@ -64,39 +70,97 @@ export default React.memo(function CalendarPage() {
         />
       ) : null}
       <Container>
-        <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
-          {data.mapAll({
-            loading() {
-              return <Loader />
-            },
-            failure() {
-              return <div>{i18n.common.errors.genericGetError}</div>
-            },
-            success(response) {
-              return (
-                <>
-                  <CalendarListView
-                    dailyReservations={response.dailyData}
-                    onCreateReservationClicked={() =>
-                      setReservationViewOpen(true)
+        {data.mapAll({
+          loading() {
+            return <Loader />
+          },
+          failure() {
+            return <div>{i18n.common.errors.genericGetError}</div>
+          },
+          success(response) {
+            const weeklyData = response.dailyData.reduce<WeekProps[]>(
+              (weekly, daily) => {
+                const last = _.last(weekly)
+                if (
+                  last === undefined ||
+                  daily.date.getIsoWeek() !== last.weekNumber
+                ) {
+                  return [
+                    ...weekly,
+                    {
+                      weekNumber: daily.date.getIsoWeek(),
+                      dailyReservations: [daily]
                     }
-                    selectDate={selectDate}
-                  />
-                  {reservationViewOpen && (
-                    <ReservationModal
-                      onClose={() => setReservationViewOpen(false)}
-                      availableChildren={response.children}
-                      onReload={loadDefaultRange}
-                      reservableDays={response.reservableDays}
+                  ]
+                } else {
+                  return [
+                    ..._.dropRight(weekly),
+                    {
+                      ...last,
+                      dailyReservations: [...last.dailyReservations, daily]
+                    }
+                  ]
+                }
+              },
+              []
+            )
+
+            return (
+              <>
+                <MobileOnly>
+                  <ContentArea
+                    opaque
+                    paddingVertical="zero"
+                    paddingHorizontal="zero"
+                  >
+                    <CalendarListView
+                      weeklyData={weeklyData}
+                      onCreateReservationClicked={() =>
+                        setReservationViewOpen(true)
+                      }
+                      selectDate={selectDate}
                     />
-                  )}
-                </>
-              )
-            }
-          })}
-        </ContentArea>
+                  </ContentArea>
+                </MobileOnly>
+                <DesktopOnly>
+                  <Gap size="s" />
+                  <ContentArea opaque>
+                    <CalendarGridView
+                      weeklyData={weeklyData}
+                      onCreateReservationClicked={() =>
+                        setReservationViewOpen(true)
+                      }
+                      selectDate={selectDate}
+                    />
+                  </ContentArea>
+                </DesktopOnly>
+                {reservationViewOpen && (
+                  <ReservationModal
+                    onClose={() => setReservationViewOpen(false)}
+                    availableChildren={response.children}
+                    onReload={loadDefaultRange}
+                    reservableDays={response.reservableDays}
+                  />
+                )}
+              </>
+            )
+          }
+        })}
       </Container>
       <Footer />
     </>
   )
 })
+
+const MobileOnly = styled.div`
+  display: none;
+  @media (max-width: ${desktopMin}) {
+    display: block;
+  }
+`
+
+const DesktopOnly = styled.div`
+  @media (max-width: ${desktopMin}) {
+    display: none;
+  }
+`
