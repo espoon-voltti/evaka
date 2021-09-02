@@ -185,7 +185,7 @@ fun updateAllVardaData(
     logger.info("VardaUpdate: running varda update for data modified since $since")
     updateOrganizer(db, client, organizer)
     updateUnits(db, client, organizer)
-    updateChildData(db, client, since, feeDecisionMinDate)
+    updateChildData(db, client, feeDecisionMinDate)
 }
 
 private fun calculateStartingFrom(db: Database.Connection): HelsinkiDateTime {
@@ -202,7 +202,7 @@ private fun calculateStartingFrom(db: Database.Connection): HelsinkiDateTime {
     2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
        update all service need related data to varda
  */
-fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime, feeDecisionMinDate: LocalDate) {
+fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMinDate: LocalDate) {
     val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client, feeDecisionMinDate).toMutableSet()
     logger.info { "VardaUpdate: successfully processed ${processedServiceNeedIds.size} unsuccessful service needs" }
 
@@ -212,10 +212,6 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
 
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         .filter { includedChildIds.contains(it.key) }
-
-    val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }
-        .filter { includedChildIds.contains(it.evakaChildId) }
-        .groupBy { it.serviceNeedId }
 
     logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
 
@@ -239,22 +235,6 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
                 processedServiceNeedIds.add(addedServiceNeedId)
                 handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate)
             }
-        }
-    }
-
-    // Handle fee data only -changes (no changes in service need). If there was any service need change, all related
-    // fee data has already been sent to / deleted from varda, so we filter those service needs out here
-    val unprocessedChangedFeeData = feeAndVoucherDiffsByServiceNeed.filterNot { processedServiceNeedIds.contains(it.key) }
-    if (unprocessedChangedFeeData.entries.isNotEmpty()) logger.info("VardaUpdate: found ${unprocessedChangedFeeData.entries.size} unprocessed fee data")
-
-    unprocessedChangedFeeData.entries.forEach { it ->
-        val serviceNeedId = it.key
-        processedServiceNeedIds.add(serviceNeedId)
-        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
-        if (vardaServiceNeed != null) {
-            handleUpdatedEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate)
-        } else {
-            handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate)
         }
     }
 
@@ -580,11 +560,8 @@ private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<
 
 // Find out changed varhaiskasvatuspaatos for a child: any new service need with a different update timestamp in history
 private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<ServiceNeedId> {
-    return evakaServiceNeedChangesForChild.filter { newServiceNeedChange ->
-        val match = vardaServiceNeedsForChild.find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }
-        match != null && newServiceNeedChange.evakaServiceNeedUpdated != match.evakaServiceNeedUpdated
-    }.map {
-        it.evakaServiceNeedId
+    return evakaServiceNeedChangesForChild.mapNotNull { newServiceNeedChange ->
+        vardaServiceNeedsForChild.find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }?.evakaServiceNeedId
     }
 }
 
@@ -701,6 +678,7 @@ WITH potential_missing_varda_service_needs AS (
         AND sno.daycare_hours_per_week > 0
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
         AND sn.start_date <= current_date
+        AND vrc.reset_timestamp IS NOT NULL
 ), service_need_fee_decision AS (
     SELECT
         sn.id service_need_id,
@@ -728,7 +706,7 @@ WITH potential_missing_varda_service_needs AS (
         SELECT
             vsn.evaka_service_need_id,
             p.child_id AS evaka_child_id,
-            sn.updated AS evaka_service_need_updated
+            GREATEST(fd.updated, vd.updated) AS evaka_service_need_updated
         FROM 
             service_need sn 
             JOIN placement p ON sn.placement_id = p.id
@@ -751,8 +729,8 @@ WHERE invoiced_by_municipality = false
    OR vd.voucher_decision_id IS NOT NULL
 UNION
 SELECT DISTINCT
-    a.evaka_service_need_id,
     a.evaka_child_id,
+    a.evaka_service_need_id,
     a.evaka_service_need_updated
 FROM existing_varda_service_needs_with_changed_fee_data a        
         """.trimIndent()
@@ -786,49 +764,47 @@ WHERE evaka_service_need_id = :eVakaServiceNeedId
         .mapTo<VardaServiceNeed>()
         .firstOrNull()
 
-fun Database.Read.getAllChangedServiceNeedFeeDataSince(startingFrom: HelsinkiDateTime?): List<FeeDataByServiceNeed> {
-    return getServiceNeedFeeDataQuery(startingFrom, null, null, null)
+fun Database.Read.getServiceNeedFeeData(serviceNeedId: ServiceNeedId, feeDecisionStatus: FeeDecisionStatus = FeeDecisionStatus.SENT, voucherValueDecisionStatus: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT): List<FeeDataByServiceNeed> {
+    return getServiceNeedFeeDataQuery(serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
 }
 
-fun Database.Read.getServiceNeedFeeData(serviceNeedId: ServiceNeedId?, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> {
-    return getServiceNeedFeeDataQuery(null, serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
-}
-
-private fun Database.Read.getServiceNeedFeeDataQuery(startingFrom: HelsinkiDateTime?, serviceNeedId: ServiceNeedId?, feeDecisionStatus: FeeDecisionStatus?, voucherValueDecisionStatus: VoucherValueDecisionStatus?): List<FeeDataByServiceNeed> =
+private fun Database.Read.getServiceNeedFeeDataQuery(serviceNeedId: ServiceNeedId, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> =
     createQuery(
         """
 WITH child_fees AS (
-  SELECT
-    fd.id AS fee_decision_id,
-    fdc.child_id,
-    fd.valid_during
-  FROM fee_decision fd JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
-  ${if (startingFrom != null) " WHERE fd.sent_at >= :startingFrom" else ""}
-  ${if (feeDecisionStatus != null) " WHERE fd.status = :feeDecisionStatus" else ""}  
+    SELECT
+        fd.id AS fee_decision_id,
+        fdc.child_id,
+        fd.valid_during
+    FROM fee_decision fd
+        JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
+    WHERE fd.status = :feeDecisionStatus
 ), service_need_fees AS (
-  SELECT
-    sn.id AS service_need_id,
-    p.child_id AS child_id,
-    array_agg(child_fees.fee_decision_id) AS fee_decision_ids
-  FROM service_need sn JOIN placement p ON p.id = sn.placement_id
-    JOIN daycare d ON d.id = p.unit_id
-    JOIN child_fees ON p.child_id = child_fees.child_id 
-      AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
-  WHERE d.upload_children_to_varda = true AND d.invoiced_by_municipality = true
-  GROUP BY service_need_id, p.child_id
+    SELECT
+        sn.id AS service_need_id,
+        p.child_id AS child_id,
+        array_agg(child_fees.fee_decision_id) AS fee_decision_ids
+    FROM service_need sn
+        JOIN placement p ON p.id = sn.placement_id
+        JOIN daycare d ON d.id = p.unit_id
+        JOIN child_fees ON p.child_id = child_fees.child_id
+            AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
+    WHERE d.upload_children_to_varda = true
+        AND d.invoiced_by_municipality = true
+    GROUP BY service_need_id, p.child_id
 ), service_need_vouchers AS (
-SELECT
-    sn.id AS service_need_id,
-    p.child_id AS child_id,
-    array_agg(vvd.id) AS voucher_value_decision_ids
-FROM service_need sn JOIN placement p ON p.id = sn.placement_id
-  JOIN daycare d ON d.id = p.unit_id  
-  JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
-    AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-WHERE d.upload_children_to_varda = true AND d.invoiced_by_municipality = true
-${if (startingFrom != null) " AND vvd.sent_at >= :startingFrom" else ""}      
-${if (voucherValueDecisionStatus != null) " AND vvd.status = :voucherValueDecisionStatus" else ""}  
-GROUP BY service_need_id, p.child_id
+    SELECT
+        sn.id AS service_need_id,
+        p.child_id AS child_id,
+        array_agg(vvd.id) AS voucher_value_decision_ids
+    FROM service_need sn JOIN placement p ON p.id = sn.placement_id
+        JOIN daycare d ON d.id = p.unit_id  
+        JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id
+            AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+    WHERE d.upload_children_to_varda = true
+        AND d.invoiced_by_municipality = true
+        AND vvd.status = :voucherValueDecisionStatus
+    GROUP BY service_need_id, p.child_id
 )
 SELECT
     COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) AS service_need_id,
@@ -838,10 +814,9 @@ SELECT
 FROM service_need_fees 
     FULL OUTER JOIN service_need_vouchers ON 
         service_need_fees.service_need_id = service_need_vouchers.service_need_id
-${ if (serviceNeedId != null) "WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) = :serviceNeedId" else ""}
+WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) = :serviceNeedId
         """
     )
-        .bind("startingFrom", startingFrom)
         .bind("serviceNeedId", serviceNeedId)
         .bind("feeDecisionStatus", feeDecisionStatus)
         .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
