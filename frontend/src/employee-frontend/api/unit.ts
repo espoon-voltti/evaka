@@ -31,7 +31,11 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 import { UnitProviderType } from 'lib-customizations/types'
-import {AbsenceType, ApplicationStatus, PlacementType} from 'lib-common/generated/enums'
+import {
+  AbsenceType,
+  ApplicationStatus,
+  PlacementType
+} from 'lib-common/generated/enums'
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
 
@@ -865,27 +869,26 @@ export interface ChildReservations {
     lastName: string
     dateOfBirth: LocalDate
   }
-  reservations: Record<
-    JsonOf<LocalDate>,
-    { startTime: string; endTime: string }
-  >
-  attendances: Record<
-    JsonOf<LocalDate>,
-    { startTime: string; endTime: string | null }
-  >
-  absences: Record<
-    JsonOf<LocalDate>,
-    { type: AbsenceType }
-  >
+  dailyData: DailyChildData[]
 }
 
-const mapChildReservationJson = ({
-  child,
-  ...json
-}: JsonOf<ChildReservations>): ChildReservations => ({
+export interface DailyChildData {
+  date: LocalDate
+  reservation: { startTime: string; endTime: string } | null
+  attendance: { startTime: string; endTime: string | null } | null
+  absence: { type: AbsenceType } | null
+}
+
+const mapChildReservationJson = (
+  json: JsonOf<ChildReservations>
+): ChildReservations => ({
   ...json,
   child: {
-    ...child,
-    dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
-  }
+    ...json.child,
+    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
+  },
+  dailyData: json.dailyData.map((data) => ({
+    ...data,
+    date: LocalDate.parseIso(data.date)
+  }))
 })

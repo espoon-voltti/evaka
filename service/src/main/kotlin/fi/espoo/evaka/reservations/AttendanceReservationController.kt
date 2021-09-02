@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
@@ -13,6 +14,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
@@ -42,25 +44,26 @@ class AttendanceReservationController(private val ac: AccessControl) {
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val dateRange = FiniteDateRange(from, to)
         return db.read { tx ->
+            val unitName = tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
             val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
             tx
-                .getUnitAttendanceReservations(unitId, dateRange)
+                .getAttendanceReservationData(unitId, dateRange)
+                .let { it }
                 .groupBy { it.group }
                 .let { groupedReservations ->
                     val ungroupedRows = groupedReservations[null]
-                        ?: error("Unit attendances query should always include ungrouped")
 
                     UnitAttendanceReservations(
-                        unit = ungroupedRows.first().unit,
+                        unit = unitName,
                         operationalDays = operationalDays,
                         groups = groupedReservations.entries.mapNotNull { (group, rows) ->
                             if (group == null) null
                             else UnitAttendanceReservations.GroupAttendanceReservations(
                                 group = group,
-                                children = mapChildReservationsAndAttendances(rows)
+                                children = mapRowsToChildReservations(rows)
                             )
                         },
-                        ungrouped = mapChildReservationsAndAttendances(ungroupedRows)
+                        ungrouped = ungroupedRows?.let { mapRowsToChildReservations(it) } ?: emptyList()
                     )
                 }
         }
@@ -81,70 +84,71 @@ private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: F
     .mapTo<UnitAttendanceReservations.OperationalDay>()
     .toList()
 
-private fun Database.Read.getUnitAttendanceReservations(unitId: DaycareId, dateRange: FiniteDateRange) = createQuery(
+private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRange: FiniteDateRange) = createQuery(
     """
-    WITH unit_group AS (
-        SELECT
-            daycare.id AS unit_id,
-            daycare.name AS unit_name,
-            daycare_group.id AS group_id,
-            daycare_group.name AS group_name
-        FROM daycare JOIN daycare_group ON daycare.id = daycare_group.daycare_id
-        WHERE daycare.id = :unitId
-        UNION ALL
-        SELECT
-            daycare.id AS unit_id,
-            daycare.name AS unit_name,
-            NULL AS group_id,
-            NULL AS group_name
-        FROM daycare
-        WHERE daycare.id = :unitId
-    ), group_res AS (
-        SELECT
-            child.id,
-            child.first_name,
-            child.last_name,
-            child.date_of_birth,
-            res.start_time as reservation_start,
-            res.end_time as reservation_end,
-            res.start_date as reservation_date,
-            att.arrived as attendance_start,
-            att.departed as attendance_end,
-            abs.date as absence_date,
-            abs.absence_type,
-            group_placement.daycare_group_id AS group_id
-        FROM person child
-        JOIN placement ON child.id = placement.child_id AND daterange(placement.start_date, placement.end_date, '[]') && :dateRange
-        LEFT JOIN daycare_group_placement group_placement ON placement.id = group_placement.daycare_placement_id
-            AND daterange(placement.start_date, placement.end_date, '[]') && daterange(group_placement.start_date, group_placement.end_date, '[]')
-        -- todo: should these joins be also limited by :dateRange?
-        -- todo: I guess these join conditions now result in tons of unnecessary rows, needs optimizing/rethinking
-        LEFT JOIN attendance_reservation res ON child.id = res.child_id AND res.start_date BETWEEN placement.start_date AND placement.end_date
-        LEFT JOIN child_attendance att ON child.id = att.child_id AND att.arrived BETWEEN placement.start_date AND placement.end_date
-        LEFT JOIN absence abs ON child.id = abs.child_id AND abs.date BETWEEN placement.start_date AND placement.end_date
-    )
-    SELECT
-        unit_group.unit_name AS unit,
-        unit_group.group_name AS group,
-        group_res.id,
-        group_res.first_name,
-        group_res.last_name,
-        group_res.date_of_birth,
-        group_res.reservation_date,
-        to_char((group_res.reservation_start AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_start_time,
-        to_char((group_res.reservation_end AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_end_time,
-        group_res.attendance_start,
-        group_res.attendance_end,
-        group_res.absence_date,
-        group_res.absence_type
-    FROM unit_group
-    LEFT JOIN group_res ON unit_group.group_id = group_res.group_id OR (unit_group.group_id IS NULL AND group_res.group_id IS NULL)
+    SELECT 
+        t::date AS date,
+        dg.name AS "group",
+        p.id,
+        p.first_name,
+        p.last_name,
+        p.date_of_birth,
+        to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_start_time,
+        to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_end_time,
+        att.arrived AS attendance_start,
+        att.departed AS attendance_end,
+        ab.absence_type
+    FROM generate_series(:start, :end, '1 day') t
+    JOIN placement pl ON pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> t::date
+    JOIN person p ON p.id = pl.child_id
+    LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
+    LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    LEFT JOIN attendance_reservation res ON res.child_id = p.id AND res.start_date = t::date
+    LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
+    LEFT JOIN absence ab ON ab.child_id = p.id AND ab.date = t::date
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .bind("dateRange", dateRange)
+    .bind("start", dateRange.start)
+    .bind("end", dateRange.end)
     .mapTo<UnitAttendanceReservations.QueryRow>()
     .toList()
+
+private fun mapRowsToChildReservations(rows: List<UnitAttendanceReservations.QueryRow>): List<UnitAttendanceReservations.ChildReservations> {
+    return rows
+        .groupBy { it.child }
+        .map { (child, rowsByChild) ->
+            UnitAttendanceReservations.ChildReservations(
+                child = child,
+                dailyData = rowsByChild
+                    .associateBy { it.date }
+                    .map { (date, rowByDateAndChild) ->
+                        UnitAttendanceReservations.DailyChildData(
+                            date = date,
+                            reservation = rowByDateAndChild.reservation?.let {
+                                UnitAttendanceReservations.ReservationTimes(
+                                    startTime = it.startTime,
+                                    endTime = it.endTime
+                                )
+                            },
+                            attendance = rowByDateAndChild.attendance?.let {
+                                UnitAttendanceReservations.AttendanceTimes(
+                                    startTime = it.start.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    endTime = it.end?.toLocalTime()?.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                )
+                            },
+                            absence = rowByDateAndChild.absence?.let {
+                                UnitAttendanceReservations.Absence(
+                                    type = it.type
+                                )
+                            }
+                        )
+                    }
+                    .sortedBy { it.date }
+            )
+        }
+        .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
+}
 
 data class UnitAttendanceReservations(
     val unit: String,
@@ -152,6 +156,11 @@ data class UnitAttendanceReservations(
     val groups: List<GroupAttendanceReservations>,
     val ungrouped: List<ChildReservations>
 ) {
+    data class OperationalDay(
+        val date: LocalDate,
+        val isHoliday: Boolean
+    )
+
     data class GroupAttendanceReservations(
         val group: String,
         val children: List<ChildReservations>
@@ -159,9 +168,14 @@ data class UnitAttendanceReservations(
 
     data class ChildReservations(
         val child: Child,
-        val reservations: Map<LocalDate, ReservationTimes>,
-        val attendances: Map<LocalDate, AttendanceTimes>,
-        val absences: Map<LocalDate, Absence>
+        val dailyData: List<DailyChildData>
+    )
+
+    data class DailyChildData(
+        val date: LocalDate,
+        val reservation: ReservationTimes?,
+        val attendance: AttendanceTimes?,
+        val absence: Absence?
     )
 
     data class ReservationTimes(
@@ -179,7 +193,6 @@ data class UnitAttendanceReservations(
     )
 
     data class Child(
-        @PropagateNull
         val id: PersonId,
         val firstName: String,
         val lastName: String,
@@ -187,10 +200,10 @@ data class UnitAttendanceReservations(
     )
 
     data class QueryRow(
-        val unit: String,
+        val date: LocalDate,
         val group: String?,
         @Nested
-        val child: Child?,
+        val child: Child,
         @Nested("reservation")
         val reservation: QueryRowReservation?,
         @Nested("attendance")
@@ -201,7 +214,6 @@ data class UnitAttendanceReservations(
 
     data class QueryRowReservation(
         @PropagateNull
-        val date: LocalDate,
         val startTime: String,
         val endTime: String
     )
@@ -214,43 +226,6 @@ data class UnitAttendanceReservations(
 
     data class QueryRowAbsence(
         @PropagateNull
-        val date: LocalDate,
         val type: AbsenceType
     )
-
-    data class OperationalDay(
-        val date: LocalDate,
-        val isHoliday: Boolean
-    )
 }
-
-private fun mapChildReservationsAndAttendances(
-    data: List<UnitAttendanceReservations.QueryRow>
-): List<UnitAttendanceReservations.ChildReservations> = data
-    .mapNotNull { row -> row.child?.let { it to ChildData(row.reservation, row.attendance, row.absence) } }
-    .groupBy { (child, _) -> child }
-    .map { (child, childDataList) ->
-        UnitAttendanceReservations.ChildReservations(
-            child = child,
-            reservations = childDataList
-                .mapNotNull { it.second.reservation }
-                .associate { it.date to UnitAttendanceReservations.ReservationTimes(it.startTime, it.endTime) },
-            attendances = childDataList
-                .mapNotNull { it.second.attendance }
-                .associate {
-                    it.start.toLocalDate() to UnitAttendanceReservations.AttendanceTimes(
-                        it.start.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
-                        it.end?.toLocalTime()?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                    )
-                },
-            absences = childDataList
-                .mapNotNull { it.second.absence }
-                .associate { it.date to UnitAttendanceReservations.Absence(it.type) }
-        )
-    }
-
-private data class ChildData(
-    val reservation: UnitAttendanceReservations.QueryRowReservation?,
-    val attendance: UnitAttendanceReservations.QueryRowAttendance?,
-    val absence: UnitAttendanceReservations.QueryRowAbsence?
-)

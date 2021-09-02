@@ -18,6 +18,39 @@ interface Props {
   reservations: ChildReservations[]
 }
 
+function renderChildDay(
+  day: OperationalDay,
+  childReservations: ChildReservations
+) {
+  const data = childReservations.dailyData.find((d) => d.date.isEqual(day.date))
+
+  if (!data) return null
+
+  if (data.absence) return <AbsenceCell>Poissa</AbsenceCell>
+
+  if (day.isHoliday && !data.reservation && !data.absence) return null
+
+  return (
+    <DateCell>
+      <AttendanceTimesRow>
+        <Time>{data.attendance?.startTime ?? '–'}</Time>
+        <Time>{data.attendance?.endTime ?? '–'}</Time>
+      </AttendanceTimesRow>
+      <Gap size="xxs" />
+      <ReservationTimesRow>
+        {data.reservation ? (
+          <>
+            <Time>{data.reservation?.startTime ?? '–'}</Time>
+            <Time>{data.reservation?.endTime ?? '–'}</Time>
+          </>
+        ) : (
+          <div>Ei varausta</div>
+        )}
+      </ReservationTimesRow>
+    </DateCell>
+  )
+}
+
 export default React.memo(function ReservationsTable({
   operationalDays,
   reservations
@@ -60,39 +93,9 @@ export default React.memo(function ReservationsTable({
                   />
                 </ChildName>
               </StyledTd>
-              {operationalDays.map(({ date, isHoliday }) => (
-                <StyledTd key={date.formatIso()}>
-                  {!isHoliday ? (
-                    <DateCell>
-                      <AttendanceTimesRow>
-                        <Time>
-                          {childReservations.attendances[date.formatIso()]
-                            ?.startTime ?? '–'}
-                        </Time>
-                        <Time>
-                          {childReservations.attendances[date.formatIso()]
-                            ?.endTime ?? '–'}
-                        </Time>
-                      </AttendanceTimesRow>
-                      <Gap size="xxs" />
-                      <ReservationTimesRow>
-                        {childReservations.reservations[date.formatIso()] ? (
-                          <>
-                            <Time>
-                              {childReservations.reservations[date.formatIso()]
-                                ?.startTime ?? '–'}
-                            </Time>
-                            <Time>
-                              {childReservations.reservations[date.formatIso()]
-                                ?.endTime ?? '–'}
-                            </Time>
-                          </>
-                        ) : (
-                          <div>Ei varausta</div>
-                        )}
-                      </ReservationTimesRow>
-                    </DateCell>
-                  ) : null}
+              {operationalDays.map((day) => (
+                <StyledTd key={day.date.formatIso()}>
+                  {renderChildDay(day, childReservations)}
                 </StyledTd>
               ))}
             </Tr>
@@ -115,6 +118,7 @@ const DateTh = styled(CustomTh)<{ faded: boolean }>`
 
 const StyledTd = styled(Td)`
   border-right: 1px solid ${colors.greyscale.medium};
+  vertical-align: middle;
 `
 
 const ChildName = styled.div`
@@ -162,4 +166,9 @@ const Time = styled.div`
   &:not(:first-child) {
     margin-left: ${defaultMargins.xs};
   }
+`
+
+const AbsenceCell = styled.div`
+  text-align: center;
+  font-style: italic;
 `
