@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import Loader from 'lib-components/atoms/Loader'
+import { formatTime, isValidTime } from 'lib-common/date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -20,14 +21,13 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { TallContentArea } from '../../../components/mobile/components'
+import { TallContentArea } from '../../mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childArrivesPOST,
   getDaycareAttendances
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { getCurrentTime } from '../child-info/ChildInfo'
 import DailyNote from '../notes/DailyNote'
 import { Actions, BackButtonInline } from '../components'
 
@@ -38,7 +38,7 @@ export default React.memo(function MarkPresent() {
   const { attendanceResponse, setAttendanceResponse } =
     useContext(AttendanceUIContext)
 
-  const [time, setTime] = useState<string>(getCurrentTime())
+  const [time, setTime] = useState<string>(formatTime(new Date()))
 
   const { childId, unitId, groupId } = useParams<{
     unitId: string
@@ -115,6 +115,7 @@ export default React.memo(function MarkPresent() {
                 <AsyncButton
                   primary
                   text={i18n.common.confirm}
+                  disabled={!isValidTime(time)}
                   onClick={() => childArrives()}
                   onSuccess={() => history.go(-2)}
                   data-qa="mark-present-btn"
