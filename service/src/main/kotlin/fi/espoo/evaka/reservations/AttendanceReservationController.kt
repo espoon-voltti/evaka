@@ -5,10 +5,11 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @RestController
 @RequestMapping("/attendance-reservations")
@@ -53,6 +55,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
                 .let { groupedReservations ->
                     val ungroupedRows = groupedReservations[null]
 
+                    val childIds = groupedReservations.values.flatten().map { it.child.id }.toSet()
+                    val serviceTimes = tx.getDailyServiceTimes(childIds)
+
                     UnitAttendanceReservations(
                         unit = unitName,
                         operationalDays = operationalDays,
@@ -60,10 +65,10 @@ class AttendanceReservationController(private val ac: AccessControl) {
                             if (group == null) null
                             else UnitAttendanceReservations.GroupAttendanceReservations(
                                 group = group,
-                                children = mapRowsToChildReservations(rows)
+                                children = mapChildReservations(rows, serviceTimes)
                             )
                         },
-                        ungrouped = ungroupedRows?.let { mapRowsToChildReservations(it) } ?: emptyList()
+                        ungrouped = ungroupedRows?.let { mapChildReservations(it, serviceTimes) } ?: emptyList()
                     )
                 }
         }
@@ -114,12 +119,26 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     .mapTo<UnitAttendanceReservations.QueryRow>()
     .toList()
 
-private fun mapRowsToChildReservations(rows: List<UnitAttendanceReservations.QueryRow>): List<UnitAttendanceReservations.ChildReservations> {
+// currently queried separately to be able to use existing mapper
+private fun Database.Read.getDailyServiceTimes(childIds: Set<UUID>) = createQuery(
+    """
+    SELECT *
+    FROM daily_service_time
+    WHERE child_id = ANY(:childIds)
+    """.trimIndent()
+)
+    .bind("childIds", childIds.toTypedArray())
+    .map { row -> toDailyServiceTimes(row) }
+    .toList()
+    .filterNotNull()
+    .associateBy { it.childId }
+
+private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<UUID, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
     return rows
         .groupBy { it.child }
         .map { (child, rowsByChild) ->
             UnitAttendanceReservations.ChildReservations(
-                child = child,
+                child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
                 dailyData = rowsByChild
                     .associateBy { it.date }
                     .map { (date, rowByDateAndChild) ->
@@ -193,10 +212,11 @@ data class UnitAttendanceReservations(
     )
 
     data class Child(
-        val id: PersonId,
+        val id: UUID,
         val firstName: String,
         val lastName: String,
-        val dateOfBirth: LocalDate
+        val dateOfBirth: LocalDate,
+        val dailyServiceTimes: DailyServiceTimes?
     )
 
     data class QueryRow(

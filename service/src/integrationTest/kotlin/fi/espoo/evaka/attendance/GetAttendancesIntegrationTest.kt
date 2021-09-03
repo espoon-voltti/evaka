@@ -208,12 +208,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child has regular daily service times`() {
-        val testTimes = DailyServiceTimes.RegularTimes(regularTimes = TimeRange("08:15", "17:19"))
+        val testTimes = DailyServiceTimes.RegularTimes(testChild_1.id, regularTimes = TimeRange("08:15", "17:19"))
         db.transaction { tx ->
-            tx.upsertChildDailyServiceTimes(
-                childId = testChild_1.id,
-                times = testTimes
-            )
+            tx.upsertChildDailyServiceTimes(testTimes)
         }
         val child = expectOneChild()
         assertEquals(testTimes, child.dailyServiceTimes)
@@ -222,6 +219,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child has irregular daily service times`() {
         val testTimes = DailyServiceTimes.IrregularTimes(
+            childId = testChild_1.id,
             monday = TimeRange("08:15", "17:19"),
             tuesday = TimeRange("08:16", "17:19"),
             wednesday = TimeRange("08:17", "17:19"),
@@ -229,10 +227,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             friday = TimeRange("08:19", "17:19"),
         )
         db.transaction { tx ->
-            tx.upsertChildDailyServiceTimes(
-                childId = testChild_1.id,
-                times = testTimes
-            )
+            tx.upsertChildDailyServiceTimes(testTimes)
         }
         val child = expectOneChild()
         assertEquals(testTimes, child.dailyServiceTimes)

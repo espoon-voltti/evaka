@@ -223,6 +223,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             pe.last_name,
             ch.preferred_name,
             pe.date_of_birth,
+            dst.child_id,
             dst.type,
             dst.regular_start,
             dst.regular_end,

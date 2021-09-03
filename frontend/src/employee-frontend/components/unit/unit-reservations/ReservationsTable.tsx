@@ -12,39 +12,101 @@ import colors from 'lib-customizations/common'
 import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
+import { AbsenceType } from 'lib-common/generated/enums'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { faThermometer } from 'lib-icons'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  getTimesOnWeekday,
+  isIrregular,
+  isRegular,
+  isVariableTime
+} from 'lib-common/api-types/child/common'
 
 interface Props {
   operationalDays: OperationalDay[]
   reservations: ChildReservations[]
 }
 
+function renderAbsence(type: AbsenceType) {
+  if (type === 'SICKLEAVE')
+    return (
+      <AbsenceCell>
+        <FixedSpaceRow spacing="xs" alignItems="center">
+          <RoundIcon
+            content={faThermometer}
+            color={colors.accents.violet}
+            size="m"
+          />
+          <div>Sairaus</div>
+        </FixedSpaceRow>
+      </AbsenceCell>
+    )
+
+  return (
+    <AbsenceCell>
+      <FixedSpaceRow spacing="xs" alignItems="center">
+        <RoundIcon content="–" color={colors.primary} size="m" />
+        <div>Muu syy</div>
+      </FixedSpaceRow>
+    </AbsenceCell>
+  )
+}
+
 function renderChildDay(
   day: OperationalDay,
   childReservations: ChildReservations
 ) {
-  const data = childReservations.dailyData.find((d) => d.date.isEqual(day.date))
+  const dailyData = childReservations.dailyData.find((d) =>
+    d.date.isEqual(day.date)
+  )
 
-  if (!data) return null
+  if (!dailyData) return null
 
-  if (data.absence) return <AbsenceCell>Poissa</AbsenceCell>
+  if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
+    return null
 
-  if (day.isHoliday && !data.reservation && !data.absence) return null
+  if (dailyData.absence && !dailyData.attendance)
+    return renderAbsence(dailyData.absence.type)
+
+  const serviceTimes = childReservations.child.dailyServiceTimes
+  const serviceTimesAvailable =
+    serviceTimes != null && !isVariableTime(serviceTimes)
+  const serviceTimeOfDay =
+    serviceTimes === null || isVariableTime(serviceTimes)
+      ? null
+      : isRegular(serviceTimes)
+      ? serviceTimes.regularTimes
+      : isIrregular(serviceTimes)
+      ? getTimesOnWeekday(serviceTimes, day.date.getIsoDayOfWeek())
+      : null
 
   return (
     <DateCell>
       <AttendanceTimesRow>
-        <Time>{data.attendance?.startTime ?? '–'}</Time>
-        <Time>{data.attendance?.endTime ?? '–'}</Time>
+        <Time>{dailyData.attendance?.startTime ?? '–'}</Time>
+        <Time>{dailyData.attendance?.endTime ?? '–'}</Time>
       </AttendanceTimesRow>
       <Gap size="xxs" />
       <ReservationTimesRow>
-        {data.reservation ? (
+        {dailyData.reservation ? (
           <>
-            <Time>{data.reservation?.startTime ?? '–'}</Time>
-            <Time>{data.reservation?.endTime ?? '–'}</Time>
+            <ReservationTime>
+              {dailyData.reservation?.startTime ?? '–'}
+            </ReservationTime>
+            <ReservationTime>
+              {dailyData.reservation?.endTime ?? '–'}
+            </ReservationTime>
           </>
+        ) : serviceTimesAvailable && serviceTimeOfDay ? (
+          <>
+            <ReservationTime>{serviceTimeOfDay.start}*</ReservationTime>
+            <ReservationTime>{serviceTimeOfDay.end}*</ReservationTime>
+          </>
+        ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
+          <ReservationTime>Vapaapäivä</ReservationTime>
         ) : (
-          <div>Ei varausta</div>
+          <ReservationTime>Ei varausta</ReservationTime>
         )}
       </ReservationTimesRow>
     </DateCell>
@@ -160,7 +222,7 @@ const AttendanceTimesRow = styled(TimesRow)`
 const ReservationTimesRow = styled(TimesRow)``
 
 const Time = styled.div`
-  width: 54px;
+  min-width: 54px;
   text-align: center;
 
   &:not(:first-child) {
@@ -168,7 +230,13 @@ const Time = styled.div`
   }
 `
 
+const ReservationTime = styled(Time)`
+  font-style: italic;
+`
+
 const AbsenceCell = styled.div`
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-style: italic;
 `

@@ -38,6 +38,7 @@ import {
 } from 'lib-common/generated/enums'
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -868,6 +869,7 @@ export interface ChildReservations {
     firstName: string
     lastName: string
     dateOfBirth: LocalDate
+    dailyServiceTimes: DailyServiceTimes | null
   }
   dailyData: DailyChildData[]
 }

@@ -33,21 +33,27 @@ enum class DailyServiceTimesType {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "type")
 sealed class DailyServiceTimes(
+    open val childId: UUID,
     val type: DailyServiceTimesType
 ) {
     data class RegularTimes(
+        override val childId: UUID,
         val regularTimes: TimeRange
-    ) : DailyServiceTimes(DailyServiceTimesType.REGULAR)
+    ) : DailyServiceTimes(childId, DailyServiceTimesType.REGULAR)
 
     data class IrregularTimes(
+        override val childId: UUID,
         val monday: TimeRange?,
         val tuesday: TimeRange?,
         val wednesday: TimeRange?,
         val thursday: TimeRange?,
         val friday: TimeRange?
-    ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
+    ) : DailyServiceTimes(childId, DailyServiceTimesType.IRREGULAR)
 
-    data class VariableTimes(val variableTimes: Boolean) : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
+    data class VariableTimes(
+        override val childId: UUID,
+        val variableTimes: Boolean
+    ) : DailyServiceTimes(childId, DailyServiceTimesType.VARIABLE_TIME)
 }
 
 fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
@@ -69,9 +75,11 @@ fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
 
     return when (type) {
         DailyServiceTimesType.REGULAR -> DailyServiceTimes.RegularTimes(
+            childId = row.mapColumn("child_id"),
             regularTimes = toTimeRange(row, "regular")!!
         )
         DailyServiceTimesType.IRREGULAR -> DailyServiceTimes.IrregularTimes(
+            childId = row.mapColumn("child_id"),
             monday = toTimeRange(row, "monday"),
             tuesday = toTimeRange(row, "tuesday"),
             wednesday = toTimeRange(row, "wednesday"),
@@ -79,6 +87,7 @@ fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
             friday = toTimeRange(row, "friday"),
         )
         DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes(
+            childId = row.mapColumn("child_id"),
             variableTimes = true
         )
     }.exhaust()
@@ -93,15 +102,15 @@ fun toTimeRange(row: RowView, columnPrefix: String): TimeRange? {
     return null
 }
 
-fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes) {
+fun Database.Transaction.upsertChildDailyServiceTimes(times: DailyServiceTimes) {
     when (times) {
-        is DailyServiceTimes.RegularTimes -> upsertRegularChildDailyServiceTimes(childId, times)
-        is DailyServiceTimes.IrregularTimes -> upsertIrregularChildDailyServiceTimes(childId, times)
-        is DailyServiceTimes.VariableTimes -> upsertVariableChildDailyServiceTimes(childId)
+        is DailyServiceTimes.RegularTimes -> upsertRegularChildDailyServiceTimes(times)
+        is DailyServiceTimes.IrregularTimes -> upsertIrregularChildDailyServiceTimes(times)
+        is DailyServiceTimes.VariableTimes -> upsertVariableChildDailyServiceTimes(times)
     }
 }
 
-private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes.RegularTimes) {
+private fun Database.Transaction.upsertRegularChildDailyServiceTimes(times: DailyServiceTimes.RegularTimes) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -143,13 +152,13 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UU
     """.trimIndent()
 
     this.createUpdate(sql)
-        .bind("childId", childId)
+        .bind("childId", times.childId)
         .bind("regularStart", times.regularTimes.start)
         .bind("regularEnd", times.regularTimes.end)
         .execute()
 }
 
-private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes.IrregularTimes) {
+private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(times: DailyServiceTimes.IrregularTimes) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -191,7 +200,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
     """.trimIndent()
 
     this.createUpdate(sql)
-        .bind("childId", childId)
+        .bind("childId", times.childId)
         .bind("mondayStart", times.monday?.start)
         .bind("mondayEnd", times.monday?.end)
         .bind("tuesdayStart", times.tuesday?.start)
@@ -205,7 +214,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
         .execute()
 }
 
-private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: UUID) {
+private fun Database.Transaction.upsertVariableChildDailyServiceTimes(times: DailyServiceTimes.VariableTimes) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -247,7 +256,7 @@ private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: U
     """.trimIndent()
 
     this.createUpdate(sql)
-        .bind("childId", childId)
+        .bind("childId", times.childId)
         .execute()
 }
 
