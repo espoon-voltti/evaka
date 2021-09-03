@@ -213,9 +213,11 @@ fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMin
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         .filter { includedChildIds.contains(it.key) }
 
-    logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
+    logger.info("VardaUpdate: children found with changed service need data: ${serviceNeedDiffsByChild.entries.size}")
 
-    serviceNeedDiffsByChild.entries.forEach { serviceNeedDiffByChild ->
+    serviceNeedDiffsByChild.entries.forEachIndexed { index, serviceNeedDiffByChild ->
+        logger.info("VardaUpdate: processing child ${index + 1} / ${serviceNeedDiffsByChild.entries.size}")
+
         serviceNeedDiffByChild.value.deletes.forEach { deletedServiceNeedId ->
             if (!processedServiceNeedIds.contains(deletedServiceNeedId)) {
                 processedServiceNeedIds.add(deletedServiceNeedId)
@@ -238,7 +240,7 @@ fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMin
         }
     }
 
-    logger.info("VardaUpdate: processed ${processedServiceNeedIds.size} service needs")
+    logger.info("VardaUpdate: processed service needs: ${processedServiceNeedIds.size} ")
 }
 
 fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId) {
@@ -247,6 +249,7 @@ fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
             ?: error("VardaUpdate: cannot handle deleted service need $evakaServiceNeedId: varda service need missing")
         deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
         db.transaction { it.deleteVardaServiceNeedByEvakaServiceNeed(evakaServiceNeedId) }
+        logger.info("VardaUpdate: successfully deleted service need $evakaServiceNeedId")
     } catch (e: Exception) {
         db.transaction { it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage)) }
         logger.error("VardaUpdate: error while processing deleted service need $evakaServiceNeedId: ${e.localizedMessage}")
@@ -260,19 +263,21 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
         deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
         addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed, feeDecisionMinDate)
+        logger.info("VardaUpdate: successfully updated service need $evakaServiceNeedId")
     } catch (e: Exception) {
         db.transaction { it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage)) }
         logger.error("VardaUpdate: error while processing updated service need $evakaServiceNeedId: ${e.localizedMessage}")
     }
 }
 
-fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate): Boolean {
+fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate): Boolean {
     try {
-        val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+        val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
         val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
         addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
+        logger.info("VardaUpdate: successfully created new service need $evakaServiceNeedId")
     } catch (e: Exception) {
-        logger.error("VardaUpdate: error while processing new service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: error while processing new service need $evakaServiceNeedId data: ${e.localizedMessage}")
         return false
     }
 
