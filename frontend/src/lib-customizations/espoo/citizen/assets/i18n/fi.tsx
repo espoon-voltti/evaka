@@ -14,6 +14,7 @@ export default {
     ok: 'Ok',
     save: 'Tallenna',
     confirm: 'Vahvista',
+    edit: 'Muokkaa',
     add: 'Lisää',
     unit: {
       providerTypes: {
@@ -1199,26 +1200,32 @@ export default {
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
   },
   income: {
-    title: 'Tulotietojen ilmoitus',
+    title: 'Tulotiedot',
     description: (
       <>
-        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
-        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
-        korkeimpaan maksuun.
-        <br />
-        <br />
-        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
-        alkamispäivästä lähtien.
-        <br />
-        <br />
-        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
-        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
-        varhaiskasvatusmaksuja myös takautuvasti.
-        <br />
-        <br />* Tähdellä merkityt tiedot ovat pakollisia
+        <p>
+          Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
+          vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
+          tuloselvityksiä ja muokata tai poistaa niitä kunnes viranomainen on
+          käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
+          tulotietojasi toimittamalla uuden lomakkeen.
+          <br />
+          Lisätietoja maksuista:{' '}
+          <a href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_Varhaiskasvatuksessa">
+            Maksut varhaiskasvatuksessa
+          </a>
+        </p>
+        <p>
+          Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
+          prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen
+          koon ja tulojen sekä varhaiskasvatusajan mukaan. Tarkista alla
+          olevasta taulukosta tarvitseeko sinun toimittaa tuloselvitystä, vai
+          kuuluuko perheenne automaattisesti korkeimman varhaiskasvatusmaksun
+          piiriin.
+        </p>
       </>
     ),
-    addNew: 'Luo uusi tulotieto',
+    addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
@@ -1409,7 +1416,16 @@ export default {
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
       consentRequired:
-        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan'
+        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan',
+      removeFailed: 'Tuloselvitystä ei voitu poistaa'
+    },
+    table: {
+      title: 'Tuloselvitykset',
+      incomeStatementForm: 'Tuloselvityslomake',
+      startDate: 'Voimassa alkaen',
+      endDate: 'Voimassa asti',
+      handler: 'Käsittelijä',
+      openIncomeStatement: 'Avaa lomake'
     }
   },
   validationErrors: {

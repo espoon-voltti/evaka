@@ -8,7 +8,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -72,7 +74,7 @@ class IncomeStatementControllerCitizen {
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        Audit.IncomeStatementUpdate.log(user.id)
+        Audit.IncomeStatementUpdate.log(incomeStatementId)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->
@@ -88,5 +90,21 @@ class IncomeStatementControllerCitizen {
                 }
             }
         }.let { success -> if (!success) throw NotFound("Income statement not found") }
+    }
+
+    @DeleteMapping("/{id}")
+    fun removeIncomeStatement(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: IncomeStatementId
+    ) {
+        Audit.IncomeStatementDelete.log(id)
+        user.requireOneOfRoles(UserRole.END_USER)
+        return db.transaction { tx ->
+            tx.readIncomeStatementForPerson(user.id, id)
+                ?.also { if (it.handlerName != null) throw Forbidden("Handled income statement cannot be removed") }
+                ?: throw NotFound("Income statement not found")
+            tx.removeIncomeStatement(id)
+        }
     }
 }
