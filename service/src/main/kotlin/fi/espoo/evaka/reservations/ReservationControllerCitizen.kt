@@ -75,9 +75,21 @@ class ReservationControllerCitizen(
 }
 
 fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<Reservation>) {
-    // tx.clearOldCitizenAbsences(reservations) todo: add created_by_citizen column
+    tx.clearOldCitizenAbsences(reservations)
     tx.clearOldCitizenReservations(reservations)
     tx.insertValidReservations(userId, reservations)
+}
+
+fun Database.Transaction.clearOldCitizenAbsences(reservations: List<Reservation>) {
+    val batch = prepareBatch(
+        "DELETE FROM absence WHERE child_id = :childId AND date = :date AND modified_by_guardian_id IS NOT NULL"
+    )
+
+    reservations.forEach {
+        batch.bind("childId", it.childId).bind("date", it.startTime.toLocalDate()).add()
+    }
+
+    batch.execute()
 }
 
 fun Database.Transaction.clearOldCitizenReservations(reservations: List<Reservation>) {
