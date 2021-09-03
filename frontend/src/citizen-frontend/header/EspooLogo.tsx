@@ -11,7 +11,7 @@ import { cityLogo } from 'lib-customizations/citizen'
 export default React.memo(function Logo() {
   return (
     <Container>
-      <Img src={cityLogo.src} alt={cityLogo.alt} />
+      <Img src={cityLogo.src} alt={cityLogo.alt} data-qa="header-city-logo" />
     </Container>
   )
 })
