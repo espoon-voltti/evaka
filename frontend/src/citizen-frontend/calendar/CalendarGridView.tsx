@@ -2,27 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { Fragment } from 'react'
 import LocalDate from 'lib-common/local-date'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import colors from 'lib-customizations/common'
 import { WeekProps } from './WeekElem'
 import { H1 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { formatDate } from 'lib-common/date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { faCalendarPlus } from 'lib-icons'
+import { faCalendarPlus, faUserMinus } from 'lib-icons'
 
 export interface Props {
   weeklyData: WeekProps[]
   onCreateReservationClicked: () => void
+  onCreateAbsencesClicked: () => void
   selectDate: (date: LocalDate) => void
 }
 
 export default React.memo(function CalendarGridView({
   weeklyData,
   onCreateReservationClicked,
+  onCreateAbsencesClicked,
   selectDate
 }: Props) {
   const i18n = useTranslation()
@@ -32,6 +34,12 @@ export default React.memo(function CalendarGridView({
       <PageHeaderRow>
         <H1 noMargin>{i18n.calendar.title}</H1>
         <div>
+          <InlineButton
+            onClick={onCreateAbsencesClicked}
+            text={i18n.calendar.newAbsence}
+            icon={faUserMinus}
+          />
+          <Gap size="L" horizontal />
           <InlineButton
             onClick={onCreateReservationClicked}
             text={i18n.calendar.newReservationBtn}
@@ -49,7 +57,7 @@ export default React.memo(function CalendarGridView({
       </CalendarHeader>
       <Grid>
         {weeklyData.map((w) => (
-          <>
+          <Fragment key={w.weekNumber}>
             <WeekNumber>{w.weekNumber}</WeekNumber>
             {w.dailyReservations.map((d) => (
               <DayCell
@@ -84,7 +92,7 @@ export default React.memo(function CalendarGridView({
                 {d.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
               </DayCell>
             ))}
-          </>
+          </Fragment>
         ))}
       </Grid>
     </>

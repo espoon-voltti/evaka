@@ -77,7 +77,6 @@ export interface IconSet {
   faSignIn: IconDefinition
   faSignOut: IconDefinition
   faStickyNote: IconDefinition
-  farStickyNote: IconDefinition
   faSync: IconDefinition
   faThermometer: IconDefinition
   faTimes: IconDefinition
@@ -86,11 +85,13 @@ export interface IconSet {
   faUser: IconDefinition
   faUserAltSlash: IconDefinition
   faUserFriends: IconDefinition
+  faUserMinus: IconDefinition
   faUserUnlock: IconDefinition
   faUsers: IconDefinition
   farFileAlt: IconDefinition
   farGavel: IconDefinition
   farMap: IconDefinition
+  farStickyNote: IconDefinition
   fasCaretUp: IconDefinition
   fasCaretDown: IconDefinition
   fasCaretLeft: IconDefinition
@@ -193,6 +194,7 @@ export const faUndo = iconSet.faUndo
 export const faUser = iconSet.faUser
 export const faUserAltSlash = iconSet.faUserAltSlash
 export const faUserFriends = iconSet.faUserFriends
+export const faUserMinus = iconSet.faUserMinus
 export const faUserUnlock = iconSet.faUserUnlock
 export const faUsers = iconSet.faUsers
 export const farFileAlt = iconSet.farFileAlt

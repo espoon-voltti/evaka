@@ -8,16 +8,18 @@ interface Props extends ZIndexProp {
 }
 
 interface ZIndexProp {
+  onClick?: () => void
   zIndex?: number
 }
 
 export default React.memo(function ModalBackground({
+  onClick,
   zIndex,
   children
 }: Props) {
   return (
     <FocusLock>
-      <BackgroundOverlay zIndex={zIndex} />
+      <BackgroundOverlay zIndex={zIndex} onClick={onClick} />
       <FormModalLifter zIndex={zIndex}>{children}</FormModalLifter>
     </FocusLock>
   )
@@ -34,5 +36,6 @@ const BackgroundOverlay = styled.div<ZIndexProp>`
 `
 
 const FormModalLifter = styled.div<ZIndexProp>`
+  position: relative;
   z-index: ${(p) => (p.zIndex ? p.zIndex - 1 : modalZIndex - 1)};
 `

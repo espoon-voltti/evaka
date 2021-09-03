@@ -150,6 +150,8 @@ const sv: Translations = {
   calendar: {
     title: 'Kalender',
     holiday: 'Helgdag',
+    newReservationOrAbsence: 'Varaus / Poissaolo',
+    newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',
     reservationModal: {
@@ -164,6 +166,17 @@ const sv: Translations = {
       repetitions: {
         DAILY: 'Päivittäin',
         WEEKLY: 'Viikoittain'
+      }
+    },
+    absenceModal: {
+      title: 'Ilmoita poissaolo',
+      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
+      dateRange: 'Poissaoloilmoitus ajalle',
+      absenceType: 'Poissaolon syy',
+      absenceTypes: {
+        sickness: 'Sairaus',
+        other: 'Muu poissaolo',
+        planned: 'Säännöllinen vapaapäivä/vuorohoito'
       }
     }
   },

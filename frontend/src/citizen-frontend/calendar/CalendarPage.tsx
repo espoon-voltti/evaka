@@ -16,12 +16,14 @@ import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
+import AbsenceModal from './AbsenceModal'
 import DayView from './DayView'
 import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
 import _ from 'lodash'
 import { WeekProps } from './WeekElem'
+import ActionPickerModal from './ActionPickerModal'
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
@@ -30,7 +32,9 @@ export default React.memo(function CalendarPage() {
   const user = useUser()
 
   const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
-  const [reservationViewOpen, setReservationViewOpen] = useState(false)
+  const [openModal, setOpenModal] = useState<
+    'pickAction' | 'reservations' | 'absences'
+  >()
 
   const loadData = useRestApi(getReservations, setData)
   const loadDefaultRange = useCallback(
@@ -115,9 +119,7 @@ export default React.memo(function CalendarPage() {
                   >
                     <CalendarListView
                       weeklyData={weeklyData}
-                      onCreateReservationClicked={() =>
-                        setReservationViewOpen(true)
-                      }
+                      onHoverButtonClick={() => setOpenModal('pickAction')}
                       selectDate={selectDate}
                     />
                   </ContentArea>
@@ -128,18 +130,33 @@ export default React.memo(function CalendarPage() {
                     <CalendarGridView
                       weeklyData={weeklyData}
                       onCreateReservationClicked={() =>
-                        setReservationViewOpen(true)
+                        setOpenModal('reservations')
                       }
+                      onCreateAbsencesClicked={() => setOpenModal('absences')}
                       selectDate={selectDate}
                     />
                   </ContentArea>
                 </DesktopOnly>
-                {reservationViewOpen && (
+                {openModal === 'pickAction' && (
+                  <ActionPickerModal
+                    close={() => setOpenModal(undefined)}
+                    openReservations={() => setOpenModal('reservations')}
+                    openAbsences={() => setOpenModal('absences')}
+                  />
+                )}
+                {openModal === 'reservations' && (
                   <ReservationModal
-                    onClose={() => setReservationViewOpen(false)}
+                    onClose={() => setOpenModal(undefined)}
                     availableChildren={response.children}
                     onReload={loadDefaultRange}
                     reservableDays={response.reservableDays}
+                  />
+                )}
+                {openModal === 'absences' && (
+                  <AbsenceModal
+                    close={() => setOpenModal(undefined)}
+                    reload={loadDefaultRange}
+                    availableChildren={response.children}
                   />
                 )}
               </>

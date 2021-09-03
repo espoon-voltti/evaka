@@ -1,6 +1,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -9,6 +10,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.utils.dateNow
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -72,21 +74,44 @@ class ReservationControllerCitizen(
 
         db.transaction { createReservations(it, user.id, reservations) }
     }
+
+    @PostMapping("/citizen/absences")
+    fun postAbsences(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: AbsenceRequest
+    ) {
+        Audit.AbsenceCitizenCreate.log(targetId = body.childIds.joinToString())
+        user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
+        accessControl.requireGuardian(user, body.childIds)
+
+        if (body.dateRange.start.isBefore(dateNow()))
+            throw BadRequest("Cannot mark absences for past days")
+
+        db.transaction { tx ->
+            tx.clearOldCitizenAbsences(
+                body.childIds.flatMap { childId ->
+                    body.dateRange.dates().map { childId to it }
+                }
+            )
+            tx.insertAbsences(user.id, body)
+        }
+    }
 }
 
 fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<Reservation>) {
-    tx.clearOldCitizenAbsences(reservations)
+    tx.clearOldCitizenAbsences(reservations.map { it.childId to it.startTime.toLocalDate() })
     tx.clearOldCitizenReservations(reservations)
     tx.insertValidReservations(userId, reservations)
 }
 
-fun Database.Transaction.clearOldCitizenAbsences(reservations: List<Reservation>) {
+fun Database.Transaction.clearOldCitizenAbsences(childDatePairs: List<Pair<UUID, LocalDate>>) {
     val batch = prepareBatch(
         "DELETE FROM absence WHERE child_id = :childId AND date = :date AND modified_by_guardian_id IS NOT NULL"
     )
 
-    reservations.forEach {
-        batch.bind("childId", it.childId).bind("date", it.startTime.toLocalDate()).add()
+    childDatePairs.forEach { (childId, date) ->
+        batch.bind("childId", childId).bind("date", date).add()
     }
 
     batch.execute()
@@ -141,6 +166,52 @@ fun Database.Transaction.insertValidReservations(userId: UUID, reservations: Lis
     batch.execute()
 }
 
+fun Database.Transaction.insertAbsences(userId: UUID, request: AbsenceRequest) {
+    val batch = prepareBatch(
+        """
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by_guardian_id)
+        SELECT
+            :childId,
+            :date,
+            care_type,
+            :absenceType,
+            :userId
+        FROM (
+            SELECT unnest((CASE type
+                WHEN 'CLUB'::placement_type THEN '{CLUB}'
+                WHEN 'SCHOOL_SHIFT_CARE'::placement_type THEN '{SCHOOL_SHIFT_CARE}'
+                WHEN 'PRESCHOOL'::placement_type THEN '{PRESCHOOL}'
+                WHEN 'PREPARATORY'::placement_type THEN '{PRESCHOOL}'
+                WHEN 'PRESCHOOL_DAYCARE'::placement_type THEN '{PRESCHOOL, PRESCHOOL_DAYCARE}'
+                WHEN 'PREPARATORY_DAYCARE'::placement_type THEN '{PRESCHOOL, PRESCHOOL_DAYCARE}'
+                WHEN 'DAYCARE'::placement_type THEN '{DAYCARE}'
+                WHEN 'DAYCARE_PART_TIME'::placement_type THEN '{DAYCARE}'
+                WHEN 'DAYCARE_FIVE_YEAR_OLDS'::placement_type THEN '{DAYCARE, DAYCARE_5YO_FREE}'
+                WHEN 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'::placement_type THEN '{DAYCARE, DAYCARE_5YO_FREE}'
+                WHEN 'TEMPORARY_DAYCARE'::placement_type THEN '{}'
+                WHEN 'TEMPORARY_DAYCARE_PART_DAY'::placement_type THEN '{}'
+            END)::text[]) AS care_type
+            FROM placement
+            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
+        ) care_type
+        ON CONFLICT DO NOTHING
+        """.trimIndent()
+    )
+
+    request.childIds.forEach { childId ->
+        request.dateRange.dates().forEach { date ->
+            batch
+                .bind("childId", childId)
+                .bind("date", date)
+                .bind("absenceType", request.absenceType)
+                .bind("userId", userId)
+                .add()
+        }
+    }
+
+    batch.execute()
+}
+
 data class DailyReservationRequest(
     val childId: UUID,
     val date: LocalDate,
@@ -172,6 +243,12 @@ data class ReservationChild(
     val id: UUID,
     val firstName: String,
     val preferredName: String?
+)
+
+data class AbsenceRequest(
+    val childIds: Set<UUID>,
+    val dateRange: FiniteDateRange,
+    val absenceType: AbsenceType
 )
 
 fun Database.Read.getReservations(guardianId: UUID, range: FiniteDateRange): List<DailyReservationData> {

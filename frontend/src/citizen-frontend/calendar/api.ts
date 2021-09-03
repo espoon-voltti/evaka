@@ -4,6 +4,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 export interface Reservation {
   startTime: Date
@@ -68,5 +69,20 @@ export async function postReservations(
   return client
     .post('/citizen/reservations', reservations)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface AbsencesRequest {
+  childIds: string[]
+  dateRange: FiniteDateRange
+  absenceType: AbsenceType
+}
+
+export async function postAbsences(
+  request: AbsencesRequest
+): Promise<Result<void>> {
+  return client
+    .post('/citizen/absences', request)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
