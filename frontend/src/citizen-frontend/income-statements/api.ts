@@ -41,7 +41,7 @@ export async function updateIncomeStatement(
   return client.put(`/citizen/income-statements/${id}`, body)
 }
 
-export async function removeIncomeStatement(id: UUID): Promise<Result<void>> {
+export async function deleteIncomeStatement(id: UUID): Promise<Result<void>> {
   return client
     .delete(`/citizen/income-statements/${id}`)
     .then(() => Success.of())

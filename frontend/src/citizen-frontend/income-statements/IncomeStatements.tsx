@@ -9,16 +9,17 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faFileAlt, faPen, faTrash } from 'lib-icons'
+import { faFileAlt, faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
-import { getIncomeStatements, removeIncomeStatement } from './api'
+import { getIncomeStatements, deleteIncomeStatement } from './api'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -104,18 +105,30 @@ export default function IncomeStatements() {
 
   useEffect(() => loadData(), [loadData])
 
-  const onRemove = useCallback(
-    (id: UUID) =>
-      removeIncomeStatement(id).then((res) => {
-        if (res.isFailure) {
-          setErrorMessage({
-            title: t.income.errors.removeFailed,
-            type: 'error',
-            resolveLabel: t.common.ok
+  const [rowToDelete, setRowToDelete] = useState<UUID>()
+  const [deleting, setDeleting] = useState(false)
+
+  const onDelete = useCallback(
+    (id: UUID) => {
+      setDeleting(true)
+      deleteIncomeStatement(id)
+        .then((res) =>
+          res.mapAll({
+            failure: () =>
+              setErrorMessage({
+                title: t.income.errors.deleteFailed,
+                type: 'error',
+                resolveLabel: t.common.ok
+              }),
+            loading: () => null,
+            success: () => {
+              setRowToDelete(undefined)
+              setDeleting(false)
+            }
           })
-        }
-        loadData()
-      }),
+        )
+        .finally(() => loadData())
+    },
     [loadData, setErrorMessage, t]
   )
 
@@ -132,9 +145,7 @@ export default function IncomeStatements() {
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
             <AddButton
-              onClick={() => {
-                history.push('/income/new')
-              }}
+              onClick={() => history.push('/income/new')}
               text={t.income.addNew}
             />
           </HeadingContainer>
@@ -150,12 +161,30 @@ export default function IncomeStatements() {
                 items.length > 0 && (
                   <IncomeStatementsTable
                     items={items}
-                    onRemoveIncomeStatement={onRemove}
+                    onRemoveIncomeStatement={setRowToDelete}
                   />
                 )
               )
             }
           })}
+
+          {rowToDelete && (
+            <InfoModal
+              iconColour="orange"
+              title={t.income.table.deleteConfirm}
+              text={t.income.table.deleteDescription}
+              icon={faQuestion}
+              reject={{
+                action: () => setRowToDelete(undefined),
+                label: t.common.return
+              }}
+              resolve={{
+                action: () => onDelete(rowToDelete),
+                label: t.common.delete
+              }}
+              resolveDisabled={deleting}
+            />
+          )}
         </ContentArea>
       </Container>
       <Footer />
