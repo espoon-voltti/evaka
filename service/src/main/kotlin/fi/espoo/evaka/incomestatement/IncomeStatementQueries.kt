@@ -18,7 +18,7 @@ enum class IncomeStatementType {
     INCOME,
 }
 
-private fun selectQuery(single: Boolean): String {
+private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): String {
     // language=SQL
     return """
 SELECT
@@ -56,16 +56,19 @@ SELECT
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
-        'contentType', content_type
+        'contentType', content_type,
+        'uploadedByEmployee', uploaded_by_employee
       )), '[]'::jsonb) FROM (
-        SELECT id, name, content_type FROM attachment a
+        SELECT id, name, content_type, uploaded_by_employee IS NOT NULL AS uploaded_by_employee
+        FROM attachment a
         WHERE a.income_statement_id = ist.id 
+        ${if (excludeEmployeeAttachments) " AND uploaded_by_employee IS NULL" else ""}
         ORDER BY a.created
     ) s) AS attachments
 FROM income_statement ist
 LEFT JOIN employee e on ist.handler_id = e.id
 WHERE person_id = :personId
-${if (single) "AND ist.id = :id" else ""}
+${if (single) " AND ist.id = :id" else ""}
 ORDER BY start_date DESC
         """
 }
@@ -160,17 +163,19 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
 
 fun Database.Read.readIncomeStatementsForPerson(
     personId: UUID,
+    excludeEmployeeAttachments: Boolean
 ): List<IncomeStatement> =
-    createQuery(selectQuery(false))
+    createQuery(selectQuery(false, excludeEmployeeAttachments))
         .bind("personId", personId)
         .map { row -> mapIncomeStatement(row) }
         .list()
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: UUID,
-    incomeStatementId: IncomeStatementId
+    incomeStatementId: IncomeStatementId,
+    excludeEmployeeAttachments: Boolean
 ): IncomeStatement? =
-    createQuery(selectQuery(true))
+    createQuery(selectQuery(true, excludeEmployeeAttachments))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
         .map { row -> mapIncomeStatement(row) }

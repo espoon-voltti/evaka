@@ -95,7 +95,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     fun `add an attachment`() {
         val id = db.transaction { tx ->
             tx.createIncomeStatement(
-                testAdult_1.id, IncomeStatementBody.Income(
+                testAdult_1.id,
+                IncomeStatementBody.Income(
                     startDate = LocalDate.now(),
                     endDate = null,
                     gross = Gross(
@@ -129,11 +130,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 student = false,
                 alimonyPayer = false,
                 otherInfo = "",
-                attachments = listOf(Attachment(
-                    id = attachmentId,
-                    name = "espoo-logo.png",
-                    contentType = "image/png",
-                )),
+                attachments = listOf(
+                    Attachment(
+                        id = attachmentId,
+                        name = "espoo-logo.png",
+                        contentType = "image/png",
+                        uploadedByEmployee = true,
+                    )
+                ),
                 created = incomeStatement.created,
                 updated = incomeStatement.updated,
                 handlerName = null,
@@ -169,5 +173,5 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png")
+    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png", true)
 }

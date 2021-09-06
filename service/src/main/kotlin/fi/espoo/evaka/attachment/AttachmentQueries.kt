@@ -160,7 +160,7 @@ fun Database.Transaction.associateAttachments(
     }
 }
 
-fun Database.Transaction.dissociateAllAttachments(
+fun Database.Transaction.dissociateAllPersonsAttachments(
     personId: UUID,
     incomeStatementId: IncomeStatementId,
 ) {

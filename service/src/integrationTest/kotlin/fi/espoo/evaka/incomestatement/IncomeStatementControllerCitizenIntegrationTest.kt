@@ -9,7 +9,10 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import org.junit.jupiter.api.BeforeEach
@@ -541,6 +544,76 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .bind("id", id).execute()
     }
 
+    @Test
+    fun `employee attachments are not visible to citizen`() {
+        val attachment1 = uploadAttachment()
+
+        val employeeId = UUID.randomUUID()
+        val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
+        db.transaction {
+            it.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
+        }
+
+        createIncomeStatement(
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = LocalDate.of(2021, 8, 9),
+                gross = Gross(
+                    incomeSource = IncomeSource.INCOMES_REGISTER,
+                    estimatedIncome = EstimatedIncome(
+                        estimatedMonthlyIncome = 500,
+                        incomeStartDate = LocalDate.of(1992, 1, 2),
+                        incomeEndDate = LocalDate.of(2099, 9, 9),
+                    ),
+                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                ),
+                entrepreneur = Entrepreneur(
+                    fullTime = true,
+                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                    spouseWorksInCompany = false,
+                    startupGrant = true,
+                    checkupConsent = true,
+                    selfEmployed = SelfEmployed(
+                        attachments = true,
+                        estimatedIncome = EstimatedIncome(
+                            estimatedMonthlyIncome = 1000,
+                            incomeStartDate = LocalDate.of(2005, 6, 6),
+                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                        )
+                    ),
+                    limitedCompany = LimitedCompany(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                    ),
+                    partnership = false,
+                    lightEntrepreneur = false,
+                    accountant = Accountant(
+                        name = "Foo",
+                        address = "Bar",
+                        phone = "123",
+                        email = "foo.bar@example.com",
+                    )
+                ),
+                student = false,
+                alimonyPayer = true,
+                otherInfo = "foo bar",
+                attachmentIds = listOf(attachment1)
+            ),
+        )
+
+        val incomeStatementId = getIncomeStatements()[0].id
+
+        uploadAttachmentAsEmployee(employee, incomeStatementId)
+
+        val incomeStatement = getIncomeStatement(incomeStatementId)
+        assertEquals(
+            listOf(idToAttachment(attachment1)),
+            when (incomeStatement) {
+                is IncomeStatement.Income -> incomeStatement.attachments
+                else -> throw Error("No attachments")
+            }
+        )
+    }
+
     private fun getIncomeStatements(): List<IncomeStatement> =
         http.get("/citizen/income-statements")
             .timeout(1000000)
@@ -597,5 +670,17 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png")
+    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png", false)
+
+    private fun uploadAttachmentAsEmployee(
+        user: AuthenticatedUser,
+        incomeStatementId: IncomeStatementId
+    ): AttachmentId {
+        val (_, _, result) = http.upload("/attachments/income-statements/$incomeStatementId")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .responseObject<AttachmentId>(objectMapper)
+
+        return result.get()
+    }
 }
