@@ -6,111 +6,17 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { H4 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
-import { AbsenceType } from 'lib-common/generated/enums'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { faThermometer } from 'lib-icons'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import {
-  getTimesOnWeekday,
-  isIrregular,
-  isRegular,
-  isVariableTime
-} from 'lib-common/api-types/child/common'
+import ChildDay, { TimeCell, TimesRow } from './ChildDay'
 
 interface Props {
   operationalDays: OperationalDay[]
   reservations: ChildReservations[]
-}
-
-function renderAbsence(type: AbsenceType) {
-  if (type === 'SICKLEAVE')
-    return (
-      <AbsenceCell>
-        <FixedSpaceRow spacing="xs" alignItems="center">
-          <RoundIcon
-            content={faThermometer}
-            color={colors.accents.violet}
-            size="m"
-          />
-          <div>Sairaus</div>
-        </FixedSpaceRow>
-      </AbsenceCell>
-    )
-
-  return (
-    <AbsenceCell>
-      <FixedSpaceRow spacing="xs" alignItems="center">
-        <RoundIcon content="–" color={colors.primary} size="m" />
-        <div>Muu syy</div>
-      </FixedSpaceRow>
-    </AbsenceCell>
-  )
-}
-
-function renderChildDay(
-  day: OperationalDay,
-  childReservations: ChildReservations
-) {
-  const dailyData = childReservations.dailyData.find((d) =>
-    d.date.isEqual(day.date)
-  )
-
-  if (!dailyData) return null
-
-  if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
-    return null
-
-  if (dailyData.absence && !dailyData.attendance)
-    return renderAbsence(dailyData.absence.type)
-
-  const serviceTimes = childReservations.child.dailyServiceTimes
-  const serviceTimesAvailable =
-    serviceTimes != null && !isVariableTime(serviceTimes)
-  const serviceTimeOfDay =
-    serviceTimes === null || isVariableTime(serviceTimes)
-      ? null
-      : isRegular(serviceTimes)
-      ? serviceTimes.regularTimes
-      : isIrregular(serviceTimes)
-      ? getTimesOnWeekday(serviceTimes, day.date.getIsoDayOfWeek())
-      : null
-
-  return (
-    <DateCell>
-      <AttendanceTimesRow>
-        <Time>{dailyData.attendance?.startTime ?? '–'}</Time>
-        <Time>{dailyData.attendance?.endTime ?? '–'}</Time>
-      </AttendanceTimesRow>
-      <Gap size="xxs" />
-      <ReservationTimesRow>
-        {dailyData.reservation ? (
-          <>
-            <ReservationTime>
-              {dailyData.reservation?.startTime ?? '–'}
-            </ReservationTime>
-            <ReservationTime>
-              {dailyData.reservation?.endTime ?? '–'}
-            </ReservationTime>
-          </>
-        ) : serviceTimesAvailable && serviceTimeOfDay ? (
-          <>
-            <ReservationTime>{serviceTimeOfDay.start}*</ReservationTime>
-            <ReservationTime>{serviceTimeOfDay.end}*</ReservationTime>
-          </>
-        ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
-          <ReservationTime>Vapaapäivä</ReservationTime>
-        ) : (
-          <ReservationTime>Ei varausta</ReservationTime>
-        )}
-      </ReservationTimesRow>
-    </DateCell>
-  )
 }
 
 export default React.memo(function ReservationsTable({
@@ -132,8 +38,10 @@ export default React.memo(function ReservationsTable({
                 } ${date.format('dd.MM.')}`}
               </Date>
               <TimesRow>
-                <Time>{i18n.unit.attendanceReservations.startTime}</Time>
-                <Time>{i18n.unit.attendanceReservations.endTime}</Time>
+                <TimeCell>
+                  {i18n.unit.attendanceReservations.startTime}
+                </TimeCell>
+                <TimeCell>{i18n.unit.attendanceReservations.endTime}</TimeCell>
               </TimesRow>
             </DateTh>
           ))}
@@ -157,7 +65,7 @@ export default React.memo(function ReservationsTable({
               </StyledTd>
               {operationalDays.map((day) => (
                 <StyledTd key={day.date.formatIso()}>
-                  {renderChildDay(day, childReservations)}
+                  <ChildDay day={day} childReservations={childReservations} />
                 </StyledTd>
               ))}
             </Tr>
@@ -197,46 +105,5 @@ const ChildName = styled.div`
 
 const Date = styled(H4)`
   text-align: center;
-  margin: 0;
-  margin-bottom: ${defaultMargins.s};
-`
-
-const DateCell = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-`
-
-const TimesRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-evenly;
-`
-
-const AttendanceTimesRow = styled(TimesRow)`
-  font-weight: 600;
-`
-
-const ReservationTimesRow = styled(TimesRow)``
-
-const Time = styled.div`
-  min-width: 54px;
-  text-align: center;
-
-  &:not(:first-child) {
-    margin-left: ${defaultMargins.xs};
-  }
-`
-
-const ReservationTime = styled(Time)`
-  font-style: italic;
-`
-
-const AbsenceCell = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-style: italic;
+  margin: 0 0 ${defaultMargins.s};
 `

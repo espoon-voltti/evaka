@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @RestController
@@ -50,7 +48,6 @@ class AttendanceReservationController(private val ac: AccessControl) {
             val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
             tx
                 .getAttendanceReservationData(unitId, dateRange)
-                .let { it }
                 .groupBy { it.group }
                 .let { groupedReservations ->
                     val ungroupedRows = groupedReservations[null]
@@ -100,8 +97,8 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         p.date_of_birth,
         to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_start_time,
         to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_end_time,
-        att.arrived AS attendance_start,
-        att.departed AS attendance_end,
+        to_char((att.arrived AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_start_time,
+        to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
     JOIN placement pl ON pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> t::date
@@ -139,31 +136,16 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
         .map { (child, rowsByChild) ->
             UnitAttendanceReservations.ChildReservations(
                 child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
-                dailyData = rowsByChild
-                    .associateBy { it.date }
-                    .map { (date, rowByDateAndChild) ->
+                dailyData = rowsByChild.associateBy(
+                    keySelector = { it.date },
+                    valueTransform = {
                         UnitAttendanceReservations.DailyChildData(
-                            date = date,
-                            reservation = rowByDateAndChild.reservation?.let {
-                                UnitAttendanceReservations.ReservationTimes(
-                                    startTime = it.startTime,
-                                    endTime = it.endTime
-                                )
-                            },
-                            attendance = rowByDateAndChild.attendance?.let {
-                                UnitAttendanceReservations.AttendanceTimes(
-                                    startTime = it.start.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
-                                    endTime = it.end?.toLocalTime()?.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                )
-                            },
-                            absence = rowByDateAndChild.absence?.let {
-                                UnitAttendanceReservations.Absence(
-                                    type = it.type
-                                )
-                            }
+                            reservation = it.reservation,
+                            attendance = it.attendance,
+                            absence = it.absence
                         )
                     }
-                    .sortedBy { it.date }
+                )
             )
         }
         .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
@@ -187,27 +169,29 @@ data class UnitAttendanceReservations(
 
     data class ChildReservations(
         val child: Child,
-        val dailyData: List<DailyChildData>
+        val dailyData: Map<LocalDate, DailyChildData>
     )
 
     data class DailyChildData(
-        val date: LocalDate,
         val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
         val absence: Absence?
     )
 
     data class ReservationTimes(
+        @PropagateNull
         val startTime: String,
         val endTime: String
     )
 
     data class AttendanceTimes(
+        @PropagateNull
         val startTime: String,
         val endTime: String?
     )
 
     data class Absence(
+        @PropagateNull
         val type: AbsenceType
     )
 
@@ -225,27 +209,10 @@ data class UnitAttendanceReservations(
         @Nested
         val child: Child,
         @Nested("reservation")
-        val reservation: QueryRowReservation?,
+        val reservation: ReservationTimes?,
         @Nested("attendance")
-        val attendance: QueryRowAttendance?,
+        val attendance: AttendanceTimes?,
         @Nested("absence")
-        val absence: QueryRowAbsence?
-    )
-
-    data class QueryRowReservation(
-        @PropagateNull
-        val startTime: String,
-        val endTime: String
-    )
-
-    data class QueryRowAttendance(
-        @PropagateNull
-        val start: HelsinkiDateTime,
-        val end: HelsinkiDateTime?
-    )
-
-    data class QueryRowAbsence(
-        @PropagateNull
-        val type: AbsenceType
+        val absence: Absence?
     )
 }

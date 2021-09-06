@@ -871,11 +871,10 @@ export interface ChildReservations {
     dateOfBirth: LocalDate
     dailyServiceTimes: DailyServiceTimes | null
   }
-  dailyData: DailyChildData[]
+  dailyData: Record<JsonOf<LocalDate>, DailyChildData>
 }
 
 export interface DailyChildData {
-  date: LocalDate
   reservation: { startTime: string; endTime: string } | null
   attendance: { startTime: string; endTime: string | null } | null
   absence: { type: AbsenceType } | null
@@ -888,9 +887,5 @@ const mapChildReservationJson = (
   child: {
     ...json.child,
     dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-  },
-  dailyData: json.dailyData.map((data) => ({
-    ...data,
-    date: LocalDate.parseIso(data.date)
-  }))
+  }
 })
