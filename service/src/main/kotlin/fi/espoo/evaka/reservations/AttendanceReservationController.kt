@@ -131,7 +131,8 @@ private fun Database.Read.getDailyServiceTimes(childIds: Set<UUID>) = createQuer
     """.trimIndent()
 )
     .bind("childIds", childIds.toTypedArray())
-    .map { row -> row.mapColumn<UUID>("child_id") to toDailyServiceTimes(row) }
+    .map { row -> toDailyServiceTimes(row)?.let { row.mapColumn<UUID>("child_id") to it } }
+    .filterNotNull()
     .toMap()
 
 private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<UUID, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
