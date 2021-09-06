@@ -324,7 +324,8 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
         val hasFeeData: Boolean = serviceNeedFeeData.firstOrNull().let { it != null && it.hasFeeData() }
 
-        if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
+        if (evakaServiceNeed.hoursPerWeek < 1) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because hours per week is ${evakaServiceNeed.hoursPerWeek} ")
+        else if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
         else {
             check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
                 "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
@@ -680,7 +681,7 @@ WITH potential_missing_varda_service_needs AS (
     WHERE
         p.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
-        AND sno.daycare_hours_per_week > 0
+        AND sno.daycare_hours_per_week >= 1
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
         AND sn.start_date <= current_date
         AND vrc.reset_timestamp IS NOT NULL
