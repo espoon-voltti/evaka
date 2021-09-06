@@ -9,16 +9,17 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faFileAlt, faPen, faTrash } from 'lib-icons'
+import { faFileAlt, faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
-import { getIncomeStatements, removeIncomeStatement } from './api'
+import { getIncomeStatements, deleteIncomeStatement } from './api'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -91,6 +92,15 @@ function IncomeStatementsTable({
   )
 }
 
+type DeletionState =
+  | {
+      status: 'row-not-selected'
+    }
+  | {
+      status: 'confirming' | 'deleting'
+      rowToDelete: UUID
+    }
+
 export default function IncomeStatements() {
   const t = useTranslation()
   const history = useHistory()
@@ -104,18 +114,25 @@ export default function IncomeStatements() {
 
   useEffect(() => loadData(), [loadData])
 
-  const onRemove = useCallback(
-    (id: UUID) =>
-      removeIncomeStatement(id).then((res) => {
+  const [deletionState, setDeletionState] = useState<DeletionState>({
+    status: 'row-not-selected'
+  })
+
+  const onDelete = useCallback(
+    (id: UUID) => {
+      setDeletionState({ status: 'deleting', rowToDelete: id })
+      void deleteIncomeStatement(id).then((res) => {
         if (res.isFailure) {
           setErrorMessage({
-            title: t.income.errors.removeFailed,
+            title: t.income.errors.deleteFailed,
             type: 'error',
             resolveLabel: t.common.ok
           })
         }
+        setDeletionState({ status: 'row-not-selected' })
         loadData()
-      }),
+      })
+    },
     [loadData, setErrorMessage, t]
   )
 
@@ -132,9 +149,7 @@ export default function IncomeStatements() {
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
             <AddButton
-              onClick={() => {
-                history.push('/income/new')
-              }}
+              onClick={() => history.push('/income/new')}
               text={t.income.addNew}
             />
           </HeadingContainer>
@@ -150,12 +165,35 @@ export default function IncomeStatements() {
                 items.length > 0 && (
                   <IncomeStatementsTable
                     items={items}
-                    onRemoveIncomeStatement={onRemove}
+                    onRemoveIncomeStatement={(id) =>
+                      setDeletionState({
+                        status: 'confirming',
+                        rowToDelete: id
+                      })
+                    }
                   />
                 )
               )
             }
           })}
+
+          {deletionState.status !== 'row-not-selected' && (
+            <InfoModal
+              iconColour="orange"
+              title={t.income.table.deleteConfirm}
+              text={t.income.table.deleteDescription}
+              icon={faQuestion}
+              reject={{
+                action: () => setDeletionState({ status: 'row-not-selected' }),
+                label: t.common.return
+              }}
+              resolve={{
+                action: () => onDelete(deletionState.rowToDelete),
+                label: t.common.delete
+              }}
+              resolveDisabled={deletionState.status === 'deleting'}
+            />
+          )}
         </ContentArea>
       </Container>
       <Footer />

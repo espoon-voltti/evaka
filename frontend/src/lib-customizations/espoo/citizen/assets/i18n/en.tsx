@@ -15,6 +15,7 @@ const en: Translations = {
     ok: 'Ok',
     save: 'Save',
     confirm: 'Confirm',
+    delete: 'Remove',
     edit: 'Edit',
     add: 'Add',
     unit: {
@@ -1505,7 +1506,7 @@ const en: Translations = {
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
       consentRequired:
         'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan',
-      removeFailed: 'Tuloselvitystä ei voitu poistaa'
+      deleteFailed: 'Tuloselvitystä ei voitu poistaa'
     },
     table: {
       title: 'Tuloselvitykset',
@@ -1513,7 +1514,10 @@ const en: Translations = {
       startDate: 'Voimassa alkaen',
       endDate: 'Voimassa asti',
       handler: 'Käsittelijä',
-      openIncomeStatement: 'Avaa lomake'
+      openIncomeStatement: 'Avaa lomake',
+      deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
+      deleteDescription:
+        'Haluatko varmasti poistaa toimittamasi tuloselvityksen? Kaikki poistettavan lomakkeen tiedot menetetään.'
     }
   },
   validationErrors: {
