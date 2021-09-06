@@ -134,7 +134,7 @@ const PersonProfile = React.memo(function PersonProfile({
                   }`}
                   background={`black`}
                   color={`white`}
-                  data-qa="deceaced-label"
+                  data-qa="deceased-label"
                 />
               )}
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
