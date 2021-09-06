@@ -379,6 +379,15 @@ fun Database.Transaction.setIncomeStatementHandler(handlerId: EmployeeId?, incom
         .execute()
 }
 
+fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
+    createUpdate("UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = :id")
+        .bind("id", id)
+        .execute()
+    createUpdate("DELETE FROM income_statement WHERE id = :id")
+        .bind("id", id)
+        .execute()
+}
+
 data class IncomeStatementAwaitingHandler(
     val id: UUID,
     val type: IncomeStatementType,

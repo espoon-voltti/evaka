@@ -119,6 +119,7 @@ enum class Audit(
     FinanceBasicsFeeThresholdsCreate("evaka.finance-basics-fee-thresholds.create"),
     FinanceBasicsFeeThresholdsUpdate("evaka.finance-basics-fee-thresholds.update"),
     IncomeStatementCreate("evaka.income-statement.create"),
+    IncomeStatementDelete("evaka.income-statement.delete"),
     IncomeStatementOfPerson("evaka.income-statement.person.read"),
     IncomeStatementUpdate("evaka.income-statement.update"),
     IncomeStatementUpdateHandled("evaka.income-statement.handled.update"),
