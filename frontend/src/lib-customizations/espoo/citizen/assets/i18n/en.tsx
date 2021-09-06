@@ -1278,7 +1278,7 @@ const en: Translations = {
           tulotietojasi toimittamalla uuden lomakkeen.
           <br />
           Lisätietoja maksuista:{' '}
-          <a href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_Varhaiskasvatuksessa">
+          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
             Maksut varhaiskasvatuksessa
           </a>
         </p>
@@ -1290,6 +1290,26 @@ const en: Translations = {
           kuuluuko perheenne automaattisesti korkeimman varhaiskasvatusmaksun
           piiriin.
         </p>
+      </>
+    ),
+    formTitle: 'Tulotietojen ilmoitus',
+    formDescription: (
+      <>
+        <p>
+          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+          korkeimpaan maksuun.
+        </p>
+        <p>
+          Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+          alkamispäivästä lähtien.
+        </p>
+        <p>
+          Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+          asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu
+          perimään varhaiskasvatusmaksuja myös takautuvasti.
+        </p>
+        <p>* Tähdellä merkityt tiedot ovat pakollisia</p>
       </>
     ),
     addNew: 'Uusi tuloselvitys',
