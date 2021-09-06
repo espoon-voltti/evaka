@@ -99,6 +99,7 @@ export default React.memo(function UnitList({
 
                 <Centered>
                   <InlineButton
+                    data-qa="toggle-show-more-units"
                     onClick={() => setShowMoreUnits(true)}
                     text={t.map.showMore}
                     icon={faAngleDown}

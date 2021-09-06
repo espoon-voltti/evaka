@@ -108,7 +108,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
   }
 
   const accountant =
-    limitedCompany || partnership
+    limitedCompany || selfEmployed || partnership
       ? validateAccountant(formData.accountant)
       : null
   if (accountant === invalid) {

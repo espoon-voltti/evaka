@@ -120,9 +120,8 @@ export default React.forwardRef(function IncomeStatementForm(
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
           <FixedSpaceColumn spacing="zero">
-            <H1 noMargin>{t.income.title}</H1>
-            <Gap size="s" />
-            <P noMargin>{t.income.description}</P>
+            <H1 noMargin>{t.income.formTitle}</H1>
+            {t.income.formDescription}
           </FixedSpaceColumn>
         </ContentArea>
         <Gap size="s" />
@@ -638,7 +637,9 @@ function EntrepreneurIncomeSelection({
             <Indent>{t.income.entrepreneurIncome.lightEntrepreneurInfo}</Indent>
           </>
         )}
-        {(formData.limitedCompany.selected || formData.partnership) && (
+        {(formData.limitedCompany.selected ||
+          formData.selfEmployed.selected ||
+          formData.partnership) && (
           <>
             <Gap size="L" />
             <Accounting

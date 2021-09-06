@@ -61,10 +61,13 @@ export async function getPlacements(
           ...sn,
           startDate: LocalDate.parseIso(sn.startDate),
           endDate: LocalDate.parseIso(sn.endDate),
-          confirmed: {
-            ...sn.confirmed,
-            at: new Date(sn.confirmed.at)
-          }
+          confirmed:
+            sn.confirmed != null
+              ? {
+                  ...sn.confirmed,
+                  at: sn.confirmed.at != null ? new Date(sn.confirmed.at) : null
+                }
+              : null
         }))
       }))
     )

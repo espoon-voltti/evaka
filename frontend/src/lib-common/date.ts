@@ -16,3 +16,14 @@ export function formatDate(
 ): string {
   return date ? format(date, dateFormat) : ''
 }
+
+export function formatTime(date: Date | null | undefined): string {
+  return formatDate(date, DATE_FORMAT_TIME_ONLY)
+}
+
+// matches 24h format with mandatory leading zeros "23:59" and "00:09"
+const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/
+
+export function isValidTime(time: string): boolean {
+  return timeRegex.test(time)
+}

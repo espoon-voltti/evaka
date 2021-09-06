@@ -1,15 +1,16 @@
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllAttachments
-import fi.espoo.evaka.daycare.controllers.utils.notFound
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +27,7 @@ class IncomeStatementControllerCitizen {
         db: Database.Connection,
         user: AuthenticatedUser
     ): List<IncomeStatement> {
+        Audit.IncomeStatementsOfPerson.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementsForPerson(user.id)
@@ -38,6 +40,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
+        Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementForPerson(user.id, incomeStatementId) ?: throw NotFound("No such income statement")
@@ -49,7 +52,8 @@ class IncomeStatementControllerCitizen {
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: IncomeStatementBody
-    ): ResponseEntity<Unit> {
+    ) {
+        Audit.IncomeStatementCreate.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
         db.transaction { tx ->
@@ -61,7 +65,6 @@ class IncomeStatementControllerCitizen {
                     Unit
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -70,7 +73,8 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
-    ): ResponseEntity<Unit> {
+    ) {
+        Audit.IncomeStatementUpdate.log(incomeStatementId)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->
@@ -85,9 +89,22 @@ class IncomeStatementControllerCitizen {
                     }
                 }
             }
-        }.let { success ->
-            if (success) ResponseEntity.noContent().build()
-            else notFound()
+        }.let { success -> if (!success) throw NotFound("Income statement not found") }
+    }
+
+    @DeleteMapping("/{id}")
+    fun removeIncomeStatement(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: IncomeStatementId
+    ) {
+        Audit.IncomeStatementDelete.log(id)
+        user.requireOneOfRoles(UserRole.END_USER)
+        return db.transaction { tx ->
+            tx.readIncomeStatementForPerson(user.id, id)
+                ?.also { if (it.handlerName != null) throw Forbidden("Handled income statement cannot be removed") }
+                ?: throw NotFound("Income statement not found")
+            tx.removeIncomeStatement(id)
         }
     }
 }

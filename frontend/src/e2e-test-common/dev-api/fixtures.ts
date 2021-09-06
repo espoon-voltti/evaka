@@ -239,6 +239,24 @@ export const enduserChildJariOtherGuardianFixture: PersonDetail = {
   restrictedDetailsEndDate: null
 }
 
+export const enduserDeceasedChildFixture: PersonDetail = {
+  id: 'b8711722-0c1b-4044-a794-5b308207d78b',
+  ssn: '150515-999T',
+  firstName: 'Unelma',
+  lastName: 'Aapinen',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: '2015-05-15',
+  dateOfDeath: '2020-06-01',
+  streetAddress: 'Aapiskatu 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
 const twoGuardiansGuardian1 = {
   id: '9d6289ba-9ffd-11ea-bb37-0242ac130002',
   ssn: '220281-9456',

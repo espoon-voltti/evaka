@@ -14,6 +14,8 @@ export default {
     ok: 'Ok',
     save: 'Tallenna',
     confirm: 'Vahvista',
+    delete: 'Poista',
+    edit: 'Muokkaa',
     add: 'Lisää',
     unit: {
       providerTypes: {
@@ -63,6 +65,7 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
+      income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri'
     },
@@ -142,8 +145,10 @@ export default {
     backToSearch: 'Takaisin hakuun'
   },
   calendar: {
+    title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
     newReservationBtn: 'Tee varaus',
+    noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Valitse lapset',
@@ -1197,26 +1202,52 @@ export default {
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
   },
   income: {
-    title: 'Tulotietojen ilmoitus',
+    title: 'Tulotiedot',
     description: (
       <>
-        Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
-        aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
-        korkeimpaan maksuun.
-        <br />
-        <br />
-        Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
-        alkamispäivästä lähtien.
-        <br />
-        <br />
-        Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
-        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
-        varhaiskasvatusmaksuja myös takautuvasti.
-        <br />
-        <br />* Tähdellä merkityt tiedot ovat pakollisia
+        <p>
+          Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
+          vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
+          tuloselvityksiä ja muokata tai poistaa niitä kunnes viranomainen on
+          käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
+          tulotietojasi toimittamalla uuden lomakkeen.
+          <br />
+          Lisätietoja maksuista:{' '}
+          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+            Maksut varhaiskasvatuksessa
+          </a>
+        </p>
+        <p>
+          Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
+          prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen
+          koon ja tulojen sekä varhaiskasvatusajan mukaan. Tarkista alla
+          olevasta taulukosta tarvitseeko sinun toimittaa tuloselvitystä, vai
+          kuuluuko perheenne automaattisesti korkeimman varhaiskasvatusmaksun
+          piiriin.
+        </p>
       </>
     ),
-    addNew: 'Luo uusi tulotieto',
+    formTitle: 'Tulotietojen ilmoitus',
+    formDescription: (
+      <>
+        <p>
+          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
+          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
+          korkeimpaan maksuun.
+        </p>
+        <p>
+          Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
+          alkamispäivästä lähtien.
+        </p>
+        <p>
+          Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
+          asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu
+          perimään varhaiskasvatusmaksuja myös takautuvasti.
+        </p>
+        <p>* Tähdellä merkityt tiedot ovat pakollisia</p>
+      </>
+    ),
+    addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
@@ -1407,7 +1438,19 @@ export default {
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
       consentRequired:
-        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan'
+        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan',
+      deleteFailed: 'Tuloselvitystä ei voitu poistaa'
+    },
+    table: {
+      title: 'Tuloselvitykset',
+      incomeStatementForm: 'Tuloselvityslomake',
+      startDate: 'Voimassa alkaen',
+      endDate: 'Voimassa asti',
+      handler: 'Käsittelijä',
+      openIncomeStatement: 'Avaa lomake',
+      deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
+      deleteDescription:
+        'Haluatko varmasti poistaa toimittamasi tuloselvityksen? Kaikki poistettavan lomakkeen tiedot menetetään.'
     }
   },
   validationErrors: {

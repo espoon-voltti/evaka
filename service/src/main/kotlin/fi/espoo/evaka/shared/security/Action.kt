@@ -21,9 +21,17 @@ import java.util.EnumSet
 
 sealed interface Action {
     sealed interface ScopedAction<I> : Action
+
+    /*
+    * Global actions are top/root level actions that cannot be tied to any specific scope.
+    * If a global action is permitted to a scoped role then user has to have that role somewhere,
+    * e.g. be a unit supervisor in some unit.
+    * */
     enum class Global(private val roles: EnumSet<UserRole>) : Action {
         CREATE_VASU_TEMPLATE(),
         READ_VASU_TEMPLATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+
+        FETCH_INCOME_STATEMENTS_AWAITING_HANDLER(FINANCE_ADMIN),
 
         CREATE_PAPER_APPLICATION(SERVICE_WORKER),
         SEARCH_APPLICATION_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
@@ -35,6 +43,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+
     enum class Application(private val roles: EnumSet<UserRole>) : Action {
         READ_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         READ_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),

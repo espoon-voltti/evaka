@@ -6,40 +6,24 @@ import React from 'react'
 import _ from 'lodash'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DailyReservationData } from './api'
 import WeekElem, { WeekProps } from './WeekElem'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
+import { useTranslation } from '../localization'
 
 export interface Props {
-  dailyReservations: DailyReservationData[]
+  weeklyData: WeekProps[]
   onCreateReservationClicked: () => void
   selectDate: (date: LocalDate) => void
 }
 
 export default React.memo(function CalendarListView({
-  dailyReservations,
+  weeklyData,
   onCreateReservationClicked,
   selectDate
 }: Props) {
-  const weeklyData = dailyReservations.reduce((weekly, daily) => {
-    const last = _.last(weekly)
-    if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
-      return [
-        ...weekly,
-        { weekNumber: daily.date.getIsoWeek(), dailyReservations: [daily] }
-      ]
-    } else {
-      return [
-        ..._.dropRight(weekly),
-        {
-          ...last,
-          dailyReservations: [...last.dailyReservations, daily]
-        }
-      ]
-    }
-  }, [] as WeekProps[])
+  const i18n = useTranslation()
 
   return (
     <>
@@ -50,7 +34,7 @@ export default React.memo(function CalendarListView({
       </FixedSpaceColumn>
       <HoverButton
         onClick={onCreateReservationClicked}
-        text={'Luo varaus'}
+        text={i18n.calendar.newReservationBtn}
         primary
         type="button"
       />

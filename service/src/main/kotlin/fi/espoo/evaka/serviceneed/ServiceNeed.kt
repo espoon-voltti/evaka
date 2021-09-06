@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.serviceneed
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -31,7 +33,8 @@ data class ServiceNeed(
     val option: ServiceNeedOptionSummary,
     val shiftCare: Boolean,
     @Nested("confirmed")
-    val confirmed: ServiceNeedConfirmation,
+    @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
+    val confirmed: ServiceNeedConfirmation?,
     val updated: Instant
 )
 
@@ -47,10 +50,11 @@ data class ServiceNeedOptionSummary(
 )
 
 data class ServiceNeedConfirmation(
+    @PropagateNull
     val employeeId: UUID,
     val firstName: String,
     val lastName: String,
-    val at: HelsinkiDateTime
+    val at: HelsinkiDateTime?
 )
 
 data class ServiceNeedOptionPublicInfo(
@@ -184,8 +188,8 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = old.endDate,
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed.employeeId,
-                    confirmedAt = old.confirmed.at
+                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedAt = old.confirmed?.at
                 )
             }
             periodToClear.includes(oldPeriod.end) -> {
@@ -195,8 +199,8 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed.employeeId,
-                    confirmedAt = old.confirmed.at
+                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedAt = old.confirmed?.at
                 )
             }
             else -> {
@@ -206,8 +210,8 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed.employeeId,
-                    confirmedAt = old.confirmed.at
+                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedAt = old.confirmed?.at
                 )
                 tx.insertServiceNeed(
                     placementId = placementId,
@@ -215,8 +219,8 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = old.endDate,
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed.employeeId,
-                    confirmedAt = old.confirmed.at
+                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedAt = old.confirmed?.at
                 )
             }
         }

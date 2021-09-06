@@ -253,19 +253,13 @@ test('Placement proposal flow', async (t) => {
   await unitPage.clickProposalAccept(applicationId)
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
-    .ok()
+    .notOk()
 
   await unitPage.clickProposalAccept(applicationId2)
-  await t
-    .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
-    .notOk()
 
   await unitPage.clickProposalReject(applicationId2)
   await unitPage.selectProposalRejectionReason(0)
   await unitPage.submitProposalRejectionReason()
-  await t
-    .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
-    .ok()
 
   await employeeLogin(t, seppoAdmin, ApplicationListView.url)
   await applicationWorkbench.waitUntilLoaded()

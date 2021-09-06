@@ -8,6 +8,12 @@ import { RawElement } from 'e2e-playwright/utils/element'
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
+  readonly #deceased = new RawElement(this.page, '[data-qa="deceased-label"]')
+
+  async deceasedIconIsShown() {
+    await this.#deceased.waitUntilVisible()
+  }
+
   async openCollapsible<C extends Collapsible>(
     collapsible: C
   ): Promise<SectionFor<C>> {

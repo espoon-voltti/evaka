@@ -76,8 +76,8 @@ export interface ServiceNeed {
     employeeId: UUID
     firstName: string
     lastName: string
-    at: Date
-  }
+    at: Date | null
+  } | null
 }
 
 export interface Placement {

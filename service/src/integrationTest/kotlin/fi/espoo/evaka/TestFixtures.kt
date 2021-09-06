@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.PersonBasics
 import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.Language
@@ -712,7 +713,8 @@ fun Database.Transaction.insertApplication(
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
-    guardianEmail: String = "abc@espoo.fi"
+    guardianEmail: String = "abc@espoo.fi",
+    serviceNeedOption: ServiceNeedOption? = null
 ): ApplicationDetails {
     insertTestApplication(
         id = applicationId,
@@ -772,7 +774,7 @@ fun Database.Transaction.insertApplication(
                     endTime = "15:00",
                     shiftCare = false,
                     partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
-                    serviceNeedOption = null
+                    serviceNeedOption = serviceNeedOption
                 ),
                 siblingBasis = null,
                 preparatory = appliedType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE),

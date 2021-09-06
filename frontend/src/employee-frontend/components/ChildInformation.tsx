@@ -37,6 +37,7 @@ import { requireRole } from '../utils/roles'
 import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
+import CircularLabel from './common/CircularLabel'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -202,6 +203,16 @@ const ChildInformation = React.memo(function ChildInformation({
               {i18n.childInformation.title}
             </Title>
             <div>
+              {person.isSuccess && person.value.dateOfDeath && (
+                <CircularLabel
+                  text={`${i18n.common.form.dateOfDeath}: ${
+                    person.value.dateOfDeath?.format() ?? ''
+                  }`}
+                  background={`black`}
+                  color={`white`}
+                  data-qa="deceased-label"
+                />
+              )}
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel text={i18n.childInformation.restrictedDetails} />
               )}
