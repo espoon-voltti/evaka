@@ -121,8 +121,7 @@ export default React.forwardRef(function IncomeStatementForm(
         <ContentArea opaque paddingVertical="L">
           <FixedSpaceColumn spacing="zero">
             <H1 noMargin>{t.income.formTitle}</H1>
-            <Gap size="s" />
-            <P noMargin>{t.income.formDescription}</P>
+            {t.income.formDescription}
           </FixedSpaceColumn>
         </ContentArea>
         <Gap size="s" />
