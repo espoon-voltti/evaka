@@ -220,7 +220,7 @@ const attachmentToFile = (attachment: Attachment): FileObject => {
   }
 }
 
-const fileIcon = (file: FileObject): IconDefinition => {
+export const fileIcon = (file: Attachment): IconDefinition => {
   switch (file.contentType) {
     case 'image/jpeg':
     case 'image/png':

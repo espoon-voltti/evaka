@@ -29,11 +29,12 @@ import { PersonContext } from '../state/person'
 import { getPersonDetails } from '../api/person'
 import { getAttachmentBlob } from '../api/attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import FileUpload from 'lib-components/molecules/FileUpload'
+import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import {
   deleteAttachment,
   saveIncomeStatementAttachment
 } from '../api/attachments'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export default React.memo(function IncomeStatementPage({
   match
@@ -54,7 +55,10 @@ export default React.memo(function IncomeStatementPage({
         prev.type === 'INCOME'
           ? {
               ...prev,
-              attachments: [...prev.attachments, attachment]
+              attachments: [
+                ...prev.attachments,
+                { ...attachment, uploadedByEmployee: true }
+              ]
             }
           : prev
       )
@@ -115,7 +119,9 @@ export default React.memo(function IncomeStatementPage({
               <ContentArea opaque>
                 <EmployeeAttachments
                   incomeStatementId={incomeStatement.id}
-                  attachments={incomeStatement.attachments}
+                  attachments={incomeStatement.attachments.filter(
+                    (attachment) => attachment.uploadedByEmployee
+                  )}
                   onUploaded={handleAttachmentUploaded}
                   onDeleted={handleAttachmentDeleted}
                 />
@@ -160,7 +166,11 @@ function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
         value={incomeStatement.otherInfo || '-'}
       />
       <HorizontalLine />
-      <CitizenAttachments attachments={incomeStatement.attachments} />
+      <CitizenAttachments
+        attachments={incomeStatement.attachments.filter(
+          (attachment) => !attachment.uploadedByEmployee
+        )}
+      />
     </>
   )
 }
@@ -348,19 +358,34 @@ function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
       ) : (
         <Row
           label={`${i18n.incomeStatement.attachments}:`}
-          value={attachments.map((attachment) => (
-            <FileDownloadButton
-              key={attachment.id}
-              file={attachment}
-              fileFetchFn={getAttachmentBlob}
-              onFileUnavailable={() => undefined}
-            />
-          ))}
+          value={<UploadedFiles files={attachments} />}
         />
       )}
     </>
   )
 }
+
+function UploadedFiles({ files }: { files: Attachment[] }) {
+  return (
+    <FixedSpaceColumn>
+      {files.map((file) => (
+        <div key={file.id}>
+          <FileIcon icon={fileIcon(file)} />
+          <FileDownloadButton
+            file={file}
+            fileFetchFn={getAttachmentBlob}
+            onFileUnavailable={() => undefined}
+          />
+        </div>
+      ))}
+    </FixedSpaceColumn>
+  )
+}
+
+const FileIcon = styled(FontAwesomeIcon)`
+  color: ${(p) => p.theme.colors.main.primary};
+  margin-right: ${defaultMargins.s};
+`
 
 function EmployeeAttachments({
   incomeStatementId,
