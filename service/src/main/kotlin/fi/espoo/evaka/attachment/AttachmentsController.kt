@@ -82,19 +82,23 @@ class AttachmentsController(
         return ResponseEntity.ok(id)
     }
 
-    @PostMapping("/citizen", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements/"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser,
+        @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<AttachmentId> {
+    ): AttachmentId {
         Audit.AttachmentsUpload.log(targetId = "nothing")
         user.requireOneOfRoles(UserRole.END_USER)
 
         checkAttachmentCount(db, user)
 
-        val id = handleFileUpload(db, user, AttachToNothing, file, null)
-        return ResponseEntity.ok(id)
+        val attachTo = if (incomeStatementId != null) AttachToIncomeStatement(incomeStatementId) else AttachToNothing
+        return handleFileUpload(db, user, attachTo, file, null)
     }
 
     private fun checkAttachmentCount(db: Database, user: AuthenticatedUser) {

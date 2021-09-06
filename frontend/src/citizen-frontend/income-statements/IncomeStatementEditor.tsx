@@ -114,6 +114,7 @@ export default function IncomeStatementEditor() {
   if (formData) {
     return (
       <IncomeStatementForm
+        incomeStatementId={id}
         formData={formData}
         showFormErrors={showFormErrors}
         onChange={updateFormData}
