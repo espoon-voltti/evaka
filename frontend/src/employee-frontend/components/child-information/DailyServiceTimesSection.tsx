@@ -235,17 +235,15 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
       apiCall = deleteChildDailyServiceTimes(id)
     } else if (formData.type === 'REGULAR') {
       const data: RegularDailyServiceTimes = {
-        childId: id,
         type: 'REGULAR',
         regularTimes: {
           start: formData.regular.start,
           end: formData.regular.end
         }
       }
-      apiCall = putChildDailyServiceTimes(data)
+      apiCall = putChildDailyServiceTimes(id, data)
     } else if (formData.type === 'IRREGULAR') {
       const data: IrregularDailyServiceTimes = {
-        childId: id,
         type: 'IRREGULAR',
         monday: formData.monday.selected
           ? {
@@ -278,14 +276,12 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
             }
           : null
       }
-      apiCall = putChildDailyServiceTimes(data)
+      apiCall = putChildDailyServiceTimes(id, data)
     } else if (formData.type === 'VARIABLE_TIME') {
       const data: VariableDailyServiceTimes = {
-        childId: id,
-        type: 'VARIABLE_TIME',
-        variableTimes: true
+        type: 'VARIABLE_TIME'
       }
-      apiCall = putChildDailyServiceTimes(data)
+      apiCall = putChildDailyServiceTimes(id, data)
     }
 
     if (apiCall) {

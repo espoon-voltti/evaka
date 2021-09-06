@@ -24,10 +24,11 @@ export async function getChildDailyServiceTimes(
 }
 
 export async function putChildDailyServiceTimes(
+  childId: UUID,
   data: DailyServiceTimes
 ): Promise<Result<null>> {
   return client
-    .put(`/daily-service-times`, data)
+    .put(`/children/${childId}/daily-service-times`, data)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

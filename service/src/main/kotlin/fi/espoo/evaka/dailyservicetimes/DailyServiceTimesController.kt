@@ -43,16 +43,17 @@ class DailyServiceTimesController(
         }
     }
 
-    @PutMapping("/daily-service-times")
+    @PutMapping("/children/{childId}/daily-service-times")
     fun putDailyServiceTimes(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable childId: UUID,
         @RequestBody body: DailyServiceTimes
     ): ResponseEntity<Unit> {
-        Audit.ChildDailyServiceTimesEdit.log(targetId = body.childId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_DAILY_SERVICE_TIMES, body.childId)
+        Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_DAILY_SERVICE_TIMES, childId)
 
-        db.transaction { it.upsertChildDailyServiceTimes(body) }
+        db.transaction { it.upsertChildDailyServiceTimes(childId, body) }
 
         return ResponseEntity.noContent().build()
     }

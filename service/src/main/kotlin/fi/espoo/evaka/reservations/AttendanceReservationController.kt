@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -107,7 +108,12 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
     LEFT JOIN attendance_reservation res ON res.child_id = p.id AND res.start_date = t::date
     LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
-    LEFT JOIN absence ab ON ab.child_id = p.id AND ab.date = t::date
+    LEFT JOIN LATERAL (
+        SELECT absence_type
+        FROM absence
+        WHERE absence.date = t::date AND absence.child_id = p.id
+        LIMIT 1
+    ) ab ON true
     """.trimIndent()
 )
     .bind("unitId", unitId)
@@ -125,10 +131,8 @@ private fun Database.Read.getDailyServiceTimes(childIds: Set<UUID>) = createQuer
     """.trimIndent()
 )
     .bind("childIds", childIds.toTypedArray())
-    .map { row -> toDailyServiceTimes(row) }
-    .toList()
-    .filterNotNull()
-    .associateBy { it.childId }
+    .map { row -> row.mapColumn<UUID>("child_id") to toDailyServiceTimes(row) }
+    .toMap()
 
 private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<UUID, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
     return rows

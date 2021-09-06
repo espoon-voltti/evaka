@@ -53,7 +53,7 @@ export default React.memo(function ReservationsTable({
 
           return (
             <Tr key={childName}>
-              <StyledTd>
+              <NameTd>
                 <ChildName>
                   <Link to={`/child-information/${childReservations.child.id}`}>
                     {childName}
@@ -62,7 +62,7 @@ export default React.memo(function ReservationsTable({
                     dateOfBirth={childReservations.child.dateOfBirth}
                   />
                 </ChildName>
-              </StyledTd>
+              </NameTd>
               {operationalDays.map((day) => (
                 <StyledTd key={day.date.formatIso()}>
                   <ChildDay day={day} childReservations={childReservations} />
@@ -89,6 +89,10 @@ const DateTh = styled(CustomTh)<{ faded: boolean }>`
 const StyledTd = styled(Td)`
   border-right: 1px solid ${colors.greyscale.medium};
   vertical-align: middle;
+`
+
+const NameTd = styled(StyledTd)`
+  width: 350px;
 `
 
 const ChildName = styled.div`

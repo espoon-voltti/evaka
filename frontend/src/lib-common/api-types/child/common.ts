@@ -2,21 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../types'
-
 export interface TimeRange {
   start: string
   end: string
 }
 
 export interface RegularDailyServiceTimes {
-  childId: UUID
   type: 'REGULAR'
   regularTimes: TimeRange
 }
 
 export interface IrregularDailyServiceTimes {
-  childId: UUID
   type: 'IRREGULAR'
   monday: TimeRange | null
   tuesday: TimeRange | null
@@ -26,9 +22,7 @@ export interface IrregularDailyServiceTimes {
 }
 
 export interface VariableDailyServiceTimes {
-  childId: UUID
   type: 'VARIABLE_TIME'
-  variableTimes: boolean | null
 }
 
 export type DailyServiceTimes =
