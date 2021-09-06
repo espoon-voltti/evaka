@@ -638,7 +638,9 @@ function EntrepreneurIncomeSelection({
             <Indent>{t.income.entrepreneurIncome.lightEntrepreneurInfo}</Indent>
           </>
         )}
-        {(formData.limitedCompany.selected || formData.partnership) && (
+        {(formData.limitedCompany.selected ||
+          formData.selfEmployed.selected ||
+          formData.partnership) && (
           <>
             <Gap size="L" />
             <Accounting
