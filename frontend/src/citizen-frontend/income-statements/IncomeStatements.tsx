@@ -92,6 +92,15 @@ function IncomeStatementsTable({
   )
 }
 
+type DeletionState =
+  | {
+      status: 'row-not-selected'
+    }
+  | {
+      status: 'confirming' | 'deleting'
+      rowToDelete: UUID
+    }
+
 export default function IncomeStatements() {
   const t = useTranslation()
   const history = useHistory()
@@ -105,29 +114,24 @@ export default function IncomeStatements() {
 
   useEffect(() => loadData(), [loadData])
 
-  const [rowToDelete, setRowToDelete] = useState<UUID>()
-  const [deleting, setDeleting] = useState(false)
+  const [deletionState, setDeletionState] = useState<DeletionState>({
+    status: 'row-not-selected'
+  })
 
   const onDelete = useCallback(
     (id: UUID) => {
-      setDeleting(true)
-      deleteIncomeStatement(id)
-        .then((res) =>
-          res.mapAll({
-            failure: () =>
-              setErrorMessage({
-                title: t.income.errors.deleteFailed,
-                type: 'error',
-                resolveLabel: t.common.ok
-              }),
-            loading: () => null,
-            success: () => {
-              setRowToDelete(undefined)
-              setDeleting(false)
-            }
+      setDeletionState({ status: 'deleting', rowToDelete: id })
+      void deleteIncomeStatement(id).then((res) => {
+        if (res.isFailure) {
+          setErrorMessage({
+            title: t.income.errors.deleteFailed,
+            type: 'error',
+            resolveLabel: t.common.ok
           })
-        )
-        .finally(() => loadData())
+        }
+        setDeletionState({ status: 'row-not-selected' })
+        loadData()
+      })
     },
     [loadData, setErrorMessage, t]
   )
@@ -161,28 +165,33 @@ export default function IncomeStatements() {
                 items.length > 0 && (
                   <IncomeStatementsTable
                     items={items}
-                    onRemoveIncomeStatement={setRowToDelete}
+                    onRemoveIncomeStatement={(id) =>
+                      setDeletionState({
+                        status: 'confirming',
+                        rowToDelete: id
+                      })
+                    }
                   />
                 )
               )
             }
           })}
 
-          {rowToDelete && (
+          {deletionState.status !== 'row-not-selected' && (
             <InfoModal
               iconColour="orange"
               title={t.income.table.deleteConfirm}
               text={t.income.table.deleteDescription}
               icon={faQuestion}
               reject={{
-                action: () => setRowToDelete(undefined),
+                action: () => setDeletionState({ status: 'row-not-selected' }),
                 label: t.common.return
               }}
               resolve={{
-                action: () => onDelete(rowToDelete),
+                action: () => onDelete(deletionState.rowToDelete),
                 label: t.common.delete
               }}
-              resolveDisabled={deleting}
+              resolveDisabled={deletionState.status === 'deleting'}
             />
           )}
         </ContentArea>
