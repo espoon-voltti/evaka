@@ -64,6 +64,7 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
+      income: 'Income',
       messages: 'Messages',
       calendar: 'Calendar'
     },

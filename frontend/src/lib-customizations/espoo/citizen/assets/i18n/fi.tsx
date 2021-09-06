@@ -63,6 +63,7 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
+      income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri'
     },
