@@ -589,7 +589,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")!!
 
     private fun uploadAttachment(user: AuthenticatedUser = citizen): AttachmentId {
-        val (_, _, result) = http.upload("/attachments/citizen")
+        val (_, _, result) = http.upload("/attachments/citizen/income-statements")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .responseObject<AttachmentId>(objectMapper)

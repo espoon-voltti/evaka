@@ -1322,8 +1322,17 @@ export const fi = {
     alimonyPayer: 'Maksaa elatusmaksuja',
     otherInfo: 'Lisätietoja tulotietoihin liittyen',
 
-    attachmentsTitle: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-    noAttachments: 'Ei liitteitä',
+    citizenAttachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      noAttachments: 'Ei liitteitä'
+    },
+
+    employeeAttachments: {
+      title: 'Lisää liitteitä',
+      description:
+        'Tässä voit lisätä asiakkaan paperisena toimittamia liitteitä eVakan kautta palautettuun tuloselvitykseen.'
+    },
+
     statementTypes: {
       HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
       INCOME: 'Huoltajan toimittamat tulotiedot'

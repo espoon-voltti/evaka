@@ -13,12 +13,15 @@ import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -39,6 +42,7 @@ import java.util.UUID
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
+    private val accessControl: AccessControl,
     evakaEnv: EvakaEnv,
     bucketEnv: BucketEnv
 ) {
@@ -52,14 +56,25 @@ class AttachmentsController(
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<AttachmentId> {
+    ): AttachmentId {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        return handleFileUpload(db, user, AttachToApplication(applicationId), file, type).also {
+            db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
+        }
+    }
 
-        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
-        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
-
-        return ResponseEntity.ok(id)
+    @PostMapping("/income-statements/{incomeStatementId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadIncomeStatementAttachmentEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        Audit.AttachmentsUpload.log(targetId = incomeStatementId)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_EMPLOYEE_ATTACHMENT, incomeStatementId)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        return handleFileUpload(db, user, AttachToIncomeStatement(incomeStatementId), file)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -83,7 +98,7 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements/"],
+        value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadAttachmentCitizen(
@@ -112,7 +127,7 @@ class AttachmentsController(
         user: AuthenticatedUser,
         attachTo: AttachTo,
         file: MultipartFile,
-        type: AttachmentType?
+        type: AttachmentType? = null
     ): AttachmentId {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
