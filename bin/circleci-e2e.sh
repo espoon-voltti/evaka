@@ -57,35 +57,41 @@ if [ "$SKIP_SPLIT" != 'true' ]; then
     TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
     echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
     echo "$TESTCAFE_FIXTURE_REGEX" > testcafe-fixture-regex.txt
-
   else
     echo "ERROR: Invalid test_runner: $TEST_RUNNER"
     exit 1
   fi
   popd
+else
+  rm -f frontend/testcafe-fixture-regex.txt
 fi
 
 # Make "docker run" the main process to ensure it handles all signals correctly
 if [ "$TEST_RUNNER" = "playwright" ]; then
+  PLAYWRIGHT_IMAGE=localhost:5000/playwright-todo
+  docker build -t "$PLAYWRIGHT_IMAGE" -f ./compose/e2e/playwright.Dockerfile ./compose/e2e/
   exec docker run --rm -it \
     --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
     --volume "${PWD}":/repo:rw \
     --ipc=host \
     --network="$COMPOSE_NETWORK" \
-    --env CI="$CI" \
+    --env CI="${CI:-false}" \
     --env DEBUG="${DEBUG-}" \
     --entrypoint=/bin/bash \
-    "mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal" \
+    "$PLAYWRIGHT_IMAGE" \
     /tmp/cmd.sh "$TEST_RUNNER"
 else
+  TESTCAFE_IMAGE=localhost:5000/testcafe-todo
+  docker build -t "$TESTCAFE_IMAGE" -f ./compose/e2e/testcafe.Dockerfile ./compose/e2e/
+
   exec docker run --rm -it \
     --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
     --volume "${PWD}":/repo:rw \
     --network="$COMPOSE_NETWORK" \
-    --env REPO_UID="$UID" \
-    --env CI="$CI" \
-    --env DEBUG="${DEBUG-}" \
-    --entrypoint=/bin/bash \
-    cimg/node:14.15-browsers \
-    /tmp/cmd.sh "$TEST_RUNNER"
+    --env REPO_UID="${UID:-$(id -u)}" \
+    --env REPO_GID="${GID:-$(id -g)}" \
+    --env CI="${CI:-false}" \
+    --env DEBUG="${DEBUG-false}" \
+    --env TESTS="Supervisor accepts decision on behalf of the enduser" \
+    "$TESTCAFE_IMAGE"
 fi
