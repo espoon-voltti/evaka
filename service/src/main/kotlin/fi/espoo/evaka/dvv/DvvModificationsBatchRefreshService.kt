@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.dvv
 
-import fi.espoo.evaka.shared.async.AsyncJobPayload
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.AsyncJobType
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.async.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
@@ -23,7 +21,7 @@ class DvvModificationsBatchRefreshService(
     private val dvvModificationsService: DvvModificationsService
 ) {
     init {
-        asyncJobRunner.dvvModificationsRefresh = ::doDvvModificationsRefresh
+        asyncJobRunner.registerHandler(::doDvvModificationsRefresh)
     }
 
     fun doDvvModificationsRefresh(db: Database, msg: DvvModificationsRefresh) {
@@ -71,8 +69,3 @@ SELECT DISTINCT(social_security_number) FROM person
 )
     .mapTo<String>()
     .toList()
-
-data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) : AsyncJobPayload {
-    override val asyncJobType = AsyncJobType.DVV_MODIFICATIONS_REFRESH
-    override val user: AuthenticatedUser? = null
-}

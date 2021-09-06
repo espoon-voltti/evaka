@@ -7,6 +7,7 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
@@ -27,7 +28,7 @@ class KoskiUpdateService(
     private val env: EvakaEnv
 ) {
     init {
-        asyncJobRunner.scheduleKoskiUploads = { db, msg -> scheduleKoskiUploads(db, msg.params) }
+        asyncJobRunner.registerHandler { db, msg: ScheduleKoskiUploads -> scheduleKoskiUploads(db, msg.params) }
     }
 
     fun scheduleKoskiUploads(db: Database, params: KoskiSearchParams) = db.connect {

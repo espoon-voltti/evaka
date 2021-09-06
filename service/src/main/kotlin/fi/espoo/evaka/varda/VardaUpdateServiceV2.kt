@@ -52,7 +52,7 @@ class VardaUpdateServiceV2(
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
 
     init {
-        asyncJobRunner.vardaUpdateV2 = ::updateAll
+        asyncJobRunner.registerHandler(::updateAll)
     }
 
     fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {

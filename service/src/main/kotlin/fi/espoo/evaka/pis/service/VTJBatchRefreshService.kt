@@ -16,7 +16,7 @@ class VTJBatchRefreshService(
 ) {
 
     init {
-        asyncJobRunner.vtjRefresh = ::doVTJRefresh
+        asyncJobRunner.registerHandler(::doVTJRefresh)
     }
 
     fun doVTJRefresh(db: Database, msg: VTJRefresh) {

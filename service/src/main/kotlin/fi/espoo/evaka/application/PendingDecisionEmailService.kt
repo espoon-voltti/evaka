@@ -29,7 +29,7 @@ class PendingDecisionEmailService(
     env: EmailEnv
 ) {
     init {
-        asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
+        asyncJobRunner.registerHandler(::doSendPendingDecisionsEmail)
     }
 
     val senderAddress: String = env.senderAddress

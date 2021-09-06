@@ -44,7 +44,7 @@ class KoskiClient(
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     init {
-        asyncJobRunner?.uploadToKoski = { db, msg -> uploadToKoski(db, msg, today = LocalDate.now()) }
+        asyncJobRunner?.registerHandler { db, msg: UploadToKoski -> uploadToKoski(db, msg, today = LocalDate.now()) }
     }
 
     fun uploadToKoski(db: Database, msg: UploadToKoski, today: LocalDate) = db.transaction { tx ->

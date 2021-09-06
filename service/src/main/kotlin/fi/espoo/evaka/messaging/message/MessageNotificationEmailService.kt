@@ -24,7 +24,7 @@ class MessageNotificationEmailService(
     emailEnv: EmailEnv
 ) {
     init {
-        asyncJobRunner.sendMessageNotificationEmail = ::sendMessageNotification
+        asyncJobRunner.registerHandler(::sendMessageNotification)
     }
 
     val baseUrl: String = env.frontendBaseUrlFi

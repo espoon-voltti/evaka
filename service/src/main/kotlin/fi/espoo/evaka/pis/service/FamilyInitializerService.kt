@@ -32,7 +32,7 @@ class FamilyInitializerService(
     private val logger = KotlinLogging.logger {}
 
     init {
-        asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
+        asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
     fun handleInitializeFamilyFromApplication(db: Database, msg: InitializeFamilyFromApplication) =

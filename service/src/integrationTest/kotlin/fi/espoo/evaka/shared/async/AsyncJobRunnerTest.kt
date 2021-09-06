@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import org.jdbi.v3.core.Jdbi
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -32,17 +33,25 @@ class AsyncJobRunnerTest {
     private lateinit var db: Database
 
     private val user = AuthenticatedUser.SystemInternalUser
+    private val currentCallback: AtomicReference<(msg: NotifyDecisionCreated) -> Unit> = AtomicReference()
 
     @BeforeAll
     fun setup() {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = false)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        asyncJobRunner.close()
+        currentCallback.set(null)
     }
 
     @BeforeEach
-    @AfterAll
     fun clean() {
-        asyncJobRunner.notifyDecisionCreated = { _, _ -> }
+        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = false)
+        asyncJobRunner.registerHandler { _, msg: NotifyDecisionCreated ->
+            currentCallback.get()(msg)
+        }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
         db = Database(jdbi)
     }
@@ -89,7 +98,7 @@ class AsyncJobRunnerTest {
 
     private fun <R> setAsyncJobCallback(f: (msg: NotifyDecisionCreated) -> R): Future<R> {
         val future = CompletableFuture<R>()
-        asyncJobRunner.notifyDecisionCreated = { _, msg ->
+        currentCallback.set { msg: NotifyDecisionCreated ->
             try {
                 future.complete(f(msg))
             } catch (t: Throwable) {

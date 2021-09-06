@@ -23,8 +23,8 @@ class FeeDecisionGenerationJobProcessor(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     init {
-        asyncJobRunner.notifyFeeThresholdsUpdated = ::runJob
-        asyncJobRunner.generateFinanceDecisions = ::runJob
+        asyncJobRunner.registerHandler<NotifyFeeThresholdsUpdated>(::runJob)
+        asyncJobRunner.registerHandler<GenerateFinanceDecisions>(::runJob)
     }
 
     fun runJob(db: Database, msg: NotifyFeeThresholdsUpdated) {

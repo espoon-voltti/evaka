@@ -24,10 +24,10 @@ class InvoicingAsyncJobs(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     init {
-        asyncJobRunner.notifyFeeDecisionApproved = ::runCreateFeeDecisionPdf
-        asyncJobRunner.notifyFeeDecisionPdfGenerated = ::runSendFeeDecisionPdf
-        asyncJobRunner.notifyVoucherValueDecisionApproved = ::runCreateVoucherValueDecisionPdf
-        asyncJobRunner.notifyVoucherValueDecisionPdfGenerated = ::runSendVoucherValueDecisionPdf
+        asyncJobRunner.registerHandler(::runCreateFeeDecisionPdf)
+        asyncJobRunner.registerHandler(::runSendFeeDecisionPdf)
+        asyncJobRunner.registerHandler(::runCreateVoucherValueDecisionPdf)
+        asyncJobRunner.registerHandler(::runSendVoucherValueDecisionPdf)
     }
 
     fun runCreateFeeDecisionPdf(db: Database, msg: NotifyFeeDecisionApproved) = db.transaction { tx ->

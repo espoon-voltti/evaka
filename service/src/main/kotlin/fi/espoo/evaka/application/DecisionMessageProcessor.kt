@@ -20,8 +20,8 @@ class DecisionMessageProcessor(
     private val decisionService: DecisionService
 ) {
     init {
-        asyncJobRunner.notifyDecisionCreated = ::runCreateJob
-        asyncJobRunner.sendDecision = ::runSendJob
+        asyncJobRunner.registerHandler(::runCreateJob)
+        asyncJobRunner.registerHandler(::runSendJob)
     }
 
     fun runCreateJob(db: Database, msg: NotifyDecisionCreated) = db.transaction { tx ->

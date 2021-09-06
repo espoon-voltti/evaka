@@ -24,6 +24,7 @@ import kotlin.test.assertTrue
 
 class AsyncJobQueriesTest : PureJdbiTest() {
     private val user = AuthenticatedUser.SystemInternalUser
+    private val jobType = AsyncJobType(NotifyDecisionCreated::class)
 
     @BeforeEach
     fun beforeEach() {
@@ -45,8 +46,8 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         }
         val runAt = db.read { it.createQuery("SELECT run_at FROM async_job").mapTo<HelsinkiDateTime>().one() }
 
-        val ref = db.transaction { it.claimJob(listOf(AsyncJobType.DECISION_CREATED))!! }
-        assertEquals(AsyncJobType.DECISION_CREATED, ref.jobType)
+        val ref = db.transaction { it.claimJob(listOf(jobType))!! }
+        assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) = db.read {
             it.createQuery("SELECT run_at, retry_count FROM async_job").mapTo<Retry>().one()
         }
@@ -54,7 +55,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         assertEquals(1233, retryCount)
 
         db.transaction { tx ->
-            val payload = tx.startJob(ref, NotifyDecisionCreated::class.java)!!
+            val payload = tx.startJob(ref)!!
             assertEquals(NotifyDecisionCreated(id, user, sendAsMessage = false), payload)
 
             tx.completeJob(ref)
@@ -78,15 +79,15 @@ class AsyncJobQueriesTest : PureJdbiTest() {
             val h2 = handles[2].begin()
 
             // Two jobs in the db -> only two claims should succeed
-            val job0 = Database.Transaction.wrap(h0).claimJob()!!
-            val job1 = Database.Transaction.wrap(h1).claimJob()!!
+            val job0 = Database.Transaction.wrap(h0).claimJob(listOf(jobType))!!
+            val job1 = Database.Transaction.wrap(h1).claimJob(listOf(jobType))!!
             assertNotEquals(job0.jobId, job1.jobId)
-            assertNull(Database.Transaction.wrap(h2).claimJob())
+            assertNull(Database.Transaction.wrap(h2).claimJob(listOf(jobType)))
 
             h1.rollback()
 
             // Handle 1 rolled back -> job 1 should now be available
-            val job2 = Database.Transaction.wrap(h2).claimJob()!!
+            val job2 = Database.Transaction.wrap(h2).claimJob(listOf(jobType))!!
             assertEquals(job1.jobId, job2.jobId)
 
             Database.Transaction.wrap(h0).completeJob(job0)

@@ -52,7 +52,7 @@ class VardaUpdateService(
     private val organizer = env.organizer
 
     init {
-        asyncJobRunner.vardaUpdate = ::updateAll
+        asyncJobRunner.registerHandler(::updateAll)
     }
 
     fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {

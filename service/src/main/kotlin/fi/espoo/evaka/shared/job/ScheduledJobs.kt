@@ -19,6 +19,7 @@ import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.RunScheduledJob
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -60,7 +61,7 @@ class ScheduledJobs(
 ) {
 
     init {
-        asyncJobRunner.runScheduledJob = { db, msg ->
+        asyncJobRunner.registerHandler { db, msg: RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
             db.connect { msg.job.fn(this, it) }
