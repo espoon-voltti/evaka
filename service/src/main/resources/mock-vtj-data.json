@@ -3323,5 +3323,93 @@
     },
     "dependants": [],
     "guardians": []
+  },
+  {
+    "firstNames": "Anelma",
+    "lastName": "Aapinen",
+    "socialSecurityNumber": "150580-999K",
+    "nationalities": [
+      {
+        "countryName": "Suomi",
+        "countryCode": "FIN"
+      }
+    ],
+    "nativeLanguage": {
+      "languageName": "suomi",
+      "code": "fi"
+    },
+    "restrictedDetails": {
+      "enabled": false,
+      "endDate": null
+    },
+    "residenceCode": "aapinen_1",
+    "address": {
+      "streetAddress": "Aapiskatu 1",
+      "postalCode": "00340",
+      "postOffice": "Espoo",
+      "streetAddressSe": "Aapisväg 1",
+      "postOfficeSe": "Esbo"
+    },
+    "dependants": [{
+      "firstNames": "Unelma",
+      "lastName": "Aapinen",
+      "dateOfDeath":"2020-06-01",
+      "socialSecurityNumber": "150515-999T",
+      "nationalities": [
+        {
+          "countryName": "Suomi",
+          "countryCode": "FIN"
+        }
+      ],
+      "nativeLanguage": {
+        "languageName": "suomi",
+        "code": "fi"
+      },
+      "restrictedDetails": {
+        "enabled": false,
+        "endDate": null
+      },
+      "residenceCode": "aapinen_1",
+      "address": {
+        "streetAddress": "Aapiskatu 1",
+        "postalCode": "00340",
+        "postOffice": "Espoo",
+        "streetAddressSe": "Aapisväg 1",
+        "postOfficeSe": "Esbo"
+      },
+      "dependants": [],
+      "guardians": []
+    }],
+    "guardians": [
+      {
+        "firstNames": "Anelma",
+        "lastName": "Aapinen",
+        "socialSecurityNumber": "150580-999K",
+        "nationalities": [
+          {
+            "countryName": "Suomi",
+            "countryCode": "FIN"
+          }
+        ],
+        "nativeLanguage": {
+          "languageName": "suomi",
+          "code": "fi"
+        },
+        "restrictedDetails": {
+          "enabled": false,
+          "endDate": null
+        },
+        "residenceCode": "aapinen_1",
+        "address": {
+          "streetAddress": "Aapiskatu 1",
+          "postalCode": "00340",
+          "postOffice": "Espoo",
+          "streetAddressSe": "Aapisväg 1",
+          "postOfficeSe": "Esbo"
+        },
+        "dependants": [],
+        "guardians": []
+      }
+    ]
   }
 ]

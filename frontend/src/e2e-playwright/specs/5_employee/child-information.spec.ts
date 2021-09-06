@@ -13,6 +13,7 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
+  enduserDeceasedChildFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'e2e-test-common/dev-api/types'
@@ -51,6 +52,17 @@ beforeEach(async () => {
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
+})
+
+describe('Child Information - deceased child', () => {
+  test('Deceased child indicator is shown', async () => {
+    await page.goto(
+      config.employeeUrl +
+        '/child-information/' +
+        enduserDeceasedChildFixture.id
+    )
+    await childInformationPage.deceasedIconIsShown()
+  })
 })
 
 describe('Child Information - daily service times', () => {
