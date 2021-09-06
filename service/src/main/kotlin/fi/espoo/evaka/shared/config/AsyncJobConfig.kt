@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -16,11 +17,11 @@ import java.time.Duration
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi, evakaEnv: EvakaEnv) =
+    fun asyncJobRunner(jdbi: Jdbi, evakaEnv: EvakaEnv): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(jdbi, disableRunner = evakaEnv.asyncJobRunnerDisabled)
 
     @Bean
-    fun asyncJobRunnerSchedule(asyncJobRunner: AsyncJobRunner) = object {
+    fun asyncJobRunnerSchedule(asyncJobRunner: AsyncJobRunner<AsyncJob>) = object {
         @EventListener
         fun onApplicationReady(@Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent) {
             asyncJobRunner.schedulePeriodicRun(Duration.ofMinutes(1))

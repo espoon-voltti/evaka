@@ -22,6 +22,7 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -44,7 +45,7 @@ import kotlin.test.assertEquals
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired
     lateinit var voucherValueDecisionService: VoucherValueDecisionService

@@ -20,6 +20,7 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -47,7 +48,7 @@ import java.util.UUID
 class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
 ) {
     @PostMapping

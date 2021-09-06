@@ -19,6 +19,7 @@ import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -45,7 +46,7 @@ import kotlin.test.assertTrue
 
 class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {

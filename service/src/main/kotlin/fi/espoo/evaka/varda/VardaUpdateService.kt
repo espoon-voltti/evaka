@@ -10,8 +10,8 @@ import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VardaUpdate
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
@@ -42,7 +42,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateService(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
@@ -60,11 +60,11 @@ class VardaUpdateService(
             val client = VardaClient(tokenProvider, fuel, mapper, env)
             updateAll(db, client, personService, organizer)
         } else {
-            db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdate()), retryCount = 1) }
+            db.transaction { asyncJobRunner.plan(it, listOf(AsyncJob.VardaUpdate()), retryCount = 1) }
         }
     }
 
-    fun updateAll(db: Database, msg: VardaUpdate) {
+    fun updateAll(db: Database, msg: AsyncJob.VardaUpdate) {
         val client = VardaClient(tokenProvider, fuel, mapper, env)
         db.connect { updateAll(it, client, personService, organizer) }
     }

@@ -8,8 +8,8 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SendMessageNotificationEmail
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -18,7 +18,7 @@ import java.util.UUID
 
 @Service
 class MessageNotificationEmailService(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     env: EvakaEnv,
     emailEnv: EmailEnv
@@ -38,7 +38,7 @@ class MessageNotificationEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun getMessageNotifications(tx: Database.Transaction, messageId: UUID): List<SendMessageNotificationEmail> {
+    fun getMessageNotifications(tx: Database.Transaction, messageId: UUID): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
             """
             SELECT DISTINCT
@@ -57,7 +57,7 @@ class MessageNotificationEmailService(
         )
             .bind("messageId", messageId)
             .map { row ->
-                SendMessageNotificationEmail(
+                AsyncJob.SendMessageNotificationEmail(
                     messageRecipientId = row.mapColumn("message_recipient_id"),
                     personEmail = row.mapColumn("person_email"),
                     language = getLanguage(row.mapColumn("language"))
@@ -83,7 +83,7 @@ class MessageNotificationEmailService(
         }
     }
 
-    fun sendMessageNotification(db: Database, msg: SendMessageNotificationEmail) {
+    fun sendMessageNotification(db: Database, msg: AsyncJob.SendMessageNotificationEmail) {
         val (messageRecipientId, personEmail, language) = msg
 
         db.transaction { tx ->

@@ -11,8 +11,8 @@ import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.pis.service.PartnershipService
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -34,7 +34,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/partnerships")
-class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private val partnershipService: PartnershipService) {
+class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val partnershipService: PartnershipService) {
     @PostMapping
     fun createPartnership(
         db: Database.Connection,
@@ -52,7 +52,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
                     val partnership = partnershipService.createPartnership(tx, personId1, personId2, startDate, endDate)
                     asyncJobRunner.plan(
                         tx,
-                        listOf(GenerateFinanceDecisions.forAdult(personId2, DateRange(startDate, endDate)))
+                        listOf(AsyncJob.GenerateFinanceDecisions.forAdult(personId2, DateRange(startDate, endDate)))
                     )
                     partnership
                 }
@@ -104,7 +104,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
                 asyncJobRunner.plan(
                     tx,
                     listOf(
-                        GenerateFinanceDecisions.forAdult(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
                             partnership.partners.last().id,
                             DateRange(partnership.startDate, partnership.endDate)
                         )
@@ -130,7 +130,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
                 asyncJobRunner.plan(
                     tx,
                     listOf(
-                        GenerateFinanceDecisions.forAdult(it.partners.first().id, DateRange(it.startDate, it.endDate))
+                        AsyncJob.GenerateFinanceDecisions.forAdult(it.partners.first().id, DateRange(it.startDate, it.endDate))
                     )
                 )
             }
@@ -153,7 +153,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
                 asyncJobRunner.plan(
                     tx,
                     partnership.partners.map {
-                        GenerateFinanceDecisions.forAdult(it.id, DateRange(partnership.startDate, partnership.endDate))
+                        AsyncJob.GenerateFinanceDecisions.forAdult(it.id, DateRange(partnership.startDate, partnership.endDate))
                     }
                 )
             }

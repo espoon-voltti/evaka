@@ -12,6 +12,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -91,7 +92,7 @@ class SharedIntegrationTestConfig {
     fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi, dataSource: DataSource) = AsyncJobRunner(jdbi, syncMode = true)
+    fun asyncJobRunner(jdbi: Jdbi, dataSource: DataSource): AsyncJobRunner<AsyncJob> = AsyncJobRunner(jdbi, syncMode = true)
 
     @Bean
     fun dataSource(): DataSource = getTestDataSource()

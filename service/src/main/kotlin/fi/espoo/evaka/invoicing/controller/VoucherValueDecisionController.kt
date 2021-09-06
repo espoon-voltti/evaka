@@ -22,8 +22,8 @@ import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -51,7 +51,7 @@ import java.util.UUID
 @RequestMapping("/value-decisions")
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
     fun search(
@@ -154,7 +154,7 @@ class VoucherValueDecisionController(
 
 fun sendVoucherValueDecisions(
     tx: Database.Transaction,
-    asyncJobRunner: AsyncJobRunner,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser,
     now: Instant,
     ids: List<VoucherValueDecisionId>
@@ -188,7 +188,7 @@ fun sendVoucherValueDecisions(
 
     val validIds = decisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, user.id, now)
-    asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
+    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }
 
 enum class VoucherValueDecisionSortParam {

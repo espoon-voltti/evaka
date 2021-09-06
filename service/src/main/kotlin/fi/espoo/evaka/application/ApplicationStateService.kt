@@ -58,10 +58,8 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
-import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
-import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -89,7 +87,7 @@ class ApplicationStateService(
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
     env: BucketEnv
@@ -149,17 +147,17 @@ class ApplicationStateService(
                 tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
             if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
             }
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
-            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.PRESCHOOL) {
             val sentWithinPreschoolApplicationPeriod = tx.sentWithinPreschoolApplicationPeriod(sentDate)
-            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
         }
 
         tx.updateApplicationStatus(application.id, SENT)
@@ -196,7 +194,7 @@ class ApplicationStateService(
 
         tx.setCheckedByAdminToDefault(applicationId, application.form)
 
-        asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)))
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
@@ -708,7 +706,7 @@ class ApplicationStateService(
             ).let(::validateIncome)
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, application.guardianId)
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
         }
     }
 }

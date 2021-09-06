@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
@@ -17,14 +17,14 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class DvvModificationsBatchRefreshService(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val dvvModificationsService: DvvModificationsService
 ) {
     init {
         asyncJobRunner.registerHandler(::doDvvModificationsRefresh)
     }
 
-    fun doDvvModificationsRefresh(db: Database, msg: DvvModificationsRefresh) {
+    fun doDvvModificationsRefresh(db: Database, msg: AsyncJob.DvvModificationsRefresh) {
         logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
         val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, msg.ssns)
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
@@ -39,7 +39,7 @@ class DvvModificationsBatchRefreshService(
             asyncJobRunner.plan(
                 tx,
                 payloads = listOf(
-                    DvvModificationsRefresh(
+                    AsyncJob.DvvModificationsRefresh(
                         ssns = ssns,
                         requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
                     )

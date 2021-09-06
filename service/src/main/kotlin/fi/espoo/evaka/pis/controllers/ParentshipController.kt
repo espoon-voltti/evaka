@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -33,7 +34,7 @@ import java.util.UUID
 @RequestMapping("/parentships")
 class ParentshipController(
     private val parentshipService: ParentshipService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping
     fun createParentship(

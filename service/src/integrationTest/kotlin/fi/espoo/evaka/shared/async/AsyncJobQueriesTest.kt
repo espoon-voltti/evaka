@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -23,8 +22,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AsyncJobQueriesTest : PureJdbiTest() {
-    private val user = AuthenticatedUser.SystemInternalUser
-    private val jobType = AsyncJobType(NotifyDecisionCreated::class)
+    private data class TestJob(val data: UUID) : AsyncJobPayload {
+        override val user: AuthenticatedUser? = null
+    }
+
+    private val jobType = AsyncJobType(TestJob::class)
 
     @BeforeEach
     fun beforeEach() {
@@ -33,11 +35,11 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testCompleteHappyCase() {
-        val id = DecisionId(UUID.randomUUID())
+        val id = UUID.randomUUID()
         db.transaction {
             it.insertJob(
                 JobParams(
-                    NotifyDecisionCreated(id, user, sendAsMessage = false),
+                    TestJob(id),
                     1234,
                     Duration.ofMinutes(42),
                     HelsinkiDateTime.now()
@@ -56,7 +58,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
         db.transaction { tx ->
             val payload = tx.startJob(ref)!!
-            assertEquals(NotifyDecisionCreated(id, user, sendAsMessage = false), payload)
+            assertEquals(TestJob(id), payload)
 
             tx.completeJob(ref)
         }
@@ -68,7 +70,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testParallelClaimContention() {
-        val payloads = (0..1).map { NotifyDecisionCreated(DecisionId(UUID.randomUUID()), user, sendAsMessage = false) }
+        val payloads = (0..1).map { TestJob(UUID.randomUUID()) }
         db.transaction { tx ->
             payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO, HelsinkiDateTime.now())) }
         }

@@ -19,8 +19,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -41,7 +41,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateServiceV2(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
@@ -62,11 +62,11 @@ class VardaUpdateServiceV2(
             updateAllVardaData(db, client, organizer, feeDecisionMinDate)
         } else {
             logger.info("VardaUpdate: scheduling varda update")
-            db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdateV2()), retryCount = 1) }
+            db.transaction { asyncJobRunner.plan(it, listOf(AsyncJob.VardaUpdateV2()), retryCount = 1) }
         }
     }
 
-    fun updateAll(db: Database, msg: VardaUpdateV2) {
+    fun updateAll(db: Database, msg: AsyncJob.VardaUpdateV2) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
         db.connect { updateAllVardaData(it, client, organizer, feeDecisionMinDate) }
     }

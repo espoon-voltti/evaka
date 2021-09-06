@@ -19,6 +19,7 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -45,7 +46,7 @@ import kotlin.test.assertTrue
 
 class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")

@@ -35,7 +35,7 @@ private data class Registration<T : AsyncJobPayload>(val handler: (db: Database,
         handler(db, msg as T)
 }
 
-class AsyncJobRunner(
+class AsyncJobRunner<T : AsyncJobPayload>(
     private val jdbi: Jdbi,
     private val disableRunner: Boolean = false,
     private val syncMode: Boolean = false
@@ -45,12 +45,12 @@ class AsyncJobRunner(
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     private val handlersLock: Lock = ReentrantLock()
-    private val handlers: ConcurrentHashMap<AsyncJobType<out AsyncJobPayload>, Registration<*>> = ConcurrentHashMap()
+    private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> = ConcurrentHashMap()
 
-    inline fun <reified P : AsyncJobPayload> registerHandler(noinline handler: (db: Database, msg: P) -> Unit) =
+    inline fun <reified P : T> registerHandler(noinline handler: (db: Database, msg: P) -> Unit) =
         registerHandler(AsyncJobType(P::class), handler)
 
-    fun <P : AsyncJobPayload> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, msg: P) -> Unit): Unit = handlersLock.withLock {
+    fun <P : T> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, msg: P) -> Unit): Unit = handlersLock.withLock {
         require(!handlers.containsKey(jobType)) { "handler for $jobType has already been registered" }
         val ambiguousKey = handlers.keys.find { it.name == jobType.name }
         require(ambiguousKey == null) { "handlers for $jobType and $ambiguousKey have a name conflict" }
@@ -59,7 +59,7 @@ class AsyncJobRunner(
 
     fun plan(
         tx: Database.Transaction,
-        payloads: Iterable<AsyncJobPayload>,
+        payloads: Iterable<T>,
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
         runAt: HelsinkiDateTime = HelsinkiDateTime.now()
@@ -137,7 +137,7 @@ class AsyncJobRunner(
     }
 
     @Suppress("DEPRECATION")
-    private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef<out AsyncJobPayload>) {
+    private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef<out T>) {
         val logMeta = mapOf(
             "jobId" to job.jobId,
             "jobType" to job.jobType,

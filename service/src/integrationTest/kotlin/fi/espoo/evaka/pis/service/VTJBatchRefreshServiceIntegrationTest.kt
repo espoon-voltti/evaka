@@ -13,8 +13,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -38,7 +38,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
     lateinit var fridgeFamilyService: FridgeFamilyService
 
     @MockBean
-    protected lateinit var asyncJobRunner: AsyncJobRunner
+    protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     lateinit var service: VTJBatchRefreshService
 
@@ -87,7 +87,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
-        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -112,7 +112,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             )
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
-        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 
@@ -148,7 +148,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -192,7 +192,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 }

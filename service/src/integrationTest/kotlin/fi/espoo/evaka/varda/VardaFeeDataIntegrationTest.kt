@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VardaDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -70,7 +71,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {

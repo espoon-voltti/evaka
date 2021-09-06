@@ -5,7 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.async.UploadToKoski
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -45,7 +45,7 @@ internal class KoskiTester(private val jdbi: Jdbi, private val client: KoskiClie
     fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) {
         val db = Database(jdbi)
         db.read { it.getPendingStudyRights(today, params) }.forEach { request ->
-            client.uploadToKoski(db, UploadToKoski(request), today)
+            client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today)
         }
     }
 }

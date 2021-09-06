@@ -10,8 +10,8 @@ import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsForPerson
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -33,7 +33,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/fee-alterations")
-class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner, private val accessControl: AccessControl) {
+class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
     fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
@@ -52,7 +52,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner, privat
             asyncJobRunner.plan(
                 tx,
                 listOf(
-                    GenerateFinanceDecisions.forChild(
+                    AsyncJob.GenerateFinanceDecisions.forChild(
                         feeAlteration.personId,
                         DateRange(feeAlteration.validFrom, feeAlteration.validTo)
                     )
@@ -77,7 +77,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner, privat
                 DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
             } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -97,7 +97,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner, privat
                 asyncJobRunner.plan(
                     tx,
                     listOf(
-                        GenerateFinanceDecisions.forChild(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
                             existing.personId,
                             DateRange(existing.validFrom, existing.validTo)
                         )

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.config
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobRunner
@@ -21,7 +22,7 @@ class ScheduledJobConfig {
     @Bean
     fun scheduledJobRunner(
         jdbi: Jdbi,
-        asyncJobRunner: AsyncJobRunner,
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
         dataSource: DataSource,
         schedule: JobSchedule
     ) = ScheduledJobRunner(jdbi, asyncJobRunner, dataSource, schedule)

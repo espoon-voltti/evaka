@@ -7,8 +7,8 @@ package fi.espoo.evaka.pairing
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class PairingsController(
     private val acl: AccessControlList,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     /**
      * Unit supervisor calls this endpoint as an authorized desktop user to start a new pairing process.
@@ -51,7 +51,7 @@ class PairingsController(
 
             asyncJobRunner.plan(
                 tx = tx,
-                payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
+                payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = pairing.id)),
                 runAt = pairing.expires.plusDays(1)
             )
 

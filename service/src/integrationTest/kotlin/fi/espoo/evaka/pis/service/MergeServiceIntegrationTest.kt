@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
@@ -19,8 +20,8 @@ import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -47,7 +48,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService
 
     private val objectMapper: ObjectMapper = defaultObjectMapper()
-    private val asyncJobRunnerMock = Mockito.mock(AsyncJobRunner::class.java)
+    private val asyncJobRunnerMock: AsyncJobRunner<AsyncJob> = mock { }
     private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
     private val messageService: MessageService = MessageService(messageNotificationEmailService)
 
@@ -138,7 +139,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         verify(asyncJobRunnerMock).plan(
             any(),
-            eq(listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(validFrom, validTo)))),
+            eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(validFrom, validTo)))),
             any(),
             any(),
             any()
@@ -317,7 +318,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         verify(asyncJobRunnerMock).plan(
             any(),
-            eq(listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(placementStart, placementEnd)))),
+            eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(placementStart, placementEnd)))),
             any(),
             any(),
             any()

@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -30,7 +31,7 @@ import java.time.LocalDate
 @RestController
 class ServiceNeedController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     data class ServiceNeedCreateRequest(
