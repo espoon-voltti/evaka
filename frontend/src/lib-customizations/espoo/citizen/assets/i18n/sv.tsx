@@ -150,6 +150,11 @@ const sv: Translations = {
   calendar: {
     title: 'Kalender',
     holiday: 'Helgdag',
+    absent: 'Poissa',
+    absences: {
+      SICKLEAVE: 'Sairaus',
+      PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+    },
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',

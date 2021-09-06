@@ -57,22 +57,7 @@ class ReservationControllerCitizen(
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.joinToString())
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
-
-        val reservations = body.map { res ->
-            Reservation(
-                childId = res.childId,
-                startTime = HelsinkiDateTime.of(
-                    date = res.date,
-                    time = res.startTime
-                ),
-                endTime = HelsinkiDateTime.of(
-                    date = if (res.endTime.isAfter(res.startTime)) res.date else res.date.plusDays(1),
-                    time = res.endTime
-                )
-            )
-        }
-
-        db.transaction { createReservations(it, user.id, reservations) }
+        db.transaction { createReservations(it, user.id, body) }
     }
 
     @PostMapping("/citizen/absences")
@@ -99,9 +84,10 @@ class ReservationControllerCitizen(
     }
 }
 
-fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<Reservation>) {
-    tx.clearOldCitizenAbsences(reservations.map { it.childId to it.startTime.toLocalDate() })
-    tx.clearOldCitizenReservations(reservations)
+fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
+    val childIdDatePairs = reservations.map { it.childId to it.date }
+    tx.clearOldCitizenAbsences(childIdDatePairs)
+    tx.clearOldCitizenReservations(childIdDatePairs)
     tx.insertValidReservations(userId, reservations)
 }
 
@@ -117,7 +103,7 @@ fun Database.Transaction.clearOldCitizenAbsences(childDatePairs: List<Pair<UUID,
     batch.execute()
 }
 
-fun Database.Transaction.clearOldCitizenReservations(reservations: List<Reservation>) {
+fun Database.Transaction.clearOldCitizenReservations(reservations: List<Pair<UUID, LocalDate>>) {
     val batch = prepareBatch(
         """
         DELETE FROM attendance_reservation 
@@ -125,17 +111,17 @@ fun Database.Transaction.clearOldCitizenReservations(reservations: List<Reservat
         """.trimIndent()
     )
 
-    reservations.forEach { res ->
+    reservations.forEach { (childId, date) ->
         batch
-            .bind("childId", res.childId)
-            .bind("date", res.startTime.toLocalDate())
+            .bind("childId", childId)
+            .bind("date", date)
             .add()
     }
 
     batch.execute()
 }
 
-fun Database.Transaction.insertValidReservations(userId: UUID, reservations: List<Reservation>) {
+fun Database.Transaction.insertValidReservations(userId: UUID, reservations: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
@@ -154,12 +140,20 @@ fun Database.Transaction.insertValidReservations(userId: UUID, reservations: Lis
     )
 
     reservations.forEach { res ->
+        val start = HelsinkiDateTime.of(
+            date = res.date,
+            time = res.startTime
+        )
+        val end = HelsinkiDateTime.of(
+            date = if (res.endTime.isAfter(res.startTime)) res.date else res.date.plusDays(1),
+            time = res.endTime
+        )
         batch
             .bind("userId", userId)
             .bind("childId", res.childId)
-            .bind("start", res.startTime)
-            .bind("end", res.endTime)
-            .bind("date", res.startTime.toLocalDate())
+            .bind("start", start)
+            .bind("end", end)
+            .bind("date", res.date)
             .add()
     }
 
@@ -229,14 +223,20 @@ data class DailyReservationData(
     val date: LocalDate,
     val isHoliday: Boolean,
     @Json
-    val reservations: List<Reservation>
+    val children: List<ChildDailyData>
+)
+
+@Json
+data class ChildDailyData(
+    val childId: UUID,
+    val absence: AbsenceType?,
+    val reservation: Reservation?
 )
 
 @Json
 data class Reservation(
     val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime,
-    val childId: UUID
+    val endTime: HelsinkiDateTime
 )
 
 data class ReservationChild(
@@ -261,13 +261,24 @@ SELECT
     EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
     coalesce(
         jsonb_agg(
-            jsonb_build_object('startTime', ar.start_time, 'endTime', ar.end_time, 'childId', ar.child_id)
-        ) FILTER (WHERE ar.id IS NOT NULL), 
+            jsonb_build_object(
+                'childId', g.child_id,
+                'absence', a.absence_type
+            ) || (CASE
+                WHEN ar.start_time IS NULL THEN '{}'::jsonb
+                ELSE jsonb_build_object('reservation', jsonb_build_object('startTime', ar.start_time, 'endTime', ar.end_time))
+            END)
+        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.id IS NOT NULL),
         '[]'
-    ) AS reservations
+    ) AS children
 FROM generate_series(:start, :end, '1 day') t
 JOIN guardian g ON g.guardian_id = :guardianId
+JOIN placement p ON g.child_id = p.child_id
+JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
+LEFT JOIN LATERAL (
+    SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
+) a ON true
 GROUP BY date, is_holiday
         """.trimIndent()
     )
@@ -275,7 +286,7 @@ GROUP BY date, is_holiday
         .bind("start", range.start)
         .bind("end", range.end)
         .mapTo<DailyReservationData>()
-        .list()
+        .toList()
         .filter { !it.date.isWeekend() }
 }
 

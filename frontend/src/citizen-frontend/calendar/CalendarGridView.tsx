@@ -10,7 +10,6 @@ import colors from 'lib-customizations/common'
 import { WeekProps } from './WeekElem'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { formatDate } from 'lib-common/date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faCalendarPlus, faUserMinus } from 'lib-icons'
 
@@ -79,15 +78,7 @@ export default React.memo(function CalendarGridView({
                         {i18n.calendar.noReservation}
                       </NoReservation>
                     ))}
-                  {d.reservations
-                    .map(
-                      (reservation) =>
-                        `${formatDate(
-                          reservation.startTime,
-                          'HH:mm'
-                        )} - ${formatDate(reservation.endTime, 'HH:mm')}`
-                    )
-                    .join(', ')}
+                  {d.reservations.join(', ')}
                 </DayCellReservations>
                 {d.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
               </DayCell>

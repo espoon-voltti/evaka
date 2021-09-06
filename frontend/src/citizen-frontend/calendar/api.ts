@@ -6,16 +6,19 @@ import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { AbsenceType } from 'lib-common/generated/enums'
 
-export interface Reservation {
-  startTime: Date
-  endTime: Date
+export interface ChildDailyData {
   childId: string
+  absence: AbsenceType | null
+  reservation: {
+    startTime: Date
+    endTime: Date
+  } | null
 }
 
 export interface DailyReservationData {
   date: LocalDate
   isHoliday: boolean
-  reservations: Reservation[]
+  children: ChildDailyData[]
 }
 
 export interface ReservationChild {
@@ -44,10 +47,14 @@ export async function getReservations(
         dailyData: res.data.dailyData.map((data) => ({
           ...data,
           date: LocalDate.parseIso(data.date),
-          reservations: data.reservations.map((r) => ({
-            ...r,
-            startTime: new Date(r.startTime),
-            endTime: new Date(r.endTime)
+          children: data.children.map((child) => ({
+            ...child,
+            reservation: child.reservation
+              ? {
+                  startTime: new Date(child.reservation.startTime),
+                  endTime: new Date(child.reservation.endTime)
+                }
+              : null
           }))
         })),
         reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)

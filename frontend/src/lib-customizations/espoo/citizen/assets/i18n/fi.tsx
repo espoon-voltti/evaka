@@ -149,6 +149,11 @@ export default {
   calendar: {
     title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
+    absent: 'Poissa',
+    absences: {
+      SICKLEAVE: 'Sairauspoissaolo',
+      PLANNED_ABSENCE: 'Vapaapäivä'
+    },
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
