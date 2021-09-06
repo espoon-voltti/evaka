@@ -8,8 +8,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.convertToVardaChildRequest
 import org.jdbi.v3.core.kotlin.mapTo
-import java.lang.Exception
 import java.util.UUID
+import kotlin.Exception
 
 fun getOrCreateVardaChildByOrganizer(
     db: Database.Connection,
@@ -139,8 +139,11 @@ private fun createVardaChildWhenPersonExists(
             sourceSystem = sourceSystem
         )
 
-        val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
-            ?: error("VardaUpdate: Couldn't create Varda PAOS child for $vardaChildPayload")
+        val vardaChildId = try {
+            client.createChildV2(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+        } catch (e: Exception) {
+            error("VardaUpdate: failed to create PAOS child: ${e.message}")
+        }
 
         insertVardaOrganizerChild(
             tx,
@@ -160,8 +163,11 @@ private fun createVardaChildWhenPersonExists(
             sourceSystem = sourceSystem
         )
 
-        val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
-            ?: error("VardaUpdate: Couldn't create Varda child for $vardaChildPayload")
+        val vardaChildId = try {
+            client.createChildV2(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+        } catch (e: Exception) {
+            error("VardaUpdate: failed to create child: ${e.message}")
+        }
 
         insertVardaOrganizerChild(
             tx,
