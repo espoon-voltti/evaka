@@ -12,6 +12,7 @@ import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from 'lib-components/breakpoints'
+import { featureFlags } from 'lib-customizations/employee'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
@@ -197,6 +198,11 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.decisions} {maybeLockElem}
           </StyledNavLink>
+          {featureFlags.experimental?.incomeStatements && (
+            <StyledNavLink to="/income" data-qa="nav-income">
+              {t.header.nav.income} {maybeLockElem}
+            </StyledNavLink>
+          )}
           {user.accessibleFeatures.messages && (
             <StyledNavLink to="/messages" onClick={close}>
               {t.header.nav.messages}{' '}

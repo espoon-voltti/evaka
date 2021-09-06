@@ -17,6 +17,7 @@ import {
 import React, { useCallback, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+import { featureFlags } from 'lib-customizations/employee'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
@@ -46,6 +47,11 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/decisions" data-qa="nav-decisions">
               {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
+            {featureFlags.experimental?.incomeStatements && (
+              <StyledNavLink to="/income" data-qa="nav-income">
+                {t.header.nav.income} {maybeLockElem}
+              </StyledNavLink>
+            )}
             {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}

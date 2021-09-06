@@ -64,6 +64,7 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
+      income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender'
     },
