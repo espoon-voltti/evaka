@@ -57,7 +57,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
+class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 

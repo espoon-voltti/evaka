@@ -23,14 +23,15 @@ val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProvide
 
 fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: String) {
     val units = db.read { getNewOrStaleUnits(it, organizerName, client.sourceSystem) }
-    logger.info { "Varda: Sending ${units.size} new or updated units" }
+    logger.info { "VardaUpdate: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
-        val response =
-            if (unit.vardaUnitId == null) client.createUnit(VardaUnitRequest.fromVardaUnit(unit))
-            else client.updateUnit(VardaUnitRequest.fromVardaUnit(unit))
-
-        response?.let { (vardaUnitId, ophUnitOid) ->
-            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = vardaUnitId, ophUnitOid = ophUnitOid)) }
+        try {
+            val response =
+                if (unit.vardaUnitId == null) client.createUnit(VardaUnitRequest.fromVardaUnit(unit))
+                else client.updateUnit(VardaUnitRequest.fromVardaUnit(unit))
+            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = response.vardaUnitId, ophUnitOid = response.ophUnitOid)) }
+        } catch (e: Exception) {
+            logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
         }
     }
 }
