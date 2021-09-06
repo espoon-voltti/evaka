@@ -66,7 +66,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -327,27 +326,21 @@ class ApplicationStateService(
         // language=sql
         val sql =
             """
-            SELECT application_id, unit_confirmation_status
+            SELECT application_id
             FROM placement_plan pp
             JOIN application a ON a.id = pp.application_id
-            WHERE a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND pp.unit_id = :unitId
+            WHERE 
+                a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND 
+                pp.unit_id = :unitId AND
+                pp.unit_confirmation_status = 'ACCEPTED'
             """.trimIndent()
-        val applicationStates = tx.createQuery(sql)
+
+        val validIds = tx.createQuery(sql)
             .bind("unitId", unitId)
-            .map { row ->
-                Pair<ApplicationId, PlacementPlanConfirmationStatus>(
-                    row.mapColumn("application_id"),
-                    row.mapColumn("unit_confirmation_status")
-                )
-            }
+            .mapTo<ApplicationId>()
             .toList()
 
-        if (applicationStates.any { it.second != PlacementPlanConfirmationStatus.ACCEPTED })
-            throw BadRequest("Must accept all children")
-
-        applicationStates
-            .map { getApplication(tx, it.first) }
-            .forEach { finalizeDecisions(tx, user, it) }
+        validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, it) }
     }
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {

@@ -25,7 +25,6 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
-import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
@@ -1116,71 +1115,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
             val placements = tx.getPlacementsForChild(testChild_2.id)
             assertEquals(0, placements.size)
-        }
-    }
-
-    @Test
-    fun `acceptPlacementProposal - throws if some application is pending response`() {
-        db.transaction { tx ->
-            // given
-            tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL,
-                child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-            service.createPlacementPlan(
-                tx,
-                serviceWorker,
-                applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod
-                )
-            )
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when / then
-            assertThrows<BadRequest> { service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id) }
-        }
-    }
-
-    @Test
-    fun `acceptPlacementProposal - throws if some application has been rejected`() {
-        db.transaction { tx ->
-            // given
-            tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL,
-                child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-            service.createPlacementPlan(
-                tx,
-                serviceWorker,
-                applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod
-                )
-            )
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when / then
-            service.respondToPlacementProposal(
-                tx,
-                serviceWorker,
-                applicationId,
-                PlacementPlanConfirmationStatus.REJECTED,
-                PlacementPlanRejectReason.REASON_1
-            )
-            assertThrows<BadRequest> { service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id) }
         }
     }
 
