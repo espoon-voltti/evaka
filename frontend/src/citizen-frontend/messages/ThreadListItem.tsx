@@ -28,7 +28,7 @@ export default React.memo(function ThreadListItem({
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
-  const participants = [...new Set(thread.messages.map((t) => t.senderName))]
+  const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
   return (
     <Container
       isRead={!hasUnreadMessages}

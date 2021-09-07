@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useTranslation } from 'citizen-frontend/localization'
 import {
   getReceivers,
   sendMessage,
@@ -51,11 +52,12 @@ export default React.memo(function MessagesPage() {
   const [receivers, setReceivers] = useState<Result<MessageAccount[]>>(
     Loading.of()
   )
+  const t = useTranslation()
   const loadReceivers = useRestApi(getReceivers, setReceivers)
 
   useEffect(() => {
-    loadReceivers()
-  }, [loadReceivers])
+    loadReceivers(t.messages.staffAnnotation)
+  }, [loadReceivers, t.messages.staffAnnotation])
 
   return (
     <FullHeightContainer>

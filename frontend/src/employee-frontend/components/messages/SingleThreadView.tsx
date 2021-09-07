@@ -75,7 +75,7 @@ function Message({
         </TitleRow>
       )}
       <TitleRow>
-        <SenderName>{message.senderName}</SenderName>
+        <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
       </TitleRow>
       <span>{message.recipients.map((r) => r.name).join(', ')}</span>
@@ -129,7 +129,7 @@ export function SingleThreadView({
       accountId
     })
 
-  const canReply = type === 'MESSAGE' || messages[0].senderId === accountId
+  const canReply = type === 'MESSAGE' || messages[0].sender.id === accountId
   const editorLabels = useMemo(
     () => ({
       add: i18n.common.add,

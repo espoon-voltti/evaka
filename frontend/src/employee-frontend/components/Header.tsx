@@ -4,6 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import { NestedMessageAccount } from 'employee-frontend/components/messages/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -86,19 +87,35 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { accounts } = useContext(MessageContext)
+  const { nestedAccounts: accounts, unreadCountsByAccount } =
+    useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
-  const unreadCount = useMemo<number>(
-    () =>
-      accounts.mapAll({
-        failure: () => 0,
-        loading: () => 0,
-        success: (value) =>
-          value.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
-      }),
-    [accounts]
-  )
+  const unreadCount = useMemo<number>(() => {
+    if (accounts.isSuccess && unreadCountsByAccount.isSuccess) {
+      const countUnreads = (accounts: NestedMessageAccount[]) =>
+        accounts.reduce<number>(
+          (sum, account) =>
+            (
+              unreadCountsByAccount.value.find(
+                (x) => x.accountId === account.account.id
+              ) || { unreadCount: 0 }
+            ).unreadCount + sum,
+          0
+        )
+      if (accounts.value.find((acc) => acc.account.type === 'PERSONAL')) {
+        return countUnreads(
+          accounts.value.filter((acc) => acc.account.type === 'PERSONAL')
+        )
+      } else {
+        return countUnreads(
+          accounts.value.filter((acc) => acc.account.type === 'GROUP')
+        )
+      }
+    } else {
+      return 0
+    }
+  }, [accounts, unreadCountsByAccount])
 
   const path = location.pathname
   const atCustomerInfo =

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageAccount as BaseMessageAccount } from 'lib-common/api-types/messaging/message'
+import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
@@ -15,6 +15,11 @@ export interface Recipient {
   guardian: boolean
   headOfChild: boolean
   blocklisted: boolean
+}
+
+export type UnreadCountByAccount = {
+  accountId: UUID
+  unreadCount: number
 }
 
 export interface ReceiverChild {
@@ -42,14 +47,10 @@ export const deserializeReceiverChild = (
   childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })
 
-interface AccountWithUnreadCount extends BaseMessageAccount {
-  unreadCount: number
+export interface NestedMessageAccount {
+  account: MessageAccount
 }
-export interface PersonalMessageAccount extends AccountWithUnreadCount {
-  type: 'PERSONAL'
-}
-export interface GroupMessageAccount extends AccountWithUnreadCount {
-  type: 'GROUP'
+export interface NestedGroupMessageAccount extends NestedMessageAccount {
   daycareGroup: {
     id: UUID
     name: string
@@ -57,15 +58,6 @@ export interface GroupMessageAccount extends AccountWithUnreadCount {
     unitName: string
   }
 }
-export type MessageAccount = PersonalMessageAccount | GroupMessageAccount
-
-export const isGroupMessageAccount = (
-  acc: MessageAccount
-): acc is GroupMessageAccount => acc.type === 'GROUP'
-
-export const isPersonalMessageAccount = (
-  acc: MessageAccount
-): acc is PersonalMessageAccount => acc.type === 'PERSONAL'
 
 export interface MessageBody {
   title: string
@@ -99,7 +91,7 @@ export interface SentMessage {
   type: MessageType
   threadTitle: string
   content: string
-  recipients: MessageAccount[]
+  recipients: NestedMessageAccount[]
   recipientNames: string[]
   sentAt: Date
 }

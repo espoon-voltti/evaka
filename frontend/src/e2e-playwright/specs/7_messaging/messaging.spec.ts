@@ -187,7 +187,7 @@ describe('Sending and receiving messages', () => {
   test('Citizen sends message to the unit supervisor and the group', async () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
-    const receivers = ['Esimies Essi', 'Kosmiset vakiot']
+    const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.sendNewMessage(title, content, receivers)

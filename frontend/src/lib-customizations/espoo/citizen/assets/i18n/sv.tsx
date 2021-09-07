@@ -182,6 +182,7 @@ const sv: Translations = {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'
     },
+    staffAnnotation: 'Personal',
     replyToThread: 'Svar',
     messageEditor: {
       newMessage: 'Nytt Meddelande',

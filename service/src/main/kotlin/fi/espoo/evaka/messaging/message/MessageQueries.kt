@@ -17,18 +17,22 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getUnreadMessagesCount(accountIds: Set<UUID>): Int {
+fun Database.Read.getUnreadMessagesCounts(accountIds: Set<UUID>): Set<UnreadCountByAccount> {
     // language=SQL
     val sql = """
-        SELECT COUNT(DISTINCT m.id) AS count
-        FROM message_recipients m
-        WHERE m.recipient_id = ANY(:accountIds) AND m.read_at IS NULL
+        SELECT 
+        acc.id as account_id,
+        SUM(CASE WHEN m.id IS NOT NULL AND m.read_at IS NULL THEN 1 ELSE 0 END) as unread_count
+        FROM message_account acc
+        LEFT JOIN message_recipients m
+        ON m.recipient_id = acc.id
+        WHERE acc.id = ANY(:accountIds)
+        GROUP BY acc.id
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())
-        .mapTo<Int>()
-        .one()
+        .mapTo<UnreadCountByAccount>().toSet()
 }
 
 fun Database.Transaction.markThreadRead(accountId: UUID, threadId: UUID): Int {
@@ -125,9 +129,11 @@ data class ReceivedMessageResultItem(
     val content: String,
     val senderId: UUID,
     val senderName: String,
+    val senderAccountType: AccountType,
     val readAt: HelsinkiDateTime? = null,
     val recipientId: UUID,
     val recipientName: String,
+    val recipientAccountType: AccountType
 )
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
@@ -147,14 +153,26 @@ participated_messages AS (
         m.sent_at, 
         m.sender_name,
         m.sender_id,
+        CASE
+            WHEN sender_acc.employee_id IS NOT NULL THEN 'PERSONAL'
+            WHEN sender_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
+            ELSE 'CITIZEN'
+        END AS sender_account_type,
         c.content,
         rec.read_at,
         rec.recipient_id,
-        acc.account_name recipient_name
+        acc.account_name recipient_name,
+        CASE
+            WHEN recipient_acc.employee_id IS NOT NULL THEN 'PERSONAL'
+            WHEN recipient_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
+            ELSE 'CITIZEN'
+        END AS recipient_account_type
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
     JOIN message_content c ON m.content_id = c.id
     JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+    JOIN message_account sender_acc ON sender_acc.id = m.sender_id
+    JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
     WHERE m.sender_id = :accountId OR EXISTS (
         SELECT 1
             FROM message_recipients rec2
@@ -187,9 +205,11 @@ SELECT
     msg.content,
     msg.sender_name,
     msg.sender_id,
+    msg.sender_account_type,
     msg.read_at,
     msg.recipient_id,
-    msg.recipient_name
+    msg.recipient_name,
+    msg.recipient_account_type
     FROM threads t
           JOIN participated_messages msg ON msg.thread_id = t.id
     ORDER BY t.last_message DESC, msg.sent_at ASC
@@ -212,14 +232,17 @@ SELECT
                             Message(
                                 id = messageId,
                                 content = messages[0].content,
-                                senderId = messages[0].senderId,
-                                senderName = messages[0].senderName,
+                                sender = MessageAccount(
+                                    id = messages[0].senderId,
+                                    name = messages[0].senderName,
+                                    type = messages[0].senderAccountType
+                                ),
                                 sentAt = messages[0].sentAt,
                                 readAt = messages.find { it.recipientId == accountId }?.readAt,
                                 recipients = messages
                                     .groupBy { it.recipientId }
                                     .map { (recipientId, recipients) ->
-                                        MessageAccount(recipientId, recipients[0].recipientName)
+                                        MessageAccount(recipientId, recipients[0].recipientName, recipients[0].recipientAccountType)
                                     }.toSet()
                             )
                         }
@@ -233,8 +256,10 @@ data class MessageResultItem(
     val id: UUID,
     val senderId: UUID,
     val senderName: String,
-    val recipient_id: UUID,
-    val recipient_name: String,
+    val senderAccountType: AccountType,
+    val recipientId: UUID,
+    val recipientName: String,
+    val recipientAccountType: AccountType,
     val sentAt: HelsinkiDateTime,
     val content: String,
 )
@@ -245,14 +270,26 @@ fun Database.Read.getMessage(id: UUID): Message {
             m.id,
             m.sender_id,
             m.sender_name,
+            CASE
+                WHEN sender_acc.employee_id IS NOT NULL THEN 'PERSONAL'
+                WHEN sender_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
+                ELSE 'CITIZEN'
+            END AS sender_account_type,
             m.sent_at,
             c.content,
             rec.recipient_id,
-            acc.account_name recipient_name
+            recipient_acc_name.account_name recipient_name,
+            CASE
+                WHEN recipient_acc.employee_id IS NOT NULL THEN 'PERSONAL'
+                WHEN recipient_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
+                ELSE 'CITIZEN'
+            END AS recipient_account_type
         FROM message m
         JOIN message_content c ON m.content_id = c.id
         JOIN message_recipients rec ON m.id = rec.message_id
-        JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+        JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
+        JOIN message_account sender_acc ON m.sender_id = sender_acc.id
+        JOIN message_account_name_view recipient_acc_name ON rec.recipient_id = recipient_acc_name.id
         WHERE m.id = :id
     """.trimIndent()
 
@@ -265,9 +302,12 @@ fun Database.Read.getMessage(id: UUID): Message {
                 id = id,
                 content = messages[0].content,
                 sentAt = messages[0].sentAt,
-                senderId = messages[0].senderId,
-                senderName = messages[0].senderName,
-                recipients = messages.map { MessageAccount(it.recipient_id, it.recipient_name) }.toSet()
+                sender = MessageAccount(
+                    id = messages[0].senderId,
+                    name = messages[0].senderName,
+                    type = messages[0].senderAccountType
+                ),
+                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet()
             )
         }
         .single()
@@ -353,7 +393,8 @@ groups AS (
 
 SELECT
     msg.id AS id,
-    msg_name.account_name AS name
+    msg_name.account_name AS name,
+    'PERSONAL' AS type
 FROM supervisors
 JOIN employee e
 ON e.id = supervisors.id
@@ -366,7 +407,8 @@ UNION
 
 SELECT
     msg.id AS id,
-    g.name AS name
+    g.name AS name,
+    'GROUP' AS type
 FROM groups
 JOIN daycare_group g
 ON groups.id = g.id
@@ -405,10 +447,19 @@ WITH pageable_messages AS (
     LIMIT :pageSize OFFSET :offset
 ),
 recipients AS (
-    SELECT m.content_id, rec.recipient_id, name_view.account_name
+    SELECT
+        m.content_id,
+        rec.recipient_id,
+        name_view.account_name,
+        CASE
+            WHEN acc.employee_id IS NOT NULL THEN 'PERSONAL'
+            WHEN acc.daycare_group_id IS NOT NULL THEN 'GROUP'
+            ELSE 'CITIZEN'
+        END AS account_type
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
     JOIN message_account_name_view name_view ON rec.recipient_id = name_view.id
+    JOIN message_account acc ON acc.id = rec.recipient_id
 )
 
 SELECT
@@ -421,7 +472,8 @@ SELECT
     mc.content,
     (SELECT jsonb_agg(json_build_object(
            'id', rec.recipient_id,
-           'name', rec.account_name
+           'name', rec.account_name,
+           'type', rec.account_type
        ))) AS recipients
 FROM pageable_messages msg
 JOIN recipients rec ON msg.content_id = rec.content_id

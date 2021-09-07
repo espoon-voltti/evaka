@@ -4,6 +4,7 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
+  deserializeMessageAccount,
   deserializeMessageThread,
   deserializeReplyResponse,
   MessageAccount,
@@ -16,6 +17,7 @@ import { client } from '../api-client'
 
 export async function getReceivedMessages(
   page: number,
+  staffAnnotation: string,
   pageSize = 10
 ): Promise<Result<Paged<MessageThread>>> {
   return client
@@ -25,16 +27,24 @@ export async function getReceivedMessages(
     .then((res) =>
       Success.of({
         ...res.data,
-        data: res.data.data.map(deserializeMessageThread)
+        data: res.data.data.map((d) =>
+          deserializeMessageThread(d, staffAnnotation)
+        )
       })
     )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getReceivers(): Promise<Result<MessageAccount[]>> {
+export async function getReceivers(
+  staffAnnotation: string
+): Promise<Result<MessageAccount[]>> {
   return client
     .get<MessageAccount[]>(`/citizen/messages/receivers`)
-    .then((res) => Success.of(res.data))
+    .then((res) =>
+      Success.of(
+        res.data.map((d) => deserializeMessageAccount(d, staffAnnotation))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }
 
@@ -52,9 +62,16 @@ export async function markThreadRead(id: string): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getUnreadMessagesCount(): Promise<Result<number>> {
+export type UnreadCountByAccount = {
+  accountId: UUID
+  unreadCount: number
+}
+
+export async function getUnreadMessagesCount(): Promise<
+  Result<UnreadCountByAccount[]>
+> {
   return client
-    .get<number>(`/citizen/messages/unread-count`)
+    .get<UnreadCountByAccount[]>(`/citizen/messages/unread-count`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -78,18 +95,22 @@ export interface ReplyToThreadParams {
   messageId: UUID
   content: string
   recipientAccountIds: UUID[]
+  staffAnnotation: string
 }
 
 export async function replyToThread({
   messageId,
   content,
-  recipientAccountIds
+  recipientAccountIds,
+  staffAnnotation
 }: ReplyToThreadParams): Promise<Result<ReplyResponse>> {
   return client
     .post<JsonOf<ReplyResponse>>(`/citizen/messages/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(({ data }) => Success.of(deserializeReplyResponse(data)))
+    .then(({ data }) =>
+      Success.of(deserializeReplyResponse(data, staffAnnotation))
+    )
     .catch((e) => Failure.fromError(e))
 }
