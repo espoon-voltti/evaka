@@ -48,6 +48,8 @@ export const incomeCoefficients = [
   'MONTHLY_NO_HOLIDAY_BONUS',
   'BI_WEEKLY_WITH_HOLIDAY_BONUS',
   'BI_WEEKLY_NO_HOLIDAY_BONUS',
+  'DAILY_ALLOWANCE_21_5',
+  'DAILY_ALLOWANCE_25',
   'YEARLY'
 ] as const
 
