@@ -1207,6 +1207,8 @@ export const fi = {
           MONTHLY_NO_HOLIDAY_BONUS: 'Kuukausi ilman lomarahaa',
           BI_WEEKLY_WITH_HOLIDAY_BONUS: '2 viikkoa',
           BI_WEEKLY_NO_HOLIDAY_BONUS: '2 viikkoa ilman lomarahaa',
+          DAILY_ALLOWANCE_21_5: 'Päiväraha x 21,5',
+          DAILY_ALLOWANCE_25: 'Päiväraha x 25',
           YEARLY: 'Vuosi'
         },
         updateError: 'Tulotietojen tallennus epäonnistui',

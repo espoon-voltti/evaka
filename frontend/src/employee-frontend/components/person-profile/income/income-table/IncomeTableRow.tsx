@@ -34,11 +34,13 @@ const typesWithCoefficients: IncomeType[] = [
   'OTHER_INCOME'
 ]
 
-const coefficientMultipliers = {
+const coefficientMultipliers: Record<IncomeCoefficient, number> = {
   MONTHLY_WITH_HOLIDAY_BONUS: 1.0417,
   MONTHLY_NO_HOLIDAY_BONUS: 1,
   BI_WEEKLY_WITH_HOLIDAY_BONUS: 2.2323,
   BI_WEEKLY_NO_HOLIDAY_BONUS: 2.1429,
+  DAILY_ALLOWANCE_21_5: 21.5,
+  DAILY_ALLOWANCE_25: 25,
   YEARLY: 0.0833
 }
 
