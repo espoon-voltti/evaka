@@ -206,7 +206,7 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
       />
       <Row
         label={i18n.incomeStatement.kelaInspectionConsent}
-        value={yesno(true)}
+        value={yesno(entrepreneur.checkupConsent)}
       />
       <H3>{i18n.incomeStatement.companyInfoTitle}</H3>
       <Row

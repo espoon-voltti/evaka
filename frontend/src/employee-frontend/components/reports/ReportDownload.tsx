@@ -7,7 +7,6 @@ import { CSVLink } from 'react-csv'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileSpreadsheet } from 'lib-icons'
-import { LabelKeyObject } from 'react-csv/components/CommonPropTypes'
 import { useTranslation } from '../../state/i18n'
 import colors from 'lib-customizations/common'
 
@@ -26,15 +25,20 @@ const LinkText = styled.span`
   font-weight: 600;
 `
 
-interface Props {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  data: object[] | string[][]
-  headers?: LabelKeyObject[]
+interface Props<T> {
+  data: T[]
+  headers?: Array<{ label: string; key: keyof T }>
   filename: string
   'data-qa'?: string
 }
 
-function ReportDownload({ data, headers, filename, 'data-qa': dataQa }: Props) {
+// eslint-disable-next-line @typescript-eslint/ban-types
+function ReportDownload<T extends object>({
+  data,
+  headers,
+  filename,
+  'data-qa': dataQa
+}: Props<T>) {
   const { i18n } = useTranslation()
   const [reloadCSV, setReloadCSV] = useState(true)
 
@@ -61,7 +65,10 @@ function ReportDownload({ data, headers, filename, 'data-qa': dataQa }: Props) {
         {data.length > 0 && !reloadCSV ? (
           <CSVLink
             data={data}
-            headers={headers}
+            headers={headers?.map(({ label, key }) => ({
+              label,
+              key: String(key)
+            }))}
             separator=";"
             filename={filename}
           >

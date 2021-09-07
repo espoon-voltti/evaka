@@ -4,7 +4,9 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 
 export default {
   common: {
@@ -1230,27 +1232,49 @@ export default {
     formTitle: 'Tulotietojen ilmoitus',
     formDescription: (
       <>
-        <p>
-          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
-          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
-          korkeimpaan maksuun.
-        </p>
-        <p>
+        <P>
+          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa
+          varhaiskasvatuksen aloittamisesta. Maksu voidaan määrätä
+          puutteellisilla tulotiedoilla korkeimpaan maksuun.
+        </P>
+        <P>
           Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
           alkamispäivästä lähtien.
-        </p>
-        <p>
+        </P>
+        <P>
           Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
           asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu
           perimään varhaiskasvatusmaksuja myös takautuvasti.
-        </p>
-        <p>* Tähdellä merkityt tiedot ovat pakollisia</p>
+        </P>
+        <P>
+          <strong>Huomioitavaa:</strong>
+        </P>
+        <Gap size="xs" />
+        <UnorderedList>
+          <li>
+            Jos tulosi ylittävät perhekoon mukaisen tulorajan, hyväksy korkein
+            varhaiskasvatusmaksu. Tällöin sinun ei tarvitse selvittää tulojasi
+            lainkaan.
+          </li>
+          <li>
+            Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava
+            tuloselvitys.
+          </li>
+        </UnorderedList>
+        <P>* Tähdellä merkityt tiedot ovat pakollisia</P>
       </>
+    ),
+    confidential: (
+      <P>
+        <strong>Salassapidettävä</strong>
+        <br />
+        (JulkL 24.1 §:n 23 kohta)
+      </P>
     ),
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
     incomeType: {
       description: (
         <>
@@ -1271,10 +1295,10 @@ export default {
     grossIncome: {
       title: 'Bruttotulotietojen täyttäminen',
       description:
-        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan tulorekisteristä sekä Kelasta tarvittaessa.',
       incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
-        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+        'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
       estimate: 'Arvio bruttotuloistani',
       otherIncome: 'Muut tulot',
       otherIncomeInfo:
@@ -1332,7 +1356,7 @@ export default {
         'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
       checkupLabel: 'Tietojen tarkastus',
       checkupConsent:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
       companyInfo: 'Yrityksen tiedot',
       companyForm: 'Yrityksen toimintamuoto',
       selfEmployed: 'Toiminimi',
@@ -1437,8 +1461,6 @@ export default {
         'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
-      consentRequired:
-        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan',
       deleteFailed: 'Tuloselvitystä ei voitu poistaa'
     },
     table: {

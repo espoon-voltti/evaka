@@ -6,6 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -31,14 +32,16 @@ enum class DailyServiceTimesType {
     VARIABLE_TIME
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class DailyServiceTimes(
     val type: DailyServiceTimesType
 ) {
+    @JsonTypeName("REGULAR")
     data class RegularTimes(
         val regularTimes: TimeRange
     ) : DailyServiceTimes(DailyServiceTimesType.REGULAR)
 
+    @JsonTypeName("IRREGULAR")
     data class IrregularTimes(
         val monday: TimeRange?,
         val tuesday: TimeRange?,
@@ -47,7 +50,8 @@ sealed class DailyServiceTimes(
         val friday: TimeRange?
     ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
 
-    data class VariableTimes(val variableTimes: Boolean) : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
+    @JsonTypeName("VARIABLE_TIME")
+    object VariableTimes : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
 }
 
 fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
@@ -78,9 +82,7 @@ fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
             thursday = toTimeRange(row, "thursday"),
             friday = toTimeRange(row, "friday"),
         )
-        DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes(
-            variableTimes = true
-        )
+        DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes
     }.exhaust()
 }
 

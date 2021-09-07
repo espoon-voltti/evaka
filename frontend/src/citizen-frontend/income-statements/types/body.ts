@@ -96,7 +96,6 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
 
   if (
-    !checkupConsent ||
     fullTime === null ||
     startOfEntrepreneurship === invalid ||
     spouseWorksInCompany === null ||
@@ -120,6 +119,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     startOfEntrepreneurship,
     spouseWorksInCompany,
     startupGrant,
+    checkupConsent,
     selfEmployed,
     limitedCompany,
     partnership,

@@ -131,6 +131,7 @@ function Raw() {
                     { label: 'Palvelualue', key: 'careArea' },
                     { label: 'Toimintamuoto', key: 'unitType' },
                     { label: 'Järjestämismuoto', key: 'unitProviderType' },
+                    { label: 'Kustannuspaikka', key: 'costCenter' },
                     { label: 'Sijoitettu ryhmään', key: 'daycareGroupId' },
                     { label: 'Ryhmä', key: 'groupName' },
                     {

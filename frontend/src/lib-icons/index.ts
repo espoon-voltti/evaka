@@ -79,6 +79,7 @@ export interface IconSet {
   faStickyNote: IconDefinition
   farStickyNote: IconDefinition
   faSync: IconDefinition
+  faThermometer: IconDefinition
   faTimes: IconDefinition
   faTrash: IconDefinition
   faUndo: IconDefinition
@@ -185,6 +186,7 @@ export const faSignOut = iconSet.faSignOut
 export const faStickyNote = iconSet.faStickyNote
 export const farStickyNote = iconSet.farStickyNote
 export const faSync = iconSet.faSync
+export const faThermometer = iconSet.faThermometer
 export const faTimes = iconSet.faTimes
 export const faTrash = iconSet.faTrash
 export const faUndo = iconSet.faUndo

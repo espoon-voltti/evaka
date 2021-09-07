@@ -126,11 +126,14 @@ export default class MessagesPage {
   async assertDraftContent(title: string, content: string) {
     await this.#draftMessagesBoxRow.click()
     await waitUntilEqual(
-      () => this.#draftMessage.find('[data-qa="draft-title"]').innerText,
+      () =>
+        this.#draftMessage.find('[data-qa="thread-list-item-title"]').innerText,
       title
     )
     await waitUntilEqual(
-      () => this.#draftMessage.find('[data-qa="draft-content"]').innerText,
+      () =>
+        this.#draftMessage.find('[data-qa="thread-list-item-content"]')
+          .innerText,
       content
     )
   }

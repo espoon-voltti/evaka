@@ -55,10 +55,10 @@ export const TypeAndDate = styled.div`
   align-items: flex-end;
 `
 
-function formatSentAt(sentAt: Date) {
+function formatTimestamp(sentAt: Date) {
   const format = isToday(sentAt) ? DATE_FORMAT_TIME_ONLY : DATE_FORMAT_NO_YEAR
   return formatDate(sentAt, format)
 }
-export function SentAt({ sentAt }: { sentAt: Date }) {
-  return <span>{formatSentAt(sentAt)}</span>
+export function Timestamp({ date }: { date: Date }) {
+  return <span>{formatTimestamp(date)}</span>
 }

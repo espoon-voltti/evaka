@@ -135,3 +135,4 @@ V134__income_statement.sql
 V135__remove_varda_service_need_option.sql
 V136__income_statement_handler.sql
 V137__service_need_confirmed_by_nullable.sql
+V138__income_statement_checkup_consent.sql

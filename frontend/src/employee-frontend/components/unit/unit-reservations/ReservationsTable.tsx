@@ -12,6 +12,7 @@ import colors from 'lib-customizations/common'
 import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
+import ChildDay, { TimeCell, TimesRow } from './ChildDay'
 
 interface Props {
   operationalDays: OperationalDay[]
@@ -36,10 +37,12 @@ export default React.memo(function ReservationsTable({
                   i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek()]
                 } ${date.format('dd.MM.')}`}
               </Date>
-              <TimeWrapper>
-                <Time>{i18n.unit.attendanceReservations.startTime}</Time>
-                <Time>{i18n.unit.attendanceReservations.endTime}</Time>
-              </TimeWrapper>
+              <TimesRow>
+                <TimeCell>
+                  {i18n.unit.attendanceReservations.startTime}
+                </TimeCell>
+                <TimeCell>{i18n.unit.attendanceReservations.endTime}</TimeCell>
+              </TimesRow>
             </DateTh>
           ))}
         </Tr>
@@ -50,7 +53,7 @@ export default React.memo(function ReservationsTable({
 
           return (
             <Tr key={childName}>
-              <Td>
+              <NameTd>
                 <ChildName>
                   <Link to={`/child-information/${childReservations.child.id}`}>
                     {childName}
@@ -59,26 +62,11 @@ export default React.memo(function ReservationsTable({
                     dateOfBirth={childReservations.child.dateOfBirth}
                   />
                 </ChildName>
-              </Td>
-              {operationalDays.map(({ date, isHoliday }) => (
-                <Td key={date.formatIso()}>
-                  {!isHoliday ? (
-                    <TimeWrapper>
-                      <Time>
-                        {
-                          childReservations.reservations[date.formatIso()]
-                            ?.startTime
-                        }
-                      </Time>
-                      <Time>
-                        {
-                          childReservations.reservations[date.formatIso()]
-                            ?.endTime
-                        }
-                      </Time>
-                    </TimeWrapper>
-                  ) : null}
-                </Td>
+              </NameTd>
+              {operationalDays.map((day) => (
+                <StyledTd key={day.date.formatIso()}>
+                  <ChildDay day={day} childReservations={childReservations} />
+                </StyledTd>
               ))}
             </Tr>
           )
@@ -98,6 +86,15 @@ const DateTh = styled(CustomTh)<{ faded: boolean }>`
   ${({ faded }) => (faded ? `color: ${colors.greyscale.medium};` : '')}
 `
 
+const StyledTd = styled(Td)`
+  border-right: 1px solid ${colors.greyscale.medium};
+  vertical-align: middle;
+`
+
+const NameTd = styled(StyledTd)`
+  width: 350px;
+`
+
 const ChildName = styled.div`
   display: flex;
   flex-direction: row;
@@ -112,22 +109,5 @@ const ChildName = styled.div`
 
 const Date = styled(H4)`
   text-align: center;
-  margin: 0;
-  margin-bottom: ${defaultMargins.s};
-`
-
-const TimeWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-`
-
-const Time = styled.div`
-  width: 54px;
-  text-align: center;
-
-  &:not(:first-child) {
-    margin-left: ${defaultMargins.xs};
-  }
+  margin: 0 0 ${defaultMargins.s};
 `

@@ -108,6 +108,7 @@ export interface RawReportRow {
   careArea: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
   unitProviderType: UnitProviderType
+  costCenter: string | null
   daycareGroupId: UUID | null
   groupName: string | null
   caretakersPlanned: number | null
@@ -362,14 +363,14 @@ export interface VoucherServiceProviderUnitRow {
   childLastName: string
   childDateOfBirth: LocalDate
   childGroupName: string
-  serviceVoucherDecisionId: string
-  serviceVoucherValue: number
-  serviceVoucherCoPayment: number
-  serviceNeedDescription: number
   unitId: UUID
   unitName: string
   areaId: UUID
   areaName: string
+  serviceVoucherDecisionId: UUID
+  serviceVoucherValue: number
+  serviceVoucherCoPayment: number
+  serviceNeedDescription: string
   realizedAmount: number
   realizedPeriod: FiniteDateRange
   numberOfDays: number

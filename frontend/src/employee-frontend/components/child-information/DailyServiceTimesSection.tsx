@@ -279,8 +279,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
       apiCall = putChildDailyServiceTimes(id, data)
     } else if (formData.type === 'VARIABLE_TIME') {
       const data: VariableDailyServiceTimes = {
-        type: 'VARIABLE_TIME',
-        variableTimes: true
+        type: 'VARIABLE_TIME'
       }
       apiCall = putChildDailyServiceTimes(id, data)
     }

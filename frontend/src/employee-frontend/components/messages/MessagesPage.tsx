@@ -10,11 +10,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import { deleteDraft, postMessage } from './api'
 import { MessageContext } from './MessageContext'
 import MessageEditor from './MessageEditor'
-import MessageList from './MessageList'
-import ReceiverSelection from './ReceiverSelection'
+import MessageList from './ThreadListContainer'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
 import { MessageBody } from './types'
+import ReceiverSelection from 'employee-frontend/components/messages/ReceiverSelection'
 
 // TODO is fixed header height possible?
 // If not, replace with a stretching flex container with scrollable children
