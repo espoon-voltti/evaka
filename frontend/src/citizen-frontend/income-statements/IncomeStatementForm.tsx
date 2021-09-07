@@ -119,10 +119,13 @@ export default React.forwardRef(function IncomeStatementForm(
       <Container>
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
-          <FixedSpaceColumn spacing="zero">
-            <H1 noMargin>{t.income.formTitle}</H1>
-            {t.income.formDescription}
-          </FixedSpaceColumn>
+          <ResponsiveFixedSpaceRow>
+            <FixedSpaceColumn spacing="zero">
+              <H1 noMargin>{t.income.formTitle}</H1>
+              {t.income.formDescription}
+            </FixedSpaceColumn>
+            <Confidential>{t.income.confidential}</Confidential>
+          </ResponsiveFixedSpaceRow>
         </ContentArea>
         <Gap size="s" />
         <IncomeTypeSelection
@@ -1034,6 +1037,16 @@ const Indent = styled.div`
 
 const OtherIncomeWrapper = styled.div`
   max-width: 480px;
+`
+
+const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
+  @media (max-width: 900px) {
+    display: block;
+  }
+`
+
+const Confidential = styled.div`
+  flex: 0 0 auto;
 `
 
 const LabelError = styled(function ({

@@ -1314,6 +1314,13 @@ const en: Translations = {
         <p>* Tähdellä merkityt tiedot ovat pakollisia</p>
       </>
     ),
+    confidential: (
+      <P>
+        <strong>Salassapidettävä</strong>
+        <br />
+        (JulkL 24.1 §:n 23 kohta.
+      </P>
+    ),
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
