@@ -23,7 +23,6 @@ export interface IrregularDailyServiceTimes {
 
 export interface VariableDailyServiceTimes {
   type: 'VARIABLE_TIME'
-  variableTimes: boolean | null
 }
 
 export type DailyServiceTimes =
@@ -47,4 +46,24 @@ export function isVariableTime(
   times: DailyServiceTimes
 ): times is VariableDailyServiceTimes {
   return times.type === 'VARIABLE_TIME'
+}
+
+export function getTimesOnWeekday(
+  times: IrregularDailyServiceTimes,
+  dayNumber: number
+) {
+  switch (dayNumber) {
+    case 1:
+      return times.monday
+    case 2:
+      return times.tuesday
+    case 3:
+      return times.wednesday
+    case 4:
+      return times.thursday
+    case 5:
+      return times.friday
+    default:
+      return null
+  }
 }
