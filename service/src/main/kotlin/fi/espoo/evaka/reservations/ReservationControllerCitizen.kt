@@ -38,7 +38,12 @@ class ReservationControllerCitizen(
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
-        val range = FiniteDateRange(from, to)
+        val range = try {
+            FiniteDateRange(from, to)
+        } catch (e: IllegalArgumentException) {
+            throw BadRequest("Invalid date range $from - $to")
+        }
+
         return db.read {
             ReservationsResponse(
                 dailyData = it.getReservations(user.id, range),
@@ -57,6 +62,12 @@ class ReservationControllerCitizen(
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.joinToString())
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
+
+        val reservableDays = getReservableDays(dateNow())
+        if (body.any { !reservableDays.includes(it.date) }) {
+            throw BadRequest("Some days are not reservable")
+        }
+
         db.transaction { createReservations(it, user.id, body) }
     }
 
