@@ -67,23 +67,23 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(monday, dailyData[0].date)
         assertEquals(
             setOf(
-                Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime), testChild_1.id),
-                Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime), testChild_2.id),
+                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime))),
+                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(monday, startTime), HelsinkiDateTime.of(monday, endTime)))
             ),
-            dailyData[0].reservations.toSet()
+            dailyData[0].children.toSet()
         )
 
         assertEquals(monday.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime), testChild_1.id),
-                Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime), testChild_2.id),
+                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime))),
+                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(monday.plusDays(1), startTime), HelsinkiDateTime.of(monday.plusDays(1), endTime))),
             ),
-            dailyData[1].reservations.toSet()
+            dailyData[1].children.toSet()
         )
 
         assertEquals(monday.plusDays(2), dailyData[2].date)
-        assertEquals(0, dailyData[2].reservations.size)
+        assertEquals(0, dailyData[2].children.size)
     }
 
     private fun postReservations(request: List<DailyReservationRequest>) {

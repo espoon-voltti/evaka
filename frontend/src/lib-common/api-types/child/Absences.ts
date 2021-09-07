@@ -13,12 +13,9 @@ export interface Absence {
   date: LocalDate
   absenceType: AbsenceType
   careType: AbsenceCareType
-  modifiedAt?: Date
-  modifiedBy?: string
 }
 
 export const deserializeAbsence = (absence: JsonOf<Absence>): Absence => ({
   ...absence,
-  date: LocalDate.parseIso(absence.date),
-  modifiedAt: absence.modifiedAt ? new Date(absence.modifiedAt) : undefined
+  date: LocalDate.parseIso(absence.date)
 })

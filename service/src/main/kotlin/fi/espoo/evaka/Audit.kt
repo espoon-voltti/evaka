@@ -12,6 +12,7 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low"
 ) {
+    AbsenceCitizenCreate("evaka.absence.create"),
     AbsenceRead("evaka.absence.read"),
     AbsenceDeleteRange("evaka.absence.delete.range"),
     AbsenceUpdate("evaka.absence.update"),

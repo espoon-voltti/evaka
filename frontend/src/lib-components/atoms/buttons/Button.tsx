@@ -76,7 +76,8 @@ export const StyledButton = styled.button`
 
 interface ButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent) => unknown
-  text: string
+  children?: React.ReactNode | React.ReactNodeArray
+  text?: string
   primary?: boolean
   disabled?: boolean
   type?: 'submit' | 'button'
@@ -87,10 +88,10 @@ function Button({
   className,
   'data-qa': dataQa,
   onClick,
-  text,
   primary = false,
   disabled = false,
-  type = 'button'
+  type = 'button',
+  ...props
 }: ButtonProps) {
   const [ignoreClick, setIgnoreClick] = React.useState(false)
   React.useEffect(() => {
@@ -117,7 +118,7 @@ function Button({
       disabled={disabled}
       type={type}
     >
-      {text}
+      {'children' in props ? props.children : props.text}
     </StyledButton>
   )
 }

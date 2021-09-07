@@ -173,3 +173,11 @@ function DatePicker({
 }
 
 export default DatePicker
+
+export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
+  return <DateInputSpacer>–</DateInputSpacer>
+})
+
+const DateInputSpacer = styled.div`
+  padding: 6px;
+`

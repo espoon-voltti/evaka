@@ -150,6 +150,13 @@ const en: Translations = {
   calendar: {
     title: 'Calendar',
     holiday: 'Holiday',
+    absent: 'Absent',
+    absences: {
+      SICKLEAVE: 'Sairaus',
+      PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+    },
+    newReservationOrAbsence: 'Reservation / Absence',
+    newAbsence: 'Report absence',
     newReservationBtn: 'Create reservation',
     noReservation: 'No reservation',
     reservationModal: {
@@ -164,6 +171,17 @@ const en: Translations = {
       repetitions: {
         DAILY: 'Daily',
         WEEKLY: 'Weekly'
+      }
+    },
+    absenceModal: {
+      title: 'Report absence',
+      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
+      dateRange: 'Poissaoloilmoitus ajalle',
+      absenceType: 'Poissaolon syy',
+      absenceTypes: {
+        sickness: 'Sairaus',
+        other: 'Muu poissaolo',
+        planned: 'Säännöllinen vapaapäivä/vuorohoito'
       }
     }
   },

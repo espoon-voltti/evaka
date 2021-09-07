@@ -6,7 +6,6 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
-import FocusLock from 'react-focus-lock'
 import Button from '../../atoms/buttons/Button'
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Title from '../../atoms/Title'
@@ -14,6 +13,7 @@ import { P } from '../../typography'
 import { defaultMargins, Gap } from '../../white-space'
 import { modalZIndex } from '../../layout/z-helpers'
 import { tabletMin } from 'lib-components/breakpoints'
+import ModalBackground from './ModalBackground'
 
 export const DimmedModal = styled.div``
 
@@ -29,10 +29,6 @@ export const BackgroundOverlay = styled.div<zIndexProps>`
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: ${(p) => (p.zIndex ? p.zIndex - 2 : modalZIndex - 2)};
-`
-
-const FormModalLifter = styled.div<zIndexProps>`
-  z-index: ${(p) => (p.zIndex ? p.zIndex - 1 : modalZIndex - 1)};
 `
 
 interface ModalContainerProps {
@@ -135,10 +131,6 @@ export const ModalIcon = styled.div<ModalIconProps>`
   margin: auto;
 `
 
-export const ModalBackground = styled.div`
-  background: rgba(15, 15, 15, 0.86);
-`
-
 export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   display: flex;
   flex-direction: row;
@@ -194,56 +186,50 @@ function ModalBase({
   onSubmit
 }: CommonProps & { onSubmit?: () => void }) {
   return (
-    <FocusLock>
-      <DimmedModal>
-        <BackgroundOverlay />
-        <FormModalLifter>
-          <ModalWrapper className={className} data-qa={dataQa}>
-            <ModalBackground />
-            <ModalContainer
-              size={size}
-              mobileFullScreen={mobileFullScreen}
-              data-qa="form-modal"
-            >
-              {title && title.length > 0 ? (
-                <ModalTitle>
-                  {icon && (
-                    <>
-                      <ModalIcon colour={iconColour}>
-                        <FontAwesomeIcon icon={icon} />
-                      </ModalIcon>
-                      <Gap size={'m'} />
-                    </>
-                  )}
-                  {title && (
-                    <Title size={1} data-qa="title" centered>
-                      {title}
-                    </Title>
-                  )}
-                  {text && (
-                    <P data-qa="text" centered>
-                      {text}
-                    </P>
-                  )}
-                </ModalTitle>
-              ) : (
-                <Gap size={'L'} />
+    <ModalBackground>
+      <ModalWrapper className={className} data-qa={dataQa}>
+        <ModalContainer
+          size={size}
+          mobileFullScreen={mobileFullScreen}
+          data-qa="form-modal"
+        >
+          {title && title.length > 0 ? (
+            <ModalTitle>
+              {icon && (
+                <>
+                  <ModalIcon colour={iconColour}>
+                    <FontAwesomeIcon icon={icon} />
+                  </ModalIcon>
+                  <Gap size={'m'} />
+                </>
               )}
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  if (onSubmit) {
-                    if (!resolve.disabled) onSubmit()
-                  }
-                }}
-              >
-                {children}
-              </form>
-            </ModalContainer>
-          </ModalWrapper>
-        </FormModalLifter>
-      </DimmedModal>
-    </FocusLock>
+              {title && (
+                <Title size={1} data-qa="title" centered>
+                  {title}
+                </Title>
+              )}
+              {text && (
+                <P data-qa="text" centered>
+                  {text}
+                </P>
+              )}
+            </ModalTitle>
+          ) : (
+            <Gap size={'L'} />
+          )}
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (onSubmit) {
+                if (!resolve.disabled) onSubmit()
+              }
+            }}
+          >
+            {children}
+          </form>
+        </ModalContainer>
+      </ModalWrapper>
+    </ModalBackground>
   )
 }
 
