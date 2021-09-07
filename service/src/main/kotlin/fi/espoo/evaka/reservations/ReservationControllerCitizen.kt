@@ -317,12 +317,10 @@ fun getReservableDays(today: LocalDate): FiniteDateRange {
         today.plusWeeks(2).minusDays(today.dayOfWeek.value - 1L)
     }
 
-    // Take the first end of July that satisfies the condition that the date range is at least one full week
-    val nextSunday = start.plusDays(6)
-    val end = if (nextSunday <= nextSunday.withMonth(7).withDayOfMonth(31)) {
-        nextSunday.withMonth(7).withDayOfMonth(31)
+    val end = if (start.withMonth(7).withDayOfMonth(1) <= start) {
+        start.plusYears(1).withMonth(7).withDayOfMonth(31)
     } else {
-        nextSunday.plusYears(1).withMonth(7).withDayOfMonth(31)
+        start.withMonth(7).withDayOfMonth(31)
     }
 
     return FiniteDateRange(start, end)

@@ -302,27 +302,36 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
     @Test
     fun `reservable days query date is Monday`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 5))
+        val result = getReservableDays(LocalDate.of(2021, 6, 7))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 12), LocalDate.of(2021, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 6, 14), LocalDate.of(2021, 7, 31)),
             result
         )
     }
 
     @Test
     fun `reservable days query date is Tuesday`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 6))
+        val result = getReservableDays(LocalDate.of(2021, 6, 8))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 19), LocalDate.of(2021, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 6, 21), LocalDate.of(2021, 7, 31)),
             result
         )
     }
 
     @Test
-    fun `reservable days is at least one full week`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 14))
+    fun `reservable days includes next year when start is in July`() {
+        val result = getReservableDays(LocalDate.of(2021, 6, 28))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 26), LocalDate.of(2022, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 7, 5), LocalDate.of(2022, 7, 31)),
+            result
+        )
+    }
+
+    @Test
+    fun `reservable days query date is in September`() {
+        val result = getReservableDays(LocalDate.of(2021, 9, 1))
+        assertEquals(
+            FiniteDateRange(LocalDate.of(2021, 9, 13), LocalDate.of(2022, 7, 31)),
             result
         )
     }
