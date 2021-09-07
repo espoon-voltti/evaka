@@ -23,7 +23,7 @@ RUN sudo apt-get update \
  && chromedriver --version
 
 USER root
-COPY ./testcafe/bin/ /bin/
+COPY ./testcafe/bin/run-tests.sh ./entrypoint.sh /bin/
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
 CMD ["/bin/run-tests.sh"]

@@ -66,32 +66,33 @@ else
   rm -f frontend/testcafe-fixture-regex.txt
 fi
 
+pushd compose
+
+./test-e2e run "$TEST_RUNNER"
+
+exit 0
+
 # Make "docker run" the main process to ensure it handles all signals correctly
 if [ "$TEST_RUNNER" = "playwright" ]; then
   PLAYWRIGHT_IMAGE=localhost:5000/playwright-todo
   docker build -t "$PLAYWRIGHT_IMAGE" -f ./compose/e2e/playwright.Dockerfile ./compose/e2e/
   exec docker run --rm -it \
-    --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
     --volume "${PWD}":/repo:rw \
     --ipc=host \
     --network="$COMPOSE_NETWORK" \
     --env CI="${CI:-false}" \
     --env DEBUG="${DEBUG-}" \
-    --entrypoint=/bin/bash \
-    "$PLAYWRIGHT_IMAGE" \
-    /tmp/cmd.sh "$TEST_RUNNER"
+    "$PLAYWRIGHT_IMAGE"
 else
   TESTCAFE_IMAGE=localhost:5000/testcafe-todo
   docker build -t "$TESTCAFE_IMAGE" -f ./compose/e2e/testcafe.Dockerfile ./compose/e2e/
 
   exec docker run --rm -it \
-    --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
     --volume "${PWD}":/repo:rw \
     --network="$COMPOSE_NETWORK" \
     --env REPO_UID="${UID:-$(id -u)}" \
     --env REPO_GID="${GID:-$(id -g)}" \
     --env CI="${CI:-false}" \
     --env DEBUG="${DEBUG-false}" \
-    --env TESTS="Supervisor accepts decision on behalf of the enduser" \
     "$TESTCAFE_IMAGE"
 fi

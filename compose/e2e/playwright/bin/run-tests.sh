@@ -15,9 +15,12 @@ if [ "${DEBUG}" = "true" ]; then
     set -x
 fi
 
+export FORCE_COLOR=1
+
 cd /repo/frontend
 
 echo 'INFO: Waiting for compose stack to be up...'
 ./wait-for-dev-api.sh "$PROXY_URL"
 
-yarn e2e-ci-testcafe --fixture-grep "$(cat testcafe-fixture-regex.txt)" -- src/e2e-test/specs/
+mapfile -t FILENAMES < playwright-filenames.txt
+yarn e2e-ci-playwright "${FILENAMES[@]}"

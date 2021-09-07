@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Use this compose file to extend docker-compose.yml when you want to run
+# the latest published versions, e.g. for E2E testing.
+version: '3.5'
+
+services:
+  playwright:
+    image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-playwright:${COMPOSE_TAG:-latest}
+    build:
+      context: ./e2e
+      dockerfile: ./playwright.Dockerfile
+    volumes:
+      - ..:/repo
+    ipc: host
+    environment:
+      CI: ${CI:-false}
+      DEBUG: ${DEBUG:-}
+
+  testcafe:
+    image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-testcafe:${COMPOSE_TAG:-latest}
+    build:
+      context: ./e2e
+      dockerfile: ./testcafe.Dockerfile
+    volumes:
+      - ..:/repo
+    ipc: host
+    environment:
+      REPO_UID: "${UID}"
+      REPO_GID: "${GID}"
+      CI: ${CI:-false}
+      DEBUG: ${DEBUG:-}

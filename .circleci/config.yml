@@ -54,6 +54,11 @@ aliases:
     context:
       - voltti-slack
       - org-global
+  - &aws_docker_contexts
+    context:
+      - voltti-dockerhub
+      - voltti-slack
+      - org-global
 
   - &default_config
     working_directory: << pipeline.parameters.workspace_root >>
@@ -380,6 +385,35 @@ commands:
             ICONS=pro yarn build-storybook
             ls -lRa ./storybook-build
 
+  e2e_build:
+    parameters:
+      test_runner:
+        type: enum
+        enum:
+          - testcafe
+          - playwright
+    steps:
+      - restore_repo
+      - setup_remote_docker:
+          version: *remote_docker_version
+          docker_layer_caching: false
+      - run:
+          name: Build and push E2E << parameters.test_runner >> image
+          working_directory: *workspace_compose
+          command: |
+            ecr-login
+            # The image is not expected to chage too often so we use :latest for all cache
+            E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
+            docker pull "$E2E_IMAGE"
+            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f ./e2e/"<< parameters.test_runner >>.Dockerfile" ./e2e/
+            docker push "$E2E_IMAGE"
+            docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
+      - persist_to_workspace:
+          root: *workspace_compose
+          paths:
+            - "e2e-<< parameters.test_runner >>.tar"
+      - notify_slack
+
   e2e_test:
     parameters:
       yarn_version:
@@ -390,9 +424,6 @@ commands:
         enum:
           - testcafe
           - playwright
-      suite:
-        type: string
-        default: ""
     steps:
       - restore_repo
       - attach_root_workspace
@@ -410,9 +441,15 @@ commands:
       - restore_frontend_deps
       - restore_frontend_comm_deps
       - run:
-          name: Run E2E tests against compose inside a Docker container
+          name: Load E2E image
           working_directory: << pipeline.parameters.workspace_root >>
-          command: ./bin/circleci-e2e.sh "<< parameters.test_runner >>"
+          command: |
+            docker load -i "e2e-<< parameters.test_runner >>.tar"
+      - run:
+          name: Run E2E tests against compose inside a docker-compose
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: |
+            CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
       - run:
           name: Collect docker-compose logs
           working_directory: *workspace_compose
@@ -790,6 +827,20 @@ jobs:
 
   # E2E JOBS
 
+  e2e-build-testcafe:
+    executor: aws_docker_executor
+    steps:
+      - e2e_build:
+          test_runner: testcafe
+      - notify_slack
+
+  e2e-build-playwright:
+    executor: aws_docker_executor
+    steps:
+      - e2e_build:
+          test_runner: playwright
+      - notify_slack
+
   e2e-test-testcafe:
     executor: e2e_executor
     parallelism: 8
@@ -1096,10 +1147,7 @@ workflows:
             - apigw_build_and_test
 
       - frontend_build_core:
-          context:
-            - voltti-slack
-            - voltti-dockerhub
-            - sentry-release
+          <<: *aws_docker_contexts
           requires:
             - fetch_private_dependencies
       - frontend_build_misc_and_test:
@@ -1107,15 +1155,25 @@ workflows:
           requires:
             - fetch_private_dependencies
 
+      - e2e-build-testcafe:
+          <<: *aws_docker_contexts
+          requires:
+            - checkout_repo
+      - e2e-build-playwright:
+          <<: *aws_docker_contexts
+          requires:
+            - checkout_repo
       - e2e-test-testcafe:
           <<: *default_contexts
           requires:
+            - e2e-build-testcafe
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
+            - e2e-build-playwright
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
