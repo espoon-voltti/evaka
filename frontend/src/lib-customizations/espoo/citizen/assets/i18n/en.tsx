@@ -1298,9 +1298,9 @@ const en: Translations = {
     formDescription: (
       <>
         <p>
-          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa hoidon
-          aloittamisesta. Maksu voidaan määrätä puutteellisilla tulotiedoilla
-          korkeimpaan maksuun.
+          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa
+          varhaiskasvatuksen aloittamisesta. Maksu voidaan määrätä
+          puutteellisilla tulotiedoilla korkeimpaan maksuun.
         </p>
         <p>
           Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
