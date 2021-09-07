@@ -531,16 +531,13 @@ function EntrepreneurIncomeSelection({
           }
         />
         <Gap size="L" />
-        <Label>{t.income.entrepreneurIncome.checkupLabel} *</Label>
+        <Label>{t.income.entrepreneurIncome.checkupLabel}</Label>
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.checkupConsent}
           checked={formData.checkupConsent}
           onChange={(value) => onChange({ ...formData, checkupConsent: value })}
         />
-        {showFormErrors && !formData.checkupConsent && (
-          <AlertBox message={t.income.errors.consentRequired} />
-        )}
         <Gap size="XL" />
         <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
         <Gap size="L" />

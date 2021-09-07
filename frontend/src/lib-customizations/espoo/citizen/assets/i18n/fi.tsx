@@ -1461,8 +1461,6 @@ export default {
         'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
-      consentRequired:
-        'Jos suostumusta tulotietojen tarkistamiseen joko kelasta tai tulorekisteristä ei anneta, määrätään maksu puuttuvilla tuloilla korkeimpaan maksuluokkaan',
       deleteFailed: 'Tuloselvitystä ei voitu poistaa'
     },
     table: {

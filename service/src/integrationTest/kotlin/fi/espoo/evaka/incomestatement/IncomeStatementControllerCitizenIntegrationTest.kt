@@ -77,6 +77,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                     spouseWorksInCompany = false,
                     startupGrant = true,
+                    checkupConsent = true,
                     selfEmployed = SelfEmployed(
                         attachments = true,
                         estimatedIncome = EstimatedIncome(
@@ -123,6 +124,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                         spouseWorksInCompany = false,
                         startupGrant = true,
+                        checkupConsent = true,
                         selfEmployed = SelfEmployed(
                             attachments = true,
                             estimatedIncome = EstimatedIncome(
@@ -199,6 +201,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                     spouseWorksInCompany = true,
                     startupGrant = true,
+                    checkupConsent = true,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = false,
@@ -227,6 +230,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                     spouseWorksInCompany = true,
                     startupGrant = true,
+                    checkupConsent = true,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = true,
@@ -251,6 +255,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                     spouseWorksInCompany = true,
                     startupGrant = true,
+                    checkupConsent = true,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = true,
@@ -390,6 +395,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                     spouseWorksInCompany = false,
                     startupGrant = true,
+                    checkupConsent = true,
                     selfEmployed = SelfEmployed(
                         attachments = true,
                         estimatedIncome = EstimatedIncome(
@@ -430,6 +436,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
                     spouseWorksInCompany = true,
                     startupGrant = false,
+                    checkupConsent = false,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = true,
@@ -462,6 +469,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
                     spouseWorksInCompany = true,
                     startupGrant = false,
+                    checkupConsent = false,
                     selfEmployed = null,
                     limitedCompany = null,
                     partnership = true,

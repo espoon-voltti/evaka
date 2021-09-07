@@ -65,6 +65,7 @@ export interface Entrepreneur {
   startOfEntrepreneurship: LocalDate
   spouseWorksInCompany: boolean
   startupGrant: boolean
+  checkupConsent: boolean
   selfEmployed: SelfEmployed | null
   limitedCompany: LimitedCompany | null
   partnership: boolean

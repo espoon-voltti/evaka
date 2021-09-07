@@ -159,7 +159,7 @@ function mapEntrepreneur(
     startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship.format(),
     spouseWorksInCompany: entrepreneur.spouseWorksInCompany,
     startupGrant: entrepreneur.startupGrant,
-    checkupConsent: true,
+    checkupConsent: entrepreneur.checkupConsent,
     selfEmployed: mapSelfEmployed(entrepreneur.selfEmployed),
     limitedCompany: mapLimitedCompany(entrepreneur.limitedCompany),
     partnership: entrepreneur.partnership,
