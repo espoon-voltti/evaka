@@ -11,7 +11,7 @@ import { Gap } from 'lib-components/white-space'
 import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import styled from 'styled-components'
-import { errorToInputInfo } from 'citizen-frontend/form-validation'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,

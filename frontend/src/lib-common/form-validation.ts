@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
-import { Translations } from 'lib-customizations/citizen'
 import { parse } from 'date-fns'
 
 export const SSN_REGEXP = /^[0-9]{6}[+\-A][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
@@ -129,18 +127,6 @@ export type ErrorsOf<T> = {
   [key in keyof T]?: T[key] extends unknown[]
     ? ErrorsOfArray<T[key]>
     : ErrorKey | undefined
-}
-
-export function errorToInputInfo(
-  error: ErrorKey | undefined,
-  localization: Translations['validationErrors']
-): InputInfo | undefined {
-  return (
-    error && {
-      text: localization[error],
-      status: 'warning'
-    }
-  )
 }
 
 function isArrayErrors<T extends unknown[]>(

@@ -1,19 +1,13 @@
+import React, { useEffect, useState } from 'react'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
-import React, { useEffect, useState } from 'react'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { useLang, useTranslation } from '../localization'
-import { postReservations, ReservationChild } from './api'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
-import { UUID } from 'lib-common/types'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import {
   ErrorsOf,
   getErrorCount,
@@ -25,20 +19,20 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { Gap } from 'lib-components/white-space'
-import { errorToInputInfo } from '../input-info-helper'
+import { CalendarChild, postReservations } from '../../../api/unit'
+import { useTranslation } from '../../../state/i18n'
+import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 interface Props {
   onClose: () => void
   onReload: () => void
-  availableChildren: ReservationChild[]
-  reservableDays: FiniteDateRange
+  child: CalendarChild
 }
 
 type Repetition = 'DAILY' | 'WEEKLY'
 
 interface ReservationFormData {
-  selectedChildren: UUID[]
   startDate: string
   endDate: string
   repetition: Repetition
@@ -52,18 +46,15 @@ interface ReservationFormData {
 
 type ReservationErrors = ErrorsOf<ReservationFormData>
 
-export default React.memo(function ReservationModal({
+export default React.memo(function ReservationModalSingleChild({
   onClose,
   onReload,
-  availableChildren,
-  reservableDays
+  child
 }: Props) {
-  const i18n = useTranslation()
-  const [lang] = useLang()
+  const { i18n, lang } = useTranslation()
 
   const [formData, setFormData] = useState<ReservationFormData>({
-    selectedChildren: availableChildren.map((child) => child.id),
-    startDate: reservableDays.start.format(),
+    startDate: LocalDate.today().format(),
     endDate: '',
     repetition: 'DAILY',
     startTime: '',
@@ -82,7 +73,6 @@ export default React.memo(function ReservationModal({
   }
 
   const [errors, setErrors] = useState<ReservationErrors>({
-    selectedChildren: undefined,
     startDate: undefined,
     endDate: undefined
   })
@@ -90,16 +80,11 @@ export default React.memo(function ReservationModal({
   const validate = () => {
     const startDate = LocalDate.parseFiOrNull(formData.startDate)
     setErrors({
-      selectedChildren: {
-        arrayErrors:
-          formData.selectedChildren.length > 0 ? undefined : 'required',
-        itemErrors: []
-      },
       startDate:
         startDate === null
           ? 'validDate'
           : LocalDate.parseFiOrThrow(formData.startDate).isBefore(
-              reservableDays.start
+              LocalDate.today()
             )
           ? 'dateTooEarly'
           : undefined,
@@ -109,10 +94,6 @@ export default React.memo(function ReservationModal({
           : startDate &&
             LocalDate.parseFiOrThrow(formData.endDate).isBefore(startDate)
           ? 'dateTooEarly'
-          : LocalDate.parseFiOrThrow(formData.endDate).isAfter(
-              reservableDays.end
-            )
-          ? 'dateTooLate'
           : undefined,
       startTime:
         formData.repetition !== 'DAILY'
@@ -154,7 +135,7 @@ export default React.memo(function ReservationModal({
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
-  useEffect(validate, [formData, reservableDays])
+  useEffect(validate, [formData])
 
   const [postResult, setPostResult] = useState<Result<null>>()
 
@@ -172,31 +153,29 @@ export default React.memo(function ReservationModal({
     )
     switch (formData.repetition) {
       case 'DAILY':
-        return [...range.dates()].flatMap((date) =>
-          formData.selectedChildren.map((childId) => ({
-            childId,
-            date,
-            reservation: {
-              startTime: formData.startTime,
-              endTime: formData.endTime
-            }
-          }))
-        )
+        return [...range.dates()].map((date) => ({
+          childId: child.id,
+          date,
+          reservation: {
+            startTime: formData.startTime,
+            endTime: formData.endTime
+          }
+        }))
       case 'WEEKLY':
         return [...range.dates()]
           .filter((d) => !d.isWeekend())
-          .flatMap((date) => {
+          .map((date) => {
             const startTime =
               formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime
             const endTime =
               formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
             const noReservation = startTime === '' || endTime === ''
 
-            return formData.selectedChildren.map((childId) => ({
-              childId,
+            return {
+              childId: child.id,
               date,
               reservation: noReservation ? null : { startTime, endTime }
-            }))
+            }
           })
     }
   }
@@ -204,7 +183,7 @@ export default React.memo(function ReservationModal({
   return (
     <FormModal
       mobileFullScreen
-      title={i18n.calendar.reservationModal.title}
+      title={i18n.unit.attendanceReservations.reservationModal.title}
       resolve={{
         action: () => {
           if (getErrorCount(errors) > 0) {
@@ -216,64 +195,48 @@ export default React.memo(function ReservationModal({
           )
         },
         label: i18n.common.confirm,
-        disabled:
-          postResult?.isLoading || formData.selectedChildren.length === 0
+        disabled: postResult?.isLoading
       }}
       reject={{
         action: onClose,
         label: i18n.common.cancel
       }}
     >
-      <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-      <FixedSpaceColumn>
-        {availableChildren.map((child) => (
-          <Checkbox
-            key={child.id}
-            label={child.preferredName || child.firstName.split(' ')[0]}
-            checked={formData.selectedChildren.includes(child.id)}
-            onChange={(selected) => {
-              if (selected) {
-                updateForm({
-                  selectedChildren: [...formData.selectedChildren, child.id]
-                })
-              } else {
-                updateForm({
-                  selectedChildren: formData.selectedChildren.filter(
-                    (id) => id !== child.id
-                  )
-                })
-              }
-            }}
-          />
-        ))}
-      </FixedSpaceColumn>
+      <H2>
+        {i18n.unit.attendanceReservations.reservationModal.selectedChildren}
+      </H2>
+      <div>
+        {child.lastName} {child.firstName}
+      </div>
 
-      <H2>{i18n.calendar.reservationModal.dateRange}</H2>
-      <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+      <H2>{i18n.unit.attendanceReservations.reservationModal.dateRange}</H2>
+      <Label>
+        {i18n.unit.attendanceReservations.reservationModal.dateRangeLabel}
+      </Label>
       <FixedSpaceRow>
         <DatePicker
           date={formData.startDate}
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays.includes(date)}
+          isValidDate={(date) => !date.isBefore(LocalDate.today())}
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
         />
-        <DatePickerSpacer />
+        <span>-</span>
         <DatePicker
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays.includes(date)}
+          isValidDate={(date) => !date.isBefore(LocalDate.today())}
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={reservableDays.start}
+          initialMonth={LocalDate.today()}
         />
       </FixedSpaceRow>
 
-      <H2>{i18n.calendar.reservationModal.times}</H2>
+      <H2>{i18n.unit.attendanceReservations.reservationModal.times}</H2>
 
-      <Label>{i18n.calendar.reservationModal.repeats}</Label>
+      <Label>{i18n.unit.attendanceReservations.reservationModal.repeats}</Label>
       <Combobox<Repetition>
         items={['DAILY', 'WEEKLY']}
         selectedItem={formData.repetition}
@@ -282,7 +245,7 @@ export default React.memo(function ReservationModal({
         }}
         clearable={false}
         getItemLabel={(item) =>
-          i18n.calendar.reservationModal.repetitions[item]
+          i18n.unit.attendanceReservations.reservationModal.repetitions[item]
         }
       />
 
@@ -290,7 +253,9 @@ export default React.memo(function ReservationModal({
 
       {formData.repetition === 'DAILY' && (
         <FixedSpaceRow>
-          <Label>{i18n.calendar.reservationModal.businessDays}</Label>
+          <Label>
+            {i18n.unit.attendanceReservations.reservationModal.businessDays}
+          </Label>
           <InputField
             value={formData.startTime}
             type={'time'}
@@ -365,7 +330,9 @@ export default React.memo(function ReservationModal({
       )}
 
       {postResult?.isFailure && (
-        <ErrorSegment title={i18n.calendar.reservationModal.postError} />
+        <ErrorSegment
+          title={i18n.unit.attendanceReservations.reservationModal.postError}
+        />
       )}
     </FormModal>
   )

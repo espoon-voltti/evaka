@@ -12,9 +12,9 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { H3, Label } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
-import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function OtherPartnerSubSection({
   formData,

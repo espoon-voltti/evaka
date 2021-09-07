@@ -12,7 +12,7 @@ import AssistanceNeedSubSection from '../../../applications/editor/service-need/
 import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
-import { getErrorCount } from '../../../form-validation'
+import { getErrorCount } from 'lib-common/form-validation'
 import { useTranslation } from '../../../localization'
 import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors, Term } from '../validations'

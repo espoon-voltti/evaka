@@ -17,12 +17,9 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
-import {
-  ErrorsOf,
-  errorToInputInfo,
-  getErrorCount
-} from 'citizen-frontend/form-validation'
+import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsencesRequest, postAbsences, ReservationChild } from './api'
+import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
   close: () => void

@@ -12,11 +12,11 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { H3, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
-import { errorToInputInfo } from '../../../form-validation'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function GuardianSubSection({
   formData,
