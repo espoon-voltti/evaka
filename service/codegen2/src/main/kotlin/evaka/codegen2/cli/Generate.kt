@@ -75,8 +75,7 @@ fun main() {
     }
 
     val path = locateRoot() / "api-types.d.ts"
-    val ts = header + analyzedClasses.reversed().joinToString("\n\n") { it.toTs() }
-    // println(ts)
+    val ts = header + analyzedClasses.sortedBy { it.name }.joinToString("\n\n") { it.toTs() }
     path.writeText(ts)
 }
 
@@ -95,7 +94,7 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
         return null
 
     if (clazz.qualifiedName?.startsWith("kotlin.") == true || clazz.qualifiedName?.startsWith("java.") == true)
-        error("Kotlin/Java class ${clazz.qualifiedName} not handled")
+        error("Kotlin/Java class ${clazz.qualifiedName} not handled, add to tsMapping")
 
     return when {
         clazz.java.enumConstants?.isNotEmpty() == true -> AnalyzedClass.EnumClass(
@@ -106,7 +105,7 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
             name = clazz.qualifiedName ?: error("no class name"),
             properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
         )
-        clazz.isSealed -> null // TODO
+        clazz.isSealed -> null // Not yet supported
         else -> error("unhandled case")
     }
 }
@@ -145,7 +144,10 @@ private sealed class AnalyzedClass(
         val properties: List<AnalyzedProperty>
     ) : AnalyzedClass(name) {
         override fun toTs(): String {
-            return """export interface ${name.split('.').last()} {
+            return """/**
+* Generated from $name
+*/
+export interface ${name.split('.').last()} {
 ${properties.joinToString("\n") { "    " + it.toTs() }}
 }"""
         }
@@ -156,7 +158,10 @@ ${properties.joinToString("\n") { "    " + it.toTs() }}
         val values: List<String>
     ) : AnalyzedClass(name) {
         override fun toTs(): String {
-            return "export type ${name.split('.').last()} = ${values.joinToString(" | ") { "'$it'" }}"
+            return """/**
+* Generated from $name
+*/
+export type ${name.split('.').last()} = ${values.joinToString(" | ") { "'$it'" }}"""
         }
     }
 }
