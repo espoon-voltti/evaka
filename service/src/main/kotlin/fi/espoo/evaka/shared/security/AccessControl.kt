@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -51,6 +52,15 @@ WHERE acl.employee_id = :userId
         """.trimIndent(),
         "bc.id",
         permittedRoleActions::backupCareActions
+    )
+    private val child = ActionConfig(
+        """
+SELECT child_id AS id, role
+FROM child_acl_view
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "child_id",
+        permittedRoleActions::childActions
     )
     private val group = ActionConfig(
         """
@@ -223,6 +233,9 @@ WHERE employee_id = :userId
             mapping = permittedRoleActions::childActions
         )
     }
+
+    fun getPermittedChildActions(user: AuthenticatedUser, ids: Collection<ChildId>): Map<ChildId, Set<Action.Child>> =
+        this.child.getPermittedActions(user, ids)
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.DailyNote, id: DaycareDailyNoteId) {
         assertPermission(

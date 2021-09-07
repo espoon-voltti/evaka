@@ -14,6 +14,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,7 +31,8 @@ import java.util.UUID
 @RequestMapping("/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
@@ -51,13 +54,7 @@ class FamilyController(
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.STAFF,
-                UserRole.SPECIAL_EDUCATION_TEACHER
-            )
+        accessControl.requirePermissionFor(user, Action.Child.READ_FAMILY_CONTACTS, childId)
         return db
             .read { it.fetchFamilyContacts(childId) }
             .let { ResponseEntity.ok(it) }
@@ -70,8 +67,7 @@ class FamilyController(
         @RequestBody body: FamilyContactUpdate
     ): ResponseEntity<Unit> {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        acl.getRolesForChild(user, body.childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT, body.childId)
 
         db.transaction { it.updateFamilyContact(body.childId, body.contactPersonId, body.priority) }
 

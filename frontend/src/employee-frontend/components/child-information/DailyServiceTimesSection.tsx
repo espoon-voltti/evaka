@@ -39,10 +39,10 @@ import Radio from 'lib-components/atoms/form/Radio'
 import InputField from 'lib-components/atoms/form/InputField'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
 
 const weekdays = [
   'monday',
@@ -108,6 +108,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
+  const { permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -352,18 +353,20 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
         <>
           {!formData && (
             <>
-              <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-                <RightAlign>
-                  <InlineButton
-                    text={i18n.common.edit}
-                    icon={faPen}
-                    onClick={startEditing}
-                    data-qa="edit-button"
-                  />
-                </RightAlign>
+              {permittedActions.has('UPDATE_DAILY_SERVICE_TIMES') && (
+                <>
+                  <RightAlign>
+                    <InlineButton
+                      text={i18n.common.edit}
+                      icon={faPen}
+                      onClick={startEditing}
+                      data-qa="edit-button"
+                    />
+                  </RightAlign>
 
-                <Gap size="s" />
-              </RequireRole>
+                  <Gap size="s" />
+                </>
+              )}
 
               {apiData.value === null ? (
                 <FixedWidthLabel data-qa="times-type">

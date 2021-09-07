@@ -17,6 +17,7 @@ import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { Recipient } from '../components/messages/types'
+import { Action } from 'lib-common/generated/action'
 
 export async function getPersonDetails(
   id: UUID
@@ -25,6 +26,22 @@ export async function getPersonDetails(
     .get<JsonOf<PersonDetails>>(`/person/details/${id}`)
     .then((res) => res.data)
     .then(deserializePersonDetails)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface ChildDetails {
+  person: PersonDetails
+  permittedActions: Set<Action.Child>
+}
+
+export async function getChildDetails(id: UUID): Promise<Result<ChildDetails>> {
+  return client
+    .get<JsonOf<ChildDetails>>(`/children/${id}`)
+    .then(({ data }) => ({
+      person: deserializePersonDetails(data.person),
+      permittedActions: new Set(data.permittedActions)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

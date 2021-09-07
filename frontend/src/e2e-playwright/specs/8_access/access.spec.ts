@@ -12,11 +12,16 @@ import {
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
 import {
+  insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import {
+  createDaycarePlacementFixture,
+  uuidv4
+} from 'e2e-test-common/dev-api/fixtures'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -88,6 +93,12 @@ beforeAll(async () => {
     fixtures.daycareFixture.id,
     'SPECIAL_EDUCATION_TEACHER'
   )
+  const placementFixture = createDaycarePlacementFixture(
+    uuidv4(),
+    fixtures.enduserChildFixtureJari.id,
+    fixtures.daycareFixture.id
+  )
+  await insertDaycarePlacementFixtures([placementFixture])
 })
 beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
@@ -179,7 +190,7 @@ describe('Child information page', () => {
 })
 
 describe('Child information page sections', () => {
-  test('Admin sees every collapsible sections', async () => {
+  test('Admin sees every collapsible section', async () => {
     await employeeLogin(page, 'ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -196,7 +207,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Service worker sees guardians, parents, placements, backup care, service need, assistance, applicaitons and family contact sections ', async () => {
+  test('Service worker sees the correct sections', async () => {
     await employeeLogin(page, 'SERVICE_WORKER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -207,13 +218,13 @@ describe('Child information page sections', () => {
       placements: true,
       assistance: true,
       backupCare: true,
-      familyContacts: true,
+      familyContacts: false,
       childApplications: true,
       messageBlocklist: false
     })
   })
 
-  test('FinanceAdmin sees fee alterations, guardians, parents, placements backup cares and service need sections', async () => {
+  test('Finance admin sees the correct sections', async () => {
     await employeeLogin(page, 'FINANCE_ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -230,7 +241,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Staff sees family contacts, backup pickups, placements, backup care and service need sections', async () => {
+  test('Staff sees the correct sections', async () => {
     await employeeLogin(page, 'STAFF')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -247,7 +258,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance and family contacts, backup pickups sections', async () => {
+  test('Unit supervisor sees the correct sections', async () => {
     await employeeLogin(page, 'UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -264,7 +275,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Special education techer sees family contacts, placements, backup care, service need and assistance sections', async () => {
+  test('Special education teacher sees the correct sections', async () => {
     await employeeLogin(page, 'SPECIAL_EDUCATION_TEACHER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
