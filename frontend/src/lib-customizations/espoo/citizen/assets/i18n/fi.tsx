@@ -4,7 +4,9 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 
 export default {
   common: {
@@ -1230,21 +1232,36 @@ export default {
     formTitle: 'Tulotietojen ilmoitus',
     formDescription: (
       <>
-        <p>
+        <P>
           Tuloselvitys liitteineen palautetaan kahden viikon kuluessa
           varhaiskasvatuksen aloittamisesta. Maksu voidaan määrätä
           puutteellisilla tulotiedoilla korkeimpaan maksuun.
-        </p>
-        <p>
+        </P>
+        <P>
           Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
           alkamispäivästä lähtien.
-        </p>
-        <p>
+        </P>
+        <P>
           Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
           asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu
           perimään varhaiskasvatusmaksuja myös takautuvasti.
-        </p>
-        <p>* Tähdellä merkityt tiedot ovat pakollisia</p>
+        </P>
+        <P>
+          <strong>Huomioitavaa:</strong>
+        </P>
+        <Gap size="xs" />
+        <UnorderedList>
+          <li>
+            Jos tulosi ylittävät perhekoon mukaisen tulorajan, hyväksy korkein
+            varhaiskasvatusmaksu. Tällöin sinun ei tarvitse selvittää tulojasi
+            lainkaan.
+          </li>
+          <li>
+            Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava
+            tuloselvitys.
+          </li>
+        </UnorderedList>
+        <P>* Tähdellä merkityt tiedot ovat pakollisia</P>
       </>
     ),
     confidential: (
