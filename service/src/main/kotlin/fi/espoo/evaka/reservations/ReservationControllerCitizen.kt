@@ -38,7 +38,12 @@ class ReservationControllerCitizen(
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
-        val range = FiniteDateRange(from, to)
+        val range = try {
+            FiniteDateRange(from, to)
+        } catch (e: IllegalArgumentException) {
+            throw BadRequest("Invalid date range $from - $to")
+        }
+
         return db.read {
             ReservationsResponse(
                 dailyData = it.getReservations(user.id, range),
@@ -57,6 +62,12 @@ class ReservationControllerCitizen(
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.joinToString())
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
+
+        val reservableDays = getReservableDays(dateNow())
+        if (body.any { !reservableDays.includes(it.date) }) {
+            throw BadRequest("Some days are not reservable")
+        }
+
         db.transaction { createReservations(it, user.id, body) }
     }
 
@@ -317,12 +328,10 @@ fun getReservableDays(today: LocalDate): FiniteDateRange {
         today.plusWeeks(2).minusDays(today.dayOfWeek.value - 1L)
     }
 
-    // Take the first end of July that satisfies the condition that the date range is at least one full week
-    val nextSunday = start.plusDays(6)
-    val end = if (nextSunday <= nextSunday.withMonth(7).withDayOfMonth(31)) {
-        nextSunday.withMonth(7).withDayOfMonth(31)
+    val end = if (start.withMonth(7).withDayOfMonth(1) <= start) {
+        start.plusYears(1).withMonth(7).withDayOfMonth(31)
     } else {
-        nextSunday.plusYears(1).withMonth(7).withDayOfMonth(31)
+        start.withMonth(7).withDayOfMonth(31)
     }
 
     return FiniteDateRange(start, end)
