@@ -55,6 +55,11 @@ val tsMapping = mapOf(
 )
 
 fun main() {
+    val path = locateRoot() / "api-types.d.ts"
+    path.writeText(generate())
+}
+
+fun generate(): String {
     val knownClasses = tsMapping.keys.toMutableSet()
     val analyzedClasses = mutableListOf<AnalyzedClass>()
 
@@ -74,9 +79,7 @@ fun main() {
         }
     }
 
-    val path = locateRoot() / "api-types.d.ts"
-    val ts = header + analyzedClasses.sortedBy { it.name }.joinToString("\n\n") { it.toTs() }
-    path.writeText(ts)
+    return header + analyzedClasses.sortedBy { it.name }.joinToString("\n\n") { it.toTs() }
 }
 
 fun locateRoot(): Path {

@@ -49,4 +49,10 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
+
+    create("codegen2Check", JavaExec::class) {
+        mainClass.set("evaka.codegen2.cli.CheckKt")
+        classpath = sourceSets["main"].runtimeClasspath
+        workingDir = projectDir.parentFile
+    }
 }
