@@ -6,7 +6,13 @@ import { UUID } from 'lib-common/types'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
@@ -65,7 +71,7 @@ function Message({
         </TitleRow>
       )}
       <TitleRow>
-        <SenderName>{message.senderName}</SenderName>
+        <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatDate(message.sentAt)}</SentDate>
       </TitleRow>
       <span>{message.recipients.map((r) => r.name).join(', ')}</span>
@@ -101,6 +107,8 @@ export default React.memo(function ThreadView({
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
 
+  useEffect(() => setReplyEditorVisible(false), [threadId])
+
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
@@ -111,7 +119,10 @@ export default React.memo(function ThreadView({
     sendReply({
       content: replyContent,
       messageId: messages.slice(-1)[0].id,
-      recipientAccountIds: recipients.filter((r) => r.selected).map((r) => r.id)
+      recipientAccountIds: recipients
+        .filter((r) => r.selected)
+        .map((r) => r.id),
+      staffAnnotation: i18n.messages.staffAnnotation
     })
 
   const editorLabels = useMemo(

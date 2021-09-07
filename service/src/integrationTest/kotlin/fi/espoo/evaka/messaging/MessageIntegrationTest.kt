@@ -15,7 +15,7 @@ import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -156,7 +156,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -313,7 +313,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id),
                 it.getCitizenMessageAccount(person3Id),
@@ -417,7 +417,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
             )
         }
@@ -444,7 +444,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             replyAsCitizen(
                 user = person1,
                 messageId = thread.messages.first().id,
-                recipientAccountIds = setOf(thread.messages.first().senderId),
+                recipientAccountIds = setOf(thread.messages.first().sender.id),
                 content = "Kiitos tiedosta"
             ).second.statusCode
         )
@@ -476,7 +476,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -526,7 +526,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     ) = getMessageThreads(
         accountId,
         user
-    ).flatMap { it.messages.filter { m -> m.senderId != accountId && m.readAt == null } }
+    ).flatMap { it.messages.filter { m -> m.sender.id != accountId && m.readAt == null } }
 
     private fun postNewThread(
         title: String,
@@ -618,6 +618,6 @@ class MessageIntegrationTest : FullApplicationTest() {
         .responseObject<Paged<SentMessage>>(objectMapper).third.get().data
 }
 
-fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.senderId, it.content) }
+fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.sender.id, it.content) }
 fun SentMessage.toContentRecipientsPair(): Pair<String, Set<UUID>> =
     Pair(this.content, this.recipients.map { it.id }.toSet())

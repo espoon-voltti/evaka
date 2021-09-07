@@ -17,10 +17,11 @@ import {
   deserializeReceiverChild,
   deserializeSentMessage,
   DraftContent,
-  MessageAccount,
+  NestedMessageAccount,
   MessageBody,
   ReceiverGroup,
   SentMessage,
+  UnreadCountByAccount,
   UpsertableDraftContent
 } from './types'
 
@@ -43,10 +44,19 @@ export async function getReceivers(
 }
 
 export async function getMessagingAccounts(): Promise<
-  Result<MessageAccount[]>
+  Result<NestedMessageAccount[]>
 > {
   return client
-    .get<JsonOf<MessageAccount[]>>('/messages/my-accounts')
+    .get<JsonOf<NestedMessageAccount[]>>('/messages/my-accounts')
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getUnreadCounts(): Promise<
+  Result<UnreadCountByAccount[]>
+> {
+  return client
+    .get<JsonOf<UnreadCountByAccount[]>>('/messages/unread')
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
@@ -63,7 +73,7 @@ export async function getReceivedMessages(
     .then(({ data }) =>
       Success.of({
         ...data,
-        data: data.data.map(deserializeMessageThread)
+        data: data.data.map((d) => deserializeMessageThread(d))
       })
     )
     .catch((e) => Failure.fromError(e))

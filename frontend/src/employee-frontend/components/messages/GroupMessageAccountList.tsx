@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 import MessageBox, { MessageBoxRow } from './MessageBox'
-import { GroupMessageAccount } from './types'
+import { NestedGroupMessageAccount, NestedMessageAccount } from './types'
 import { AccountView, messageBoxes } from './types-view'
+import { MessageContext } from 'employee-frontend/components/messages/MessageContext'
 
 const AccountContainer = styled.div`
   margin: 12px 0;
@@ -64,23 +65,32 @@ export default function GroupMessageAccountList({
   activeView,
   setView
 }: {
-  accounts: GroupMessageAccount[]
+  accounts: NestedGroupMessageAccount[]
   activeView: AccountView | undefined
   setView: (view: AccountView) => void
 }) {
+  const { unreadCountsByAccount } = useContext(MessageContext)
+  const startCollapsed = (nestedAccount: NestedMessageAccount, i: number) =>
+    i > 0 &&
+    ((unreadCountsByAccount.isSuccess &&
+      !unreadCountsByAccount.value.find(
+        (x) => x.accountId === nestedAccount.account.id
+      )?.unreadCount) ||
+      !unreadCountsByAccount.isSuccess)
+
   return (
     <CollapsibleMessageBoxesContainer>
-      {accounts.map((acc, i) => (
+      {accounts.map((nestedAcc, i) => (
         <CollapsibleRow
-          key={acc.id}
-          startCollapsed={i > 0 && !acc.unreadCount}
-          title={acc.daycareGroup.name}
+          key={nestedAcc.account.id}
+          startCollapsed={startCollapsed(nestedAcc, i)}
+          title={nestedAcc.daycareGroup.name}
         >
           {messageBoxes.map((view) => (
             <MessageBox
               key={view}
               view={view}
-              account={acc}
+              account={nestedAcc.account}
               activeView={activeView}
               setView={setView}
             />

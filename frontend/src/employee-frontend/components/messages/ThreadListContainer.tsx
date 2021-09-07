@@ -26,7 +26,7 @@ const getUniqueParticipants: (t: MessageThread) => string[] = (
 ) =>
   Object.values(
     t.messages.reduce((acc, msg) => {
-      acc[msg.senderId] = msg.senderName
+      acc[msg.sender.id] = msg.sender.name
       msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
       return acc
     }, {})
@@ -97,7 +97,7 @@ export default React.memo(function ThreadListContainer({
     title: thread.title,
     content: thread.messages[thread.messages.length - 1].content,
     participants: getUniqueParticipants(thread),
-    unread: thread.messages.some((m) => !m.readAt && m.senderId != account.id),
+    unread: thread.messages.some((m) => !m.readAt && m.sender.id != account.id),
     onClick: () => selectThread(thread),
     type: thread.type,
     timestamp: thread.messages[thread.messages.length - 1].sentAt,
@@ -114,10 +114,9 @@ export default React.memo(function ThreadListContainer({
       messages: [
         {
           id: message.contentId,
-          senderId: account.id,
+          sender: { ...account },
           sentAt: message.sentAt,
-          senderName: account.name,
-          recipients: message.recipients,
+          recipients: message.recipients.map((r) => ({ ...r.account })),
           readAt: new Date(),
           content: message.content
         }

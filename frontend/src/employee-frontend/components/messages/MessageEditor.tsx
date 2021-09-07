@@ -31,7 +31,8 @@ import {
 } from './SelectorNode'
 import {
   DraftContent,
-  MessageAccount,
+  NestedGroupMessageAccount,
+  NestedMessageAccount,
   MessageBody,
   UpsertableDraftContent
 } from './types'
@@ -76,7 +77,7 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
 
 interface Props {
   defaultSender: SelectOption
-  accounts: MessageAccount[]
+  accounts: NestedMessageAccount[]
   selectedUnit: SelectOption
   availableReceivers: SelectorNode
   onSend: (
@@ -177,12 +178,12 @@ export default React.memo(function MessageEditor({
   useEffect(
     function updateReceiversOnSenderChange() {
       const account = accounts.find(
-        (account) => account.id === message.sender.value
+        (account) => account.account.id === message.sender.value
       )
-      if (account?.type === 'PERSONAL') {
+      if (account?.account.type === 'PERSONAL') {
         setReceiverTree(availableReceivers)
-      } else if (account?.type === 'GROUP') {
-        const groupId = account.daycareGroup.id
+      } else if (account?.account.type === 'GROUP') {
+        const groupId = (account as NestedGroupMessageAccount).daycareGroup.id
         const selection = getSubTree(availableReceivers, groupId)
         if (selection) {
           setReceiverTree(selection)
@@ -231,15 +232,19 @@ export default React.memo(function MessageEditor({
     () =>
       accounts
         .filter(
-          (account: MessageAccount) =>
-            account.type === 'PERSONAL' ||
-            (account.type === 'GROUP' &&
-              !!getSelectorName(account.daycareGroup.id, availableReceivers) &&
-              account.daycareGroup.unitId === selectedUnit.value)
+          (nestedAccount: NestedMessageAccount) =>
+            nestedAccount.account.type === 'PERSONAL' ||
+            (nestedAccount.account.type === 'GROUP' &&
+              !!getSelectorName(
+                (nestedAccount as NestedGroupMessageAccount).daycareGroup.id,
+                availableReceivers
+              ) &&
+              (nestedAccount as NestedGroupMessageAccount).daycareGroup
+                .unitId === selectedUnit.value)
         )
-        .map((account: MessageAccount) => ({
-          value: account.id,
-          label: account.name
+        .map((nestedAccount: NestedMessageAccount) => ({
+          value: nestedAccount.account.id,
+          label: nestedAccount.account.name
         })),
     [accounts, availableReceivers, selectedUnit.value]
   )

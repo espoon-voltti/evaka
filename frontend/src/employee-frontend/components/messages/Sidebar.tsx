@@ -22,9 +22,8 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import {
-  isGroupMessageAccount,
-  isPersonalMessageAccount,
-  MessageAccount,
+  NestedGroupMessageAccount,
+  NestedMessageAccount,
   ReceiverGroup
 } from './types'
 import { messageBoxes } from './types-view'
@@ -89,7 +88,7 @@ const Receivers = styled.div<{ active: boolean }>`
 `
 
 interface AccountsParams {
-  accounts: MessageAccount[]
+  accounts: NestedMessageAccount[]
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
@@ -101,14 +100,16 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
     useContext(MessageContext)
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
-    const personalAccount = accounts.find(isPersonalMessageAccount)
-    const groupAccounts = accounts.filter(isGroupMessageAccount)
+    const personalAccount = accounts.find((a) => a.account.type === 'PERSONAL')
+    const groupAccounts = accounts.filter((a) => a.account.type === 'GROUP')
     const unitOptions = sortBy(
       uniqBy(
-        groupAccounts.map(({ daycareGroup }) => ({
-          value: daycareGroup.unitId,
-          label: daycareGroup.unitName
-        })),
+        (groupAccounts as NestedGroupMessageAccount[]).map(
+          ({ daycareGroup }) => ({
+            value: daycareGroup.unitId,
+            label: daycareGroup.unitName
+          })
+        ),
         (val) => val.value
       ),
       (u) => u.label
@@ -137,7 +138,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
 
   const visibleGroupAccounts = selectedUnit
     ? sortBy(
-        groupAccounts.filter(
+        (groupAccounts as NestedGroupMessageAccount[]).filter(
           (acc) => acc.daycareGroup.unitId === selectedUnit.value
         ),
         (val) => val.daycareGroup.name
@@ -157,7 +158,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
             <MessageBox
               key={view}
               view={view}
-              account={personalAccount}
+              account={personalAccount.account}
               activeView={selectedAccount}
               setView={setSelectedAccount}
             />
@@ -202,8 +203,11 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { accounts, selectedAccount, setSelectedAccount } =
-    useContext(MessageContext)
+  const {
+    nestedAccounts: accounts,
+    selectedAccount,
+    setSelectedAccount
+  } = useContext(MessageContext)
 
   const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (

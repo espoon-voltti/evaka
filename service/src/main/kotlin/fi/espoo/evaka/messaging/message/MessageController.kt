@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-data class UnreadMessagesResponse(val count: Int)
+data class UnreadCountByAccount(val accountId: UUID, val unreadCount: Int)
 
 @RestController
 @RequestMapping("/messages")
@@ -34,10 +34,10 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<DetailedMessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         user.requireAnyEmployee()
-        return db.read { it.getEmployeeDetailedMessageAccounts(user.id) }
+        return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
     }
 
     @GetMapping("/{accountId}/received")
@@ -70,12 +70,10 @@ class MessageController(
     fun getUnreadMessages(
         db: Database.Connection,
         user: AuthenticatedUser,
-    ): UnreadMessagesResponse {
+    ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        val accountIds = db.read { it.getEmployeeMessageAccounts(user.id) }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds) }
-        return UnreadMessagesResponse(count)
+        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(user.id)) }
     }
 
     data class PostMessageBody(
@@ -223,7 +221,7 @@ class MessageController(
         accountId: UUID
     ) {
         requireAuthorizedMessagingRole(user)
-        db.read { it.getEmployeeMessageAccounts(user.id) }.find { it == accountId }
+        db.read { it.getEmployeeMessageAccountIds(user.id) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
