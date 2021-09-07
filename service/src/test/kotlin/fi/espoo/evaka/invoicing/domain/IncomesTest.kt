@@ -21,7 +21,7 @@ class IncomesTest {
     @Test
     fun `Income total with only MAIN_INCOME`() {
         val income =
-            testIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS)))
+            testIncome.copy(data = mapOf("MAIN_INCOME" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, 1)))
 
         assertEquals(50000, income.total())
     }
@@ -30,9 +30,9 @@ class IncomesTest {
     fun `Income total with multiple incomes`() {
         val income = testIncome.copy(
             data = mapOf(
-                IncomeType.MAIN_INCOME to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS),
-                IncomeType.SECONDARY_INCOME to IncomeValue(100000, MONTHLY_NO_HOLIDAY_BONUS),
-                IncomeType.PARENTAL_ALLOWANCE to IncomeValue(20000, MONTHLY_NO_HOLIDAY_BONUS)
+                "MAIN_INCOME" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, 1),
+                "SECONDARY_INCOME" to IncomeValue(100000, MONTHLY_NO_HOLIDAY_BONUS, 1),
+                "PARENTAL_ALLOWANCE" to IncomeValue(20000, MONTHLY_NO_HOLIDAY_BONUS, 1)
             )
         )
 
@@ -42,7 +42,7 @@ class IncomesTest {
     @Test
     fun `Income total with expenses`() {
         val income =
-            testIncome.copy(data = mapOf(IncomeType.ALL_EXPENSES to IncomeValue(10000, MONTHLY_NO_HOLIDAY_BONUS)))
+            testIncome.copy(data = mapOf("ALL_EXPENSES" to IncomeValue(10000, MONTHLY_NO_HOLIDAY_BONUS, -1)))
 
         assertEquals(-10000, income.total())
     }
@@ -51,8 +51,8 @@ class IncomesTest {
     fun `Income total with income and expenses`() {
         val income = testIncome.copy(
             data = mapOf(
-                IncomeType.MAIN_INCOME to IncomeValue(500000, MONTHLY_NO_HOLIDAY_BONUS),
-                IncomeType.ALL_EXPENSES to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS)
+                "MAIN_INCOME" to IncomeValue(500000, MONTHLY_NO_HOLIDAY_BONUS, 1),
+                "ALL_EXPENSES" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, -1)
             )
         )
 
@@ -62,7 +62,7 @@ class IncomesTest {
     @Test
     fun `Income total with YEARLY coefficient`() {
         val income =
-            testIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(100000, YEARLY)))
+            testIncome.copy(data = mapOf("MAIN_INCOME" to IncomeValue(100000, YEARLY, 1)))
 
         assertEquals(8330, income.total())
     }

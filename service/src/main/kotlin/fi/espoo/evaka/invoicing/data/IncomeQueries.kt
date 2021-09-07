@@ -8,12 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeType
+import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -86,7 +90,7 @@ fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, upda
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getIncome(mapper: ObjectMapper, id: IncomeId): Income? {
+fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, id: IncomeId): Income? {
     return createQuery(
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -96,11 +100,11 @@ fun Database.Read.getIncome(mapper: ObjectMapper, id: IncomeId): Income? {
         """.trimIndent()
     )
         .bind("id", id)
-        .map(toIncome(mapper))
+        .map(toIncome(mapper, incomeTypesProvider.get()))
         .firstOrNull()
 }
 
-fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, personId: UUID, validAt: LocalDate? = null): List<Income> {
+fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, personId: UUID, validAt: LocalDate? = null): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -114,11 +118,11 @@ fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, personId: UUID, vali
     return createQuery(sql)
         .bind("personId", personId)
         .bindNullable("validAt", validAt)
-        .map(toIncome(mapper))
+        .map(toIncome(mapper, incomeTypesProvider.get()))
         .toList()
 }
 
-fun Database.Read.getIncomesFrom(mapper: ObjectMapper, personIds: List<UUID>, from: LocalDate): List<Income> {
+fun Database.Read.getIncomesFrom(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, personIds: List<UUID>, from: LocalDate): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -132,7 +136,7 @@ fun Database.Read.getIncomesFrom(mapper: ObjectMapper, personIds: List<UUID>, fr
     return createQuery(sql)
         .bind("personIds", personIds.toTypedArray())
         .bind("from", from)
-        .map(toIncome(mapper))
+        .map(toIncome(mapper, incomeTypesProvider.get()))
         .toList()
 }
 
@@ -162,12 +166,14 @@ fun Database.Transaction.splitEarlierIncome(personId: UUID, period: DateRange) {
     handlingExceptions { update.execute() }
 }
 
-fun toIncome(objectMapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
+fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
     Income(
         id = IncomeId(rs.getUUID("id")),
         personId = UUID.fromString(rs.getString("person_id")),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
-        data = objectMapper.readValue(rs.getString("data")),
+        data = objectMapper.readValue<Map<String, IncomeValue>>(rs.getString("data")).mapValues { (type, value) ->
+            value.copy(multiplier = incomeTypes[type]?.multiplier ?: throw Conflict("Unknown income type $type"))
+        },
         isEntrepreneur = rs.getBoolean("is_entrepreneur"),
         worksAtECHA = rs.getBoolean("works_at_echa"),
         validFrom = rs.getDate("valid_from").toLocalDate(),

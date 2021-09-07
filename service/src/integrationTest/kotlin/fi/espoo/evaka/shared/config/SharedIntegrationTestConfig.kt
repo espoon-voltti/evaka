@@ -12,6 +12,8 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -157,4 +159,7 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+
+    @Bean
+    fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 }

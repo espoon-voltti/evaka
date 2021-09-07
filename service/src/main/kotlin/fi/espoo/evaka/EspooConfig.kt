@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -55,6 +57,9 @@ class EspooConfig {
     @Bean
     @Profile("local")
     fun devDataInitializer(jdbi: Jdbi) = DevDataInitializer(jdbi)
+
+    @Bean
+    fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 }
 
 data class EspooEnv(val invoiceIntegrationEnabled: Boolean) {

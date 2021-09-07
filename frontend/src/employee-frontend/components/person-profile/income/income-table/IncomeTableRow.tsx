@@ -12,9 +12,8 @@ import { TableIncomeState } from '../IncomeTable'
 import { Translations } from '../../../../state/i18n'
 import {
   incomeCoefficients,
-  incomeSubTypes,
   IncomeCoefficient,
-  IncomeType
+  IncomeOption
 } from '../../../../types/income'
 import { formatCents, parseCents } from '../../../../utils/money'
 
@@ -27,12 +26,6 @@ const TypeLabel = styled.span<TypeLabelProps>`
 const MonthlyValue = styled.span`
   font-style: italic;
 `
-
-const typesWithCoefficients: IncomeType[] = [
-  'MAIN_INCOME',
-  'SECONDARY_INCOME',
-  'OTHER_INCOME'
-]
 
 const coefficientMultipliers: Record<IncomeCoefficient, number> = {
   MONTHLY_WITH_HOLIDAY_BONUS: 1.0417,
@@ -54,7 +47,7 @@ const calculateMonthlyAmount = (
 
 type Props = {
   i18n: Translations
-  type: IncomeType
+  type: IncomeOption
   editing: boolean
   amount: string
   coefficient: IncomeCoefficient
@@ -77,11 +70,9 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
   }))
 
   return (
-    <Tr key={type}>
+    <Tr key={type.value}>
       <Td>
-        <TypeLabel indent={incomeSubTypes.includes(type)}>
-          {i18n.personProfile.income.details.incomeTypes[type]}
-        </TypeLabel>
+        <TypeLabel indent={type.isSubType}>{type.nameFi}</TypeLabel>
       </Td>
       <Td align="right">
         {editing ? (
@@ -90,23 +81,23 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
             onChange={(amount) =>
               updateData((prev) => ({
                 ...prev,
-                [type]: {
+                [type.value]: {
                   amount,
                   coefficient:
-                    prev[type]?.coefficient ?? 'MONTHLY_NO_HOLIDAY_BONUS',
+                    prev[type.value]?.coefficient ?? 'MONTHLY_NO_HOLIDAY_BONUS',
                   monthlyAmount: undefined
                 }
               }))
             }
             allowEmpty
-            data-qa={`income-input-${type}`}
+            data-qa={`income-input-${type.value}`}
           />
         ) : (
           <span>{amount} €</span>
         )}
       </Td>
       <Td>
-        {typesWithCoefficients.includes(type) ? (
+        {type.withCoefficient ? (
           editing ? (
             <SimpleSelect
               value={coefficient}
@@ -114,14 +105,14 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
               onChange={(e) => {
                 updateData((prev) => ({
                   ...prev,
-                  [type]: {
-                    amount: prev[type]?.amount ?? '',
-                    coefficient: e.target.value,
+                  [type.value]: {
+                    amount: prev[type.value]?.amount ?? '',
+                    coefficient: e.target.value as IncomeCoefficient,
                     monthlyAmount: undefined
                   }
                 }))
               }}
-              data-qa={`income-coefficient-select-${type}`}
+              data-qa={`income-coefficient-select-${type.value}`}
             />
           ) : (
             <span>

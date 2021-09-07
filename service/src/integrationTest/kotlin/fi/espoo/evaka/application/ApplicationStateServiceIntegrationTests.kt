@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -86,6 +87,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Autowired
     lateinit var mapper: ObjectMapper
+
+    @Autowired
+    lateinit var incomeTypesProvider: IncomeTypesProvider
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
@@ -1218,7 +1222,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
@@ -1257,7 +1261,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(2, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
@@ -1297,7 +1301,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1337,7 +1341,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1377,7 +1381,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             val incomeByApplication = incomes.first()
@@ -1419,7 +1423,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1459,7 +1463,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
         }
@@ -1497,7 +1501,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
@@ -1536,7 +1540,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1576,7 +1580,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(application.id, incomes.first().applicationId)
@@ -1617,7 +1621,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1657,7 +1661,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1697,7 +1701,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1737,7 +1741,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1777,7 +1781,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)

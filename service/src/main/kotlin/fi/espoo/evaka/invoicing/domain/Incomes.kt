@@ -21,7 +21,7 @@ data class Income(
     val id: IncomeId? = null,
     val personId: UUID,
     val effect: IncomeEffect,
-    val data: Map<IncomeType, IncomeValue>,
+    val data: Map<String, IncomeValue>,
     @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
     val worksAtECHA: Boolean = false,
     val validFrom: LocalDate,
@@ -34,14 +34,14 @@ data class Income(
     @JsonProperty("totalIncome")
     fun totalIncome(): Int =
         data.entries
-            .filter { (type, _) -> type.multiplier > 0 }
-            .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
+            .filter { (_, value) -> value.multiplier > 0 }
+            .sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }
 
     @JsonProperty("totalExpenses")
     fun totalExpenses(): Int =
         data.entries
-            .filter { (type, _) -> type.multiplier < 0 }
-            .sumOf { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
+            .filter { (_, value) -> value.multiplier < 0 }
+            .sumOf { (_, value) -> -1 * value.multiplier * value.monthlyAmount() }
 
     @JsonProperty("total")
     fun total(): Int = incomeTotal(data)
@@ -49,6 +49,8 @@ data class Income(
     fun toDecisionIncome() = DecisionIncome(
         effect = effect,
         data = data.mapValues { (_, value) -> value.monthlyAmount() },
+        totalIncome = totalIncome(),
+        totalExpenses = totalExpenses(),
         total = total(),
         worksAtECHA = worksAtECHA,
         validFrom = validFrom,
@@ -60,30 +62,20 @@ data class Income(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
     val effect: IncomeEffect,
-    val data: Map<IncomeType, Int>,
+    val data: Map<String, Int>,
+    val totalIncome: Int,
+    val totalExpenses: Int,
     val total: Int,
     val worksAtECHA: Boolean = false,
     val validFrom: LocalDate?,
     val validTo: LocalDate?
-) {
-    @JsonProperty("totalIncome")
-    fun totalIncome(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier > 0 }
-            .sumOf { (type, value) -> type.multiplier * value }
+)
 
-    @JsonProperty("totalExpenses")
-    fun totalExpenses(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier < 0 }
-            .sumOf { (type, value) -> -1 * type.multiplier * value }
-}
-
-fun incomeTotal(data: Map<IncomeType, IncomeValue>) = data.entries
-    .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
+fun incomeTotal(data: Map<String, IncomeValue>) = data.entries
+    .sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient) {
+data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient, val multiplier: Int) {
     @JsonProperty("monthlyAmount")
     fun monthlyAmount(): Int = (BigDecimal(amount) * coefficient.multiplier()).setScale(0, RoundingMode.HALF_UP).toInt()
 }
@@ -95,20 +87,12 @@ enum class IncomeEffect {
     NOT_AVAILABLE
 }
 
-enum class IncomeType(val multiplier: Int) {
-    MAIN_INCOME(1),
-    SHIFT_WORK_ADD_ON(1),
-    PERKS(1),
-    SECONDARY_INCOME(1),
-    PENSION(1),
-    UNEMPLOYMENT_BENEFITS(1),
-    SICKNESS_ALLOWANCE(1),
-    PARENTAL_ALLOWANCE(1),
-    HOME_CARE_ALLOWANCE(1),
-    ALIMONY(1),
-    OTHER_INCOME(1),
-    ALL_EXPENSES(-1);
-}
+data class IncomeType(
+    val nameFi: String,
+    val multiplier: Int,
+    val withCoefficient: Boolean,
+    val isSubType: Boolean
+)
 
 enum class IncomeCoefficient {
     MONTHLY_WITH_HOLIDAY_BONUS,
