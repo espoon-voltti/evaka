@@ -72,6 +72,7 @@ data class Entrepreneur(
     val startOfEntrepreneurship: LocalDate,
     val spouseWorksInCompany: Boolean,
     val startupGrant: Boolean,
+    val checkupConsent: Boolean,
     val selfEmployed: SelfEmployed?,
     val limitedCompany: LimitedCompany?,
     val partnership: Boolean,

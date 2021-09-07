@@ -119,10 +119,13 @@ export default React.forwardRef(function IncomeStatementForm(
       <Container>
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
-          <FixedSpaceColumn spacing="zero">
-            <H1 noMargin>{t.income.formTitle}</H1>
-            {t.income.formDescription}
-          </FixedSpaceColumn>
+          <ResponsiveFixedSpaceRow>
+            <FixedSpaceColumn spacing="zero">
+              <H1 noMargin>{t.income.formTitle}</H1>
+              {t.income.formDescription}
+            </FixedSpaceColumn>
+            <Confidential>{t.income.confidential}</Confidential>
+          </ResponsiveFixedSpaceRow>
         </ContentArea>
         <Gap size="s" />
         <IncomeTypeSelection
@@ -528,16 +531,13 @@ function EntrepreneurIncomeSelection({
           }
         />
         <Gap size="L" />
-        <Label>{t.income.entrepreneurIncome.checkupLabel} *</Label>
+        <Label>{t.income.entrepreneurIncome.checkupLabel}</Label>
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.checkupConsent}
           checked={formData.checkupConsent}
           onChange={(value) => onChange({ ...formData, checkupConsent: value })}
         />
-        {showFormErrors && !formData.checkupConsent && (
-          <AlertBox message={t.income.errors.consentRequired} />
-        )}
         <Gap size="XL" />
         <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
         <Gap size="L" />
@@ -1034,6 +1034,16 @@ const Indent = styled.div`
 
 const OtherIncomeWrapper = styled.div`
   max-width: 480px;
+`
+
+const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
+  @media (max-width: 900px) {
+    display: block;
+  }
+`
+
+const Confidential = styled.div`
+  flex: 0 0 auto;
 `
 
 const LabelError = styled(function ({

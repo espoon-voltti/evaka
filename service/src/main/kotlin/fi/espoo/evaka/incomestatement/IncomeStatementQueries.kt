@@ -34,6 +34,7 @@ SELECT
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
+    checkup_consent,
     self_employed_attachments,
     self_employed_estimated_monthly_income,
     self_employed_income_start_date,
@@ -131,6 +132,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
                 spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
                 startupGrant = row.mapColumn("startup_grant"),
+                checkupConsent = row.mapColumn("checkup_consent"),
                 selfEmployed = selfEmployed,
                 limitedCompany = limitedCompany,
                 partnership = row.mapColumn("partnership"),
@@ -186,6 +188,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
         .bindNullable("spouseWorksInCompany", null as Boolean?)
         .bindNullable("startupGrant", null as Boolean?)
+        .bindNullable("checkupConsent", null as Boolean?)
         .bindNullable("selfEmployedAttachments", null as Boolean?)
         .bindNullable("selfEmployedEstimatedMonthlyIncome", null as Int?)
         .bindNullable("selfEmployedIncomeStartDate", null as LocalDate?)
@@ -232,6 +235,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entr
         .bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
         .bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
         .bind("startupGrant", entrepreneur.startupGrant)
+        .bind("checkupConsent", entrepreneur.checkupConsent)
         .bind("partnership", entrepreneur.partnership)
         .bind("lightEntrepreneur", entrepreneur.lightEntrepreneur)
         .run { if (entrepreneur.accountant != null) bindAccountant(entrepreneur.accountant) else this }
@@ -274,6 +278,7 @@ INSERT INTO income_statement (
     start_of_entrepreneurship,
     spouse_works_in_company,
     startup_grant,
+    checkup_consent,
     self_employed_attachments,
     self_employed_estimated_monthly_income,
     self_employed_income_start_date, 
@@ -302,6 +307,7 @@ INSERT INTO income_statement (
     :startOfEntrepreneurship,
     :spouseWorksInCompany,
     :startupGrant,
+    :checkupConsent,
     :selfEmployedAttachments,
     :selfEmployedEstimatedMonthlyIncome,
     :selfEmployedIncomeStartDate,
@@ -346,6 +352,7 @@ UPDATE income_statement SET
     start_of_entrepreneurship = :startOfEntrepreneurship,
     spouse_works_in_company = :spouseWorksInCompany,
     startup_grant = :startupGrant,
+    checkup_consent = :checkupConsent,
     self_employed_attachments = :selfEmployedAttachments,
     self_employed_estimated_monthly_income = :selfEmployedEstimatedMonthlyIncome,
     self_employed_income_start_date = :selfEmployedIncomeStartDate,
