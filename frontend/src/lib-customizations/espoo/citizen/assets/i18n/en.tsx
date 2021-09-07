@@ -1335,13 +1335,13 @@ const en: Translations = {
       <P>
         <strong>Salassapidettävä</strong>
         <br />
-        (JulkL 24.1 §:n 23 kohta.
+        (JulkL 24.1 §:n 23 kohta)
       </P>
     ),
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     incomesRegisterConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
     incomeType: {
       description: (
         <>
@@ -1362,10 +1362,10 @@ const en: Translations = {
     grossIncome: {
       title: 'Bruttotulotietojen täyttäminen',
       description:
-        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan Kelasta ja tulorekisteristä.',
+        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan tulorekisteristä sekä Kelasta tarvittaessa.',
       incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
-        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+        'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
       estimate: 'Arvio bruttotuloistani',
       otherIncome: 'Muut tulot',
       otherIncomeInfo:
@@ -1423,7 +1423,7 @@ const en: Translations = {
         'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
       checkupLabel: 'Tietojen tarkastus',
       checkupConsent:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä tarvittaessa.',
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
       companyInfo: 'Yrityksen tiedot',
       companyForm: 'Yrityksen toimintamuoto',
       selfEmployed: 'Toiminimi',
