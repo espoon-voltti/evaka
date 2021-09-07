@@ -19,6 +19,7 @@ import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageType } from 'lib-common/generated/enums'
+import { View } from 'employee-frontend/components/messages/types-view'
 
 const MessageContainer = styled.div`
   background-color: white;
@@ -98,12 +99,14 @@ interface Props {
   accountId: UUID
   goBack: () => void
   thread: MessageThread
+  view: View
 }
 
 export function SingleThreadView({
   accountId,
   goBack,
-  thread: { id: threadId, messages, title, type }
+  thread: { id: threadId, messages, title, type },
+  view
 }: Props) {
   const { i18n } = useTranslation()
   const { getReplyContent, sendReply, replyState, setReplyContent } =
@@ -158,7 +161,7 @@ export function SingleThreadView({
             index={idx}
           />
         ))}
-        {canReply && (
+        {canReply && view === 'RECEIVED' && (
           <MessageContainer>
             <MessageReplyEditor
               recipients={recipients}
