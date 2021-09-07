@@ -65,8 +65,6 @@ class ServiceNeedController(
                 .let { id -> tx.getServiceNeedChildRange(id) }
                 .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
-        asyncJobRunner.scheduleImmediateRun()
-
         return ResponseEntity.noContent().build()
     }
 
@@ -111,8 +109,6 @@ class ServiceNeedController(
                 )
             )
         }
-        asyncJobRunner.scheduleImmediateRun()
-
         return ResponseEntity.noContent().build()
     }
 
@@ -130,7 +126,6 @@ class ServiceNeedController(
             tx.deleteServiceNeed(id)
             notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
-        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }

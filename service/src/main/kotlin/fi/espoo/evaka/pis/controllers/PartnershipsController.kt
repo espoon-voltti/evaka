@@ -56,7 +56,6 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob
                     )
                     partnership
                 }
-                .also { asyncJobRunner.scheduleImmediateRun() }
                 .let { ResponseEntity.created(URI.create("/partnerships/${it.id}")).body(it) }
         }
     }
@@ -112,7 +111,6 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob
                 )
                 partnership
             }
-            .also { asyncJobRunner.scheduleImmediateRun() }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -135,7 +133,6 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob
                 )
             }
         }
-        asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
 
@@ -158,7 +155,6 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob
                 )
             }
         }
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 

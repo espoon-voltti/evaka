@@ -51,8 +51,6 @@ class DvvModificationsBatchRefreshService(
             ssns.size
         }
 
-        asyncJobRunner.scheduleImmediateRun()
-
         return jobCount
     }
 }

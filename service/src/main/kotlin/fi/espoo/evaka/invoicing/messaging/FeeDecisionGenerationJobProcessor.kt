@@ -29,7 +29,6 @@ class FeeDecisionGenerationJobProcessor(
     fun runJob(db: Database, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
         logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, msg.dateRange, listOf()) }
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     fun runJob(db: Database, msg: AsyncJob.GenerateFinanceDecisions) {

@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -35,17 +36,20 @@ private data class Registration<T : AsyncJobPayload>(val handler: (db: Database,
         handler(db, msg as T)
 }
 
-class AsyncJobRunner<T : AsyncJobPayload>(
-    private val jdbi: Jdbi,
-    private val disableRunner: Boolean = false,
-    private val syncMode: Boolean = false
-) : AutoCloseable {
+class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseable {
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
-    private var periodicRunner: ScheduledFuture<*>? = null
+    private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     private val handlersLock: Lock = ReentrantLock()
     private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> = ConcurrentHashMap()
+    private val wakeUpHook: () -> Unit = { wakeUp() }
+
+    val isStarted: Boolean
+        get() = periodicRunner.get() != null
+
+    val isBusy: Boolean
+        get() = runningCount.get() > 0
 
     inline fun <reified P : T> registerHandler(noinline handler: (db: Database, msg: P) -> Unit) =
         registerHandler(AsyncJobType(P::class), handler)
@@ -74,32 +78,22 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                 )
             )
         }
+        tx.afterCommit(wakeUpHook)
     }
 
-    fun scheduleImmediateRun(maxCount: Int = 1_000) {
-        if (syncMode) {
-            logger.info("Skipping scheduleImmediateRun in sync mode")
-            return
-        }
-        executor.execute { this.runPendingJobs(maxCount) }
+    fun start(pollingInterval: Duration) {
+        val newRunner = this.executor.scheduleWithFixedDelay(
+            { this.runPendingJobs() },
+            0,
+            pollingInterval.toNanos(),
+            TimeUnit.NANOSECONDS
+        )
+        this.periodicRunner.getAndSet(newRunner)?.cancel(false)
     }
 
-    fun schedulePeriodicRun(pollingInterval: Duration, maxCount: Int = 1_000) {
-        if (syncMode) {
-            logger.info("Skipping schedulePeriodicRun in sync mode")
-            return
-        }
-        this.periodicRunner?.cancel(false)
-        if (!pollingInterval.isZero && !pollingInterval.isNegative) {
-            this.periodicRunner =
-                this.executor.scheduleWithFixedDelay(
-                    { this.runPendingJobs(maxCount) },
-                    0,
-                    pollingInterval.toNanos(),
-                    TimeUnit.NANOSECONDS
-                )
-        } else {
-            this.periodicRunner = null
+    fun wakeUp() {
+        if (isStarted) {
+            executor.execute { this.runPendingJobs() }
         }
     }
 
@@ -107,23 +101,19 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         this.executor.submit { this.runPendingJobs(maxCount) }.get()
     }
 
-    fun getRunningCount(): Int = runningCount.get()
-
     fun getPendingJobCount(): Int =
         Database(jdbi).read { it.getPendingJobCount(handlers.keys) }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
         do {
-            if (getRunningCount() == 0) return
+            if (!isBusy) return
             TimeUnit.MILLISECONDS.sleep(100)
         } while (Duration.between(start, Instant.now()).abs() < timeout)
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(maxCount: Int) {
-        if (disableRunner) return
-
+    private fun runPendingJobs(maxCount: Int = 1_000) {
         Database(jdbi).connect { db ->
             var remaining = maxCount
             do {

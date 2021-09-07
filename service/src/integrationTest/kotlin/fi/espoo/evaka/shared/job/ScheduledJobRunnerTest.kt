@@ -32,7 +32,7 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.resetDatabase() }
-        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = true)
+        asyncJobRunner = AsyncJobRunner(jdbi)
     }
 
     @Test

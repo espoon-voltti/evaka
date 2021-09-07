@@ -77,7 +77,6 @@ class FridgeFamilyService(
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }
-                    asyncJobRunner.scheduleImmediateRun()
                     logger.info("Child ${child.id} added")
                 } catch (e: Exception) {
                     logger.debug("Ignored the following:", e)

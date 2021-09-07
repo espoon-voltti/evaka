@@ -108,7 +108,6 @@ class FeeDecisionController(
             val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
             asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
         }
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 

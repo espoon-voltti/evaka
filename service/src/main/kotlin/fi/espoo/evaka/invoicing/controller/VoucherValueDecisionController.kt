@@ -122,7 +122,6 @@ class VoucherValueDecisionController(
                 ids = decisionIds
             )
         }
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 

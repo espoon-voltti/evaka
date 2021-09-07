@@ -228,7 +228,6 @@ class PersonController(
         db.transaction { tx ->
             mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
         }
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok().build()
     }
 

@@ -103,8 +103,6 @@ GROUP BY application.guardian_id
             createdJobCount
         }
 
-        asyncJobRunner.scheduleImmediateRun()
-
         return jobCount
     }
 

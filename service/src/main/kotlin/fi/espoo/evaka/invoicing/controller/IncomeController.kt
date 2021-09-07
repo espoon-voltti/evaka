@@ -74,7 +74,6 @@ class IncomeController(
             id
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok(id)
     }
 
@@ -100,7 +99,6 @@ class IncomeController(
             asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -119,7 +117,6 @@ class IncomeController(
             asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 }

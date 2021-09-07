@@ -43,6 +43,5 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner<
 
     private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
-        asyncJobRunner.scheduleImmediateRun()
     }
 }

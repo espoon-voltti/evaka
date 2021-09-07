@@ -67,7 +67,6 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<A
         db.transaction { tx ->
             asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     data class TriggerBody(val type: ScheduledJob)

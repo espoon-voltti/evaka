@@ -132,8 +132,6 @@ class PlacementController(
                 listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PutMapping("/placements/{placementId}")
@@ -162,8 +160,6 @@ class PlacementController(
                 )
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @DeleteMapping("/placements/{placementId}")
@@ -182,8 +178,6 @@ class PlacementController(
                 listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PostMapping("/placements/{placementId}/group-placements")

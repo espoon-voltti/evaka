@@ -68,7 +68,6 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
             mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
             asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PutMapping("/fee-thresholds/{id}")
@@ -86,7 +85,6 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
             mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
             asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 }
 

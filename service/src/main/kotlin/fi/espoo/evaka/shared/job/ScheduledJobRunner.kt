@@ -50,7 +50,7 @@ class ScheduledJobRunner(
         db.transaction { tx ->
             asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = ASYNC_JOB_RETRY_COUNT)
         }
-        asyncJobRunner.scheduleImmediateRun()
+        asyncJobRunner.wakeUp()
     }
 
     fun getScheduledExecutionsForTask(job: ScheduledJob): List<ScheduledExecution<Unit>> =

@@ -54,7 +54,6 @@ class ParentshipController(
             return db.transaction {
                 parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
             }
-                .also { asyncJobRunner.scheduleImmediateRun() }
                 .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
         }
     }
@@ -118,7 +117,6 @@ class ParentshipController(
         return db.transaction {
             parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
         }
-            .also { asyncJobRunner.scheduleImmediateRun() }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -137,7 +135,6 @@ class ParentshipController(
         )
 
         db.transaction { parentshipService.retryParentship(it, parentshipId) }
-        asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
 
@@ -157,8 +154,6 @@ class ParentshipController(
 
             parentshipService.deleteParentship(it, id)
         }
-
-        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }

@@ -50,7 +50,7 @@ class AsyncJobRunnerTest {
 
     @BeforeEach
     fun clean() {
-        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = false)
+        asyncJobRunner = AsyncJobRunner(jdbi)
         asyncJobRunner.registerHandler { _, msg: TestJob ->
             currentCallback.get()(msg)
         }
@@ -74,9 +74,8 @@ class AsyncJobRunnerTest {
         val id = UUID.randomUUID()
         val future = this.setAsyncJobCallback { msg -> msg }
         db.transaction { asyncJobRunner.plan(it, listOf(TestJob(id))) }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
+        asyncJobRunner.runPendingJobsSync()
         val result = future.get(10, TimeUnit.SECONDS)
-        asyncJobRunner.waitUntilNoRunningJobs()
         assertEquals(id, result.data)
     }
 
@@ -85,17 +84,16 @@ class AsyncJobRunnerTest {
         val id = UUID.randomUUID()
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
         db.transaction { asyncJobRunner.plan(it, listOf(TestJob(id)), 20, Duration.ZERO) }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
+        asyncJobRunner.runPendingJobsSync(1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
         assertTrue(exception.cause is LetsRollbackException)
-        asyncJobRunner.waitUntilNoRunningJobs()
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         val future = this.setAsyncJobCallback { msg -> msg }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
+        asyncJobRunner.runPendingJobsSync(1)
         future.get(10, TimeUnit.SECONDS)
-        asyncJobRunner.waitUntilNoRunningJobs()
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
     }
 
     private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {

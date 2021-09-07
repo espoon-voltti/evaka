@@ -60,7 +60,6 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
             )
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -80,7 +79,6 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
             asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -106,7 +104,6 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
             }
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 }
