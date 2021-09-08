@@ -149,12 +149,12 @@ const sv: Translations = {
     backToSearch: 'Tillbaka till sökning'
   },
   calendar: {
-    title: 'Kalender',
-    holiday: 'Helgdag',
+    title: 'Kalenteri',
+    holiday: 'Pyhäpäivä',
     absent: 'Poissa',
     absences: {
-      SICKLEAVE: 'Sairaus',
-      PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+      SICKLEAVE: 'Sairauspoissaolo',
+      PLANNED_ABSENCE: 'Vapaapäivä'
     },
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newAbsence: 'Ilmoita poissaolo',
