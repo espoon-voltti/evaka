@@ -1,4 +1,4 @@
-package evaka.codegen2
+package evaka.codegen.apitypes
 
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
@@ -29,7 +29,7 @@ fun getApiClasses(packageName: String): Set<KClass<*>> {
         .toSet()
 }
 
-fun scanClassPath(packageName: String): Set<KClass<Any>> {
+private fun scanClassPath(packageName: String): Set<KClass<Any>> {
     val workingDir = Path("")
     val path = (workingDir / "build/classes/kotlin/main/${packageName.replace('.', '/')}").absolute().normalize()
     val directory = File(path.toUri())

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen.cli
+package evaka.codegen.actionenum.cli
 
-import evaka.codegen.generatedFiles
+import evaka.codegen.actionenum.generatedFiles
 import kotlin.io.path.div
 
-fun main() {
+fun generateActionEnumTypes() {
     val root = locateRoot()
     for (definition in generatedFiles) {
         val file = root / definition.name

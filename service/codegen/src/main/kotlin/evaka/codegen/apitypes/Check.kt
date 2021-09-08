@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen2.cli
+package evaka.codegen.apitypes
 
 import mu.KotlinLogging
 import kotlin.io.path.div
@@ -11,9 +11,9 @@ import kotlin.system.exitProcess
 
 val logger = KotlinLogging.logger {}
 
-fun main() {
+fun checkGeneratedApiTypes() {
     val file = locateRoot() / "api-types.d.ts"
-    val expectedContent = generate()
+    val expectedContent = getApiTypesInTypeScript()
     val currentContent = file.readText()
     if (expectedContent == currentContent) {
         logger.info("Generated api types up to date")

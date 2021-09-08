@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen
+package evaka.codegen.actionenum
 
 import kotlin.reflect.KClass
 

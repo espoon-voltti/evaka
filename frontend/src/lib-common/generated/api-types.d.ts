@@ -5,16 +5,17 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-import LocalDate from "../local-date";
-import FiniteDateRange from "../finite-date-range";
-import DateRange from "../date-range";
-import {DailyServiceTimes} from "../api-types/child/common";
+import { UUID } from '../types'
+import LocalDate from '../local-date'
+import FiniteDateRange from '../finite-date-range'
+import DateRange from '../date-range'
+import {DailyServiceTimes} from '../api-types/child/common'
 
 /**
 * Generated from fi.espoo.evaka.application.AcceptDecisionRequest
 */
 export interface AcceptDecisionRequest {
-    decisionId: string
+    decisionId: UUID
     requestedStartDate: LocalDate
 }
 
@@ -32,20 +33,20 @@ export interface Address {
 */
 export interface ApplicationAttachment {
     contentType: string
-    id: string
+    id: UUID
     name: string
     receivedAt: Date
     type: AttachmentType
     updated: Date
-    uploadedByEmployee: string | null
-    uploadedByPerson: string | null
+    uploadedByEmployee: UUID | null
+    uploadedByPerson: UUID | null
 }
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
-    applicationId: string
+    applicationId: UUID
     childName: string
     decisions: DecisionSummary[]
 }
@@ -57,20 +58,20 @@ export interface ApplicationDetails {
     additionalDaycareApplication: boolean
     attachments: ApplicationAttachment[]
     checkedByAdmin: boolean
-    childId: string
+    childId: UUID
     childRestricted: boolean
     createdDate: Date | null
     dueDate: LocalDate | null
     dueDateSetManuallyAt: Date | null
     form: ApplicationForm
     guardianDateOfDeath: LocalDate | null
-    guardianId: string
+    guardianId: UUID
     guardianRestricted: boolean
     hideFromGuardian: boolean
-    id: string
+    id: UUID
     modifiedDate: Date | null
     origin: ApplicationOrigin
-    otherGuardianId: string | null
+    otherGuardianId: UUID | null
     otherGuardianLivesInSameAddress: boolean | null
     sentDate: LocalDate | null
     status: ApplicationStatus
@@ -153,7 +154,7 @@ export interface ApplicationSummary {
     duplicateApplication: boolean
     extendedCare: boolean
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     origin: ApplicationOrigin
     placementProposalStatus: PlacementProposalStatus | null
@@ -195,7 +196,7 @@ export interface ApplicationUpdate {
 */
 export interface ApplicationsOfChild {
     applicationSummaries: CitizenApplicationSummary[]
-    childId: string
+    childId: UUID
     childName: string
 }
 
@@ -240,9 +241,9 @@ export interface ChildInfo {
 */
 export interface CitizenApplicationSummary {
     allPreferredUnitNames: string[]
-    applicationId: string
+    applicationId: UUID
     applicationStatus: ApplicationStatus
-    childId: string
+    childId: UUID
     childName: string | null
     createdDate: Date
     modifiedDate: Date
@@ -265,7 +266,7 @@ export interface ClubDetails {
 * Generated from fi.espoo.evaka.application.CreateApplicationBody
 */
 export interface CreateApplicationBody {
-    childId: string
+    childId: UUID
     type: ApplicationType
 }
 
@@ -275,7 +276,7 @@ export interface CreateApplicationBody {
 export interface DaycarePlacementPlan {
     period: FiniteDateRange
     preschoolDaycarePeriod: FiniteDateRange | null
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -294,7 +295,7 @@ export interface DecisionDraftJSON {
 * Generated from fi.espoo.evaka.application.DecisionSummary
 */
 export interface DecisionSummary {
-    decisionId: string
+    decisionId: UUID
     resolved: LocalDate | null
     sentDate: LocalDate
     status: DecisionStatus
@@ -327,7 +328,7 @@ export interface Guardian {
 */
 export interface GuardianInfo {
     firstName: string
-    id: string | null
+    id: UUID | null
     isVtjGuardian: boolean
     lastName: string
     ssn: string | null
@@ -351,8 +352,8 @@ export type OtherGuardianAgreementStatus = 'AGREED' | 'NOT_AGREED' | 'RIGHT_TO_G
 * Generated from fi.espoo.evaka.application.PaperApplicationCreateRequest
 */
 export interface PaperApplicationCreateRequest {
-    childId: string
-    guardianId: string | null
+    childId: UUID
+    guardianId: UUID | null
     guardianSsn: string | null
     guardianToBeCreated: CreatePersonBody | null
     hideFromGuardian: boolean
@@ -365,15 +366,15 @@ export interface PaperApplicationCreateRequest {
 * Generated from fi.espoo.evaka.application.PersonApplicationSummary
 */
 export interface PersonApplicationSummary {
-    applicationId: string
-    childId: string
+    applicationId: UUID
+    childId: UUID
     childName: string | null
     childSsn: string | null
     connectedDaycare: boolean
-    guardianId: string
+    guardianId: UUID
     guardianName: string
     preferredStartDate: LocalDate | null
-    preferredUnitId: string | null
+    preferredUnitId: UUID | null
     preferredUnitName: string | null
     preparatoryEducation: boolean
     sentDate: LocalDate | null
@@ -424,7 +425,7 @@ export interface Preferences {
 * Generated from fi.espoo.evaka.application.PreferredUnit
 */
 export interface PreferredUnit {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -432,7 +433,7 @@ export interface PreferredUnit {
 * Generated from fi.espoo.evaka.application.RejectDecisionRequest
 */
 export interface RejectDecisionRequest {
-    decisionId: string
+    decisionId: UUID
 }
 
 /**
@@ -482,7 +483,7 @@ export interface ServiceNeed {
 * Generated from fi.espoo.evaka.application.ServiceNeedOption
 */
 export interface ServiceNeedOption {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -498,7 +499,7 @@ export interface SiblingBasis {
 * Generated from fi.espoo.evaka.application.SimpleBatchRequest
 */
 export interface SimpleBatchRequest {
-    applicationIds: string[]
+    applicationIds: UUID[]
 }
 
 /**
@@ -515,14 +516,14 @@ export type VoucherApplicationFilter = 'VOUCHER_FIRST_CHOICE' | 'VOUCHER_ONLY' |
 * Generated from fi.espoo.evaka.application.notes.NoteJSON
 */
 export interface NoteJSON {
-    applicationId: string
+    applicationId: UUID
     created: Date
-    createdBy: string
+    createdBy: UUID
     createdByName: string
-    id: string
+    id: UUID
     text: string
     updated: Date
-    updatedBy: string | null
+    updatedBy: UUID | null
     updatedByName: string | null
 }
 
@@ -537,7 +538,7 @@ export interface NoteRequest {
 * Generated from fi.espoo.evaka.application.notes.NoteSearchDTO
 */
 export interface NoteSearchDTO {
-    applicationIds: string[]
+    applicationIds: UUID[]
 }
 
 /**
@@ -552,9 +553,9 @@ export interface NotesWrapperJSON {
 */
 export interface AssistanceAction {
     actions: string[]
-    childId: string
+    childId: UUID
     endDate: LocalDate
-    id: string
+    id: UUID
     measures: AssistanceMeasure[]
     otherAction: string
     startDate: LocalDate
@@ -599,10 +600,10 @@ export interface AssistanceBasisOption {
 export interface AssistanceNeed {
     bases: string[]
     capacityFactor: number
-    childId: string
+    childId: UUID
     description: string
     endDate: LocalDate
-    id: string
+    id: UUID
     otherBasis: string
     startDate: LocalDate
 }
@@ -655,8 +656,8 @@ export interface Child {
     dailyNote: DaycareDailyNote | null
     dailyServiceTimes: DailyServiceTimes | null
     firstName: string
-    groupId: string
-    id: string
+    groupId: UUID
+    id: UUID
     imageUrl: string | null
     lastName: string
     placementType: PlacementType
@@ -670,8 +671,8 @@ export interface Child {
 */
 export interface ChildAbsence {
     careType: AbsenceCareType
-    childId: string
-    id: string
+    childId: UUID
+    id: UUID
 }
 
 /**
@@ -679,10 +680,10 @@ export interface ChildAbsence {
 */
 export interface ChildAttendance {
     arrived: Date
-    childId: string
+    childId: UUID
     departed: Date | null
-    id: string
-    unitId: string
+    id: UUID
+    unitId: UUID
 }
 
 /**
@@ -728,7 +729,7 @@ export interface FullDayAbsenceRequest {
 */
 export interface GetChildSensitiveInfoRequest {
     pin: string
-    staffId: string
+    staffId: UUID
 }
 
 /**
@@ -754,7 +755,7 @@ export interface ChildSensitiveInformation {
     contacts: ContactInfo[]
     diet: string
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     medication: string
     placementTypes: PlacementType[]
@@ -780,7 +781,7 @@ export interface ContactInfo {
 */
 export interface GroupInfo {
     dailyNote: DaycareDailyNote | null
-    id: string
+    id: UUID
     name: string
 }
 
@@ -789,8 +790,8 @@ export interface GroupInfo {
 */
 export interface Staff {
     firstName: string
-    groups: string[]
-    id: string
+    groups: UUID[]
+    id: UUID
     lastName: string
     pinSet: boolean
 }
@@ -800,7 +801,7 @@ export interface Staff {
 */
 export interface UnitInfo {
     groups: GroupInfo[]
-    id: string
+    id: UUID
     name: string
     staff: Staff[]
 }
@@ -811,7 +812,7 @@ export interface UnitInfo {
 export interface BackupCareChild {
     birthDate: LocalDate
     firstName: string
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -819,14 +820,14 @@ export interface BackupCareChild {
 * Generated from fi.espoo.evaka.backupcare.BackupCareCreateResponse
 */
 export interface BackupCareCreateResponse {
-    id: string
+    id: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareGroup
 */
 export interface BackupCareGroup {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -834,7 +835,7 @@ export interface BackupCareGroup {
 * Generated from fi.espoo.evaka.backupcare.BackupCareUnit
 */
 export interface BackupCareUnit {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -842,7 +843,7 @@ export interface BackupCareUnit {
 * Generated from fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 */
 export interface BackupCareUpdateRequest {
-    groupId: string | null
+    groupId: UUID | null
     period: FiniteDateRange
 }
 
@@ -851,7 +852,7 @@ export interface BackupCareUpdateRequest {
 */
 export interface ChildBackupCare {
     group: BackupCareGroup | null
-    id: string
+    id: UUID
     period: FiniteDateRange
     unit: BackupCareUnit
 }
@@ -867,9 +868,9 @@ export interface ChildBackupCaresResponse {
 * Generated from fi.espoo.evaka.backupcare.NewBackupCare
 */
 export interface NewBackupCare {
-    groupId: string | null
+    groupId: UUID | null
     period: FiniteDateRange
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -878,7 +879,7 @@ export interface NewBackupCare {
 export interface UnitBackupCare {
     child: BackupCareChild
     group: BackupCareGroup | null
-    id: string
+    id: UUID
     missingServiceNeedDays: number
     period: FiniteDateRange
     serviceNeeds: ServiceNeed[]
@@ -895,8 +896,8 @@ export interface UnitBackupCaresResponse {
 * Generated from fi.espoo.evaka.backuppickup.ChildBackupPickup
 */
 export interface ChildBackupPickup {
-    childId: string
-    id: string
+    childId: UUID
+    id: UUID
     name: string
     phone: string
 }
@@ -913,7 +914,7 @@ export interface ChildBackupPickupContent {
 * Generated from fi.espoo.evaka.backuppickup.ChildBackupPickupCreateResponse
 */
 export interface ChildBackupPickupCreateResponse {
-    id: string
+    id: UUID
 }
 
 /**
@@ -952,7 +953,7 @@ export interface Daycare {
     enabledPilotFeatures: PilotFeature[]
     financeDecisionHandler: FinanceDecisionHandler | null
     ghostUnit: boolean
-    id: string
+    id: UUID
     invoicedByMunicipality: boolean
     language: Language
     location: Coordinate | null
@@ -980,7 +981,7 @@ export interface Daycare {
 * Generated from fi.espoo.evaka.daycare.DaycareCareArea
 */
 export interface DaycareCareArea {
-    id: string
+    id: UUID
     name: string
     shortName: string
 }
@@ -1000,7 +1001,7 @@ export interface DaycareDecisionCustomization {
 */
 export interface DaycareFields {
     additionalInfo: string | null
-    areaId: string
+    areaId: UUID
     capacity: number
     closingDate: LocalDate | null
     clubApplyPeriod: DateRange | null
@@ -1008,7 +1009,7 @@ export interface DaycareFields {
     daycareApplyPeriod: DateRange | null
     decisionCustomization: DaycareDecisionCustomization
     email: string | null
-    financeDecisionHandlerId: string | null
+    financeDecisionHandlerId: UUID | null
     ghostUnit: boolean
     invoicedByMunicipality: boolean
     language: Language
@@ -1039,7 +1040,7 @@ export interface DaycareFields {
 export interface FinanceDecisionHandler {
     LastName: string
     firstName: string
-    id: string
+    id: UUID
 }
 
 /**
@@ -1075,7 +1076,7 @@ export interface UnitManager {
 * Generated from fi.espoo.evaka.daycare.UnitStub
 */
 export interface UnitStub {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -1128,7 +1129,7 @@ export interface CaretakersResponse {
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CreateDaycareResponse
 */
 export interface CreateDaycareResponse {
-    id: string
+    id: UUID
 }
 
 /**
@@ -1157,7 +1158,7 @@ export interface PublicUnit {
     daycareApplyPeriod: DateRange | null
     email: string | null
     ghostUnit: boolean | null
-    id: string
+    id: UUID
     language: Language
     location: Coordinate | null
     name: string
@@ -1176,7 +1177,7 @@ export interface PublicUnit {
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.GroupAclUpdate
 */
 export interface GroupAclUpdate {
-    groupIds: string[]
+    groupIds: UUID[]
 }
 
 /**
@@ -1195,9 +1196,9 @@ export type ProviderType = 'MUNICIPAL' | 'PURCHASED' | 'PRIVATE' | 'MUNICIPAL_SC
 export interface Absence {
     absenceType: AbsenceType
     careType: AbsenceCareType
-    childId: string
+    childId: UUID
     date: LocalDate
-    id: string | null
+    id: UUID | null
     modifiedAt: string | null
     modifiedBy: string | null
 }
@@ -1212,7 +1213,7 @@ export type AbsenceCareType = 'SCHOOL_SHIFT_CARE' | 'PRESCHOOL' | 'PRESCHOOL_DAY
 */
 export interface AbsenceDelete {
     careType: AbsenceCareType
-    childId: string
+    childId: UUID
     date: LocalDate
 }
 
@@ -1227,8 +1228,8 @@ export type AbsenceType = 'OTHER_ABSENCE' | 'SICKLEAVE' | 'UNKNOWN_ABSENCE' | 'P
 export interface CaretakerAmount {
     amount: number
     endDate: LocalDate | null
-    groupId: string
-    id: string
+    groupId: UUID
+    id: UUID
     startDate: LocalDate
 }
 
@@ -1236,10 +1237,10 @@ export interface CaretakerAmount {
 * Generated from fi.espoo.evaka.daycare.service.DaycareGroup
 */
 export interface DaycareGroup {
-    daycareId: string
+    daycareId: UUID
     deletable: boolean
     endDate: LocalDate | null
-    id: string
+    id: UUID
     name: string
     startDate: LocalDate
 }
@@ -1251,7 +1252,7 @@ export interface GroupStaffAttendance {
     count: number
     countOther: number
     date: LocalDate
-    groupId: string
+    groupId: UUID
     updated: Date
 }
 
@@ -1262,7 +1263,7 @@ export interface StaffAttendanceUpdate {
     count: number | null
     countOther: number | null
     date: LocalDate
-    groupId: string
+    groupId: UUID
 }
 
 /**
@@ -1280,14 +1281,14 @@ export interface UnitStaffAttendance {
 * Generated from fi.espoo.evaka.decision.Decision
 */
 export interface Decision {
-    applicationId: string
-    childId: string
+    applicationId: UUID
+    childId: UUID
     childName: string
     createdBy: string
     decisionNumber: number
     documentKey: string | null
     endDate: LocalDate
-    id: string
+    id: UUID
     otherGuardianDocumentKey: string | null
     requestedStartDate: LocalDate | null
     resolved: LocalDate | null
@@ -1303,11 +1304,11 @@ export interface Decision {
 */
 export interface DecisionDraft {
     endDate: LocalDate
-    id: string
+    id: UUID
     planned: boolean
     startDate: LocalDate
     type: DecisionType
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -1315,10 +1316,10 @@ export interface DecisionDraft {
 */
 export interface DecisionDraftUpdate {
     endDate: LocalDate
-    id: string
+    id: UUID
     planned: boolean
     startDate: LocalDate
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -1345,7 +1346,7 @@ export interface DecisionUnit {
     daycareDecisionName: string
     decisionHandler: string
     decisionHandlerAddress: string
-    id: string
+    id: UUID
     manager: string | null
     name: string
     phone: string | null
@@ -1368,8 +1369,8 @@ export interface ExternalId {
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
-    id: string
-    personId: string
+    id: UUID
+    personId: UUID
     personName: string
     type: IncomeStatementType
 }
@@ -1402,7 +1403,7 @@ export interface FeeDecisionTypeRequest {
 * Generated from fi.espoo.evaka.invoicing.controller.FeeThresholdsWithId
 */
 export interface FeeThresholdsWithId {
-    id: string
+    id: UUID
     thresholds: FeeThresholds
 }
 
@@ -1411,7 +1412,7 @@ export interface FeeThresholdsWithId {
 */
 export interface GenerateDecisionsBody {
     starting: string
-    targetHeads: string[]
+    targetHeads: UUID[]
 }
 
 /**
@@ -1437,7 +1438,7 @@ export interface SearchFeeDecisionRequest {
     area: string | null
     distinctions: string | null
     endDate: string | null
-    financeDecisionHandlerId: string | null
+    financeDecisionHandlerId: UUID | null
     page: number
     pageSize: number
     searchByStartDate: boolean
@@ -1472,7 +1473,7 @@ export interface SearchInvoicesRequest {
 export interface SearchVoucherValueDecisionRequest {
     area: string | null
     endDate: string | null
-    financeDecisionHandlerId: string | null
+    financeDecisionHandlerId: UUID | null
     page: number
     pageSize: number
     searchByStartDate: boolean
@@ -1499,13 +1500,13 @@ export type VoucherValueDecisionSortParam = 'HEAD_OF_FAMILY' | 'STATUS'
 */
 export interface FeeAlteration {
     amount: number
-    id: string | null
+    id: UUID | null
     isAbsolute: boolean
     notes: string
-    personId: string
+    personId: UUID
     type: Type
     updatedAt: Date | null
-    updatedBy: string | null
+    updatedBy: UUID | null
     validFrom: LocalDate
     validTo: LocalDate | null
 }
@@ -1530,7 +1531,7 @@ export interface FeeDecisionSummary {
     decisionNumber: number | null
     finalPrice: number
     headOfFamily: Basic
-    id: string
+    id: UUID
     sentAt: Date | null
     status: FeeDecisionStatus
     validDuring: DateRange
@@ -1580,14 +1581,14 @@ export interface Invoice {
     agreementType: number
     dueDate: LocalDate
     headOfFamily: JustId
-    id: string
+    id: UUID
     invoiceDate: LocalDate
     number: number | null
     periodEnd: LocalDate
     periodStart: LocalDate
     rows: InvoiceRow[]
     sentAt: Date | null
-    sentBy: string | null
+    sentBy: UUID | null
     status: InvoiceStatus
 }
 
@@ -1599,14 +1600,14 @@ export interface InvoiceDetailed {
     agreementType: number
     dueDate: LocalDate
     headOfFamily: Detailed
-    id: string
+    id: UUID
     invoiceDate: LocalDate
     number: number | null
     periodEnd: LocalDate
     periodStart: LocalDate
     rows: InvoiceRowDetailed[]
     sentAt: Date | null
-    sentBy: string | null
+    sentBy: UUID | null
     status: InvoiceStatus
 }
 
@@ -1618,7 +1619,7 @@ export interface InvoiceRow {
     child: WithDateOfBirth
     costCenter: string
     description: string
-    id: string | null
+    id: UUID | null
     periodEnd: LocalDate
     periodStart: LocalDate
     product: Product
@@ -1634,7 +1635,7 @@ export interface InvoiceRowDetailed {
     child: Detailed
     costCenter: string
     description: string
-    id: string
+    id: UUID
     periodEnd: LocalDate
     periodStart: LocalDate
     product: Product
@@ -1648,7 +1649,7 @@ export interface InvoiceRowDetailed {
 export interface InvoiceRowSummary {
     amount: number
     child: Basic
-    id: string
+    id: UUID
     unitPrice: number
 }
 
@@ -1664,12 +1665,12 @@ export interface InvoiceSummary {
     account: number
     createdAt: Date | null
     headOfFamily: Detailed
-    id: string
+    id: UUID
     periodEnd: LocalDate
     periodStart: LocalDate
     rows: InvoiceRowSummary[]
     sentAt: Date | null
-    sentBy: string | null
+    sentBy: UUID | null
     status: InvoiceStatus
 }
 
@@ -1679,7 +1680,7 @@ export interface InvoiceSummary {
 export interface Basic {
     dateOfBirth: LocalDate
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     ssn: string | null
 }
@@ -1693,7 +1694,7 @@ export interface Detailed {
     email: string | null
     firstName: string
     forceManualFeeDecisions: boolean
-    id: string
+    id: UUID
     invoiceRecipientName: string
     invoicingPostOffice: string
     invoicingPostalCode: string
@@ -1713,7 +1714,7 @@ export interface Detailed {
 * Generated from fi.espoo.evaka.invoicing.domain.PersonData.JustId
 */
 export interface JustId {
-    id: string
+    id: UUID
 }
 
 /**
@@ -1721,7 +1722,7 @@ export interface JustId {
 */
 export interface WithDateOfBirth {
     dateOfBirth: LocalDate
-    id: string
+    id: UUID
 }
 
 /**
@@ -1744,7 +1745,7 @@ export interface VoucherValueDecisionSummary {
     decisionNumber: number | null
     finalCoPayment: number
     headOfFamily: Basic
-    id: string
+    id: UUID
     sentAt: Date | null
     status: VoucherValueDecisionStatus
     validFrom: LocalDate
@@ -1766,11 +1767,11 @@ export interface InvoiceCodes {
 * Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 */
 export interface DaycareDailyNote {
-    childId: string | null
+    childId: UUID | null
     date: LocalDate
     feedingNote: DaycareDailyNoteLevelInfo | null
-    groupId: string | null
-    id: string | null
+    groupId: UUID | null
+    id: UUID | null
     modifiedAt: Date | null
     modifiedBy: string | null
     note: string | null
@@ -1816,7 +1817,7 @@ export interface CitizenMessageBody {
 */
 export interface DetailedMessageAccount {
     daycareGroup: Group | null
-    id: string
+    id: UUID
     name: string
     type: AccountType
     unreadCount: number
@@ -1828,8 +1829,8 @@ export interface DetailedMessageAccount {
 export interface DraftContent {
     content: string
     created: Date
-    id: string
-    recipientIds: string[]
+    id: UUID
+    recipientIds: UUID[]
     recipientNames: string[]
     title: string
     type: MessageType
@@ -1839,9 +1840,9 @@ export interface DraftContent {
 * Generated from fi.espoo.evaka.messaging.message.Group
 */
 export interface Group {
-    id: string
+    id: UUID
     name: string
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -1850,10 +1851,10 @@ export interface Group {
 */
 export interface Message {
     content: string
-    id: string
+    id: UUID
     readAt: Date | null
     recipients: MessageAccount[]
-    senderId: string
+    senderId: UUID
     senderName: string
     sentAt: Date
 }
@@ -1862,7 +1863,7 @@ export interface Message {
 * Generated from fi.espoo.evaka.messaging.message.MessageAccount
 */
 export interface MessageAccount {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -1871,7 +1872,7 @@ export interface MessageAccount {
 */
 export interface PostMessageBody {
     content: string
-    recipientAccountIds: string[]
+    recipientAccountIds: UUID[]
     recipientNames: string[]
     title: string
     type: MessageType
@@ -1882,7 +1883,7 @@ export interface PostMessageBody {
 */
 export interface ReplyToMessageBody {
     content: string
-    recipientAccountIds: string[]
+    recipientAccountIds: UUID[]
 }
 
 /**
@@ -1890,7 +1891,7 @@ export interface ReplyToMessageBody {
 */
 export interface ReplyToMessageBody {
     content: string
-    recipientAccountIds: string[]
+    recipientAccountIds: UUID[]
 }
 
 /**
@@ -1899,7 +1900,7 @@ export interface ReplyToMessageBody {
 export interface MessageReceiver {
     childDateOfBirth: LocalDate
     childFirstName: string
-    childId: string
+    childId: UUID
     childLastName: string
     receiverPersons: MessageReceiverPerson[]
 }
@@ -1908,7 +1909,7 @@ export interface MessageReceiver {
 * Generated from fi.espoo.evaka.messaging.message.MessageReceiverPerson
 */
 export interface MessageReceiverPerson {
-    accountId: string
+    accountId: UUID
     receiverFirstName: string
     receiverLastName: string
 }
@@ -1917,7 +1918,7 @@ export interface MessageReceiverPerson {
 * Generated from fi.espoo.evaka.messaging.message.MessageReceiversResponse
 */
 export interface MessageReceiversResponse {
-    groupId: string
+    groupId: UUID
     groupName: string
     receivers: MessageReceiver[]
 }
@@ -1927,14 +1928,14 @@ export interface MessageReceiversResponse {
 */
 export interface ThreadReply {
     message: Message
-    threadId: string
+    threadId: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.messaging.message.MessageThread
 */
 export interface MessageThread {
-    id: string
+    id: UUID
     messages: Message[]
     title: string
     type: MessageType
@@ -1962,7 +1963,7 @@ export interface Recipient {
 */
 export interface SentMessage {
     content: string
-    contentId: string
+    contentId: UUID
     recipientNames: string[]
     recipients: MessageAccount[]
     sentAt: Date
@@ -1982,7 +1983,7 @@ export interface UnreadMessagesResponse {
 */
 export interface UpsertableDraftContent {
     content: string
-    recipientIds: string[]
+    recipientIds: UUID[]
     recipientNames: string[]
     title: string
     type: MessageType
@@ -2012,7 +2013,7 @@ export interface OccupancyResponse {
 * Generated from fi.espoo.evaka.occupancy.OccupancyResponseGroupLevel
 */
 export interface OccupancyResponseGroupLevel {
-    groupId: string
+    groupId: UUID
     occupancies: OccupancyResponse
 }
 
@@ -2020,17 +2021,17 @@ export interface OccupancyResponseGroupLevel {
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
-    id: string
+    id: UUID
     name: string
-    unitId: string
+    unitId: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.pairing.MobileDeviceIdentity
 */
 export interface MobileDeviceIdentity {
-    id: string
-    longTermToken: string
+    id: UUID
+    longTermToken: UUID
 }
 
 /**
@@ -2046,11 +2047,11 @@ export interface RenameRequest {
 export interface Pairing {
     challengeKey: string
     expires: Date
-    id: string
-    mobileDeviceId: string | null
+    id: UUID
+    mobileDeviceId: UUID | null
     responseKey: string | null
     status: PairingStatus
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -2076,7 +2077,7 @@ export interface PostPairingChallengeReq {
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
 */
 export interface PostPairingReq {
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -2099,7 +2100,7 @@ export interface PostPairingValidationReq {
 * Generated from fi.espoo.evaka.pis.DaycareRole
 */
 export interface DaycareRole {
-    daycareId: string
+    daycareId: UUID
     daycareName: string
     role: UserRole
 }
@@ -2112,7 +2113,7 @@ export interface Employee {
     email: string | null
     externalId: ExternalId | null
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     updated: Date | null
 }
@@ -2124,7 +2125,7 @@ export interface EmployeeUser {
     allScopedRoles: UserRole[]
     firstName: string
     globalRoles: UserRole[]
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -2137,7 +2138,7 @@ export interface EmployeeWithDaycareRoles {
     email: string | null
     firstName: string
     globalRoles: UserRole[]
-    id: string
+    id: UUID
     lastName: string
     updated: Date | null
 }
@@ -2149,7 +2150,7 @@ export interface FamilyContact {
     backupPhone: string | null
     email: string | null
     firstName: string | null
-    id: string
+    id: UUID
     lastName: string | null
     phone: string | null
     postOffice: string
@@ -2193,7 +2194,7 @@ export interface EmployeeUserResponse {
     allScopedRoles: UserRole[]
     firstName: string
     globalRoles: UserRole[]
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -2231,8 +2232,8 @@ export interface EmployeeUpdate {
 * Generated from fi.espoo.evaka.pis.controllers.FamilyContactUpdate
 */
 export interface FamilyContactUpdate {
-    childId: string
-    contactPersonId: string
+    childId: UUID
+    contactPersonId: UUID
     priority: number | null
 }
 
@@ -2248,9 +2249,9 @@ export interface GetOrCreatePersonBySsnRequest {
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipRequest
 */
 export interface ParentshipRequest {
-    childId: string
+    childId: UUID
     endDate: LocalDate
-    headOfChildId: string
+    headOfChildId: UUID
     startDate: LocalDate
 }
 
@@ -2267,7 +2268,7 @@ export interface ParentshipUpdateRequest {
 */
 export interface PartnershipRequest {
     endDate: LocalDate | null
-    personIds: string[]
+    personIds: UUID[]
     startDate: LocalDate
 }
 
@@ -2290,15 +2291,15 @@ export interface AddSsnRequest {
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.MergeRequest
 */
 export interface MergeRequest {
-    duplicate: string
-    master: string
+    duplicate: UUID
+    master: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonIdentityResponseJSON
 */
 export interface PersonIdentityResponseJSON {
-    id: string
+    id: UUID
     socialSecurityNumber: string | null
 }
 
@@ -2358,12 +2359,12 @@ export interface FamilyOverview {
 export interface FamilyOverviewPerson {
     dateOfBirth: LocalDate
     firstName: string
-    headOfChild: string | null
+    headOfChild: UUID | null
     incomeEffect: IncomeEffect | null
-    incomeId: string | null
+    incomeId: UUID | null
     incomeTotal: number | null
     lastName: string
-    personId: string
+    personId: UUID
     postOffice: string
     postalCode: string
     restrictedDetailsEnabled: boolean
@@ -2375,12 +2376,12 @@ export interface FamilyOverviewPerson {
 */
 export interface Parentship {
     child: PersonJSON
-    childId: string
+    childId: UUID
     conflict: boolean
     endDate: LocalDate
     headOfChild: PersonJSON
-    headOfChildId: string
-    id: string
+    headOfChildId: UUID
+    id: UUID
     startDate: LocalDate
 }
 
@@ -2390,7 +2391,7 @@ export interface Parentship {
 export interface Partnership {
     conflict: boolean
     endDate: LocalDate | null
-    id: string
+    id: UUID
     partners: PersonJSON[]
     startDate: LocalDate
 }
@@ -2421,7 +2422,7 @@ export interface PersonJSON {
     email: string | null
     firstName: string | null
     forceManualFeeDecisions: boolean
-    id: string
+    id: UUID
     invoiceRecipientName: string
     invoicingPostOffice: string
     invoicingPostalCode: string
@@ -2446,7 +2447,7 @@ export interface PersonWithChildrenDTO {
     dateOfBirth: LocalDate
     dateOfDeath: LocalDate | null
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     nationalities: Nationality[]
     nativeLanguage: NativeLanguage | null
@@ -2469,7 +2470,7 @@ export interface RestrictedDetails {
 export interface ChildBasics {
     dateOfBirth: LocalDate
     firstName: string | null
-    id: string
+    id: UUID
     lastName: string | null
     socialSecurityNumber: string | null
 }
@@ -2479,7 +2480,7 @@ export interface ChildBasics {
 */
 export interface DaycareBasics {
     area: string
-    id: string
+    id: UUID
     name: string
     providerType: ProviderType
 }
@@ -2488,11 +2489,11 @@ export interface DaycareBasics {
 * Generated from fi.espoo.evaka.placement.DaycareGroupPlacement
 */
 export interface DaycareGroupPlacement {
-    daycarePlacementId: string
+    daycarePlacementId: UUID
     endDate: LocalDate
-    groupId: string | null
+    groupId: UUID | null
     groupName: string | null
-    id: string | null
+    id: UUID | null
     startDate: LocalDate
 }
 
@@ -2504,7 +2505,7 @@ export interface DaycarePlacementWithDetails {
     daycare: DaycareBasics
     endDate: LocalDate
     groupPlacements: DaycareGroupPlacement[]
-    id: string
+    id: UUID
     isRestrictedFromUser: boolean
     missingServiceNeedDays: number
     serviceNeeds: ServiceNeed[]
@@ -2517,7 +2518,7 @@ export interface DaycarePlacementWithDetails {
 */
 export interface GroupPlacementRequestBody {
     endDate: LocalDate
-    groupId: string
+    groupId: UUID
     startDate: LocalDate
 }
 
@@ -2525,7 +2526,7 @@ export interface GroupPlacementRequestBody {
 * Generated from fi.espoo.evaka.placement.GroupTransferRequestBody
 */
 export interface GroupTransferRequestBody {
-    groupId: string
+    groupId: UUID
     startDate: LocalDate
 }
 
@@ -2533,11 +2534,11 @@ export interface GroupTransferRequestBody {
 * Generated from fi.espoo.evaka.placement.PlacementCreateRequestBody
 */
 export interface PlacementCreateRequestBody {
-    childId: string
+    childId: UUID
     endDate: LocalDate
     startDate: LocalDate
     type: PlacementType
-    unitId: string
+    unitId: UUID
 }
 
 /**
@@ -2546,7 +2547,7 @@ export interface PlacementCreateRequestBody {
 export interface PlacementDraftChild {
     dob: LocalDate
     firstName: string
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -2554,9 +2555,9 @@ export interface PlacementDraftChild {
 * Generated from fi.espoo.evaka.placement.PlacementDraftPlacement
 */
 export interface PlacementDraftPlacement {
-    childId: string
+    childId: UUID
     endDate: LocalDate
-    id: string
+    id: UUID
     startDate: LocalDate
     type: PlacementType
     unit: PlacementDraftUnit
@@ -2566,7 +2567,7 @@ export interface PlacementDraftPlacement {
 * Generated from fi.espoo.evaka.placement.PlacementDraftUnit
 */
 export interface PlacementDraftUnit {
-    id: string
+    id: UUID
     name: string
 }
 
@@ -2576,7 +2577,7 @@ export interface PlacementDraftUnit {
 export interface PlacementPlanChild {
     dateOfBirth: LocalDate
     firstName: string
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -2589,14 +2590,14 @@ export type PlacementPlanConfirmationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED
 * Generated from fi.espoo.evaka.placement.PlacementPlanDetails
 */
 export interface PlacementPlanDetails {
-    applicationId: string
+    applicationId: UUID
     child: PlacementPlanChild
-    id: string
+    id: UUID
     period: FiniteDateRange
     preschoolDaycarePeriod: FiniteDateRange | null
     type: PlacementType
     unitConfirmationStatus: PlacementPlanConfirmationStatus
-    unitId: string
+    unitId: UUID
     unitRejectOtherReason: string | null
     unitRejectReason: PlacementPlanRejectReason | null
 }
@@ -2642,7 +2643,7 @@ export interface ApplicationsReportRow {
     preschool: number
     total: number
     under3Years: number
-    unitId: string
+    unitId: UUID
     unitName: string
     unitProviderType: string
 }
@@ -2661,7 +2662,7 @@ export interface AssistanceNeedsAndActionsReportRow {
     developmentalDisability2: number
     disability: number
     focusChallenge: number
-    groupId: string
+    groupId: UUID
     groupName: string
     linguisticChallenge: number
     longTermCondition: number
@@ -2677,7 +2678,7 @@ export interface AssistanceNeedsAndActionsReportRow {
     resourcePerson: number
     smallerGroup: number
     specialGroup: number
-    unitId: string
+    unitId: UUID
     unitName: string
     unitProviderType: string
     unitType: UnitType | null
@@ -2712,7 +2713,7 @@ export interface ChildAgeLanguageReportRow {
     sv_5y: number
     sv_6y: number
     sv_7y: number
-    unitId: string
+    unitId: UUID
     unitName: string
     unitProviderType: string
     unitType: UnitType | null
@@ -2725,13 +2726,13 @@ export interface ChildrenInDifferentAddressReportRow {
     addressChild: string
     addressParent: string
     careAreaName: string
-    childId: string
+    childId: UUID
     firstNameChild: string | null
     firstNameParent: string | null
     lastNameChild: string | null
     lastNameParent: string | null
-    parentId: string
-    unitId: string
+    parentId: UUID
+    unitId: UUID
     unitName: string
 }
 
@@ -2763,7 +2764,7 @@ export interface DecisionsReportRow {
     preschoolDaycare: number
     providerType: string
     total: number
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -2775,7 +2776,7 @@ export interface DuplicatePeopleReportRow {
     duplicateNumber: number
     firstName: string | null
     groupIndex: number
-    id: string
+    id: UUID
     lastName: string | null
     referenceCounts: ReferenceCount[]
     socialSecurityNumber: string | null
@@ -2786,7 +2787,7 @@ export interface DuplicatePeopleReportRow {
 * Generated from fi.espoo.evaka.reports.EndedPlacementsReportRow
 */
 export interface EndedPlacementsReportRow {
-    childId: string
+    childId: UUID
     firstName: string | null
     lastName: string | null
     nextPlacementStart: LocalDate | null
@@ -2801,11 +2802,11 @@ export interface FamilyConflictReportRow {
     careAreaName: string
     childConflictCount: number
     firstName: string | null
-    id: string
+    id: UUID
     lastName: string | null
     partnerConflictCount: number
     socialSecurityNumber: string | null
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -2818,7 +2819,7 @@ export interface FamilyContactReportRow {
     guardian1: Contact | null
     guardian2: Contact | null
     headOfChild: Contact | null
-    id: string
+    id: UUID
     lastName: string
     postOffice: string
     postalCode: string
@@ -2855,11 +2856,11 @@ export interface InvoiceReportRow {
 */
 export interface MissingHeadOfFamilyReportRow {
     careAreaName: string
-    childId: string
+    childId: UUID
     daysWithoutHead: number
     firstName: string | null
     lastName: string | null
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -2868,11 +2869,11 @@ export interface MissingHeadOfFamilyReportRow {
 */
 export interface MissingServiceNeedReportRow {
     careAreaName: string
-    childId: string
+    childId: UUID
     daysWithoutServiceNeed: number
     firstName: string | null
     lastName: string | null
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -2887,9 +2888,9 @@ export interface PartnersInDifferentAddressReportRow {
     firstName2: string | null
     lastName1: string | null
     lastName2: string | null
-    personId1: string
-    personId2: string
-    unitId: string
+    personId1: UUID
+    personId2: UUID
+    unitId: UUID
     unitName: string
 }
 
@@ -2897,23 +2898,23 @@ export interface PartnersInDifferentAddressReportRow {
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
-    applicationId: string | null
+    applicationId: UUID | null
     areaName: string
     assistanceNeeded: boolean | null
     childDob: string | null
     childFirstName: string | null
-    childId: string
+    childId: UUID
     childLastName: string | null
     childStreetAddr: string | null
     connectedDaycare: boolean | null
-    currentUnitId: string | null
+    currentUnitId: UUID | null
     currentUnitName: string | null
     guardianEmail: string | null
     guardianPhoneNumber: string | null
     otherPreferredUnits: string[]
     preferredStartDate: LocalDate
     preparatoryEducation: boolean | null
-    requestedUnitId: string
+    requestedUnitId: UUID
     requestedUnitName: string
     sentDate: LocalDate
     siblingBasis: boolean | null
@@ -2925,7 +2926,7 @@ export interface PlacementSketchingReportRow {
 export interface PresenceReportRow {
     date: LocalDate
     daycareGroupName: string | null
-    daycareId: string | null
+    daycareId: UUID | null
     present: boolean | null
     socialSecurityNumber: string | null
 }
@@ -2937,18 +2938,18 @@ export interface RawReportRow {
     absenceFree: AbsenceType | null
     absencePaid: AbsenceType | null
     age: number
-    backupGroupId: string | null
-    backupUnitId: string | null
+    backupGroupId: UUID | null
+    backupUnitId: UUID | null
     capacity: number
     capacityFactor: number
     careArea: string
     caretakersPlanned: number | null
     caretakersRealized: number | null
-    childId: string
+    childId: UUID
     costCenter: string | null
     dateOfBirth: LocalDate
     day: LocalDate
-    daycareGroupId: string | null
+    daycareGroupId: UUID | null
     groupName: string | null
     hasAssistanceNeed: boolean
     hasServiceNeed: boolean
@@ -2959,7 +2960,7 @@ export interface RawReportRow {
     placementType: PlacementType
     postOffice: string
     shiftCare: boolean | null
-    unitId: string
+    unitId: UUID
     unitName: string
     unitProviderType: string
     unitType: UnitType | null
@@ -3013,12 +3014,12 @@ export interface ServiceVoucherUnitReport {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueRow
 */
 export interface ServiceVoucherValueRow {
-    areaId: string
+    areaId: UUID
     areaName: string
     childDateOfBirth: LocalDate
     childFirstName: string
     childGroupName: string | null
-    childId: string
+    childId: UUID
     childLastName: string
     isNew: boolean
     numberOfDays: number
@@ -3026,10 +3027,10 @@ export interface ServiceVoucherValueRow {
     realizedPeriod: FiniteDateRange
     serviceNeedDescription: string
     serviceVoucherCoPayment: number
-    serviceVoucherDecisionId: string
+    serviceVoucherDecisionId: UUID
     serviceVoucherValue: number
     type: VoucherReportRowType
-    unitId: string
+    unitId: UUID
     unitName: string
 }
 
@@ -3046,9 +3047,9 @@ export interface ServiceVoucherValueUnitAggregate {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate.UnitData
 */
 export interface UnitData {
-    areaId: string
+    areaId: UUID
     areaName: string
-    id: string
+    id: UUID
     name: string
 }
 
@@ -3057,7 +3058,7 @@ export interface UnitData {
 */
 export interface StartingPlacementsRow {
     careAreaName: string
-    childId: string
+    childId: UUID
     dateOfBirth: LocalDate
     firstName: string
     lastName: string
@@ -3074,10 +3075,10 @@ export type UnitType = 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB'
 * Generated from fi.espoo.evaka.reports.VardaErrorReportRow
 */
 export interface VardaErrorReportRow {
-    childId: string
+    childId: UUID
     errors: string[]
     serviceNeedEndDate: string
-    serviceNeedId: string
+    serviceNeedId: UUID
     serviceNeedOptionName: string
     serviceNeedStartDate: string
     updated: Date
@@ -3101,7 +3102,7 @@ export interface DailyReservationData {
 * Generated from fi.espoo.evaka.reservations.DailyReservationRequest
 */
 export interface DailyReservationRequest {
-    childId: string
+    childId: UUID
     date: LocalDate
     endTime: string
     startTime: string
@@ -3111,7 +3112,7 @@ export interface DailyReservationRequest {
 * Generated from fi.espoo.evaka.reservations.Reservation
 */
 export interface Reservation {
-    childId: string
+    childId: UUID
     endTime: Date
     startTime: Date
 }
@@ -3121,7 +3122,7 @@ export interface Reservation {
 */
 export interface ReservationChild {
     firstName: string
-    id: string
+    id: UUID
     preferredName: string | null
 }
 
@@ -3140,9 +3141,9 @@ export interface ReservationsResponse {
 export interface ServiceNeed {
     confirmed: ServiceNeedConfirmation | null
     endDate: LocalDate
-    id: string
+    id: UUID
     option: ServiceNeedOptionSummary
-    placementId: string
+    placementId: UUID
     shiftCare: boolean
     startDate: LocalDate
     updated: Date
@@ -3153,7 +3154,7 @@ export interface ServiceNeed {
 */
 export interface ServiceNeedConfirmation {
     at: Date | null
-    employeeId: string
+    employeeId: UUID
     firstName: string
     lastName: string
 }
@@ -3163,8 +3164,8 @@ export interface ServiceNeedConfirmation {
 */
 export interface ServiceNeedCreateRequest {
     endDate: LocalDate
-    optionId: string
-    placementId: string
+    optionId: UUID
+    placementId: UUID
     shiftCare: boolean
     startDate: LocalDate
 }
@@ -3174,7 +3175,7 @@ export interface ServiceNeedCreateRequest {
 */
 export interface ServiceNeedUpdateRequest {
     endDate: LocalDate
-    optionId: string
+    optionId: UUID
     shiftCare: boolean
     startDate: LocalDate
 }
@@ -3188,7 +3189,7 @@ export interface ServiceNeedOption {
     feeCoefficient: number
     feeDescriptionFi: string
     feeDescriptionSv: string
-    id: string
+    id: UUID
     name: string
     occupancyCoefficient: number
     partDay: boolean
@@ -3204,7 +3205,7 @@ export interface ServiceNeedOption {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 */
 export interface ServiceNeedOptionPublicInfo {
-    id: string
+    id: UUID
     name: string
     validPlacementType: PlacementType
 }
@@ -3213,7 +3214,7 @@ export interface ServiceNeedOptionPublicInfo {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionSummary
 */
 export interface ServiceNeedOptionSummary {
-    id: string
+    id: UUID
     name: string
     updated: Date
 }
@@ -3223,7 +3224,7 @@ export interface ServiceNeedOptionSummary {
 */
 export interface DaycareAclRow {
     employee: DaycareAclRowEmployee
-    groupIds: string[]
+    groupIds: UUID[]
     role: UserRole
 }
 
@@ -3233,7 +3234,7 @@ export interface DaycareAclRow {
 export interface DaycareAclRowEmployee {
     email: string | null
     firstName: string
-    id: string
+    id: UUID
     lastName: string
 }
 
@@ -3296,7 +3297,7 @@ export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 export interface VardaChildRequest {
     henkilo: string | null
     henkilo_oid: string | null
-    id: string
+    id: UUID
     lahdejarjestelma: string
     oma_organisaatio_oid: string | null
     paos_organisaatio_oid: string | null
@@ -3351,7 +3352,7 @@ export interface VardaGuardian {
 */
 export interface VardaPersonRequest {
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     nickName: string
     personOid: string | null
@@ -3421,7 +3422,7 @@ export interface DecisionPeriod {
 */
 export interface Child {
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     socialSecurityNumber: string
 }
@@ -3433,7 +3434,7 @@ export interface CitizenUserDetails {
     accessibleFeatures: CitizenFeatures
     children: Child[]
     firstName: string
-    id: string
+    id: UUID
     lastName: string
     socialSecurityNumber: string
 }

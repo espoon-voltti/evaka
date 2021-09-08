@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen2.cli
+package evaka.codegen.apitypes
 
-import evaka.codegen2.getApiClasses
 import fi.espoo.evaka.ExcludeCodeGen
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -20,46 +19,46 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
-val header = """// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+private val header = """// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-import LocalDate from "../local-date";
-import FiniteDateRange from "../finite-date-range";
-import DateRange from "../date-range";
-import {DailyServiceTimes} from "../api-types/child/common";
+import { UUID } from '../types'
+import LocalDate from '../local-date'
+import FiniteDateRange from '../finite-date-range'
+import DateRange from '../date-range'
+import {DailyServiceTimes} from '../api-types/child/common'
 
 """
 
-val tsMapping = mapOf(
+private val tsMapping = mapOf(
     "kotlin.String" to "string",
-    "java.util.UUID" to "string",
-    "fi.espoo.evaka.shared.Id" to "string",
-    "java.time.LocalDate" to "string",
-    "java.time.LocalTime" to "string",
-    "fi.espoo.evaka.shared.domain.FiniteDateRange" to "FiniteDateRange",
-    "fi.espoo.evaka.shared.domain.DateRange" to "DateRange",
+    "java.util.UUID" to "UUID",
+    "fi.espoo.evaka.shared.Id" to "UUID",
     "kotlin.Int" to "number",
     "kotlin.Long" to "number",
     "kotlin.Double" to "number",
     "java.math.BigDecimal" to "number",
     "kotlin.Boolean" to "boolean",
     "java.time.LocalDate" to "LocalDate",
-    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to "Date",
+    "fi.espoo.evaka.shared.domain.FiniteDateRange" to "FiniteDateRange",
+    "fi.espoo.evaka.shared.domain.DateRange" to "DateRange",
+    "java.time.LocalTime" to "string",
     "java.time.LocalDateTime" to "Date",
-    "java.time.OffsetDateTime" to "Date",
-    "java.time.Instant" to "Date"
+    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to "Date",
+    "java.time.Instant" to "Date",
+    "java.time.OffsetDateTime" to "Date"
 )
 
-fun main() {
+fun generateApiTypes() {
     val path = locateRoot() / "api-types.d.ts"
-    path.writeText(generate())
+    path.writeText(getApiTypesInTypeScript())
 }
 
-fun generate(): String {
+fun getApiTypesInTypeScript(): String {
     val knownClasses = tsMapping.keys.toMutableSet()
     val analyzedClasses = mutableListOf<AnalyzedClass>()
 
