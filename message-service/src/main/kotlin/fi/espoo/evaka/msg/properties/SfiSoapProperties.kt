@@ -32,7 +32,10 @@ data class SfiPrintingProperties(
     var forcePrintForElectronicUser: Boolean = false,
     var printingProvider: String? = "Edita",
     var billingId: String? = null,
-    var billingPassword: String? = null
+    var billingPassword: String? = null,
+    var contactPersonName: String? = "",
+    var contactPersonPhone: String? = "",
+    var contactPersonEmail: String? = ""
 
 )
 
