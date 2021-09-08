@@ -406,6 +406,28 @@ class MockVardaIntegrationEndpoint {
         """.trimIndent()
     }
 
+    fun getMockErrorResponseForFeeData() =
+        """
+        {
+           "huoltajat":[
+              {
+                 "error_code":"MA003",
+                 "description":"No matching huoltaja found.",
+                 "translations":[
+                    {
+                       "language":"FI",
+                       "description":"Väestötietojärjestelmästä ei löydy lapsen ilmoitettua huoltajaa."
+                    },
+                    {
+                       "language":"SV",
+                       "description":"Det gick inte att hitta vårdnadshavaren till barnet i Befolkningsdatasystemet."
+                    }
+                 ]
+              }
+           ]
+        }
+        """
+
     private fun getMockDecisionResponse(id: Long): String {
         return """
 {
@@ -429,10 +451,12 @@ class MockVardaIntegrationEndpoint {
 
     private var failNextRequest: VardaCallType? = null
     private var failResponseCode = 200
+    private var failResponseMessage = ""
 
-    fun failNextVardaCall(failWithHttpCode: Int, ofType: VardaCallType) {
+    fun failNextVardaCall(failWithHttpCode: Int, ofType: VardaCallType, message: String) {
         failNextRequest = ofType
         failResponseCode = failWithHttpCode
+        failResponseMessage = message
     }
 
     private fun shouldFailRequest(type: VardaCallType) = type == failNextRequest
@@ -440,7 +464,6 @@ class MockVardaIntegrationEndpoint {
     private fun failRequest(): ResponseEntity<String> {
         logger.info("MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode")
         failNextRequest = null
-        failResponseCode = 200
-        return ResponseEntity.status(failResponseCode).build()
+        return ResponseEntity.status(failResponseCode).body(failResponseMessage)
     }
 }

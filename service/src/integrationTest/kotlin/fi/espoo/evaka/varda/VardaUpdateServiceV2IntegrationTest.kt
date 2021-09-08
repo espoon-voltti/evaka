@@ -645,8 +645,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         val snId = createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
-
-        mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
+        mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA, mockEndpoint.getMockErrorResponseForFeeData())
         updateChildData(db, vardaClient, feeDecisionMinDate)
         assertFailedVardaUpdates(1)
         assertEquals(1, getVardaServiceNeedError(snId).size)
