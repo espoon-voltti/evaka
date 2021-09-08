@@ -122,26 +122,17 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
 
             feeIds.forEachIndexed { index, feeId ->
                 logger.info { "VardaUpdate: deleting fee data $feeId for child $vardaChildId (${index + 1} / ${feeIds.size})" }
-                if (vardaClient.deleteFeeDataV2(feeId)) {
-                    logger.info { "VardaUpdate: deleting fee data from db for child $evakaChildId (varda id $vardaChildId) by id $feeId" }
-                    db.transaction { deleteVardaFeeData(it, feeId) }
-                }
+                vardaClient.deleteFeeDataV2(feeId)
             }
 
             placementIds.forEachIndexed { index, placementId ->
                 logger.info { "VardaUpdate: deleting placement $placementId for child $vardaChildId (${index + 1} / ${placementIds.size})" }
-                if (vardaClient.deletePlacementV2(placementId)) {
-                    logger.info { "VardaUpdate: deleting placement data from db for child $evakaChildId (varda id $vardaChildId) by id $placementId" }
-                    db.transaction { deletePlacement(it, placementId) }
-                }
+                vardaClient.deletePlacementV2(placementId)
             }
 
             decisionIds.forEachIndexed { index, decisionId ->
                 logger.info { "VardaUpdate: deleting decision $decisionId for child $vardaChildId (${index + 1} / ${decisionIds.size})" }
-                if (vardaClient.deleteDecisionV2(decisionId)) {
-                    logger.info { "VardaUpdate: deleting decision data from db for child $evakaChildId (varda id $vardaChildId) by id $decisionId" }
-                    db.transaction { deleteDecision(it, decisionId) }
-                }
+                vardaClient.deleteDecisionV2(decisionId)
             }
 
             logger.info { "VardaUpdate: deleting from varda_service_need for child $evakaChildId (varda id $vardaChildId)" }
