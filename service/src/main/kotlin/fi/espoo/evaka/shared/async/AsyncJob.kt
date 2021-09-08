@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJob
 import java.time.Duration
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -29,13 +28,8 @@ data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
 
     @Suppress("DEPRECATION")
     fun getAllNames(): List<String> = listOf(name) + when (payloadClass) {
-        AsyncJob.NotifyServiceNeedUpdated::class -> listOf("SERVICE_NEED_UPDATED")
-        AsyncJob.NotifyFamilyUpdated::class -> listOf("FAMILY_UPDATED")
-        AsyncJob.NotifyFeeAlterationUpdated::class -> listOf("FEE_ALTERATION_UPDATED")
-        AsyncJob.NotifyIncomeUpdated::class -> listOf("INCOME_UPDATED")
         AsyncJob.NotifyDecisionCreated::class -> listOf("DECISION_CREATED")
         AsyncJob.SendDecision::class -> listOf("SEND_DECISION")
-        AsyncJob.NotifyPlacementPlanApplied::class -> listOf("PLACEMENT_PLAN_APPLIED")
         AsyncJob.NotifyFeeDecisionApproved::class -> listOf("FEE_DECISION_APPROVED")
         AsyncJob.NotifyFeeDecisionPdfGenerated::class -> listOf("FEE_DECISION_PDF_GENERATED")
         AsyncJob.NotifyVoucherValueDecisionApproved::class -> listOf("VOUCHER_VALUE_DECISION_APPROVED")
@@ -95,52 +89,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    @Deprecated("Use GenerateFinanceDecisions instead")
-    data class NotifyPlacementPlanApplied(val childId: UUID, val startDate: LocalDate, val endDate: LocalDate) :
-        AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    @Deprecated("Use GenerateFinanceDecisions instead")
-    data class NotifyServiceNeedUpdated(val childId: UUID, val startDate: LocalDate, val endDate: LocalDate?) :
-        AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    @Deprecated("Use GenerateFinanceDecisions instead")
-    data class NotifyFamilyUpdated(
-        val adultId: UUID,
-        val startDate: LocalDate,
-        val endDate: LocalDate?
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    @Deprecated("Use GenerateFinanceDecisions instead")
-    data class NotifyFeeAlterationUpdated(
-        val personId: UUID,
-        val startDate: LocalDate,
-        val endDate: LocalDate?
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    @Deprecated("Use GenerateFinanceDecisions instead")
-    data class NotifyIncomeUpdated(
-        val personId: UUID,
-        val startDate: LocalDate,
-        val endDate: LocalDate?
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class NotifyDecisionCreated(val decisionId: DecisionId, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJob
 
-    data class SendDecision(
-        val decisionId: DecisionId,
-        @Deprecated(message = "only for backwards compatibility")
+    data class SendDecision(val decisionId: DecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
-    ) : AsyncJob
+    }
 
     data class NotifyFeeDecisionApproved(val decisionId: FeeDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null

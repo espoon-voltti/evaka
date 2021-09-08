@@ -126,7 +126,6 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseabl
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef<out T>) {
         val logMeta = mapOf(
             "jobId" to job.jobId,
