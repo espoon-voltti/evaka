@@ -62,12 +62,17 @@ class VardaClient(
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
     val sourceSystem: String = env.sourceSystem
 
+    // Varda error may contain any of the keys below, perhaps, depending on the endpoint
     private data class VardaErrors(
-        val errors: List<VardaError>
-    )
+        val errors: List<VardaError> = listOf(),
+        val tuntimaara_viikossa: List<VardaError> = listOf(),
+        val huoltajat: List<VardaError> = listOf()
+    ) {
+        fun getAll() = errors + tuntimaara_viikossa + huoltajat
+    }
 
     private data class VardaError(
-        val errorCode: String,
+        val error_code: String,
         val description: String
     )
 
@@ -91,16 +96,17 @@ class VardaClient(
 
     private fun parseVardaError(request: Request, error: FuelError): VardaRequestError {
         return try {
-            val errors = objectMapper.readValue<VardaErrors>(error.errorData.decodeToString()).errors
+            val errors = objectMapper.readValue<VardaErrors>(error.errorData.decodeToString()).getAll()
             VardaRequestError(
                 method = request.method.toString(),
                 url = request.url.toString(),
                 body = request.body.asString("application/json"),
-                errorMessage = errors.map { it.description }.joinToString { "\n" },
-                errorCode = errors.map { it.errorCode }.joinToString { "\n" },
+                errorMessage = errors.joinToString(", ") { it.description },
+                errorCode = errors.joinToString(", ") { it.error_code },
                 statusCode = error.response.statusCode.toString()
             )
         } catch (e: Exception) {
+            logger.info { "VardaUpdate: client failed to parse error response: $e, using fallback" }
             VardaRequestError(
                 method = request.method.toString(),
                 url = request.url.toString(),
@@ -114,7 +120,7 @@ class VardaClient(
 
     private fun vardaError(request: Request, error: FuelError, message: (meta: VardaRequestError) -> String): Nothing {
         val meta = parseVardaError(request, error)
-        logger.error(request, meta.asMap()) { "VardaUpdate: request failed to ${meta.url}, status ${meta.statusCode}, reason ${meta.errorCode}" }
+        logger.error(request, meta.asMap()) { "VardaUpdate: request failed to ${meta.url}, status ${meta.statusCode}, reason ${meta.errorCode}: ${meta.errorMessage}" }
         error(message(meta))
     }
 
