@@ -90,9 +90,11 @@ class AttachmentsController(
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
-        checkAttachmentCount(db, user)
 
-        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
+        val attachTo = AttachToApplication(applicationId)
+        checkAttachmentCount(db, attachTo, user)
+
+        val id = handleFileUpload(db, user, attachTo, file, type)
         db.transaction { stateService.reCalculateDueDate(it, applicationId) }
 
         return ResponseEntity.ok(id)
@@ -111,15 +113,23 @@ class AttachmentsController(
         Audit.AttachmentsUpload.log(targetId = "nothing")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user) }) throw Forbidden("Permission denied")
-        checkAttachmentCount(db, user)
+        if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user.id) }) throw Forbidden("Permission denied")
 
         val attachTo = if (incomeStatementId != null) AttachToIncomeStatement(incomeStatementId) else AttachToNothing
+        checkAttachmentCount(db, attachTo, user)
+
         return handleFileUpload(db, user, attachTo, file, null)
     }
 
-    private fun checkAttachmentCount(db: Database, user: AuthenticatedUser) {
-        if (db.read { it.userAttachmentCount(user.id) } >= maxAttachmentsPerUser) {
+    private fun checkAttachmentCount(db: Database, attachTo: AttachTo, user: AuthenticatedUser) {
+        val count = db.read {
+            when (attachTo) {
+                is AttachToNothing -> it.userUnparentedAttachmentCount(user.id)
+                is AttachToApplication -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
+                is AttachToIncomeStatement -> it.userIncomeStatementAttachmentCount(attachTo.incomeStatementId, user.id)
+            }
+        }
+        if (count >= maxAttachmentsPerUser) {
             throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
         }
     }
@@ -229,13 +239,6 @@ fun Database.Read.isOwnApplication(applicationId: ApplicationId, user: Authentic
         .bind("userId", user.id)
         .mapTo<Int>()
         .any()
-}
-
-fun Database.Read.userAttachmentCount(userId: UUID): Int {
-    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE uploaded_by_person = :userId")
-        .bind("userId", userId)
-        .mapTo<Int>()
-        .first()
 }
 
 fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: AttachmentId): Boolean {

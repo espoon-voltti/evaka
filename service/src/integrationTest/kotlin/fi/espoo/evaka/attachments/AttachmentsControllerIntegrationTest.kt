@@ -4,43 +4,105 @@
 
 package fi.espoo.evaka.attachments
 
+import com.github.kittinunf.fuel.core.FileDataPart
+import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.attachment.AttachmentType
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.net.URL
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest() {
-
-    private lateinit var user: AuthenticatedUser
-    private val applicationId = ApplicationId(UUID.randomUUID())
+    private val user = AuthenticatedUser.Citizen(testAdult_5.id)
 
     @BeforeEach
-    protected fun beforeEach() {
+    private fun beforeEach() {
         db.transaction {
             it.resetDatabase()
             it.insertGeneralTestFixtures()
         }
-        user = AuthenticatedUser.Citizen(testAdult_5.id)
     }
 
     @Test
-    fun `Enduser can upload attachments up to the limit`() {
+    fun `Citizen can upload application attachments up to a limit`() {
         val maxAttachments = evakaEnv.maxAttachmentsPerUser
+        val applicationId = ApplicationId(UUID.randomUUID())
         db.transaction {
-            it.insertApplication(applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
+            it.insertApplication(
+                applicationId = applicationId,
+                guardian = testAdult_5,
+                status = ApplicationStatus.CREATED
+            )
         }
         for (i in 1..maxAttachments) {
-            assertTrue(uploadAttachment(applicationId, user))
+            assertTrue(uploadApplicationAttachment(applicationId))
         }
-        assertFalse(uploadAttachment(applicationId, user))
+        assertFalse(uploadApplicationAttachment(applicationId))
+    }
+
+    @Test
+    fun `Citizen can upload income statement attachments up to a limit`() {
+        val maxAttachments = evakaEnv.maxAttachmentsPerUser
+        val incomeStatementId = db.transaction {
+            it.createIncomeStatement(
+                testAdult_5.id,
+                IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null)
+            )
+        }
+        for (i in 1..maxAttachments) {
+            assertTrue(uploadIncomeStatementAttachment(incomeStatementId))
+        }
+        assertFalse(uploadIncomeStatementAttachment(incomeStatementId))
+    }
+
+    @Test
+    fun `Citizen can upload unparented attachments up to a limit`() {
+        val maxAttachments = evakaEnv.maxAttachmentsPerUser
+        for (i in 1..maxAttachments) {
+            assertTrue(uploadUnparentedAttachment())
+        }
+        assertFalse(uploadUnparentedAttachment())
+    }
+
+    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")!!
+
+    private fun uploadAttachment(path: String, parameters: List<Pair<String, Any?>>? = null): Boolean {
+        val (_, res, _) = http.upload(path, parameters = parameters)
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .response()
+
+        return res.isSuccessful
+    }
+
+    private fun uploadApplicationAttachment(
+        applicationId: ApplicationId,
+        type: AttachmentType = AttachmentType.URGENCY
+    ): Boolean {
+        return uploadAttachment("/attachments/citizen/applications/$applicationId", listOf("type" to type))
+    }
+
+    private fun uploadIncomeStatementAttachment(incomeStatementId: IncomeStatementId): Boolean {
+        return uploadAttachment("/attachments/citizen/income-statements/$incomeStatementId")
+    }
+
+    private fun uploadUnparentedAttachment(): Boolean {
+        return uploadAttachment("/attachments/citizen/income-statements")
     }
 }
