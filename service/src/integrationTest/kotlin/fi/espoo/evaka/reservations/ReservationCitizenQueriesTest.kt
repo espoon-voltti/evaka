@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -48,22 +47,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime,
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then 2 reservations are added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(2, reservations.size)
     }
 
@@ -80,22 +82,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime,
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first().startTime.toLocalDate())
     }
@@ -113,22 +118,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then no reservation are added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(0, reservations.size)
     }
 
@@ -145,22 +153,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.minusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.minusDays(1), endTime),
+                        date = monday.minusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first().startTime.toLocalDate())
     }
@@ -179,22 +190,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first().startTime.toLocalDate())
     }
@@ -213,22 +227,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first().startTime.toLocalDate())
     }
@@ -242,15 +259,17 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, startTime),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = startTime,
+                        endTime = endTime
                     ),
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday.plusDays(1), startTime),
-                        endTime = HelsinkiDateTime.of(monday.plusDays(1), endTime),
+                        date = monday.plusDays(1),
+                        startTime = startTime,
+                        endTime = endTime,
                     )
                 )
             )
@@ -261,17 +280,19 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             createReservations(
                 it, testAdult_1.id,
                 listOf(
-                    Reservation(
+                    DailyReservationRequest(
                         childId = testChild_1.id,
-                        startTime = HelsinkiDateTime.of(monday, LocalTime.of(12, 0)),
-                        endTime = HelsinkiDateTime.of(monday, endTime),
+                        date = monday,
+                        startTime = LocalTime.of(12, 0),
+                        endTime = endTime,
                     )
                 )
             )
         }
 
         // then 1 reservation is changed
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }.flatMap { it.reservations }
+        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+            .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(2, reservations.size)
         assertEquals(monday, reservations[0].startTime.toLocalDate())
         assertEquals(12, reservations[0].startTime.toLocalTime().hour)
@@ -281,27 +302,36 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
     @Test
     fun `reservable days query date is Monday`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 5))
+        val result = getReservableDays(LocalDate.of(2021, 6, 7))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 12), LocalDate.of(2021, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 6, 14), LocalDate.of(2021, 7, 31)),
             result
         )
     }
 
     @Test
     fun `reservable days query date is Tuesday`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 6))
+        val result = getReservableDays(LocalDate.of(2021, 6, 8))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 19), LocalDate.of(2021, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 6, 21), LocalDate.of(2021, 7, 31)),
             result
         )
     }
 
     @Test
-    fun `reservable days is at least one full week`() {
-        val result = getReservableDays(LocalDate.of(2021, 7, 14))
+    fun `reservable days includes next year when start is in July`() {
+        val result = getReservableDays(LocalDate.of(2021, 6, 28))
         assertEquals(
-            FiniteDateRange(LocalDate.of(2021, 7, 26), LocalDate.of(2022, 7, 31)),
+            FiniteDateRange(LocalDate.of(2021, 7, 5), LocalDate.of(2022, 7, 31)),
+            result
+        )
+    }
+
+    @Test
+    fun `reservable days query date is in September`() {
+        val result = getReservableDays(LocalDate.of(2021, 9, 1))
+        assertEquals(
+            FiniteDateRange(LocalDate.of(2021, 9, 13), LocalDate.of(2022, 7, 31)),
             result
         )
     }

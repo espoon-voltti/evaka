@@ -170,7 +170,11 @@ function Group({
     setGroupDaycareDailyNotes
   )
 
-  useEffect(loadGroupDaycareDailyNotes, [loadGroupDaycareDailyNotes])
+  useEffect(() => {
+    if (permittedActions.has('READ_DAYCARE_DAILY_NOTES')) {
+      loadGroupDaycareDailyNotes()
+    }
+  }, [permittedActions, loadGroupDaycareDailyNotes])
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)

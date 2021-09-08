@@ -45,7 +45,7 @@ import Combobox from 'lib-components/atoms/form/Combobox'
 import {
   deleteAttachment,
   getAttachmentBlob,
-  saveAttachment
+  saveApplicationAttachment
 } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
@@ -152,29 +152,32 @@ export default React.memo(function ApplicationEditView({
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
     ): Promise<Result<UUID>> =>
-      saveAttachment(application.id, file, type, onUploadProgress).then(
-        (res) => {
-          res.isSuccess &&
-            setApplication(
-              (prev) =>
-                prev && {
-                  ...prev,
-                  attachments: [
-                    ...prev.attachments,
-                    {
-                      contentType: file.type,
-                      id: res.value,
-                      name: file.name,
-                      type,
-                      updated: new Date(),
-                      receivedAt: new Date()
-                    }
-                  ]
-                }
-            )
-          return res
-        }
-      )
+      saveApplicationAttachment(
+        application.id,
+        file,
+        type,
+        onUploadProgress
+      ).then((res) => {
+        res.isSuccess &&
+          setApplication(
+            (prev) =>
+              prev && {
+                ...prev,
+                attachments: [
+                  ...prev.attachments,
+                  {
+                    contentType: file.type,
+                    id: res.value,
+                    name: file.name,
+                    type,
+                    updated: new Date(),
+                    receivedAt: new Date()
+                  }
+                ]
+              }
+          )
+        return res
+      })
 
   const onDeleteAttachment = (id: UUID) =>
     deleteAttachment(id).then((res) => {

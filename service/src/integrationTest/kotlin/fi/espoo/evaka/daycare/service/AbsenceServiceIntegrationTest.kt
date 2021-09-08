@@ -245,13 +245,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
-        val modifiedBy = db.read { it.getUserNameById(testUserId) }
 
         assertEquals(initialAbsence.childId, absence.childId)
         assertEquals(absenceDate, absence.date)
         assertEquals(initialAbsence.careType, absence.careType)
         assertEquals(initialAbsence.absenceType, absence.absenceType)
-        assertEquals(modifiedBy, absence.modifiedBy)
     }
 
     @Test
@@ -551,9 +549,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
             childId = childId,
             date = date,
             careType = careType,
-            absenceType = absenceType,
-            modifiedAt = null,
-            modifiedBy = null
+            absenceType = absenceType
         )
     }
 }

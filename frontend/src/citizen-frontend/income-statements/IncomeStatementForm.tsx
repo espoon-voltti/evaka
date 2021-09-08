@@ -36,7 +36,7 @@ import { UUID } from 'lib-common/types'
 import {
   deleteAttachment,
   getAttachmentBlob,
-  saveAttachment
+  saveIncomeStatementAttachment
 } from '../attachments'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'lib-icons'
@@ -45,6 +45,7 @@ import LocalDate from 'lib-common/local-date'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 
 interface Props {
+  incomeStatementId: UUID | null
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
   onChange: (
@@ -60,7 +61,15 @@ export interface IncomeStatementFormAPI {
 }
 
 export default React.forwardRef(function IncomeStatementForm(
-  { formData, showFormErrors, onChange, onSave, onSuccess, onCancel }: Props,
+  {
+    incomeStatementId,
+    formData,
+    showFormErrors,
+    onChange,
+    onSave,
+    onSuccess,
+    onCancel
+  }: Props,
   ref: React.ForwardedRef<IncomeStatementFormAPI>
 ) {
   const t = useTranslation()
@@ -162,6 +171,7 @@ export default React.forwardRef(function IncomeStatementForm(
             <OtherInfo formData={formData} onChange={handleChange} />
             <Gap size="L" />
             <Attachments
+              incomeStatementId={incomeStatementId}
               requiredAttachments={requiredAttachments}
               attachments={formData.attachments}
               onUploaded={handleAttachmentUploaded}
@@ -912,11 +922,13 @@ function OtherInfo({
 }
 
 function Attachments({
+  incomeStatementId,
   requiredAttachments,
   attachments,
   onUploaded,
   onDeleted
 }: {
+  incomeStatementId: UUID | null
   requiredAttachments: Set<AttachmentType>
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
@@ -929,7 +941,13 @@ function Attachments({
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
     ) => {
-      return (await saveAttachment(file, onUploadProgress)).map((id) => {
+      return (
+        await saveIncomeStatementAttachment(
+          incomeStatementId,
+          file,
+          onUploadProgress
+        )
+      ).map((id) => {
         onUploaded({
           id,
           name: file.name,
@@ -938,7 +956,7 @@ function Attachments({
         return id
       })
     },
-    [onUploaded]
+    [incomeStatementId, onUploaded]
   )
 
   const handleDelete = React.useCallback(

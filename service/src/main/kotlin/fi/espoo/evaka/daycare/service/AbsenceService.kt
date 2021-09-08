@@ -77,8 +77,7 @@ class AbsenceService {
 
     fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, userId: UUID) {
         try {
-            val userName = tx.getEmployeeNameById(userId)
-            tx.upsertAbsences(absences, userName)
+            tx.upsertAbsences(absences, userId)
         } catch (e: Exception) {
             logger.error(e) { "Error: Updating absences by user $userId failed" }
             throw BadRequest("Error: Updating absences failed: ${e.message}")
@@ -201,9 +200,7 @@ data class Absence(
     val childId: UUID,
     val date: LocalDate,
     var careType: AbsenceCareType,
-    val absenceType: AbsenceType,
-    val modifiedAt: String? = null,
-    val modifiedBy: String? = null
+    val absenceType: AbsenceType
 )
 
 data class AbsenceBackupCare(
@@ -237,14 +234,14 @@ data class AbsencePlacement(
 )
 
 // database functions
-private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: String) {
+private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: UUID) {
     //language=SQL
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by_employee_id)
         VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
         ON CONFLICT (child_id, date, care_type)
-            DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = now()
+            DO UPDATE SET absence_type = :absenceType, modified_by_employee_id = :modifiedBy, modified_at = now()
         """.trimIndent()
 
     val batch = prepareBatch(sql)
@@ -283,36 +280,6 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
             .add()
     }
     batch.execute()
-}
-
-fun Database.Read.getEmployeeNameById(employeeId: UUID): String {
-    //language=SQL
-    val sql =
-        """
-        SELECT concat(first_name, ' ', last_name)
-        FROM employee
-        WHERE id = :employeeId
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("employeeId", employeeId)
-        .mapTo(String::class.java)
-        .first()
-}
-
-fun Database.Read.getUserNameById(userId: UUID): String {
-    //language=SQL
-    val sql =
-        """
-        SELECT concat(first_name, ' ', last_name)
-        FROM person
-        WHERE id = :userId
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("userId", userId)
-        .mapTo(String::class.java)
-        .first()
 }
 
 fun Database.Read.getGroupName(groupId: GroupId): String? {
@@ -387,7 +354,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, period: FiniteDateRange):
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, a.modified_at, a.modified_by
+        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
         FROM absence a
         WHERE child_id IN (
           SELECT child_id
@@ -417,7 +384,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: FiniteDateRan
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, a.modified_at, a.modified_by
+        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
         FROM absence a
         WHERE date <@ :period
         AND a.child_id = :childId
@@ -434,7 +401,7 @@ fun Database.Read.getAbsencesByChildByPeriod(childId: UUID, period: DateRange): 
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, a.modified_at, a.modified_by
+        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
         FROM absence a
         WHERE date <@ :period
         AND a.child_id = :childId

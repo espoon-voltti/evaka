@@ -20,7 +20,7 @@ import {
 } from 'citizen-frontend/form-validation'
 import {
   postReservations,
-  Reservation,
+  ChildDailyData,
   ReservationChild,
   ReservationsResponse
 } from './api'
@@ -49,7 +49,7 @@ export default React.memo(function DayView({
     )
 
     return data.children.map((child) => {
-      const reservation = reservations?.reservations.find(
+      const reservation = reservations?.children.find(
         ({ childId }) => childId === child.id
       )
 
@@ -149,16 +149,21 @@ export default React.memo(function DayView({
               <Gap size="s" />
               <Grid>
                 <Label>Varaus</Label>
-                {reservation === undefined ? (
-                  <NoReservation>Ei varausta</NoReservation>
-                ) : (
+                {reservation?.absence ? (
+                  <span>
+                    {i18n.calendar.absences[reservation.absence] ??
+                      i18n.calendar.absent}
+                  </span>
+                ) : reservation?.reservation ? (
                   <span>{`${formatDate(
-                    reservation.startTime,
+                    reservation.reservation.startTime,
                     DATE_FORMAT_TIME_ONLY
                   )} – ${formatDate(
-                    reservation.endTime,
+                    reservation.reservation.endTime,
                     DATE_FORMAT_TIME_ONLY
                   )}`}</span>
+                ) : (
+                  <NoReservation>Ei varausta</NoReservation>
                 )}
                 <Label>Toteuma</Label>
                 <span>–</span>
@@ -189,7 +194,7 @@ function useEditState(
   reloadData: () => void,
   childrenWithReservations: {
     child: ReservationChild
-    reservation: Reservation | undefined
+    reservation: ChildDailyData | undefined
   }[]
 ) {
   const editable = data.reservableDays.includes(date)
@@ -201,11 +206,11 @@ function useEditState(
     () =>
       childrenWithReservations.map(({ child, reservation }) => ({
         child,
-        startTime: reservation
-          ? formatDate(reservation.startTime, DATE_FORMAT_TIME_ONLY)
+        startTime: reservation?.reservation
+          ? formatDate(reservation.reservation.startTime, DATE_FORMAT_TIME_ONLY)
           : '',
-        endTime: reservation
-          ? formatDate(reservation.endTime, DATE_FORMAT_TIME_ONLY)
+        endTime: reservation?.reservation
+          ? formatDate(reservation.reservation.endTime, DATE_FORMAT_TIME_ONLY)
           : '',
         errors: {
           startTime: undefined,

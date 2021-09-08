@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Collapsible, RawElement } from 'e2e-playwright/utils/element'
+import { Collapsible } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -40,7 +41,6 @@ export default class ChildInformationPage {
     this.page,
     '[data-qa="child-message-blocklist-collapsible"]'
   )
-  readonly pageWrapper = new RawElement(this.page, '.child-information-wrapper')
 
   async childCollapsiblesVisible(params: {
     feeAlterations: boolean
@@ -52,24 +52,18 @@ export default class ChildInformationPage {
     childApplications: boolean
     messageBlocklist: boolean
   }) {
-    await this.pageWrapper.waitUntilVisible()
-    expect(await this.feeAlterationsCollapsible.visible).toBe(
-      params.feeAlterations
-    )
-    expect(await this.guardiansCollapsible.visible).toBe(
-      params.guardiansAndParents
-    )
-    expect(await this.placementsCollapsible.visible).toBe(params.placements)
-    expect(await this.assistanceCollapsible.visible).toBe(params.assistance)
-    expect(await this.backupCareCollapsible.visible).toBe(params.backupCare)
-    expect(await this.familyContactsCollapsible.visible).toBe(
-      params.familyContacts
-    )
-    expect(await this.childApplicationsCollapsible.visible).toBe(
-      params.childApplications
-    )
-    expect(await this.messageBlocklistCollapsible.visible).toBe(
-      params.messageBlocklist
+    await waitUntilEqual(
+      async () => ({
+        feeAlterations: await this.feeAlterationsCollapsible.visible,
+        guardiansAndParents: await this.guardiansCollapsible.visible,
+        placements: await this.placementsCollapsible.visible,
+        assistance: await this.assistanceCollapsible.visible,
+        backupCare: await this.backupCareCollapsible.visible,
+        familyContacts: await this.familyContactsCollapsible.visible,
+        childApplications: await this.childApplicationsCollapsible.visible,
+        messageBlocklist: await this.messageBlocklistCollapsible.visible
+      }),
+      params
     )
   }
 

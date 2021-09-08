@@ -8,20 +8,28 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
 import CalendarGridView from './CalendarGridView'
-import { getReservations, ReservationsResponse } from './api'
+import {
+  ChildDailyData,
+  DailyReservationData,
+  getReservations,
+  ReservationsResponse
+} from './api'
+import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
-import { useTranslation } from '../localization'
+import { useTranslation, Translations } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
+import AbsenceModal from './AbsenceModal'
 import DayView from './DayView'
 import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
 import _ from 'lodash'
 import { WeekProps } from './WeekElem'
+import ActionPickerModal from './ActionPickerModal'
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
@@ -30,7 +38,9 @@ export default React.memo(function CalendarPage() {
   const user = useUser()
 
   const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
-  const [reservationViewOpen, setReservationViewOpen] = useState(false)
+  const [openModal, setOpenModal] = useState<
+    'pickAction' | 'reservations' | 'absences'
+  >()
 
   const loadData = useRestApi(getReservations, setData)
   const loadDefaultRange = useCallback(
@@ -78,32 +88,7 @@ export default React.memo(function CalendarPage() {
             return <div>{i18n.common.errors.genericGetError}</div>
           },
           success(response) {
-            const weeklyData = response.dailyData.reduce<WeekProps[]>(
-              (weekly, daily) => {
-                const last = _.last(weekly)
-                if (
-                  last === undefined ||
-                  daily.date.getIsoWeek() !== last.weekNumber
-                ) {
-                  return [
-                    ...weekly,
-                    {
-                      weekNumber: daily.date.getIsoWeek(),
-                      dailyReservations: [daily]
-                    }
-                  ]
-                } else {
-                  return [
-                    ..._.dropRight(weekly),
-                    {
-                      ...last,
-                      dailyReservations: [...last.dailyReservations, daily]
-                    }
-                  ]
-                }
-              },
-              []
-            )
+            const weeklyData = asWeeklyData(i18n, response.dailyData)
 
             return (
               <>
@@ -115,9 +100,7 @@ export default React.memo(function CalendarPage() {
                   >
                     <CalendarListView
                       weeklyData={weeklyData}
-                      onCreateReservationClicked={() =>
-                        setReservationViewOpen(true)
-                      }
+                      onHoverButtonClick={() => setOpenModal('pickAction')}
                       selectDate={selectDate}
                     />
                   </ContentArea>
@@ -128,18 +111,33 @@ export default React.memo(function CalendarPage() {
                     <CalendarGridView
                       weeklyData={weeklyData}
                       onCreateReservationClicked={() =>
-                        setReservationViewOpen(true)
+                        setOpenModal('reservations')
                       }
+                      onCreateAbsencesClicked={() => setOpenModal('absences')}
                       selectDate={selectDate}
                     />
                   </ContentArea>
                 </DesktopOnly>
-                {reservationViewOpen && (
+                {openModal === 'pickAction' && (
+                  <ActionPickerModal
+                    close={() => setOpenModal(undefined)}
+                    openReservations={() => setOpenModal('reservations')}
+                    openAbsences={() => setOpenModal('absences')}
+                  />
+                )}
+                {openModal === 'reservations' && (
                   <ReservationModal
-                    onClose={() => setReservationViewOpen(false)}
+                    onClose={() => setOpenModal(undefined)}
                     availableChildren={response.children}
                     onReload={loadDefaultRange}
                     reservableDays={response.reservableDays}
+                  />
+                )}
+                {openModal === 'absences' && (
+                  <AbsenceModal
+                    close={() => setOpenModal(undefined)}
+                    reload={loadDefaultRange}
+                    availableChildren={response.children}
                   />
                 )}
               </>
@@ -164,3 +162,61 @@ const DesktopOnly = styled.div`
     display: none;
   }
 `
+
+const asWeeklyData = (
+  i18n: Translations,
+  dailyData: DailyReservationData[]
+): WeekProps[] =>
+  dailyData.reduce<WeekProps[]>((weekly, daily) => {
+    const last = _.last(weekly)
+    if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
+      return [
+        ...weekly,
+        {
+          weekNumber: daily.date.getIsoWeek(),
+          dailyReservations: [
+            { ...daily, reservations: uniqueReservations(i18n, daily.children) }
+          ]
+        }
+      ]
+    } else {
+      return [
+        ..._.dropRight(weekly),
+        {
+          ...last,
+          dailyReservations: [
+            ...last.dailyReservations,
+            { ...daily, reservations: uniqueReservations(i18n, daily.children) }
+          ]
+        }
+      ]
+    }
+  }, [])
+
+const uniqueReservations = (
+  i18n: Translations,
+  reservations: ChildDailyData[]
+): string[] => {
+  const uniqueReservationTimes: string[] = reservations
+    .map(({ absence, reservation }) =>
+      absence === null && reservation !== null
+        ? `${formatDate(reservation.startTime, 'HH:mm')} – ${formatDate(
+            reservation.endTime,
+            'HH:mm'
+          )}`
+        : undefined
+    )
+    .filter((reservation): reservation is string => reservation !== undefined)
+    .reduce<string[]>(
+      (uniq, reservation) =>
+        uniq.some((res) => res === reservation) ? uniq : [...uniq, reservation],
+      []
+    )
+
+  const someoneIsAbsent = reservations.some(({ absence }) => absence !== null)
+
+  return [
+    ...(someoneIsAbsent ? [i18n.calendar.absent] : []),
+    ...uniqueReservationTimes
+  ]
+}

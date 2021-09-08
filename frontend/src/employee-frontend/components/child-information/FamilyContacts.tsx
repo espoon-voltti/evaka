@@ -30,6 +30,7 @@ import { patchPersonDetails } from 'employee-frontend/api/person'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { UserContext } from 'employee-frontend/state/user'
 import BackupPickup from './BackupPickup'
+import { ChildContext } from 'employee-frontend/state'
 
 interface FamilyContactsProps {
   id: UUID
@@ -43,6 +44,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
   const [submitting, setSubmitting] = useState(false)
   const [open, setOpen] = useState(startOpen)
   const { roles } = useContext(UserContext)
+  const { permittedActions } = useContext(ChildContext)
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
   useEffect(() => loadContacts(id), [id, loadContacts])
@@ -265,7 +267,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
         </>
       )}
       <Gap size="XL" />
-      <BackupPickup id={id} />
+      {permittedActions.has('READ_BACKUP_PICKUP') && <BackupPickup id={id} />}
     </CollapsibleContentArea>
   )
 }

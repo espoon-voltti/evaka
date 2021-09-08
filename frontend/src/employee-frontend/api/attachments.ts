@@ -7,29 +7,49 @@ import { UUID } from 'lib-common/types'
 import { client } from './client'
 import { AttachmentType } from 'lib-common/generated/enums'
 
-export async function saveAttachment(
-  applicationId: UUID,
+async function doSaveAttachment(
+  config: { path: string; params?: unknown },
   file: File,
-  type: AttachmentType,
   onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {
   const formData = new FormData()
   formData.append('file', file)
 
   try {
-    const { data } = await client.post<UUID>(
-      `/attachments/applications/${applicationId}`,
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: { type },
-        onUploadProgress
-      }
-    )
+    const { data } = await client.post<UUID>(config.path, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: config.params,
+      onUploadProgress
+    })
     return Success.of(data)
   } catch (e) {
     return Failure.fromError(e)
   }
+}
+
+export async function saveApplicationAttachment(
+  applicationId: UUID,
+  file: File,
+  type: AttachmentType,
+  onUploadProgress: (progressEvent: ProgressEvent) => void
+): Promise<Result<UUID>> {
+  return await doSaveAttachment(
+    { path: `/attachments/applications/${applicationId}`, params: { type } },
+    file,
+    onUploadProgress
+  )
+}
+
+export async function saveIncomeStatementAttachment(
+  incomeStatementId: UUID,
+  file: File,
+  onUploadProgress: (progressEvent: ProgressEvent) => void
+): Promise<Result<UUID>> {
+  return await doSaveAttachment(
+    { path: `/attachments/income-statements/${incomeStatementId}` },
+    file,
+    onUploadProgress
+  )
 }
 
 export const deleteAttachment = (id: UUID): Promise<Result<void>> =>

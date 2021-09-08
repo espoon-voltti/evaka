@@ -149,6 +149,13 @@ export default {
   calendar: {
     title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
+    absent: 'Poissa',
+    absences: {
+      SICKLEAVE: 'Sairauspoissaolo',
+      PLANNED_ABSENCE: 'Vapaapäivä'
+    },
+    newReservationOrAbsence: 'Varaus / Poissaolo',
+    newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',
     reservationModal: {
@@ -163,6 +170,17 @@ export default {
       repetitions: {
         DAILY: 'Päivittäin',
         WEEKLY: 'Viikoittain'
+      }
+    },
+    absenceModal: {
+      title: 'Ilmoita poissaolo',
+      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
+      dateRange: 'Poissaoloilmoitus ajalle',
+      absenceType: 'Poissaolon syy',
+      absenceTypes: {
+        sickness: 'Sairaus',
+        other: 'Muu poissaolo',
+        planned: 'Säännöllinen vapaapäivä/vuorohoito'
       }
     }
   },

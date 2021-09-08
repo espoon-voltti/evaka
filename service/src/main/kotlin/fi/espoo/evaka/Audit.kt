@@ -12,6 +12,7 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low"
 ) {
+    AbsenceCitizenCreate("evaka.absence.create"),
     AbsenceRead("evaka.absence.read"),
     AbsenceDeleteRange("evaka.absence.delete.range"),
     AbsenceUpdate("evaka.absence.update"),
@@ -33,7 +34,8 @@ enum class Audit(
     AssistanceNeedsReportRead("evaka.assistance-needs-report.read"),
     AttachmentsDelete("evaka.attachments.delete"),
     AttachmentsRead("evaka.attachments.read"),
-    AttachmentsUpload("evaka.attachments.upload"),
+    AttachmentsUploadForApplication("evaka.attachments.upload-for-application"),
+    AttachmentsUploadForIncomeStatement("evaka.attachments.upload-for-income-statement"),
     AttendanceReservationCitizenCreate("evaka.attendance-reservation.citizen.create"),
     AttendanceReservationCitizenRead("evaka.attendance-reservation.citizen.read"),
     BackupCareDelete("evaka.backup-care.delete"),

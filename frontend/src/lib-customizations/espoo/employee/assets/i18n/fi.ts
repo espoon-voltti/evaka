@@ -1207,6 +1207,8 @@ export const fi = {
           MONTHLY_NO_HOLIDAY_BONUS: 'Kuukausi ilman lomarahaa',
           BI_WEEKLY_WITH_HOLIDAY_BONUS: '2 viikkoa',
           BI_WEEKLY_NO_HOLIDAY_BONUS: '2 viikkoa ilman lomarahaa',
+          DAILY_ALLOWANCE_21_5: 'Päiväraha x 21,5',
+          DAILY_ALLOWANCE_25: 'Päiväraha x 25',
           YEARLY: 'Vuosi'
         },
         updateError: 'Tulotietojen tallennus epäonnistui',
@@ -1320,8 +1322,17 @@ export const fi = {
     alimonyPayer: 'Maksaa elatusmaksuja',
     otherInfo: 'Lisätietoja tulotietoihin liittyen',
 
-    attachmentsTitle: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-    noAttachments: 'Ei liitteitä',
+    citizenAttachments: {
+      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+      noAttachments: 'Ei liitteitä'
+    },
+
+    employeeAttachments: {
+      title: 'Lisää liitteitä',
+      description:
+        'Tässä voit lisätä asiakkaan paperisena toimittamia liitteitä eVakan kautta palautettuun tuloselvitykseen.'
+    },
+
     statementTypes: {
       HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
       INCOME: 'Huoltajan toimittamat tulotiedot'
@@ -1778,8 +1789,8 @@ export const fi = {
     PRESCHOOL_WITH_DAYCARE_DISCOUNT: 'Alennus (maksup.)',
     PRESCHOOL_WITH_DAYCARE_INCREASE: 'Korotus (maksup.)',
     TEMPORARY_CARE: 'Tilapäinen varhaiskasvatus',
-    SICK_LEAVE_100: 'Sairaspoissaolo 100%',
-    SICK_LEAVE_50: 'Sairaspoissaolo 50%',
+    SICK_LEAVE_100: 'Laskuun vaikuttava poissaolo 100%',
+    SICK_LEAVE_50: 'Laskuun vaikuttava poissaolo 50%',
     ABSENCE: 'Poissaolovähennys',
     EU_CHEMICAL_AGENCY: 'Kemikaaliviraston varhaiskasvatuksen laskut',
     OTHER_MUNICIPALITY: 'Ulkopaikkakuntalaisten lasten varhaiskasvatus',
@@ -2242,15 +2253,20 @@ export const fi = {
         'Tarkista ettei henkilöillä ole esimerkiksi päällekäisiä sijoituksia, palveluntarpeita tai muita päällekkäisyyksiä, jotka voisivat estää yhdistämisen.',
       columns: {
         'absence.child_id': 'Poissa- oloja',
+        'absence.modified_by_guardian_id': 'Itse merkittyjä poissa -oloja',
         'application.child_id': 'Hakemuksia (lapsena)',
         'application.guardian_id': 'Hakemuksia (huoltajana)',
         'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',
         'assistance_action.child_id': 'Tuki- toimia',
         'assistance_need.child_id': 'Tuen tarpeita',
         'attachment.uploaded_by_person': 'Liitteitä',
+        'attendance_reservation.child_id': 'Läsnäolo -varauksia',
+        'attendance_reservation.created_by_guardian_id':
+          'Itse merkittyjä läsnäolo -varauksia',
         'backup_care.child_id': 'Vara- sijoituksia',
         'backup_pickup.child_id': 'Vara- hakijoita',
         'child_attendance.child_id': 'Läsnäoloja',
+        'child_images.child_id': 'Kuvia',
         'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
         'daycare_daily_note.child_id': 'Muistiin- panoja',
         'family_contact.child_id': 'Yhteys- henkilöitä (lapsi)',
@@ -2263,6 +2279,7 @@ export const fi = {
         'fridge_child.head_of_child': 'Jääkaappi- lapsia',
         'fridge_partner.person_id': 'Jääkaappi- puolisoja',
         'income.person_id': 'Tulo- tietoja',
+        'income_statement.person_id': 'Tulo -ilmoituksia',
         'invoice.head_of_family': 'Laskuja',
         'invoice_row.child': 'Lasku- rivejä',
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
@@ -2270,6 +2287,8 @@ export const fi = {
         'messaging_blocklist.child_id': 'Estettyjä viestin saajia',
         'placement.child_id': 'Sijoituksia',
         'varda_child.person_id': 'Varda lapsi',
+        'varda_service_need.evaka_child_id': 'Varda palvelun -tarpeita',
+        'vasu_document.child_id': 'Vasuja',
         'voucher_value_decision.child_id': 'Arvo- päätös- rivejä',
         'voucher_value_decision.head_of_family_id': 'Arvo- päätöksiä (päämies)',
         'voucher_value_decision.partner_id': 'Arvo- päätöksiä (puoliso)',

@@ -4,23 +4,25 @@
 
 import React from 'react'
 import _ from 'lodash'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import WeekElem, { WeekProps } from './WeekElem'
-import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../localization'
 
 export interface Props {
   weeklyData: WeekProps[]
-  onCreateReservationClicked: () => void
+  onHoverButtonClick: () => void
   selectDate: (date: LocalDate) => void
 }
 
 export default React.memo(function CalendarListView({
   weeklyData,
-  onCreateReservationClicked,
+  onHoverButtonClick,
   selectDate
 }: Props) {
   const i18n = useTranslation()
@@ -32,12 +34,10 @@ export default React.memo(function CalendarListView({
           <WeekElem {...w} key={w.weekNumber} selectDate={selectDate} />
         ))}
       </FixedSpaceColumn>
-      <HoverButton
-        onClick={onCreateReservationClicked}
-        text={i18n.calendar.newReservationBtn}
-        primary
-        type="button"
-      />
+      <HoverButton onClick={onHoverButtonClick} primary type="button">
+        <Icon icon={faPlus} />
+        {i18n.calendar.newReservationOrAbsence}
+      </HoverButton>
     </>
   )
 })
@@ -47,4 +47,8 @@ const HoverButton = styled(Button)`
   bottom: ${defaultMargins.s};
   right: ${defaultMargins.s};
   border-radius: 40px;
+`
+
+const Icon = styled(FontAwesomeIcon)`
+  margin-right: ${defaultMargins.xs};
 `

@@ -17,7 +17,7 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { getParentshipsByChild } from '../api/parentships'
-import { getPersonDetails } from '../api/person'
+import { getChildDetails } from '../api/person'
 import Assistance from '../components/child-information/Assistance'
 import BackupCare from '../components/child-information/BackupCare'
 import ChildApplications from '../components/child-information/ChildApplications'
@@ -38,6 +38,7 @@ import DailyServiceTimesSection from './child-information/DailyServiceTimesSecti
 import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
 import CircularLabel from './common/CircularLabel'
+import { Action } from 'lib-common/generated/action'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -68,17 +69,61 @@ const HeadOfFamilyLink = styled(Link)`
   }
 `
 
+interface SectionProps {
+  id: UUID
+  startOpen: boolean
+}
+
+function requireOneOfPermittedActions(
+  Component: React.FunctionComponent<SectionProps>,
+  ...actions: Action.Child[]
+): React.FunctionComponent<SectionProps> {
+  return function Section({ id, startOpen }: SectionProps) {
+    const { permittedActions } = useContext<ChildState>(ChildContext)
+    if (actions.some((action) => permittedActions.has(action))) {
+      return <Component id={id} startOpen={startOpen} />
+    } else {
+      return null
+    }
+  }
+}
+
 const components = {
-  'fee-alterations': FeeAlteration,
-  guardiansAndParents: GuardiansAndParents,
-  placements: Placements,
-  'daily-service-times': DailyServiceTimesSection,
-  vasuAndLeops: VasuAndLeops,
-  assistance: Assistance,
-  'backup-care': BackupCare,
-  'family-contacts': FamilyContacts,
-  applications: ChildApplications,
-  'message-blocklist': MessageBlocklist
+  'fee-alterations': requireOneOfPermittedActions(
+    FeeAlteration,
+    'READ_FEE_ALTERATIONS'
+  ),
+  guardiansAndParents: requireOneOfPermittedActions(
+    GuardiansAndParents,
+    'READ_GUARDIANS'
+  ),
+  placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
+  'daily-service-times': requireOneOfPermittedActions(
+    DailyServiceTimesSection,
+    'READ_DAILY_SERVICE_TIMES'
+  ),
+  vasuAndLeops: requireOneOfPermittedActions(
+    VasuAndLeops,
+    'READ_VASU_DOCUMENT'
+  ),
+  assistance: requireOneOfPermittedActions(
+    Assistance,
+    'READ_ASSISTANCE_NEED',
+    'READ_ASSISTANCE_ACTION'
+  ),
+  'backup-care': requireOneOfPermittedActions(BackupCare, 'READ_BACKUP_CARE'),
+  'family-contacts': requireOneOfPermittedActions(
+    FamilyContacts,
+    'READ_FAMILY_CONTACTS'
+  ),
+  applications: requireOneOfPermittedActions(
+    ChildApplications,
+    'READ_APPLICATION'
+  ),
+  'message-blocklist': requireOneOfPermittedActions(
+    MessageBlocklist,
+    'READ_CHILD_RECIPIENTS'
+  )
 }
 
 const layouts: Layouts<typeof components> = {
@@ -151,14 +196,26 @@ const ChildInformation = React.memo(function ChildInformation({
   const { id } = match.params
 
   const { roles } = useContext(UserContext)
-  const { person, setPerson, parentships, setParentships } =
-    useContext<ChildState>(ChildContext)
+  const {
+    person,
+    setPerson,
+    parentships,
+    setParentships,
+    setPermittedActions
+  } = useContext<ChildState>(ChildContext)
+
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {
     setPerson(Loading.of())
     setParentships(Loading.of())
-    void getPersonDetails(id).then(setPerson)
+    setPermittedActions(new Set())
+    void getChildDetails(id).then((result) => {
+      setPerson(result.map((details) => details.person))
+      if (result.isSuccess) {
+        setPermittedActions(result.value.permittedActions)
+      }
+    })
 
     if (
       requireRole(roles, 'SERVICE_WORKER', 'UNIT_SUPERVISOR', 'FINANCE_ADMIN')

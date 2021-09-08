@@ -5,10 +5,10 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
@@ -22,9 +22,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ChildRecipientsController(
-    private val acl: AccessControlList
-) {
+class ChildRecipientsController(private val accessControl: AccessControl) {
 
     @GetMapping("/child/{childId}/recipients")
     fun getRecipients(
@@ -33,10 +31,7 @@ class ChildRecipientsController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<Recipient>> {
         Audit.MessagingBlocklistRead.log(childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER,
-            UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
-        )
+        accessControl.requirePermissionFor(user, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
         return db.read { fetchRecipients(it, Instant.now(), childId) }
             .let { ResponseEntity.ok(it) }
@@ -54,9 +49,7 @@ class ChildRecipientsController(
         @RequestBody body: EditRecipientRequest
     ): ResponseEntity<Unit> {
         Audit.MessagingBlocklistEdit.log(childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
-        )
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
 
         db.transaction { tx ->
             if (body.blocklisted) {

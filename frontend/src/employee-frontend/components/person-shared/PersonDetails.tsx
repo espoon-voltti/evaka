@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as React from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { faPen } from 'lib-icons'
-import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { PersonDetails } from '../../types/person'
 import { useTranslation } from '../../state/i18n'
-import { useContext, useEffect, useState } from 'react'
-import Loader from 'lib-components/atoms/Loader'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -51,7 +49,7 @@ const PostalCodeAndOffice = styled.div`
 `
 
 interface Props {
-  personResult: Result<PersonDetails>
+  person: PersonDetails
   isChild: boolean
   onUpdateComplete?: (data: PersonDetails) => void
 }
@@ -80,7 +78,7 @@ const RightAlignedRow = styled.div`
 `
 
 const PersonDetails = React.memo(function PersonDetails({
-  personResult,
+  person,
   isChild,
   onUpdateComplete
 }: Props) {
@@ -106,40 +104,31 @@ const PersonDetails = React.memo(function PersonDetails({
   })
 
   useEffect(() => {
-    if (editing && personResult.isSuccess) {
+    if (editing) {
       setForm({
-        firstName: personResult.value.firstName || '',
-        lastName: personResult.value.lastName || '',
-        dateOfBirth: personResult.value.dateOfBirth,
-        email: personResult.value.email || '',
-        phone: personResult.value.phone || '',
-        backupPhone: personResult.value.backupPhone || '',
-        streetAddress: personResult.value.streetAddress || '',
-        postalCode: personResult.value.postalCode || '',
-        postOffice: personResult.value.postOffice || '',
-        invoiceRecipientName: personResult.value.invoiceRecipientName ?? '',
-        invoicingStreetAddress: personResult.value.invoicingStreetAddress ?? '',
-        invoicingPostalCode: personResult.value.invoicingPostalCode ?? '',
-        invoicingPostOffice: personResult.value.invoicingPostOffice ?? '',
-        forceManualFeeDecisions:
-          personResult.value.forceManualFeeDecisions ?? false
+        firstName: person.firstName || '',
+        lastName: person.lastName || '',
+        dateOfBirth: person.dateOfBirth,
+        email: person.email || '',
+        phone: person.phone || '',
+        backupPhone: person.backupPhone || '',
+        streetAddress: person.streetAddress || '',
+        postalCode: person.postalCode || '',
+        postOffice: person.postOffice || '',
+        invoiceRecipientName: person.invoiceRecipientName ?? '',
+        invoicingStreetAddress: person.invoicingStreetAddress ?? '',
+        invoicingPostalCode: person.invoicingPostalCode ?? '',
+        invoicingPostOffice: person.invoicingPostOffice ?? '',
+        forceManualFeeDecisions: person.forceManualFeeDecisions ?? false
       })
     }
-  }, [personResult, editing])
+  }, [person, editing])
 
   // clear ui mode when dismounting component
   useEffect(() => {
     return clearUiMode
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (personResult.isLoading) {
-    return <Loader />
-  }
-  if (personResult.isFailure) {
-    return <div>{i18n.common.loadingFailed}</div>
-  }
-
-  const person = personResult.value
   const powerEditing = editing && person.socialSecurityNumber == null
 
   const updateForm: UpdateStateFn<Form> = (values) => {

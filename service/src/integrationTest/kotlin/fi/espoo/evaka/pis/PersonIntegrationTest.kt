@@ -85,10 +85,11 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `getTransferablePersonReferences returns references to person and child tables`() {
         val references = db.read { it.getTransferablePersonReferences() }
-        assertEquals(38, references.size)
+        assertEquals(39, references.size)
         assertEquals(
             listOf(
                 PersonReference("absence", "child_id"),
+                PersonReference("absence", "modified_by_guardian_id"),
                 PersonReference("application", "child_id"),
                 PersonReference("application", "guardian_id"),
                 PersonReference("application", "other_guardian_id"),

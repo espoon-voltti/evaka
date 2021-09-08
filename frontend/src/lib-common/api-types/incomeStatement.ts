@@ -51,7 +51,7 @@ export interface Income extends Base {
   student: boolean
   alimonyPayer: boolean
   otherInfo: string
-  attachments: Attachment[]
+  attachments: IncomeStatementAttachment[]
 }
 
 export interface Gross {
@@ -93,6 +93,10 @@ export interface Accountant {
   email: string
   address: string
   phone: string
+}
+
+export interface IncomeStatementAttachment extends Attachment {
+  uploadedByEmployee: boolean
 }
 
 export type IncomeStatement = HighestFee | Income

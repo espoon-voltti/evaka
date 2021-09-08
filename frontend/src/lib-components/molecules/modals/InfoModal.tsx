@@ -7,20 +7,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'lib-icons'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
-import FocusLock from 'react-focus-lock'
 
+import ModalBackground from './ModalBackground'
 import {
-  DimmedModal,
-  BackgroundOverlay,
   ModalWrapper,
-  ModalBackground,
   ModalButtons,
   ModalIcon,
   ModalContainer,
   ModalTitle,
   ModalSize,
   IconColour
-} from 'lib-components/molecules/modals/FormModal'
+} from './FormModal'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import { P } from 'lib-components/typography'
@@ -124,71 +121,63 @@ function InfoModal({
   zIndex
 }: Props) {
   return (
-    <FocusLock>
-      <DimmedModal>
-        <BackgroundOverlay />
-        <ModalWrapper data-qa={dataQa} zIndex={zIndex}>
-          <ModalBackground />
-          {close && (
-            <ButtonContainer
-              size={size}
-              customSize={customSize}
-              onClick={close}
-            >
-              <CloseButton>
-                <CloseButtonText>Sulje</CloseButtonText>
-                <FontAwesomeIcon icon={faTimes} />
-              </CloseButton>
-            </ButtonContainer>
-          )}
-          <ModalContainer size={size} customSize={customSize} data-qa="modal">
-            <ModalContent marginBottom={resolve ? 0 : 80}>
-              <ModalTitle>
-                {icon && (
-                  <Fragment>
-                    <ModalIcon colour={iconColour}>
-                      <FontAwesomeIcon icon={icon} />
-                    </ModalIcon>
-                    <Gap size={'m'} />
-                  </Fragment>
-                )}
-                <Title size={1} data-qa="title" centered>
-                  {title}
-                </Title>
-                {text && (
-                  <Fragment>
-                    <P data-qa="text" centered>
-                      {text}
-                    </P>
-                  </Fragment>
-                )}
-              </ModalTitle>
-              {children}
-              {resolve && (
-                <ModalButtons $singleButton={!reject}>
-                  {reject && (
-                    <>
-                      <InlineButton
-                        onClick={reject.action}
-                        data-qa="modal-cancelBtn"
-                        text={reject.label}
-                      />
-                      <Gap horizontal size={'xs'} />
-                    </>
-                  )}
-                  <InlineButton
-                    data-qa="modal-okBtn"
-                    onClick={resolve.action}
-                    disabled={resolveDisabled}
-                    text={resolve.label}
-                  />
-                </ModalButtons>
+    <ModalBackground zIndex={zIndex}>
+      <ModalWrapper data-qa={dataQa} zIndex={zIndex}>
+        {close && (
+          <ButtonContainer size={size} customSize={customSize} onClick={close}>
+            <CloseButton>
+              <CloseButtonText>Sulje</CloseButtonText>
+              <FontAwesomeIcon icon={faTimes} />
+            </CloseButton>
+          </ButtonContainer>
+        )}
+        <ModalContainer size={size} customSize={customSize} data-qa="modal">
+          <ModalContent marginBottom={resolve ? 0 : 80}>
+            <ModalTitle>
+              {icon && (
+                <Fragment>
+                  <ModalIcon colour={iconColour}>
+                    <FontAwesomeIcon icon={icon} />
+                  </ModalIcon>
+                  <Gap size={'m'} />
+                </Fragment>
               )}
-            </ModalContent>
-          </ModalContainer>
-        </ModalWrapper>
-      </DimmedModal>
-    </FocusLock>
+              <Title size={1} data-qa="title" centered>
+                {title}
+              </Title>
+              {text && (
+                <Fragment>
+                  <P data-qa="text" centered>
+                    {text}
+                  </P>
+                </Fragment>
+              )}
+            </ModalTitle>
+            {children}
+            {resolve && (
+              <ModalButtons $singleButton={!reject}>
+                {reject && (
+                  <>
+                    <InlineButton
+                      onClick={reject.action}
+                      data-qa="modal-cancelBtn"
+                      text={reject.label}
+                    />
+                    <Gap horizontal size={'xs'} />
+                  </>
+                )}
+                <InlineButton
+                  data-qa="modal-okBtn"
+                  onClick={resolve.action}
+                  disabled={resolveDisabled}
+                  text={resolve.label}
+                />
+              </ModalButtons>
+            )}
+          </ModalContent>
+        </ModalContainer>
+      </ModalWrapper>
+    </ModalBackground>
   )
 }
 

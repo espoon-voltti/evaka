@@ -7,11 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React from 'react'
-import ReactFocusLock from 'react-focus-lock'
-import {
-  BackgroundOverlay,
-  DimmedModal
-} from 'lib-components/molecules/modals/FormModal'
+import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -50,18 +46,15 @@ interface Props {
 }
 function BottomModalMenu({ title, onClose, children }: Props) {
   return (
-    <ReactFocusLock>
-      <DimmedModal>
-        <BackgroundOverlay />
-        <MenuBackground>
-          <TopRow>
-            <span>{title}</span>
-            <FontAwesomeIcon icon={faTimes} onClick={onClose} />
-          </TopRow>
-          <div>{children}</div>
-        </MenuBackground>
-      </DimmedModal>
-    </ReactFocusLock>
+    <ModalBackground>
+      <MenuBackground>
+        <TopRow>
+          <span>{title}</span>
+          <FontAwesomeIcon icon={faTimes} onClick={onClose} />
+        </TopRow>
+        <div>{children}</div>
+      </MenuBackground>
+    </ModalBackground>
   )
 }
 

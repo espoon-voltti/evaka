@@ -14,7 +14,9 @@ import {
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DatePicker, {
+  DatePickerSpacer
+} from 'lib-components/molecules/date-picker/DatePicker'
 import { UUID } from 'lib-common/types'
 import {
   ErrorsOf,
@@ -250,7 +252,7 @@ export default React.memo(function ReservationModal({
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
         />
-        <span>-</span>
+        <DatePickerSpacer />
         <DatePicker
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
