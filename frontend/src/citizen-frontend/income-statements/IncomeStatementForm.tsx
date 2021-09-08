@@ -188,6 +188,7 @@ export default React.forwardRef(function IncomeStatementForm(
           <Checkbox
             label={`${t.income.assure} *`}
             checked={formData.assure}
+            data-qa="assure-checkbox"
             onChange={(value) => handleChange({ ...formData, assure: value })}
           />
           <Button text={t.common.cancel} onClick={onCancel} />
@@ -275,6 +276,7 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
         <Gap size="s" />
         <Checkbox
           label={t.income.incomeType.agreeToHighestFee}
+          data-qa="highest-fee-checkbox"
           checked={formData.highestFee}
           onChange={(value) =>
             onChange({
@@ -297,6 +299,7 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
         <Checkbox
           label={t.income.incomeType.grossIncome}
           checked={formData.gross.selected}
+          data-qa="gross-income-checkbox"
           disabled={formData.highestFee}
           onChange={(value) =>
             onChange({
@@ -309,6 +312,7 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
         <Checkbox
           label={t.income.incomeType.entrepreneurIncome}
           checked={formData.entrepreneur.selected}
+          data-qa="entrepreneur-income-checkbox"
           disabled={formData.highestFee}
           onChange={(value) =>
             onChange({
