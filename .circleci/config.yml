@@ -405,11 +405,17 @@ commands:
             # The image is not expected to chage too often so we use :latest for all cache
             E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
             docker pull "$E2E_IMAGE"
-            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f ./e2e/"<< parameters.test_runner >>.Dockerfile" ./e2e/
+            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
             docker push "$E2E_IMAGE"
+      - run:
+          name: Build and push E2E << parameters.test_runner >> image
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: |
+            E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
             docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
-      - persist_to_workspace:
-          root: *workspace_compose
+      - save_cache:
+          name: Store Docker image in cache
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
           paths:
             - "e2e-<< parameters.test_runner >>.tar"
       - notify_slack
@@ -440,11 +446,13 @@ commands:
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - restore_frontend_deps
       - restore_frontend_comm_deps
+      - restore_cache:
+          name: Restore Docker image from cache
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
       - run:
           name: Load E2E image
-          working_directory: << pipeline.parameters.workspace_root >>
           command: |
-            docker load -i "e2e-<< parameters.test_runner >>.tar"
+            docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar"
       - run:
           name: Run E2E tests against compose inside a docker-compose
           working_directory: << pipeline.parameters.workspace_root >>

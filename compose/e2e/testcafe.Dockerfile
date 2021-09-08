@@ -20,7 +20,7 @@ RUN sudo apt-get update \
  && rm -f chromedriver_linux64.zip \
  && sudo mv chromedriver /usr/local/bin/chromedriver \
  && sudo chmod +x /usr/local/bin/chromedriver \
- && chromedriver --version
+ && sudo rm -rf $HOME/.cache/pip /var/lib/apt/lists/*
 
 USER root
 COPY ./testcafe/bin/run-tests.sh ./entrypoint.sh /bin/
