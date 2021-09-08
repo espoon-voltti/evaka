@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.async
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
@@ -60,6 +61,7 @@ interface AsyncJobPayload {
     val user: AuthenticatedUser?
 }
 
+@JsonIgnoreProperties("asyncJobType") // only present in old jobs in db
 sealed interface AsyncJob : AsyncJobPayload {
     data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) : AsyncJob {
         override val user: AuthenticatedUser? = null
