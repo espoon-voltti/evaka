@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
+import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
@@ -110,6 +111,7 @@ class AttachmentsController(
         Audit.AttachmentsUpload.log(targetId = "nothing")
         user.requireOneOfRoles(UserRole.END_USER)
 
+        if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user) }) throw Forbidden("Permission denied")
         checkAttachmentCount(db, user)
 
         val attachTo = if (incomeStatementId != null) AttachToIncomeStatement(incomeStatementId) else AttachToNothing

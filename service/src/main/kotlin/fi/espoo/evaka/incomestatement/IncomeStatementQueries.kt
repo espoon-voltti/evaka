@@ -424,3 +424,10 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAw
     )
         .mapTo<IncomeStatementAwaitingHandler>()
         .list()
+
+fun Database.Read.isOwnIncomeStatement(id: IncomeStatementId, personId: UUID): Boolean =
+    createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")
+        .bind("id", id)
+        .bind("personId", personId)
+        .mapTo<Int>()
+        .any()
