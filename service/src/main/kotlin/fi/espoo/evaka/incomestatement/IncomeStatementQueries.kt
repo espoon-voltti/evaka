@@ -62,13 +62,13 @@ SELECT
         SELECT id, name, content_type, uploaded_by_employee IS NOT NULL AS uploaded_by_employee
         FROM attachment a
         WHERE a.income_statement_id = ist.id 
-        ${if (excludeEmployeeAttachments) " AND uploaded_by_employee IS NULL" else ""}
+        ${if (excludeEmployeeAttachments) "AND uploaded_by_employee IS NULL" else ""}
         ORDER BY a.created
     ) s) AS attachments
 FROM income_statement ist
 LEFT JOIN employee e on ist.handler_id = e.id
 WHERE person_id = :personId
-${if (single) " AND ist.id = :id" else ""}
+${if (single) "AND ist.id = :id" else ""}
 ORDER BY start_date DESC
         """
 }
