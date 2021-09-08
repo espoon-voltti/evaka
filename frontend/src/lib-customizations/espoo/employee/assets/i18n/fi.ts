@@ -108,7 +108,8 @@ export const fi = {
       postOffice: 'Postitoimipaikka',
       invoiceRecipient: 'Laskun vastaanottaja',
       invoicingAddress: 'Laskutusosoite',
-      addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi'
+      addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi',
+      ophPersonOid: 'OPH henkilö-OID'
     },
     expandableList: {
       others: 'muuta'

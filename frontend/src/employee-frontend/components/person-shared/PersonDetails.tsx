@@ -69,6 +69,7 @@ interface Form {
   invoicingPostalCode: string
   invoicingPostOffice: string
   forceManualFeeDecisions: boolean
+  ophPersonOid: string
 }
 
 const RightAlignedRow = styled.div`
@@ -100,7 +101,8 @@ const PersonDetails = React.memo(function PersonDetails({
     invoicingStreetAddress: '',
     invoicingPostalCode: '',
     invoicingPostOffice: '',
-    forceManualFeeDecisions: false
+    forceManualFeeDecisions: false,
+    ophPersonOid: ''
   })
 
   useEffect(() => {
@@ -119,7 +121,8 @@ const PersonDetails = React.memo(function PersonDetails({
         invoicingStreetAddress: person.invoicingStreetAddress ?? '',
         invoicingPostalCode: person.invoicingPostalCode ?? '',
         invoicingPostOffice: person.invoicingPostOffice ?? '',
-        forceManualFeeDecisions: person.forceManualFeeDecisions ?? false
+        forceManualFeeDecisions: person.forceManualFeeDecisions ?? false,
+        ophPersonOid: person.ophPersonOid ?? ''
       })
     }
   }, [person, editing])
@@ -277,6 +280,26 @@ const PersonDetails = React.memo(function PersonDetails({
                       } ${person.postOffice ?? ''}`}
                 </span>
               )
+            },
+            {
+              label: i18n.common.form.ophPersonOid,
+              dataQa: 'person-oph-person-oid',
+              value:
+                powerEditing || editing ? (
+                  <>
+                    <InputField
+                      value={form.ophPersonOid}
+                      placeholder={i18n.common.form.ophPersonOid}
+                      onChange={(value) =>
+                        updateForm({
+                          ophPersonOid: value
+                        })
+                      }
+                    />
+                  </>
+                ) : (
+                  person.ophPersonOid
+                )
             },
             ...(!isChild && requireRole(roles, 'FINANCE_ADMIN')
               ? [
