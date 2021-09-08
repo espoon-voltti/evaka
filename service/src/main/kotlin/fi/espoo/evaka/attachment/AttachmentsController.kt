@@ -8,17 +8,21 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
+import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -39,6 +43,7 @@ import java.util.UUID
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
+    private val accessControl: AccessControl,
     evakaEnv: EvakaEnv,
     bucketEnv: BucketEnv
 ) {
@@ -52,14 +57,25 @@ class AttachmentsController(
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<AttachmentId> {
-        Audit.AttachmentsUpload.log(targetId = applicationId)
+    ): AttachmentId {
+        Audit.AttachmentsUploadForApplication.log(applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        return handleFileUpload(db, user, AttachToApplication(applicationId), file, type).also {
+            db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
+        }
+    }
 
-        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
-        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
-
-        return ResponseEntity.ok(id)
+    @PostMapping("/income-statements/{incomeStatementId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadIncomeStatementAttachmentEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_EMPLOYEE_ATTACHMENT, incomeStatementId)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        return handleFileUpload(db, user, AttachToIncomeStatement(incomeStatementId), file)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -70,35 +86,50 @@ class AttachmentsController(
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<AttachmentId> {
-        Audit.AttachmentsUpload.log(targetId = applicationId)
+        Audit.AttachmentsUploadForApplication.log(applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
-        checkAttachmentCount(db, user)
 
-        val id = handleFileUpload(db, user, AttachToApplication(applicationId), file, type)
+        val attachTo = AttachToApplication(applicationId)
+        checkAttachmentCount(db, attachTo, user)
+
+        val id = handleFileUpload(db, user, attachTo, file, type)
         db.transaction { stateService.reCalculateDueDate(it, applicationId) }
 
         return ResponseEntity.ok(id)
     }
 
-    @PostMapping("/citizen", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser,
+        @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<AttachmentId> {
-        Audit.AttachmentsUpload.log(targetId = "nothing")
+    ): AttachmentId {
+        Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        checkAttachmentCount(db, user)
+        if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user.id) }) throw Forbidden("Permission denied")
 
-        val id = handleFileUpload(db, user, AttachToNothing, file, null)
-        return ResponseEntity.ok(id)
+        val attachTo = if (incomeStatementId != null) AttachToIncomeStatement(incomeStatementId) else AttachToNothing
+        checkAttachmentCount(db, attachTo, user)
+
+        return handleFileUpload(db, user, attachTo, file, null)
     }
 
-    private fun checkAttachmentCount(db: Database, user: AuthenticatedUser) {
-        if (db.read { it.userAttachmentCount(user.id) } >= maxAttachmentsPerUser) {
+    private fun checkAttachmentCount(db: Database, attachTo: AttachTo, user: AuthenticatedUser) {
+        val count = db.read {
+            when (attachTo) {
+                is AttachToNothing -> it.userUnparentedAttachmentCount(user.id)
+                is AttachToApplication -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
+                is AttachToIncomeStatement -> it.userIncomeStatementAttachmentCount(attachTo.incomeStatementId, user.id)
+            }
+        }
+        if (count >= maxAttachmentsPerUser) {
             throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
         }
     }
@@ -108,7 +139,7 @@ class AttachmentsController(
         user: AuthenticatedUser,
         attachTo: AttachTo,
         file: MultipartFile,
-        type: AttachmentType?
+        type: AttachmentType? = null
     ): AttachmentId {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
@@ -208,13 +239,6 @@ fun Database.Read.isOwnApplication(applicationId: ApplicationId, user: Authentic
         .bind("userId", user.id)
         .mapTo<Int>()
         .any()
-}
-
-fun Database.Read.userAttachmentCount(userId: UUID): Int {
-    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE uploaded_by_person = :userId")
-        .bind("userId", userId)
-        .mapTo<Int>()
-        .first()
 }
 
 fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: AttachmentId): Boolean {

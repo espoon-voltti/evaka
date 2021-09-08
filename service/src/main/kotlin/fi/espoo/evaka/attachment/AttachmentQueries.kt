@@ -160,7 +160,7 @@ fun Database.Transaction.associateAttachments(
     }
 }
 
-fun Database.Transaction.dissociateAllAttachments(
+fun Database.Transaction.dissociateAllPersonsAttachments(
     personId: UUID,
     incomeStatementId: IncomeStatementId,
 ) {
@@ -174,4 +174,34 @@ fun Database.Transaction.dissociateAllAttachments(
         .bind("incomeStatementId", incomeStatementId)
         .bind("personId", personId)
         .execute()
+}
+
+fun Database.Read.userUnparentedAttachmentCount(userId: UUID): Int {
+    return this.createQuery(
+        """
+        SELECT COUNT(*) FROM attachment
+        WHERE application_id IS NULL
+          AND income_statement_id IS NULL
+          AND uploaded_by_person = :userId
+        """
+    )
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
+}
+
+fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, userId: UUID): Int {
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE application_id = :applicationId AND uploaded_by_person = :userId")
+        .bind("applicationId", applicationId)
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
+}
+
+fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: UUID): Int {
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by_person = :userId")
+        .bind("incomeStatementId", incomeStatementId)
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
 }

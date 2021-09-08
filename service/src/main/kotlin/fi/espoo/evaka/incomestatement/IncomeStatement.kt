@@ -140,7 +140,12 @@ private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean 
     // Start and end dates must be in the right order
     estimatedIncome?.incomeEndDate == null || estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
-data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
+data class Attachment(
+    val id: AttachmentId,
+    val name: String,
+    val contentType: String,
+    val uploadedByEmployee: Boolean
+)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class IncomeStatement(

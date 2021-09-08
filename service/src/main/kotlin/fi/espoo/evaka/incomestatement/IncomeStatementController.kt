@@ -30,7 +30,7 @@ class IncomeStatementController(
     ): List<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { it.readIncomeStatementsForPerson(personId.raw) }
+        return db.read { it.readIncomeStatementsForPerson(personId.raw, excludeEmployeeAttachments = false) }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
@@ -42,7 +42,7 @@ class IncomeStatementController(
     ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { it.readIncomeStatementForPerson(personId.raw, incomeStatementId) } ?: throw NotFound("No such income statement")
+        return db.read { it.readIncomeStatementForPerson(personId.raw, incomeStatementId, excludeEmployeeAttachments = false) } ?: throw NotFound("No such income statement")
     }
 
     @PostMapping("/{incomeStatementId}/handled")

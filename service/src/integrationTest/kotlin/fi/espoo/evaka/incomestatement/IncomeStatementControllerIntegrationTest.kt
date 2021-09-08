@@ -1,11 +1,13 @@
 package fi.espoo.evaka.incomestatement
 
+import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -15,6 +17,8 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testAdult_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -87,6 +91,61 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `add an attachment`() {
+        val id = db.transaction { tx ->
+            tx.createIncomeStatement(
+                testAdult_1.id,
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.now(),
+                    endDate = null,
+                    gross = Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedIncome = null,
+                        otherIncome = setOf(),
+                    ),
+                    entrepreneur = null,
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "",
+                    attachmentIds = listOf(),
+                )
+            )
+        }
+
+        val attachmentId = uploadAttachment(id)
+
+        val incomeStatement = getIncomeStatement(id)
+        assertEquals(
+            IncomeStatement.Income(
+                id = id,
+                startDate = LocalDate.now(),
+                endDate = null,
+                gross = Gross(
+                    incomeSource = IncomeSource.ATTACHMENTS,
+                    estimatedIncome = null,
+                    otherIncome = setOf(),
+                ),
+                entrepreneur = null,
+                student = false,
+                alimonyPayer = false,
+                otherInfo = "",
+                attachments = listOf(
+                    Attachment(
+                        id = attachmentId,
+                        name = "espoo-logo.png",
+                        contentType = "image/png",
+                        uploadedByEmployee = true,
+                    )
+                ),
+                created = incomeStatement.created,
+                updated = incomeStatement.updated,
+                handlerName = null,
+            ),
+            getIncomeStatement(id)
+        )
+    }
+
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
         http.get("/income-statements/person/${testAdult_1.id}/$id")
             .asUser(employee)
@@ -102,4 +161,17 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 assertEquals(200, res.statusCode)
             }
     }
+
+    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")!!
+
+    private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
+        val (_, _, result) = http.upload("/attachments/income-statements/$id")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(employee)
+            .responseObject<AttachmentId>(objectMapper)
+
+        return result.get()
+    }
+
+    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png", true)
 }

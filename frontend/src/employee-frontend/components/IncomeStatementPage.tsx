@@ -6,7 +6,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3, Label } from 'lib-components/typography'
+import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
@@ -29,6 +29,12 @@ import { PersonContext } from '../state/person'
 import { getPersonDetails } from '../api/person'
 import { getAttachmentBlob } from '../api/attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
+import {
+  deleteAttachment,
+  saveIncomeStatementAttachment
+} from '../api/attachments'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export default React.memo(function IncomeStatementPage({
   match
@@ -42,6 +48,37 @@ export default React.memo(function IncomeStatementPage({
   const { person, setPerson } = React.useContext(PersonContext)
   const loadPerson = useRestApi(getPersonDetails, setPerson)
   const loadIncomeStatement = useRestApi(getIncomeStatement, setIncomeStatement)
+
+  const handleAttachmentUploaded = (attachment: Attachment) => {
+    setIncomeStatement((result) =>
+      result.map((prev) =>
+        prev.type === 'INCOME'
+          ? {
+              ...prev,
+              attachments: [
+                ...prev.attachments,
+                { ...attachment, uploadedByEmployee: true }
+              ]
+            }
+          : prev
+      )
+    )
+  }
+
+  const handleAttachmentDeleted = (id: UUID) => {
+    setIncomeStatement((result) =>
+      result.map((prev) =>
+        prev.type === 'INCOME'
+          ? {
+              ...prev,
+              attachments: prev.attachments.filter(
+                (attachment) => attachment.id !== id
+              )
+            }
+          : prev
+      )
+    )
+  }
 
   React.useEffect(() => {
     loadPerson(personId)
@@ -76,6 +113,21 @@ export default React.memo(function IncomeStatementPage({
               <IncomeInfo incomeStatement={incomeStatement} />
             )}
           </ContentArea>
+          {incomeStatement.type === 'INCOME' && (
+            <>
+              <Gap size="L" />
+              <ContentArea opaque>
+                <EmployeeAttachments
+                  incomeStatementId={incomeStatement.id}
+                  attachments={incomeStatement.attachments.filter(
+                    (attachment) => attachment.uploadedByEmployee
+                  )}
+                  onUploaded={handleAttachmentUploaded}
+                  onDeleted={handleAttachmentDeleted}
+                />
+              </ContentArea>
+            </>
+          )}
         </Container>
       )
     }
@@ -114,7 +166,11 @@ function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
         value={incomeStatement.otherInfo || '-'}
       />
       <HorizontalLine />
-      <Attachments attachments={incomeStatement.attachments} />
+      <CitizenAttachments
+        attachments={incomeStatement.attachments.filter(
+          (attachment) => !attachment.uploadedByEmployee
+        )}
+      />
     </>
   )
 }
@@ -292,26 +348,96 @@ function AccountantInfo({ accountant }: { accountant: Accountant }) {
   )
 }
 
-function Attachments({ attachments }: { attachments: Attachment[] }) {
+function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
   const { i18n } = useTranslation()
   return (
     <>
-      <H2>{i18n.incomeStatement.attachmentsTitle}</H2>
+      <H2>{i18n.incomeStatement.citizenAttachments.title}</H2>
       {attachments.length === 0 ? (
-        <p>{i18n.incomeStatement.noAttachments}</p>
+        <p>{i18n.incomeStatement.citizenAttachments.noAttachments}</p>
       ) : (
         <Row
           label={`${i18n.incomeStatement.attachments}:`}
-          value={attachments.map((attachment) => (
-            <FileDownloadButton
-              key={attachment.id}
-              file={attachment}
-              fileFetchFn={getAttachmentBlob}
-              onFileUnavailable={() => undefined}
-            />
-          ))}
+          value={<UploadedFiles files={attachments} />}
         />
       )}
+    </>
+  )
+}
+
+function UploadedFiles({ files }: { files: Attachment[] }) {
+  return (
+    <FixedSpaceColumn>
+      {files.map((file) => (
+        <div key={file.id}>
+          <FileIcon icon={fileIcon(file)} />
+          <FileDownloadButton
+            file={file}
+            fileFetchFn={getAttachmentBlob}
+            onFileUnavailable={() => undefined}
+          />
+        </div>
+      ))}
+    </FixedSpaceColumn>
+  )
+}
+
+const FileIcon = styled(FontAwesomeIcon)`
+  color: ${(p) => p.theme.colors.main.primary};
+  margin-right: ${defaultMargins.s};
+`
+
+function EmployeeAttachments({
+  incomeStatementId,
+  attachments,
+  onUploaded,
+  onDeleted
+}: {
+  incomeStatementId: UUID
+  attachments: Attachment[]
+  onUploaded: (attachment: Attachment) => void
+  onDeleted: (id: UUID) => void
+}) {
+  const { i18n } = useTranslation()
+
+  const handleUpload = React.useCallback(
+    async (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ) =>
+      (
+        await saveIncomeStatementAttachment(
+          incomeStatementId,
+          file,
+          onUploadProgress
+        )
+      ).map((id) => {
+        onUploaded({ id, name: file.name, contentType: file.type })
+        return id
+      }),
+    [incomeStatementId, onUploaded]
+  )
+
+  const handleDelete = React.useCallback(
+    async (id: UUID) => {
+      return (await deleteAttachment(id)).map(() => {
+        onDeleted(id)
+      })
+    },
+    [onDeleted]
+  )
+
+  return (
+    <>
+      <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
+      <P>{i18n.incomeStatement.employeeAttachments.description}</P>
+      <FileUpload
+        files={attachments}
+        onUpload={handleUpload}
+        onDelete={handleDelete}
+        onDownloadFile={getAttachmentBlob}
+        i18n={i18n.fileUpload}
+      />
     </>
   )
 }
