@@ -44,7 +44,8 @@ function IncomeStatementsTable({
   const history = useHistory()
 
   const onOpen = useCallback(
-    (item: IncomeStatement) => () => history.push(`/income/${item.id}`),
+    (item: IncomeStatement, mode: 'view' | 'edit') => () =>
+      history.push(`/income/${item.id}/${mode}`),
     [history]
   )
 
@@ -66,7 +67,7 @@ function IncomeStatementsTable({
               <InlineButton
                 icon={faFileAlt}
                 text={t.openIncomeStatement}
-                onClick={onOpen(item)}
+                onClick={onOpen(item, 'view')}
                 data-qa={`button-open-income-statement-${item.id}`}
               />
             </Td>
@@ -76,7 +77,7 @@ function IncomeStatementsTable({
             <Td>
               {isIncomeStatementEditable(item) && (
                 <Buttons>
-                  <IconButton icon={faPen} onClick={onOpen(item)} />
+                  <IconButton icon={faPen} onClick={onOpen(item, 'edit')} />
                   <Gap size="xs" horizontal />
                   <IconButton
                     icon={faTrash}

@@ -20,6 +20,8 @@ const en: Translations = {
     delete: 'Remove',
     edit: 'Edit',
     add: 'Add',
+    yes: 'Yes',
+    no: 'No',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',
@@ -1558,6 +1560,73 @@ const en: Translations = {
       deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
       deleteDescription:
         'Haluatko varmasti poistaa toimittamasi tuloselvityksen? Kaikki poistettavan lomakkeen tiedot menetetään.'
+    },
+    view: {
+      title: 'Tuloselvityslomake',
+      startDate: 'Voimassa alkaen',
+      feeBasis: 'Asiakasmaksun peruste',
+
+      grossTitle: 'Bruttotulot',
+      incomeSource: 'Tietojen toimitus',
+      incomesRegister:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+      attachmentsAndKela:
+        'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      grossEstimatedIncome: 'Arvio bruttotuloista',
+      otherIncome: 'Muut tulot',
+
+      entrepreneurTitle: 'Yrittäjän tulotiedot',
+      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
+      fullTime: 'Päätoimista',
+      partTime: 'Sivutoimista',
+      startOfEntrepreneurship: 'Yrittäjyys alkanut',
+      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
+      startupGrant: 'Starttiraha',
+      kelaInspectionConsent: 'Tiedot saa tarkastaa Kelasta',
+      companyInfoTitle: 'Yrityksen tiedot',
+      companyType: 'Toimintamuoto',
+      selfEmployed: 'Toiminimi',
+      selfEmployedAttachments:
+        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
+      selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
+      limitedCompany: 'Osakeyhtiö',
+      limitedCompanyIncomesRegister:
+        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      limitedCompanyAttachments:
+        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
+      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
+      lightEntrepreneur: 'Kevytyrittäjyys',
+      attachments: 'Liitteet',
+
+      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
+      timeRange: 'Aikavälillä',
+
+      accountantTitle: 'Kirjanpitäjän tiedot',
+      accountant: 'Kirjanpitäjä',
+      email: 'Sähköpostiosoite',
+      phone: 'Puhelinnumero',
+      address: 'Postiosoite',
+
+      otherInfoTitle: 'Muita tuloihin liittyviä tietoja',
+      student: 'Opiskelija',
+      alimonyPayer: 'Maksaa elatusmaksuja',
+      otherInfo: 'Lisätietoja tulotietoihin liittyen',
+
+      citizenAttachments: {
+        title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
+        noAttachments: 'Ei liitteitä'
+      },
+
+      employeeAttachments: {
+        title: 'Lisää liitteitä',
+        description:
+          'Tässä voit lisätä asiakkaan paperisena toimittamia liitteitä eVakan kautta palautettuun tuloselvitykseen.'
+      },
+
+      statementTypes: {
+        HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
+        INCOME: 'Huoltajan toimittamat tulotiedot'
+      }
     }
   },
   validationErrors: {
