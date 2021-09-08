@@ -404,8 +404,8 @@ function EmployeeAttachments({
     async (
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) => {
-      return (
+    ) =>
+      (
         await saveIncomeStatementAttachment(
           incomeStatementId,
           file,
@@ -414,8 +414,7 @@ function EmployeeAttachments({
       ).map((id) => {
         onUploaded({ id, name: file.name, contentType: file.type })
         return id
-      })
-    },
+      }),
     [incomeStatementId, onUploaded]
   )
 
