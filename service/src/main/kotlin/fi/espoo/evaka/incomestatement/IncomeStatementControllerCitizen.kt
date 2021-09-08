@@ -112,8 +112,9 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         id: IncomeStatementId
     ) {
-        tx.readIncomeStatementForPerson(user.id, id)
-            ?.let { if (it.handlerName != null) throw Forbidden("Handled income statement cannot be modified or removed") }
-            ?: throw NotFound("Income statement not found")
+        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id) ?: throw NotFound("Income statement not found")
+        if (incomeStatement.handlerName != null) {
+            throw Forbidden("Handled income statement cannot be modified or removed")
+        }
     }
 }
