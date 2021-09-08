@@ -153,20 +153,12 @@ participated_messages AS (
         m.sent_at, 
         m.sender_name,
         m.sender_id,
-        CASE
-            WHEN sender_acc.employee_id IS NOT NULL THEN 'PERSONAL'
-            WHEN sender_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-            ELSE 'CITIZEN'
-        END AS sender_account_type,
+        sender_acc.type AS sender_account_type,
         c.content,
         rec.read_at,
         rec.recipient_id,
         acc.account_name recipient_name,
-        CASE
-            WHEN recipient_acc.employee_id IS NOT NULL THEN 'PERSONAL'
-            WHEN recipient_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-            ELSE 'CITIZEN'
-        END AS recipient_account_type
+        recipient_acc.type AS recipient_account_type
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
     JOIN message_content c ON m.content_id = c.id
@@ -270,20 +262,12 @@ fun Database.Read.getMessage(id: UUID): Message {
             m.id,
             m.sender_id,
             m.sender_name,
-            CASE
-                WHEN sender_acc.employee_id IS NOT NULL THEN 'PERSONAL'
-                WHEN sender_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-                ELSE 'CITIZEN'
-            END AS sender_account_type,
+            sender_acc.type as sender_account_type,
             m.sent_at,
             c.content,
             rec.recipient_id,
             recipient_acc_name.account_name recipient_name,
-            CASE
-                WHEN recipient_acc.employee_id IS NOT NULL THEN 'PERSONAL'
-                WHEN recipient_acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-                ELSE 'CITIZEN'
-            END AS recipient_account_type
+            recipient_acc.type AS recipient_account_type
         FROM message m
         JOIN message_content c ON m.content_id = c.id
         JOIN message_recipients rec ON m.id = rec.message_id
@@ -451,11 +435,7 @@ recipients AS (
         m.content_id,
         rec.recipient_id,
         name_view.account_name,
-        CASE
-            WHEN acc.employee_id IS NOT NULL THEN 'PERSONAL'
-            WHEN acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-            ELSE 'CITIZEN'
-        END AS account_type
+        acc.type AS account_type
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
     JOIN message_account_name_view name_view ON rec.recipient_id = name_view.id

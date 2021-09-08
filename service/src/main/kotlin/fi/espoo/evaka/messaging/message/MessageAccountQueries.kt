@@ -34,11 +34,7 @@ WHERE acc.person_id = :personId AND acc.active = true
 fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<UUID> {
     val sql = """
 SELECT acc.id,
-CASE
-    WHEN acc.employee_id IS NOT NULL THEN 'PERSONAL'
-    WHEN acc.daycare_group_id IS NOT NULL THEN 'GROUP'
-    ELSE 'CITIZEN'
-END AS type
+       acc.type
 FROM message_account acc
 LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
@@ -59,10 +55,7 @@ fun Database.Read.getEmployeeNestedMessageAccounts(employeeId: UUID): Set<Nested
     val sql = """
 SELECT acc.id AS account_id,
        name_view.account_name AS account_name,
-       CASE
-           WHEN dg.id IS NOT NULL THEN 'group'
-           ELSE 'personal'
-       END                    AS account_type,
+       acc.type               AS account_type,
        dg.id                  AS group_id,
        dg.name                AS group_name,
        dc.id                  AS group_unitId,
