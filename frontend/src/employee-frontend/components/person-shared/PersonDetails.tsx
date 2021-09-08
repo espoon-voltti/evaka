@@ -281,26 +281,30 @@ const PersonDetails = React.memo(function PersonDetails({
                 </span>
               )
             },
-            {
-              label: i18n.common.form.ophPersonOid,
-              dataQa: 'person-oph-person-oid',
-              value:
-                powerEditing || editing ? (
-                  <>
-                    <InputField
-                      value={form.ophPersonOid}
-                      placeholder={i18n.common.form.ophPersonOid}
-                      onChange={(value) =>
-                        updateForm({
-                          ophPersonOid: value
-                        })
-                      }
-                    />
-                  </>
-                ) : (
-                  person.ophPersonOid
-                )
-            },
+            ...(requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR', 'DIRECTOR')
+              ? [
+                  {
+                    label: i18n.common.form.ophPersonOid,
+                    dataQa: 'person-oph-person-oid',
+                    value:
+                      powerEditing || editing ? (
+                        <>
+                          <InputField
+                            value={form.ophPersonOid}
+                            placeholder={i18n.common.form.ophPersonOid}
+                            onChange={(value) =>
+                              updateForm({
+                                ophPersonOid: value
+                              })
+                            }
+                          />
+                        </>
+                      ) : (
+                        person.ophPersonOid
+                      )
+                  }
+                ]
+              : []),
             ...(!isChild && requireRole(roles, 'FINANCE_ADMIN')
               ? [
                   {
