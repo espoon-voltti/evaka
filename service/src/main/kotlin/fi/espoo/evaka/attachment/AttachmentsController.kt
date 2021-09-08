@@ -58,7 +58,7 @@ class AttachmentsController(
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        Audit.AttachmentsUpload.log(targetId = applicationId)
+        Audit.AttachmentsUploadForApplication.log(applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
         return handleFileUpload(db, user, AttachToApplication(applicationId), file, type).also {
             db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
@@ -72,7 +72,7 @@ class AttachmentsController(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        Audit.AttachmentsUpload.log(targetId = incomeStatementId)
+        Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_EMPLOYEE_ATTACHMENT, incomeStatementId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         return handleFileUpload(db, user, AttachToIncomeStatement(incomeStatementId), file)
@@ -86,7 +86,7 @@ class AttachmentsController(
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<AttachmentId> {
-        Audit.AttachmentsUpload.log(targetId = applicationId)
+        Audit.AttachmentsUploadForApplication.log(applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
@@ -110,7 +110,7 @@ class AttachmentsController(
         @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        Audit.AttachmentsUpload.log(targetId = "nothing")
+        Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user.id) }) throw Forbidden("Permission denied")
