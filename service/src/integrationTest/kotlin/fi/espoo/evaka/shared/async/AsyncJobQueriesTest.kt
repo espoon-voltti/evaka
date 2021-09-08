@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -18,6 +19,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -136,6 +138,27 @@ class AsyncJobQueriesTest : PureJdbiTest() {
             ),
             remainingJobs
         )
+    }
+
+    @Test
+    fun `legacy jobs with asyncJobType fields are supported`() {
+        val id = UUID.fromString("d9a88d89-b8d6-4245-a921-b9f5baafc863")
+        db.transaction {
+            it.createUpdate(
+                """
+                INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
+                VALUES ('SEND_DECISION', 20, 'PT20S', now(), '{"asyncJobType": "SEND_DECISION", "decisionId": "$id"}')
+                """.trimIndent()
+            ).execute()
+        }
+        db.transaction {
+            val jobType = AsyncJobType(AsyncJob.SendDecision::class)
+            val jobRef = it.claimJob(listOf(jobType))
+            assertNotNull(jobRef)
+            assertEquals(jobType, jobRef.jobType)
+            val job = it.startJob(jobRef)
+            assertEquals(AsyncJob.SendDecision(decisionId = DecisionId(id)), job)
+        }
     }
 
     private data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)
