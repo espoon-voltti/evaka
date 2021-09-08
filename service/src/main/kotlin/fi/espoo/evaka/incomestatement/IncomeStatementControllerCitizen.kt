@@ -78,6 +78,7 @@ class IncomeStatementControllerCitizen {
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->
+            verifyIncomeStatementModificationsAllowed(tx, user, incomeStatementId)
             tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
                 if (success) {
                     tx.dissociateAllAttachments(user.id, incomeStatementId)
@@ -101,10 +102,18 @@ class IncomeStatementControllerCitizen {
         Audit.IncomeStatementDelete.log(id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.transaction { tx ->
-            tx.readIncomeStatementForPerson(user.id, id)
-                ?.also { if (it.handlerName != null) throw Forbidden("Handled income statement cannot be removed") }
-                ?: throw NotFound("Income statement not found")
+            verifyIncomeStatementModificationsAllowed(tx, user, id)
             tx.removeIncomeStatement(id)
         }
+    }
+
+    private fun verifyIncomeStatementModificationsAllowed(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        id: IncomeStatementId
+    ) {
+        tx.readIncomeStatementForPerson(user.id, id)
+            ?.let { if (it.handlerName != null) throw Forbidden("Handled income statement cannot be modified or removed") }
+            ?: throw NotFound("Income statement not found")
     }
 }

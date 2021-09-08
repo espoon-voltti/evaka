@@ -493,6 +493,54 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `cannot update a handled income statement`() {
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+            )
+        )
+        val id = getIncomeStatements().first().id
+
+        markIncomeStatementHandled(id)
+
+        updateIncomeStatement(
+            id,
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2030, 4, 3),
+                endDate = null,
+            ),
+            403
+        )
+    }
+
+    @Test
+    fun `cannot remove a handled income statement`() {
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+            )
+        )
+        val id = getIncomeStatements().first().id
+
+        markIncomeStatementHandled(id)
+
+        deleteIncomeStatement(id, 403)
+    }
+
+    private fun markIncomeStatementHandled(id: IncomeStatementId) = db.transaction { tx ->
+        tx.createUpdate(
+            """
+            UPDATE income_statement
+            SET handler_id = (SELECT id FROM employee LIMIT 1)
+            WHERE id = :id
+            """.trimIndent()
+        )
+            .bind("id", id).execute()
+    }
+
     private fun getIncomeStatements(): List<IncomeStatement> =
         http.get("/citizen/income-statements")
             .timeout(1000000)
@@ -519,13 +567,22 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             }
     }
 
-    private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody) {
+    private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody, expectedStatus: Int = 200) {
         http.put("/citizen/income-statements/$id")
             .asUser(citizen)
             .objectBody(body, mapper = objectMapper)
             .response()
             .also { (_, res, _) ->
-                assertEquals(200, res.statusCode)
+                assertEquals(expectedStatus, res.statusCode)
+            }
+    }
+
+    private fun deleteIncomeStatement(id: IncomeStatementId, expectedStatus: Int = 200) {
+        http.delete("/citizen/income-statements/$id")
+            .asUser(citizen)
+            .response()
+            .also { (_, res, _) ->
+                assertEquals(expectedStatus, res.statusCode)
             }
     }
 
