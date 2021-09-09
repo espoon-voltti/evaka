@@ -9,6 +9,7 @@ import fi.espoo.evaka.msg.properties.SfiPrintingProperties
 import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A
 import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A.Laskutus
 import fi.espoo.evaka.msg.sficlient.soap.Viranomainen
+import fi.espoo.evaka.msg.sficlient.soap.Yhteyshenkilo
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,6 +25,7 @@ class SfiAccountDetailsService(
         viranomaisTunnus = messageProperties.authorityIdentifier
         palveluTunnus = messageProperties.serviceIdentifier
         sanomaVersio = messageProperties.messageApiVersion
+        yhteyshenkilo = createContactPerson()
     }
 
     fun createQueryWithPrintingDetails(): KyselyWS2A = KyselyWS2A().apply {
@@ -39,5 +41,11 @@ class SfiAccountDetailsService(
             printingProperties.billingPassword.isNullOrEmpty() -> null
             else -> printingProperties.billingPassword
         }
+    }
+
+    private fun createContactPerson() = Yhteyshenkilo().apply {
+        nimi = printingProperties.contactPersonName
+        matkapuhelin = printingProperties.contactPersonPhone
+        sahkoposti = printingProperties.contactPersonEmail
     }
 }
