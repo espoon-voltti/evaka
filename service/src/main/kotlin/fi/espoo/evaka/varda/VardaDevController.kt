@@ -37,17 +37,6 @@ class VardaDevController(
     }
 
     @PostMapping("/run-update-all")
-    fun runUpdateAll(
-        db: Database.Connection
-    ): ResponseEntity<Unit> {
-        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
-            vardaUpdateService.scheduleVardaUpdate(db, runNow = true)
-            return ResponseEntity.noContent().build()
-        }
-        return ResponseEntity.notFound().build()
-    }
-
-    @PostMapping("/run-update-all-v2")
     fun runFullVardaUpdate(
         db: Database.Connection
     ): ResponseEntity<Unit> {
