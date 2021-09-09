@@ -16,9 +16,9 @@ import fi.espoo.evaka.pis.getGuardianDependants
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.lockPersonBySSN
-import fi.espoo.evaka.pis.updatePersonContactInfo
-import fi.espoo.evaka.pis.updatePersonDetails
+import fi.espoo.evaka.pis.updateNonSsnPersonDetails
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.pis.updatePersonNonVtjDetails
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -146,21 +146,10 @@ class PersonService(
     fun patchUserDetails(tx: Database.Transaction, id: UUID, data: PersonPatch): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
+        // People with SSN get basic details from VTJ which should not be modified
         when (person.identity) {
-            is ExternalIdentifier.SSN -> tx.updatePersonContactInfo(
-                id,
-                ContactInfo(
-                    email = data.email ?: person.email ?: "",
-                    phone = data.phone ?: person.phone ?: "",
-                    backupPhone = data.backupPhone ?: person.backupPhone,
-                    invoiceRecipientName = data.invoiceRecipientName ?: person.invoiceRecipientName,
-                    invoicingStreetAddress = data.invoicingStreetAddress ?: person.invoicingStreetAddress,
-                    invoicingPostalCode = data.invoicingPostalCode ?: person.invoicingPostalCode,
-                    invoicingPostOffice = data.invoicingPostOffice ?: person.invoicingPostOffice,
-                    forceManualFeeDecisions = data.forceManualFeeDecisions ?: person.forceManualFeeDecisions
-                )
-            )
-            is ExternalIdentifier.NoID -> tx.updatePersonDetails(id, data)
+            is ExternalIdentifier.SSN -> tx.updatePersonNonVtjDetails(id, data)
+            is ExternalIdentifier.NoID -> tx.updateNonSsnPersonDetails(id, data)
         }.exhaust()
 
         return tx.getPersonById(id)!!
@@ -311,7 +300,8 @@ data class PersonDTO(
     val invoicingStreetAddress: String = "",
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
-    val forceManualFeeDecisions: Boolean = false
+    val forceManualFeeDecisions: Boolean = false,
+    val ophPersonOid: String? = ""
 ) {
     fun toVtjPersonDTO() = VtjPersonDTO(
         id = this.id,
@@ -354,7 +344,8 @@ data class PersonJSON(
     val invoicingStreetAddress: String = "",
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
-    val forceManualFeeDecisions: Boolean = false
+    val forceManualFeeDecisions: Boolean = false,
+    val ophPersonOid: String? = ""
 ) {
     companion object {
         fun from(p: PersonDTO): PersonJSON = PersonJSON(
@@ -377,7 +368,8 @@ data class PersonJSON(
             invoicingStreetAddress = p.invoicingStreetAddress,
             invoicingPostalCode = p.invoicingPostalCode,
             invoicingPostOffice = p.invoicingPostOffice,
-            forceManualFeeDecisions = p.forceManualFeeDecisions
+            forceManualFeeDecisions = p.forceManualFeeDecisions,
+            ophPersonOid = p.ophPersonOid
         )
     }
 }
@@ -407,7 +399,8 @@ data class PersonPatch(
     val invoicingStreetAddress: String? = null,
     val invoicingPostalCode: String? = null,
     val invoicingPostOffice: String? = null,
-    val forceManualFeeDecisions: Boolean? = null
+    val forceManualFeeDecisions: Boolean? = null,
+    val ophPersonOid: String? = null
 )
 
 data class PersonWithChildrenDTO(

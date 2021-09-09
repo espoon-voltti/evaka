@@ -186,11 +186,11 @@ fun Database.Transaction.insertTestPerson(person: DevPerson) = insertTestDataRow
 INSERT INTO person (
     id, date_of_birth, date_of_death, first_name, last_name, social_security_number, email, phone, language,
     street_address, postal_code, post_office, residence_code, nationalities, restricted_details_enabled, restricted_details_end_date,
-    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj
+    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj, oph_person_oid
 ) VALUES (
     :id, :dateOfBirth, :dateOfDeath, :firstName, :lastName, :ssn, :email, :phone, :language,
     :streetAddress, :postalCode, :postOffice, :residenceCode, :nationalities, :restrictedDetailsEnabled, :restrictedDetailsEndDate,
-    :invoicingStreetAddress, :invoicingPostalCode, :invoicingPostOffice, :updatedFromVtj
+    :invoicingStreetAddress, :invoicingPostalCode, :invoicingPostOffice, :updatedFromVtj, :ophPersonOid
 )
 RETURNING id
 """
