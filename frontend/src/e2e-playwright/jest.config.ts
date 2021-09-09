@@ -10,7 +10,9 @@ const config: Config.InitialOptions = {
   testEnvironment: './jest-environment',
   testRunner: 'jest-circus/runner',
   moduleNameMapper: {
-    '^e2e-playwright/(.*)$': '<rootDir>/$1'
+    '^(lib-.*)/(.*)': '<rootDir>/../$1/$2',
+    '^e2e-playwright/(.*)$': '<rootDir>/$1',
+    '^e2e-test-common/(.*)$': '<rootDir>/../e2e-test-common/$1'
   }
 }
 export default config

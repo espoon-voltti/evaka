@@ -8,6 +8,9 @@ const config: Config.InitialOptions = {
   displayName: 'citizen-frontend',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testRunner: 'jest-circus/runner'
+  testRunner: 'jest-circus/runner',
+  moduleNameMapper: {
+    '^(lib-.*)/(.*)': '<rootDir>/../$1/$2'
+  }
 }
 export default config

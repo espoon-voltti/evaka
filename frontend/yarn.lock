@@ -7676,12 +7676,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"e2e-playwright@link:dist/e2e-playwright::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "e2e-playwright@link:dist/e2e-playwright::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
 "e2e-test-common@link:dist/e2e-test-common::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "e2e-test-common@link:dist/e2e-test-common::locator=evaka-frontend%40workspace%3A."
@@ -8354,7 +8348,6 @@ __metadata:
     csstype: ^3.0.8
     date-fns: ^2.22.1
     downshift: ^6.1.3
-    e2e-playwright: "link:dist/e2e-playwright"
     e2e-test-common: "link:dist/e2e-test-common"
     eslint: ^7.31.0
     eslint-config-prettier: ^8.3.0
@@ -8373,10 +8366,6 @@ __metadata:
     jest-junit: ^12.2.0
     leaflet: ^1.7.1
     leaflet.markercluster: ^1.5.0
-    lib-common: "link:dist/lib-common"
-    lib-components: "link:dist/lib-components"
-    lib-customizations: "link:dist/lib-customizations"
-    lib-icons: "link:dist/lib-icons"
     lodash: ^4.17.21
     make-error-cause: ^2.3.0
     playwright: ^1.14.1
@@ -11868,30 +11857,6 @@ fsevents@^1.2.7:
   checksum: 775861da38dcb7e5f1de5bea2a1c7ffaede6e9e8632cfbac76be145ecb295370f46bb41307613c283d66f1fee5d8cc448ca3323c4a02d0fb1e913b2f78de2abb
   languageName: node
   linkType: hard
-
-"lib-common@link:dist/lib-common::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "lib-common@link:dist/lib-common::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"lib-components@link:dist/lib-components::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "lib-components@link:dist/lib-components::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"lib-customizations@link:dist/lib-customizations::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "lib-customizations@link:dist/lib-customizations::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"lib-icons@link:dist/lib-icons::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "lib-icons@link:dist/lib-icons::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
 
 "line-height@npm:^0.3.1":
   version: 0.3.1

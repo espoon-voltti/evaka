@@ -105,7 +105,14 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
         Icons:
           icons === 'pro'
             ? path.resolve(__dirname, 'dist/lib-icons/pro-icons')
-            : path.resolve(__dirname, 'dist/lib-icons/free-icons')
+            : path.resolve(__dirname, 'dist/lib-icons/free-icons'),
+        'lib-common': path.resolve(__dirname, 'dist/lib-common'),
+        'lib-components': path.resolve(__dirname, 'dist/lib-components'),
+        'lib-customizations': path.resolve(
+          __dirname,
+          'dist/lib-customizations'
+        ),
+        'lib-icons': path.resolve(__dirname, 'dist/lib-icons')
       }
     },
     plugins,
