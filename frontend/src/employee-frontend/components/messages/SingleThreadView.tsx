@@ -19,7 +19,7 @@ import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageType } from 'lib-common/generated/enums'
-import { View } from 'employee-frontend/components/messages/types-view'
+import { View } from './types-view'
 
 const MessageContainer = styled.div`
   background-color: white;

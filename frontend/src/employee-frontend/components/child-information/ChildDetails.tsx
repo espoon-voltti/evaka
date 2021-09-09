@@ -11,7 +11,7 @@ import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { UnwrapResult } from 'employee-frontend/components/async-rendering'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   id: UUID

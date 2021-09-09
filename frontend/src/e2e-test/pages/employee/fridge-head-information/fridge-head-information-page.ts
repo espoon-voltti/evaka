@@ -3,11 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { formatCents } from 'employee-frontend/utils/money'
 import {
   selectFirstComboboxOption,
   waitUntilScrolled
 } from '../../../utils/helpers'
+
+function formatCents(amount?: number): string | undefined {
+  if (amount === undefined || amount === null) {
+    return undefined
+  }
+
+  const euros = amount >= 0 ? Math.floor(amount / 100) : Math.ceil(amount / 100)
+  const cents = Math.abs(amount % 100)
+
+  if (cents !== 0) {
+    return `${euros},${cents.toString().padStart(2, '0')}`
+  } else {
+    return euros.toString()
+  }
+}
 
 interface VerifyFamilyPersonOpts {
   personId: string

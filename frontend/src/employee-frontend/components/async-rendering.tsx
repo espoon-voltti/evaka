@@ -6,7 +6,7 @@ import React from 'react'
 import { Result } from 'lib-common/api'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { useTranslation } from '../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 
 export function renderResult<T>(

@@ -15,7 +15,7 @@ import { PersonDetails as PersonDetailsType } from '../../types/person'
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { faUser } from 'lib-icons'
 import { TitleContext, TitleState } from '../../state/title'
-import { UnwrapResult } from 'employee-frontend/components/async-rendering'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   id: UUID

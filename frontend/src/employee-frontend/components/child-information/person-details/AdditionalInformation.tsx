@@ -25,7 +25,7 @@ import { textAreaRows } from '../../utils'
 import { RequireRole } from '../../../utils/roles'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
-import { FlexRow } from 'employee-frontend/components/common/styled/containers'
+import { FlexRow } from '../../common/styled/containers'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;

@@ -8,7 +8,7 @@ import { espooBrandColors } from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { AccountView, View } from './types-view'
-import { MessageContext } from 'employee-frontend/components/messages/MessageContext'
+import { MessageContext } from './MessageContext'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 
 export const MessageBoxRow = styled.div<{ active: boolean }>`

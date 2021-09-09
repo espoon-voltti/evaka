@@ -11,7 +11,7 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 import MessageBox, { MessageBoxRow } from './MessageBox'
 import { NestedGroupMessageAccount, NestedMessageAccount } from './types'
 import { AccountView, messageBoxes } from './types-view'
-import { MessageContext } from 'employee-frontend/components/messages/MessageContext'
+import { MessageContext } from './MessageContext'
 
 const AccountContainer = styled.div`
   margin: 12px 0;

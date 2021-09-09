@@ -9,7 +9,7 @@ import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { ChildContext, ChildState } from '../../state/child'
 
 export interface Props {
   id: UUID
