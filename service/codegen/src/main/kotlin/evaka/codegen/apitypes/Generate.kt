@@ -14,6 +14,7 @@ import kotlin.io.path.writeText
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
@@ -92,8 +93,12 @@ fun locateRoot(): Path {
 }
 
 private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
-    if (clazz.annotations.any { it.annotationClass == ExcludeCodeGen::class })
+    if ((clazz.allSupertypes.map { it.jvmErasure } + clazz).any { cls ->
+        cls.annotations.any { it.annotationClass == ExcludeCodeGen::class }
+    }
+    ) {
         return null
+    }
 
     if (clazz.qualifiedName?.startsWith("kotlin.") == true || clazz.qualifiedName?.startsWith("java.") == true)
         error("Kotlin/Java class ${clazz.qualifiedName} not handled, add to tsMapping")
