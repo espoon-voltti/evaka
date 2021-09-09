@@ -180,9 +180,9 @@ const en: Translations = {
       dateRange: 'Poissaoloilmoitus ajalle',
       absenceType: 'Poissaolon syy',
       absenceTypes: {
-        sickness: 'Sairaus',
-        other: 'Muu poissaolo',
-        planned: 'Säännöllinen vapaapäivä/vuorohoito'
+        SICKLEAVE: 'Sairaus',
+        OTHER_ABSENCE: 'Muu poissaolo',
+        PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
       }
     }
   },

@@ -23,14 +23,17 @@ export default React.memo(function ActionPickerModal({
   return (
     <ModalBackground onClick={close}>
       <Container>
-        <Action onClick={openAbsences}>
+        <Action onClick={openAbsences} data-qa="calendar-action-absences">
           {i18n.calendar.newAbsence}
           <IconBackground>
             <FontAwesomeIcon icon={faUserMinus} size="1x" />
           </IconBackground>
         </Action>
         <Gap size="s" />
-        <Action onClick={openReservations}>
+        <Action
+          onClick={openReservations}
+          data-qa="calendar-action-reservations"
+        >
           {i18n.calendar.newReservationBtn}
           <IconBackground>
             <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
