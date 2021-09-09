@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from 'citizen-frontend/localization'
-import {
-  getReceivers,
-  sendMessage,
-  SendMessageParams
-} from 'citizen-frontend/messages/api'
-import EmptyThreadView from 'citizen-frontend/messages/EmptyThreadView'
-import MessageEditor from 'citizen-frontend/messages/MessageEditor'
+import { useTranslation } from '../localization'
+import { getReceivers, sendMessage, SendMessageParams } from './api'
+import EmptyThreadView from './EmptyThreadView'
+import MessageEditor from './MessageEditor'
 import { Loading, Result } from 'lib-common/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { useRestApi } from 'lib-common/utils/useRestApi'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from 'citizen-frontend/localization/state'
+import { useTranslation } from '../localization/state'
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
