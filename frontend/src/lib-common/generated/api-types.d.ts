@@ -1101,14 +1101,6 @@ export interface AdditionalInformation {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ChildController.ChildResponse
-*/
-export interface ChildResponse {
-    permittedActions: Child[]
-    person: PersonJSON
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareAclResponse
 */
 export interface DaycareAclResponse {

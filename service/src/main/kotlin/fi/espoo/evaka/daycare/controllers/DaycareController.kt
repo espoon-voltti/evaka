@@ -328,7 +328,9 @@ class DaycareController(
         val caretakers: List<CaretakerAmount>
     )
 
+    @ExcludeCodeGen
     data class DaycareGroupResponse(val id: GroupId, val name: String, val permittedActions: Set<Action.Group>)
+
     @ExcludeCodeGen
     data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
 }
