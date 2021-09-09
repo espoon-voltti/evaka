@@ -13,11 +13,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from 'citizen-frontend/localization'
-import {
-  TIME_REGEXP,
-  regexp,
-  errorToInputInfo
-} from 'citizen-frontend/form-validation'
+import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
   postReservations,
   ChildDailyData,
@@ -25,6 +21,7 @@ import {
   ReservationsResponse
 } from './api'
 import CalendarModal from './CalendarModal'
+import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
   date: LocalDate
@@ -255,14 +252,17 @@ function useEditState(
 
     setSaving(true)
     return postReservations(
-      editorState
-        .filter(({ startTime, endTime }) => startTime !== '' && endTime !== '')
-        .map(({ child, startTime, endTime }) => ({
-          childId: child.id,
-          date: date,
-          startTime,
-          endTime
-        }))
+      editorState.map(({ child, startTime, endTime }) => ({
+        childId: child.id,
+        date: date,
+        reservation:
+          startTime !== '' && endTime !== ''
+            ? {
+                startTime,
+                endTime
+              }
+            : null
+      }))
     )
       .then(() => setEditing(false))
       .then(() => reloadData())

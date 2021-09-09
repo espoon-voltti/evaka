@@ -145,7 +145,20 @@ export const fi = {
       modalMessage:
         'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
     },
-    openExpandingInfo: 'Avaa lisätietokenttä'
+    openExpandingInfo: 'Avaa lisätietokenttä',
+    datetime: {
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      weekShort: 'Vk',
+      weekdays: [
+        'Maanantai',
+        'Tiistai',
+        'Keskiviikko',
+        'Torstai',
+        'Perjantai',
+        'Lauantai',
+        'Sunnuntai'
+      ]
+    }
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -1591,7 +1604,20 @@ export const fi = {
       ungrouped: 'Lapset ilman ryhmää',
       childName: 'Lapsen nimi',
       startTime: 'Saapuu',
-      endTime: 'Lähtee'
+      endTime: 'Lähtee',
+      reservationModal: {
+        title: 'Tee varaus',
+        selectedChildren: 'Lapset, joille varaus tehdään',
+        dateRange: 'Varauksen voimassaolo',
+        dateRangeLabel: 'Tee varaus päiville',
+        times: 'Kellonaika',
+        businessDays: 'Ma-Pe',
+        repeats: 'Toistuu',
+        repetitions: {
+          DAILY: 'Päivittäin',
+          WEEKLY: 'Viikoittain'
+        }
+      }
     },
     error: {
       placement: {
@@ -2858,5 +2884,20 @@ export const fi = {
   },
   welcomePage: {
     text: 'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+  },
+  validationErrors: {
+    required: 'Pakollinen tieto',
+    requiredSelection: 'Valinta puuttuu',
+    format: 'Anna oikeassa muodossa',
+    ssn: 'Virheellinen henkilötunnus',
+    phone: 'Virheellinen numero',
+    email: 'Virheellinen sähköpostiosoite',
+    validDate: 'Anna muodossa pp.kk.vvvv',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä',
+    preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    timeFormat: 'Anna muodossa hh:mm',
+    unitNotSelected: 'Valitse vähintään yksi hakutoive',
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
   }
 }

@@ -39,6 +39,7 @@ import {
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -825,6 +826,15 @@ export interface DaycareDailyNoteFormData {
   modifiedBy?: string
 }
 
+export async function postReservations(
+  reservations: DailyReservationRequest[]
+): Promise<Result<void>> {
+  return client
+    .post('/attendance-reservations', reservations)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getUnitAttendanceReservations(
   unitId: UUID,
   dateRange: FiniteDateRange
@@ -869,14 +879,16 @@ export interface OperationalDay {
   isHoliday: boolean
 }
 
+export interface CalendarChild {
+  id: string
+  firstName: string
+  lastName: string
+  dateOfBirth: LocalDate
+  dailyServiceTimes: DailyServiceTimes | null
+}
+
 export interface ChildReservations {
-  child: {
-    id: string
-    firstName: string
-    lastName: string
-    dateOfBirth: LocalDate
-    dailyServiceTimes: DailyServiceTimes | null
-  }
+  child: CalendarChild
   dailyData: Record<JsonOf<LocalDate>, DailyChildData>
 }
 

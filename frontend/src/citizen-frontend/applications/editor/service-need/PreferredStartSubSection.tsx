@@ -15,7 +15,6 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { errorToInputInfo } from '../../../form-validation'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 import { ClubTermsInfo } from './ClubTermsInfo'
@@ -26,6 +25,7 @@ import {
   getAttachmentBlob,
   saveApplicationAttachment
 } from '../../../attachments'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,

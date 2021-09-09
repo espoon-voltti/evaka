@@ -5,6 +5,7 @@ import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 export interface ChildDailyData {
   childId: string
@@ -61,13 +62,6 @@ export async function getReservations(
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export interface DailyReservationRequest {
-  childId: string
-  date: LocalDate
-  startTime: string
-  endTime: string
 }
 
 export async function postReservations(

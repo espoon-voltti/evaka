@@ -9,10 +9,10 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../localization'
-import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import Radio from 'lib-components/atoms/form/Radio'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function SiblingBasisSubSection({
   applicationType,

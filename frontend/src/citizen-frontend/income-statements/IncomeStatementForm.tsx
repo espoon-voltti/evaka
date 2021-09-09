@@ -20,13 +20,12 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 import {
-  errorToInputInfo,
   required,
   validate,
   validateIf,
   validDate,
   validInt
-} from '../form-validation'
+} from 'lib-common/form-validation'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
@@ -43,6 +42,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import LocalDate from 'lib-common/local-date'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
+import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
   incomeStatementId: UUID | null

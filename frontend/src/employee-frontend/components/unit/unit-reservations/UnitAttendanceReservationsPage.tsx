@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
@@ -19,11 +19,13 @@ import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
+  CalendarChild,
   getUnitAttendanceReservations,
   UnitAttendanceReservations
 } from 'employee-frontend/api/unit'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import ReservationsTable from './ReservationsTable'
+import ReservationModalSingleChild from './ReservationModalSingleChild'
 
 export default React.memo(function UnitAttendanceReservationsPage() {
   const { unitId } = useParams<{ unitId: string }>()
@@ -40,10 +42,14 @@ export default React.memo(function UnitAttendanceReservationsPage() {
     setReservations
   )
 
-  useEffect(
+  const reload = useCallback(
     () => loadAttendanceReservations(unitId, dateRange),
     [unitId, dateRange, loadAttendanceReservations]
   )
+  useEffect(reload, [reload])
+
+  const [creatingReservationChild, setCreatingReservationChild] =
+    useState<CalendarChild | null>(null)
 
   return (
     <Container>
@@ -59,6 +65,14 @@ export default React.memo(function UnitAttendanceReservationsPage() {
           success(data) {
             return (
               <>
+                {creatingReservationChild && (
+                  <ReservationModalSingleChild
+                    child={creatingReservationChild}
+                    onReload={reload}
+                    onClose={() => setCreatingReservationChild(null)}
+                  />
+                )}
+
                 <H2>{data.unit}</H2>
                 <Gap size="m" />
                 <WeekPicker>
@@ -90,6 +104,7 @@ export default React.memo(function UnitAttendanceReservationsPage() {
                       <ReservationsTable
                         operationalDays={data.operationalDays}
                         reservations={children}
+                        onMakeReservationForChild={setCreatingReservationChild}
                       />
                     </div>
                   ))}
@@ -101,6 +116,7 @@ export default React.memo(function UnitAttendanceReservationsPage() {
                       <ReservationsTable
                         operationalDays={data.operationalDays}
                         reservations={data.ungrouped}
+                        onMakeReservationForChild={setCreatingReservationChild}
                       />
                     </div>
                   ) : null}

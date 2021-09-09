@@ -13,12 +13,12 @@ import Radio from 'lib-components/atoms/form/Radio'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
-import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/enums'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

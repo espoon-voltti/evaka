@@ -12,7 +12,7 @@ import {
   ApplicationFormDataErrors,
   applicationHasErrors
 } from '../../applications/editor/validations'
-import { getErrorCount } from '../../form-validation'
+import { getErrorCount } from 'lib-common/form-validation'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { ApplicationType } from 'lib-common/generated/enums'
 

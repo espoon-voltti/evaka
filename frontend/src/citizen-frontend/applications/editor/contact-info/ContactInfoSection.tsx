@@ -9,7 +9,7 @@ import { ContactInfoFormData } from 'lib-common/api-types/application/Applicatio
 import EditorSection from '../../../applications/editor/EditorSection'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ApplicationFormDataErrors } from '../validations'
-import { getErrorCount } from '../../../form-validation'
+import { getErrorCount } from 'lib-common/form-validation'
 import ChildSubSection from '../../../applications/editor/contact-info/ChildSubSection'
 import GuardianSubSection from '../../../applications/editor/contact-info/GuardianSubSection'
 import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
