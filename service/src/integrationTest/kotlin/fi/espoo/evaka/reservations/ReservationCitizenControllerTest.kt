@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 
 class ReservationCitizenControllerTest : FullApplicationTest() {
 
-    val testDate = LocalDate.now().plusWeeks(2)
+    val testDate = LocalDate.now().let { it.minusDays(it.dayOfWeek.value - 1L) }.plusWeeks(3)
     val startTime = LocalTime.of(9, 0)
     val endTime = LocalTime.of(17, 0)
 

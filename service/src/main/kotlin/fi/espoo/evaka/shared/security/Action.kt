@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import java.util.EnumSet
 
+@ExcludeCodeGen
 sealed interface Action {
     sealed interface ScopedAction<I> : Action
 
