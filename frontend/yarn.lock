@@ -7834,7 +7834,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.0.0, enhanced-resolve@npm:^5.7.0, enhanced-resolve@npm:^5.8.0":
+"enhanced-resolve@npm:^5.7.0, enhanced-resolve@npm:^5.8.0":
   version: 5.8.2
   resolution: "enhanced-resolve@npm:5.8.2"
   dependencies:
@@ -8357,7 +8357,6 @@ __metadata:
     eslint-plugin-react-hooks: ^4.2.0
     express: ^4.17.1
     express-http-proxy: ^1.6.2
-    fork-ts-checker-webpack-plugin: ^6.2.12
     history: ^4.10.1
     html-webpack-plugin: ^5.3.2
     jest: ^27.0.6
@@ -8395,7 +8394,6 @@ __metadata:
     testcafe: ~1.13.0
     testcafe-reporter-junit: 3.0.2
     ts-jest: ^27.0.4
-    ts-loader: ^9.2.3
     ts-node: ^10.1.0
     tsconfig-paths-webpack-plugin: ^3.5.1
     tslib: ^2.3.0
@@ -9005,7 +9003,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:^6.0.4, fork-ts-checker-webpack-plugin@npm:^6.2.12":
+"fork-ts-checker-webpack-plugin@npm:^6.0.4":
   version: 6.2.12
   resolution: "fork-ts-checker-webpack-plugin@npm:6.2.12"
   dependencies:
@@ -12397,7 +12395,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.0, micromatch@npm:^4.0.2, micromatch@npm:^4.0.4":
+"micromatch@npm:^4.0.2, micromatch@npm:^4.0.4":
   version: 4.0.4
   resolution: "micromatch@npm:4.0.4"
   dependencies:
@@ -17530,21 +17528,6 @@ resolve@^2.0.0-next.3:
   bin:
     ts-jest: cli.js
   checksum: 2891c2052f881e9350367ec0f978193d4268485496aa2613e45d6208f5809e7a04932105be38f3d1c016ff43d7699b7c7728728df6864ce22bc054aa0954af2f
-  languageName: node
-  linkType: hard
-
-"ts-loader@npm:^9.2.3":
-  version: 9.2.3
-  resolution: "ts-loader@npm:9.2.3"
-  dependencies:
-    chalk: ^4.1.0
-    enhanced-resolve: ^5.0.0
-    micromatch: ^4.0.0
-    semver: ^7.3.4
-  peerDependencies:
-    typescript: "*"
-    webpack: ^5.0.0
-  checksum: 10727f5b0e773e2e28196c7e527646690324b99d4e44fac1e12d685b39fbe3530a04e71de396b1c572c462cb3318d6884deca7d091f47173a625b26cda7e28b0
   languageName: node
   linkType: hard
 
