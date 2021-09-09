@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
-
     id("org.jmailen.kotlinter")
 }
 
@@ -23,9 +22,14 @@ dependencies {
 
     // Kotlin + core
     implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
 
+    // Spring
+    api("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-web")
 }
 
 tasks.withType<KotlinCompile> {
@@ -41,12 +45,12 @@ tasks {
     }
 
     create("codegen", JavaExec::class) {
-        mainClass.set("evaka.codegen.cli.GenerateKt")
+        mainClass.set("evaka.codegen.GenerateKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
     create("codegenCheck", JavaExec::class) {
-        mainClass.set("evaka.codegen.cli.CheckKt")
+        mainClass.set("evaka.codegen.CheckKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }

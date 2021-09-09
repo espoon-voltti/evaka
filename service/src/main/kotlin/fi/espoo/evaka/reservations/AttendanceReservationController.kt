@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
@@ -156,6 +157,7 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
         .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
 }
 
+@ExcludeCodeGen
 data class UnitAttendanceReservations(
     val unit: String,
     val operationalDays: List<OperationalDay>,

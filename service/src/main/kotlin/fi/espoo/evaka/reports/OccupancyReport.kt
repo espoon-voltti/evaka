@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.OccupancyValues
 import fi.espoo.evaka.occupancy.calculateDailyGroupOccupancyValues
@@ -78,12 +79,14 @@ class OccupancyReportController {
     }
 }
 
+@ExcludeCodeGen
 data class OccupancyUnitReportResultRow(
     val unitId: DaycareId,
     val unitName: String,
     val occupancies: Map<LocalDate, OccupancyValues>
 )
 
+@ExcludeCodeGen
 data class OccupancyGroupReportResultRow(
     val unitId: DaycareId,
     val unitName: String,

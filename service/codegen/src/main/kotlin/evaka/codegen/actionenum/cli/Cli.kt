@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen.cli
+package evaka.codegen.actionenum.cli
 
 import mu.KotlinLogging
 import java.nio.file.Path
