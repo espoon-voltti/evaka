@@ -11,8 +11,6 @@
 /lib/
 /codegen/build/
 /codegen/target/
-/codegen2/build/
-/codegen2/target/
 /buildSrc/build/
 /buildSrc/target/
 /vtjclient/build/
