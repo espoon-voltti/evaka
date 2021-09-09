@@ -150,7 +150,7 @@ export default function IncomeStatements() {
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
             <AddButton
-              onClick={() => history.push('/income/new')}
+              onClick={() => history.push('/income/new/edit')}
               text={t.income.addNew}
               data-qa="new-income-statement-btn"
             />
