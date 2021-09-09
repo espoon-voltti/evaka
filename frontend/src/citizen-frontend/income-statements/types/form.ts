@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { Attachment } from 'lib-common/api-types/attachment'
 import * as IncomeStatement from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
