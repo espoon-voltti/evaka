@@ -28,6 +28,7 @@ import GlobalInfoDialog from './overlay/Info'
 import { OverlayContextProvider } from './overlay/state'
 import IncomeStatements from './income-statements/IncomeStatements'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
+import IncomeStatementView from './income-statements/IncomeStatementView'
 import { featureFlags } from 'lib-customizations/citizen'
 
 export default function App() {
@@ -67,8 +68,15 @@ export default function App() {
                     {featureFlags.experimental?.incomeStatements && (
                       <Route
                         exact
-                        path="/income/:incomeStatementId"
+                        path="/income/:incomeStatementId/edit"
                         component={requireAuth(IncomeStatementEditor)}
+                      />
+                    )}
+                    {featureFlags.experimental?.incomeStatements && (
+                      <Route
+                        exact
+                        path="/income/:incomeStatementId"
+                        component={requireAuth(IncomeStatementView)}
                       />
                     )}
                     <Route

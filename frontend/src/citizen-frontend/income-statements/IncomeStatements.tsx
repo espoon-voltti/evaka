@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { Loading, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
@@ -44,7 +48,8 @@ function IncomeStatementsTable({
   const history = useHistory()
 
   const onOpen = useCallback(
-    (item: IncomeStatement) => () => history.push(`/income/${item.id}`),
+    (item: IncomeStatement, mode: 'view' | 'edit') => () =>
+      history.push(`/income/${item.id}/${mode === 'edit' ? 'edit' : ''}`),
     [history]
   )
 
@@ -66,7 +71,7 @@ function IncomeStatementsTable({
               <InlineButton
                 icon={faFileAlt}
                 text={t.openIncomeStatement}
-                onClick={onOpen(item)}
+                onClick={onOpen(item, 'view')}
                 data-qa={`button-open-income-statement-${item.id}`}
               />
             </Td>
@@ -76,7 +81,7 @@ function IncomeStatementsTable({
             <Td>
               {isIncomeStatementEditable(item) && (
                 <Buttons>
-                  <IconButton icon={faPen} onClick={onOpen(item)} />
+                  <IconButton icon={faPen} onClick={onOpen(item, 'edit')} />
                   <Gap size="xs" horizontal />
                   <IconButton
                     icon={faTrash}
@@ -149,7 +154,7 @@ export default function IncomeStatements() {
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
             <AddButton
-              onClick={() => history.push('/income/new')}
+              onClick={() => history.push('/income/new/edit')}
               text={t.income.addNew}
               data-qa="new-income-statement-btn"
             />

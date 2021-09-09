@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { Attachment } from 'lib-common/api-types/attachment'
