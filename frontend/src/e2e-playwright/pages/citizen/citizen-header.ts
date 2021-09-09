@@ -15,6 +15,7 @@ export default class CitizenHeader {
   #languageOptionList = new RawElement(this.page, '[data-qa="select-lang"]')
   applicationsTab = new RawElement(this.page, '[data-qa="nav-applications"]')
   decisionsTab = new RawElement(this.page, '[data-qa="nav-decisions"]')
+  incomeTab = this.page.locator('[data-qa="nav-income"]')
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()

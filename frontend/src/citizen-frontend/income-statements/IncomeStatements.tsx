@@ -151,6 +151,7 @@ export default function IncomeStatements() {
             <AddButton
               onClick={() => history.push('/income/new')}
               text={t.income.addNew}
+              data-qa="new-income-statement-btn"
             />
           </HeadingContainer>
           {incomeStatements.mapAll({
