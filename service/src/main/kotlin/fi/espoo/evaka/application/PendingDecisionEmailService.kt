@@ -9,8 +9,8 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SendPendingDecisionEmail
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
@@ -23,13 +23,13 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class PendingDecisionEmailService(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     env: EmailEnv
 ) {
     init {
-        asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
+        asyncJobRunner.registerHandler(::doSendPendingDecisionsEmail)
     }
 
     val senderAddress: String = env.senderAddress
@@ -41,7 +41,7 @@ class PendingDecisionEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
+    fun doSendPendingDecisionsEmail(db: Database, msg: AsyncJob.SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
         sendPendingDecisionEmail(db, msg)
     }
@@ -81,7 +81,7 @@ GROUP BY application.guardian_id
                         asyncJobRunner.plan(
                             tx,
                             payloads = listOf(
-                                SendPendingDecisionEmail(
+                                AsyncJob.SendPendingDecisionEmail(
                                     guardianId = pendingDecision.guardianId,
                                     email = guardian.email,
                                     language = guardian.language,
@@ -103,12 +103,10 @@ GROUP BY application.guardian_id
             createdJobCount
         }
 
-        asyncJobRunner.scheduleImmediateRun()
-
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(db: Database, pendingDecision: SendPendingDecisionEmail) {
+    fun sendPendingDecisionEmail(db: Database, pendingDecision: AsyncJob.SendPendingDecisionEmail) {
         db.transaction { tx ->
             logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
             val lang = getLanguage(pendingDecision.language)

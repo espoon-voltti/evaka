@@ -7,8 +7,8 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFeeThresholdsUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -32,7 +32,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/finance-basics")
-class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
+class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
@@ -66,9 +66,8 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
             }
 
             mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-            asyncJobRunner.plan(tx, listOf(NotifyFeeThresholdsUpdated(body.validDuring)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PutMapping("/fee-thresholds/{id}")
@@ -84,9 +83,8 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
         validateFeeThresholds(thresholds)
         db.transaction { tx ->
             mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-            asyncJobRunner.plan(tx, listOf(NotifyFeeThresholdsUpdated(thresholds.validDuring)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 }
 

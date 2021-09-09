@@ -19,8 +19,8 @@ import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger { }
 class KoskiClient(
     private val env: KoskiEnv,
     private val fuel: FuelManager,
-    asyncJobRunner: AsyncJobRunner?
+    asyncJobRunner: AsyncJobRunner<AsyncJob>?
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
     // This is important, because our payload diffing mechanism relies on the serialization format
@@ -44,10 +44,10 @@ class KoskiClient(
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     init {
-        asyncJobRunner?.uploadToKoski = { db, msg -> uploadToKoski(db, msg, today = LocalDate.now()) }
+        asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski -> uploadToKoski(db, msg, today = LocalDate.now()) }
     }
 
-    fun uploadToKoski(db: Database, msg: UploadToKoski, today: LocalDate) = db.transaction { tx ->
+    fun uploadToKoski(db: Database, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
         val data = tx.beginKoskiUpload(env.sourceSystem, msg.key, today)
         if (data == null) {

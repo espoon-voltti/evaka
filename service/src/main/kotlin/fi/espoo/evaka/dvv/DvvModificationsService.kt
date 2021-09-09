@@ -14,9 +14,8 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
-import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -32,7 +31,7 @@ class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
     private val personService: PersonService,
     private val fridgeFamilyService: FridgeFamilyService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     fun updatePersonsFromDvv(db: Database, ssns: List<String>): Int {
@@ -96,7 +95,7 @@ class DvvModificationsService(
                     personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
                 }?.let {
                     logger.info("Refreshing all VTJ information for person ${it.id}")
-                    fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.id))
+                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.id))
                 }
             }
 
@@ -114,8 +113,8 @@ class DvvModificationsService(
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
 
                 endFamilyRelations(tx, person.id, dateOfDeath)
-                asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
-                asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
             }
         }
     }

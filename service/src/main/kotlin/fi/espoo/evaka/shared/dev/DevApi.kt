@@ -67,6 +67,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -113,7 +114,7 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 @ExcludeCodeGen
 class DevApi(
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService

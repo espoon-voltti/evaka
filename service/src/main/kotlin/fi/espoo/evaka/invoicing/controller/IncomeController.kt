@@ -16,8 +16,8 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -40,7 +40,7 @@ import java.util.UUID
 @RequestMapping("/incomes")
 class IncomeController(
     private val mapper: ObjectMapper,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping
     fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
@@ -70,11 +70,10 @@ class IncomeController(
             val validIncome = income.copy(id = id).let(::validateIncome)
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, user.id)
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
             id
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok(id)
     }
 
@@ -97,10 +96,9 @@ class IncomeController(
                 DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
             } ?: DateRange(income.validFrom, income.validTo)
 
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -116,10 +114,9 @@ class IncomeController(
 
             tx.deleteIncome(incomeId)
 
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(existing.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 }

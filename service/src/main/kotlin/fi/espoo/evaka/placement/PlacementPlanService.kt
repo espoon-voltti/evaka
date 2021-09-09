@@ -16,8 +16,8 @@ import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class PlacementPlanService(
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: EvakaEnv
 ) {
     private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
@@ -216,7 +216,7 @@ class PlacementPlanService(
             effectivePeriod = period
         }
         effectivePeriod?.also {
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(childId, it.asDateRange())))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange())))
         }
     }
 

@@ -33,6 +33,7 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -81,7 +82,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private lateinit var decisionDraftService: DecisionDraftService
 
     @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired
     lateinit var mapper: ObjectMapper

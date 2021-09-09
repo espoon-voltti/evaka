@@ -18,6 +18,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -50,7 +51,7 @@ import kotlin.test.assertNotNull
 
 class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {

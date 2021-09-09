@@ -18,6 +18,7 @@ import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
@@ -56,11 +57,11 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val voucherValueDecisionService: VoucherValueDecisionService,
     private val koskiUpdateService: KoskiUpdateService,
-    asyncJobRunner: AsyncJobRunner
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     init {
-        asyncJobRunner.runScheduledJob = { db, msg ->
+        asyncJobRunner.registerHandler { db, msg: AsyncJob.RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
             db.connect { msg.job.fn(this, it) }

@@ -13,6 +13,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -36,7 +37,7 @@ import kotlin.test.assertNotNull
 
 class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired
     lateinit var scheduledJobs: ScheduledJobs

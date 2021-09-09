@@ -8,6 +8,7 @@ import com.github.kagkarlsson.scheduler.task.schedule.Schedule
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.getTestDataSource
 import org.junit.jupiter.api.BeforeEach
@@ -20,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ScheduledJobRunnerTest : PureJdbiTest() {
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule = object : JobSchedule {
         override fun getScheduleForJob(job: ScheduledJob): Schedule? = if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
@@ -31,11 +32,16 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.resetDatabase() }
-        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = true)
+        asyncJobRunner = AsyncJobRunner(jdbi)
     }
 
     @Test
     fun `a job specified by DailySchedule is scheduled and executed correctly`() {
+        val executedJob = AtomicReference<ScheduledJob?>(null)
+        asyncJobRunner.registerHandler { _, msg: AsyncJob.RunScheduledJob ->
+            val previous = executedJob.getAndSet(msg.job)
+            assertNull(previous)
+        }
         ScheduledJobRunner(jdbi, asyncJobRunner, getTestDataSource(), testSchedule).use { runner ->
             runner.scheduler.start()
             val exec = runner.getScheduledExecutionsForTask(ScheduledJob.EndOfDayAttendanceUpkeep).singleOrNull()!!
@@ -52,11 +58,6 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
             }
         }
 
-        val executedJob = AtomicReference<ScheduledJob?>(null)
-        asyncJobRunner.runScheduledJob = { _, msg ->
-            val previous = executedJob.getAndSet(msg.job)
-            assertNull(previous)
-        }
         asyncJobRunner.runPendingJobsSync()
         assertEquals(executedJob.get(), ScheduledJob.EndOfDayAttendanceUpkeep)
     }

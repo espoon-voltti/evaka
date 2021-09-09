@@ -12,8 +12,8 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -27,18 +27,18 @@ import java.util.UUID
 @Service
 class FamilyInitializerService(
     private val personService: PersonService,
-    asyncJobRunner: AsyncJobRunner
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     private val logger = KotlinLogging.logger {}
 
     init {
-        asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
+        asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
-    fun handleInitializeFamilyFromApplication(db: Database, msg: InitializeFamilyFromApplication) =
+    fun handleInitializeFamilyFromApplication(db: Database, msg: AsyncJob.InitializeFamilyFromApplication) =
         db.connect { handleInitializeFamilyFromApplication(it, msg) }
 
-    fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: AsyncJob.InitializeFamilyFromApplication) {
         val user = msg.user
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
         if (application != null) {

@@ -13,12 +13,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class DatabaseTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.resetDatabase() }
     }
+
+    private class TestException : RuntimeException()
 
     @Test
     fun `transaction savepoint should be able to recover from a database constraint exception`() {
@@ -41,10 +45,10 @@ class DatabaseTest : PureJdbiTest() {
     fun `transaction savepoint should be able to recover from an application exception`() {
         db.transaction { tx ->
             tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
-            assertThrows<RuntimeException> {
+            assertThrows<TestException> {
                 tx.subTransaction<Unit> {
                     tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-02')")
-                    throw RuntimeException("Test")
+                    throw TestException()
                 }
             }
         }
@@ -52,5 +56,36 @@ class DatabaseTest : PureJdbiTest() {
             listOf(LocalDate.of(2020, 1, 1)),
             db.read { it.createQuery("SELECT date FROM holiday ORDER BY date").mapTo<LocalDate>().toList() }
         )
+    }
+
+    @Test
+    fun `afterCommit hook is called after a successful commit`() {
+        var hookExecuted = false
+        db.transaction { tx ->
+            tx.afterCommit { hookExecuted = true }
+            assertFalse(hookExecuted)
+        }
+        assertTrue(hookExecuted)
+    }
+
+    @Test
+    fun `afterCommit hook is not called if the transaction is rolled back`() {
+        var hookExecuted = false
+        assertThrows<TestException> {
+            db.transaction { tx ->
+                tx.afterCommit { hookExecuted = true }
+                throw TestException()
+            }
+        }
+        assertFalse(hookExecuted)
+    }
+
+    @Test
+    fun `exceptions thrown by afterCommit hooks are propagated`() {
+        assertThrows<TestException> {
+            db.transaction { tx ->
+                tx.afterCommit { throw TestException() }
+            }
+        }
     }
 }
