@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
-import fi.espoo.evaka.varda.VardaUpdateService
+import fi.espoo.evaka.varda.VardaUpdateServiceV2
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -51,7 +51,7 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class ScheduledJobs(
-    private val vardaUpdateService: VardaUpdateService,
+    private val vardaUpdateService: VardaUpdateServiceV2,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
