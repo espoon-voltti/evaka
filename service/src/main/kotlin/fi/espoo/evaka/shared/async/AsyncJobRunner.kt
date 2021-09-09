@@ -129,7 +129,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseabl
     private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef<out T>) {
         val logMeta = mapOf(
             "jobId" to job.jobId,
-            "jobType" to job.jobType,
+            "jobType" to job.jobType.name,
             "remainingAttempts" to job.remainingAttempts
         )
         try {
