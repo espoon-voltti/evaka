@@ -14,6 +14,7 @@ import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   enduserDeceasedChildFixture,
+  enduserNonSsnChildFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'e2e-test-common/dev-api/types'
@@ -52,6 +53,18 @@ beforeEach(async () => {
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
+})
+
+describe('Child Information - edit child information', () => {
+  test('Oph person oid can be edited', async () => {
+    await page.goto(
+      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+    )
+    await childInformationPage.clickEdit()
+    await childInformationPage.assertOphPersonOid('')
+    await childInformationPage.setOphPersonOid('1.2.3')
+    await childInformationPage.assertOphPersonOid('1.2.3')
+  })
 })
 
 describe('Child Information - deceased child', () => {
