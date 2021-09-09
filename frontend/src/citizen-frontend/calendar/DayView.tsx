@@ -5,7 +5,6 @@
 import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { faCheck, faChevronLeft, faChevronRight, faPen } from 'lib-icons'
-import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -152,13 +151,7 @@ export default React.memo(function DayView({
                       i18n.calendar.absent}
                   </span>
                 ) : reservation?.reservation ? (
-                  <span>{`${formatDate(
-                    reservation.reservation.startTime,
-                    DATE_FORMAT_TIME_ONLY
-                  )} – ${formatDate(
-                    reservation.reservation.endTime,
-                    DATE_FORMAT_TIME_ONLY
-                  )}`}</span>
+                  <span>{`${reservation.reservation.startTime} – ${reservation.reservation.endTime}`}</span>
                 ) : (
                   <NoReservation>Ei varausta</NoReservation>
                 )}
@@ -203,12 +196,8 @@ function useEditState(
     () =>
       childrenWithReservations.map(({ child, reservation }) => ({
         child,
-        startTime: reservation?.reservation
-          ? formatDate(reservation.reservation.startTime, DATE_FORMAT_TIME_ONLY)
-          : '',
-        endTime: reservation?.reservation
-          ? formatDate(reservation.reservation.endTime, DATE_FORMAT_TIME_ONLY)
-          : '',
+        startTime: reservation?.reservation?.startTime ?? '',
+        endTime: reservation?.reservation?.endTime ?? '',
         errors: {
           startTime: undefined,
           endTime: undefined

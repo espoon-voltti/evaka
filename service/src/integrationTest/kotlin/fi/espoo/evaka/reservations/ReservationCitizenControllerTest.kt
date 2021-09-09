@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -67,8 +66,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(testDate, startTime), HelsinkiDateTime.of(testDate, endTime))),
-                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(testDate, startTime), HelsinkiDateTime.of(testDate, endTime)))
+                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
+                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString()))
             ),
             dailyData[0].children.toSet()
         )
@@ -76,8 +75,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(testDate.plusDays(1), startTime), HelsinkiDateTime.of(testDate.plusDays(1), endTime))),
-                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(testDate.plusDays(1), startTime), HelsinkiDateTime.of(testDate.plusDays(1), endTime))),
+                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
+                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString())),
             ),
             dailyData[1].children.toSet()
         )

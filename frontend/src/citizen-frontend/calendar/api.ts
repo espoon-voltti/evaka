@@ -11,8 +11,8 @@ export interface ChildDailyData {
   childId: string
   absence: AbsenceType | null
   reservation: {
-    startTime: Date
-    endTime: Date
+    startTime: string
+    endTime: string
   } | null
 }
 
@@ -47,16 +47,7 @@ export async function getReservations(
         ...res.data,
         dailyData: res.data.dailyData.map((data) => ({
           ...data,
-          date: LocalDate.parseIso(data.date),
-          children: data.children.map((child) => ({
-            ...child,
-            reservation: child.reservation
-              ? {
-                  startTime: new Date(child.reservation.startTime),
-                  endTime: new Date(child.reservation.endTime)
-                }
-              : null
-          }))
+          date: LocalDate.parseIso(data.date)
         })),
         reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)
       })
