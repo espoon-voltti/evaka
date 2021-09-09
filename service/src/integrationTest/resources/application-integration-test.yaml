@@ -19,6 +19,8 @@ evaka:
       sender_name:
         fi: Test email sender fi
         sv: Test email sender sv
+  async_job_runner:
+    disable_runner: true
   fee_decision:
     min_date: "2015-01-01"
   frontend:
