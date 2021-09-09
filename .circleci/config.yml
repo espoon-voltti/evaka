@@ -408,7 +408,7 @@ commands:
             docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
             docker push "$E2E_IMAGE"
       - run:
-          name: Build and push E2E << parameters.test_runner >> image
+          name: Package E2E << parameters.test_runner >> image
           working_directory: << pipeline.parameters.workspace_root >>
           command: |
             E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
