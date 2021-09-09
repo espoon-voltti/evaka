@@ -15,11 +15,8 @@ import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import {
-  AttendanceChild,
-  DailyNote
-} from 'employee-mobile-frontend/api/attendances'
-import { useTranslation } from 'employee-mobile-frontend/state/i18n'
+import { AttendanceChild, DailyNote } from '../../../api/attendances'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   unitId: UUID
