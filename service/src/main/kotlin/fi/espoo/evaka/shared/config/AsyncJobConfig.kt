@@ -25,10 +25,10 @@ class AsyncJobConfig {
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger { }
             if (evakaEnv.asyncJobRunnerDisabled) {
+                logger.info("Async job runner disabled")
+            } else {
                 asyncJobRunner.start(Duration.ofMinutes(1))
                 logger.info("Async job runner started")
-            } else {
-                logger.info("Async job runner disabled")
             }
         }
 }
