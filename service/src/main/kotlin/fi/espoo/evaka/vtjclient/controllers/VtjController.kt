@@ -40,14 +40,15 @@ class VtjController(private val personService: PersonService, private val access
             notFound()
         }
 
-        return db.read { it.getPersonById(personId) }?.let { person ->
-            val accessibleFeatures = accessControlCitizen.getPermittedFeatures(user)
+        return db.transaction { tx ->
+            val person = tx.getPersonById(personId) ?: return@transaction null
+
             when (person.identity) {
-                is ExternalIdentifier.NoID -> CitizenUserDetails.from(person, accessibleFeatures)
-                is ExternalIdentifier.SSN -> db.transaction {
-                    personService.getPersonWithChildren(it, user, personId)
-                }
-                    ?.let { CitizenUserDetails.from(it, accessibleFeatures) }
+                is ExternalIdentifier.NoID ->
+                    CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user))
+                is ExternalIdentifier.SSN ->
+                    personService.getPersonWithChildren(tx, user, personId)
+                        ?.let { CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)) }
             }
         } ?: notFound()
     }
