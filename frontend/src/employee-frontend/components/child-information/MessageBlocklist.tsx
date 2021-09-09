@@ -2,12 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  getChildRecipients,
-  updateChildRecipient
-} from 'employee-frontend/api/person'
-import { Recipient } from 'employee-frontend/components/messages/types'
-import { ChildContext } from 'employee-frontend/state'
+import { getChildRecipients, updateChildRecipient } from '../../api/person'
+import { Recipient } from '../messages/types'
+import { ChildContext } from '../../state'
 import { Loading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -19,7 +16,7 @@ import { useTranslation } from '../../state/i18n'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { UIContext } from 'employee-frontend/state/ui'
+import { UIContext } from '../../state/ui'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
 interface Props {

@@ -19,7 +19,7 @@ import {
   CalendarChild,
   getUnitAttendanceReservations,
   UnitAttendanceReservations
-} from 'employee-frontend/api/unit'
+} from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import ReservationsTable from './ReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'

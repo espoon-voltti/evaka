@@ -13,10 +13,7 @@ import { Income, IncomeCoefficient, IncomeOption } from '../../../types/income'
 import { formatCents, isValidCents, parseCents } from '../../../utils/money'
 import { Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import {
-  getIncomeOptions,
-  IncomeTypeOptions
-} from 'employee-frontend/api/income'
+import { getIncomeOptions, IncomeTypeOptions } from '../../../api/income'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 

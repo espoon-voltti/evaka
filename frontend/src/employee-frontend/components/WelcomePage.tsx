@@ -9,7 +9,7 @@ import { Gap } from 'lib-components/white-space'
 import Title from 'lib-components/atoms/Title'
 import { P } from 'lib-components/typography'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { useTranslation } from '../state/i18n'
 
 export default React.memo(function WelcomePage() {
   const { i18n } = useTranslation()

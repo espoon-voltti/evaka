@@ -17,7 +17,7 @@ import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
-import { Recipient } from 'employee-frontend/components/messages/types'
+import { Recipient } from '../components/messages/types'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 

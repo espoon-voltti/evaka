@@ -19,7 +19,7 @@ import {
   getAssistanceActionOptions,
   getAssistanceActions
 } from '../../api/child/assistance-actions'
-import { AssistanceActionOption } from 'employee-frontend/types/child'
+import { AssistanceActionOption } from '../../types/child'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 const TitleRow = styled.div`

@@ -42,7 +42,7 @@ import { UIContext } from '../../state/ui'
 import { NullableValues } from '../../types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { ChildContext, ChildState } from '../../state/child'
 
 const weekdays = [
   'monday',

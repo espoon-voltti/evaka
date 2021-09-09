@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import EmptyMessageFolder from 'employee-frontend/components/messages/EmptyMessageFolder'
+import EmptyMessageFolder from './EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'

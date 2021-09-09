@@ -35,7 +35,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { UserContext } from 'employee-frontend/state/user'
+import { UserContext } from '../../state/user'
 import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
