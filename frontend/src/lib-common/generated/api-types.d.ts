@@ -1101,6 +1101,14 @@ export interface AdditionalInformation {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.ChildController.ChildResponse
+*/
+export interface ChildResponse {
+    permittedActions: Child[]
+    person: PersonJSON
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareAclResponse
 */
 export interface DaycareAclResponse {
@@ -1199,8 +1207,6 @@ export interface Absence {
     childId: UUID
     date: LocalDate
     id: UUID | null
-    modifiedAt: string | null
-    modifiedBy: string | null
 }
 
 /**
@@ -3090,12 +3096,30 @@ export interface VardaErrorReportRow {
 export type VoucherReportRowType = 'ORIGINAL' | 'REFUND' | 'CORRECTION'
 
 /**
+* Generated from fi.espoo.evaka.reservations.AbsenceRequest
+*/
+export interface AbsenceRequest {
+    absenceType: AbsenceType
+    childIds: UUID[]
+    dateRange: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ChildDailyData
+*/
+export interface ChildDailyData {
+    absence: AbsenceType | null
+    childId: UUID
+    reservation: Reservation | null
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.DailyReservationData
 */
 export interface DailyReservationData {
+    children: ChildDailyData[]
     date: LocalDate
     isHoliday: boolean
-    reservations: Reservation[]
 }
 
 /**
@@ -3112,7 +3136,6 @@ export interface DailyReservationRequest {
 * Generated from fi.espoo.evaka.reservations.Reservation
 */
 export interface Reservation {
-    childId: UUID
     endTime: Date
     startTime: Date
 }
@@ -3262,6 +3285,11 @@ export interface Coordinate {
 * Generated from fi.espoo.evaka.shared.job.ScheduledJob
 */
 export type ScheduledJob = 'CancelOutdatedTransferApplications' | 'DvvUpdate' | 'EndOfDayAttendanceUpkeep' | 'EndOutdatedVoucherValueDecisions' | 'FreezeVoucherValueReports' | 'KoskiUpdate' | 'RemoveOldAsyncJobs' | 'RemoveOldDaycareDailyNotes' | 'RemoveOldDraftApplications' | 'SendPendingDecisionReminderEmails' | 'VardaUpdate' | 'InactivePeopleCleanup' | 'InactiveEmployeesRoleReset'
+
+/**
+* Generated from fi.espoo.evaka.shared.security.Action.Child
+*/
+export type Child = 'fi.espoo.evaka.shared.security.Action$Child.READ' | 'fi.espoo.evaka.shared.security.Action$Child.READ_ADDITIONAL_INFO' | 'fi.espoo.evaka.shared.security.Action$Child.UPDATE_ADDITIONAL_INFO' | 'fi.espoo.evaka.shared.security.Action$Child.READ_APPLICATION' | 'fi.espoo.evaka.shared.security.Action$Child.CREATE_ASSISTANCE_ACTION' | 'fi.espoo.evaka.shared.security.Action$Child.READ_ASSISTANCE_ACTION' | 'fi.espoo.evaka.shared.security.Action$Child.CREATE_ASSISTANCE_NEED' | 'fi.espoo.evaka.shared.security.Action$Child.READ_ASSISTANCE_NEED' | 'fi.espoo.evaka.shared.security.Action$Child.CREATE_BACKUP_CARE' | 'fi.espoo.evaka.shared.security.Action$Child.READ_BACKUP_CARE' | 'fi.espoo.evaka.shared.security.Action$Child.CREATE_BACKUP_PICKUP' | 'fi.espoo.evaka.shared.security.Action$Child.READ_BACKUP_PICKUP' | 'fi.espoo.evaka.shared.security.Action$Child.READ_DAILY_SERVICE_TIMES' | 'fi.espoo.evaka.shared.security.Action$Child.UPDATE_DAILY_SERVICE_TIMES' | 'fi.espoo.evaka.shared.security.Action$Child.DELETE_DAILY_SERVICE_TIMES' | 'fi.espoo.evaka.shared.security.Action$Child.READ_PLACEMENT' | 'fi.espoo.evaka.shared.security.Action$Child.READ_FAMILY_CONTACTS' | 'fi.espoo.evaka.shared.security.Action$Child.UPDATE_FAMILY_CONTACT' | 'fi.espoo.evaka.shared.security.Action$Child.READ_GUARDIANS' | 'fi.espoo.evaka.shared.security.Action$Child.READ_FEE_ALTERATIONS' | 'fi.espoo.evaka.shared.security.Action$Child.READ_CHILD_RECIPIENTS' | 'fi.espoo.evaka.shared.security.Action$Child.UPDATE_CHILD_RECIPIENT' | 'fi.espoo.evaka.shared.security.Action$Child.CREATE_VASU_DOCUMENT' | 'fi.espoo.evaka.shared.security.Action$Child.READ_VASU_DOCUMENT'
 
 /**
 * Generated from fi.espoo.evaka.shared.security.CitizenFeatures
