@@ -49,7 +49,7 @@ function IncomeStatementsTable({
 
   const onOpen = useCallback(
     (item: IncomeStatement, mode: 'view' | 'edit') => () =>
-      history.push(`/income/${item.id}/${mode}`),
+      history.push(`/income/${item.id}/${mode === 'edit' ? 'edit' : ''}`),
     [history]
   )
 
