@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
 import { Translations, useTranslation } from '../localization'
@@ -15,6 +15,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { OverlayContext } from '../overlay/state'
 import { getIncomeStatement } from './api'
 import {
   Accountant,
@@ -308,6 +309,14 @@ function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
 }
 
 function UploadedFiles({ files }: { files: Attachment[] }) {
+  const { setErrorMessage } = useContext(OverlayContext)
+  const t = useTranslation()
+  const onFileUnavailable = () =>
+    setErrorMessage({
+      title: t.fileDownload.modalHeader,
+      text: t.fileDownload.modalMessage,
+      type: 'error'
+    })
   return (
     <FixedSpaceColumn>
       {files.map((file) => (
@@ -316,7 +325,7 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
           <FileDownloadButton
             file={file}
             fileFetchFn={getAttachmentBlob}
-            onFileUnavailable={() => undefined}
+            onFileUnavailable={onFileUnavailable}
           />
         </div>
       ))}
