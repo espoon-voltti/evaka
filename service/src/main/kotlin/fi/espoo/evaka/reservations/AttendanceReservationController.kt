@@ -82,8 +82,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        Audit.AttendanceReservationEmployeeCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        body.map { it.childId }.toSet().forEach { childId ->
+        val distinctChildIds = body.map { it.childId }.toSet()
+        Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
+        distinctChildIds.forEach { childId ->
             ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
         }
 

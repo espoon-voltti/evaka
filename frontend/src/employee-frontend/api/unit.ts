@@ -828,10 +828,10 @@ export interface DaycareDailyNoteFormData {
 
 export async function postReservations(
   reservations: DailyReservationRequest[]
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .post('/attendance-reservations', reservations)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

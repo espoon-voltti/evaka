@@ -252,16 +252,17 @@ function useEditState(
 
     setSaving(true)
     return postReservations(
-      editorState
-        .filter(({ startTime, endTime }) => startTime !== '' && endTime !== '')
-        .map(({ child, startTime, endTime }) => ({
-          childId: child.id,
-          date: date,
-          reservation: {
-            startTime,
-            endTime
-          }
-        }))
+      editorState.map(({ child, startTime, endTime }) => ({
+        childId: child.id,
+        date: date,
+        reservation:
+          startTime !== '' && endTime !== ''
+            ? {
+                startTime,
+                endTime
+              }
+            : null
+      }))
     )
       .then(() => setEditing(false))
       .then(() => reloadData())

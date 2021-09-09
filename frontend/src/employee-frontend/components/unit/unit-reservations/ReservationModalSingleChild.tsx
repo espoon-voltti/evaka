@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
-import FormModal from 'lib-components/molecules/modals/FormModal'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DatePicker, {
+  DatePickerSpacer
+} from 'lib-components/molecules/date-picker/DatePicker'
 import {
   ErrorsOf,
   getErrorCount,
   regexp,
   TIME_REGEXP
 } from 'lib-common/form-validation'
-import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { Gap } from 'lib-components/white-space'
 import { CalendarChild, postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 import { DailyReservationRequest } from 'lib-common/api-types/reservations'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 
 interface Props {
   onClose: () => void
@@ -43,8 +43,6 @@ interface ReservationFormData {
     endTime: string
   }[]
 }
-
-type ReservationErrors = ErrorsOf<ReservationFormData>
 
 export default React.memo(function ReservationModalSingleChild({
   onClose,
@@ -72,79 +70,59 @@ export default React.memo(function ReservationModalSingleChild({
     }))
   }
 
-  const [errors, setErrors] = useState<ReservationErrors>({
-    startDate: undefined,
-    endDate: undefined
-  })
-
-  const validate = () => {
-    const startDate = LocalDate.parseFiOrNull(formData.startDate)
-    setErrors({
-      startDate:
-        startDate === null
-          ? 'validDate'
-          : LocalDate.parseFiOrThrow(formData.startDate).isBefore(
-              LocalDate.today()
-            )
-          ? 'dateTooEarly'
-          : undefined,
-      endDate:
-        LocalDate.parseFiOrNull(formData.endDate) === null
-          ? 'validDate'
-          : startDate &&
-            LocalDate.parseFiOrThrow(formData.endDate).isBefore(startDate)
-          ? 'dateTooEarly'
-          : undefined,
-      startTime:
-        formData.repetition !== 'DAILY'
-          ? undefined
-          : formData.startTime === ''
-          ? 'required'
-          : regexp(formData.startTime, TIME_REGEXP, 'timeFormat'),
-      endTime:
-        formData.repetition !== 'DAILY'
-          ? undefined
-          : formData.endTime === ''
-          ? 'required'
-          : regexp(formData.endTime, TIME_REGEXP, 'timeFormat'), // TODO: not before start?
-      weeklyTimes: {
-        arrayErrors: undefined,
-        itemErrors:
-          formData.repetition !== 'WEEKLY'
-            ? [0, 1, 2, 3, 4].map(() => ({
-                startTime: undefined,
-                endTime: undefined
-              }))
-            : formData.weeklyTimes.map((times) => ({
-                startTime:
-                  times.startTime === ''
-                    ? times.endTime !== ''
-                      ? 'required'
-                      : undefined
-                    : regexp(times.startTime, TIME_REGEXP, 'timeFormat'),
-                endTime:
-                  times.endTime === ''
-                    ? times.startTime !== ''
-                      ? 'required'
-                      : undefined
-                    : regexp(times.endTime, TIME_REGEXP, 'timeFormat')
-              }))
-      }
-    })
+  const startDate = LocalDate.parseFiOrNull(formData.startDate)
+  const errors: ErrorsOf<ReservationFormData> = {
+    startDate:
+      startDate === null
+        ? 'validDate'
+        : startDate.isBefore(LocalDate.today())
+        ? 'dateTooEarly'
+        : undefined,
+    endDate:
+      LocalDate.parseFiOrNull(formData.endDate) === null
+        ? 'validDate'
+        : startDate &&
+          LocalDate.parseFiOrThrow(formData.endDate).isBefore(startDate)
+        ? 'dateTooEarly'
+        : undefined,
+    startTime:
+      formData.repetition !== 'DAILY'
+        ? undefined
+        : formData.startTime === ''
+        ? 'required'
+        : regexp(formData.startTime, TIME_REGEXP, 'timeFormat'),
+    endTime:
+      formData.repetition !== 'DAILY'
+        ? undefined
+        : formData.endTime === ''
+        ? 'required'
+        : regexp(formData.endTime, TIME_REGEXP, 'timeFormat'), // TODO: not before start?
+    weeklyTimes: {
+      arrayErrors: undefined,
+      itemErrors:
+        formData.repetition !== 'WEEKLY'
+          ? [0, 1, 2, 3, 4].map(() => ({
+              startTime: undefined,
+              endTime: undefined
+            }))
+          : formData.weeklyTimes.map((times) => ({
+              startTime:
+                times.startTime === ''
+                  ? times.endTime !== ''
+                    ? 'required'
+                    : undefined
+                  : regexp(times.startTime, TIME_REGEXP, 'timeFormat'),
+              endTime:
+                times.endTime === ''
+                  ? times.startTime !== ''
+                    ? 'required'
+                    : undefined
+                  : regexp(times.endTime, TIME_REGEXP, 'timeFormat')
+            }))
+    }
   }
 
   const [showAllErrors, setShowAllErrors] = useState(false)
-
-  useEffect(validate, [formData])
-
-  const [postResult, setPostResult] = useState<Result<null>>()
-
-  useEffect(() => {
-    if (postResult?.isSuccess) {
-      onReload()
-      onClose()
-    }
-  }, [postResult, onReload, onClose])
 
   const getDailyReservations = (): DailyReservationRequest[] => {
     const range = new FiniteDateRange(
@@ -181,21 +159,22 @@ export default React.memo(function ReservationModalSingleChild({
   }
 
   return (
-    <FormModal
+    <AsyncFormModal
       mobileFullScreen
       title={i18n.unit.attendanceReservations.reservationModal.title}
       resolve={{
         action: () => {
           if (getErrorCount(errors) > 0) {
             setShowAllErrors(true)
-            return
+            return Promise.resolve('AsyncButton.cancel')
           }
-          void postReservations(getDailyReservations()).then((result) =>
-            setPostResult(result)
-          )
+          return postReservations(getDailyReservations())
         },
-        label: i18n.common.confirm,
-        disabled: postResult?.isLoading
+        onSuccess: () => {
+          onReload()
+          onClose()
+        },
+        label: i18n.common.confirm
       }}
       reject={{
         action: onClose,
@@ -222,7 +201,7 @@ export default React.memo(function ReservationModalSingleChild({
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
         />
-        <span>-</span>
+        <DatePickerSpacer />
         <DatePicker
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
@@ -328,12 +307,6 @@ export default React.memo(function ReservationModalSingleChild({
           ))}
         </FixedSpaceColumn>
       )}
-
-      {postResult?.isFailure && (
-        <ErrorSegment
-          title={i18n.unit.attendanceReservations.reservationModal.postError}
-        />
-      )}
-    </FormModal>
+    </AsyncFormModal>
   )
 })
