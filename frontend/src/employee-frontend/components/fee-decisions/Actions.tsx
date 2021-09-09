@@ -10,10 +10,9 @@ import StickyActionBar from '../common/StickyActionBar'
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { FeeDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
-import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${(p) => p.theme.colors.accents.orangeDark};
   margin: 0 20px;
 `
 
@@ -52,7 +51,10 @@ const Actions = React.memo(function Actions({
             }
 
             if (result.isFailure) {
-              setError(i18n.common.error.unknown)
+              setError(
+                i18n.feeDecisions.buttons.errors[result.errorCode ?? ''] ??
+                  i18n.common.error.unknown
+              )
             }
 
             return result

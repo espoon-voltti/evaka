@@ -1759,7 +1759,11 @@ export const fi = {
         count === 1 ? 'Luo maksupäätös' : 'Luo maksupäätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
-      save: 'Tallenna muutokset'
+      save: 'Tallenna muutokset',
+      errors: {
+        WAITING_FOR_MANUAL_SENDING:
+          'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
+      }
     }
   },
   valueDecisions: {
@@ -1784,7 +1788,11 @@ export const fi = {
         count === 1 ? 'Luo arvopäätös' : 'Luo arvopäätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
-      save: 'Tallenna muutokset'
+      save: 'Tallenna muutokset',
+      errors: {
+        WAITING_FOR_MANUAL_SENDING:
+          'Osalla lapsista on päätöksiä, jotka odottavat manuaalista lähetystä'
+      }
     }
   },
   placement: {
