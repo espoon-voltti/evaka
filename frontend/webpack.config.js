@@ -8,8 +8,6 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
 const WebpackPwaManifest = require('webpack-pwa-manifest')
-const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS
@@ -70,10 +68,6 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
     )
   ]
 
-  if (isDevServer) {
-    plugins.push(new ForkTsCheckerWebpackPlugin())
-  }
-
   // Only create a Sentry release when Sentry is enabled (i.e. production builds).
   // SentryWebpackPlugin automatically publishes source maps and creates a release.
   if (process.env.SENTRY_PUBLISH_ENABLED) {
@@ -92,10 +86,10 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
 
   return {
     name,
-    context: path.resolve(__dirname, `src/${name}`),
+    context: path.resolve(__dirname, `dist/${name}`),
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
-    entry: path.resolve(__dirname, `src/${name}/index.tsx`),
+    entry: path.resolve(__dirname, `dist/${name}/index.js`),
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, `dist/bundle/${name}`),
@@ -105,26 +99,21 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
         : '[name].[contenthash][ext][query][fragment]'
     },
     resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+      extensions: ['.js', '.json'],
       symlinks: false,
       alias: {
         Icons:
           icons === 'pro'
-            ? path.resolve(__dirname, 'src/lib-icons/pro-icons')
-            : path.resolve(__dirname, 'src/lib-icons/free-icons')
-      },
-      plugins: [
-        new TsConfigPaths({
-          configFile: path.resolve(__dirname, `src/${name}/tsconfig.json`)
-        })
-      ]
+            ? path.resolve(__dirname, 'dist/lib-icons/pro-icons')
+            : path.resolve(__dirname, 'dist/lib-icons/free-icons')
+      }
     },
     plugins,
     module: {
       rules: [
         // JS/TS/JSON
         {
-          test: /\.(ts|tsx|json)$/,
+          test: /\.(js|json)$/,
           exclude: /[\\/]node_modules[\\/]/,
           use: [
             {
@@ -141,14 +130,6 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
                     }
                   ]
                 ]
-              }
-            },
-            {
-              loader: 'ts-loader',
-              options: {
-                onlyCompileBundledFiles: true,
-                projectReferences: true,
-                transpileOnly: isDevServer
               }
             }
           ]

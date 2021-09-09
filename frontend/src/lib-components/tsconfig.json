@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "jsx": "react",
     "outDir": "../../dist/lib-components",
     "suppressImplicitAnyIndexErrors": true
   },

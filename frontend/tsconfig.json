@@ -1,9 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "baseUrl": "src",
-    "noEmit": true
-  },
   "files": [],
   "references": [
     { "path": "./src/citizen-frontend" },
