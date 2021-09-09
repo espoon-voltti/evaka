@@ -59,7 +59,7 @@ function DatePickerInput({
   }
 
   return (
-    <Wrapper>
+    <>
       <InputField
         placeholder={'pp.kk.vvvv'}
         value={date}
@@ -74,15 +74,12 @@ function DatePickerInput({
         data-qa={props['data-qa']}
         id={id}
         required={required}
+        width="s"
       />
       <DatePickerDescription id={ariaId} locale={locale} />
-    </Wrapper>
+    </>
   )
 }
-
-const Wrapper = styled.div`
-  width: 120px;
-`
 
 const StyledP = styled.p`
   border: 0;
