@@ -175,12 +175,15 @@ private fun Database.Read.getReservationChildren(guardianId: UUID, range: Finite
     return createQuery(
         """
 SELECT ch.id, ch.first_name, child.preferred_name
-FROM guardian g
-JOIN person ch ON ch.id = g.child_id
+FROM person ch
+JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
 LEFT JOIN child ON ch.id = child.id
-JOIN placement pl ON pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') && :range
-JOIN daycare u ON u.id = pl.unit_id AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
-WHERE g.guardian_id = :guardianId
+WHERE EXISTS(
+    SELECT 1
+    FROM placement pl
+    JOIN daycare u ON u.id = pl.unit_id
+    WHERE pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+)
 ORDER BY first_name
         """.trimIndent()
     )
