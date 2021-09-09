@@ -41,7 +41,7 @@ describe('Income statements', () => {
     test('Highest fee', async () => {
       const startDate = '24.12.2044'
 
-      await header.incomeTab.click()
+      await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType('highest-fee')
@@ -52,7 +52,7 @@ describe('Income statements', () => {
     })
 
     test('Gross income', async () => {
-      await header.incomeTab.click()
+      await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
