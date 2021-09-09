@@ -1,6 +1,6 @@
 import { faInbox } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useTranslation } from 'citizen-frontend/localization'
+import { useTranslation } from '../localization'
 import { H3 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import React from 'react'

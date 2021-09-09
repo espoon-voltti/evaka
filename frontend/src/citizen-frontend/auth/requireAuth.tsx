@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { AuthContext } from '../auth/state'
+import { AuthContext } from './state'
 import { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router-dom'
-import { getWeakLoginUri, getLoginUri } from 'citizen-frontend/header/const'
+import { getWeakLoginUri, getLoginUri } from '../header/const'
 
 function refreshRedirect(uri: string) {
   window.location.replace(uri)
