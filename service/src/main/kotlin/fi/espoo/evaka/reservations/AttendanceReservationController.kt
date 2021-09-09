@@ -188,10 +188,11 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
-    JOIN placement pl ON pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> t::date
+    JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
     JOIN person p ON p.id = pl.child_id
+    LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
-    LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
     LEFT JOIN attendance_reservation res ON res.child_id = p.id AND res.start_date = t::date
     LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
     LEFT JOIN LATERAL (
@@ -200,6 +201,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         WHERE absence.date = t::date AND absence.child_id = p.id
         LIMIT 1
     ) ab ON true
+    WHERE coalesce(bc.unit_id, pl.unit_id) = :unitId
     """.trimIndent()
 )
     .bind("unitId", unitId)
