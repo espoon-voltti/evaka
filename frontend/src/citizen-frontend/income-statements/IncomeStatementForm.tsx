@@ -357,6 +357,7 @@ function GrossIncomeSelection({
         <Gap size="s" />
         <Radio
           label={t.income.incomesRegisterConsent}
+          data-qa="incomes-register-consent-checkbox"
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
           onChange={() =>
             onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
