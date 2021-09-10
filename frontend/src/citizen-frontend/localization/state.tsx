@@ -2,8 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useContext, useMemo, useState } from 'react'
-import { Lang, translations as localizations } from 'lib-customizations/citizen'
+import React, { createContext, useContext, useMemo } from 'react'
+import {
+  Lang,
+  langs,
+  translations as localizations
+} from 'lib-customizations/citizen'
+import useLocalStorage from 'lib-common/utils/useLocalStorage'
 
 const getDefaultLanguage: () => Lang = () => {
   const params = new URLSearchParams(window.location.search)
@@ -34,9 +39,20 @@ const defaultState = {
 
 const LocalizationContext = createContext<LocalizationState>(defaultState)
 
+const validateLang = (value: string | null): value is Lang => {
+  for (const lang of langs) {
+    if (lang === value) return true
+  }
+  return false
+}
+
 export const LocalizationContextProvider = React.memo(
   function LocalizationContextProvider({ children }) {
-    const [lang, setLang] = useState<Lang>(defaultState.lang)
+    const [lang, setLang] = useLocalStorage(
+      'evaka-citizen.lang',
+      defaultState.lang,
+      validateLang
+    )
 
     const value = useMemo(
       () => ({
