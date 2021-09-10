@@ -32,4 +32,10 @@ export default class CitizenIncomePage {
   async checkAssured() {
     await this.page.locator('[data-qa="assure-checkbox"]').click()
   }
+
+  async checkIncomesRegisterConsent() {
+    await this.page
+      .locator('[data-qa="incomes-register-consent-checkbox"]')
+      .click()
+  }
 }

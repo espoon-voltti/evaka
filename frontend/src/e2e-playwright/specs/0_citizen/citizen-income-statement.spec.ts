@@ -5,6 +5,7 @@
 import { Page } from 'playwright'
 import config from '../../../e2e-test-common/config'
 import { resetDatabase } from '../../../e2e-test-common/dev-api'
+import LocalDate from 'lib-common/local-date'
 import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -28,20 +29,37 @@ afterEach(async () => {
   await page.close()
 })
 
+async function assertIncomeStatementCreated(startDate: string) {
+  await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
+  await waitUntilTrue(async () =>
+    (await incomeStatementsPage.rows.innerText()).includes(startDate)
+  )
+}
+
 describe('Income statements', () => {
-  test('Simple income statement can be created', async () => {
-    const startDate = '24.12.2044'
+  describe('With the bare minimum selected', () => {
+    test('Highest fee', async () => {
+      const startDate = '24.12.2044'
 
-    await header.incomeTab.click()
-    await incomeStatementsPage.createNewIncomeStatement()
-    await incomeStatementsPage.setValidFromDate(startDate)
-    await incomeStatementsPage.selectIncomeStatementType('highest-fee')
-    await incomeStatementsPage.checkAssured()
-    await incomeStatementsPage.submit()
+      await header.incomeTab.click()
+      await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.selectIncomeStatementType('highest-fee')
+      await incomeStatementsPage.checkAssured()
+      await incomeStatementsPage.submit()
 
-    await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
-    await waitUntilTrue(async () =>
-      (await incomeStatementsPage.rows.innerText()).includes(startDate)
-    )
+      await assertIncomeStatementCreated(startDate)
+    })
+
+    test('Gross income', async () => {
+      await header.incomeTab.click()
+      await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.checkIncomesRegisterConsent()
+      await incomeStatementsPage.checkAssured()
+      await incomeStatementsPage.submit()
+
+      await assertIncomeStatementCreated(LocalDate.today().format())
+    })
   })
 })
