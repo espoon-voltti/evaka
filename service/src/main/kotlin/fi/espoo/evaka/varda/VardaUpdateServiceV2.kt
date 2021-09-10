@@ -524,7 +524,7 @@ data class VardaChildCalculatedServiceNeedChanges(
 )
 
 // Find out new varhaiskasvatuspaatos to be added for a child: any new service needs not found from child's full varda history
-private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaChildServiceNeeds: List<VardaServiceNeed>): List<ServiceNeedId> {
+private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>, vardaChildServiceNeeds: List<VardaServiceNeed>): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.filter { newServiceNeedChange ->
         vardaChildServiceNeeds.none { vardaChildServiceNeedChange ->
             vardaChildServiceNeedChange.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId
@@ -535,7 +535,7 @@ private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<
 }
 
 // Find out changed varhaiskasvatuspaatos for a child: any new service need with a different update timestamp in history
-private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<ServiceNeedId> {
+private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.mapNotNull { newServiceNeedChange ->
         vardaServiceNeedsForChild.find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }?.evakaServiceNeedId
     }
@@ -632,7 +632,12 @@ data class VardaServiceNeed(
     val errors: MutableList<String> = mutableListOf()
 )
 
-fun Database.Read.getEvakaServiceNeedChanges(feeDecisionMinDate: LocalDate): List<VardaServiceNeed> =
+data class ChangedChildServiceNeed(
+    val evakaChildId: UUID,
+    val evakaServiceNeedId: ServiceNeedId
+)
+
+fun Database.Read.getEvakaServiceNeedChanges(feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
     createQuery(
         """
 WITH potential_missing_varda_service_needs AS (
@@ -694,8 +699,7 @@ WITH potential_missing_varda_service_needs AS (
      )  
 SELECT DISTINCT
     a.child_id AS evaka_child_id,
-    a.service_need_id AS evaka_service_need_id,
-    a.service_need_updated AS evaka_service_need_updated
+    a.service_need_id AS evaka_service_need_id
 FROM potential_missing_varda_service_needs a
     LEFT JOIN service_need_fee_decision fd on a.service_need_id = fd.service_need_id
     LEFT JOIN service_need_voucher_decision vd on a.service_need_id = vd.service_need_id
@@ -706,21 +710,19 @@ WHERE invoiced_by_municipality = false
 UNION
 SELECT DISTINCT
     a.evaka_child_id,
-    a.evaka_service_need_id,
-    a.evaka_service_need_updated
+    a.evaka_service_need_id
 FROM existing_varda_service_needs_with_changed_fee_data a
 UNION 
 SELECT
     vsn.evaka_child_id,
-    vsn.evaka_service_need_id,
-    vsn.evaka_service_need_updated
+    vsn.evaka_service_need_id
 FROM varda_service_need vsn
 WHERE update_failed = true       
         """.trimIndent()
     )
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
-        .mapTo<VardaServiceNeed>()
+        .mapTo<ChangedChildServiceNeed>()
         .list()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: UUID): List<VardaServiceNeed> =
