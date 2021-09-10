@@ -136,7 +136,7 @@ export default class CitizenCalendarPage {
 
   async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page.locator('[data-qa*="child"]').nth(i).click()
+      await this.page.locator('div[data-qa*="child"]').nth(i).click()
     }
   }
 }
