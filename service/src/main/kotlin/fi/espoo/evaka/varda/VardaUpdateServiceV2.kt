@@ -185,18 +185,15 @@ private fun calculateStartingFrom(db: Database.Connection): HelsinkiDateTime {
 }
 
 /*
-    0. If there are any existing failed service need updates, try to delete and read the service need data to varda
     1. Find out all changed service needs.
         - For each deleted service need, delete all related data from varda
         - For each new service need, IF related fee data exists, add all related data to varda
         - For each modified service need, delete old related data from varda and add new
+        - For each failed previous varda service need update, delete old related data from varda and add new
     2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
        update all service need related data to varda
  */
 fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMinDate: LocalDate) {
-    val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client, feeDecisionMinDate).toMutableSet()
-    logger.info { "VardaUpdate: successfully processed ${processedServiceNeedIds.size} unsuccessful service needs" }
-
     // This is used to control which children are ready for the new varda update service
     // (e.g. old bogus info has been removed from varda and historical info has been successfully uploaded)
     val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
@@ -205,6 +202,8 @@ fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMin
         .filter { includedChildIds.contains(it.key) }
 
     logger.info("VardaUpdate: children found with changed service need data: ${serviceNeedDiffsByChild.entries.size}")
+
+    val processedServiceNeedIds = mutableSetOf<ServiceNeedId>()
 
     serviceNeedDiffsByChild.entries.forEachIndexed { index, serviceNeedDiffByChild ->
         logger.info("VardaUpdate: processing child ${index + 1} / ${serviceNeedDiffsByChild.entries.size}")
@@ -273,26 +272,6 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, evak
     }
 
     return true
-}
-
-fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate): List<ServiceNeedId> {
-    val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
-
-    if (unsuccessfullyUploadedServiceNeeds.isNotEmpty())
-        logger.info("VardaUpdate: retrying failed varda uploads: ${unsuccessfullyUploadedServiceNeeds.size}")
-
-    return unsuccessfullyUploadedServiceNeeds.map {
-        try {
-            if (it.existsInEvaka && it.childId != null)
-                handleUpdatedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId, feeDecisionMinDate)
-            else
-                handleDeletedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
-            logger.info("VardaUpdate: successfully processed unsuccessful service need ${it.evakaServiceNeedId}")
-        } catch (e: Exception) {
-            logger.error("VardaUpdate: got an error while processing an unsuccessful service need: ${e.localizedMessage}")
-        }
-        it.evakaServiceNeedId
-    }
 }
 
 // Delete decision, placement and related fee data from Varda by stored id's
@@ -712,7 +691,7 @@ WITH potential_missing_varda_service_needs AS (
             LEFT JOIN service_need_voucher_decision vd ON vd.service_need_id = vsn.evaka_service_need_id
         WHERE
             vsn.updated < fd.updated OR vsn.updated < vd.updated
-     )   
+     )  
 SELECT DISTINCT
     a.child_id AS evaka_child_id,
     a.service_need_id AS evaka_service_need_id,
@@ -729,7 +708,14 @@ SELECT DISTINCT
     a.evaka_child_id,
     a.evaka_service_need_id,
     a.evaka_service_need_updated
-FROM existing_varda_service_needs_with_changed_fee_data a        
+FROM existing_varda_service_needs_with_changed_fee_data a
+UNION 
+SELECT
+    vsn.evaka_child_id,
+    vsn.evaka_service_need_id,
+    vsn.evaka_service_need_updated
+FROM varda_service_need vsn
+WHERE update_failed = true       
         """.trimIndent()
     )
         .bind("vardaPlacementTypes", vardaPlacementTypes)
