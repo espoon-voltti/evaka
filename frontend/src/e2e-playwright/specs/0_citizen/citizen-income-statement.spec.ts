@@ -77,6 +77,43 @@ describe('Income statements', () => {
   })
 
   describe('Entrepreneur income', () => {
+    test('Limited liability company', async () => {
+      await header.selectTab('income')
+      await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType(
+        'entrepreneur-income'
+      )
+      await incomeStatementsPage.selectEntrepreneurType('full-time')
+      await incomeStatementsPage.setEntrepreneurStartDate(
+        LocalDate.today().addYears(-10).format()
+      )
+      await incomeStatementsPage.selectEntrepreneurSpouse('no')
+
+      await incomeStatementsPage.toggleEntrepreneurStartupGrant(false)
+      await incomeStatementsPage.toggleEntrepreneurCheckupConsent(false)
+
+      await assertNeededAttachment(
+        'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        false
+      )
+      await incomeStatementsPage.toggleLimitedLiabilityCompany(true)
+      await assertNeededAttachment(
+        'Kirjanpitäjän selvitys luontoiseduista ja osingoista'
+      )
+
+      await assertNeededAttachment('Viimeisin palkkakuitti', false)
+      await incomeStatementsPage.toggleLlcType('attachments')
+      await assertNeededAttachment('Viimeisin palkkakuitti')
+      await incomeStatementsPage.toggleLlcType('incomes-register')
+      await assertNeededAttachment('Viimeisin palkkakuitti', false)
+
+      await incomeStatementsPage.fillAccountant()
+
+      await incomeStatementsPage.checkAssured()
+      await incomeStatementsPage.submit()
+
+      await assertIncomeStatementCreated()
+    })
     test('Self employed', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()

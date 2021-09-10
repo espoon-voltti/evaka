@@ -60,6 +60,7 @@ export default class CitizenIncomePage {
       | 'alimony-payer'
       | 'entrepreneur-startup-grant'
       | 'entrepreneur-checkup-consent'
+      | 'entrepreneur-llc'
       | 'entrepreneur-light-entrepreneur'
       | 'entrepreneur-self-employed'
       | 'entrepreneur-partnership'
@@ -79,6 +80,14 @@ export default class CitizenIncomePage {
 
   async toggleEntrepreneurCheckupConsent(check: boolean) {
     await this.toggleCheckbox('entrepreneur-checkup-consent', check)
+  }
+
+  async toggleLimitedLiabilityCompany(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-llc', check)
+  }
+
+  async toggleLlcType(value: 'attachments' | 'incomes-register') {
+    await this.page.locator(`[data-qa="llc-${value}"]`).click()
   }
 
   async toggleLightEntrepreneur(check: boolean) {

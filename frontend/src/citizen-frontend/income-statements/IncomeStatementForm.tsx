@@ -608,6 +608,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="m" />
         <Checkbox
           label={t.income.entrepreneurIncome.limitedCompany}
+          data-qa="entrepreneur-llc"
           checked={formData.limitedCompany.selected}
           onChange={(value) =>
             onChange({
@@ -812,6 +813,7 @@ function LimitedCompanyIncomeSelection({
         )}
         <Radio
           label={t.income.limitedCompany.incomesRegister}
+          data-qa="llc-incomes-register"
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
           onChange={() =>
             onChange({ ...formData, incomeSource: 'INCOMES_REGISTER' })
@@ -819,6 +821,7 @@ function LimitedCompanyIncomeSelection({
         />
         <Radio
           label={t.income.limitedCompany.attachments}
+          data-qa="llc-attachments"
           checked={formData.incomeSource === 'ATTACHMENTS'}
           onChange={() =>
             onChange({ ...formData, incomeSource: 'ATTACHMENTS' })
@@ -1049,7 +1052,7 @@ export function computeRequiredAttachments(
       if (entrepreneur.limitedCompany.incomeSource === 'ATTACHMENTS') {
         result.add('PAYSLIP')
       }
-      result.add('ACCOUNTANT_REPORT')
+      result.add('ACCOUNTANT_REPORT_LLC')
     }
     if (entrepreneur.partnership) {
       result.add('PROFIT_AND_LOSS_STATEMENT').add('ACCOUNTANT_REPORT')
