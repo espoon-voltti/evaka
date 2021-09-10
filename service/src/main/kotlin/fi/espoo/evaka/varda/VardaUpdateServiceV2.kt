@@ -612,9 +612,23 @@ SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS ser
 FROM varda_service_need
 WHERE evaka_service_need_id NOT IN (
     SELECT id FROM service_need
+) OR evaka_service_need_id NOT IN (
+SELECT
+    sn.id AS service_need_id
+FROM service_need sn
+JOIN placement p ON sn.placement_id = p.id
+JOIN service_need_option sno ON sn.option_id = sno.id
+JOIN daycare d ON p.unit_id = d.id
+WHERE
+  p.type = ANY(:vardaPlacementTypes::placement_type[])
+  AND d.upload_children_to_varda = true
+  AND sno.daycare_hours_per_week >= 1
+  AND sn.start_date <= current_date
 )
-GROUP BY evaka_child_id"""
+GROUP BY evaka_child_id
+            """.trimIndent()
         )
+            .bind("vardaPlacementTypes", vardaPlacementTypes)
             .map { row -> row.mapColumn<UUID>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
             .toMap()
     }
