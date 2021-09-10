@@ -38,16 +38,17 @@ async function assertIncomeStatementCreated(
   )
 }
 
-async function assertNeededAttachment(attachment: string, present = true) {
-  await waitUntilTrue(
-    async () =>
-      (!present &&
-        !(await incomeStatementsPage.requiredAttachments.isVisible())) ||
-      (
-        await incomeStatementsPage.requiredAttachments.innerText()
-      ).includes(attachment) === present
+const assertRequiredAttachment = async (attachment: string, present = true) =>
+  waitUntilTrue(async () =>
+    present
+      ? (await incomeStatementsPage.requiredAttachments.innerText()).includes(
+          attachment
+        )
+      : !(await incomeStatementsPage.requiredAttachments.isVisible()) ||
+        !(await incomeStatementsPage.requiredAttachments.innerText()).includes(
+          attachment
+        )
   )
-}
 
 describe('Income statements', () => {
   describe('With the bare minimum selected', () => {
@@ -92,20 +93,20 @@ describe('Income statements', () => {
       await incomeStatementsPage.toggleEntrepreneurStartupGrant(false)
       await incomeStatementsPage.toggleEntrepreneurCheckupConsent(false)
 
-      await assertNeededAttachment(
+      await assertRequiredAttachment(
         'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
         false
       )
       await incomeStatementsPage.toggleLimitedLiabilityCompany(true)
-      await assertNeededAttachment(
+      await assertRequiredAttachment(
         'Kirjanpitäjän selvitys luontoiseduista ja osingoista'
       )
 
-      await assertNeededAttachment('Viimeisin palkkakuitti', false)
+      await assertRequiredAttachment('Viimeisin palkkakuitti', false)
       await incomeStatementsPage.toggleLlcType('attachments')
-      await assertNeededAttachment('Viimeisin palkkakuitti')
+      await assertRequiredAttachment('Viimeisin palkkakuitti')
       await incomeStatementsPage.toggleLlcType('incomes-register')
-      await assertNeededAttachment('Viimeisin palkkakuitti', false)
+      await assertRequiredAttachment('Viimeisin palkkakuitti', false)
 
       await incomeStatementsPage.fillAccountant()
 
@@ -127,20 +128,20 @@ describe('Income statements', () => {
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
       await incomeStatementsPage.toggleEntrepreneurStartupGrant(true)
-      await assertNeededAttachment('Starttirahapäätös')
+      await assertRequiredAttachment('Starttirahapäätös')
 
       await incomeStatementsPage.toggleEntrepreneurCheckupConsent(true)
 
-      await assertNeededAttachment('Tuloslaskelma ja tase', false)
+      await assertRequiredAttachment('Tuloslaskelma ja tase', false)
       await incomeStatementsPage.toggleSelfEmployed(true)
-      await assertNeededAttachment('Tuloslaskelma ja tase')
+      await assertRequiredAttachment('Tuloslaskelma ja tase')
 
       await incomeStatementsPage.toggleSelfEmployedEstimatedIncome(true)
-      await assertNeededAttachment('Tuloslaskelma ja tase', false)
+      await assertRequiredAttachment('Tuloslaskelma ja tase', false)
       await incomeStatementsPage.toggleSelfEmployedEstimatedIncome(false)
 
       await incomeStatementsPage.toggleSelfEmployedAttachments(true)
-      await assertNeededAttachment('Tuloslaskelma ja tase')
+      await assertRequiredAttachment('Tuloslaskelma ja tase')
 
       await incomeStatementsPage.fillAccountant()
 
@@ -162,19 +163,19 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
-      await assertNeededAttachment(
+      await assertRequiredAttachment(
         'Maksutositteet palkoista ja työkorvauksista',
         false
       )
       await incomeStatementsPage.toggleLightEntrepreneur(true)
-      await assertNeededAttachment(
+      await assertRequiredAttachment(
         'Maksutositteet palkoista ja työkorvauksista'
       )
 
       await incomeStatementsPage.toggleStudent(true)
-      await assertNeededAttachment('Opiskelutodistus')
+      await assertRequiredAttachment('Opiskelutodistus')
       await incomeStatementsPage.toggleAlimonyPayer(true)
-      await assertNeededAttachment('Maksutosite elatusmaksuista')
+      await assertRequiredAttachment('Maksutosite elatusmaksuista')
 
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
@@ -195,8 +196,8 @@ describe('Income statements', () => {
       await incomeStatementsPage.selectEntrepreneurSpouse('yes')
 
       await incomeStatementsPage.togglePartnership(true)
-      await assertNeededAttachment('Tuloslaskelma ja tase')
-      await assertNeededAttachment(
+      await assertRequiredAttachment('Tuloslaskelma ja tase')
+      await assertRequiredAttachment(
         'Kirjanpitäjän selvitys palkasta ja luontoiseduista'
       )
       await incomeStatementsPage.fillAccountant()
