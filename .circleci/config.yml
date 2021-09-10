@@ -856,9 +856,6 @@ jobs:
           command: yarn lint-strict
       - run:
           working_directory: *workspace_frontend
-          command: yarn type-check
-      - run:
-          working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
       - build_storybook
       - persist_to_workspace:
