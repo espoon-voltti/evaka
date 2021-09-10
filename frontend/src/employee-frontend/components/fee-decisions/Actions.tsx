@@ -10,10 +10,9 @@ import StickyActionBar from '../common/StickyActionBar'
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { FeeDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
-import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${(p) => p.theme.colors.accents.orangeDark};
   margin: 0 20px;
 `
 
@@ -31,11 +30,11 @@ const Actions = React.memo(function Actions({
   loadDecisions
 }: Props) {
   const { i18n } = useTranslation()
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string>()
 
   return status === 'DRAFT' ? (
     <StickyActionBar align={'right'}>
-      {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
+      {error ? <ErrorMessage>{error}</ErrorMessage> : null}
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>
           {i18n.feeDecisions.buttons.checked(checkedIds.length)}
@@ -46,12 +45,20 @@ const Actions = React.memo(function Actions({
         text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
         disabled={checkedIds.length === 0}
         onClick={() =>
-          confirmFeeDecisions(checkedIds)
-            .then(() => setError(false))
-            .catch((e) => {
-              setError(true)
-              throw e
-            })
+          confirmFeeDecisions(checkedIds).then((result) => {
+            if (result.isSuccess) {
+              setError(undefined)
+            }
+
+            if (result.isFailure) {
+              setError(
+                i18n.feeDecisions.buttons.errors[result.errorCode ?? ''] ??
+                  i18n.common.error.unknown
+              )
+            }
+
+            return result
+          })
         }
         onSuccess={() => {
           clearChecked()
