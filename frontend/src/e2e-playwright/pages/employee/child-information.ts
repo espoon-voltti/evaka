@@ -3,15 +3,44 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement } from 'e2e-playwright/utils/element'
+import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
+import { waitUntilEqual } from '../../utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
   readonly #deceased = new RawElement(this.page, '[data-qa="deceased-label"]')
+  readonly #ophPersonOidInput = new RawTextInput(
+    this.page,
+    '[data-qa="person-oph-person-oid"]'
+  )
+
+  readonly #editButton = new RawElement(
+    this.page,
+    '[data-qa="edit-person-settings-button"]'
+  )
+
+  readonly #confirmButton = new RawElement(
+    this.page,
+    '[data-qa="confirm-edited-person-button"]'
+  )
+
+  async clickEdit() {
+    await this.#editButton.click()
+  }
 
   async deceasedIconIsShown() {
     await this.#deceased.waitUntilVisible()
+  }
+
+  async assertOphPersonOid(expected: string) {
+    await waitUntilEqual(() => this.#ophPersonOidInput.innerText, expected)
+  }
+
+  async setOphPersonOid(text: string) {
+    await this.#ophPersonOidInput.click()
+    await this.#ophPersonOidInput.type(text)
+    await this.#confirmButton.click()
   }
 
   async openCollapsible<C extends Collapsible>(

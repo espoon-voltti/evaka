@@ -40,11 +40,11 @@ const PostalCodeAndOffice = styled.div`
   justify-content: space-between;
 
   #postal-code {
-    width: 30%;
+    width: 40%;
   }
 
   #post-office {
-    width: 65%;
+    width: 100%;
   }
 `
 
@@ -180,8 +180,10 @@ const PersonDetails = React.memo(function PersonDetails({
             {
               label: i18n.common.form.lastName,
               dataQa: 'person-last-name',
+              valueWidth: '100%',
               value: powerEditing ? (
                 <InputField
+                  width={'L'}
                   value={form.lastName}
                   onChange={(value) => updateForm({ lastName: value })}
                   data-qa="input-last-name"
@@ -193,8 +195,10 @@ const PersonDetails = React.memo(function PersonDetails({
             {
               label: i18n.common.form.firstNames,
               dataQa: 'person-first-names',
+              valueWidth: '100%',
               value: powerEditing ? (
                 <InputField
+                  width={'L'}
                   value={form.firstName}
                   onChange={(value) => updateForm({ firstName: value })}
                   data-qa="input-first-name"
@@ -245,9 +249,11 @@ const PersonDetails = React.memo(function PersonDetails({
             {
               label: i18n.common.form.address,
               dataQa: 'person-address',
+              valueWidth: '100%',
               value: powerEditing ? (
                 <>
                   <InputField
+                    width={'L'}
                     value={form.streetAddress}
                     placeholder={i18n.common.form.streetAddress}
                     onChange={(value) =>
@@ -286,10 +292,12 @@ const PersonDetails = React.memo(function PersonDetails({
                   {
                     label: i18n.common.form.ophPersonOid,
                     dataQa: 'person-oph-person-oid',
+                    valueWidth: '100%',
                     value:
                       powerEditing || editing ? (
                         <>
                           <InputField
+                            width={'L'}
                             value={form.ophPersonOid}
                             placeholder={i18n.common.form.ophPersonOid}
                             onChange={(value) =>

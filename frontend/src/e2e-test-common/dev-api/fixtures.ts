@@ -257,6 +257,22 @@ export const enduserDeceasedChildFixture: PersonDetail = {
   restrictedDetailsEndDate: null
 }
 
+export const enduserNonSsnChildFixture: PersonDetail = {
+  id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
+  firstName: 'Heluna',
+  lastName: 'Hetuton',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: '2018-08-15',
+  streetAddress: 'Suosiellä 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
 const twoGuardiansGuardian1 = {
   id: '9d6289ba-9ffd-11ea-bb37-0242ac130002',
   ssn: '220281-9456',
