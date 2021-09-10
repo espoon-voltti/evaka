@@ -8,6 +8,7 @@ export default class CitizenIncomePage {
   constructor(private readonly page: Page) {}
 
   rows = this.page.locator('tbody tr')
+  requiredAttachments = this.page.locator('[data-qa="required-attachments"]')
 
   async createNewIncomeStatement() {
     await this.page.locator('[data-qa="new-income-statement-btn"]').click()
@@ -37,5 +38,82 @@ export default class CitizenIncomePage {
     await this.page
       .locator('[data-qa="incomes-register-consent-checkbox"]')
       .click()
+  }
+
+  async selectEntrepreneurType(value: 'full-time' | 'part-time') {
+    await this.page.locator(`[data-qa="entrepreneur-${value}-option"]`).click()
+  }
+
+  #entrepreneurDate = this.page.locator('[data-qa="entrepreneur-start-date"]')
+  async setEntrepreneurStartDate(date: string) {
+    await this.#entrepreneurDate.selectText()
+    await this.#entrepreneurDate.type(date)
+  }
+
+  async selectEntrepreneurSpouse(yesNo: 'yes' | 'no') {
+    await this.page.locator(`[data-qa="entrepreneur-spouse-${yesNo}"]`).click()
+  }
+
+  private async toggleCheckbox(
+    checkbox:
+      | 'student'
+      | 'alimony-payer'
+      | 'entrepreneur-startup-grant'
+      | 'entrepreneur-checkup-consent'
+      | 'entrepreneur-light-entrepreneur'
+      | 'entrepreneur-self-employed'
+      | 'entrepreneur-partnership'
+      | 'self-employed-attachments'
+      | 'self-employed-estimated-income',
+    check: boolean
+  ) {
+    const locator = this.page.locator(`[data-qa="${checkbox}-input"]`)
+    check
+      ? await locator.check({ force: true })
+      : await locator.uncheck({ force: true })
+  }
+
+  async toggleEntrepreneurStartupGrant(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-startup-grant', check)
+  }
+
+  async toggleEntrepreneurCheckupConsent(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-checkup-consent', check)
+  }
+
+  async toggleLightEntrepreneur(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-light-entrepreneur', check)
+  }
+
+  async toggleSelfEmployed(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-self-employed', check)
+  }
+
+  async togglePartnership(check: boolean) {
+    await this.toggleCheckbox('entrepreneur-partnership', check)
+  }
+
+  async toggleSelfEmployedEstimatedIncome(check: boolean) {
+    await this.toggleCheckbox('self-employed-estimated-income', check)
+  }
+
+  async toggleSelfEmployedAttachments(check: boolean) {
+    await this.toggleCheckbox('self-employed-attachments', check)
+  }
+
+  async toggleStudent(check: boolean) {
+    await this.toggleCheckbox('student', check)
+  }
+
+  async toggleAlimonyPayer(check: boolean) {
+    await this.toggleCheckbox('alimony-payer', check)
+  }
+
+  async fillAccountant() {
+    await this.page.locator('[data-qa="accountant-name"]').type('Kirjanpitäjä')
+    await this.page
+      .locator('[data-qa="accountant-email"]')
+      .type('foo@example.com')
+    await this.page.locator('[data-qa="accountant-phone"]').type('0400123456')
   }
 }

@@ -143,6 +143,7 @@ function Checkbox({
         <CheckboxInput
           type="checkbox"
           checked={checked}
+          data-qa={dataQa ? `${dataQa}-input` : undefined}
           aria-label={label}
           disabled={disabled}
           onChange={(e) => {

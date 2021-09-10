@@ -9,6 +9,7 @@ export const attachmentType = [
   'ALIMONY_PAYOUT',
   'PAYSLIP',
   'STARTUP_GRANT',
+  'SALARY',
   'ACCOUNTANT_REPORT',
   'PROFIT_AND_LOSS_STATEMENT',
   'PROOF_OF_STUDIES'

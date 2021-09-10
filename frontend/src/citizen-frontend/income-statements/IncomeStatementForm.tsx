@@ -490,12 +490,14 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.fullTime}
+          data-qa="entrepreneur-full-time-option"
           checked={formData.fullTime === true}
           onChange={() => onChange({ ...formData, fullTime: true })}
         />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.partTime}
+          data-qa="entrepreneur-part-time-option"
           checked={formData.fullTime === false}
           onChange={() => onChange({ ...formData, fullTime: false })}
         />
@@ -506,6 +508,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <DatePicker
           date={formData.startOfEntrepreneurship}
+          data-qa="entrepreneur-start-date"
           onChange={(value) =>
             onChange({ ...formData, startOfEntrepreneurship: value })
           }
@@ -525,12 +528,14 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.yes}
+          data-qa="entrepreneur-spouse-yes"
           checked={formData.spouseWorksInCompany === true}
           onChange={() => onChange({ ...formData, spouseWorksInCompany: true })}
         />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.no}
+          data-qa="entrepreneur-spouse-no"
           checked={formData.spouseWorksInCompany === false}
           onChange={() =>
             onChange({ ...formData, spouseWorksInCompany: false })
@@ -541,6 +546,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.startupGrant}
+          data-qa="entrepreneur-startup-grant"
           checked={formData.startupGrant}
           onChange={(value) =>
             onChange({
@@ -554,6 +560,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.checkupConsent}
+          data-qa="entrepreneur-checkup-consent"
           checked={formData.checkupConsent}
           onChange={(value) => onChange({ ...formData, checkupConsent: value })}
         />
@@ -574,6 +581,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="s" />
         <Checkbox
           label={t.income.entrepreneurIncome.selfEmployed}
+          data-qa="entrepreneur-self-employed"
           checked={formData.selfEmployed.selected}
           onChange={(value) =>
             onChange({
@@ -630,6 +638,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="m" />
         <Checkbox
           label={t.income.entrepreneurIncome.partnership}
+          data-qa="entrepreneur-partnership"
           checked={formData.partnership}
           onChange={(value) => onChange({ ...formData, partnership: value })}
         />
@@ -642,6 +651,7 @@ function EntrepreneurIncomeSelection({
         <Gap size="m" />
         <Checkbox
           label={t.income.entrepreneurIncome.lightEntrepreneur}
+          data-qa="entrepreneur-light-entrepreneur"
           checked={formData.lightEntrepreneur}
           onChange={(value) =>
             onChange({
@@ -694,11 +704,13 @@ function SelfEmployedIncomeSelection({
         )}
         <Checkbox
           label={t.income.selfEmployed.attachments}
+          data-qa="self-employed-attachments"
           checked={formData.attachments}
           onChange={(value) => onChange({ ...formData, attachments: value })}
         />
         <Checkbox
           label={t.income.selfEmployed.estimatedIncome}
+          data-qa="self-employed-estimated-income"
           checked={formData.estimation}
           onChange={(value) => onChange({ ...formData, estimation: value })}
         />
@@ -838,6 +850,7 @@ function Accounting({
           <Gap size="s" />
           <InputField
             placeholder={t.accountantPlaceholder}
+            data-qa="accountant-name"
             value={formData.name}
             onChange={(value) => onChange({ ...formData, name: value })}
             hideErrorsBeforeTouched={!showFormErrors}
@@ -851,6 +864,7 @@ function Accounting({
           <Gap size="s" />
           <InputField
             placeholder={t.emailPlaceholder}
+            data-qa="accountant-email"
             value={formData.email}
             onChange={(value) => onChange({ ...formData, email: value })}
             hideErrorsBeforeTouched={!showFormErrors}
@@ -873,6 +887,7 @@ function Accounting({
           <Gap size="s" />
           <InputField
             placeholder={t.phonePlaceholder}
+            data-qa="accountant-phone"
             value={formData.phone}
             onChange={(value) => onChange({ ...formData, phone: value })}
             hideErrorsBeforeTouched={!showFormErrors}
@@ -904,6 +919,7 @@ function OtherInfo({
         <Gap size="s" />
         <Checkbox
           label={t.income.moreInfo.student}
+          data-qa="student"
           checked={formData.student}
           onChange={(value) => onChange({ ...formData, student: value })}
         />
@@ -914,6 +930,7 @@ function OtherInfo({
         <Gap size="s" />
         <Checkbox
           label={t.income.moreInfo.alimony}
+          data-qa="alimony-payer"
           checked={formData.alimonyPayer}
           onChange={(value) => onChange({ ...formData, alimonyPayer: value })}
         />
@@ -988,7 +1005,7 @@ function Attachments({
           <>
             <H4 noMargin>{t.income.attachments.required.title}</H4>
             <Gap size="s" />
-            <UnorderedList>
+            <UnorderedList data-qa="required-attachments">
               {[...requiredAttachments].map((attachmentType) => (
                 <li key={attachmentType}>
                   {t.income.attachments.attachmentNames[attachmentType]}
@@ -1036,6 +1053,9 @@ export function computeRequiredAttachments(
     }
     if (entrepreneur.partnership) {
       result.add('PROFIT_AND_LOSS_STATEMENT').add('ACCOUNTANT_REPORT')
+    }
+    if (entrepreneur.lightEntrepreneur) {
+      result.add('SALARY')
     }
   }
   if (gross.selected || entrepreneur.selected) {
