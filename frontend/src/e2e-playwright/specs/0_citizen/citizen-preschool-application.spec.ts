@@ -39,7 +39,7 @@ afterEach(async () => {
 
 describe('Citizen preschool applications', () => {
   test('Sending incomplete preschool application gives validation error', async () => {
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
       'PRESCHOOL'
@@ -49,7 +49,7 @@ describe('Citizen preschool applications', () => {
   })
 
   test('Minimal valid preschool application can be sent', async () => {
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
       'PRESCHOOL'
@@ -64,7 +64,7 @@ describe('Citizen preschool applications', () => {
   })
 
   test('Full valid preschool application can be sent', async () => {
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
       'PRESCHOOL'

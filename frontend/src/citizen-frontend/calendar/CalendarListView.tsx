@@ -34,7 +34,12 @@ export default React.memo(function CalendarListView({
           <WeekElem {...w} key={w.weekNumber} selectDate={selectDate} />
         ))}
       </FixedSpaceColumn>
-      <HoverButton onClick={onHoverButtonClick} primary type="button">
+      <HoverButton
+        onClick={onHoverButtonClick}
+        primary
+        type="button"
+        data-qa="open-calendar-actions-modal"
+      >
         <Icon icon={faPlus} />
         {i18n.calendar.newReservationOrAbsence}
       </HoverButton>

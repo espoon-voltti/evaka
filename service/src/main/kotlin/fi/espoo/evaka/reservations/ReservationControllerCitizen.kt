@@ -116,8 +116,8 @@ data class ChildDailyData(
 
 @Json
 data class Reservation(
-    val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime
+    val startTime: String,
+    val endTime: String
 )
 
 data class ReservationChild(
@@ -147,7 +147,13 @@ SELECT
                 'absence', a.absence_type
             ) || (CASE
                 WHEN ar.start_time IS NULL THEN '{}'::jsonb
-                ELSE jsonb_build_object('reservation', jsonb_build_object('startTime', ar.start_time, 'endTime', ar.end_time))
+                ELSE jsonb_build_object(
+                    'reservation',
+                    jsonb_build_object(
+                        'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                        'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                    )
+                )
             END)
         ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.id IS NOT NULL),
         '[]'

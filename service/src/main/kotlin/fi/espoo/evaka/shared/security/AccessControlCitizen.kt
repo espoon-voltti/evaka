@@ -14,12 +14,14 @@ import java.util.UUID
 @Service
 class AccessControlCitizen(private val jdbi: Jdbi) {
     fun getPermittedFeatures(user: AuthenticatedUser): CitizenFeatures {
-        return Database(jdbi).read {
-            CitizenFeatures(
-                messages = it.citizenHasAccessToMessaging(user.id),
-                reservations = it.citizenHasAccessToReservations(user.id)
-            )
-        }
+        return Database(jdbi).read { getPermittedFeatures(it, user) }
+    }
+
+    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {
+        return CitizenFeatures(
+            messages = tx.citizenHasAccessToMessaging(user.id),
+            reservations = tx.citizenHasAccessToReservations(user.id)
+        )
     }
 
     private fun Database.Read.citizenHasAccessToMessaging(personId: UUID): Boolean {

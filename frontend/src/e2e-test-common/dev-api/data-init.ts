@@ -154,6 +154,7 @@ export const initializeAreaAndPersonData = async (): Promise<
   await devApi.insertChildFixtures([
     areaAndPersonFixtures.enduserChildFixtureJari,
     areaAndPersonFixtures.enduserChildFixtureKaarina,
+    areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted,
     ...areaAndPersonFixtures.familyWithTwoGuardians.children,
     ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
     ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,

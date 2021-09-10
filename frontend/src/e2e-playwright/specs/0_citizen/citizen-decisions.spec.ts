@@ -75,7 +75,7 @@ describe('Citizen page', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    await header.decisionsTab.click()
+    await header.selectTab('decisions')
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     await citizenDecisionsPage.assertApplicationDecision(
@@ -164,7 +164,7 @@ describe('Citizen page', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    await header.decisionsTab.click()
+    await header.selectTab('decisions')
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(

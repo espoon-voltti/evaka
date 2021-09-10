@@ -39,8 +39,8 @@ export default React.memo(function MobileNav({
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
 
   return (
-    <Container ref={ref}>
-      <MenuButton onClick={toggleMenu}>
+    <Container ref={ref} data-qa="mobile-nav">
+      <MenuButton onClick={toggleMenu} data-qa="menu-button">
         <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
       </MenuButton>
       {showMenu ? (
@@ -192,10 +192,18 @@ const Navigation = React.memo(function Navigation({
       </StyledNavLink>
       {user && (
         <>
-          <StyledNavLink to="/applications" onClick={close}>
+          <StyledNavLink
+            to="/applications"
+            onClick={close}
+            data-qa="nav-applications"
+          >
             {t.header.nav.applications} {maybeLockElem}
           </StyledNavLink>
-          <StyledNavLink to="/decisions" onClick={close}>
+          <StyledNavLink
+            to="/decisions"
+            onClick={close}
+            data-qa="nav-decisions"
+          >
             {t.header.nav.decisions} {maybeLockElem}
           </StyledNavLink>
           {featureFlags.experimental?.incomeStatements && (
@@ -204,7 +212,11 @@ const Navigation = React.memo(function Navigation({
             </StyledNavLink>
           )}
           {user.accessibleFeatures.messages && (
-            <StyledNavLink to="/messages" onClick={close}>
+            <StyledNavLink
+              to="/messages"
+              onClick={close}
+              data-qa="nav-messages"
+            >
               {t.header.nav.messages}{' '}
               {unreadMessagesCount > 0 ? (
                 <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
@@ -214,7 +226,11 @@ const Navigation = React.memo(function Navigation({
             </StyledNavLink>
           )}
           {user.accessibleFeatures.reservations && (
-            <StyledNavLink to="/calendar" onClick={close}>
+            <StyledNavLink
+              to="/calendar"
+              onClick={close}
+              data-qa="nav-calendar"
+            >
               {t.header.nav.calendar}
             </StyledNavLink>
           )}

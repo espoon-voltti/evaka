@@ -244,6 +244,7 @@ export default React.memo(function ReservationModal({
                 })
               }
             }}
+            data-qa={`child-${child.id}`}
           />
         ))}
       </FixedSpaceColumn>
@@ -258,6 +259,7 @@ export default React.memo(function ReservationModal({
           isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
+          data-qa="start-date"
         />
         <DatePickerSpacer />
         <DatePicker
@@ -268,6 +270,7 @@ export default React.memo(function ReservationModal({
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={reservableDays.start}
+          data-qa="end-date"
         />
       </FixedSpaceRow>
 
@@ -284,6 +287,7 @@ export default React.memo(function ReservationModal({
         getItemLabel={(item) =>
           i18n.calendar.reservationModal.repetitions[item]
         }
+        data-qa="repetition"
       />
 
       <Gap size="s" />
@@ -297,6 +301,7 @@ export default React.memo(function ReservationModal({
             onChange={(value) => updateForm({ startTime: value })}
             info={errorToInputInfo(errors.startTime, i18n.validationErrors)}
             hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="daily-start-time"
           />
           <span>-</span>
           <InputField
@@ -305,6 +310,7 @@ export default React.memo(function ReservationModal({
             onChange={(value) => updateForm({ endTime: value })}
             info={errorToInputInfo(errors.endTime, i18n.validationErrors)}
             hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="daily-end-time"
           />
         </FixedSpaceRow>
       )}
@@ -336,6 +342,7 @@ export default React.memo(function ReservationModal({
                   i18n.validationErrors
                 )}
                 hideErrorsBeforeTouched={!showAllErrors}
+                data-qa={`weekly-start-time-${i}`}
               />
               <span>-</span>
               <InputField
@@ -358,6 +365,7 @@ export default React.memo(function ReservationModal({
                   i18n.validationErrors
                 )}
                 hideErrorsBeforeTouched={!showAllErrors}
+                data-qa={`weekly-end-time-${i}`}
               />
             </FixedSpaceRow>
           ))}

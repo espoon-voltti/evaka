@@ -149,40 +149,40 @@ const en: Translations = {
     backToSearch: 'Back to search'
   },
   calendar: {
-    title: 'Calendar',
-    holiday: 'Holiday',
-    absent: 'Absent',
+    title: 'Kalenteri',
+    holiday: 'Pyhäpäivä',
+    absent: 'Poissa',
     absences: {
-      SICKLEAVE: 'Sairaus',
-      PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+      SICKLEAVE: 'Sairauspoissaolo',
+      PLANNED_ABSENCE: 'Vapaapäivä'
     },
-    newReservationOrAbsence: 'Reservation / Absence',
-    newAbsence: 'Report absence',
-    newReservationBtn: 'Create reservation',
-    noReservation: 'No reservation',
+    newReservationOrAbsence: 'Varaus / Poissaolo',
+    newAbsence: 'Ilmoita poissaolo',
+    newReservationBtn: 'Tee varaus',
+    noReservation: 'Ei varausta',
     reservationModal: {
-      title: 'Create reservation',
-      selectChildren: 'Select children',
-      dateRange: 'Reservation valid during',
-      dateRangeLabel: 'Make reservation for days',
-      times: 'Times',
-      businessDays: 'Mon-Fri',
-      postError: 'Creating reservation failed',
-      repeats: 'Repeats',
+      title: 'Tee varaus',
+      selectChildren: 'Valitse lapset',
+      dateRange: 'Varauksen voimassaolo',
+      dateRangeLabel: 'Tee varaus päiville',
+      times: 'Kellonaika',
+      businessDays: 'Ma-Pe',
+      postError: 'Varauksen luominen ei onnistunut',
+      repeats: 'Toistuu',
       repetitions: {
-        DAILY: 'Daily',
-        WEEKLY: 'Weekly'
+        DAILY: 'Päivittäin',
+        WEEKLY: 'Viikoittain'
       }
     },
     absenceModal: {
-      title: 'Report absence',
+      title: 'Ilmoita poissaolo',
       selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
       dateRange: 'Poissaoloilmoitus ajalle',
       absenceType: 'Poissaolon syy',
       absenceTypes: {
-        sickness: 'Sairaus',
-        other: 'Muu poissaolo',
-        planned: 'Säännöllinen vapaapäivä/vuorohoito'
+        SICKLEAVE: 'Sairaus',
+        OTHER_ABSENCE: 'Muu poissaolo',
+        PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
       }
     }
   },

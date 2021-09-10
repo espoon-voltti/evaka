@@ -107,7 +107,7 @@ export const daycareFixture: Daycare = {
     lat: 60.20377343765089,
     lon: 24.655715743526994
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
 }
 
 export const daycare2Fixture: Daycare = {

@@ -14,7 +14,6 @@ import {
   getReservations,
   ReservationsResponse
 } from './api'
-import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -200,10 +199,7 @@ const uniqueReservations = (
   const uniqueReservationTimes: string[] = reservations
     .map(({ absence, reservation }) =>
       absence === null && reservation !== null
-        ? `${formatDate(reservation.startTime, 'HH:mm')} – ${formatDate(
-            reservation.endTime,
-            'HH:mm'
-          )}`
+        ? `${reservation.startTime} – ${reservation.endTime}`
         : undefined
     )
     .filter((reservation): reservation is string => reservation !== undefined)
