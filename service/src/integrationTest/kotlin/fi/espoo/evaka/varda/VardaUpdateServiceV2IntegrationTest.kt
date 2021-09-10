@@ -55,6 +55,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Autowired
@@ -688,6 +689,87 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             ),
             mockEndpoint.feeData.values.elementAt(1)
         )
+    }
+
+    @Test
+    fun `updateChildData deletes if service need changes to bad placement type`() {
+        val snId = insertServiceNeedWithFeeDecision()
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+        assertVardaElementCounts(1, 1, 1)
+        assertVardaServiceNeedIds(snId, 1, 1)
+
+        db.transaction {
+            it.createUpdate("update placement set type = 'PRESCHOOL'::placement_type")
+                .execute()
+        }
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
+        assertNull(vardaServiceNeed)
+    }
+
+    @Test
+    fun `updateChildData deletes if service need hours is set to 0`() {
+        val snId = insertServiceNeedWithFeeDecision()
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+        assertVardaElementCounts(1, 1, 1)
+        assertVardaServiceNeedIds(snId, 1, 1)
+
+        db.transaction {
+            it.createUpdate("update service_need set option_id = :id")
+                .bind("id", snDefaultPreschool.id)
+                .execute()
+        }
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
+        assertNull(vardaServiceNeed)
+    }
+
+    @Test
+    fun `updateChildData deletes if service need start_date is updated to future`() {
+        val snId = insertServiceNeedWithFeeDecision()
+
+        db.transaction {
+            it.createUpdate("update service_need set start_date = :startDate, end_date = :endDate")
+                .bind("startDate", LocalDate.now().plusYears(1))
+                .bind("endDate", LocalDate.now().plusYears(2))
+                .execute()
+        }
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
+        assertNull(vardaServiceNeed)
+    }
+
+    @Test
+    fun `updateChildData does not delete if service need is not changed`() {
+        val snId = insertServiceNeedWithFeeDecision()
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+        assertVardaElementCounts(1, 1, 1)
+        assertVardaServiceNeedIds(snId, 1, 1)
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+        assertVardaServiceNeedIds(snId, 1, 1)
+    }
+
+    private fun insertServiceNeedWithFeeDecision(): ServiceNeedId {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+
+        val child = testChild_1
+        val adult = testAdult_1
+        val snId = createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testDaycare.id)
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testDaycare.id)
+        return snId
     }
 
     private fun assertFailedVardaUpdates(n: Int) {
