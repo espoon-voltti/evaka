@@ -2653,6 +2653,7 @@ export const fi = {
       daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
       capacity: 'Kapasiteetti on virheellinen',
       costCenter: 'Kustannuspaikka puuttuu',
+      url: 'URL-osoitteessa pitää olla https://- tai http://-etuliite',
       visitingAddress: {
         streetAddress: 'Käyntiosoitteen katuosoite puuttuu',
         postalCode: 'Käyntiosoitteen postinumero puuttuu',
