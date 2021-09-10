@@ -437,7 +437,7 @@ function Group({
             </>
           )}
           {permittedActions.has('READ_ABSENCES') && (
-            <Link to={`/absences/${group.id}`}>
+            <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
                 text={i18n.unit.groups.diaryButton}

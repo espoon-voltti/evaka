@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -27,6 +27,7 @@ import TabWaitingConfirmation from '../components/unit/TabWaitingConfirmation'
 import TabApplications from '../components/unit/TabApplications'
 import { useQuery } from '../utils/useQuery'
 import LocalDate from 'lib-common/local-date'
+import TabCalendar from './unit/TabCalendar'
 
 export default React.memo(function UnitPage() {
   const { id } = useParams<{ id: UUID }>()
@@ -93,6 +94,11 @@ export default React.memo(function UnitPage() {
           .map((data) => data.missingGroupPlacements.length)
           .getOrElse(undefined)
       },
+      {
+        id: 'calendar',
+        link: `/units/${id}/calendar`,
+        label: i18n.unit.tabs.calendar
+      },
       ...(unitInformation.isSuccess &&
       unitInformation.value.permittedActions.has('READ_DETAILED')
         ? [
@@ -147,6 +153,11 @@ export default React.memo(function UnitPage() {
                 setOpenGroups={setOpenGroups}
               />
             )}
+          />
+          <RouteWithTitle
+            exact
+            path="/units/:id/calendar"
+            component={() => <TabCalendar unitId={id} />}
           />
           <RouteWithTitle
             exact

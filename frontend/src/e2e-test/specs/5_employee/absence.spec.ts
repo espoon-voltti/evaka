@@ -97,7 +97,7 @@ test('User can open the absence dialog', async (t) => {
     .expect(absencesPage.absencesTitle.innerText)
     .eql(fixtures.daycareFixture.name)
 
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
 
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
@@ -121,7 +121,7 @@ test('User can find the child in the absence dialog', async (t) => {
     )
   )
   await t.expect(absencesPage.absenceTableChildLink.exists).ok()
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
 
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
@@ -148,7 +148,7 @@ test('User can add a sickleave to a child', async (t) => {
   await absencesPage.addBillableAbsence('SICKLEAVE')
   await t.expect(absencesPage.absenceIndicatorRight('SICKLEAVE').exists).ok()
 
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
 
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
@@ -179,7 +179,7 @@ test('Adding another leave type will override the previous one', async (t) => {
     .expect(absencesPage.absenceIndicatorRight('UNKNOWN_ABSENCE').exists)
     .ok()
 
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
 
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
@@ -207,7 +207,7 @@ test('User can clear an absence', async (t) => {
   await absencesPage.addBillableAbsence('PRESENCE')
   await t.expect(absencesPage.absenceIndicatorRight('SICKLEAVE').exists).notOk()
 
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
 
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
@@ -234,7 +234,7 @@ test('User can add a staff attendance', async (t) => {
   await t.expect(absencesPage.staffAttendanceInput.value).eql('')
   await t.typeText(absencesPage.staffAttendanceInput, '3')
   await t.wait(1000) // without this the page wont save the staff attendance
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
@@ -245,7 +245,7 @@ test('User can add a staff attendance', async (t) => {
   )
   await t.expect(absencesPage.staffAttendanceInput.value).eql('3')
 
-  await t.click(absencesPage.btnAbsencesPageReturn)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   await absencesPage.removeDaycareGroupPlacement()
   await t.expect(group.groupPlacementRows.count).eql(0)

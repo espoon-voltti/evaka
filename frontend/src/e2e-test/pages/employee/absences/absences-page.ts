@@ -30,9 +30,6 @@ export default class AbsencesPage {
   readonly btnOpenAbsenceDiary: Selector = Selector(
     '[data-qa="open-absence-diary-button"]'
   )
-  readonly btnAbsencesPageReturn: Selector = Selector(
-    '[data-qa="absences-page-return-button"]'
-  )
   readonly btnNextMonth: Selector = Selector(
     '[data-qa="period-picker-next-month"]'
   )

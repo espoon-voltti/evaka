@@ -4,6 +4,7 @@
 
 import LocalDate from './local-date'
 import { JsonOf } from './json'
+import FiniteDateRange from './finite-date-range'
 
 export default class DateRange {
   constructor(readonly start: LocalDate, readonly end: LocalDate | null) {
@@ -48,6 +49,14 @@ export default class DateRange {
       (this.end === null || !this.end.isBefore(other.start)) &&
       (other.end === null || !other.end.isBefore(this.start))
     )
+  }
+
+  includes(date: LocalDate): boolean {
+    if (this.end) {
+      return new FiniteDateRange(this.start, this.end).includes(date)
+    }
+
+    return !this.start.isAfter(date)
   }
 
   static parseJson(json: JsonOf<DateRange>): DateRange {

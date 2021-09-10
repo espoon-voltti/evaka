@@ -146,18 +146,20 @@ function AbsenceTableHead({
 
 interface AbsenceTableProps {
   groupId: string
+  selectedDate: LocalDate
   childList: Child[]
   operationDays: LocalDate[]
 }
 
 function AbsenceTable({
   groupId,
+  selectedDate,
   childList,
   operationDays
 }: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
-  const { selectedDate, tableMode } = useContext<AbsencesState>(AbsencesContext)
+  const { tableMode } = useContext<AbsencesState>(AbsencesContext)
 
   const dateColsBody =
     childList.length > 0
@@ -198,6 +200,7 @@ function AbsenceTable({
         {renderEmptyRow()}
         <StaffAttendance
           groupId={groupId}
+          selectedDate={selectedDate}
           emptyCols={emptyCols}
           operationDays={operationDays}
         />
