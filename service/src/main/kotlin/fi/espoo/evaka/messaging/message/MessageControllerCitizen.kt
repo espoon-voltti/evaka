@@ -46,10 +46,10 @@ class MessageControllerCitizen(
     fun getUnreadMessages(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): Int {
+    ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getUnreadMessagesCount(setOf(accountId)) }
+        return db.read { it.getUnreadMessagesCounts(setOf(accountId)) }
     }
 
     @PutMapping("/threads/{threadId}/read")
@@ -127,7 +127,7 @@ class MessageControllerCitizen(
         Audit.MessagingCitizenSendMessage.log()
         val accountId = requireMessageAccountAccess(db, user)
         val validReceivers = db.read { it.getCitizenReceivers(accountId) }
-        val allReceiversValid = body.recipients.all { validReceivers.contains(it) }
+        val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
         if (allReceiversValid) {
             return db.transaction { tx ->
                 val contentId = tx.insertMessageContent(body.content, accountId)

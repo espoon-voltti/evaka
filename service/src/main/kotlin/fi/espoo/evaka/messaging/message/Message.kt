@@ -15,8 +15,7 @@ import java.util.UUID
 
 data class Message(
     val id: UUID,
-    val senderId: UUID,
-    val senderName: String,
+    val sender: MessageAccount,
     val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
     val content: String,
@@ -39,7 +38,7 @@ data class SentMessage(
     val type: MessageType,
     @Json
     val recipients: Set<MessageAccount>,
-    val recipientNames: List<String>,
+    val recipientNames: List<String>
 )
 
 enum class MessageType {
@@ -61,9 +60,16 @@ data class MessageReceiver(
     val receiverPersons: List<MessageReceiverPerson>
 )
 
+enum class AccountType {
+    PERSONAL,
+    GROUP,
+    CITIZEN
+}
+
 data class MessageAccount(
     val id: UUID,
     val name: String,
+    val type: AccountType
 )
 
 data class Group(
@@ -74,18 +80,11 @@ data class Group(
     val unitName: String,
 )
 
-enum class AccountType {
-    PERSONAL,
-    GROUP
-}
-
-data class DetailedMessageAccount(
-    val id: UUID,
-    val name: String,
+data class NestedMessageAccount(
+    @Nested("account_")
+    val account: MessageAccount,
     @Nested("group_")
-    val daycareGroup: Group?,
-    val type: AccountType,
-    val unreadCount: Int
+    val daycareGroup: Group?
 )
 
 data class MessageReceiverPerson(

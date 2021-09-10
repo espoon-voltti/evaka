@@ -4,6 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import {
+  isNestedGroupMessageAccount,
+  NestedMessageAccount
+} from 'employee-frontend/components/messages/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -86,19 +90,38 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { accounts } = useContext(MessageContext)
+  const { nestedAccounts, unreadCountsByAccount } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
-  const unreadCount = useMemo<number>(
-    () =>
-      accounts.mapAll({
-        failure: () => 0,
-        loading: () => 0,
-        success: (value) =>
-          value.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
-      }),
-    [accounts]
-  )
+  const unreadCount = useMemo<number>(() => {
+    if (nestedAccounts.isSuccess && unreadCountsByAccount.isSuccess) {
+      const countUnreads = (nestedAccounts: NestedMessageAccount[]) =>
+        nestedAccounts.reduce<number>(
+          (sum, account) =>
+            (
+              unreadCountsByAccount.value.find(
+                (x) => x.accountId === account.account.id
+              ) || { unreadCount: 0 }
+            ).unreadCount + sum,
+          0
+        )
+      if (
+        nestedAccounts.value.find((acc) => !isNestedGroupMessageAccount(acc))
+      ) {
+        return countUnreads(
+          nestedAccounts.value.filter(
+            (acc) => !isNestedGroupMessageAccount(acc)
+          )
+        )
+      } else {
+        return countUnreads(
+          nestedAccounts.value.filter(isNestedGroupMessageAccount)
+        )
+      }
+    } else {
+      return 0
+    }
+  }, [nestedAccounts, unreadCountsByAccount])
 
   const path = location.pathname
   const atCustomerInfo =

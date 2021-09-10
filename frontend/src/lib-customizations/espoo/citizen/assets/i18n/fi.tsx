@@ -540,6 +540,7 @@ export default {
       BULLETIN: 'Tiedote'
     },
     replyToThread: 'Vastaa viestiin',
+    staffAnnotation: 'Henkilökunta',
     messageEditor: {
       newMessage: 'Uusi viesti',
       receivers: 'Vastaanottajat',

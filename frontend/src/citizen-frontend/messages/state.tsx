@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useTranslation } from 'citizen-frontend/localization/state'
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
@@ -22,7 +23,8 @@ import {
   getUnreadMessagesCount,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams
+  ReplyToThreadParams,
+  UnreadCountByAccount
 } from './api'
 
 const initialThreadState: ThreadsState = {
@@ -95,6 +97,7 @@ const markMatchingThreadRead = (
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
+    const t = useTranslation()
     const [accountId, setAccountId] = useState<Result<UUID>>(Loading.of())
     const loadAccount = useRestApi(getMessageAccount, setAccountId)
 
@@ -129,9 +132,9 @@ export const MessageContextProvider = React.memo(
     useEffect(() => {
       if (threads.currentPage > 0) {
         setThreads((state) => ({ ...state, loadingResult: Loading.of() }))
-        loadMessages(threads.currentPage)
+        loadMessages(threads.currentPage, t.messages.staffAnnotation)
       }
-    }, [loadMessages, threads.currentPage])
+    }, [loadMessages, threads.currentPage, t.messages.staffAnnotation])
 
     const loadMoreThreads = useCallback(() => {
       if (threads.currentPage < threads.pages) {
@@ -187,11 +190,14 @@ export const MessageContextProvider = React.memo(
     }, [])
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
-    const setUnreadResult = useCallback((res: Result<number>) => {
-      if (res.isSuccess) {
-        setUnreadMessagesCount(res.value)
-      }
-    }, [])
+    const setUnreadResult = useCallback(
+      (res: Result<UnreadCountByAccount[]>) => {
+        if (res.isSuccess) {
+          setUnreadMessagesCount(res.value[0].unreadCount)
+        }
+      },
+      []
+    )
     const refreshUnreadMessagesCount = useRestApi(
       getUnreadMessagesCount,
       setUnreadResult
@@ -209,7 +215,7 @@ export const MessageContextProvider = React.memo(
         const hasUnreadMessages =
           !!accountId?.isSuccess &&
           thread.messages.some(
-            (m) => !m.readAt && m.senderId !== accountId.value
+            (m) => !m.readAt && m.sender.id !== accountId.value
           )
 
         setThreads((state) => {

@@ -14,7 +14,7 @@ import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -108,7 +108,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `notifications are sent to citizens`() {
-        val employeeAccount = db.read { it.getEmployeeMessageAccounts(employeeId).first() }
+        val employeeAccount = db.read { it.getEmployeeMessageAccountIds(employeeId).first() }
         val personAccounts = db.read { tx ->
             testPersons.map {
                 tx.getCitizenMessageAccount(it.id)

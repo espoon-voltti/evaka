@@ -22,9 +22,8 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import {
-  isGroupMessageAccount,
-  isPersonalMessageAccount,
-  MessageAccount,
+  isNestedGroupMessageAccount,
+  NestedMessageAccount,
   ReceiverGroup
 } from './types'
 import { messageBoxes } from './types-view'
@@ -89,23 +88,27 @@ const Receivers = styled.div<{ active: boolean }>`
 `
 
 interface AccountsParams {
-  accounts: MessageAccount[]
+  nestedAccounts: NestedMessageAccount[]
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
 }
 
-function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
+function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
   const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
     useContext(MessageContext)
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
-    const personalAccount = accounts.find(isPersonalMessageAccount)
-    const groupAccounts = accounts.filter(isGroupMessageAccount)
+    const nestedPersonalAccount = nestedAccounts.find(
+      (a) => !isNestedGroupMessageAccount(a)
+    )
+    const nestedGroupAccounts = nestedAccounts.filter(
+      isNestedGroupMessageAccount
+    )
     const unitOptions = sortBy(
       uniqBy(
-        groupAccounts.map(({ daycareGroup }) => ({
+        nestedGroupAccounts.map(({ daycareGroup }) => ({
           value: daycareGroup.unitId,
           label: daycareGroup.unitName
         })),
@@ -113,8 +116,8 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
       ),
       (u) => u.label
     )
-    return [personalAccount, groupAccounts, unitOptions]
-  }, [accounts])
+    return [nestedPersonalAccount, nestedGroupAccounts, unitOptions]
+  }, [nestedAccounts])
 
   const unitSelectionEnabled = unitOptions.length > 1
 
@@ -146,7 +149,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
 
   return (
     <>
-      {accounts.length === 0 && (
+      {nestedAccounts.length === 0 && (
         <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
       )}
 
@@ -157,7 +160,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
             <MessageBox
               key={view}
               view={view}
-              account={personalAccount}
+              account={personalAccount.account}
               activeView={selectedAccount}
               setView={setSelectedAccount}
             />
@@ -180,7 +183,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
             </UnitSelection>
           )}
           <GroupMessageAccountList
-            accounts={visibleGroupAccounts}
+            nestedGroupAccounts={visibleGroupAccounts}
             activeView={selectedAccount}
             setView={setSelectedAccount}
           />
@@ -202,10 +205,11 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { accounts, selectedAccount, setSelectedAccount } =
+  const { nestedAccounts, selectedAccount, setSelectedAccount } =
     useContext(MessageContext)
 
-  const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
+  const newMessageEnabled =
+    nestedAccounts.isSuccess && nestedAccounts.value.length > 0
   return (
     <Container>
       <AccountContainer>
@@ -224,17 +228,17 @@ export default React.memo(function Sidebar({
             data-qa="new-message-btn"
           />
         </HeaderContainer>
-        {accounts.mapAll({
+        {nestedAccounts.mapAll({
           loading() {
             return <Loader />
           },
           failure() {
             return <ErrorSegment />
           },
-          success(accounts) {
+          success(nestedAccounts) {
             return (
               <Accounts
-                accounts={accounts}
+                nestedAccounts={nestedAccounts}
                 setSelectedReceivers={setSelectedReceivers}
               />
             )

@@ -202,6 +202,7 @@ const en: Translations = {
       BULLETIN: 'Bulletin'
     },
     replyToThread: 'Reply',
+    staffAnnotation: 'Staff',
     messageEditor: {
       newMessage: 'New message',
       receivers: 'Receivers',

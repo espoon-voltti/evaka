@@ -15,11 +15,11 @@ import fi.espoo.evaka.messaging.message.getAccountNames
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenReceivers
 import fi.espoo.evaka.messaging.message.getDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.getThreadByMessageId
-import fi.espoo.evaka.messaging.message.getUnreadMessagesCount
+import fi.espoo.evaka.messaging.message.getUnreadMessagesCounts
 import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
@@ -97,7 +97,7 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `a thread can be created`() {
         val (employeeAccount, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -133,8 +133,8 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `messages received by account are grouped properly`() {
         val (employee1Account, employee2Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
-                it.getEmployeeMessageAccounts(employee2Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee2Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -206,7 +206,7 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals("Newest thread", newestThread.title)
         assertEquals(
             listOf(Pair(employee1Account, "Content 2"), Pair(person1Account, "Just replying here")),
-            newestThread.messages.map { Pair(it.senderId, it.content) }
+            newestThread.messages.map { Pair(it.sender.id, it.content) }
         )
         assertEquals(employeeResult.data[0], newestThread)
 
@@ -225,7 +225,7 @@ class MessageQueriesTest : PureJdbiTest() {
         val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account, 10, 1) }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
-        assertEquals(employee2Account, employee2Result.data[0].messages[0].senderId)
+        assertEquals(employee2Account, employee2Result.data[0].messages[0].sender.id)
         assertEquals("Alone", employee2Result.data[0].messages[0].content)
     }
 
@@ -233,7 +233,7 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `received messages can be paged`() {
         val (employee1Account, person1Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id)
             )
         }
@@ -268,7 +268,7 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `sent messages`() {
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -307,7 +307,7 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `message participants by messageId`() {
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -402,7 +402,7 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
         val supervisorPersonalAccount = db.read {
-            it.getEmployeeMessageAccounts(employee1Id)
+            it.getEmployeeMessageAccountIds(employee1Id)
         }.first { it != group1Account && it != group2Account }
 
         // when we get the receivers for the citizen person1
@@ -473,7 +473,7 @@ class MessageQueriesTest : PureJdbiTest() {
         // given
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
                 it.getCitizenMessageAccount(person1Id),
                 it.getCitizenMessageAccount(person2Id)
             )
@@ -481,33 +481,33 @@ class MessageQueriesTest : PureJdbiTest() {
         val thread1 = createThread("Title", "Content", person1Account, listOf(employee1Account, person2Account))
 
         // then unread count is zero for sender and one for recipients
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(person1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(employee1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account)) })
+        assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(employee1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
 
         // when employee reads the message
         db.transaction { it.markThreadRead(employee1Account, thread1) }
 
         // then the thread does not count towards unread messages
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(person1Account)) })
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account)) })
+        assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount })
+        assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(employee1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
 
         // when a new thread is created
         val thread2 = createThread("Title", "Content", employee1Account, listOf(person1Account, person2Account))
 
         // then unread counts are bumped by one for recipients
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person1Account)) })
-        assertEquals(2, db.read { it.getUnreadMessagesCount(setOf(person2Account)) })
+        assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(employee1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount })
+        assertEquals(2, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
 
         // when person two reads a thread
         db.transaction { it.markThreadRead(person2Account, thread2) }
 
         // then unread count goes down by one
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person1Account)) })
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account)) })
+        assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(employee1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
     }
 
     private fun createThread(

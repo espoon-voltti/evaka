@@ -34,8 +34,8 @@ const PanelContainer = styled.div`
 
 export default function MessagesPage() {
   const {
-    accounts,
-    loadAccounts,
+    nestedAccounts,
+    loadNestedAccounts,
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
@@ -44,25 +44,30 @@ export default function MessagesPage() {
     refreshMessages
   } = useContext(MessageContext)
 
-  useEffect(() => loadAccounts(), [loadAccounts])
+  useEffect(() => loadNestedAccounts(), [loadNestedAccounts])
   useEffect(() => refreshMessages(), [refreshMessages])
 
   // pre-select first account on page load and on unit change
   useEffect(() => {
-    if (!accounts.isSuccess) {
+    if (!nestedAccounts.isSuccess) {
       return
     }
-    const { value: data } = accounts
+    const { value: data } = nestedAccounts
     const unitSelectionChange =
       selectedAccount &&
-      !data.find((account) => account.id === selectedAccount.account.id)
+      !data.find(
+        (nestedAccount) =>
+          nestedAccount.account.id === selectedAccount.account.id
+      )
     if ((!selectedAccount || unitSelectionChange) && data.length > 0) {
       setSelectedAccount({
         view: 'RECEIVED',
-        account: data.find((a) => a.type === 'PERSONAL') || data[0]
+        account:
+          data.find((a) => a.account.type === 'PERSONAL')?.account ||
+          data[0].account
       })
     }
-  }, [accounts, setSelectedAccount, selectedAccount])
+  }, [nestedAccounts, setSelectedAccount, selectedAccount])
 
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
@@ -134,7 +139,7 @@ export default function MessagesPage() {
           />
         )}
         {showEditor &&
-          accounts.isSuccess &&
+          nestedAccounts.isSuccess &&
           selectedReceivers &&
           selectedAccount &&
           selectedUnit && (
@@ -143,7 +148,7 @@ export default function MessagesPage() {
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              accounts={accounts.value}
+              nestedAccounts={nestedAccounts.value}
               selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
