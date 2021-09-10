@@ -121,7 +121,7 @@ TABLE (
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organization_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL;
+$$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS
 TABLE (
@@ -150,4 +150,4 @@ TABLE (
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organization_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL;
+$$ LANGUAGE SQL STABLE;
