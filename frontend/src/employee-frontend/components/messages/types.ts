@@ -59,6 +59,12 @@ export interface NestedGroupMessageAccount extends NestedMessageAccount {
   }
 }
 
+export function isNestedGroupMessageAccount(
+  nestedAccount: NestedMessageAccount
+): nestedAccount is NestedGroupMessageAccount {
+  return (nestedAccount as NestedGroupMessageAccount).account.type === 'GROUP'
+}
+
 export interface MessageBody {
   title: string
   content: string

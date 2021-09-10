@@ -61,11 +61,11 @@ const CollapsibleMessageBoxesContainer = styled.div`
 `
 
 export default function GroupMessageAccountList({
-  accounts,
+  nestedGroupAccounts,
   activeView,
   setView
 }: {
-  accounts: NestedGroupMessageAccount[]
+  nestedGroupAccounts: NestedGroupMessageAccount[]
   activeView: AccountView | undefined
   setView: (view: AccountView) => void
 }) {
@@ -80,7 +80,7 @@ export default function GroupMessageAccountList({
 
   return (
     <CollapsibleMessageBoxesContainer>
-      {accounts.map((nestedAcc, i) => (
+      {nestedGroupAccounts.map((nestedAcc, i) => (
         <CollapsibleRow
           key={nestedAcc.account.id}
           startCollapsed={startCollapsed(nestedAcc, i)}

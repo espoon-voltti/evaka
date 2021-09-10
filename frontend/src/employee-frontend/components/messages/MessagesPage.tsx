@@ -148,7 +148,7 @@ export default function MessagesPage() {
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              accounts={nestedAccounts.value}
+              nestedAccounts={nestedAccounts.value}
               selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
