@@ -149,40 +149,40 @@ const sv: Translations = {
     backToSearch: 'Tillbaka till sökning'
   },
   calendar: {
-    title: 'Kalenteri',
-    holiday: 'Pyhäpäivä',
-    absent: 'Poissa',
+    title: 'Kalender',
+    holiday: 'Helgdag',
+    absent: 'Frånvarande',
     absences: {
-      SICKLEAVE: 'Sairauspoissaolo',
-      PLANNED_ABSENCE: 'Vapaapäivä'
+      SICKLEAVE: 'Sjukskriven',
+      PLANNED_ABSENCE: 'Ledig dag'
     },
-    newReservationOrAbsence: 'Varaus / Poissaolo',
-    newAbsence: 'Ilmoita poissaolo',
-    newReservationBtn: 'Tee varaus',
-    noReservation: 'Ei varausta',
+    newReservationOrAbsence: 'Reservation / Frånvaro',
+    newAbsence: 'Anmäl frånvaro',
+    newReservationBtn: 'Reservera',
+    noReservation: 'Ingen reservation',
     reservationModal: {
-      title: 'Tee varaus',
-      selectChildren: 'Valitse lapset',
-      dateRange: 'Varauksen voimassaolo',
-      dateRangeLabel: 'Tee varaus päiville',
-      times: 'Kellonaika',
-      businessDays: 'Ma-Pe',
-      postError: 'Varauksen luominen ei onnistunut',
-      repeats: 'Toistuu',
+      title: 'Reservera',
+      selectChildren: 'Utvalda barn',
+      dateRange: 'Reservationens giltighet',
+      dateRangeLabel: 'Reservera dagarna',
+      times: 'Tid',
+      businessDays: 'Mån-Fre',
+      postError: 'Misslyckades med att reservera',
+      repeats: 'Upprepas',
       repetitions: {
-        DAILY: 'Päivittäin',
-        WEEKLY: 'Viikoittain'
+        DAILY: 'Dagligen',
+        WEEKLY: 'Veckovis'
       }
     },
     absenceModal: {
-      title: 'Ilmoita poissaolo',
-      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
-      dateRange: 'Poissaoloilmoitus ajalle',
-      absenceType: 'Poissaolon syy',
+      title: 'Anmäl frånvaro',
+      selectedChildren: 'Utvalda barn',
+      dateRange: 'Frånvaromeddelande för ',
+      absenceType: 'Anledning till frånvaro',
       absenceTypes: {
-        SICKLEAVE: 'Sairaus',
-        OTHER_ABSENCE: 'Muu poissaolo',
-        PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+        SICKLEAVE: 'Sjukdom',
+        OTHER_ABSENCE: 'Annan frånvaro',
+        PLANNED_ABSENCE: 'Vanlig ledig dag/skiftvård'
       }
     }
   },
