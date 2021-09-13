@@ -65,7 +65,7 @@ abstract class FullApplicationTest {
 
     protected fun dbInstance(): Database = Database(jdbi)
 
-    private val pngFile = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")
+    private val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")
 
     @BeforeAll
     protected fun beforeAll() {

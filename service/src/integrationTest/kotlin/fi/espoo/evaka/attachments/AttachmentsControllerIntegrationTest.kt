@@ -80,7 +80,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
         assertFalse(uploadUnparentedAttachment())
     }
 
-    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")!!
+    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")!!
 
     private fun uploadAttachment(path: String, parameters: List<Pair<String, Any?>>? = null): Boolean {
         val (_, res, _) = http.upload(path, parameters = parameters)
