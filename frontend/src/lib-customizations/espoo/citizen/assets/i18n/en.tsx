@@ -52,7 +52,7 @@ const en: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      weekShort: 'Week',
+      weekShort: 'Wk',
       weekdays: [
         'Monday',
         'Tuesday',
@@ -149,40 +149,40 @@ const en: Translations = {
     backToSearch: 'Back to search'
   },
   calendar: {
-    title: 'Kalenteri',
-    holiday: 'Pyhäpäivä',
-    absent: 'Poissa',
+    title: 'Calendar',
+    holiday: 'Holiday',
+    absent: 'Absent',
     absences: {
-      SICKLEAVE: 'Sairauspoissaolo',
-      PLANNED_ABSENCE: 'Vapaapäivä'
+      SICKLEAVE: 'Sickness absence',
+      PLANNED_ABSENCE: 'Planned day off'
     },
-    newReservationOrAbsence: 'Varaus / Poissaolo',
-    newAbsence: 'Ilmoita poissaolo',
-    newReservationBtn: 'Tee varaus',
-    noReservation: 'Ei varausta',
+    newReservationOrAbsence: 'Reservation / Absence',
+    newAbsence: 'Report absence',
+    newReservationBtn: 'Make a reservation',
+    noReservation: 'No reservations',
     reservationModal: {
-      title: 'Tee varaus',
-      selectChildren: 'Valitse lapset',
-      dateRange: 'Varauksen voimassaolo',
-      dateRangeLabel: 'Tee varaus päiville',
-      times: 'Kellonaika',
-      businessDays: 'Ma-Pe',
-      postError: 'Varauksen luominen ei onnistunut',
-      repeats: 'Toistuu',
+      title: 'Make a reservation',
+      selectChildren: 'Selected children',
+      dateRange: 'Validity',
+      dateRangeLabel: 'Make a reservation for dates',
+      times: 'Time',
+      businessDays: 'Mon-Fri',
+      postError: 'The reservation failed',
+      repeats: 'Repeating',
       repetitions: {
-        DAILY: 'Päivittäin',
-        WEEKLY: 'Viikoittain'
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly'
       }
     },
     absenceModal: {
-      title: 'Ilmoita poissaolo',
-      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
-      dateRange: 'Poissaoloilmoitus ajalle',
-      absenceType: 'Poissaolon syy',
+      title: 'Report absence',
+      selectedChildren: 'Selected children',
+      dateRange: 'Absent during',
+      absenceType: 'Reason for absence',
       absenceTypes: {
-        SICKLEAVE: 'Sairaus',
-        OTHER_ABSENCE: 'Muu poissaolo',
-        PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+        SICKLEAVE: 'Sickness',
+        OTHER_ABSENCE: 'Other absence',
+        PLANNED_ABSENCE: 'Regular day off/shift care'
       }
     }
   },
