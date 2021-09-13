@@ -63,7 +63,7 @@ fun getNewOrStaleUnits(tx: Database.Read, organizerName: String, sourceSystem: S
         LEFT JOIN unit_manager ON daycare.unit_manager_id = unit_manager.id
         WHERE daycare.upload_to_varda IS TRUE
             AND (
-                GREATEST(daycare.updated, daycare.closing_date) > varda_unit.uploaded_at OR
+                daycare.updated > varda_unit.uploaded_at OR
                 daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
                 daycare.oph_unit_oid IS NULL
             )
