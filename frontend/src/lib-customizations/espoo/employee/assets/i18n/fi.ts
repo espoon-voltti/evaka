@@ -2640,7 +2640,8 @@ export const fi = {
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
       ophOrganizationOid: 'Organisaation OID puuttuu',
-      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen'
+      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen',
+      vardaUnitPhoneNotValid: 'Vardayksiköllä on oltava puhelinnumero'
     }
   },
   fileUpload: {

@@ -39,6 +39,7 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { UnitProviderType } from 'lib-customizations/types'
+import { isNullOrEmpty } from 'lib-common/utils/string'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -363,6 +364,15 @@ function validateForm(
     form.openingDate.isAfter(form.closingDate)
   ) {
     errors.push(i18n.unitEditor.error.openingDateIsAfterClosingDate)
+  }
+
+  if (form.uploadToVarda) {
+    if (isNullOrEmpty(form.ophUnitOid))
+      errors.push(i18n.unitEditor.error.ophUnitOid)
+    if (isNullOrEmpty(form.ophOrganizerOid))
+      errors.push(i18n.unitEditor.error.ophOrganizerOid)
+    if (isNullOrEmpty(form.ophOrganizationOid))
+      errors.push(i18n.unitEditor.error.ophOrganizationOid)
   }
 
   const {
