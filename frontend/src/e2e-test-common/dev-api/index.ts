@@ -35,7 +35,8 @@ import {
   FridgePartner,
   EmployeePin,
   UserRole,
-  PersonDetailWithDependantsAndGuardians
+  PersonDetailWithDependantsAndGuardians,
+  HighestFeeFixture
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -353,6 +354,17 @@ export async function insertFeeThresholds(
 ): Promise<void> {
   try {
     await devClient.post('/fee-thresholds', fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertIncomeStatements(
+  personId: UUID,
+  data: HighestFeeFixture[]
+): Promise<void> {
+  try {
+    await devClient.post(`/income-statements`, { personId, data })
   } catch (e) {
     throw new DevApiError(e)
   }

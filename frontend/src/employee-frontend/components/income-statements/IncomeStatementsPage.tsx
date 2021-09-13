@@ -26,7 +26,7 @@ function IncomeStatementsList({
   return (
     <ul>
       {data.map(({ id, personId, personName, type }) => (
-        <li key={id}>
+        <li key={id} data-qa="income-statement-row">
           <Link to={`/profile/${personId}`}>{personName}</Link>
           {` (${i18n.incomeStatement.statementTypes[type].toLowerCase()})`}
         </li>

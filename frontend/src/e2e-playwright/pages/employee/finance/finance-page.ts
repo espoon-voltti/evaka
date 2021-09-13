@@ -40,6 +40,10 @@ export class FinancePage {
     await page.invoicesPageIsLoaded()
     return page
   }
+
+  async selectIncomeStatementsTab() {
+    await this.page.locator(`[data-qa="income-statements-tab"]`).click()
+  }
 }
 
 export class FeeDecisionsPage {
@@ -386,5 +390,18 @@ export class InvoicesPage {
 
   private formatFinnishDecimal(number: number) {
     return String(number).replace('.', ',')
+  }
+}
+
+export class IncomeStatementsPage {
+  constructor(private readonly page: Page) {}
+
+  #incomeStatementRow = this.page.locator(`[data-qa="income-statement-row"]`)
+  async getRowCount(): Promise<number> {
+    return this.#incomeStatementRow.count()
+  }
+
+  async openNthIncomeStatement(nth: number) {
+    await this.#incomeStatementRow.nth(nth).locator('a').click()
   }
 }
