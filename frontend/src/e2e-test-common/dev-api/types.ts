@@ -9,6 +9,7 @@ import {
   ApplicationOrigin,
   ApplicationStatus
 } from 'lib-common/generated/enums'
+import { HighestFee } from 'lib-common/api-types/incomeStatement'
 
 export type UUID = string
 type ISODate = string
@@ -150,6 +151,11 @@ export interface Invoice {
   sentBy?: UUID
   sentAt?: Timestamp
 }
+
+export type HighestFeeFixture = Pick<
+  HighestFee,
+  'type' | 'startDate' | 'endDate'
+>
 
 export interface CareArea {
   id: UUID

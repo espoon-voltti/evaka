@@ -156,7 +156,7 @@ function IncomeStatements({
               <Th>{i18n.handleHeading}</Th>
             </Tr>
           </Thead>
-          <Tbody>
+          <Tbody data-qa="income-statements">
             {incomeStatements.map((incomeStatement) => (
               <IncomeStatementRow
                 key={incomeStatement.id}
@@ -200,7 +200,7 @@ function IncomeStatementRow({
   )
 
   return (
-    <Tr key={incomeStatement.id}>
+    <Tr key={incomeStatement.id} data-qa="income-statement-row">
       <Td verticalAlign="middle">
         <Link
           to={`/profile/${personId}/income-statement/${incomeStatement.id}`}
@@ -211,6 +211,7 @@ function IncomeStatementRow({
       <Td verticalAlign="middle">{formatDate(incomeStatement.created)}</Td>
       <Td>
         <Checkbox
+          data-qa="set-handled-checkbox"
           label={i18n.handled}
           checked={incomeStatement.handlerName !== null}
           disabled={loading}

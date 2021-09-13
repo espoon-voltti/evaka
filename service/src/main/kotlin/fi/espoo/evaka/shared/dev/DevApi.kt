@@ -31,6 +31,8 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -326,6 +328,11 @@ class DevApi(
                 it.insertTestFeeThresholds(feeThresholds)
             )
         }
+
+    data class DevCreateIncomeStatements(val personId: UUID, val data: List<IncomeStatementBody>)
+    @PostMapping("/income-statements")
+    fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
+        db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
 
     @PostMapping("/person")
     fun upsertPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
