@@ -20,51 +20,48 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
-private val header = """// SPDX-FileCopyrightText: 2017-2021 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
-// GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
-
-import { UUID } from '../types'
-import LocalDate from '../local-date'
-import FiniteDateRange from '../finite-date-range'
-import DateRange from '../date-range'
-import {DailyServiceTimes} from '../api-types/child/common'
-
-"""
-
-private val tsMapping = mapOf(
-    "kotlin.String" to "string",
-    "java.util.UUID" to "UUID",
-    "fi.espoo.evaka.shared.Id" to "UUID",
-    "kotlin.Int" to "number",
-    "kotlin.Long" to "number",
-    "kotlin.Double" to "number",
-    "java.math.BigDecimal" to "number",
-    "kotlin.Boolean" to "boolean",
-    "java.time.LocalDate" to "LocalDate",
-    "fi.espoo.evaka.shared.domain.FiniteDateRange" to "FiniteDateRange",
-    "fi.espoo.evaka.shared.domain.DateRange" to "DateRange",
-    "java.time.LocalTime" to "string",
-    "java.time.LocalDateTime" to "Date",
-    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to "Date",
-    "java.time.Instant" to "Date",
-    "java.time.OffsetDateTime" to "Date"
-)
-
 fun generateApiTypes() {
-    val path = locateRoot() / "api-types.d.ts"
-    path.writeText(getApiTypesInTypeScript())
+    getApiTypesInTypeScript().entries.forEach { (path, content) ->
+        path.writeText(content)
+    }
 }
 
-fun getApiTypesInTypeScript(): String {
+fun getApiTypesInTypeScript(): Map<Path, String> {
+    val root = locateRoot()
+    return analyzeClasses().entries.associate { (mainPackage, classes) ->
+        val path = root / "api-types" / "$mainPackage.d.ts"
+        val content = """$header
+${getImports(classes).sorted().joinToString("\n")}
+
+${classes.sortedBy { it.name.substringAfterLast('.') }.joinToString("\n\n") { it.toTs() }}
+        """.trimMargin()
+
+        path to content
+    }
+}
+
+private fun getImports(classes: List<AnalyzedClass>): List<String> {
+    val classesToImport = classes
+        .flatMap { if (it is AnalyzedClass.DataClass) it.properties else emptyList() }
+        .map { it.type.qualifiedName!! }
+        .filter { classes.none { c -> c.name == it } }
+        .toSet()
+
+    return classesToImport.mapNotNull {
+        if (tsMapping.containsKey(it)) {
+            tsMapping[it]?.import
+        } else {
+            "import { ${it.substringAfterLast('.')} } from './${getBasePackage(it)}'"
+        }
+    }.distinct()
+}
+
+private fun analyzeClasses(): Map<String, List<AnalyzedClass>> {
     val knownClasses = tsMapping.keys.toMutableSet()
     val analyzedClasses = mutableListOf<AnalyzedClass>()
 
     val waiting = ArrayDeque<KClass<*>>()
-    waiting.addAll(getApiClasses("fi.espoo.evaka").filter { !knownClasses.contains(it.qualifiedName) })
+    waiting.addAll(getApiClasses(basePackage).filter { !knownClasses.contains(it.qualifiedName) })
 
     while (waiting.isNotEmpty()) {
         val analyzed = analyzeClass(waiting.removeFirst()) ?: continue
@@ -79,7 +76,7 @@ fun getApiTypesInTypeScript(): String {
         }
     }
 
-    return header + analyzedClasses.sortedBy { it.name }.joinToString("\n\n") { it.toTs() }
+    return analyzedClasses.groupBy { getBasePackage(it.name) }
 }
 
 fun locateRoot(): Path {
@@ -127,9 +124,7 @@ private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedPropert
 }
 
 private fun isCollection(type: KType): Boolean {
-    return type.jvmErasure.isSubclassOf(Collection::class) || type.jvmErasure.isSubclassOf(Array::class) ||
-        type.jvmErasure.isSubclassOf(IntArray::class) || type.jvmErasure.isSubclassOf(DoubleArray::class) ||
-        type.jvmErasure.isSubclassOf(BooleanArray::class)
+    return kotlinCollectionClasses.any { type.jvmErasure.isSubclassOf(it) }
 }
 
 private fun unwrapCollection(type: KType): KClass<*> {
@@ -180,8 +175,18 @@ private data class AnalyzedProperty(
     val collection: Boolean
 ) {
     fun toTs(): String {
-        return "$name: ${tsMapping[type.qualifiedName] ?: type.simpleName}"
+        return "$name: ${tsMapping[type.qualifiedName]?.type ?: type.simpleName}"
             .let { if (collection) "$it[]" else it }
             .let { if (nullable) "$it | null" else it }
     }
+}
+
+private fun getBasePackage(fullyQualifiedName: String): String {
+    val pkg = fullyQualifiedName.substringBeforeLast('.')
+    val relativePackage = when {
+        pkg == basePackage -> return "base"
+        pkg.startsWith("$basePackage.") -> pkg.substring(basePackage.length + 1)
+        else -> error("class not under base package")
+    }
+    return relativePackage.substringBefore('.')
 }
