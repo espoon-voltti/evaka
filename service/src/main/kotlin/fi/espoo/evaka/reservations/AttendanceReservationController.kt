@@ -105,8 +105,14 @@ data class UnitAttendanceReservations(
     )
 
     data class GroupAttendanceReservations(
-        val group: String,
+        val group: ReservationGroup,
         val children: List<ChildReservations>
+    )
+
+    data class ReservationGroup(
+        @PropagateNull
+        val id: UUID,
+        val name: String
     )
 
     data class ChildReservations(
@@ -147,7 +153,8 @@ data class UnitAttendanceReservations(
 
     data class QueryRow(
         val date: LocalDate,
-        val group: String?,
+        @Nested("group")
+        val group: ReservationGroup?,
         @Nested
         val child: Child,
         @Nested("reservation")
@@ -177,7 +184,8 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     """
     SELECT 
         t::date AS date,
-        dg.name AS "group",
+        dg.id AS group_id,
+        dg.name AS group_name,
         p.id,
         p.first_name,
         p.last_name,

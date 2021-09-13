@@ -3,16 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect } from 'react'
-import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
 import colors from 'lib-customizations/common'
 import { Label, LabelText } from '../common/styled/common'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Loading } from 'lib-common/api'
 import {
@@ -35,30 +32,29 @@ import {
 import AbsenceTable from './AbsenceTable'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import { TitleContext, TitleState } from '../../state/title'
-import ColorInfo from '../../components/absences/ColorInfo'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import styled from 'styled-components'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { UUID } from 'lib-common/types'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import LocalDate from 'lib-common/local-date'
 
-const AbsencesContentArea = styled(ContentArea)`
-  overflow-x: auto;
-
-  @media print {
-    padding: 0;
-  }
-`
+interface Props {
+  groupId: UUID
+  selectedDate: LocalDate
+  setSelectedDate: (date: LocalDate) => void
+}
 
 export default function Absences({
-  match
-}: RouteComponentProps<{ groupId: string }>) {
+  groupId,
+  selectedDate,
+  setSelectedDate
+}: Props) {
   const { i18n } = useTranslation()
   const {
     absences,
     setAbsences,
     modalVisible,
     setModalVisible,
-    selectedDate,
-    setSelectedDate,
     selectedCells,
     setSelectedCells,
     selectedAbsenceType,
@@ -67,8 +63,6 @@ export default function Absences({
     setSelectedCareTypeCategories
   } = useContext<AbsencesState>(AbsencesContext)
   const { setTitle } = useContext<TitleState>(TitleContext)
-
-  const { groupId } = match.params
 
   const resetModalState = () => {
     setSelectedCells([])
@@ -203,40 +197,26 @@ export default function Absences({
 
   return (
     <AbsencesPage data-qa="absences-page">
-      <Container>
-        <ReturnButton
-          label={i18n.common.goBack}
-          data-qa="absences-page-return-button"
-        />
-        <AbsencesContentArea opaque>
-          {renderAbsenceModal()}
-          {absences.isSuccess ? (
-            <div>
-              <Title size={1} data-qa="absences-title">
-                {absences.value.daycareName}
-              </Title>
-              <Title size={2}>{absences.value.groupName}</Title>
-              <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
-              <AbsenceTable
-                groupId={groupId}
-                childList={absences.value.children}
-                operationDays={absences.value.operationDays}
-              />
-              <AddAbsencesButton
-                data-qa="add-absences-button"
-                onClick={() => setModalVisible(true)}
-                disabled={selectedCells.length === 0}
-                text={i18n.absences.addAbsencesButton(selectedCells.length)}
-              />
-            </div>
-          ) : null}
-          {absences.isLoading && <Loader />}
-          {absences.isFailure && (
-            <div>Something went wrong ({absences.message})</div>
-          )}
-        </AbsencesContentArea>
-        <ColorInfo />
-      </Container>
+      {renderAbsenceModal()}
+      {absences.isSuccess ? (
+        <div>
+          <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
+          <AbsenceTable
+            groupId={groupId}
+            selectedDate={selectedDate}
+            childList={absences.value.children}
+            operationDays={absences.value.operationDays}
+          />
+          <AddAbsencesButton
+            data-qa="add-absences-button"
+            onClick={() => setModalVisible(true)}
+            disabled={selectedCells.length === 0}
+            text={i18n.absences.addAbsencesButton(selectedCells.length)}
+          />
+        </div>
+      ) : null}
+      {absences.isLoading && <Loader />}
+      {absences.isFailure && <ErrorSegment />}
     </AbsencesPage>
   )
 }

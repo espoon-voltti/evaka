@@ -23,6 +23,7 @@ import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
 import AbsenceModal from './AbsenceModal'
 import DayView from './DayView'
+
 import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'

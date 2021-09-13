@@ -421,6 +421,23 @@ export async function createGroup(
   await client.post(url, data)
 }
 
+export async function getDaycareGroups(
+  unitId: UUID
+): Promise<Result<DaycareGroup[]>> {
+  return client
+    .get<JsonOf<DaycareGroup[]>>(`/daycares/${unitId}/groups`)
+    .then(({ data }) =>
+      Success.of(
+        data.map((group) => ({
+          ...group,
+          startDate: LocalDate.parseIso(group.startDate),
+          endDate: LocalDate.parseNullableIso(group.endDate)
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function editGroup(
   daycareId: UUID,
   groupId: UUID,
@@ -868,10 +885,15 @@ export interface UnitAttendanceReservations {
   unit: string
   operationalDays: OperationalDay[]
   groups: Array<{
-    group: string
+    group: ReservationGroup
     children: Array<ChildReservations>
   }>
   ungrouped: Array<ChildReservations>
+}
+
+interface ReservationGroup {
+  id: UUID
+  name: string
 }
 
 export interface OperationalDay {

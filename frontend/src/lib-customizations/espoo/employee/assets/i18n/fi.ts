@@ -1354,6 +1354,7 @@ export const fi = {
     tabs: {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',
+      calendar: 'Kalenteri',
       waitingConfirmation: 'Vahvistettavana huoltajalla',
       placementProposals: 'Sijoitusehdotukset',
       applications: 'Hakemukset'
@@ -1497,6 +1498,13 @@ export const fi = {
           groupNotStarted: 'Ryhmä ei ole vielä alkanut',
           groupEnded: 'Ryhmä on jo lakkautettu'
         }
+      }
+    },
+    calendar: {
+      title: 'Varaukset ja läsnäolot',
+      modes: {
+        week: 'Viikko',
+        month: 'Kuukausi'
       }
     },
     groups: {
