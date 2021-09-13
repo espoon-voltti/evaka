@@ -9,14 +9,16 @@ import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'
 import { useTranslation } from '../../../state/i18n'
-import {
-  Income,
-  IncomeCoefficient,
-  IncomeType,
-  incomeTypes,
-  expenseTypes
-} from '../../../types/income'
+import { Income, IncomeCoefficient, IncomeOption } from '../../../types/income'
 import { formatCents, isValidCents, parseCents } from '../../../utils/money'
+import { Result, Success } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import {
+  getIncomeOptions,
+  IncomeTypeOptions
+} from 'employee-frontend/api/income'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 const Container = styled.div`
   margin-bottom: 40px;
@@ -32,7 +34,7 @@ const formatData = (data: Partial<Income['data']>): TableIncomeState => {
   Object.entries(data).forEach(([type, value]) => {
     if (value && value.amount) {
       formatted[type] = {
-        amount: formatCents(value?.amount),
+        amount: formatCents(value?.amount) as string,
         coefficient: value?.coefficient
       }
     }
@@ -59,13 +61,14 @@ const parseData = (state: TableIncomeState): Partial<Income['data']> => {
 }
 
 export type TableIncomeState = Partial<
-  {
-    [Key in IncomeType]: {
+  Record<
+    string,
+    {
       amount: string
       coefficient: IncomeCoefficient
-      monthlyAmount: number
+      monthlyAmount?: number
     }
-  }
+  >
 >
 
 type NotEditing = { total: number }
@@ -101,16 +104,34 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
     }
   }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const types: readonly IncomeType[] =
+  const [incomeOptions, setIncomeOptions] = useState<Result<IncomeTypeOptions>>(
+    Success.of([[], []])
+  )
+  const loadIncomeOptions = useRestApi(getIncomeOptions, setIncomeOptions)
+  useEffect(() => {
+    loadIncomeOptions()
+  }, [loadIncomeOptions])
+
+  if (incomeOptions.isLoading) {
+    return <SpinnerSegment />
+  }
+  if (incomeOptions.isFailure) {
+    return <ErrorSegment />
+  }
+
+  const [incomeTypes, expenseTypes] = incomeOptions.value
+  const types: readonly IncomeOption[] =
     props.type === 'income' ? incomeTypes : expenseTypes
 
   const shownTypes =
-    'editing' in props ? types : types.filter((type) => !!props.data[type])
+    'editing' in props
+      ? types
+      : types.filter((type) => !!props.data[type.value])
 
   const sum =
     'editing' in props
       ? Object.entries(state)
-          .filter(([key]) => types.includes(key as IncomeType))
+          .filter(([key]) => types.map((type) => type.value).includes(key))
           .map(([, value]) => value?.monthlyAmount ?? 0)
           .reduce((sum, value) => (value ? sum + value : sum), 0)
       : props.total
@@ -123,26 +144,26 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
           <Tbody>
             {shownTypes.map((type) => (
               <IncomeTableRow
-                key={type}
+                key={type.value}
                 i18n={i18n}
                 type={type}
                 editing={'editing' in props}
                 updateData={setState}
                 amount={
                   ('editing' in props
-                    ? state[type]?.amount
-                    : formatCents(props.data[type]?.amount)) ?? ''
+                    ? state[type.value]?.amount
+                    : formatCents(props.data[type.value]?.amount)) ?? ''
                 }
                 coefficient={
                   ('editing' in props
-                    ? state[type]?.coefficient
-                    : props.data[type]?.coefficient) ??
+                    ? state[type.value]?.coefficient
+                    : props.data[type.value]?.coefficient) ??
                   'MONTHLY_NO_HOLIDAY_BONUS'
                 }
                 monthlyAmount={
                   ('editing' in props
-                    ? state[type]?.monthlyAmount
-                    : props.data[type]?.monthlyAmount) ?? 0
+                    ? state[type.value]?.monthlyAmount
+                    : props.data[type.value]?.monthlyAmount) ?? 0
                 }
               />
             ))}

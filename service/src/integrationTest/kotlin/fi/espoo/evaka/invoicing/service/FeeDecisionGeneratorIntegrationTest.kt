@@ -17,7 +17,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestFeeThresholds
@@ -1655,7 +1654,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
             headOfFamilyIncome = DecisionIncome(
                 effect = IncomeEffect.INCOME,
-                data = mapOf(IncomeType.MAIN_INCOME to 0),
+                data = mapOf("MAIN_INCOME" to 0),
+                totalIncome = 0,
+                totalExpenses = 0,
                 total = 0,
                 validFrom = period.start,
                 validTo = period.end
@@ -1794,7 +1795,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 validFrom = period.start,
                 validTo = period.end,
                 effect = IncomeEffect.INCOME,
-                data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1))
             )
         }
     }

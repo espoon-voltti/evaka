@@ -19,7 +19,6 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
@@ -473,7 +472,7 @@ fun Database.Transaction.insertTestIncome(
     id: UUID = UUID.randomUUID(),
     validFrom: LocalDate = LocalDate.of(2019, 1, 1),
     validTo: LocalDate? = null,
-    data: Map<IncomeType, IncomeValue> = mapOf(),
+    data: Map<String, IncomeValue> = mapOf(),
     effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     updatedAt: Instant = Instant.now(),
     updatedBy: UUID = UUID.randomUUID()

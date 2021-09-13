@@ -44,6 +44,7 @@ import fi.espoo.evaka.invoicing.data.splitEarlierIncome
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
@@ -90,6 +91,7 @@ class ApplicationStateService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
+    private val incomeTypesProvider: IncomeTypesProvider,
     env: BucketEnv
 ) {
     private val filesBucket = env.attachments
@@ -679,7 +681,7 @@ class ApplicationStateService(
         !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
     private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
-        val incomes = tx.getIncomesForPerson(mapper, application.guardianId)
+        val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, application.guardianId)
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
             income.validTo != null &&
@@ -694,6 +696,7 @@ class ApplicationStateService(
             logger.debug { "Could not add a new max fee accepted income from application ${application.id}" }
         } else {
             val period = DateRange(start = validFrom, end = null)
+            val incomeTypes = incomeTypesProvider.get()
             val validIncome = Income(
                 id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
@@ -703,7 +706,7 @@ class ApplicationStateService(
                 validFrom = validFrom,
                 validTo = null,
                 applicationId = application.id
-            ).let(::validateIncome)
+            ).let { validateIncome(it, incomeTypes) }
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, application.guardianId)
             asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))

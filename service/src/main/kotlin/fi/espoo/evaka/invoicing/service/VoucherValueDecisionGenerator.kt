@@ -42,6 +42,7 @@ import java.util.UUID
 
 internal fun Database.Transaction.handleValueDecisionChanges(
     objectMapper: ObjectMapper,
+    incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     child: PersonData.WithDateOfBirth,
     headOfFamily: PersonData.JustId,
@@ -51,7 +52,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
-    val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 

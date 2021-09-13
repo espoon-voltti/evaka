@@ -10,7 +10,7 @@ export type IncomeId = 'new' | UUID
 
 export interface PartialIncome {
   effect: IncomeEffect
-  data: Partial<{ [K in IncomeType]: IncomeValue }>
+  data: Partial<Record<string, IncomeValue>>
   isEntrepreneur: boolean
   worksAtECHA: boolean
   validFrom: LocalDate
@@ -28,6 +28,14 @@ export interface Income extends PartialIncome {
   updatedBy: string
   applicationId: UUID | null
   notes: string
+}
+
+export interface IncomeOption {
+  value: string
+  nameFi: string
+  multiplier: number
+  withCoefficient: boolean
+  isSubType: boolean
 }
 
 export const deserializeIncome = (json: JsonOf<Income>): Income => ({
@@ -62,25 +70,3 @@ export const incomeEffects = [
 ] as const
 
 export type IncomeEffect = typeof incomeEffects[number]
-
-export const incomeTypes = [
-  'MAIN_INCOME',
-  'SHIFT_WORK_ADD_ON',
-  'PERKS',
-  'SECONDARY_INCOME',
-  'PENSION',
-  'UNEMPLOYMENT_BENEFITS',
-  'SICKNESS_ALLOWANCE',
-  'PARENTAL_ALLOWANCE',
-  'HOME_CARE_ALLOWANCE',
-  'ALIMONY',
-  'OTHER_INCOME'
-] as const
-
-export const expenseTypes = ['ALL_EXPENSES'] as const
-
-export type IncomeType =
-  | typeof incomeTypes[number]
-  | typeof expenseTypes[number]
-
-export const incomeSubTypes: IncomeType[] = ['SHIFT_WORK_ADD_ON', 'PERKS']
