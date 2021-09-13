@@ -323,6 +323,9 @@ function validateForm(
   if (form.invoicedByMunicipality && !costCenter) {
     errors.push(i18n.unitEditor.error.costCenter)
   }
+  if (url && !(url.startsWith('https://') || url.startsWith('http://'))) {
+    errors.push(i18n.unitEditor.error.url)
+  }
   if (!visitingAddress.streetAddress) {
     errors.push(i18n.unitEditor.error.visitingAddress.streetAddress)
   }
