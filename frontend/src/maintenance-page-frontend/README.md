@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017-2021 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
 # maintenance-page-frontend
 
 Simple static maintenance page that can be deployed alongside eVaka to show
