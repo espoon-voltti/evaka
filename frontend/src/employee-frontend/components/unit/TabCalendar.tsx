@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { useTranslation } from '../../state/i18n'
@@ -17,6 +17,8 @@ import { UnitContext } from '../../state/unit'
 import LocalDate from 'lib-common/local-date'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 import { useQuery } from '../../utils/useQuery'
+import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
+import { UUID_REGEX } from '../../utils/validation/validations'
 
 type Mode = 'week' | 'month'
 
@@ -41,9 +43,19 @@ export default React.memo(function TabCalendar({ unitId }: Props) {
   const { i18n } = useTranslation()
   const { unitInformation } = useContext(UnitContext)
   const [mode, setMode] = useState<Mode>('month')
-  const defaultGroup = useQuery().get('group')
-  const [groupId, setGroupId] = useState<UUID | 'no-group' | null>(defaultGroup)
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
+
+  const groupParam = useQuery().get('group')
+  const defaultGroup =
+    groupParam && (groupParam === 'no-group' || UUID_REGEX.test(groupParam))
+      ? groupParam
+      : null
+  const [groupId, setGroupId] = useState<UUID | 'no-group' | null>(defaultGroup)
+  const memoizedParams = useMemo(
+    () => (groupId ? { group: groupId } : ({} as Record<string, string>)),
+    [groupId]
+  )
+  useSyncQueryParams(memoizedParams)
 
   const reservationEnabled = unitInformation
     .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))

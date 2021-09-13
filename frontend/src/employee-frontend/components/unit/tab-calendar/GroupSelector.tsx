@@ -65,7 +65,6 @@ export default React.memo(function GroupSelector({
       value={selected}
       options={options}
       onChange={(e) => onSelect(e.target.value)}
-      placeholder={''}
     />
   ) : null
 })

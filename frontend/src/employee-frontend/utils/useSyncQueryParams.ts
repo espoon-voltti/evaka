@@ -12,8 +12,11 @@ import { useHistory } from 'react-router-dom'
 export function useSyncQueryParams(queryParams: Record<string, string>) {
   const history = useHistory()
   useEffect(() => {
-    const { pathname } = history.location
+    const { pathname, search } = history.location
     const query = new URLSearchParams(queryParams).toString()
-    history.replace(`${pathname}?${query}`)
+    const url = `${pathname}${query ? `?${query}` : ''}`
+    if (pathname + (search ? search : '') !== url) {
+      history.replace(url)
+    }
   }, [history, queryParams])
 }
