@@ -33,7 +33,9 @@ export default class AbsencesPage {
   readonly btnNextMonth: Selector = Selector(
     '[data-qa="period-picker-next-month"]'
   )
-  readonly absencesTitle: Selector = Selector('[data-qa="absences-title"]')
+  readonly absencesUnitName: Selector = Selector(
+    '[data-qa="calendar-unit-name"]'
+  )
   readonly absenceTableChildLink: Selector = Selector('.absence-child-link')
   readonly absenceCell: Selector = Selector('[data-qa="absence-cell"]')
   readonly btnAddAbsence: Selector = Selector('[data-qa="add-absences-button"]')

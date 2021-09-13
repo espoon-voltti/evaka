@@ -94,7 +94,7 @@ test('User can open the absence dialog', async (t) => {
 
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await t
-    .expect(absencesPage.absencesTitle.innerText)
+    .expect(absencesPage.absencesUnitName.innerText)
     .eql(fixtures.daycareFixture.name)
 
   await unitPage.openTabGroups()

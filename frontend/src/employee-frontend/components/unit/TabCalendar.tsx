@@ -67,7 +67,7 @@ export default React.memo(function TabCalendar({ unitId }: Props) {
         )}
       </TopRow>
 
-      <H2>
+      <H2 data-qa="calendar-unit-name">
         {unitInformation.isSuccess ? unitInformation.value.daycare.name : ' '}
       </H2>
 
