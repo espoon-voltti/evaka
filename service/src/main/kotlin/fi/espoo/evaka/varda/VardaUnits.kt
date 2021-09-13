@@ -4,12 +4,7 @@
 
 package fi.espoo.evaka.varda
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -27,9 +22,9 @@ fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: Str
     units.forEach { unit ->
         try {
             val response =
-                if (unit.vardaUnitId == null) client.createUnit(VardaUnitRequest.fromVardaUnit(unit))
-                else client.updateUnit(VardaUnitRequest.fromVardaUnit(unit))
-            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = response.vardaUnitId, ophUnitOid = response.ophUnitOid)) }
+                if (unit.vardaUnitId == null) client.createUnit(getVardaUnitRequest(unit))
+                else client.updateUnit(getVardaUnitRequest(unit))
+            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
         } catch (e: Exception) {
             logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
         }
@@ -144,123 +139,76 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
 }
 
 data class VardaUnitResponse(
-    @JsonProperty("id")
-    var vardaUnitId: Long,
-    @JsonProperty("organisaatio_oid")
-    val ophUnitOid: String
+    var id: Long,
+    val organisaatio_oid: String
 )
 
-@JsonPropertyOrder(
-    "id", "organisaatio_oid", "vakajarjestaja", "kayntiosoite", "postiosoite", "nimi",
-    "kayntiosoite_postinumero", "kayntiosoite_postitoimipaikka", "postinumero", "postitoimipaikka", "kunta_koodi",
-    "puhelinnumero", "sahkopostiosoite", "kasvatusopillinen_jarjestelma_koodi",
-    "toimintamuoto_koodi", "asiointikieli_koodi", "jarjestamismuoto_koodi", "varhaiskasvatuspaikat",
-    "toiminnallinenpainotus_kytkin", "kielipainotus_kytkin", "alkamis_pvm", "paattymis_pvm"
-)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 data class VardaUnit(
-    @JsonProperty("id")
     var vardaUnitId: Long?,
-    @JsonProperty("organisaatio_oid")
     val ophUnitOid: String?,
-    @JsonIgnore
-    val evakaDaycareId: DaycareId?,
-    @JsonProperty("vakajarjestaja")
     var organizer: String?,
-    @JsonProperty("nimi")
     val name: String?,
-    @JsonProperty("kayntiosoite")
     val address: String?,
-    @JsonProperty("kayntiosoite_postinumero")
     val postalCode: String?,
-    @JsonProperty("kayntiosoite_postitoimipaikka")
     val postOffice: String?,
-    @JsonProperty("postiosoite")
     val mailingStreetAddress: String?,
-    @JsonProperty("postinumero")
     val mailingPostalCode: String?,
-    @JsonProperty("postitoimipaikka")
     val mailingPostOffice: String?,
-    @JsonProperty("puhelinnumero")
     val phoneNumber: String?,
-    @JsonProperty("sahkopostiosoite")
     val email: String?,
-    @JsonProperty("varhaiskasvatuspaikat")
     val capacity: Int,
-    @JsonIgnore
-    val unitProviderType: VardaUnitProviderType,
-    @JsonIgnore
-    val unitType: List<VardaUnitType>,
-    @JsonIgnore
-    val language: VardaLanguage,
-    @JsonIgnore
-    val languageEmphasisId: UUID?,
-    @JsonProperty("alkamis_pvm")
     val openingDate: String?,
-    @JsonProperty("paattymis_pvm")
     val closingDate: String?,
-    @JsonProperty("kunta_koodi")
     val municipalityCode: String,
-    @JsonProperty("lahdejarjestelma")
-    val sourceSystem: String
-) {
-    // Espoo always false
-    @JsonProperty("toiminnallinenpainotus_kytkin")
-    fun getUnitEmphasisSwitch(): Boolean {
-        return false
-    }
+    val sourceSystem: String,
+    val evakaDaycareId: DaycareId?,
+    val unitProviderType: VardaUnitProviderType,
+    val unitType: List<VardaUnitType>,
+    val language: VardaLanguage,
+    val languageEmphasisId: UUID?
+)
 
-    // Espoo always kj98
-    @JsonProperty("kasvatusopillinen_jarjestelma_koodi")
-    fun getEducationSystemCode(): String {
-        return VardaUnitEducationSystem.NONE.vardaCode
-    }
-
-    // Varda needs a list of codes but evaka uses only one code
-    @JsonProperty("jarjestamismuoto_koodi")
-    fun getUnitProviderTypeAsList(): List<String> {
-        return listOfNotNull(unitProviderType.vardaCode)
-    }
-
-    // Varda needs a single code and we use some types that are not in varda
-    // Before we send units to Varda we filter out units that have "" as a unit type
-    @JsonProperty("toimintamuoto_koodi")
-    fun getUnitTypeAsString(): String? {
-        return when {
-            unitType.contains(VardaUnitType.CENTRE) -> {
-                VardaUnitType.CENTRE.vardaCode
-            }
-            unitType.contains(VardaUnitType.FAMILY) -> {
-                VardaUnitType.FAMILY.vardaCode
-            }
-            unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
-                VardaUnitType.GROUP_FAMILY.vardaCode
-            }
-            unitType.contains(VardaUnitType.PRESCHOOL) -> {
-                VardaUnitType.PRESCHOOL.vardaCode
-            }
-            else -> null
+fun getVardaUnitRequest(unit: VardaUnit): VardaUnitRequest = VardaUnitRequest(
+    id = unit.vardaUnitId,
+    organisaatio_oid = unit.ophUnitOid,
+    vakajarjestaja = unit.organizer,
+    nimi = unit.name,
+    kayntiosoite = unit.address,
+    kayntiosoite_postinumero = unit.postalCode,
+    kayntiosoite_postitoimipaikka = unit.postOffice,
+    postiosoite = unit.mailingStreetAddress,
+    postinumero = unit.mailingPostalCode,
+    postitoimipaikka = unit.mailingPostOffice,
+    puhelinnumero = unit.phoneNumber,
+    sahkopostiosoite = unit.email,
+    varhaiskasvatuspaikat = unit.capacity,
+    alkamis_pvm = unit.openingDate,
+    paattymis_pvm = unit.closingDate,
+    kunta_koodi = unit.municipalityCode,
+    lahdejarjestelma = unit.sourceSystem,
+    toiminnallinenpainotus_kytkin = false,
+    kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
+    jarjestamismuoto_koodi = listOfNotNull(unit.unitProviderType.vardaCode),
+    toimintamuoto_koodi = when {
+        unit.unitType.contains(VardaUnitType.CENTRE) -> {
+            VardaUnitType.CENTRE.vardaCode
         }
-    }
-
-    // Varda want's a list of languages
-    @JsonProperty("asiointikieli_koodi")
-    fun getLanguageAsList(): List<String> {
-        return listOfNotNull(language.vardaCode)
-    }
-
-    // Varda needs true or false / Evaka has UUID or null
-    @JsonProperty("kielipainotus_kytkin")
-    fun getLanguageEmphasisSwitch(): Boolean {
-        if (languageEmphasisId == null) {
-            return false
+        unit.unitType.contains(VardaUnitType.FAMILY) -> {
+            VardaUnitType.FAMILY.vardaCode
         }
-        return true
-    }
-}
+        unit.unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
+            VardaUnitType.GROUP_FAMILY.vardaCode
+        }
+        unit.unitType.contains(VardaUnitType.PRESCHOOL) -> {
+            VardaUnitType.PRESCHOOL.vardaCode
+        }
+        else -> null
+    },
+    asiointikieli_koodi = listOfNotNull(unit.language.vardaCode),
+    kielipainotus_kytkin = unit.languageEmphasisId?.let { true } ?: false
+)
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class VardaUnitRequest(
     val id: Long?,
     val organisaatio_oid: String?,
@@ -285,32 +233,4 @@ data class VardaUnitRequest(
     val toimintamuoto_koodi: String?,
     val asiointikieli_koodi: List<String>,
     val kielipainotus_kytkin: Boolean
-) {
-    companion object {
-        fun fromVardaUnit(unit: VardaUnit): VardaUnitRequest = VardaUnitRequest(
-            id = unit.vardaUnitId,
-            organisaatio_oid = unit.ophUnitOid,
-            vakajarjestaja = unit.organizer,
-            nimi = unit.name,
-            kayntiosoite = unit.address,
-            kayntiosoite_postinumero = unit.postalCode,
-            kayntiosoite_postitoimipaikka = unit.postOffice,
-            postiosoite = unit.mailingStreetAddress,
-            postinumero = unit.mailingPostalCode,
-            postitoimipaikka = unit.mailingPostOffice,
-            puhelinnumero = unit.phoneNumber,
-            sahkopostiosoite = unit.email,
-            varhaiskasvatuspaikat = unit.capacity,
-            alkamis_pvm = unit.openingDate,
-            paattymis_pvm = unit.closingDate,
-            kunta_koodi = unit.municipalityCode,
-            lahdejarjestelma = unit.sourceSystem,
-            toiminnallinenpainotus_kytkin = unit.getUnitEmphasisSwitch(),
-            kasvatusopillinen_jarjestelma_koodi = unit.getEducationSystemCode(),
-            jarjestamismuoto_koodi = unit.getUnitProviderTypeAsList(),
-            toimintamuoto_koodi = unit.getUnitTypeAsString(),
-            asiointikieli_koodi = unit.getLanguageAsList(),
-            kielipainotus_kytkin = unit.getLanguageEmphasisSwitch()
-        )
-    }
-}
+)
