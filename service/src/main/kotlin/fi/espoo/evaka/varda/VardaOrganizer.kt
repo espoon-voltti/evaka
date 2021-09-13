@@ -10,17 +10,20 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.util.UUID
 
-fun updateOrganizer(db: Database.Connection, client: VardaClient, organizerName: String) {
-    val organizer = db.read { getStaleOrganizer(it, organizerName) }
+private val logger = KotlinLogging.logger {}
 
-    organizer?.let {
-        client.updateOrganizer(organizer.toUpdateObject()).let { success ->
-            if (success) db.transaction { setOrganizerUploaded(it, organizer) }
-        }
+fun updateOrganizer(db: Database.Connection, client: VardaClient, organizerName: String) {
+    try {
+        val organizer = db.read { getStaleOrganizer(it, organizerName) }!!
+        client.updateOrganizer(organizer.toUpdateObject())
+        db.transaction { setOrganizerUploaded(it, organizer) }
+    } catch (e: Exception) {
+        logger.error { "VardaUpdate: failed to update organizer: $e" }
     }
 }
 
@@ -67,19 +70,6 @@ data class VardaOrganizer(
 ) {
     fun toUpdateObject(): VardaUpdateOrganizer = VardaUpdateOrganizer(vardaOrganizerId, email, phone)
 }
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class VardaOrganizerResponse(
-    @JsonProperty("id")
-    val vardaOrganizerId: Long,
-    @JsonProperty("organisaatio_oid")
-    val vardaOrganizerOid: String,
-    @JsonProperty("url")
-    val url: String,
-    @JsonProperty("kunta_koodi")
-    val municipalityCode: String
-)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)

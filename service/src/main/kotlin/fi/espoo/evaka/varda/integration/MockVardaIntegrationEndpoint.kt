@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda.integration
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.varda.VardaChildRequest
 import fi.espoo.evaka.varda.VardaDecision
 import fi.espoo.evaka.varda.VardaFeeData
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -263,8 +265,15 @@ class MockVardaIntegrationEndpoint {
         ResponseEntity.noContent().build()
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DecisionPeriod(
+        val id: Long,
+        val alkamis_pvm: LocalDate,
+        val paattymis_pvm: LocalDate
+    )
+
     @GetMapping("/v1/lapset/{childId}/varhaiskasvatuspaatokset/")
-    fun getChildDecisions(@PathVariable childId: Long): ResponseEntity<VardaClient.PaginatedResponse<VardaClient.DecisionPeriod>> =
+    fun getChildDecisions(@PathVariable childId: Long): ResponseEntity<VardaClient.PaginatedResponse<DecisionPeriod>> =
         lock.withLock {
             logger.info { "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId" }
             val childDecisions = decisions.entries.filter { (_, decision) ->
@@ -276,7 +285,7 @@ class MockVardaIntegrationEndpoint {
                     next = null,
                     previous = null,
                     results = childDecisions.map { (vardaId, decision) ->
-                        VardaClient.DecisionPeriod(vardaId, decision.startDate, decision.endDate)
+                        DecisionPeriod(vardaId, decision.startDate, decision.endDate)
                     }
                 )
             )

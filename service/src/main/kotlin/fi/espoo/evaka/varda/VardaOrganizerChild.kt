@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.varda
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
-import fi.espoo.evaka.varda.integration.convertToVardaChildRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 import kotlin.Exception
@@ -86,7 +88,8 @@ private fun createVardaPersonAndChild(
 
     val vardaPerson = try {
         client.createPerson(personPayload)
-            ?: client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
+    } catch (e: Exception) {
+        client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
     } catch (e: Exception) {
         error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
     }
@@ -140,7 +143,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChildV2(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+            client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create PAOS child: ${e.message}")
         }
@@ -164,7 +167,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChildV2(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+            client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create child: ${e.message}")
         }
@@ -224,4 +227,80 @@ fun insertVardaOrganizerChild(
         .bind("vardaPersonOid", vardaPersonOid)
         .bind("organizerOid", organizerOid)
         .execute()
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaPersonRequest(
+    val id: UUID,
+    @JsonProperty("etunimet")
+    val firstName: String,
+    @JsonProperty("sukunimi")
+    val lastName: String,
+    @JsonProperty("kutsumanimi")
+    val nickName: String,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("henkilotunnus")
+    val ssn: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("henkilo_oid")
+    val personOid: String? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaPersonResponse(
+    val url: String,
+    @JsonProperty("id")
+    val vardaId: Int,
+    @JsonProperty("etunimet")
+    val firstName: String,
+    @JsonProperty("sukunimi")
+    val lastName: String,
+    @JsonProperty("kutsumanimi")
+    val nickName: String,
+    @JsonProperty("henkilo_oid")
+    val personOid: String,
+    @JsonProperty("syntyma_pvm")
+    val dob: String?,
+    @JsonProperty("lapsi")
+    val child: List<String>
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaChildRequest(
+    val id: UUID,
+    val henkilo: String? = null,
+    val henkilo_oid: String? = null,
+    val vakatoimija_oid: String?,
+    val oma_organisaatio_oid: String?,
+    val paos_organisaatio_oid: String?,
+    val lahdejarjestelma: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaChildResponse(
+    val id: Int
+)
+
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
+    return VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = payload.personUrl,
+        henkilo_oid = payload.personOid,
+        vakatoimija_oid = payload.organizerOid,
+        oma_organisaatio_oid = null,
+        paos_organisaatio_oid = null,
+        lahdejarjestelma = payload.sourceSystem
+    )
+}
+
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
+    return VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = payload.personUrl,
+        henkilo_oid = payload.personOid,
+        vakatoimija_oid = null,
+        oma_organisaatio_oid = payload.organizerOid,
+        paos_organisaatio_oid = payload.paosOrganizationOid,
+        lahdejarjestelma = payload.sourceSystem
+    )
 }
