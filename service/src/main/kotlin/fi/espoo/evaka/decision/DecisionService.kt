@@ -338,6 +338,16 @@ private fun generateDecisionPages(
                 "hideDaycareTime",
                 decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB || decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
             )
+            setVariable(
+                "decisionUnitName",
+                when (decision.type) {
+                    DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME ->
+                        decision.unit.daycareDecisionName.takeUnless { it.isBlank() }
+                    DecisionType.PRESCHOOL, DecisionType.PRESCHOOL_DAYCARE, DecisionType.PREPARATORY_EDUCATION ->
+                        decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
+                    else -> null
+                } ?: decision.unit.name
+            )
         }
     )
 }
