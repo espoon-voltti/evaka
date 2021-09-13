@@ -7,16 +7,13 @@ import { useHistory } from 'react-router-dom'
 
 /**
  * Keeps current URL's query params up to date with the queryParams object
- * Use a memoized value for the queryParams object because history.replace causes a rerender
  */
 export function useSyncQueryParams(queryParams: Record<string, string>) {
   const history = useHistory()
+  const query = new URLSearchParams(queryParams).toString()
   useEffect(() => {
-    const { pathname, search } = history.location
-    const query = new URLSearchParams(queryParams).toString()
-    const url = `${pathname}${query ? `?${query}` : ''}`
-    if (pathname + (search ? search : '') !== url) {
-      history.replace(url)
-    }
-  }, [history, queryParams])
+    const { pathname } = history.location
+    const url = query ? `${pathname}?${query}` : pathname
+    history.replace(url)
+  }, [history, query])
 }

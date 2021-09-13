@@ -109,17 +109,14 @@ function VoucherServiceProviders() {
     return queryParams.get('unit') ?? ''
   })
 
-  const memoizedFilters = useMemo(
-    () => ({
-      year: filters.year.toString(),
-      month: filters.month.toString(),
-      areaId: filters.areaId ?? '',
-      unit: unitFilter
-    }),
-    [filters, unitFilter]
-  )
-  useSyncQueryParams(memoizedFilters)
-  const query = new URLSearchParams(memoizedFilters).toString()
+  const params = {
+    year: filters.year.toString(),
+    month: filters.month.toString(),
+    areaId: filters.areaId ?? '',
+    unit: unitFilter
+  }
+  useSyncQueryParams(params)
+  const query = new URLSearchParams(params).toString()
 
   useEffect(() => {
     void getAreas().then((res) =>

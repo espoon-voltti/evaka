@@ -157,7 +157,7 @@ export default React.memo(function UnitPage() {
           <RouteWithTitle
             exact
             path="/units/:id/calendar"
-            component={() => <TabCalendar unitId={id} />}
+            component={TabCalendar}
           />
           <RouteWithTitle
             exact
