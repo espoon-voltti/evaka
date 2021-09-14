@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useUser } from 'citizen-frontend/auth'
-import { SendMessageParams } from 'citizen-frontend/messages/api'
+import { useUser } from '../auth'
+import { SendMessageParams } from './api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

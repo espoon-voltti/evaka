@@ -2,11 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getReceivers } from 'employee-frontend/components/messages/api'
-import {
-  SelectorNode,
-  unitAsSelectorNode
-} from 'employee-frontend/components/messages/SelectorNode'
+import { getReceivers } from './api'
+import { SelectorNode, unitAsSelectorNode } from './SelectorNode'
 import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'

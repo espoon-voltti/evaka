@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import { SelectOption } from 'employee-frontend/components/common/Select'
-import { UserContext } from 'employee-frontend/state/user'
+import { SelectOption } from '../common/Select'
+import { UserContext } from '../../state/user'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,

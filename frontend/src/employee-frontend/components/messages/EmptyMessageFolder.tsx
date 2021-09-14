@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { H3 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import styled from 'styled-components'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { useTranslation } from '../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 
 type Props = {

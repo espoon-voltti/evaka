@@ -10,13 +10,10 @@ import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeCoefficient, IncomeOption } from '../../../types/income'
-import { formatCents, isValidCents, parseCents } from '../../../utils/money'
+import { formatCents, isValidCents, parseCents } from 'lib-common/money'
 import { Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import {
-  getIncomeOptions,
-  IncomeTypeOptions
-} from 'employee-frontend/api/income'
+import { getIncomeOptions, IncomeTypeOptions } from '../../../api/income'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 

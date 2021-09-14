@@ -44,7 +44,7 @@ import {
   VoucherServiceProviderUnitRow
 } from '../../types/reports'
 import { formatName } from '../../utils'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'

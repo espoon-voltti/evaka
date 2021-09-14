@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { isValidCents } from '../../utils/money'
+import { isValidCents } from 'lib-common/money'
 import InputField from 'lib-components/atoms/form/InputField'
 
 type Props = {

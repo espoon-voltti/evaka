@@ -16,7 +16,7 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import LocalDate from 'lib-common/local-date'
 
 function ReportInvoices() {

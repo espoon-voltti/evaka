@@ -9,7 +9,7 @@ import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { useTranslation } from 'citizen-frontend/localization'
+import { useTranslation } from '../localization'
 
 interface Props {
   close: () => void

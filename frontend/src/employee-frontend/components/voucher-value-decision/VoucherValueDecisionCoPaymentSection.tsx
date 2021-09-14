@@ -8,7 +8,7 @@ import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

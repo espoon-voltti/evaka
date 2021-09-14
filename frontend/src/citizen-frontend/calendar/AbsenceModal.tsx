@@ -20,7 +20,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { useLang, useTranslation } from 'citizen-frontend/localization'
+import { useLang, useTranslation } from '../localization'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsencesRequest, postAbsences, ReservationChild } from './api'
 import { errorToInputInfo } from '../input-info-helper'

@@ -10,14 +10,11 @@ import { H3, H5 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { Income } from '../../types/income'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { formatName, formatPercent } from '../../utils'
 import { Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import {
-  getIncomeOptions,
-  IncomeTypeOptions
-} from 'employee-frontend/api/income'
+import { getIncomeOptions, IncomeTypeOptions } from '../../api/income'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 

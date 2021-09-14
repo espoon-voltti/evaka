@@ -11,7 +11,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { useTranslation } from 'citizen-frontend/localization'
+import { useTranslation } from '../localization'
 import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
   postReservations,

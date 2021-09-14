@@ -13,9 +13,9 @@ import {
   SelectorChange,
   SelectorNode,
   updateSelector
-} from 'employee-frontend/components/messages/SelectorNode'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UUID } from 'employee-frontend/types'
+} from './SelectorNode'
+import { useTranslation } from '../../state/i18n'
+import { UUID } from '../../types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'

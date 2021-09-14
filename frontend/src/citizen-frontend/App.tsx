@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AuthContext } from 'citizen-frontend/auth/state'
+import { AuthContext } from './auth/state'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { theme } from 'lib-customizations/common'
 import React, { ReactNode, useContext } from 'react'

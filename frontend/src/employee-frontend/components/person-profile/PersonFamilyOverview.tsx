@@ -20,7 +20,7 @@ import {
   FamilyOverviewPersonRole
 } from '../../types/family-overview'
 import { UUID } from '../../types'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { formatName } from '../../utils'
 

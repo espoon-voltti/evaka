@@ -33,7 +33,7 @@ import {
   FeeThresholdsWithId
 } from '../../types/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import StatusLabel from '../common/StatusLabel'
 import FeeThresholdsEditor from './FeeThresholdsEditor'
 

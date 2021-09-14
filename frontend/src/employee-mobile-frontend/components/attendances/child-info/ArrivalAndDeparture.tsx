@@ -4,8 +4,8 @@
 
 import React from 'react'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { useTranslation } from 'employee-mobile-frontend/state/i18n'
-import { AttendanceChild } from 'employee-mobile-frontend/api/attendances'
+import { useTranslation } from '../../../state/i18n'
+import { AttendanceChild } from '../../../api/attendances'
 import { formatTime } from 'lib-common/date'
 import { ArrivalTime } from '../components'
 

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { isPinCodeLocked, updatePinCode } from 'employee-frontend/api/employees'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { isPinCodeLocked, updatePinCode } from '../../api/employees'
+import { useTranslation } from '../../state/i18n'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ReceiverGroup } from 'employee-frontend/components/messages/types'
-import { UUID } from 'employee-frontend/types'
+import { ReceiverGroup } from './types'
+import { UUID } from '../../types'
 import LocalDate from 'lib-common/local-date'
 
 /*
@@ -104,6 +104,7 @@ export const deselectAll = (selectorNode: SelectorNode): SelectorNode => {
 export interface ChildSelectorNode extends SelectorNode {
   dateOfBirth: LocalDate
 }
+
 export const isChildSelectorNode = (
   node: SelectorNode
 ): node is ChildSelectorNode => 'dateOfBirth' in node

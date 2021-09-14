@@ -13,9 +13,9 @@ import {
   CalendarChild,
   ChildReservations,
   OperationalDay
-} from 'employee-frontend/api/unit'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
+} from '../../../api/unit'
+import { useTranslation } from '../../../state/i18n'
+import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
 import ChildDay, { TimeCell, TimesRow } from './ChildDay'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faCalendarPlus } from 'lib-icons'
