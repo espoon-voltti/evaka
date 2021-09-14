@@ -464,6 +464,30 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `updateChildData doesn't send blank guardian oid as empty string`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+        db.transaction {
+            it.createUpdate("update person set oph_person_oid = ' ' where id = :id")
+                .bind("id", testAdult_1.id)
+                .execute()
+        }
+
+        updateChildData(db, vardaClient, feeDecisionMinDate)
+
+        assertVardaElementCounts(1, 1, 1)
+
+        val vardaFeeData = mockEndpoint.feeData.values.elementAt(0)
+        assertEquals(1, vardaFeeData.huoltajat.size)
+        assertNull(vardaFeeData.huoltajat.first().henkilo_oid)
+    }
+
+    @Test
     fun `updateChildData sends child service need fee data to varda with one guardian only if guardians live in different address`() {
         db.transaction {
             it.createUpdate("INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)")

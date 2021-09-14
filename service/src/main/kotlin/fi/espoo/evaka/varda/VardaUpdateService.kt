@@ -415,7 +415,19 @@ data class VardaGuardianWithId(
 
 fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
     return db.read {
-        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus, oph_person_oid AS henkilo_oid, residence_code AS asuinpaikantunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+        it.createQuery(
+            """
+            SELECT
+                id,
+                first_name AS etunimet,
+                last_name as sukunimi,
+                social_security_number AS henkilotunnus,
+                nullif(trim(oph_person_oid), '') AS henkilo_oid,
+                residence_code AS asuinpaikantunnus
+            FROM person 
+            WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)
+            """.trimIndent()
+        )
             .bind("id", childId)
             .mapTo<VardaGuardianWithId>()
             .list()
