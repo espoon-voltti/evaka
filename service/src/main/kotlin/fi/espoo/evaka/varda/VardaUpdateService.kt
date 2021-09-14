@@ -944,27 +944,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-data class UnsuccessfullyUploadedServiceNeed(
-    val evakaServiceNeedId: ServiceNeedId,
-    val existsInEvaka: Boolean,
-    val childId: UUID?
-)
-
-fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<UnsuccessfullyUploadedServiceNeed> =
-    createQuery(
-        """
-SELECT 
-    vsn.evaka_service_need_id, 
-    EXISTS(SELECT 1 FROM service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
-    p.child_id
-FROM varda_service_need vsn 
-    LEFT JOIN service_need sn ON sn.id = vsn.evaka_service_need_id
-    LEFT JOIN placement p ON p.id = sn.placement_id
-WHERE update_failed = true"""
-    )
-        .mapTo<UnsuccessfullyUploadedServiceNeed>()
-        .list()
-
 fun Database.Read.getVardaChildrenToReset(): List<UUID> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")
         .mapTo<UUID>()
