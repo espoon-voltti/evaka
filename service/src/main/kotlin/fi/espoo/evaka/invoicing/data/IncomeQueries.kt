@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -104,7 +103,12 @@ fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTyp
         .firstOrNull()
 }
 
-fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, personId: UUID, validAt: LocalDate? = null): List<Income> {
+fun Database.Read.getIncomesForPerson(
+    mapper: ObjectMapper,
+    incomeTypesProvider: IncomeTypesProvider,
+    personId: UUID,
+    validAt: LocalDate? = null
+): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -122,7 +126,12 @@ fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, incomeTypesProvider:
         .toList()
 }
 
-fun Database.Read.getIncomesFrom(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, personIds: List<UUID>, from: LocalDate): List<Income> {
+fun Database.Read.getIncomesFrom(
+    mapper: ObjectMapper,
+    incomeTypesProvider: IncomeTypesProvider,
+    personIds: List<UUID>,
+    from: LocalDate
+): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -171,9 +180,7 @@ fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) =
         id = IncomeId(rs.getUUID("id")),
         personId = UUID.fromString(rs.getString("person_id")),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
-        data = objectMapper.readValue<Map<String, IncomeValue>>(rs.getString("data")).mapValues { (type, value) ->
-            value.copy(multiplier = incomeTypes[type]?.multiplier ?: throw Conflict("Unknown income type $type"))
-        },
+        data = parseIncomeDataJson(rs.getString("data"), objectMapper, incomeTypes),
         isEntrepreneur = rs.getBoolean("is_entrepreneur"),
         worksAtECHA = rs.getBoolean("works_at_echa"),
         validFrom = rs.getDate("valid_from").toLocalDate(),
@@ -183,4 +190,15 @@ fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) =
         updatedBy = (rs.getString("updated_by_employee")),
         applicationId = rs.getNullableUUID("application_id")?.let(::ApplicationId),
     )
+}
+
+fun parseIncomeDataJson(
+    json: String,
+    objectMapper: ObjectMapper,
+    incomeTypes: Map<String, IncomeType>
+): Map<String, IncomeValue> {
+    return objectMapper.readValue<Map<String, IncomeValue>>(json)
+        .mapValues { (type, value) ->
+            value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
+        }
 }
