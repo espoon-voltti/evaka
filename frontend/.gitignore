@@ -17,7 +17,6 @@ screenshots/
 videos/
 .yalc
 yalc.lock
-**/storybook-build/
 
 .yarn/*
 !.yarn/releases
