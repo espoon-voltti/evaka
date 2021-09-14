@@ -53,6 +53,10 @@ class PersonService(
         val person1 = db.getPersonById(person1Id)
         val person2 = db.getPersonById(person2Id)
 
+        return personsLiveInTheSameAddress(person1, person2)
+    }
+
+    fun personsLiveInTheSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
     }
 
@@ -416,7 +420,28 @@ data class PersonWithChildrenDTO(
     val nationalities: Set<Nationality>,
     val nativeLanguage: NativeLanguage?,
     val restrictedDetails: RestrictedDetails
-)
+) {
+    fun toPersonDTO() = PersonDTO(
+        id = id,
+        identity = when (socialSecurityNumber) {
+            is String -> ExternalIdentifier.SSN.getInstance(socialSecurityNumber)
+            else -> ExternalIdentifier.NoID()
+        },
+        dateOfBirth = dateOfBirth,
+        dateOfDeath = dateOfDeath,
+        firstName = firstName,
+        lastName = lastName,
+        residenceCode = residenceCode,
+        streetAddress = addresses.firstOrNull()?.streetAddress,
+        postalCode = addresses.firstOrNull()?.postalCode,
+        postOffice = addresses.firstOrNull()?.city,
+        restrictedDetailsEnabled = restrictedDetails.enabled,
+        restrictedDetailsEndDate = restrictedDetails.endDate,
+        language = nativeLanguage?.code,
+        email = null,
+        phone = null
+    )
+}
 
 data class PersonAddressDTO(
     val origin: Origin,

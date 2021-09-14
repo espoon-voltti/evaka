@@ -73,7 +73,9 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend()
 
     const application = await getApplication(applicationId)
-    minimalDaycareForm.validateResult(application)
+    minimalDaycareForm.validateResult(application, [
+      fixtures.enduserChildFixtureKaarina
+    ])
   })
 
   test('Full valid daycare application can be sent', async () => {
@@ -89,7 +91,9 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend()
 
     const application = await getApplication(applicationId)
-    fullDaycareForm.validateResult(application)
+    fullDaycareForm.validateResult(application, [
+      fixtures.enduserChildFixtureKaarina
+    ])
   })
 
   test('Notification on duplicate application is visible', async () => {

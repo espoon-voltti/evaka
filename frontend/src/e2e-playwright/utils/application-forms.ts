@@ -5,6 +5,7 @@
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import { format } from 'date-fns'
 
 const currentPreferredStartDate = format(
@@ -56,7 +57,10 @@ export type FormInput = Partial<
 
 export const minimalDaycareForm: {
   form: FormInput
-  validateResult: (result: ApplicationDetails) => void
+  validateResult: (
+    result: ApplicationDetails,
+    vtjSiblingsLivingInSameAddress: PersonDetail[]
+  ) => void
 } = {
   form: {
     serviceNeed: {
@@ -77,7 +81,7 @@ export const minimalDaycareForm: {
       noGuardianEmail: true
     }
   },
-  validateResult: (res) => {
+  validateResult: (res, vtjSiblingsLivingInSameAddress) => {
     assertEquals('SENT', res.status)
 
     assertNull(res.form.child.futureAddress)
@@ -94,7 +98,16 @@ export const minimalDaycareForm: {
 
     assertNull(res.form.otherPartner)
 
-    assertEmpty(res.form.otherChildren)
+    assertEquals(
+      vtjSiblingsLivingInSameAddress.length,
+      res.form.otherChildren.length
+    )
+    for (let i = 0; i < vtjSiblingsLivingInSameAddress.length; i++) {
+      const { firstName, lastName, ssn } = vtjSiblingsLivingInSameAddress[i]
+      assertEquals(firstName, res.form.otherChildren[i].firstName)
+      assertEquals(lastName, res.form.otherChildren[i].lastName)
+      assertEquals(ssn, res.form.otherChildren[i].socialSecurityNumber)
+    }
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
@@ -120,7 +133,10 @@ export const minimalDaycareForm: {
 
 export const fullDaycareForm: {
   form: FormInput
-  validateResult: (result: ApplicationDetails) => void
+  validateResult: (
+    result: ApplicationDetails,
+    vtjSiblingsLivingInSameAddress: PersonDetail[]
+  ) => void
 } = {
   form: {
     serviceNeed: {
@@ -182,7 +198,7 @@ export const fullDaycareForm: {
       allergies: 'Pähkinät, chili'
     }
   },
-  validateResult: (res) => {
+  validateResult: (res, vtjSiblingsLivingInSameAddress) => {
     assertEquals('SENT', res.status)
 
     assertEquals(
@@ -214,13 +230,30 @@ export const fullDaycareForm: {
     assertEquals('Heppuli', res.form.otherPartner?.lastName)
     assertEquals('210188-389L', res.form.otherPartner?.socialSecurityNumber)
 
-    assertEquals(2, res.form.otherChildren.length)
-    assertEquals('Tupu', res.form.otherChildren[0].firstName)
-    assertEquals('Ankka', res.form.otherChildren[0].lastName)
-    assertEquals('250718A809H', res.form.otherChildren[0].socialSecurityNumber)
-    assertEquals('Tauno', res.form.otherChildren[1].firstName)
-    assertEquals('Hanhi', res.form.otherChildren[1].lastName)
-    assertEquals('101017A479B', res.form.otherChildren[1].socialSecurityNumber)
+    assertEquals(
+      vtjSiblingsLivingInSameAddress.length + 2,
+      res.form.otherChildren.length
+    )
+    for (let i = 0; i < vtjSiblingsLivingInSameAddress.length; i++) {
+      const { firstName, lastName, ssn } = vtjSiblingsLivingInSameAddress[i]
+      assertEquals(firstName, res.form.otherChildren[i].firstName)
+      assertEquals(lastName, res.form.otherChildren[i].lastName)
+      assertEquals(ssn, res.form.otherChildren[i].socialSecurityNumber)
+    }
+    const tupuIndex = vtjSiblingsLivingInSameAddress.length + 0
+    assertEquals('Tupu', res.form.otherChildren[tupuIndex].firstName)
+    assertEquals('Ankka', res.form.otherChildren[tupuIndex].lastName)
+    assertEquals(
+      '250718A809H',
+      res.form.otherChildren[tupuIndex].socialSecurityNumber
+    )
+    const taunoIndex = vtjSiblingsLivingInSameAddress.length + 1
+    assertEquals('Tauno', res.form.otherChildren[taunoIndex].firstName)
+    assertEquals('Hanhi', res.form.otherChildren[taunoIndex].lastName)
+    assertEquals(
+      '101017A479B',
+      res.form.otherChildren[taunoIndex].socialSecurityNumber
+    )
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
@@ -461,7 +494,10 @@ export const minimalPreschoolForm: {
 
 export const fullPreschoolForm: {
   form: FormInput
-  validateResult: (result: ApplicationDetails) => void
+  validateResult: (
+    result: ApplicationDetails,
+    vtjSiblingsLivingInSameAddress: PersonDetail[]
+  ) => void
 } = {
   form: {
     serviceNeed: {
@@ -521,7 +557,7 @@ export const fullPreschoolForm: {
       allergies: 'Pähkinät, chili'
     }
   },
-  validateResult: (res) => {
+  validateResult: (res, vtjSiblingsLivingInSameAddress) => {
     assertEquals('SENT', res.status)
 
     assertEquals(
@@ -555,10 +591,23 @@ export const fullPreschoolForm: {
     assertEquals('Heppuli', res.form.otherPartner?.lastName)
     assertEquals('210188-389L', res.form.otherPartner?.socialSecurityNumber)
 
-    assertEquals(1, res.form.otherChildren.length)
-    assertEquals('Tupu', res.form.otherChildren[0].firstName)
-    assertEquals('Ankka', res.form.otherChildren[0].lastName)
-    assertEquals('250718A809H', res.form.otherChildren[0].socialSecurityNumber)
+    assertEquals(
+      vtjSiblingsLivingInSameAddress.length + 1,
+      res.form.otherChildren.length
+    )
+    for (let i = 0; i < vtjSiblingsLivingInSameAddress.length; i++) {
+      const { firstName, lastName, ssn } = vtjSiblingsLivingInSameAddress[i]
+      assertEquals(firstName, res.form.otherChildren[i].firstName)
+      assertEquals(lastName, res.form.otherChildren[i].lastName)
+      assertEquals(ssn, res.form.otherChildren[i].socialSecurityNumber)
+    }
+    const tupuIndex = vtjSiblingsLivingInSameAddress.length + 0
+    assertEquals('Tupu', res.form.otherChildren[tupuIndex].firstName)
+    assertEquals('Ankka', res.form.otherChildren[tupuIndex].lastName)
+    assertEquals(
+      '250718A809H',
+      res.form.otherChildren[tupuIndex].socialSecurityNumber
+    )
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
