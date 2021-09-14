@@ -6,11 +6,12 @@ package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.invoicing.data.parseIncomeDataJson
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getNullableUUID
@@ -21,7 +22,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Service
-class FamilyOverviewService(private val objectMapper: ObjectMapper) {
+class FamilyOverviewService(
+    private val objectMapper: ObjectMapper,
+    private val incomeTypesProvider: IncomeTypesProvider
+) {
     fun getFamilyByAdult(tx: Database.Read, adultId: UUID): FamilyOverview? {
         val sql =
             """
@@ -80,7 +84,9 @@ AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
         val familyMembersNow =
-            tx.createQuery(sql).bind("id", adultId).map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper) }
+            tx.createQuery(sql)
+                .bind("id", adultId)
+                .map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper, incomeTypesProvider) }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 
@@ -136,7 +142,11 @@ data class FamilyOverviewPerson(
     val incomeEffect: IncomeEffect? = null
 )
 
-fun toFamilyOverviewPerson(rs: ResultSet, objectMapper: ObjectMapper): FamilyOverviewPerson {
+fun toFamilyOverviewPerson(
+    rs: ResultSet,
+    objectMapper: ObjectMapper,
+    incomeTypesProvider: IncomeTypesProvider
+): FamilyOverviewPerson {
     return FamilyOverviewPerson(
         personId = UUID.fromString(rs.getString("id")),
         firstName = rs.getString("first_name"),
@@ -149,6 +159,8 @@ fun toFamilyOverviewPerson(rs: ResultSet, objectMapper: ObjectMapper): FamilyOve
         headOfChild = rs.getString("head_of_child")?.let { UUID.fromString(it) },
         incomeId = rs.getNullableUUID("income_id")?.let(::IncomeId),
         incomeEffect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
-        incomeTotal = rs.getString("income_data")?.let { incomeTotal(objectMapper.readValue(it)) }
+        incomeTotal = rs.getString("income_data")?.let {
+            incomeTotal(parseIncomeDataJson(it, objectMapper, incomeTypesProvider.get()))
+        }
     )
 }
