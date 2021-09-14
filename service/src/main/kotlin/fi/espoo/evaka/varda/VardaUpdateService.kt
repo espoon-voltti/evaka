@@ -370,7 +370,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             )
         } catch (e: Exception) {
-            error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+            error("VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
     }
 
@@ -390,7 +390,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             )
         } catch (e: Exception) {
-            error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+            error("VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
     }
 
