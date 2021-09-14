@@ -100,7 +100,6 @@ class VardaClient(
                 statusCode = error.response.statusCode.toString()
             )
         } catch (e: Exception) {
-            logger.info { "VardaUpdate: client failed to parse error response: $e, using fallback" }
             VardaRequestError(
                 method = request.method.toString(),
                 url = request.url.toString(),
