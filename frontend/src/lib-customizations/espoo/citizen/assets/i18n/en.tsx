@@ -1028,6 +1028,11 @@ const en: Translations = {
       },
       contactInfo: {
         title: 'Personal information',
+        familyInfo: (
+          <P>
+            Please report all adults and children living in the same household.
+          </P>
+        ),
         info: function ContactInfoInfoText() {
           return (
             <P>
