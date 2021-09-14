@@ -63,9 +63,7 @@ export default class FiniteDateRange {
    * Returns true if this date range includes the given date.
    */
   includes(date: LocalDate): boolean {
-    if (this.start.isAfter(date)) return false
-    if (this.end.isBefore(date)) return false
-    return true
+    return !(this.start.isAfter(date) || this.end.isBefore(date))
   }
 
   /**
