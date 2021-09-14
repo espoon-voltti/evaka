@@ -913,7 +913,7 @@ RETURNING id
 )
 
 data class DevFridgeChild(
-    val id: ParentshipId,
+    val id: ParentshipId = ParentshipId(UUID.randomUUID()),
     val childId: UUID,
     val headOfChild: UUID,
     val startDate: LocalDate,

@@ -82,6 +82,15 @@ WHERE employee_id = :userId
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
     )
+    private val person = ActionConfig(
+        """
+SELECT person_id AS id, role
+FROM person_acl_view
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "person_id",
+        permittedRoleActions::personActions
+    )
     private val placement = ActionConfig(
         """
 SELECT placement.id, role
@@ -177,8 +186,9 @@ WHERE employee_id = :userId
     fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, id: I): Boolean =
         when (action) {
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
-            is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
+            is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
+            is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
             else -> error("Unsupported action type")
@@ -286,11 +296,6 @@ WHERE employee_id = :userId
             action = action,
             mapping = permittedRoleActions::pairingActions
         )
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Person, @Suppress("UNUSED_PARAMETER") id: PersonId) {
-        // Person actions in Espoo are global so the id parameter is ignored
-        assertPermissionUsingAllRoles(user, action, permittedRoleActions::personActions)
     }
 
     fun getPermittedPlacementActions(

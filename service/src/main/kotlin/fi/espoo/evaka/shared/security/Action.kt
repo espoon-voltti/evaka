@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
@@ -218,7 +219,8 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Person(private val roles: EnumSet<UserRole>) : Action {
+    enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
+        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_INCOME_STATEMENTS(FINANCE_ADMIN);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
