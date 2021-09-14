@@ -73,7 +73,10 @@ class DvvModificationsService(
                             is PersonNameDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is PersonNameChangeDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
-                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
+                            else -> {
+                                logger.info("Refreshing person from VTJ for an unsupported DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
+                                ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            }
                         }
                     } catch (e: Throwable) {
                         logger.error(e) {

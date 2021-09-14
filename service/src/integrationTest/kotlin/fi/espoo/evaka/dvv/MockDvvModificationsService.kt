@@ -502,6 +502,18 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
+    """.trimIndent(),
+    "tuntematon_muutos" to """
+{
+  "henkilotunnus": "140921A999X",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "JOKU_MUU",
+      "muutosattribuutti": "LISATTY"
+    }
+  ],
+  "muutospv": "2021-09-14T12:01:04.568Z"
+}            
     """.trimIndent()
 )
 
