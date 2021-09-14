@@ -11,7 +11,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { getPersonVoucherValueDecisions } from '../../api/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 
 interface Props {
   id: string

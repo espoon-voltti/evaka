@@ -15,7 +15,7 @@ import {
   IncomeCoefficient,
   IncomeOption
 } from '../../../../types/income'
-import { formatCents, parseCents } from '../../../../utils/money'
+import { formatCents, parseCents } from 'lib-common/money'
 
 type TypeLabelProps = { indent: boolean }
 
