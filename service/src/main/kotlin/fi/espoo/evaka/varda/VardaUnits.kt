@@ -22,8 +22,8 @@ fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: Str
     units.forEach { unit ->
         try {
             val response =
-                if (unit.vardaUnitId == null) client.createUnit(getVardaUnitRequest(unit))
-                else client.updateUnit(getVardaUnitRequest(unit))
+                if (unit.vardaUnitId == null) client.createUnit(unit.toVardaUnitRequest())
+                else client.updateUnit(unit.toVardaUnitRequest())
             db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
         } catch (e: Exception) {
             logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
@@ -166,47 +166,47 @@ data class VardaUnit(
     val unitType: List<VardaUnitType>,
     val language: VardaLanguage,
     val languageEmphasisId: UUID?
-)
-
-fun getVardaUnitRequest(unit: VardaUnit): VardaUnitRequest = VardaUnitRequest(
-    id = unit.vardaUnitId,
-    organisaatio_oid = unit.ophUnitOid,
-    vakajarjestaja = unit.organizer,
-    nimi = unit.name,
-    kayntiosoite = unit.address,
-    kayntiosoite_postinumero = unit.postalCode,
-    kayntiosoite_postitoimipaikka = unit.postOffice,
-    postiosoite = unit.mailingStreetAddress,
-    postinumero = unit.mailingPostalCode,
-    postitoimipaikka = unit.mailingPostOffice,
-    puhelinnumero = unit.phoneNumber,
-    sahkopostiosoite = unit.email,
-    varhaiskasvatuspaikat = unit.capacity,
-    alkamis_pvm = unit.openingDate,
-    paattymis_pvm = unit.closingDate,
-    kunta_koodi = unit.municipalityCode,
-    lahdejarjestelma = unit.sourceSystem,
-    toiminnallinenpainotus_kytkin = false,
-    kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
-    jarjestamismuoto_koodi = listOfNotNull(unit.unitProviderType.vardaCode),
-    toimintamuoto_koodi = when {
-        unit.unitType.contains(VardaUnitType.CENTRE) -> {
-            VardaUnitType.CENTRE.vardaCode
-        }
-        unit.unitType.contains(VardaUnitType.FAMILY) -> {
-            VardaUnitType.FAMILY.vardaCode
-        }
-        unit.unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
-            VardaUnitType.GROUP_FAMILY.vardaCode
-        }
-        unit.unitType.contains(VardaUnitType.PRESCHOOL) -> {
-            VardaUnitType.PRESCHOOL.vardaCode
-        }
-        else -> null
-    },
-    asiointikieli_koodi = listOfNotNull(unit.language.vardaCode),
-    kielipainotus_kytkin = unit.languageEmphasisId?.let { true } ?: false
-)
+) {
+    fun toVardaUnitRequest() = VardaUnitRequest(
+        id = vardaUnitId,
+        organisaatio_oid = ophUnitOid,
+        vakajarjestaja = organizer,
+        nimi = name,
+        kayntiosoite = address,
+        kayntiosoite_postinumero = postalCode,
+        kayntiosoite_postitoimipaikka = postOffice,
+        postiosoite = mailingStreetAddress,
+        postinumero = mailingPostalCode,
+        postitoimipaikka = mailingPostOffice,
+        puhelinnumero = phoneNumber,
+        sahkopostiosoite = email,
+        varhaiskasvatuspaikat = capacity,
+        alkamis_pvm = openingDate,
+        paattymis_pvm = closingDate,
+        kunta_koodi = municipalityCode,
+        lahdejarjestelma = sourceSystem,
+        toiminnallinenpainotus_kytkin = false,
+        kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
+        jarjestamismuoto_koodi = listOfNotNull(unitProviderType.vardaCode),
+        toimintamuoto_koodi = when {
+            unitType.contains(VardaUnitType.CENTRE) -> {
+                VardaUnitType.CENTRE.vardaCode
+            }
+            unitType.contains(VardaUnitType.FAMILY) -> {
+                VardaUnitType.FAMILY.vardaCode
+            }
+            unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
+                VardaUnitType.GROUP_FAMILY.vardaCode
+            }
+            unitType.contains(VardaUnitType.PRESCHOOL) -> {
+                VardaUnitType.PRESCHOOL.vardaCode
+            }
+            else -> null
+        },
+        asiointikieli_koodi = listOfNotNull(language.vardaCode),
+        kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
+    )
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class VardaUnitRequest(
