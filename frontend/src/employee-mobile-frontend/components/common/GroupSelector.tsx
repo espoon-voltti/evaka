@@ -96,4 +96,6 @@ const Info = styled.span`
 
 const Wrapper = styled.div`
   margin: 12px 16px 8px 16px;
+  max-height: 60vh;
+  overflow: scroll;
 `
