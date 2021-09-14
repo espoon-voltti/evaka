@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg width="1440" height="576" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 38100 15240" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+  <defs class="ClipPathGroup">
+    <clipPath id="a">
+      <path d="M0 0h38100v15240H0z"/>
+    </clipPath>
+  </defs>
+  <g class="SlideGroup">
+    <g class="Slide" clip-path="url(#a)">
+      <g class="Page">
+        <g class="com.sun.star.drawing.PolyPolygonShape">
+          <path class="BoundingBox" fill="none" d="M0 0h45158v22580H0z"/>
+        </g>
+        <g class="Group">
+          <g class="com.sun.star.drawing.ClosedBezierShape">
+            <path class="BoundingBox" fill="none" d="M5085 4906h5251v5484H5085z"/>
+            <path d="M10335 7868H5819c38 562 254 1012 649 1359 386 347 885 515 1477 515 339 0 640-56 922-178 113-47 217-103 320-168 254-169 603-141 800 93l19 19c-235 290-536 506-894 656-357 150-753 225-1185 225-556 0-1045-122-1478-356-423-235-762-563-997-975-245-422-367-890-367-1415s113-993 348-1415c235-421 546-740 941-974 405-235 847-347 1346-347 498 0 950 112 1345 347 395 234 706 553 932 965 225 412 338 881 338 1415v234zM6421 6031c-348 328-555 759-602 1294h3829c-47-535-244-966-602-1294-348-327-790-496-1317-496s-960 169-1308 496z" fill="#9ab9e1"/>
+          </g>
+          <g class="com.sun.star.drawing.ClosedBezierShape">
+            <path class="BoundingBox" fill="none" d="M10888 4897h5621v5408h-5621z"/>
+            <path d="m16508 4906-2587 5398h-744l-2239-4676c-160-337 85-722 461-722l2164 4461 2183-4470 762 9z" fill="#013c8c"/>
+          </g>
+          <g class="com.sun.star.drawing.ClosedBezierShape">
+            <path class="BoundingBox" fill="none" d="M16957 4944h4471v5418h-4471z"/>
+            <path d="M20871 5459c377 347 556 862 556 1547v3298c-386 0-687-309-687-684v-141c-160 281-405 497-715 647-311 159-687 234-1120 234-593 0-1073-140-1421-421-348-282-527-656-527-1125 0-450 160-815 489-1096 330-281 857-413 1572-413h1693v-328c0-459-131-805-385-1049s-631-356-1130-356c-338 0-668 56-978 169-311 112-584 262-800 459l-329-534c273-225 593-403 978-535 377-121 781-187 1195-187 697-9 1233 169 1609 515zm-809 4048c292-187 508-449 649-805v-872h-1674c-913 0-1374 319-1374 956 0 309 122 553 357 731 236 178 565 272 998 272 395 0 752-94 1044-282z" fill="#013c8c"/>
+          </g>
+          <g class="com.sun.star.drawing.ClosedBezierShape">
+            <path class="BoundingBox" fill="none" d="M22903 4850h5026v5503h-5026z"/>
+            <path d="m25152 7775-1524 1602v975h-725V4851c395 0 725 422 725 815v2718l3293-3439h894l-2155 2314 2268 3093h-885l-1891-2577z" fill="#013c8c"/>
+          </g>
+          <g class="com.sun.star.drawing.ClosedBezierShape">
+            <path class="BoundingBox" fill="none" d="M28547 4954h4470v5427h-4470z"/>
+            <path d="M32461 5479c377 346 555 862 555 1546v3298c-385 0-686-309-686-684v-140c-160 281-405 496-716 646-310 160-686 235-1119 235-593 0-1073-141-1421-422s-527-656-527-1125c0-449 160-815 489-1096 330-281 857-412 1572-412h1694v-328c0-459-132-806-387-1050-253-243-630-356-1129-356-338 0-668 56-978 169-311 112-584 262-800 459l-329-534c273-244 593-422 969-544 376-121 781-187 1195-187 706 0 1242 178 1618 525zm-818 4048c292-188 508-450 649-806v-872h-1675c-913 0-1374 319-1374 956 0 310 123 553 358 731s564 272 997 272c405-9 753-94 1045-281z" fill="#013c8c"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

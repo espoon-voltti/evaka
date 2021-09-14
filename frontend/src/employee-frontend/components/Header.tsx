@@ -133,7 +133,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
       title={i18n.header.title}
       logo={
         <Img
-          data-qa="espoo-logo"
+          data-qa="city-logo"
           src={cityLogo.src}
           alt={cityLogo.alt}
           className="logo"

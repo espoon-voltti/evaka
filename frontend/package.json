@@ -17,7 +17,7 @@
     "build-storybook": "build-storybook -c src/lib-components/.storybook -o storybook-build",
     "test": "jest src/*-frontend src/lib-*",
     "test:watch": "jest --watchAll src/*-frontend src/lib-*",
-    "dev-maintenance-page": "cd src/maintenance-page-frontend && python -m http.server 8000",
+    "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
     "e2e": "testcafe 'chrome --start-fullscreen' src/e2e-test/**/*.spec.ts",
     "e2e-headless": "testcafe 'chrome:headless' src/e2e-test/**/*.spec.ts",
     "e2e-ff": "testcafe 'firefox:headless:emulation:width=1920;height=1080 --start-fullscreen' src/e2e-test/**/*.spec.ts --page-load-timeout 60000 --assertion-timeout 20000 --selector-timeout 20000 -S -s screenshots",

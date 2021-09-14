@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { faInbox } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'citizen-frontend/localization'
