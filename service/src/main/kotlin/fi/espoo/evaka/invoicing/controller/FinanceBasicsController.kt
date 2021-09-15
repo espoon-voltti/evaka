@@ -7,14 +7,16 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -32,11 +34,14 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/finance-basics")
-class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class FinanceBasicsController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_FEE_THRESHOLDS)
 
         return db.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
     }
@@ -48,7 +53,7 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         @RequestBody body: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsCreate.log()
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
         db.transaction { tx ->
@@ -74,11 +79,11 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     fun updateFeeThresholds(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeThresholds.UPDATE, id)
 
         validateFeeThresholds(thresholds)
         db.transaction { tx ->
@@ -89,7 +94,7 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
 }
 
 data class FeeThresholdsWithId(
-    val id: UUID,
+    val id: FeeThresholdsId,
     @Nested
     val thresholds: FeeThresholds
 )
@@ -191,13 +196,13 @@ INSERT INTO fee_thresholds (
         .bind("id", UUID.randomUUID())
         .execute()
 
-fun Database.Transaction.updateFeeThresholdsValidity(id: UUID, newValidity: DateRange) =
+fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")
         .bind("id", id)
         .bind("validDuring", newValidity)
         .execute()
 
-fun Database.Transaction.updateFeeThresholds(id: UUID, feeThresholds: FeeThresholds) =
+fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
     createUpdate(
         """
 UPDATE fee_thresholds

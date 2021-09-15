@@ -41,7 +41,10 @@ sealed interface Action {
         CREATE_PAPER_APPLICATION(SERVICE_WORKER),
         SEARCH_APPLICATION_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_PERSON_APPLICATION(SERVICE_WORKER) // Applications summary on person page
+        READ_PERSON_APPLICATION(SERVICE_WORKER), // Applications summary on person page
+
+        READ_FEE_THRESHOLDS(FINANCE_ADMIN),
+        CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -165,6 +168,14 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Decision(private val roles: EnumSet<UserRole>) : Action {
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class FeeThresholds(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE(FINANCE_ADMIN)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

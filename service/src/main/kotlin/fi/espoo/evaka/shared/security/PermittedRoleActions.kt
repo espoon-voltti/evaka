@@ -22,6 +22,7 @@ interface PermittedRoleActions {
     fun childActions(role: UserRole): Set<Action.Child>
     fun dailyNoteActions(role: UserRole): Set<Action.DailyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
+    fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds>
     fun groupActions(role: UserRole): Set<Action.Group>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
@@ -51,6 +52,7 @@ class StaticPermittedRoleActions(
     val child: ActionsByRole<Action.Child> = getDefaults(),
     val dailyNote: ActionsByRole<Action.DailyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
+    val feeThresholds: ActionsByRole<Action.FeeThresholds> = getDefaults(),
     val group: ActionsByRole<Action.Group> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
@@ -73,6 +75,7 @@ class StaticPermittedRoleActions(
     override fun childActions(role: UserRole): Set<Action.Child> = child[role] ?: emptySet()
     override fun dailyNoteActions(role: UserRole): Set<Action.DailyNote> = dailyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
+    override fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds> = feeThresholds[role] ?: emptySet()
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()

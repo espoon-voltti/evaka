@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -281,6 +282,10 @@ WHERE employee_id = :userId
             action = action,
             mapping = permittedRoleActions::decisionActions
         )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.FeeThresholds, @Suppress("UNUSED_PARAMETER") id: FeeThresholdsId) {
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::feeThresholdsActions)
     }
 
     fun getPermittedGroupActions(
