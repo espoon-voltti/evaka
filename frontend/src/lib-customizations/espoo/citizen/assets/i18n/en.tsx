@@ -752,10 +752,10 @@ const en: Translations = {
           'Describe the need for support for the child.',
         assistanceNeedInstructions: {
           DAYCARE:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
-          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
+          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
