@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
@@ -918,13 +919,13 @@ AND NOT EXISTS (
             WHEN f.document->>'type' = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
         END)
         AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
-        AND p.end_date >= :now
+        AND p.end_date >= :yesterday
 )
 RETURNING id
 """
 )
     .bind("cancelled", ApplicationStatus.CANCELLED)
-    .bind("now", LocalDate.now())
+    .bind("yesterday", dateNow().minusDays(1))
     .bind(
         "notDaycarePlacements",
         arrayOf(
