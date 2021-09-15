@@ -52,53 +52,100 @@ class VardaUpdateService(
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
 
     init {
-        asyncJobRunner.registerHandler(::updateAll)
+        asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)
+        asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
     }
 
-    fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {
-        if (runNow) {
-            logger.info("VardaUpdate: running varda update immediately")
-            val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-            updateAllVardaData(db, client, organizer, feeDecisionMinDate)
-        } else {
-            logger.info("VardaUpdate: scheduling varda update")
-            db.transaction { asyncJobRunner.plan(it, listOf(AsyncJob.VardaUpdateV2()), retryCount = 1) }
+    fun initVardaUpdate(db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+
+        updateOrganizer(db, client, organizer)
+        updateUnits(db, client, organizer)
+
+        planVardaChildrenUpdate(db)
+    }
+
+    fun initVardaReset(db: Database.Connection) {
+        planVardaReset(db)
+    }
+
+    /*
+        1. Find all potentially changed service needs and the ones that have failed upload
+            - For each deleted service need, delete all related data from varda
+            - For each new service need, IF related fee data exists, add all related data to varda
+            - For each modified service need, delete old related data from varda and add new
+     */
+    fun planVardaChildrenUpdate(db: Database.Connection) {
+        val serviceNeedDiffsByChild = getChildrenToUpdate(db, feeDecisionMinDate)
+
+        logger.info("VardaUpdate: will update ${serviceNeedDiffsByChild.entries.size} children")
+
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                serviceNeedDiffsByChild.values.map {
+                    AsyncJob.UpdateVardaChild(it)
+                }
+            )
         }
     }
 
-    fun updateAll(db: Database, msg: AsyncJob.VardaUpdateV2) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-        db.connect { updateAllVardaData(it, client, organizer, feeDecisionMinDate) }
-    }
-
-    fun resetChildren(db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-
+    fun planVardaReset(db: Database.Connection) {
         val resetChildIds = db.read { it.getVardaChildrenToReset() }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
 
-        val successfulResets: List<UUID> = resetChildIds.foldIndexed(listOf()) { index, successfulResets, childId ->
-            logger.info { "VardaUpdate: resetting child $childId (${index + 1}/${resetChildIds.size})" }
-            if (deleteChildDataFromVardaAndDb(db, client, childId)) {
-                try {
-                    val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
-                    logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
-                    childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
-                        logger.info { "VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})" }
-                        if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
-                            error("VardaUpdate: failed to send service need for child $childId")
-                    }
-                    db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
-                    logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
-                    successfulResets.plus(childId)
-                } catch (e: Exception) {
-                    logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.localizedMessage}")
-                    successfulResets
-                }
-            } else successfulResets
+        db.transaction { tx ->
+            asyncJobRunner.plan(tx, resetChildIds.map { AsyncJob.ResetVardaChild(it) })
         }
+    }
 
-        logger.info("VardaUpdate: successfully reset ${successfulResets.size} children (failed ${resetChildIds.size - successfulResets.size} children)")
+    fun updateVardaChildByAsyncJob(db: Database, msg: AsyncJob.UpdateVardaChild) {
+        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        db.connect { updateVardaChild(it, client, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
+    }
+
+    fun resetVardaChildByAsyncJob(db: Database, msg: AsyncJob.ResetVardaChild) {
+        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        db.connect { resetVardaChild(it, client, msg.childId, feeDecisionMinDate) }
+    }
+}
+
+fun getChildrenToUpdate(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
+    val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
+    val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        .filter { includedChildIds.contains(it.key) }
+    return serviceNeedDiffsByChild
+}
+
+fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges, feeDecisionMinDate: LocalDate) {
+    serviceNeedDiffByChild.deletes.forEach { deletedServiceNeedId ->
+        handleDeletedEvakaServiceNeed(db, client, deletedServiceNeedId)
+    }
+
+    serviceNeedDiffByChild.updates.forEach { updatedServiceNeedId ->
+        handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId, feeDecisionMinDate)
+    }
+
+    serviceNeedDiffByChild.additions.forEach { addedServiceNeedId ->
+        handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate)
+    }
+}
+
+fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate) {
+    if (deleteChildDataFromVardaAndDb(db, client, childId)) {
+        try {
+            val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
+            logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
+            childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
+                logger.info { "VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})" }
+                if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
+                    error("VardaUpdate: failed to send service need for child $childId")
+            }
+            db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
+            logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
+        } catch (e: Exception) {
+            logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.localizedMessage}")
+        }
     }
 }
 
@@ -166,73 +213,6 @@ fun getVardaChildIdsByEvakaChildId(db: Database.Connection, evakaChildId: UUID):
     }
 }
 
-fun updateAllVardaData(
-    db: Database.Connection,
-    client: VardaClient,
-    organizer: String,
-    feeDecisionMinDate: LocalDate
-) {
-    val since = calculateStartingFrom(db)
-    logger.info("VardaUpdate: running varda update for data modified since $since")
-    updateOrganizer(db, client, organizer)
-    updateUnits(db, client, organizer)
-    updateChildData(db, client, feeDecisionMinDate)
-}
-
-private fun calculateStartingFrom(db: Database.Connection): HelsinkiDateTime {
-    return db.read { it.createQuery("SELECT COALESCE(MAX(evaka_service_need_updated), now()) - INTERVAL '1 day' FROM varda_service_need") }
-        .mapTo<HelsinkiDateTime>().one()
-}
-
-/*
-    1. Find out all changed service needs.
-        - For each deleted service need, delete all related data from varda
-        - For each new service need, IF related fee data exists, add all related data to varda
-        - For each modified service need, delete old related data from varda and add new
-        - For each failed previous varda service need update, delete old related data from varda and add new
-    2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
-       update all service need related data to varda
- */
-fun updateChildData(db: Database.Connection, client: VardaClient, feeDecisionMinDate: LocalDate) {
-    // This is used to control which children are ready for the new varda update service
-    // (e.g. old bogus info has been removed from varda and historical info has been successfully uploaded)
-    val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
-
-    val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
-        .filter { includedChildIds.contains(it.key) }
-
-    logger.info("VardaUpdate: children found with changed service need data: ${serviceNeedDiffsByChild.entries.size}")
-
-    val processedServiceNeedIds = mutableSetOf<ServiceNeedId>()
-
-    serviceNeedDiffsByChild.entries.forEachIndexed { index, serviceNeedDiffByChild ->
-        logger.info("VardaUpdate: processing child ${index + 1} / ${serviceNeedDiffsByChild.entries.size}")
-
-        serviceNeedDiffByChild.value.deletes.forEach { deletedServiceNeedId ->
-            if (!processedServiceNeedIds.contains(deletedServiceNeedId)) {
-                processedServiceNeedIds.add(deletedServiceNeedId)
-                handleDeletedEvakaServiceNeed(db, client, deletedServiceNeedId)
-            }
-        }
-
-        serviceNeedDiffByChild.value.updates.forEach { updatedServiceNeedId ->
-            if (!processedServiceNeedIds.contains(updatedServiceNeedId)) {
-                processedServiceNeedIds.add(updatedServiceNeedId)
-                handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId, feeDecisionMinDate)
-            }
-        }
-
-        serviceNeedDiffByChild.value.additions.forEach { addedServiceNeedId ->
-            if (!processedServiceNeedIds.contains(addedServiceNeedId)) {
-                processedServiceNeedIds.add(addedServiceNeedId)
-                handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate)
-            }
-        }
-    }
-
-    logger.info("VardaUpdate: processed service needs: ${processedServiceNeedIds.size} ")
-}
-
 fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId) {
     try {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
@@ -284,7 +264,13 @@ fun deleteServiceNeedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: V
 }
 
 // Add child if missing, service need, placement and mandatory fee decision(s)
-fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient, evakaServiceNeed: EvakaServiceNeedInfoForVarda, vardaServiceNeed: VardaServiceNeed, feeDecisionMinDate: LocalDate) {
+fun addServiceNeedDataToVarda(
+    db: Database.Connection,
+    vardaClient: VardaClient,
+    evakaServiceNeed: EvakaServiceNeedInfoForVarda,
+    vardaServiceNeed: VardaServiceNeed,
+    feeDecisionMinDate: LocalDate
+) {
     try {
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 

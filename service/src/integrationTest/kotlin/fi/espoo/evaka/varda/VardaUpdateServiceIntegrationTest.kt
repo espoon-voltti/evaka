@@ -45,6 +45,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
+import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -781,6 +782,12 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         updateChildData(db, vardaClient, feeDecisionMinDate)
         assertVardaServiceNeedIds(snId, 1, 1)
+    }
+
+    // TODO: find better way to run update process now that the implementation uses async jobs
+    private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
+        val diffs = getChildrenToUpdate(db, feeDecisionMinDate)
+        diffs.entries.forEach { updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate) }
     }
 
     private fun insertServiceNeedWithFeeDecision(): ServiceNeedId {
