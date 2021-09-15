@@ -149,6 +149,7 @@ export default React.memo(function GuardianSubSection({
       <Gap size={'m'} />
 
       <ExpandingInfo
+        data-qa="guardian-future-address-info"
         info={t.applications.editor.contactInfo.futureAddressInfo}
         ariaLabel={t.common.openExpandingInfo}
         margin="xs"

@@ -59,6 +59,7 @@ type ExpandingInfoProps = {
   ariaLabel: string
   margin?: SpacingSize
   fullWidth?: boolean
+  'data-qa'?: string
 }
 
 export default function ExpandingInfo({
@@ -66,7 +67,8 @@ export default function ExpandingInfo({
   info,
   ariaLabel,
   margin,
-  fullWidth
+  fullWidth,
+  'data-qa': dataQa
 }: ExpandingInfoProps) {
   const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
@@ -76,6 +78,7 @@ export default function ExpandingInfo({
       <FixedSpaceRow spacing="xs" alignItems={'center'}>
         <div>{children}</div>
         <RoundIconWithMargin
+          data-qa={dataQa}
           margin={margin ?? 'zero'}
           content={fasInfo}
           color={colors.brand.secondary}
@@ -95,7 +98,7 @@ export default function ExpandingInfo({
               size="s"
             />
 
-            <InfoContainer>{info}</InfoContainer>
+            <InfoContainer data-qa={`${dataQa}-text`}>{info}</InfoContainer>
 
             <IconButton
               onClick={() => setExpanded(false)}

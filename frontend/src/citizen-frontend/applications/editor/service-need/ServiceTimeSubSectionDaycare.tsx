@@ -146,6 +146,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                     label={opt.name}
                     checked={formData.serviceNeedOption?.id === opt.id}
                     onChange={() => updateFormData({ serviceNeedOption: opt })}
+                    data-qa={`part-time-option-${opt.id}`}
                   />
                 ))}
               </FixedSpaceColumn>
@@ -173,6 +174,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                     label={opt.name}
                     checked={formData.serviceNeedOption?.id === opt.id}
                     onChange={() => updateFormData({ serviceNeedOption: opt })}
+                    data-qa={`full-time-option-${opt.id}`}
                   />
                 ))}
               </FixedSpaceColumn>
@@ -259,6 +261,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       <Gap size={'L'} />
 
       <ExpandingInfo
+        data-qa="shiftcare-instructions"
         info={t.applications.editor.serviceNeed.shiftCare.instructions}
         ariaLabel={t.common.openExpandingInfo}
         margin="xs"
@@ -279,7 +282,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         <>
           <Gap size={'s'} />
 
-          <P fitted>
+          <P fitted data-qa="shiftcare-attachments-message">
             {
               t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
                 .text

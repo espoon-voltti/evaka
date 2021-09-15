@@ -316,6 +316,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       <ActionRow breakpoint="660px">
         {!verifying && (
           <Button
+            data-qa="cancel-application-button"
             text={t.applications.editor.actions.cancel}
             onClick={() => history.goBack()}
             disabled={submitting}

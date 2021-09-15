@@ -69,12 +69,12 @@ export default React.memo(function ApplicationCreation() {
   if (child === undefined) {
     return <Redirect to="/applications" />
   }
-
+  
   return (
     <>
       <Container>
         <ReturnButton label={t.common.return} />
-        <ContentArea opaque paddingVertical="L">
+        <ContentArea opaque paddingVertical="L" data-qa="application-options-area">
           <H1 noMargin>{t.applications.creation.title}</H1>
           <Gap size="m" />
           <H2 noMargin>
@@ -82,6 +82,7 @@ export default React.memo(function ApplicationCreation() {
           </H2>
           <Gap size="XL" />
           <ExpandingInfo
+            data-qa="daycare-expanding-info"
             info={t.applications.creation.daycareInfo}
             ariaLabel={t.common.openExpandingInfo}
             margin="xs"
@@ -115,6 +116,7 @@ export default React.memo(function ApplicationCreation() {
             </>
           )}
           <ExpandingInfo
+            data-qa="club-expanding-info"
             info={t.applications.creation.clubInfo}
             ariaLabel={t.common.openExpandingInfo}
             margin="xs"

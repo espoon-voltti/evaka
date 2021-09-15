@@ -105,6 +105,7 @@ export default React.memo(function PreferredStartSubSection({
 
         {type !== 'CLUB' ? (
           <ExpandingInfo
+            data-qa="startdate-instructions"
             info={t.applications.editor.serviceNeed.startDate.instructions()}
             ariaLabel={t.common.openExpandingInfo}
           >
@@ -206,6 +207,7 @@ export default React.memo(function PreferredStartSubSection({
               }
               ariaLabel={t.common.openExpandingInfo}
               margin="xs"
+              data-qa={'wasOnDaycare-info'}
             >
               <Checkbox
                 checked={formData.wasOnDaycare}
@@ -222,6 +224,7 @@ export default React.memo(function PreferredStartSubSection({
             </ExpandingInfo>
             <Gap size="m" />
             <ExpandingInfo
+              data-qa={'wasOnClubCare-info'}
               info={
                 t.applications.editor.serviceNeed.clubDetails.wasOnClubCareInfo
               }
