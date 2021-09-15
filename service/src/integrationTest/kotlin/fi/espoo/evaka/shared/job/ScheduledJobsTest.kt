@@ -145,6 +145,19 @@ class ScheduledJobsTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a daycare transfer application for a child with a 5yo daycare placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+        createPlacement(PlacementType.DAYCARE_FIVE_YEAR_OLDS, dateRange)
+
+        scheduledJobs.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
     fun `a daycare transfer application for a child with a future daycare placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
