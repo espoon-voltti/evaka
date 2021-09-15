@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -78,7 +79,20 @@ sealed interface Action {
 
         CONFIRM_DECISIONS_MAILED(SERVICE_WORKER),
         ACCEPT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
-        REJECT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR);
+        REJECT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
+
+        READ_NOTES(SERVICE_WORKER, SPECIAL_EDUCATION_TEACHER),
+        CREATE_NOTE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class ApplicationNote(private val roles: EnumSet<UserRole>) : ScopedAction<ApplicationNoteId> {
+        UPDATE(),
+        DELETE()
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

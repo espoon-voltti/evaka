@@ -4,10 +4,12 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.messaging.message.draftBelongsToAnyAccount
 import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
@@ -201,6 +203,7 @@ WHERE employee_id = :userId
     fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, id: I): Boolean =
         when (action) {
             is Action.Application -> this.application.hasPermission(user, action, id as ApplicationId)
+            is Action.ApplicationNote -> hasPermissionFor(user, action, id as ApplicationNoteId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
@@ -223,6 +226,15 @@ WHERE employee_id = :userId
                 }
             }
             else -> false
+        }
+
+    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
+        user is AuthenticatedUser.Employee && when (action) {
+            Action.ApplicationNote.UPDATE,
+            Action.ApplicationNote.DELETE -> user.hasOneOfRoles(
+                    UserRole.ADMIN,
+                    UserRole.SERVICE_WORKER
+                ) || Database(jdbi).read { it.getApplicationNoteCreatedBy(id) == user.id }
         }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
