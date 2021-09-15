@@ -98,7 +98,9 @@ export default function ExpandingInfo({
               size="s"
             />
 
-            <InfoContainer data-qa={`${dataQa}-text`}>{info}</InfoContainer>
+            <InfoContainer data-qa={`${dataQa ?? ''}-text`}>
+              {info}
+            </InfoContainer>
 
             <IconButton
               onClick={() => setExpanded(false)}

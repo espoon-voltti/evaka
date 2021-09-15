@@ -69,12 +69,16 @@ export default React.memo(function ApplicationCreation() {
   if (child === undefined) {
     return <Redirect to="/applications" />
   }
-  
+
   return (
     <>
       <Container>
         <ReturnButton label={t.common.return} />
-        <ContentArea opaque paddingVertical="L" data-qa="application-options-area">
+        <ContentArea
+          opaque
+          paddingVertical="L"
+          data-qa="application-options-area"
+        >
           <H1 noMargin>{t.applications.creation.title}</H1>
           <Gap size="m" />
           <H2 noMargin>
