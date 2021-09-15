@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useMemo, useState } from 'react'
-import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import {
   TableMode,
@@ -24,8 +23,6 @@ export interface AbsencesState {
   setTableMode: (mode: TableMode) => void
   modalVisible: boolean
   setModalVisible: (modalVisible: boolean) => void
-  selectedDate: LocalDate
-  setSelectedDate: (date: LocalDate) => void
   selectedCells: Cell[]
   setSelectedCells: (cells: Cell[]) => void
   selectedAbsenceType: AbsenceType | null
@@ -42,8 +39,6 @@ const defaultState: AbsencesState = {
   setTableMode: () => undefined,
   modalVisible: false,
   setModalVisible: () => undefined,
-  selectedDate: LocalDate.today(),
-  setSelectedDate: () => undefined,
   selectedCells: [],
   setSelectedCells: () => undefined,
   selectedAbsenceType: defaultAbsenceType,
@@ -59,9 +54,6 @@ export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
     const [absences, setAbsences] = useState<Result<Group>>(Loading.of())
     const [tableMode, setTableMode] = useState(defaultState.tableMode)
-    const [selectedDate, setSelectedDate] = useState<LocalDate>(
-      defaultState.selectedDate
-    )
     const [selectedCells, setSelectedCells] = useState<Cell[]>(
       defaultState.selectedCells
     )
@@ -93,8 +85,6 @@ export const AbsencesContextProvider = React.memo(
         setTableMode,
         modalVisible,
         setModalVisible,
-        selectedDate,
-        setSelectedDate,
         selectedCells,
         setSelectedCells,
         selectedAbsenceType,
@@ -111,8 +101,6 @@ export const AbsencesContextProvider = React.memo(
         setTableMode,
         modalVisible,
         setModalVisible,
-        selectedDate,
-        setSelectedDate,
         selectedCells,
         setSelectedCells,
         selectedAbsenceType,

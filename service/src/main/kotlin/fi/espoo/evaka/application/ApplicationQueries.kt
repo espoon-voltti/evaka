@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
@@ -898,6 +899,8 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
 
 fun Database.Transaction.cancelOutdatedTransferApplications(): List<ApplicationId> = createUpdate(
     // only include applications that don't have decisions
+    // placement type checks are doing in inverse so that the addition and accidental omission of new placement types
+    // does not cause the cancellation of applications that shouldn't be cancelled
     """
 UPDATE application SET status = :cancelled
 WHERE transferapplication
@@ -910,19 +913,76 @@ AND NOT EXISTS (
         AND f.application_id = application.id
         AND f.latest
         AND (CASE
-            WHEN f.document->>'type' = 'DAYCARE' THEN p.type = ANY('{DAYCARE, DAYCARE_PART_TIME}')
-            WHEN f.document->>'type' = 'PRESCHOOL' AND NOT (f.document->>'connectedDaycare')::boolean THEN p.type = ANY('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}')
-            WHEN f.document->>'type' = 'PRESCHOOL' AND (f.document->>'connectedDaycare')::boolean THEN p.type = ANY('{PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE}')
-            WHEN f.document->>'type' = 'CLUB' THEN p.type = ANY('{CLUB}')
+            WHEN f.document->>'type' = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
+            WHEN f.document->>'type' = 'PRESCHOOL' AND NOT (f.document->>'connectedDaycare')::boolean THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
+            WHEN f.document->>'type' = 'PRESCHOOL' AND (f.document->>'connectedDaycare')::boolean THEN NOT p.type = ANY(:notPreschoolDaycarePlacements::placement_type[])
+            WHEN f.document->>'type' = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
         END)
         AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
-        AND p.end_date >= :now
+        AND p.end_date >= :yesterday
 )
 RETURNING id
 """
 )
     .bind("cancelled", ApplicationStatus.CANCELLED)
-    .bind("now", LocalDate.now())
+    .bind("yesterday", dateNow().minusDays(1))
+    .bind(
+        "notDaycarePlacements",
+        arrayOf(
+            PlacementType.CLUB,
+            PlacementType.PRESCHOOL,
+            PlacementType.PRESCHOOL_DAYCARE,
+            PlacementType.PREPARATORY,
+            PlacementType.PREPARATORY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.SCHOOL_SHIFT_CARE
+        )
+    )
+    .bind(
+        "notPreschoolPlacements",
+        arrayOf(
+            PlacementType.CLUB,
+            PlacementType.DAYCARE,
+            PlacementType.DAYCARE_PART_TIME,
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.SCHOOL_SHIFT_CARE
+        )
+    )
+    .bind(
+        "notPreschoolDaycarePlacements",
+        arrayOf(
+            PlacementType.CLUB,
+            PlacementType.DAYCARE,
+            PlacementType.DAYCARE_PART_TIME,
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            PlacementType.PRESCHOOL,
+            PlacementType.PREPARATORY,
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.SCHOOL_SHIFT_CARE
+        )
+    )
+    .bind(
+        "notClubPlacements",
+        arrayOf(
+            PlacementType.DAYCARE,
+            PlacementType.DAYCARE_PART_TIME,
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            PlacementType.PRESCHOOL,
+            PlacementType.PRESCHOOL_DAYCARE,
+            PlacementType.PREPARATORY,
+            PlacementType.PREPARATORY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.SCHOOL_SHIFT_CARE
+        )
+    )
     .executeAndReturnGeneratedKeys()
     .mapTo<ApplicationId>()
     .toList()

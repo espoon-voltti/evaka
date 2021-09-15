@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class AttachmentsIntegrationTest {
-    private val pngFile = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")
-    private val jpgFile = this::class.java.getResource("/attachments-fixtures/espoo-logo.jpg")
+    private val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")
+    private val jpgFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg")
 
     @Test
     fun `file content type check works for png file`() {

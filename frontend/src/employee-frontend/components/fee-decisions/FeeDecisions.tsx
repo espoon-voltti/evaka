@@ -24,7 +24,7 @@ import { FeeDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
 import { Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { SortByFeeDecisions } from '../../api/invoicing'
 import Pagination from 'lib-components/Pagination'
 

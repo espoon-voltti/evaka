@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS person_acl_view;
 DROP VIEW IF EXISTS child_acl_view;
 DROP VIEW IF EXISTS daycare_group_acl_view;
 DROP VIEW IF EXISTS daycare_acl_view;
@@ -67,4 +68,23 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     FROM backup_care bc
     JOIN daycare_group_acl acl ON bc.group_id = acl.daycare_group_id
     WHERE bc.end_date > current_date - interval '1 month'
+);
+
+CREATE VIEW person_acl_view(employee_id, person_id, role) AS (
+    SELECT *
+    FROM child_acl_view
+
+    UNION ALL
+
+    SELECT acl.employee_id, guardian_id AS person_id, acl.role
+    FROM child_acl_view acl
+    JOIN guardian
+    USING (child_id)
+
+    UNION ALL
+
+    SELECT acl.employee_id, head_of_child AS person_id, acl.role
+    FROM child_acl_view acl
+    JOIN fridge_child
+    USING (child_id)
 );

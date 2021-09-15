@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -23,6 +25,8 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -40,7 +44,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitAttendanceReservations {
-        Audit.UnitAttendanceReservations.log(targetId = unitId, objectId = from)
+        Audit.UnitAttendanceReservationsRead.log(targetId = unitId, objectId = from)
         ac.requirePermissionFor(user, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val dateRange = FiniteDateRange(from, to)
@@ -71,6 +75,95 @@ class AttendanceReservationController(private val ac: AccessControl) {
                 }
         }
     }
+
+    @PostMapping
+    fun postReservations(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: List<DailyReservationRequest>
+    ) {
+        val distinctChildIds = body.map { it.childId }.toSet()
+        Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
+        distinctChildIds.forEach { childId ->
+            ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
+        }
+
+        db.transaction { createReservationsAsEmployee(it, user.id, body) }
+    }
+}
+
+@ExcludeCodeGen
+data class UnitAttendanceReservations(
+    val unit: String,
+    val operationalDays: List<OperationalDay>,
+    val groups: List<GroupAttendanceReservations>,
+    val ungrouped: List<ChildReservations>
+) {
+    data class OperationalDay(
+        val date: LocalDate,
+        val isHoliday: Boolean
+    )
+
+    data class GroupAttendanceReservations(
+        val group: ReservationGroup,
+        val children: List<ChildReservations>
+    )
+
+    data class ReservationGroup(
+        @PropagateNull
+        val id: UUID,
+        val name: String
+    )
+
+    data class ChildReservations(
+        val child: Child,
+        val dailyData: Map<LocalDate, DailyChildData>
+    )
+
+    data class DailyChildData(
+        val reservation: ReservationTimes?,
+        val attendance: AttendanceTimes?,
+        val absence: Absence?
+    )
+
+    data class ReservationTimes(
+        @PropagateNull
+        val startTime: String,
+        val endTime: String
+    )
+
+    data class AttendanceTimes(
+        @PropagateNull
+        val startTime: String,
+        val endTime: String?
+    )
+
+    data class Absence(
+        @PropagateNull
+        val type: AbsenceType
+    )
+
+    data class Child(
+        val id: UUID,
+        val firstName: String,
+        val lastName: String,
+        val dateOfBirth: LocalDate,
+        val dailyServiceTimes: DailyServiceTimes?
+    )
+
+    data class QueryRow(
+        val date: LocalDate,
+        @Nested("group")
+        val group: ReservationGroup?,
+        @Nested
+        val child: Child,
+        @Nested("reservation")
+        val reservation: ReservationTimes?,
+        @Nested("attendance")
+        val attendance: AttendanceTimes?,
+        @Nested("absence")
+        val absence: Absence?
+    )
 }
 
 private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: FiniteDateRange) = createQuery(
@@ -91,7 +184,8 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     """
     SELECT 
         t::date AS date,
-        dg.name AS "group",
+        dg.id AS group_id,
+        dg.name AS group_name,
         p.id,
         p.first_name,
         p.last_name,
@@ -102,10 +196,11 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
-    JOIN placement pl ON pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> t::date
+    JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
     JOIN person p ON p.id = pl.child_id
+    LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
-    LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
     LEFT JOIN attendance_reservation res ON res.child_id = p.id AND res.start_date = t::date
     LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
     LEFT JOIN LATERAL (
@@ -114,6 +209,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         WHERE absence.date = t::date AND absence.child_id = p.id
         LIMIT 1
     ) ab ON true
+    WHERE coalesce(bc.unit_id, pl.unit_id) = :unitId
     """.trimIndent()
 )
     .bind("unitId", unitId)
@@ -156,68 +252,48 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
         .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
 }
 
-data class UnitAttendanceReservations(
-    val unit: String,
-    val operationalDays: List<OperationalDay>,
-    val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildReservations>
-) {
-    data class OperationalDay(
-        val date: LocalDate,
-        val isHoliday: Boolean
+fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
+    tx.clearOldAbsences(reservations.filter { it.reservation != null }.map { it.childId to it.date })
+    tx.clearOldReservations(reservations.map { it.childId to it.date })
+    tx.insertValidReservations(userId, reservations)
+}
+
+private fun Database.Transaction.insertValidReservations(userId: UUID, reservations: List<DailyReservationRequest>) {
+    val batch = prepareBatch(
+        """
+        INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
+        SELECT :childId, :start, :end, NULL, :userId
+        FROM placement pl 
+        JOIN daycare d ON d.id = pl.unit_id
+        WHERE 
+            pl.child_id = :childId AND 
+            daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
+            extract(DOW FROM :date) = ANY(d.operation_days) AND 
+            NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date) AND
+            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
+        ON CONFLICT DO NOTHING;
+        """.trimIndent()
     )
 
-    data class GroupAttendanceReservations(
-        val group: String,
-        val children: List<ChildReservations>
-    )
+    reservations.forEach { res ->
+        if (res.reservation != null) {
+            val start = HelsinkiDateTime.of(
+                date = res.date,
+                time = res.reservation.startTime
+            )
+            val end = HelsinkiDateTime.of(
+                date = if (res.reservation.endTime.isAfter(res.reservation.startTime)) res.date else res.date.plusDays(1),
+                time = res.reservation.endTime
+            )
+            batch
+                .bind("userId", userId)
+                .bind("childId", res.childId)
+                .bind("start", start)
+                .bind("end", end)
+                .bind("date", res.date)
+                .add()
+        }
+    }
 
-    data class ChildReservations(
-        val child: Child,
-        val dailyData: Map<LocalDate, DailyChildData>
-    )
-
-    data class DailyChildData(
-        val reservation: ReservationTimes?,
-        val attendance: AttendanceTimes?,
-        val absence: Absence?
-    )
-
-    data class ReservationTimes(
-        @PropagateNull
-        val startTime: String,
-        val endTime: String
-    )
-
-    data class AttendanceTimes(
-        @PropagateNull
-        val startTime: String,
-        val endTime: String?
-    )
-
-    data class Absence(
-        @PropagateNull
-        val type: AbsenceType
-    )
-
-    data class Child(
-        val id: UUID,
-        val firstName: String,
-        val lastName: String,
-        val dateOfBirth: LocalDate,
-        val dailyServiceTimes: DailyServiceTimes?
-    )
-
-    data class QueryRow(
-        val date: LocalDate,
-        val group: String?,
-        @Nested
-        val child: Child,
-        @Nested("reservation")
-        val reservation: ReservationTimes?,
-        @Nested("attendance")
-        val attendance: AttendanceTimes?,
-        @Nested("absence")
-        val absence: Absence?
-    )
+    batch.execute()
 }

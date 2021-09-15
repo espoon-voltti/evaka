@@ -31,7 +31,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div class="decision-details">
             <div class="strong" th:text="#{decision.placement.unit}"></div>
             <div style="text-indent: 6em">
-                <div th:text="${decision.unit.preschoolDecisionName}"></div>
+                <div th:text="${decisionUnitName}"></div>
                 <div th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></div>
             </div>
         </div>

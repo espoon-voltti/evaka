@@ -1,7 +1,12 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.getAbsencesByChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -44,27 +49,25 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
         }
 
         // then 2 reservations are added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
             .flatMap { it.children.mapNotNull { child -> child.reservation } }
         assertEquals(2, reservations.size)
     }
@@ -79,30 +82,28 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime)
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
         assertEquals(1, reservations.size)
-        assertEquals(monday, reservations.first().startTime.toLocalDate())
+        assertEquals(monday, reservations.first())
     }
 
     @Test
@@ -115,28 +116,26 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime)
                     )
                 )
             )
         }
 
         // then no reservation are added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
         assertEquals(0, reservations.size)
     }
 
@@ -150,30 +149,28 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.minusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime
+                        TimeRange(startTime, endTime)
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
         assertEquals(1, reservations.size)
-        assertEquals(monday, reservations.first().startTime.toLocalDate())
+        assertEquals(monday, reservations.first())
     }
 
     @Test
@@ -187,67 +184,69 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime)
                     )
                 )
             )
         }
 
         // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
         assertEquals(1, reservations.size)
-        assertEquals(monday, reservations.first().startTime.toLocalDate())
+        assertEquals(monday, reservations.first())
     }
 
     @Test
-    fun `reservation is not added if employee has added absence`() {
+    fun `absences are removed from days with reservation`() {
         // given
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday, careType = AbsenceCareType.DAYCARE)
             it.insertTestAbsence(childId = testChild_1.id, date = monday.plusDays(1), careType = AbsenceCareType.DAYCARE)
         }
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        reservation = null
                     )
                 )
             )
         }
 
-        // then only 1 reservation is added
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        // then 1 reservation is added
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
         assertEquals(1, reservations.size)
-        assertEquals(monday, reservations.first().startTime.toLocalDate())
+        assertEquals(monday, reservations.first())
+
+        // and 1st absence has been removed
+        val absences = db.read { it.getAbsencesByChildByRange(testChild_1.id, FiniteDateRange(monday, monday.plusDays(1))) }
+        assertEquals(1, absences.size)
+        assertEquals(monday.plusDays(1), absences.first().date)
     }
 
     @Test
@@ -256,20 +255,18 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = startTime,
-                        endTime = endTime
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        startTime = startTime,
-                        endTime = endTime,
+                        TimeRange(startTime, endTime)
                     )
                 )
             )
@@ -277,27 +274,26 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservations(
+            createReservationsAsCitizen(
                 it, testAdult_1.id,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        startTime = LocalTime.of(12, 0),
-                        endTime = endTime,
+                        TimeRange(LocalTime.of(12, 0), endTime)
                     )
                 )
             )
         }
 
         // then 1 reservation is changed
-        val reservations = db.read { it.getReservations(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
+            .flatMap { dailyData -> dailyData.children.map { child -> dailyData.date to child.reservation } }
         assertEquals(2, reservations.size)
-        assertEquals(monday, reservations[0].startTime.toLocalDate())
-        assertEquals(12, reservations[0].startTime.toLocalTime().hour)
-        assertEquals(monday.plusDays(1), reservations[1].startTime.toLocalDate())
-        assertEquals(9, reservations[1].startTime.toLocalTime().hour)
+        assertEquals(monday, reservations[0].first)
+        assertEquals("12:00", reservations[0].second?.startTime)
+        assertEquals(monday.plusDays(1), reservations[1].first)
+        assertEquals("09:00", reservations[1].second?.startTime)
     }
 
     @Test

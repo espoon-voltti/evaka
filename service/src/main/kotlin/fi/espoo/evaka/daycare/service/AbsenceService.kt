@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.getPersonById
@@ -169,6 +170,7 @@ enum class AbsenceCareType {
     CLUB
 }
 
+@ExcludeCodeGen
 data class AbsenceGroup(
     val groupId: GroupId,
     val daycareName: String,
@@ -177,6 +179,7 @@ data class AbsenceGroup(
     val operationDays: List<LocalDate>
 )
 
+@ExcludeCodeGen
 data class AbsenceChild(
     val id: UUID,
     val firstName: String,
@@ -187,6 +190,7 @@ data class AbsenceChild(
     val backupCares: Map<LocalDate, AbsenceBackupCare?>
 )
 
+@ExcludeCodeGen
 data class AbsenceChildMinimal(
     val id: UUID,
     val firstName: String,

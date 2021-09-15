@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
@@ -16,6 +17,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
 
+@ExcludeCodeGen
 data class VoucherValueDecision(
     override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,
@@ -97,6 +99,7 @@ enum class VoucherValueDecisionStatus {
     }
 }
 
+@ExcludeCodeGen
 data class VoucherValueDecisionDetailed(
     val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
@@ -182,12 +185,14 @@ data class VoucherValueDecisionSummary(
     val created: Instant = Instant.now(),
 )
 
+@ExcludeCodeGen
 data class VoucherValueDecisionPlacement(
     @Nested("unit")
     val unit: UnitData.JustId,
     val type: PlacementType
 )
 
+@ExcludeCodeGen
 data class VoucherValueDecisionPlacementDetailed(
     @Nested("unit")
     val unit: UnitData.Detailed,

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
@@ -19,6 +20,7 @@ import java.time.ZoneId
 import java.util.UUID
 import kotlin.math.max
 
+@ExcludeCodeGen
 data class FeeDecision(
     override val id: FeeDecisionId,
     override val children: List<FeeDecisionChild>,
@@ -126,6 +128,7 @@ enum class FeeDecisionType {
     RELIEF_ACCEPTED
 }
 
+@ExcludeCodeGen
 data class FeeDecisionDetailed(
     override val id: FeeDecisionId,
     override val children: List<FeeDecisionChildDetailed>,

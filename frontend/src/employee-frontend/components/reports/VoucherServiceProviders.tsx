@@ -28,14 +28,14 @@ import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { FlexRow } from '../common/styled/containers'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { UserContext } from 'employee-frontend/state/user'
+import { UserContext } from '../../state/user'
 import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
@@ -109,17 +109,14 @@ function VoucherServiceProviders() {
     return queryParams.get('unit') ?? ''
   })
 
-  const memoizedFilters = useMemo(
-    () => ({
-      year: filters.year.toString(),
-      month: filters.month.toString(),
-      areaId: filters.areaId ?? '',
-      unit: unitFilter
-    }),
-    [filters, unitFilter]
-  )
-  useSyncQueryParams(memoizedFilters)
-  const query = new URLSearchParams(memoizedFilters).toString()
+  const params = {
+    year: filters.year.toString(),
+    month: filters.month.toString(),
+    areaId: filters.areaId ?? '',
+    unit: unitFilter
+  }
+  useSyncQueryParams(params)
+  const query = new URLSearchParams(params).toString()
 
   useEffect(() => {
     void getAreas().then((res) =>

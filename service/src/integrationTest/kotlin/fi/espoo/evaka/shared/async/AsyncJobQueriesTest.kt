@@ -19,11 +19,16 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AsyncJobQueriesTest : PureJdbiTest() {
-    private val user = AuthenticatedUser.SystemInternalUser
+    private data class TestJob(val data: UUID) : AsyncJobPayload {
+        override val user: AuthenticatedUser? = null
+    }
+
+    private val jobType = AsyncJobType(TestJob::class)
 
     @BeforeEach
     fun beforeEach() {
@@ -32,11 +37,11 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testCompleteHappyCase() {
-        val id = DecisionId(UUID.randomUUID())
+        val id = UUID.randomUUID()
         db.transaction {
             it.insertJob(
                 JobParams(
-                    NotifyDecisionCreated(id, user, sendAsMessage = false),
+                    TestJob(id),
                     1234,
                     Duration.ofMinutes(42),
                     HelsinkiDateTime.now()
@@ -45,8 +50,8 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         }
         val runAt = db.read { it.createQuery("SELECT run_at FROM async_job").mapTo<HelsinkiDateTime>().one() }
 
-        val ref = db.transaction { it.claimJob(listOf(AsyncJobType.DECISION_CREATED))!! }
-        assertEquals(AsyncJobType.DECISION_CREATED, ref.jobType)
+        val ref = db.transaction { it.claimJob(listOf(jobType))!! }
+        assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) = db.read {
             it.createQuery("SELECT run_at, retry_count FROM async_job").mapTo<Retry>().one()
         }
@@ -54,8 +59,8 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         assertEquals(1233, retryCount)
 
         db.transaction { tx ->
-            val payload = tx.startJob(ref, NotifyDecisionCreated::class.java)!!
-            assertEquals(NotifyDecisionCreated(id, user, sendAsMessage = false), payload)
+            val payload = tx.startJob(ref)!!
+            assertEquals(TestJob(id), payload)
 
             tx.completeJob(ref)
         }
@@ -67,7 +72,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testParallelClaimContention() {
-        val payloads = (0..1).map { NotifyDecisionCreated(DecisionId(UUID.randomUUID()), user, sendAsMessage = false) }
+        val payloads = (0..1).map { TestJob(UUID.randomUUID()) }
         db.transaction { tx ->
             payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO, HelsinkiDateTime.now())) }
         }
@@ -78,15 +83,15 @@ class AsyncJobQueriesTest : PureJdbiTest() {
             val h2 = handles[2].begin()
 
             // Two jobs in the db -> only two claims should succeed
-            val job0 = Database.Transaction.wrap(h0).claimJob()!!
-            val job1 = Database.Transaction.wrap(h1).claimJob()!!
+            val job0 = Database.Transaction.wrap(h0).claimJob(listOf(jobType))!!
+            val job1 = Database.Transaction.wrap(h1).claimJob(listOf(jobType))!!
             assertNotEquals(job0.jobId, job1.jobId)
-            assertNull(Database.Transaction.wrap(h2).claimJob())
+            assertNull(Database.Transaction.wrap(h2).claimJob(listOf(jobType)))
 
             h1.rollback()
 
             // Handle 1 rolled back -> job 1 should now be available
-            val job2 = Database.Transaction.wrap(h2).claimJob()!!
+            val job2 = Database.Transaction.wrap(h2).claimJob(listOf(jobType))!!
             assertEquals(job1.jobId, job2.jobId)
 
             Database.Transaction.wrap(h0).completeJob(job0)
@@ -133,6 +138,27 @@ class AsyncJobQueriesTest : PureJdbiTest() {
             ),
             remainingJobs
         )
+    }
+
+    @Test
+    fun `legacy jobs with asyncJobType fields are supported`() {
+        val id = UUID.fromString("d9a88d89-b8d6-4245-a921-b9f5baafc863")
+        db.transaction {
+            it.createUpdate(
+                """
+                INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
+                VALUES ('SEND_DECISION', 20, 'PT20S', now(), '{"asyncJobType": "SEND_DECISION", "decisionId": "$id"}')
+                """.trimIndent()
+            ).execute()
+        }
+        db.transaction {
+            val jobType = AsyncJobType(AsyncJob.SendDecision::class)
+            val jobRef = it.claimJob(listOf(jobType))
+            assertNotNull(jobRef)
+            assertEquals(jobType, jobRef.jobType)
+            val job = it.startJob(jobRef)
+            assertEquals(AsyncJob.SendDecision(decisionId = DecisionId(id)), job)
+        }
     }
 
     private data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)

@@ -39,6 +39,7 @@ import {
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -418,6 +419,23 @@ export async function createGroup(
     initialCaretakers
   }
   await client.post(url, data)
+}
+
+export async function getDaycareGroups(
+  unitId: UUID
+): Promise<Result<DaycareGroup[]>> {
+  return client
+    .get<JsonOf<DaycareGroup[]>>(`/daycares/${unitId}/groups`)
+    .then(({ data }) =>
+      Success.of(
+        data.map((group) => ({
+          ...group,
+          startDate: LocalDate.parseIso(group.startDate),
+          endDate: LocalDate.parseNullableIso(group.endDate)
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function editGroup(
@@ -825,6 +843,15 @@ export interface DaycareDailyNoteFormData {
   modifiedBy?: string
 }
 
+export async function postReservations(
+  reservations: DailyReservationRequest[]
+): Promise<Result<void>> {
+  return client
+    .post('/attendance-reservations', reservations)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getUnitAttendanceReservations(
   unitId: UUID,
   dateRange: FiniteDateRange
@@ -858,10 +885,15 @@ export interface UnitAttendanceReservations {
   unit: string
   operationalDays: OperationalDay[]
   groups: Array<{
-    group: string
+    group: ReservationGroup
     children: Array<ChildReservations>
   }>
   ungrouped: Array<ChildReservations>
+}
+
+interface ReservationGroup {
+  id: UUID
+  name: string
 }
 
 export interface OperationalDay {
@@ -869,14 +901,16 @@ export interface OperationalDay {
   isHoliday: boolean
 }
 
+export interface CalendarChild {
+  id: string
+  firstName: string
+  lastName: string
+  dateOfBirth: LocalDate
+  dailyServiceTimes: DailyServiceTimes | null
+}
+
 export interface ChildReservations {
-  child: {
-    id: string
-    firstName: string
-    lastName: string
-    dateOfBirth: LocalDate
-    dailyServiceTimes: DailyServiceTimes | null
-  }
+  child: CalendarChild
   dailyData: Record<JsonOf<LocalDate>, DailyChildData>
 }
 

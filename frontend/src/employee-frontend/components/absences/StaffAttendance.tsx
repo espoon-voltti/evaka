@@ -1,20 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
-import { AbsencesContext } from '../../state/absence'
 import {
   GroupStaffAttendance,
   GroupStaffAttendanceForDates
@@ -30,12 +22,14 @@ import colors from 'lib-customizations/common'
 
 type Props = {
   groupId: string
+  selectedDate: LocalDate
   emptyCols: number[]
   operationDays: LocalDate[]
 }
 
 export default memo(function StaffAttendance({
   groupId,
+  selectedDate,
   emptyCols,
   operationDays
 }: Props) {
@@ -46,8 +40,6 @@ export default memo(function StaffAttendance({
     },
     []
   )
-
-  const { selectedDate } = useContext(AbsencesContext)
 
   const [attendance, setAttendance] = useState<
     Result<GroupStaffAttendanceForDates>

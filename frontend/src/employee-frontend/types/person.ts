@@ -32,6 +32,7 @@ export interface PersonDetails {
   invoicingPostalCode: string
   invoicingPostOffice: string
   forceManualFeeDecisions: boolean
+  ophPersonOid: string
 }
 
 export const deserializePersonDetails = (

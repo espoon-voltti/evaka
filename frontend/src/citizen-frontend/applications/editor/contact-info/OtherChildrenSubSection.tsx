@@ -15,9 +15,9 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faTimes } from 'lib-icons'
 import { Gap } from 'lib-components/white-space'
-import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 export default React.memo(function OtherChildrenSubSection({
   formData,

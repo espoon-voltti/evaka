@@ -66,8 +66,8 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { featureFlags } from 'lib-customizations/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UUID } from 'lib-common/types'
-import { requireRole } from 'employee-frontend/utils/roles'
-import { UserContext } from 'employee-frontend/state/user'
+import { requireRole } from '../../../../utils/roles'
+import { UserContext } from '../../../../state/user'
 import { Action } from 'lib-common/generated/action'
 
 interface Props {
@@ -437,7 +437,7 @@ function Group({
             </>
           )}
           {permittedActions.has('READ_ABSENCES') && (
-            <Link to={`/absences/${group.id}`}>
+            <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
                 text={i18n.unit.groups.diaryButton}

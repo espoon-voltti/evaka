@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.incomestatement
 
 import com.github.kittinunf.fuel.core.FileDataPart
@@ -133,7 +137,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 attachments = listOf(
                     Attachment(
                         id = attachmentId,
-                        name = "espoo-logo.png",
+                        name = "evaka-logo.png",
                         contentType = "image/png",
                         uploadedByEmployee = true,
                     )
@@ -162,7 +166,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             }
     }
 
-    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")!!
+    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")!!
 
     private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
         val (_, _, result) = http.upload("/attachments/income-statements/$id")
@@ -173,5 +177,5 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "espoo-logo.png", "image/png", true)
+    private fun idToAttachment(id: AttachmentId) = Attachment(id, "evaka-logo.png", "image/png", true)
 }

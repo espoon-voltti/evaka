@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Failure, Result, Success } from 'lib-common/api'
@@ -5,13 +9,14 @@ import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 export interface ChildDailyData {
   childId: string
   absence: AbsenceType | null
   reservation: {
-    startTime: Date
-    endTime: Date
+    startTime: string
+    endTime: string
   } | null
 }
 
@@ -46,28 +51,12 @@ export async function getReservations(
         ...res.data,
         dailyData: res.data.dailyData.map((data) => ({
           ...data,
-          date: LocalDate.parseIso(data.date),
-          children: data.children.map((child) => ({
-            ...child,
-            reservation: child.reservation
-              ? {
-                  startTime: new Date(child.reservation.startTime),
-                  endTime: new Date(child.reservation.endTime)
-                }
-              : null
-          }))
+          date: LocalDate.parseIso(data.date)
         })),
         reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export interface DailyReservationRequest {
-  childId: string
-  date: LocalDate
-  startTime: string
-  endTime: string
 }
 
 export async function postReservations(

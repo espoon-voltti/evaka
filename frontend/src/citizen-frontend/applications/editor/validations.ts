@@ -16,7 +16,7 @@ import {
   TIME_REGEXP,
   validate,
   validDate
-} from '../../form-validation'
+} from 'lib-common/form-validation'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import LocalDate from 'lib-common/local-date'

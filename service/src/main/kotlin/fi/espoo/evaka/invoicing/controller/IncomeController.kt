@@ -15,9 +15,10 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -39,8 +40,9 @@ import java.util.UUID
 @RestController
 @RequestMapping("/incomes")
 class IncomeController(
+    private val incomeTypesProvider: IncomeTypesProvider,
     private val mapper: ObjectMapper,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping
     fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
@@ -49,7 +51,7 @@ class IncomeController(
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
-        val incomes = db.read { it.getIncomesForPerson(mapper, parsedId) }
+        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, parsedId) }
         return ResponseEntity.ok(Wrapper(incomes))
     }
 
@@ -67,14 +69,14 @@ class IncomeController(
 
         val id = db.transaction { tx ->
             val id = IncomeId(UUID.randomUUID())
-            val validIncome = income.copy(id = id).let(::validateIncome)
+            val incomeTypes = incomeTypesProvider.get()
+            val validIncome = validateIncome(income.copy(id = id), incomeTypes)
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, user.id)
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
             id
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok(id)
     }
 
@@ -89,18 +91,18 @@ class IncomeController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = tx.getIncome(mapper, incomeId)
-            val validIncome = income.copy(id = incomeId, applicationId = null).let(::validateIncome)
+            val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
+            val incomeTypes = incomeTypesProvider.get()
+            val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
             tx.upsertIncome(mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
                 DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
             } ?: DateRange(income.validFrom, income.validTo)
 
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -110,28 +112,34 @@ class IncomeController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = tx.getIncome(mapper, incomeId)
+            val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 ?: throw BadRequest("Income not found")
             val period = DateRange(existing.validFrom, existing.validTo)
 
             tx.deleteIncome(incomeId)
 
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(existing.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
         }
 
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/types")
+    fun getTypes(user: AuthenticatedUser): ResponseEntity<Map<String, IncomeType>> {
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        return incomeTypesProvider.get().let { ResponseEntity.ok(it) }
     }
 }
 
-fun validateIncome(income: Income): Income {
+fun validateIncome(income: Income, incomeTypes: Map<String, IncomeType>): Income {
     return if (income.effect == IncomeEffect.INCOME) {
         income.copy(
             data = income.data.mapValues { (type, value) ->
-                when (type) {
-                    IncomeType.MAIN_INCOME, IncomeType.SECONDARY_INCOME, IncomeType.OTHER_INCOME -> value
-                    else -> value.copy(coefficient = IncomeCoefficient.default())
-                }
+                val incomeType = incomeTypes[type] ?: throw BadRequest("Invalid income type: $type")
+                if (incomeType.withCoefficient) value.copy(multiplier = incomeType.multiplier) else value.copy(
+                    multiplier = incomeType.multiplier,
+                    coefficient = IncomeCoefficient.default()
+                )
             }
         )
     } else {

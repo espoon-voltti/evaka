@@ -108,7 +108,8 @@ export const fi = {
       postOffice: 'Postitoimipaikka',
       invoiceRecipient: 'Laskun vastaanottaja',
       invoicingAddress: 'Laskutusosoite',
-      addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi'
+      addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi',
+      ophPersonOid: 'OPH henkilö-OID'
     },
     expandableList: {
       others: 'muuta'
@@ -144,7 +145,20 @@ export const fi = {
       modalMessage:
         'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
     },
-    openExpandingInfo: 'Avaa lisätietokenttä'
+    openExpandingInfo: 'Avaa lisätietokenttä',
+    datetime: {
+      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      weekShort: 'Vk',
+      weekdays: [
+        'Maanantai',
+        'Tiistai',
+        'Keskiviikko',
+        'Torstai',
+        'Perjantai',
+        'Lauantai',
+        'Sunnuntai'
+      ]
+    }
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -1188,20 +1202,6 @@ export const fi = {
           'Luotu automaattisesti tuntemattomalta hakemukselta',
         createdFromApplication: 'Luotu automaattisesti hakemukselta',
         application: 'Hakemus',
-        incomeTypes: {
-          MAIN_INCOME: 'Päätulot',
-          SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
-          PERKS: 'Luontaisedut',
-          SECONDARY_INCOME: 'Sivutulo',
-          PENSION: 'Eläkkeet',
-          UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
-          SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-          PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-          HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
-          ALIMONY: 'Elatusapu/-tuki',
-          OTHER_INCOME: 'Muu tulo (korko, vuokra, osinko jne.)',
-          ALL_EXPENSES: 'Menot (esim. maksetut elatusmaksut tai syytinki)'
-        },
         incomeCoefficients: {
           MONTHLY_WITH_HOLIDAY_BONUS: 'Kuukausi',
           MONTHLY_NO_HOLIDAY_BONUS: 'Kuukausi ilman lomarahaa',
@@ -1336,10 +1336,15 @@ export const fi = {
     statementTypes: {
       HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
       INCOME: 'Huoltajan toimittamat tulotiedot'
+    },
+    table: {
+      title: 'Käsittelyä odottavat tuloselvitykset',
+      customer: 'Asiakas',
+      area: 'Alue',
+      created: 'Luotu',
+      startDate: 'Voimassa',
+      type: 'Tyyppi'
     }
-  },
-  incomeStatements: {
-    title: 'Käsittelyä odottavat tuloselvitykset'
   },
   units: {
     name: 'Nimi',
@@ -1354,6 +1359,7 @@ export const fi = {
     tabs: {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',
+      calendar: 'Kalenteri',
       waitingConfirmation: 'Vahvistettavana huoltajalla',
       placementProposals: 'Sijoitusehdotukset',
       applications: 'Hakemukset'
@@ -1499,6 +1505,13 @@ export const fi = {
         }
       }
     },
+    calendar: {
+      title: 'Varaukset ja läsnäolot',
+      modes: {
+        week: 'Viikko',
+        month: 'Kuukausi'
+      }
+    },
     groups: {
       title: 'Toimipisteen ryhmät',
       familyContacts: 'Näytä yhteystietokooste',
@@ -1590,7 +1603,20 @@ export const fi = {
       ungrouped: 'Lapset ilman ryhmää',
       childName: 'Lapsen nimi',
       startTime: 'Saapuu',
-      endTime: 'Lähtee'
+      endTime: 'Lähtee',
+      reservationModal: {
+        title: 'Tee varaus',
+        selectedChildren: 'Lapset, joille varaus tehdään',
+        dateRange: 'Varauksen voimassaolo',
+        dateRangeLabel: 'Tee varaus päiville',
+        times: 'Kellonaika',
+        businessDays: 'Ma-Pe',
+        repeats: 'Toistuu',
+        repetitions: {
+          DAILY: 'Päivittäin',
+          WEEKLY: 'Viikoittain'
+        }
+      }
     },
     error: {
       placement: {
@@ -1732,7 +1758,11 @@ export const fi = {
         count === 1 ? 'Luo maksupäätös' : 'Luo maksupäätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
-      save: 'Tallenna muutokset'
+      save: 'Tallenna muutokset',
+      errors: {
+        WAITING_FOR_MANUAL_SENDING:
+          'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
+      }
     }
   },
   valueDecisions: {
@@ -1757,7 +1787,11 @@ export const fi = {
         count === 1 ? 'Luo arvopäätös' : 'Luo arvopäätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
-      save: 'Tallenna muutokset'
+      save: 'Tallenna muutokset',
+      errors: {
+        WAITING_FOR_MANUAL_SENDING:
+          'Osalla lapsista on päätöksiä, jotka odottavat manuaalista lähetystä'
+      }
     }
   },
   placement: {
@@ -1878,21 +1912,6 @@ export const fi = {
           },
           income: 'Tulot',
           expenses: 'Menot',
-          types: {
-            MAIN_INCOME: 'Päätulot',
-            SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
-            PERKS: 'Luontaisedut',
-            SECONDARY_INCOME: 'Sivutulo',
-            PENSION: 'Eläkkeet',
-            UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
-            SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-            PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-            HOME_CARE_ALLOWANCE:
-              'Kotihoidontuki, joustava/osittainen hoitoraha',
-            ALIMONY: 'Elatusapu/-tuki',
-            OTHER_INCOME: 'Muu tulo',
-            ALL_EXPENSES: 'Menot (esim. maksetut elatusmaksut tai syytinki)'
-          },
           total: 'Perheen tulot yhteensä',
           familyComposition: 'Perheen kokoonpano ja maksun perusteet',
           familySize: 'Perhekoko',
@@ -1990,20 +2009,6 @@ export const fi = {
         },
         income: 'Tulot',
         expenses: 'Menot',
-        types: {
-          MAIN_INCOME: 'Päätulot',
-          SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
-          PERKS: 'Luontaisedut',
-          SECONDARY_INCOME: 'Sivutulo',
-          PENSION: 'Eläkkeet',
-          UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
-          SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-          PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-          HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
-          ALIMONY: 'Elatusapu/-tuki',
-          OTHER_INCOME: 'Muu tulo',
-          ALL_EXPENSES: 'Menot (esim. maksetut elatusmaksut tai syytinki)'
-        },
         total: 'Perheen tulot yhteensä',
         familyComposition: 'Perheen kokoonpano ja maksun perusteet',
         familySize: 'Perhekoko',
@@ -2618,6 +2623,7 @@ export const fi = {
       daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
       capacity: 'Kapasiteetti on virheellinen',
       costCenter: 'Kustannuspaikka puuttuu',
+      url: 'URL-osoitteessa pitää olla https://- tai http://-etuliite',
       visitingAddress: {
         streetAddress: 'Käyntiosoitteen katuosoite puuttuu',
         postalCode: 'Käyntiosoitteen postinumero puuttuu',
@@ -2857,5 +2863,20 @@ export const fi = {
   },
   welcomePage: {
     text: 'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+  },
+  validationErrors: {
+    required: 'Pakollinen tieto',
+    requiredSelection: 'Valinta puuttuu',
+    format: 'Anna oikeassa muodossa',
+    ssn: 'Virheellinen henkilötunnus',
+    phone: 'Virheellinen numero',
+    email: 'Virheellinen sähköpostiosoite',
+    validDate: 'Anna muodossa pp.kk.vvvv',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä',
+    preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    timeFormat: 'Anna muodossa hh:mm',
+    unitNotSelected: 'Valitse vähintään yksi hakutoive',
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
   }
 }

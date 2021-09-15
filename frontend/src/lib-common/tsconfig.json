@@ -4,6 +4,7 @@
     "rootDir": ".",
     "composite": true,
     "outDir": "../../dist/lib-common",
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "suppressImplicitAnyIndexErrors": true
   }
 }

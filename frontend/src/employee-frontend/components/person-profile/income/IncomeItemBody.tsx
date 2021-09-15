@@ -12,7 +12,7 @@ import IncomeTable from './IncomeTable'
 import { Income } from '../../../types/income'
 import { useTranslation } from '../../../state/i18n'
 import { formatDate } from 'lib-common/date'
-import { UserContext } from 'employee-frontend/state/user'
+import { UserContext } from '../../../state/user'
 
 interface Props {
   income: Income

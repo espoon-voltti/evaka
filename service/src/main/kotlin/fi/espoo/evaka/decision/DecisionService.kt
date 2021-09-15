@@ -20,8 +20,8 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -48,7 +48,7 @@ class DecisionService(
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: BucketEnv,
 ) {
     private val decisionBucket = env.decisions
@@ -60,7 +60,7 @@ class DecisionService(
         sendAsMessage: Boolean
     ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId)
-        asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+        asyncJobRunner.plan(tx, decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
     }
 
@@ -337,6 +337,16 @@ private fun generateDecisionPages(
             setVariable(
                 "hideDaycareTime",
                 decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB || decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
+            )
+            setVariable(
+                "decisionUnitName",
+                when (decision.type) {
+                    DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME ->
+                        decision.unit.daycareDecisionName.takeUnless { it.isBlank() }
+                    DecisionType.PRESCHOOL, DecisionType.PRESCHOOL_DAYCARE, DecisionType.PREPARATORY_EDUCATION ->
+                        decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
+                    else -> null
+                } ?: decision.unit.name
             )
         }
     )

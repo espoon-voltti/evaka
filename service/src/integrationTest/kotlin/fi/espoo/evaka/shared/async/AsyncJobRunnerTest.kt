@@ -4,13 +4,13 @@
 
 package fi.espoo.evaka.shared.async
 
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
+import fi.espoo.voltti.logging.MdcKey
 import org.jdbi.v3.core.Jdbi
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,36 +22,52 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AsyncJobRunnerTest {
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private data class TestJob(
+        val data: UUID = UUID.randomUUID(),
+        override val user: AuthenticatedUser? = null
+    ) : AsyncJobPayload
+
+    private class LetsRollbackException : RuntimeException()
+
+    private lateinit var asyncJobRunner: AsyncJobRunner<TestJob>
     private lateinit var jdbi: Jdbi
     private lateinit var db: Database
 
-    private val user = AuthenticatedUser.SystemInternalUser
+    private val currentCallback: AtomicReference<(msg: TestJob) -> Unit> = AtomicReference()
 
     @BeforeAll
     fun setup() {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        asyncJobRunner = AsyncJobRunner(jdbi, syncMode = false)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        asyncJobRunner.close()
+        currentCallback.set(null)
     }
 
     @BeforeEach
-    @AfterAll
     fun clean() {
-        asyncJobRunner.notifyDecisionCreated = { _, _ -> }
+        asyncJobRunner = AsyncJobRunner(jdbi)
+        asyncJobRunner.registerHandler { _, msg: TestJob ->
+            currentCallback.get()(msg)
+        }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
         db = Database(jdbi)
     }
 
     @Test
-    fun testPlanRollback() {
+    fun `planned jobs are not saved if the transaction gets rolled back`() {
         assertThrows<LetsRollbackException> {
             db.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(NotifyDecisionCreated(DecisionId(UUID.randomUUID()), user, false)))
+                asyncJobRunner.plan(tx, listOf(TestJob(UUID.randomUUID())))
                 throw LetsRollbackException()
             }
         }
@@ -59,39 +75,73 @@ class AsyncJobRunnerTest {
     }
 
     @Test
-    fun testCompleteHappyCase() {
-        val decisionId = DecisionId(UUID.randomUUID())
-        val future = this.setAsyncJobCallback { msg -> msg }
-        db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false))) }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
-        val result = future.get(10, TimeUnit.SECONDS)
-        asyncJobRunner.waitUntilNoRunningJobs()
-        assertEquals(decisionId, result.decisionId)
+    fun `logging MDC keys are set during job execution`() {
+        val job = TestJob(user = AuthenticatedUser.SystemInternalUser)
+        val future = this.setAsyncJobCallback {
+            assertEquals(job, it)
+            val traceId = MdcKey.TRACE_ID.get()
+            val spanId = MdcKey.SPAN_ID.get()
+            assertNotNull(traceId)
+            assertEquals(traceId, spanId)
+            assertEquals(AuthenticatedUser.SystemInternalUser.id.toString(), MdcKey.USER_ID.get())
+            assertEquals(AuthenticatedUser.SystemInternalUser.idHash.toString(), MdcKey.USER_ID_HASH.get())
+        }
+        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        asyncJobRunner.runPendingJobsSync(1)
+        future.get(0, TimeUnit.SECONDS)
     }
 
     @Test
-    fun testCompleteRetry() {
-        val decisionId = DecisionId(UUID.randomUUID())
+    fun `pending jobs can be executed manually`() {
+        val job = TestJob()
+        val future = this.setAsyncJobCallback { assertEquals(job, it) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        asyncJobRunner.runPendingJobsSync()
+        future.get(0, TimeUnit.SECONDS)
+    }
+
+    @Test
+    fun `pending jobs are executed in the background if AsyncJobRunner has been started`() {
+        val job = TestJob()
+        val future = this.setAsyncJobCallback { assertEquals(job, it) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        asyncJobRunner.start(pollingInterval = Duration.ofSeconds(1))
+        future.get(10, TimeUnit.SECONDS)
+    }
+
+    @Test
+    fun `AsyncJobRunner wakes up automatically after a transaction plans jobs`() {
+        val job = TestJob()
+        val future = this.setAsyncJobCallback { assertEquals(job, it) }
+        asyncJobRunner.start(pollingInterval = Duration.ofDays(1))
+        TimeUnit.MILLISECONDS.sleep(100)
+        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        future.get(10, TimeUnit.SECONDS)
+    }
+
+    @Test
+    fun `failed jobs get retried`() {
+        val job = TestJob()
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
-        db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false)), 20, Duration.ZERO) }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
+        db.transaction { asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO) }
+        asyncJobRunner.runPendingJobsSync(1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
         assertTrue(exception.cause is LetsRollbackException)
-        asyncJobRunner.waitUntilNoRunningJobs()
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
-        val future = this.setAsyncJobCallback { msg -> msg }
-        asyncJobRunner.scheduleImmediateRun(maxCount = 1)
+        val future = this.setAsyncJobCallback { assertEquals(job, it) }
+        asyncJobRunner.runPendingJobsSync(1)
         future.get(10, TimeUnit.SECONDS)
-        asyncJobRunner.waitUntilNoRunningJobs()
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
     }
 
-    private fun <R> setAsyncJobCallback(f: (msg: NotifyDecisionCreated) -> R): Future<R> {
+    private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {
         val future = CompletableFuture<R>()
-        asyncJobRunner.notifyDecisionCreated = { _, msg ->
+        currentCallback.set { msg: TestJob ->
             try {
-                future.complete(f(msg))
+                val completed = future.complete(f(msg))
+                assertTrue(completed)
             } catch (t: Throwable) {
                 future.completeExceptionally(t)
                 throw t
@@ -100,5 +150,3 @@ class AsyncJobRunnerTest {
         return future
     }
 }
-
-class LetsRollbackException : RuntimeException()

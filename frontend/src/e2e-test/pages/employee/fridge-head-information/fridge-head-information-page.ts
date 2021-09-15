@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { formatCents } from 'employee-frontend/utils/money'
 import {
   selectFirstComboboxOption,
   waitUntilScrolled
 } from '../../../utils/helpers'
+import { formatCents } from 'lib-common/money'
 
 interface VerifyFamilyPersonOpts {
   personId: string

@@ -17,7 +17,6 @@ import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { errorToInputInfo } from '../../../form-validation'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import {
@@ -25,6 +24,7 @@ import {
   getAttachmentBlob,
   saveApplicationAttachment
 } from '../../../attachments'
+import { errorToInputInfo } from '../../../input-info-helper'
 
 const Hyphenbox = styled.div`
   display: flex;

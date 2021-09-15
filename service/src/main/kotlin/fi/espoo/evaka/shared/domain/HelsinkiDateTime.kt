@@ -62,7 +62,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
 
     fun withTime(time: LocalTime): HelsinkiDateTime = update {
-        it.withHour(time.hour).withMinute(time.minute).withSecond(time.second)
+        it.withHour(time.hour).withMinute(time.minute).withSecond(time.second).withNano(time.nano)
     }
 
     /**

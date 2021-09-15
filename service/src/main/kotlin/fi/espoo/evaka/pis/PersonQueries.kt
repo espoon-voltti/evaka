@@ -68,7 +68,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
 
     // language=SQL
     val sql = """
-        SELECT DISTINCT
+        SELECT
             id,
             social_security_number,
             first_name,
@@ -93,10 +93,11 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
             invoicing_street_address,
             invoicing_postal_code,
             invoicing_post_office,
-            force_manual_fee_decisions
+            force_manual_fee_decisions,
+            oph_person_oid
         FROM person
-        ${if (scopedRole) "JOIN child_acl_view acl ON acl.child_id = person.id AND acl.employee_id = :userId" else ""}
         WHERE $freeTextQuery
+        ${if (scopedRole) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
         ORDER BY $orderBy
         LIMIT 100
     """.trimIndent()
@@ -258,7 +259,33 @@ fun Database.Transaction.updatePersonContactInfo(id: UUID, contactInfo: ContactI
         .firstOrNull() != null
 }
 
-fun Database.Transaction.updatePersonDetails(id: UUID, patch: PersonPatch): Boolean {
+// Update those person fields which do not come from VTJ
+fun Database.Transaction.updatePersonNonVtjDetails(id: UUID, patch: PersonPatch): Boolean {
+    // language=SQL
+    val sql =
+        """
+        UPDATE person SET
+            email = coalesce(:email, email),
+            phone = coalesce(:phone, phone),
+            backup_phone = coalesce(:backupPhone, backup_phone),
+            invoice_recipient_name = coalesce(:invoiceRecipientName, invoice_recipient_name),
+            invoicing_street_address = coalesce(:invoicingStreetAddress, invoicing_street_address),
+            invoicing_postal_code = coalesce(:invoicingPostalCode, invoicing_postal_code),
+            invoicing_post_office = coalesce(:invoicingPostOffice, invoicing_post_office),
+            force_manual_fee_decisions = coalesce(:forceManualFeeDecisions, force_manual_fee_decisions),
+            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
+        WHERE id = :id
+        RETURNING id
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("id", id)
+        .bindKotlin(patch)
+        .mapTo<UUID>()
+        .firstOrNull() != null
+}
+
+fun Database.Transaction.updateNonSsnPersonDetails(id: UUID, patch: PersonPatch): Boolean {
     // language=SQL
     val sql =
         """
@@ -268,6 +295,7 @@ fun Database.Transaction.updatePersonDetails(id: UUID, patch: PersonPatch): Bool
             date_of_birth = coalesce(:dateOfBirth, date_of_birth),
             email = coalesce(:email, email),
             phone = coalesce(:phone, phone),
+            backup_phone = coalesce(:backupPhone, backup_phone),
             street_address = coalesce(:streetAddress, street_address),
             postal_code = coalesce(:postalCode, postal_code),
             post_office = coalesce(:postOffice, post_office),
@@ -275,7 +303,8 @@ fun Database.Transaction.updatePersonDetails(id: UUID, patch: PersonPatch): Bool
             invoicing_street_address = coalesce(:invoicingStreetAddress, invoicing_street_address),
             invoicing_postal_code = coalesce(:invoicingPostalCode, invoicing_postal_code),
             invoicing_post_office = coalesce(:invoicingPostOffice, invoicing_post_office),
-            force_manual_fee_decisions = coalesce(:forceManualFeeDecisions, force_manual_fee_decisions)
+            force_manual_fee_decisions = coalesce(:forceManualFeeDecisions, force_manual_fee_decisions),
+            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
         WHERE id = :id AND social_security_number IS NULL
         RETURNING id
         """.trimIndent()
@@ -334,7 +363,8 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
         invoicingStreetAddress = rs.getString("invoicing_street_address"),
         invoicingPostalCode = rs.getString("invoicing_postal_code"),
         invoicingPostOffice = rs.getString("invoicing_post_office"),
-        forceManualFeeDecisions = rs.getBoolean("force_manual_fee_decisions")
+        forceManualFeeDecisions = rs.getBoolean("force_manual_fee_decisions"),
+        ophPersonOid = rs.getString("oph_person_oid")
     )
 }
 

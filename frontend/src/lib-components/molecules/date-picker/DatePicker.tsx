@@ -18,10 +18,11 @@ const DatePickerWrapper = styled.div`
   display: inline-block;
   width: ${inputWidth}px;
 `
+const minMargin = 16
 const overflow = 70
 const DayPickerPositioner = styled.div<{ show: boolean }>`
   position: absolute;
-  top: calc(100% + 15px);
+  top: calc(2.5rem + ${minMargin}px);
   left: -${overflow}px;
   right: -${overflow}px;
   z-index: 99999;
@@ -107,8 +108,6 @@ function DatePicker({
   useLayoutEffect(() => {
     const realignPicker = () => {
       if (wrapperRef.current) {
-        const minMargin = 16
-
         const distanceFromLeftEdge = wrapperRef.current.offsetLeft
         const distanceFromRightEdge =
           window.innerWidth - wrapperRef.current.offsetLeft - inputWidth

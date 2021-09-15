@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.messaging.planFinanceDecisionGeneration
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -27,7 +28,7 @@ data class GenerateDecisionsBody(
 
 @RestController
 @RequestMapping("/fee-decision-generator")
-class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner) {
+class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     @PostMapping("/generate")
     fun generateDecisions(db: Database.Connection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
@@ -42,6 +43,5 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner)
 
     private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
-        asyncJobRunner.scheduleImmediateRun()
     }
 }

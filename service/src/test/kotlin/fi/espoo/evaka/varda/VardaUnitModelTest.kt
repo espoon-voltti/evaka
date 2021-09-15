@@ -13,33 +13,34 @@ class VardaUnitModelTest {
 
     @Test
     fun `data output is in correct form`() {
-        assertEquals(listOf("jm01"), testUnit.getUnitProviderTypeAsList())
-        assertEquals("tm01", testUnit.getUnitTypeAsString())
-        assertEquals(listOf("FI"), testUnit.getLanguageAsList())
+        assertEquals(listOf("jm01"), testUnit.toVardaUnitRequest().jarjestamismuoto_koodi)
+        assertEquals("tm01", testUnit.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals(listOf("FI"), testUnit.toVardaUnitRequest().asiointikieli_koodi)
     }
 
     @Test
     fun `unit types are printed correctly`() {
-        assertEquals("tm01", testUnitPreschool.getUnitTypeAsString())
-        assertEquals("tm02", testUnitFamily.getUnitTypeAsString())
-        assertEquals("tm03", testUnitGroupFamily.getUnitTypeAsString())
-        assertEquals("tm02", testUnitPreparatoryFamily.getUnitTypeAsString())
-        assertEquals("tm02", testUnitPreschoolFamily.getUnitTypeAsString())
+        assertEquals("tm01", testUnitPreschool.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm03", testUnitGroupFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitPreparatoryFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitPreschoolFamily.toVardaUnitRequest().toimintamuoto_koodi)
     }
 
     @Test
     fun `also municipal school should have provider type printed`() {
-        assertEquals(listOf("jm01"), testUnitMunicipalSchool.getUnitProviderTypeAsList())
+        assertEquals(listOf("jm01"), testUnitMunicipalSchool.toVardaUnitRequest().jarjestamismuoto_koodi)
     }
 
     @Test
     fun `non Varda unit types returns null`() {
-        assertEquals(null, testUnitPreparatory.getUnitTypeAsString())
+        assertEquals(null, testUnitPreparatory.toVardaUnitRequest().toimintamuoto_koodi)
     }
 
     @Test
     fun `json output is correct`() {
-        assertEquals(testUnitJson, mapper.writeValueAsString(testUnit))
+        val parsed = mapper.readValue(testUnitJson, VardaUnitRequest::class.java)
+        assertEquals(parsed, testUnit.toVardaUnitRequest())
     }
 }
 

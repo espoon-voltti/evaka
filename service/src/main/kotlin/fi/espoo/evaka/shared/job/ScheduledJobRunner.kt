@@ -7,8 +7,8 @@ package fi.espoo.evaka.shared.job
 import com.github.kagkarlsson.scheduler.ScheduledExecution
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.RunScheduledJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
@@ -24,7 +24,7 @@ private val logger = KotlinLogging.logger { }
 
 class ScheduledJobRunner(
     private val jdbi: Jdbi,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     dataSource: DataSource,
     schedule: JobSchedule
 ) : AutoCloseable {
@@ -48,9 +48,9 @@ class ScheduledJobRunner(
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(RunScheduledJob(job)), retryCount = ASYNC_JOB_RETRY_COUNT)
+            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = ASYNC_JOB_RETRY_COUNT)
         }
-        asyncJobRunner.scheduleImmediateRun()
+        asyncJobRunner.wakeUp()
     }
 
     fun getScheduledExecutionsForTask(job: ScheduledJob): List<ScheduledExecution<Unit>> =

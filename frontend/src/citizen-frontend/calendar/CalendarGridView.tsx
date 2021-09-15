@@ -37,12 +37,14 @@ export default React.memo(function CalendarGridView({
             onClick={onCreateAbsencesClicked}
             text={i18n.calendar.newAbsence}
             icon={faUserMinus}
+            data-qa="open-absences-modal"
           />
           <Gap size="L" horizontal />
           <InlineButton
             onClick={onCreateReservationClicked}
             text={i18n.calendar.newReservationBtn}
             icon={faCalendarPlus}
+            data-qa="open-reservations-modal"
           />
         </div>
       </PageHeaderRow>
@@ -63,13 +65,14 @@ export default React.memo(function CalendarGridView({
                 key={d.date.formatIso()}
                 today={d.date.isToday()}
                 onClick={() => selectDate(d.date)}
+                data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
               >
                 <DayCellHeader>
                   <DayCellDate holiday={d.isHoliday}>
                     {d.date.format('d.M')}
                   </DayCellDate>
                 </DayCellHeader>
-                <DayCellReservations>
+                <DayCellReservations data-qa="reservations">
                   {d.reservations.length === 0 &&
                     (d.isHoliday ? (
                       <HolidayNote>{i18n.calendar.holiday}</HolidayNote>

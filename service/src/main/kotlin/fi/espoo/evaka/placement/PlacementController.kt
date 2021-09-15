@@ -14,8 +14,8 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -40,7 +40,7 @@ import java.util.UUID
 class PlacementController(
     private val acl: AccessControlList,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: EvakaEnv
 ) {
     private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
@@ -129,11 +129,9 @@ class PlacementController(
             )
             asyncJobRunner.plan(
                 tx,
-                listOf(GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
+                listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PutMapping("/placements/{placementId}")
@@ -152,7 +150,7 @@ class PlacementController(
             asyncJobRunner.plan(
                 tx,
                 listOf(
-                    GenerateFinanceDecisions.forChild(
+                    AsyncJob.GenerateFinanceDecisions.forChild(
                         oldPlacement.childId,
                         DateRange(
                             minOf(body.startDate, oldPlacement.startDate),
@@ -162,8 +160,6 @@ class PlacementController(
                 )
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @DeleteMapping("/placements/{placementId}")
@@ -179,11 +175,9 @@ class PlacementController(
             val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
             asyncJobRunner.plan(
                 tx,
-                listOf(GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
+                listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
             )
         }
-
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     @PostMapping("/placements/{placementId}/group-placements")

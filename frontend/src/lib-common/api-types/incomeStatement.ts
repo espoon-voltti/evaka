@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { Attachment } from 'lib-common/api-types/attachment'
@@ -104,9 +108,12 @@ type IncomeStatementType = IncomeStatement['type']
 
 export interface IncomeStatementAwaitingHandler {
   id: UUID
+  startDate: LocalDate
+  created: Date
   type: IncomeStatementType
   personId: UUID
   personName: string
+  primaryCareArea: string | null
 }
 
 type IncomeJson = JsonOf<Income>
@@ -181,3 +188,11 @@ function deserializeEstimatedIncome(
       : null
   }
 }
+
+export const deserializeIncomeStatementAwaitingHandler = (
+  data: JsonOf<IncomeStatementAwaitingHandler>
+): IncomeStatementAwaitingHandler => ({
+  ...data,
+  startDate: LocalDate.parseIso(data.startDate),
+  created: new Date(data.created)
+})

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
@@ -30,6 +31,8 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -66,6 +69,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -109,9 +113,10 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 @Profile("enable_dev_api")
 @RestController
 @RequestMapping("/dev-api")
+@ExcludeCodeGen
 class DevApi(
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService
@@ -323,6 +328,11 @@ class DevApi(
                 it.insertTestFeeThresholds(feeThresholds)
             )
         }
+
+    data class DevCreateIncomeStatements(val personId: UUID, val data: List<IncomeStatementBody>)
+    @PostMapping("/income-statements")
+    fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
+        db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
 
     @PostMapping("/person")
     fun upsertPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
@@ -913,7 +923,8 @@ data class DevPerson(
     val invoicingPostOffice: String = "",
     val dependants: List<DevPerson> = emptyList(),
     val guardians: List<DevPerson> = emptyList(),
-    val updatedFromVtj: HelsinkiDateTime? = null
+    val updatedFromVtj: HelsinkiDateTime? = null,
+    val ophPersonOid: String = ""
 ) {
     fun toPersonDTO() = PersonDTO(
         id = this.id,
@@ -935,7 +946,8 @@ data class DevPerson(
         restrictedDetailsEndDate = this.restrictedDetailsEndDate,
         invoicingStreetAddress = this.invoicingStreetAddress,
         invoicingPostalCode = this.invoicingPostalCode,
-        invoicingPostOffice = this.invoicingPostOffice
+        invoicingPostOffice = this.invoicingPostOffice,
+        ophPersonOid = this.ophPersonOid
     )
 }
 

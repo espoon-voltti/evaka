@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.shared.EmployeeId
@@ -402,24 +406,37 @@ fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
 
 data class IncomeStatementAwaitingHandler(
     val id: UUID,
+    val created: HelsinkiDateTime,
+    val startDate: LocalDate,
     val type: IncomeStatementType,
     val personId: UUID,
-    val personName: String
+    val personName: String,
+    val primaryCareArea: String?
 )
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAwaitingHandler> =
     createQuery(
         """
-        SELECT
-            ist.id,
-            ist.type,
-            p.id AS personId,
-            p.first_name || ' ' || p.last_name AS personName
-        FROM income_statement ist
-        JOIN person p ON ist.person_id = p.id
-        WHERE handler_id IS NULL
-        ORDER BY start_date DESC
-        LIMIT 50
+WITH areas AS (
+    SELECT area.name, puv.head_of_child
+    FROM care_area area
+        JOIN daycare daycare ON area.id = daycare.care_area_id
+        JOIN primary_units_view puv ON puv.unit_id = daycare.id
+)
+
+SELECT i.id,
+       i.type,
+       i.created,
+       i.start_date,
+       p.id AS personId,
+       p.first_name || ' ' || p.last_name AS personName,
+       areas.name AS primaryCareArea
+FROM income_statement i
+    JOIN person p ON i.person_id = p.id
+    LEFT JOIN areas ON areas.head_of_child = p.id
+WHERE handler_id IS NULL
+ORDER BY start_date DESC
+LIMIT 50
         """.trimIndent()
     )
         .mapTo<IncomeStatementAwaitingHandler>()

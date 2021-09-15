@@ -15,11 +15,11 @@ function getInitialRecipients(
   const lastMessage = messages.slice(-1)[0]
   const lastRecipients = lastMessage.recipients.map(({ id }) => id)
   return [
-    ...(firstMessage.senderId !== accountId
+    ...(firstMessage.sender.id !== accountId
       ? [
           {
-            id: firstMessage.senderId,
-            name: firstMessage.senderName,
+            id: firstMessage.sender.id,
+            name: firstMessage.sender.name,
             toggleable: false,
             selected: true
           }
@@ -31,7 +31,7 @@ function getInitialRecipients(
         ...acc,
         toggleable: true,
         selected:
-          lastMessage.senderId === acc.id || lastRecipients.includes(acc.id)
+          lastMessage.sender.id === acc.id || lastRecipients.includes(acc.id)
       }))
   ]
 }

@@ -335,7 +335,7 @@ class VtjClientServiceTest {
 
         argumentCaptor<Any>().apply {
             verify(mockGenerator, times(3)).writeObject(capture())
-            assertThat(allValues).contains(mapOf("queryName" to query.type.queryName), status, query.ssn)
+            assertThat(allValues).contains(mapOf("queryName" to query.type.queryName), status, query.ssn.subSequence(0, 6))
         }
     }
 

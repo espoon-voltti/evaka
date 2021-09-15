@@ -21,7 +21,6 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { useTranslation } from '../../state/i18n'
 import { CareType, formatCareType } from '../../types'
 
-// TODO: Refactor all of these to actual components that show up in storybook
 export const WideButton = styled(Button)`
   width: 100%;
 `

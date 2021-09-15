@@ -125,7 +125,7 @@ fun toLogParamsMap(query: VTJQuery, status: QueryStatus) =
             "queryName" to query.type.queryName
         ),
         "status" to status.value,
-        "targetId" to query.ssn
+        "targetId" to if (query.ssn.length >= 6) query.ssn.subSequence(0, 6) else query.ssn
     )
 
 enum class QueryStatus(val value: String) {

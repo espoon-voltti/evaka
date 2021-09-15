@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -33,7 +34,7 @@ import java.util.UUID
 @RequestMapping("/parentships")
 class ParentshipController(
     private val parentshipService: ParentshipService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping
     fun createParentship(
@@ -53,7 +54,6 @@ class ParentshipController(
             return db.transaction {
                 parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
             }
-                .also { asyncJobRunner.scheduleImmediateRun() }
                 .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
         }
     }
@@ -117,7 +117,6 @@ class ParentshipController(
         return db.transaction {
             parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
         }
-            .also { asyncJobRunner.scheduleImmediateRun() }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -136,7 +135,6 @@ class ParentshipController(
         )
 
         db.transaction { parentshipService.retryParentship(it, parentshipId) }
-        asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
 
@@ -156,8 +154,6 @@ class ParentshipController(
 
             parentshipService.deleteParentship(it, id)
         }
-
-        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }

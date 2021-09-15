@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
@@ -60,6 +61,7 @@ class ChildController(private val accessControl: AccessControl) {
         return noContent()
     }
 
+    @ExcludeCodeGen
     data class ChildResponse(val person: PersonJSON, val permittedActions: Set<Action.Child>)
 }
 

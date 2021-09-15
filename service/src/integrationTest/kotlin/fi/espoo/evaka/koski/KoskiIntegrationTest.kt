@@ -170,7 +170,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(LocalDate.of(2018, 8, 1)),
-                Opiskeluoikeusjakso.eronnut(LocalDate.of(2019, 4, 30))
+                Opiskeluoikeusjakso.eronnut(LocalDate.of(2019, 5, 1))
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
@@ -245,7 +245,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
-                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusMonths(4))
+                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusMonths(4).plusDays(1))
             ),
             studyRights.first.opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
@@ -287,7 +287,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(start),
-                Opiskeluoikeusjakso.eronnut(firstPlacementEnd)
+                Opiskeluoikeusjakso.eronnut(firstPlacementEnd.plusDays(1))
             ),
             studyRights[0].opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
@@ -455,7 +455,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start.plusDays(10)),
                 Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(preschoolTerm2019.start.plusDays(13)),
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start.plusDays(15)),
-                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusDays(16))
+                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusDays(17))
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
@@ -489,7 +489,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertStudyRight(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
-                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusDays(2))
+                Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusDays(3))
             ),
             qualified = false
         )
@@ -720,7 +720,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 Opiskeluoikeusjakso.läsnä(absences[0].end.plusDays(1)),
                 Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(absences[1].start),
                 Opiskeluoikeusjakso.läsnä(absences[1].end.plusDays(1)),
-                Opiskeluoikeusjakso.eronnut(preschoolTerm2020.end)
+                Opiskeluoikeusjakso.eronnut(preschoolTerm2020.end.plusDays(1))
             ),
             opiskeluoikeus.tila.opiskeluoikeusjaksot
         )

@@ -7,6 +7,9 @@ import { DateRange, rangesOverlap } from '../date'
 
 export const EMAIL_REGEX = /^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i
 
+export const UUID_REGEX =
+  /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
+
 export const PHONE_REGEX = /^[0-9 \-+()]*$/
 
 export const isEmailValid = (value: string) => EMAIL_REGEX.test(value)

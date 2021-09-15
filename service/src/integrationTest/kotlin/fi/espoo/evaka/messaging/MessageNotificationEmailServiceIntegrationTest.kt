@@ -14,11 +14,12 @@ import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -45,7 +46,7 @@ import kotlin.test.assertTrue
 
 class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
@@ -107,7 +108,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `notifications are sent to citizens`() {
-        val employeeAccount = db.read { it.getEmployeeMessageAccounts(employeeId).first() }
+        val employeeAccount = db.read { it.getEmployeeMessageAccountIds(employeeId).first() }
         val personAccounts = db.read { tx ->
             testPersons.map {
                 tx.getCitizenMessageAccount(it.id)

@@ -500,8 +500,6 @@ commands:
           target_env: << parameters.target_env >>
           from: frontend/src/maintenance-page-frontend
           to: maintenance-page
-      - storybook_to_s3:
-          target_env: << parameters.target_env >>
 
   deploy_to_s3:
     parameters:
@@ -533,19 +531,6 @@ commands:
               --exclude "*index.html" \
               "${EXTRA_ARGS[@]}" \
               --profile voltti-<< parameters.target_env >>
-
-  storybook_to_s3:
-    parameters:
-      target_env:
-        type: string
-    steps:
-      - run:
-          name: Deploy Storybook
-          working_directory: *workspace_frontend
-          command: |
-            if [ "<< parameters.target_env >>" = "dev" ]; then
-              aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
-            fi
 
   load_base_image:
     steps:
@@ -823,11 +808,9 @@ jobs:
       - run:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
-      - build_storybook
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
-            - frontend/storybook-build
             - frontend/src/maintenance-page-frontend
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/frontend/test-results

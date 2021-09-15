@@ -8,7 +8,7 @@ import { Gap } from 'lib-components/white-space'
 import { H3, H4 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { formatName } from '../../utils'
 
 interface Props {

@@ -53,7 +53,7 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
 
     const child = fixtures.enduserChildFixtureJari
     await applicationsPage.assertChildIsShown(
@@ -87,7 +87,7 @@ describe('Citizen applications list', () => {
     ])
     await runPendingAsyncJobs()
 
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     await applicationsPage.assertApplicationIsListed(
       application.id,
       'Varhaiskasvatushakemus',
@@ -110,7 +110,7 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })
@@ -128,7 +128,7 @@ describe('Citizen applications list', () => {
     )
     await insertApplications([application])
 
-    await header.applicationsTab.click()
+    await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })

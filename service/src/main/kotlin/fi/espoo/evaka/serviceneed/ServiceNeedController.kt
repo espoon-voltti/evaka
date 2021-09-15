@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -30,7 +31,7 @@ import java.time.LocalDate
 @RestController
 class ServiceNeedController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     data class ServiceNeedCreateRequest(
@@ -64,8 +65,6 @@ class ServiceNeedController(
                 .let { id -> tx.getServiceNeedChildRange(id) }
                 .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
-        asyncJobRunner.scheduleImmediateRun()
-
         return ResponseEntity.noContent().build()
     }
 
@@ -110,8 +109,6 @@ class ServiceNeedController(
                 )
             )
         }
-        asyncJobRunner.scheduleImmediateRun()
-
         return ResponseEntity.noContent().build()
     }
 
@@ -129,7 +126,6 @@ class ServiceNeedController(
             tx.deleteServiceNeed(id)
             notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
-        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
@@ -138,19 +134,18 @@ class ServiceNeedController(
     fun getServiceNeedOptions(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<List<ServiceNeedOption>> {
+    ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
         user.requireAnyEmployee()
 
-        return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
+        return db.read { it.getServiceNeedOptions() }
     }
 
     @GetMapping("/public/service-needs/options")
     fun getServiceNeedOptionPublicInfos(
         db: Database.Connection,
         @RequestParam(required = true) placementTypes: List<PlacementType>
-    ): ResponseEntity<List<ServiceNeedOptionPublicInfo>> {
+    ): List<ServiceNeedOptionPublicInfo> {
         return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
-            .let { ResponseEntity.ok(it) }
     }
 }

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -5,7 +9,7 @@ import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { useTranslation } from 'citizen-frontend/localization'
+import { useTranslation } from '../localization'
 
 interface Props {
   close: () => void
@@ -23,14 +27,17 @@ export default React.memo(function ActionPickerModal({
   return (
     <ModalBackground onClick={close}>
       <Container>
-        <Action onClick={openAbsences}>
+        <Action onClick={openAbsences} data-qa="calendar-action-absences">
           {i18n.calendar.newAbsence}
           <IconBackground>
             <FontAwesomeIcon icon={faUserMinus} size="1x" />
           </IconBackground>
         </Action>
         <Gap size="s" />
-        <Action onClick={openReservations}>
+        <Action
+          onClick={openReservations}
+          data-qa="calendar-action-reservations"
+        >
           {i18n.calendar.newReservationBtn}
           <IconBackground>
             <FontAwesomeIcon icon={faCalendarPlus} size="1x" />

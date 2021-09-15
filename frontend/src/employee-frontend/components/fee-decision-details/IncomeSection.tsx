@@ -2,16 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Gap } from 'lib-components/white-space'
 import { H3, H5 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import { Income, IncomeType, incomeTypes } from '../../types/income'
+import { Income } from '../../types/income'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 import { formatName, formatPercent } from '../../utils'
+import { Result, Success } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { getIncomeOptions, IncomeTypeOptions } from '../../api/income'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -19,6 +24,22 @@ interface Props {
 
 export default React.memo(function Incomesection({ decision }: Props) {
   const { i18n } = useTranslation()
+  const [incomeOptions, setIncomeOptions] = useState<Result<IncomeTypeOptions>>(
+    Success.of([[], []])
+  )
+  const loadIncomeOptions = useRestApi(getIncomeOptions, setIncomeOptions)
+  useEffect(() => {
+    loadIncomeOptions()
+  }, [loadIncomeOptions])
+
+  if (incomeOptions.isLoading) {
+    return <SpinnerSegment />
+  }
+  if (incomeOptions.isFailure) {
+    return <ErrorSegment />
+  }
+
+  const [incomeTypes] = incomeOptions.value
 
   const personIncome = (income: Income | null) => {
     if (!income || income.effect !== 'INCOME') {
@@ -34,10 +55,8 @@ export default React.memo(function Incomesection({ decision }: Props) {
     }
 
     const nonZeroIncomes = incomeTypes
-      .filter((key) => !!income.data[key]) // also filters 0s as expected
-      .map(
-        (key) => i18n.feeDecision.form.summary.income.types[key as IncomeType]
-      )
+      .filter((type) => !!income.data[type.value]) // also filters 0s as expected
+      .map((type) => type.nameFi)
 
     return (
       <div>

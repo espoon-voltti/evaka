@@ -98,7 +98,10 @@ class Database(private val jdbi: Jdbi) {
         fun <T> transaction(f: (db: Transaction) -> T): T {
             threadId.assertCurrentThread()
             check(!handle.isInTransaction) { "Already in a transaction" }
-            return handle.inTransaction<T, Exception> { f(Transaction(it)) }
+            val hooks = TransactionHooks()
+            return handle.inTransaction<T, Exception> { f(Transaction(it, hooks)) }.also {
+                hooks.afterCommit.forEach { it() }
+            }
         }
 
         fun isConnected(): Boolean = connected.get()
@@ -126,13 +129,22 @@ class Database(private val jdbi: Jdbi) {
      *
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
-    class Transaction internal constructor(handle: Handle) : Database.Read(handle) {
+    class Transaction internal constructor(handle: Handle, private val hooks: TransactionHooks) : Database.Read(handle) {
         private var savepointId: Long = 0
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
         fun createUpdate(@Language("sql") sql: String): Update = handle.createUpdate(sql)
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch = handle.prepareBatch(sql)
         fun execute(@Language("sql") sql: String, vararg args: Any): Int = handle.execute(sql, *args)
+
+        /**
+         * Registers a function to be called after this transaction has been committed successfully.
+         *
+         * If the exactly same function (= object instance) has already been registered, this is a no-op.
+         */
+        fun afterCommit(f: () -> Unit) {
+            hooks.afterCommit += f
+        }
 
         fun <T> subTransaction(f: () -> T): T {
             val savepointName = nextSavepoint()
@@ -160,11 +172,13 @@ class Database(private val jdbi: Jdbi) {
             fun wrap(handle: Handle): Transaction {
                 check(handle.isInTransaction) { "Wrapped handle must have an active transaction" }
                 check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
-                return Transaction(handle)
+                return Transaction(handle, TransactionHooks())
             }
         }
     }
 }
+
+internal data class TransactionHooks(val afterCommit: LinkedHashSet<() -> Unit> = LinkedHashSet())
 
 internal data class ThreadId(val id: Long = Thread.currentThread().id) {
     fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }

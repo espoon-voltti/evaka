@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -37,7 +38,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
     protected lateinit var parentshipService: ParentshipService
 
     @Autowired
-    protected lateinit var asyncJobRunner: AsyncJobRunner
+    protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     protected lateinit var fridgeFamilyService: FridgeFamilyService
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient

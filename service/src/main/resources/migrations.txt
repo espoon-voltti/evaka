@@ -137,3 +137,4 @@ V136__income_statement_handler.sql
 V137__service_need_confirmed_by_nullable.sql
 V138__income_statement_checkup_consent.sql
 V139__absence_modified_by_citizen.sql
+V140__message_account_type.sql

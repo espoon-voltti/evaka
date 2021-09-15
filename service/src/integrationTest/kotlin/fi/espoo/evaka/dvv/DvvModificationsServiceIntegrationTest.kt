@@ -193,6 +193,15 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     }
 
     @Test
+    fun `Unknown muutostietue causes a VTJ update`() {
+        var targetPerson: DevPerson = testPerson.copy(ssn = "140921A999X")
+        createTestPerson(targetPerson)
+        createVtjPerson(targetPerson)
+        dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("tuntematon_muutos"))
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount(targetPerson.ssn.toString()))
+    }
+
+    @Test
     fun `name changed`() {
         val SSN = "010179-9992"
         val personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)

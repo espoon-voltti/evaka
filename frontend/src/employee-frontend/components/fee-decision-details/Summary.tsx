@@ -12,7 +12,7 @@ import IncomeSection from './IncomeSection'
 import ChildrenSection from './ChildrenSection'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 
 interface Props {
   decision: FeeDecisionDetailed

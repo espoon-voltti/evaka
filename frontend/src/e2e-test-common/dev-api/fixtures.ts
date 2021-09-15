@@ -107,7 +107,7 @@ export const daycareFixture: Daycare = {
     lat: 60.20377343765089,
     lon: 24.655715743526994
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
 }
 
 export const daycare2Fixture: Daycare = {
@@ -250,6 +250,22 @@ export const enduserDeceasedChildFixture: PersonDetail = {
   dateOfBirth: '2015-05-15',
   dateOfDeath: '2020-06-01',
   streetAddress: 'Aapiskatu 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
+export const enduserNonSsnChildFixture: PersonDetail = {
+  id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
+  firstName: 'Heluna',
+  lastName: 'Hetuton',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: '2018-08-15',
+  streetAddress: 'Suosiellä 1',
   postalCode: '00340',
   postOffice: 'Espoo',
   nationalities: ['FI'],

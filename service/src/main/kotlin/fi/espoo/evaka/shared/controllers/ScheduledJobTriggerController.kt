@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.shared.controllers
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.RunScheduledJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/scheduled")
-class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner) {
+class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     @GetMapping(produces = ["text/html"])
     fun form(user: AuthenticatedUser): String {
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -65,9 +65,8 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner) 
         user.requireOneOfRoles(UserRole.ADMIN)
 
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(RunScheduledJob(body.type)), retryCount = 1)
+            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
         }
-        asyncJobRunner.scheduleImmediateRun()
     }
 
     data class TriggerBody(val type: ScheduledJob)

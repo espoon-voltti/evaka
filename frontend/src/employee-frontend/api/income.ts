@@ -5,9 +5,10 @@
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import { client } from './client'
 import { UUID } from '../types'
-import { Income, PartialIncome } from '../types/income'
+import { Income, IncomeOption, PartialIncome } from '../types/income'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { partition } from 'lodash'
 
 export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
   return client
@@ -52,4 +53,28 @@ export async function deleteIncome(incomeId: string): Promise<Result<void>> {
     .delete<void>(`/incomes/${incomeId}`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
+}
+
+export type IncomeTypeOptions = [IncomeOption[], IncomeOption[]]
+export async function getIncomeOptions(): Promise<Result<IncomeTypeOptions>> {
+  return client
+    .get<IncomeTypes>(`/incomes/types`)
+    .then((res) =>
+      Success.of(
+        partition(
+          Object.entries(res.data).map(([value, type]) => ({ ...type, value })),
+          (type) => type.multiplier > 0
+        )
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+type IncomeTypes = Record<string, IncomeType>
+
+interface IncomeType {
+  nameFi: string
+  multiplier: number
+  withCoefficient: boolean
+  isSubType: boolean
 }

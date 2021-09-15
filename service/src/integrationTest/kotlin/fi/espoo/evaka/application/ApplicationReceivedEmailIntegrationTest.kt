@@ -17,6 +17,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -41,7 +42,7 @@ import kotlin.test.assertNotNull
 
 class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired
     lateinit var applicationReceivedEmailService: ApplicationReceivedEmailService

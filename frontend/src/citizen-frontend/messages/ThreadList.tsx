@@ -21,7 +21,7 @@ import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
 
 const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
-  thread.messages.some((m) => !m.readAt && m.senderId !== accountId)
+  thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
 
 interface Props {
   accountId: UUID

@@ -22,7 +22,10 @@ import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.DRAFT
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.SENT
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
@@ -52,12 +55,17 @@ class FeeDecisionService(
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient
 ) {
-    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<FeeDecisionId>, now: Instant): List<FeeDecisionId> {
+    fun confirmDrafts(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        ids: List<FeeDecisionId>,
+        now: Instant
+    ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
         if (decisions.isEmpty()) return listOf()
 
-        val notDrafts = decisions.filterNot { it.status == FeeDecisionStatus.DRAFT }
+        val notDrafts = decisions.filterNot { it.status == DRAFT }
         if (notDrafts.isNotEmpty()) {
             throw BadRequest("Some fee decisions were not drafts")
         }
@@ -74,11 +82,18 @@ class FeeDecisionService(
                 tx.findFeeDecisionsForHeadOfFamily(
                     it.headOfFamily.id,
                     DateRange(it.validFrom, it.validTo),
-                    listOf(FeeDecisionStatus.SENT)
+                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                 )
             }
             .distinctBy { it.id }
             .filter { !ids.contains(it.id) }
+
+        if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) throw Conflict(
+            "Some heads of family have overlapping fee decisions waiting for manual sending",
+            "WAITING_FOR_MANUAL_SENDING"
+        )
+
+        if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some heads of family have overlapping fee decisions still waiting for sending")
 
         val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
@@ -92,7 +107,12 @@ class FeeDecisionService(
             isRetroactive(it.validFrom, nowDate)
         }
 
-        tx.approveFeeDecisionDraftsForSending(retroactiveDecisions.map { it.id }, approvedBy = user.id, isRetroactive = true, approvedAt = now)
+        tx.approveFeeDecisionDraftsForSending(
+            retroactiveDecisions.map { it.id },
+            approvedBy = user.id,
+            isRetroactive = true,
+            approvedAt = now
+        )
         tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
 
         return validDecisions.map { it.id }
@@ -125,12 +145,12 @@ class FeeDecisionService(
         val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
-        if (decision.status != FeeDecisionStatus.WAITING_FOR_SENDING) {
-            throw Exception("Cannot send fee decision ${decision.id} - has status ${decision.status}")
+        if (decision.status != WAITING_FOR_SENDING) {
+            error("Cannot send fee decision ${decision.id} - has status ${decision.status}")
         }
 
         if (decision.documentKey == null) {
-            throw Exception("Cannot send fee decision ${decision.id} - missing document key")
+            error("Cannot send fee decision ${decision.id} - missing document key")
         }
 
         if (decision.requiresManualSending()) {
@@ -173,7 +193,7 @@ class FeeDecisionService(
 
     fun setSent(tx: Database.Transaction, ids: List<FeeDecisionId>) {
         val decisions = tx.getDetailedFeeDecisionsByIds(ids)
-        if (decisions.any { it.status != FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING }) {
+        if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
         tx.setFeeDecisionSent(ids)
@@ -193,7 +213,7 @@ class FeeDecisionService(
     fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
         val decision = tx.getFeeDecision(decisionId)
             ?: throw BadRequest("Decision not found with id $decisionId")
-        if (decision.status != FeeDecisionStatus.DRAFT) {
+        if (decision.status != DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }
 

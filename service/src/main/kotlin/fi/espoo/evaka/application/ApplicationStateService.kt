@@ -44,6 +44,7 @@ import fi.espoo.evaka.invoicing.data.splitEarlierIncome
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
@@ -58,10 +59,8 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
-import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
-import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -89,9 +88,10 @@ class ApplicationStateService(
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
+    private val incomeTypesProvider: IncomeTypesProvider,
     env: BucketEnv
 ) {
     private val filesBucket = env.attachments
@@ -149,17 +149,17 @@ class ApplicationStateService(
                 tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
             if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
             }
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
-            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.PRESCHOOL) {
             val sentWithinPreschoolApplicationPeriod = tx.sentWithinPreschoolApplicationPeriod(sentDate)
-            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
         }
 
         tx.updateApplicationStatus(application.id, SENT)
@@ -196,7 +196,7 @@ class ApplicationStateService(
 
         tx.setCheckedByAdminToDefault(applicationId, application.form)
 
-        asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)))
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
@@ -681,7 +681,7 @@ class ApplicationStateService(
         !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
     private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
-        val incomes = tx.getIncomesForPerson(mapper, application.guardianId)
+        val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, application.guardianId)
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
             income.validTo != null &&
@@ -696,6 +696,7 @@ class ApplicationStateService(
             logger.debug { "Could not add a new max fee accepted income from application ${application.id}" }
         } else {
             val period = DateRange(start = validFrom, end = null)
+            val incomeTypes = incomeTypesProvider.get()
             val validIncome = Income(
                 id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
@@ -705,10 +706,10 @@ class ApplicationStateService(
                 validFrom = validFrom,
                 validTo = null,
                 applicationId = application.id
-            ).let(::validateIncome)
+            ).let { validateIncome(it, incomeTypes) }
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, application.guardianId)
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
         }
     }
 }

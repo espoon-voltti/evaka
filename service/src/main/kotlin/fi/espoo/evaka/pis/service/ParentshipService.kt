@@ -11,8 +11,8 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -24,7 +24,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Service
-class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
+class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     private val logger = KotlinLogging.logger { }
 
     fun createParentship(
@@ -91,7 +91,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
 
     private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(this, listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))))
+        asyncJobRunner.plan(this, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))))
     }
 }
 

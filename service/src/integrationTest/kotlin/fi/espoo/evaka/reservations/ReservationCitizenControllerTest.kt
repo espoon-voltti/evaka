@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.reservations
 
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -10,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -24,7 +27,7 @@ import kotlin.test.assertEquals
 
 class ReservationCitizenControllerTest : FullApplicationTest() {
 
-    val testDate = LocalDate.now().plusWeeks(2)
+    val testDate = LocalDate.now().let { it.minusDays(it.dayOfWeek.value - 1L) }.plusWeeks(3)
     val startTime = LocalTime.of(9, 0)
     val endTime = LocalTime.of(17, 0)
 
@@ -45,8 +48,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(child, testDate, startTime, endTime),
-                    DailyReservationRequest(child, testDate.plusDays(1), startTime, endTime)
+                    DailyReservationRequest(child, testDate, TimeRange(startTime, endTime)),
+                    DailyReservationRequest(child, testDate.plusDays(1), TimeRange(startTime, endTime))
                 )
             },
         )
@@ -67,8 +70,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(testDate, startTime), HelsinkiDateTime.of(testDate, endTime))),
-                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(testDate, startTime), HelsinkiDateTime.of(testDate, endTime)))
+                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
+                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString()))
             ),
             dailyData[0].children.toSet()
         )
@@ -76,8 +79,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(HelsinkiDateTime.of(testDate.plusDays(1), startTime), HelsinkiDateTime.of(testDate.plusDays(1), endTime))),
-                ChildDailyData(testChild_2.id, null, Reservation(HelsinkiDateTime.of(testDate.plusDays(1), startTime), HelsinkiDateTime.of(testDate.plusDays(1), endTime))),
+                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
+                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString())),
             ),
             dailyData[1].children.toSet()
         )

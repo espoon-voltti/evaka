@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { orderBy } from 'lodash'
@@ -8,10 +12,10 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { VoucherValueDecisionSummary } from 'employee-frontend/types/invoicing'
-import { getPersonVoucherValueDecisions } from 'employee-frontend/api/invoicing'
-import { formatCents } from 'employee-frontend/utils/money'
+import { useTranslation } from '../../state/i18n'
+import { VoucherValueDecisionSummary } from '../../types/invoicing'
+import { getPersonVoucherValueDecisions } from '../../api/invoicing'
+import { formatCents } from 'lib-common/money'
 
 interface Props {
   id: string

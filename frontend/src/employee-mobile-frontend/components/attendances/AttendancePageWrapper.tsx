@@ -43,7 +43,7 @@ import TopBar from '../common/TopBar'
 import BottomNavbar, { NavItem } from '../common/BottomNavbar'
 import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
 import { Loading, Result, combine } from 'lib-common/api'
-import { getUnitStaffAttendances } from 'employee-mobile-frontend/api/staffAttendances'
+import { getUnitStaffAttendances } from '../../api/staffAttendances'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 
 export interface Props {

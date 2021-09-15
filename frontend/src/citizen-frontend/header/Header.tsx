@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { desktopMin } from 'lib-components/breakpoints'
-import EspooLogo from './EspooLogo'
+import CityLogo from './CityLogo'
 import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
@@ -27,7 +27,7 @@ export default React.memo(function Header() {
 
   return (
     <HeaderContainer fixed={showMenu}>
-      <EspooLogo />
+      <CityLogo />
       <EvakaLogo />
       <DesktopNav unreadMessagesCount={unreadMessagesCount ?? 0} />
       <MobileNav

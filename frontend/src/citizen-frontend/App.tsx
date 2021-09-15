@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AuthContext } from 'citizen-frontend/auth/state'
+import { AuthContext } from './auth/state'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { theme } from 'lib-customizations/common'
 import React, { ReactNode, useContext } from 'react'
@@ -28,6 +28,7 @@ import GlobalInfoDialog from './overlay/Info'
 import { OverlayContextProvider } from './overlay/state'
 import IncomeStatements from './income-statements/IncomeStatements'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
+import IncomeStatementView from './income-statements/IncomeStatementView'
 import { featureFlags } from 'lib-customizations/citizen'
 
 export default function App() {
@@ -67,8 +68,15 @@ export default function App() {
                     {featureFlags.experimental?.incomeStatements && (
                       <Route
                         exact
-                        path="/income/:incomeStatementId"
+                        path="/income/:incomeStatementId/edit"
                         component={requireAuth(IncomeStatementEditor)}
+                      />
+                    )}
+                    {featureFlags.experimental?.incomeStatements && (
+                      <Route
+                        exact
+                        path="/income/:incomeStatementId"
+                        component={requireAuth(IncomeStatementView)}
                       />
                     )}
                     <Route

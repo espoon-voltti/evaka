@@ -4,22 +4,22 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Service
 
 @Service
 class VTJBatchRefreshService(
     private val fridgeFamilyService: FridgeFamilyService,
-    asyncJobRunner: AsyncJobRunner
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     init {
-        asyncJobRunner.vtjRefresh = ::doVTJRefresh
+        asyncJobRunner.registerHandler(::doVTJRefresh)
     }
 
-    fun doVTJRefresh(db: Database, msg: VTJRefresh) {
+    fun doVTJRefresh(db: Database, msg: AsyncJob.VTJRefresh) {
         fridgeFamilyService.doVTJRefresh(db, msg)
     }
 }

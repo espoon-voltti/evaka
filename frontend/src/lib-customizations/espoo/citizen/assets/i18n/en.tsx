@@ -6,8 +6,7 @@ import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { Gap } from 'lib-components/white-space'
+import { INCOME_I18N } from './fi'
 
 const en: Translations = {
   common: {
@@ -20,6 +19,8 @@ const en: Translations = {
     delete: 'Remove',
     edit: 'Edit',
     add: 'Add',
+    yes: 'Yes',
+    no: 'No',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',
@@ -51,7 +52,7 @@ const en: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      weekShort: 'Week',
+      weekShort: 'Wk',
       weekdays: [
         'Monday',
         'Tuesday',
@@ -152,22 +153,22 @@ const en: Translations = {
     holiday: 'Holiday',
     absent: 'Absent',
     absences: {
-      SICKLEAVE: 'Sairaus',
-      PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+      SICKLEAVE: 'Sickness absence',
+      PLANNED_ABSENCE: 'Planned day off'
     },
     newReservationOrAbsence: 'Reservation / Absence',
     newAbsence: 'Report absence',
-    newReservationBtn: 'Create reservation',
-    noReservation: 'No reservation',
+    newReservationBtn: 'Make a reservation',
+    noReservation: 'No reservations',
     reservationModal: {
-      title: 'Create reservation',
-      selectChildren: 'Select children',
-      dateRange: 'Reservation valid during',
-      dateRangeLabel: 'Make reservation for days',
-      times: 'Times',
+      title: 'Make a reservation',
+      selectChildren: 'Selected children',
+      dateRange: 'Validity',
+      dateRangeLabel: 'Make a reservation for dates',
+      times: 'Time',
       businessDays: 'Mon-Fri',
-      postError: 'Creating reservation failed',
-      repeats: 'Repeats',
+      postError: 'The reservation failed',
+      repeats: 'Repeating',
       repetitions: {
         DAILY: 'Daily',
         WEEKLY: 'Weekly'
@@ -175,13 +176,13 @@ const en: Translations = {
     },
     absenceModal: {
       title: 'Report absence',
-      selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
-      dateRange: 'Poissaoloilmoitus ajalle',
-      absenceType: 'Poissaolon syy',
+      selectedChildren: 'Selected children',
+      dateRange: 'Absent during',
+      absenceType: 'Reason for absence',
       absenceTypes: {
-        sickness: 'Sairaus',
-        other: 'Muu poissaolo',
-        planned: 'Säännöllinen vapaapäivä/vuorohoito'
+        SICKLEAVE: 'Sickness',
+        OTHER_ABSENCE: 'Other absence',
+        PLANNED_ABSENCE: 'Regular day off/shift care'
       }
     }
   },
@@ -201,6 +202,7 @@ const en: Translations = {
       BULLETIN: 'Bulletin'
     },
     replyToThread: 'Reply',
+    staffAnnotation: 'Staff',
     messageEditor: {
       newMessage: 'New message',
       receivers: 'Receivers',
@@ -750,10 +752,10 @@ const en: Translations = {
           'Describe the need for support for the child.',
         assistanceNeedInstructions: {
           DAYCARE:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
-          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
+          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
@@ -1288,278 +1290,7 @@ const en: Translations = {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later'
   },
-  income: {
-    title: 'Tulotiedot',
-    description: (
-      <>
-        <p>
-          Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
-          vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
-          tuloselvityksiä ja muokata tai poistaa niitä kunnes viranomainen on
-          käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
-          tulotietojasi toimittamalla uuden lomakkeen.
-          <br />
-          Lisätietoja maksuista:{' '}
-          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
-            Maksut varhaiskasvatuksessa
-          </a>
-        </p>
-        <p>
-          Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
-          prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen
-          koon ja tulojen sekä varhaiskasvatusajan mukaan. Tarkista alla
-          olevasta taulukosta tarvitseeko sinun toimittaa tuloselvitystä, vai
-          kuuluuko perheenne automaattisesti korkeimman varhaiskasvatusmaksun
-          piiriin.
-        </p>
-      </>
-    ),
-    formTitle: 'Tulotietojen ilmoitus',
-    formDescription: (
-      <>
-        <P>
-          Tuloselvitys liitteineen palautetaan kahden viikon kuluessa
-          varhaiskasvatuksen aloittamisesta. Maksu voidaan määrätä
-          puutteellisilla tulotiedoilla korkeimpaan maksuun.
-        </P>
-        <P>
-          Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
-          alkamispäivästä lähtien.
-        </P>
-        <P>
-          Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
-          asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu
-          perimään varhaiskasvatusmaksuja myös takautuvasti.
-        </P>
-        <P>
-          <strong>Huomioitavaa:</strong>
-        </P>
-        <Gap size="xs" />
-        <UnorderedList>
-          <li>
-            Jos tulosi ylittävät perhekoon mukaisen tulorajan, hyväksy korkein
-            varhaiskasvatusmaksu. Tällöin sinun ei tarvitse selvittää tulojasi
-            lainkaan.
-          </li>
-          <li>
-            Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava
-            tuloselvitys.
-          </li>
-        </UnorderedList>
-        <P>* Tähdellä merkityt tiedot ovat pakollisia</P>
-      </>
-    ),
-    confidential: (
-      <P>
-        <strong>Salassapidettävä</strong>
-        <br />
-        (JulkL 24.1 §:n 23 kohta)
-      </P>
-    ),
-    addNew: 'Uusi tuloselvitys',
-    incomeInfo: 'Tulotiedot',
-    incomesRegisterConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
-    incomeType: {
-      description: (
-        <>
-          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
-          <strong>Yrittäjän tulotiedot</strong>, että{' '}
-          <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
-        </>
-      ),
-      startDate: 'Voimassa alkaen',
-      endDate: 'Voimassaolo päättyy',
-      title: 'Asiakasmaksun perusteet',
-      agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
-      highestFeeInfo:
-        'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
-      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
-      entrepreneurIncome: 'Yrittäjän tulotiedot'
-    },
-    grossIncome: {
-      title: 'Bruttotulotietojen täyttäminen',
-      description:
-        'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan tulorekisteristä sekä Kelasta tarvittaessa.',
-      incomeSource: 'Tulotietojen toimitus',
-      provideAttachments:
-        'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
-      estimate: 'Arvio bruttotuloistani',
-      otherIncome: 'Muut tulot',
-      otherIncomeInfo:
-        'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
-      choosePlaceholder: 'Valitse',
-      otherIncomeTypes: {
-        PENSION: 'Eläke',
-        ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
-        SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-        PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-        HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
-        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
-          'Joustava tai osittainen hoitoraha',
-        ALIMONY: 'Elatusapu tai -tuki',
-        INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
-        RENTAL_INCOME: 'Vuokratulot',
-        UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
-        LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
-        ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
-        JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
-        REWARD_OR_BONUS: 'Palkkio tai bonus',
-        RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
-        BASIC_INCOME: 'Perustulo',
-        FOREST_INCOME: 'Metsätulo',
-        FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
-        REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
-        EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
-        GRANT: 'Apuraha',
-        APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
-        ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
-        OTHER_INCOME: 'Muut tulot'
-      }
-    },
-    entrepreneurIncome: {
-      title: 'Yrittäjän tulotietojen täyttäminen',
-      description: (
-        <>
-          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
-          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
-          tarkemmat yrityskohtaiset tiedot liitteinä.
-          <br />
-          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
-          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
-        </>
-      ),
-      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
-      fullTime: 'Päätoimista',
-      partTime: 'Sivutoimista',
-      startOfEntrepreneurship: 'Yrittäjyys alkanut',
-      spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
-      yes: 'Kyllä',
-      no: 'Ei',
-      startupGrantLabel: 'Onko yritys saanut starttirahaa?',
-      startupGrant:
-        'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
-      checkupLabel: 'Tietojen tarkastus',
-      checkupConsent:
-        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
-      companyInfo: 'Yrityksen tiedot',
-      companyForm: 'Yrityksen toimintamuoto',
-      selfEmployed: 'Toiminimi',
-      limitedCompany: 'Osakeyhtiö',
-      partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
-      lightEntrepreneur: 'Kevytyrittäjyys',
-      lightEntrepreneurInfo:
-        'Maksutositteet palkoista ja työkorvauksista tulee toimittaa liitteinä.',
-      partnershipInfo:
-        'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
-    },
-    selfEmployed: {
-      info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
-      attachments:
-        'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
-      estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
-      estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
-      timeRange: 'Aikavälillä'
-    },
-    limitedCompany: {
-      info: (
-        <>
-          <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
-          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
-        </>
-      ),
-      incomesRegister:
-        'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
-      attachments:
-        'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
-    },
-    accounting: {
-      title: 'Kirjanpitäjän yhteystiedot',
-      description:
-        'Kirjanpitäjän yhteystiedot tarvitaan jos toimit osakeyhtiössä, kommandiittiyhtiössä tai avoimessa yhtiössä.',
-      accountant: 'Kirjanpitäjä',
-      accountantPlaceholder: 'Kirjanpitäjän nimi / yhtiön nimi',
-      email: 'Sähköpostiosoite',
-      emailPlaceholder: 'Sähköposti',
-      address: 'Postiosoite',
-      addressPlaceholder: 'Katuosoite, postinumero, toimipaikka',
-      phone: 'Puhelinnumero',
-      phonePlaceholder: 'Puhelinnumero'
-    },
-    moreInfo: {
-      title: 'Muita maksuun liittyviä tietoja',
-      studentLabel: 'Oletko opiskelija?',
-      student: 'Olen opiskelija.',
-      studentInfo:
-        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
-      deductions: 'Vähennykset',
-      alimony:
-        'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
-      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
-    },
-    attachments: {
-      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-      description:
-        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
-      required: {
-        title: 'Tarvittavat liitteet'
-      },
-      attachmentNames: {
-        PENSION: 'Päätös eläkkeestä',
-        ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
-        SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
-        PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
-        HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
-        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
-        ALIMONY: 'Elatussopimus tai päätös elatustuesta',
-        UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
-        LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
-        ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
-        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
-        REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
-        RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
-        BASIC_INCOME: 'Päätös perustulosta',
-        FOREST_INCOME: 'Tosite metsätulosta',
-        FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
-        REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
-        EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
-        GRANT: 'Tosite apurahasta',
-        APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
-        ACCIDENT_INSURANCE_COMPENSATION:
-          'Tosite tapaturmavakuutuksen korvauksesta',
-        OTHER_INCOME: 'Liitteet muista tuloista',
-        ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
-        INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
-        RENTAL_INCOME: 'Tositteet vuokratuloista',
-        PAYSLIP: 'Viimeisin palkkakuitti',
-        STARTUP_GRANT: 'Starttirahapäätös',
-        ACCOUNTANT_REPORT:
-          'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
-        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
-        PROOF_OF_STUDIES:
-          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
-      }
-    },
-    assure: 'Vakuutan antamani tiedot oikeiksi.',
-    errors: {
-      invalidForm:
-        'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
-      choose: 'Valitse vaihtoehto',
-      chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
-      deleteFailed: 'Tuloselvitystä ei voitu poistaa'
-    },
-    table: {
-      title: 'Tuloselvitykset',
-      incomeStatementForm: 'Tuloselvityslomake',
-      startDate: 'Voimassa alkaen',
-      endDate: 'Voimassa asti',
-      handler: 'Käsittelijä',
-      openIncomeStatement: 'Avaa lomake',
-      deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
-      deleteDescription:
-        'Haluatko varmasti poistaa toimittamasi tuloselvityksen? Kaikki poistettavan lomakkeen tiedot menetetään.'
-    }
-  },
+  income: INCOME_I18N,
   validationErrors: {
     required: 'Value missing',
     requiredSelection: 'Please select one of the options',

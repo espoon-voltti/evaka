@@ -2,13 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  getReceivers,
-  sendMessage,
-  SendMessageParams
-} from 'citizen-frontend/messages/api'
-import EmptyThreadView from 'citizen-frontend/messages/EmptyThreadView'
-import MessageEditor from 'citizen-frontend/messages/MessageEditor'
+import { useTranslation } from '../localization'
+import { getReceivers, sendMessage, SendMessageParams } from './api'
+import EmptyThreadView from './EmptyThreadView'
+import MessageEditor from './MessageEditor'
 import { Loading, Result } from 'lib-common/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -51,11 +48,12 @@ export default React.memo(function MessagesPage() {
   const [receivers, setReceivers] = useState<Result<MessageAccount[]>>(
     Loading.of()
   )
+  const t = useTranslation()
   const loadReceivers = useRestApi(getReceivers, setReceivers)
 
   useEffect(() => {
-    loadReceivers()
-  }, [loadReceivers])
+    loadReceivers(t.messages.staffAnnotation)
+  }, [loadReceivers, t.messages.staffAnnotation])
 
   return (
     <FullHeightContainer>

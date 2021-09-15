@@ -19,7 +19,6 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
@@ -186,11 +185,11 @@ fun Database.Transaction.insertTestPerson(person: DevPerson) = insertTestDataRow
 INSERT INTO person (
     id, date_of_birth, date_of_death, first_name, last_name, social_security_number, email, phone, language,
     street_address, postal_code, post_office, residence_code, nationalities, restricted_details_enabled, restricted_details_end_date,
-    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj
+    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj, oph_person_oid
 ) VALUES (
     :id, :dateOfBirth, :dateOfDeath, :firstName, :lastName, :ssn, :email, :phone, :language,
     :streetAddress, :postalCode, :postOffice, :residenceCode, :nationalities, :restrictedDetailsEnabled, :restrictedDetailsEndDate,
-    :invoicingStreetAddress, :invoicingPostalCode, :invoicingPostOffice, :updatedFromVtj
+    :invoicingStreetAddress, :invoicingPostalCode, :invoicingPostOffice, :updatedFromVtj, :ophPersonOid
 )
 RETURNING id
 """
@@ -473,7 +472,7 @@ fun Database.Transaction.insertTestIncome(
     id: UUID = UUID.randomUUID(),
     validFrom: LocalDate = LocalDate.of(2019, 1, 1),
     validTo: LocalDate? = null,
-    data: Map<IncomeType, IncomeValue> = mapOf(),
+    data: Map<String, IncomeValue> = mapOf(),
     effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     updatedAt: Instant = Instant.now(),
     updatedBy: UUID = UUID.randomUUID()
@@ -914,7 +913,7 @@ RETURNING id
 )
 
 data class DevFridgeChild(
-    val id: ParentshipId,
+    val id: ParentshipId = ParentshipId(UUID.randomUUID()),
     val childId: UUID,
     val headOfChild: UUID,
     val startDate: LocalDate,

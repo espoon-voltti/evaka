@@ -17,7 +17,7 @@ import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UUID } from '../../types'
 import { Invoice } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
+import { formatCents } from 'lib-common/money'
 
 interface Props {
   id: UUID

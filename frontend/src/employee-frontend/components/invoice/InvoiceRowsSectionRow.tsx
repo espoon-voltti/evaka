@@ -16,7 +16,7 @@ import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
 import { Result } from 'lib-common/api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
-import { formatCents, parseCents } from '../../utils/money'
+import { formatCents, parseCents } from 'lib-common/money'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 
 interface InvoiceRowStub {

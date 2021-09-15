@@ -34,7 +34,7 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <Container>
+    <Container data-qa="desktop-nav">
       <Nav>
         {user && (
           <>

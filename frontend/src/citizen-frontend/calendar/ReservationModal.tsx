@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -6,11 +10,7 @@ import { H2, Label } from 'lib-components/typography'
 import React, { useEffect, useState } from 'react'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
-import {
-  DailyReservationRequest,
-  postReservations,
-  ReservationChild
-} from './api'
+import { postReservations, ReservationChild } from './api'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
@@ -20,16 +20,17 @@ import DatePicker, {
 import { UUID } from 'lib-common/types'
 import {
   ErrorsOf,
-  errorToInputInfo,
   getErrorCount,
   regexp,
   TIME_REGEXP
-} from '../form-validation'
+} from 'lib-common/form-validation'
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { Gap } from 'lib-components/white-space'
+import { errorToInputInfo } from '../input-info-helper'
+import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 
 interface Props {
   onClose: () => void
@@ -140,11 +141,15 @@ export default React.memo(function ReservationModal({
             : formData.weeklyTimes.map((times) => ({
                 startTime:
                   times.startTime === ''
-                    ? 'required'
+                    ? times.endTime !== ''
+                      ? 'required'
+                      : undefined
                     : regexp(times.startTime, TIME_REGEXP, 'timeFormat'),
                 endTime:
                   times.endTime === ''
-                    ? 'required'
+                    ? times.startTime !== ''
+                      ? 'required'
+                      : undefined
                     : regexp(times.endTime, TIME_REGEXP, 'timeFormat')
               }))
       }
@@ -175,22 +180,28 @@ export default React.memo(function ReservationModal({
           formData.selectedChildren.map((childId) => ({
             childId,
             date,
-            startTime: formData.startTime,
-            endTime: formData.endTime
+            reservation: {
+              startTime: formData.startTime,
+              endTime: formData.endTime
+            }
           }))
         )
       case 'WEEKLY':
         return [...range.dates()]
           .filter((d) => !d.isWeekend())
-          .flatMap((date) =>
-            formData.selectedChildren.map((childId) => ({
+          .flatMap((date) => {
+            const startTime =
+              formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime
+            const endTime =
+              formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
+            const noReservation = startTime === '' || endTime === ''
+
+            return formData.selectedChildren.map((childId) => ({
               childId,
               date,
-              startTime:
-                formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime,
-              endTime: formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
+              reservation: noReservation ? null : { startTime, endTime }
             }))
-          )
+          })
     }
   }
 
@@ -237,6 +248,7 @@ export default React.memo(function ReservationModal({
                 })
               }
             }}
+            data-qa={`child-${child.id}`}
           />
         ))}
       </FixedSpaceColumn>
@@ -251,6 +263,7 @@ export default React.memo(function ReservationModal({
           isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.startDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
+          data-qa="start-date"
         />
         <DatePickerSpacer />
         <DatePicker
@@ -261,6 +274,7 @@ export default React.memo(function ReservationModal({
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={reservableDays.start}
+          data-qa="end-date"
         />
       </FixedSpaceRow>
 
@@ -277,6 +291,7 @@ export default React.memo(function ReservationModal({
         getItemLabel={(item) =>
           i18n.calendar.reservationModal.repetitions[item]
         }
+        data-qa="repetition"
       />
 
       <Gap size="s" />
@@ -290,6 +305,7 @@ export default React.memo(function ReservationModal({
             onChange={(value) => updateForm({ startTime: value })}
             info={errorToInputInfo(errors.startTime, i18n.validationErrors)}
             hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="daily-start-time"
           />
           <span>-</span>
           <InputField
@@ -298,6 +314,7 @@ export default React.memo(function ReservationModal({
             onChange={(value) => updateForm({ endTime: value })}
             info={errorToInputInfo(errors.endTime, i18n.validationErrors)}
             hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="daily-end-time"
           />
         </FixedSpaceRow>
       )}
@@ -329,6 +346,7 @@ export default React.memo(function ReservationModal({
                   i18n.validationErrors
                 )}
                 hideErrorsBeforeTouched={!showAllErrors}
+                data-qa={`weekly-start-time-${i}`}
               />
               <span>-</span>
               <InputField
@@ -351,6 +369,7 @@ export default React.memo(function ReservationModal({
                   i18n.validationErrors
                 )}
                 hideErrorsBeforeTouched={!showAllErrors}
+                data-qa={`weekly-end-time-${i}`}
               />
             </FixedSpaceRow>
           ))}

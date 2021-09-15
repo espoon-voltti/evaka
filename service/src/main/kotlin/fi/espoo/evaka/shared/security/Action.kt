@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
@@ -20,6 +22,7 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import java.util.EnumSet
 
+@ExcludeCodeGen
 sealed interface Action {
     sealed interface ScopedAction<I> : Action
 
@@ -122,6 +125,8 @@ sealed interface Action {
         CREATE_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         READ_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
 
+        CREATE_ATTENDANCE_RESERVATION(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+
         CREATE_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR),
         READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER),
 
@@ -214,7 +219,8 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Person(private val roles: EnumSet<UserRole>) : Action {
+    enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
+        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_INCOME_STATEMENTS(FINANCE_ADMIN);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

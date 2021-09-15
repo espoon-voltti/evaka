@@ -9,19 +9,27 @@ import { H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
-import { ChildReservations, OperationalDay } from 'employee-frontend/api/unit'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import AgeIndicatorIcon from 'employee-frontend/components/common/AgeIndicatorIcon'
+import {
+  CalendarChild,
+  ChildReservations,
+  OperationalDay
+} from '../../../api/unit'
+import { useTranslation } from '../../../state/i18n'
+import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
 import ChildDay, { TimeCell, TimesRow } from './ChildDay'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faCalendarPlus } from 'lib-icons'
 
 interface Props {
   operationalDays: OperationalDay[]
   reservations: ChildReservations[]
+  onMakeReservationForChild: (child: CalendarChild) => void
 }
 
 export default React.memo(function ReservationsTable({
   operationalDays,
-  reservations
+  reservations,
+  onMakeReservationForChild
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -45,6 +53,7 @@ export default React.memo(function ReservationsTable({
               </TimesRow>
             </DateTh>
           ))}
+          <CustomTh />
         </Tr>
       </Thead>
       <Tbody>
@@ -68,6 +77,14 @@ export default React.memo(function ReservationsTable({
                   <ChildDay day={day} childReservations={childReservations} />
                 </StyledTd>
               ))}
+              <StyledTd>
+                <IconButton
+                  icon={faCalendarPlus}
+                  onClick={() =>
+                    onMakeReservationForChild(childReservations.child)
+                  }
+                />
+              </StyledTd>
             </Tr>
           )
         })}

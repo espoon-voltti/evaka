@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
@@ -78,6 +82,7 @@ const DayElem = React.memo(function DayElem({
       alignItems="center"
       today={date.isToday()}
       onClick={() => selectDate(date)}
+      data-qa={`mobile-calendar-day-${date.formatIso()}`}
     >
       <DayColumn spacing="xxs" holiday={isHoliday}>
         <div>
@@ -85,7 +90,7 @@ const DayElem = React.memo(function DayElem({
         </div>
         <div>{date.format('dd.MM.')}</div>
       </DayColumn>
-      <div>
+      <div data-qa="reservations">
         {reservations.length === 0 && isHoliday && (
           <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
         )}

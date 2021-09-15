@@ -12,9 +12,9 @@ import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeDetailedMessageAccounts
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
-import fi.espoo.evaka.messaging.message.getUnreadMessagesCount
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
+import fi.espoo.evaka.messaging.message.getEmployeeNestedMessageAccounts
+import fi.espoo.evaka.messaging.message.getUnreadMessagesCounts
 import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
@@ -106,26 +106,26 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         val group1AccountName = "Test Daycare - Testiläiset"
         val group2AccountName = "Test Daycare - Koekaniinit"
 
-        val accounts = db.transaction { it.getEmployeeMessageAccounts(supervisorId) }
+        val accounts = db.transaction { it.getEmployeeMessageAccountIds(supervisorId) }
         assertEquals(3, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeDetailedMessageAccounts(supervisorId) }
+        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(supervisorId) }
         assertEquals(3, accounts2.size)
         val personalAccount =
-            accounts2.find { it.type === AccountType.PERSONAL } ?: throw Error("Personal account not found")
-        assertEquals(personalAccountName, personalAccount.name)
-        assertEquals(AccountType.PERSONAL, personalAccount.type)
+            accounts2.find { it.account.type === AccountType.PERSONAL } ?: throw Error("Personal account not found")
+        assertEquals(personalAccountName, personalAccount.account.name)
+        assertEquals(AccountType.PERSONAL, personalAccount.account.type)
         assertNull(personalAccount.daycareGroup)
 
         val groupAccount =
-            accounts2.find { it.name == group1AccountName } ?: throw Error("Group account $group1AccountName not found")
-        assertEquals(AccountType.GROUP, groupAccount.type)
+            accounts2.find { it.account.name == group1AccountName } ?: throw Error("Group account $group1AccountName not found")
+        assertEquals(AccountType.GROUP, groupAccount.account.type)
         assertEquals("Test Daycare", groupAccount.daycareGroup?.unitName)
         assertEquals("Testiläiset", groupAccount.daycareGroup?.name)
 
         val group2Account =
-            accounts2.find { it.name == group2AccountName } ?: throw Error("Group account $group2AccountName not found")
-        assertEquals(AccountType.GROUP, group2Account.type)
+            accounts2.find { it.account.name == group2AccountName } ?: throw Error("Group account $group2AccountName not found")
+        assertEquals(AccountType.GROUP, group2Account.account.type)
         assertEquals("Test Daycare", group2Account.daycareGroup?.unitName)
         assertEquals("Koekaniinit", group2Account.daycareGroup?.name)
     }
@@ -134,47 +134,47 @@ class MessageAccountQueriesTest : PureJdbiTest() {
     fun `employee gets access to the accounts of his groups`() {
         val groupAccountName = "Test Daycare - Testiläiset"
 
-        val accounts = db.transaction { it.getEmployeeMessageAccounts(employee1Id) }
+        val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee1Id) }
         assertEquals(1, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeDetailedMessageAccounts(employee1Id) }
+        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(employee1Id) }
         assertEquals(1, accounts2.size)
-        assertNull(accounts2.find { it.type === fi.espoo.evaka.messaging.message.AccountType.PERSONAL })
+        assertNull(accounts2.find { it.account.type === fi.espoo.evaka.messaging.message.AccountType.PERSONAL })
 
         val groupAccount = accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")
-        assertEquals(groupAccountName, groupAccount.name)
-        assertEquals(AccountType.GROUP, groupAccount.type)
+        assertEquals(groupAccountName, groupAccount.account.name)
+        assertEquals(AccountType.GROUP, groupAccount.account.type)
         assertEquals("Test Daycare", groupAccount.daycareGroup?.unitName)
         assertEquals("Testiläiset", groupAccount.daycareGroup?.name)
     }
 
     @Test
     fun `employee not in any groups sees no accounts`() {
-        val accounts = db.transaction { it.getEmployeeMessageAccounts(employee2Id) }
+        val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee2Id) }
         assertEquals(0, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeDetailedMessageAccounts(employee2Id) }
+        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(employee2Id) }
         assertEquals(0, accounts2.size)
     }
 
     @Test
     fun `employee has no access to inactive accounts`() {
-        assertEquals(3, db.read { it.getEmployeeMessageAccounts(supervisorId) }.size)
+        assertEquals(3, db.read { it.getEmployeeMessageAccountIds(supervisorId) }.size)
         db.transaction { it.deactivateEmployeeMessageAccount(supervisorId) }
 
-        val accounts = db.transaction { it.getEmployeeMessageAccounts(supervisorId) }
+        val accounts = db.transaction { it.getEmployeeMessageAccountIds(supervisorId) }
         assertEquals(2, accounts.size)
     }
 
     @Test
     fun `unread counts`() {
-        val accounts = db.read { it.getEmployeeDetailedMessageAccounts(supervisorId) }
-        assertEquals(0, accounts.first().unreadCount)
+        val counts = db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }
+        assertEquals(0, counts.first().unreadCount)
 
-        val employeeAccount = accounts.first().id
+        val employeeAccount = counts.first().accountId
         db.transaction { tx ->
             val allAccounts =
-                tx.createQuery("SELECT id, account_name as name from message_account_name_view").mapTo<MessageAccount>()
+                tx.createQuery("SELECT id, account_name as name, 'PERSONAL' as type from message_account_name_view").mapTo<MessageAccount>()
                     .list()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
@@ -183,7 +183,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }
 
-        assertEquals(3, db.read { it.getUnreadMessagesCount(accounts.map { acc -> acc.id }.toSet()) })
-        assertEquals(1, db.read { it.getEmployeeDetailedMessageAccounts(supervisorId) }.first().unreadCount)
+        assertEquals(3, db.read { it.getUnreadMessagesCounts(counts.map { counts -> counts.accountId }.toSet()).map { it.unreadCount }.sum() })
+        assertEquals(1, db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }.first().unreadCount)
     }
 }

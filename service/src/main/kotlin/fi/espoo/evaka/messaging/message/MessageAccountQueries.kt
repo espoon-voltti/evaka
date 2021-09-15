@@ -31,9 +31,10 @@ WHERE acc.person_id = :personId AND acc.active = true
         .one()
 }
 
-fun Database.Read.getEmployeeMessageAccounts(employeeId: UUID): Set<UUID> {
+fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<UUID> {
     val sql = """
-SELECT acc.id
+SELECT acc.id,
+       acc.type
 FROM message_account acc
 LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
@@ -48,24 +49,19 @@ WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId OR gacl.em
         .toSet()
 }
 
-fun Database.Read.getEmployeeDetailedMessageAccounts(employeeId: UUID): Set<DetailedMessageAccount> {
-    val accountIds = getEmployeeMessageAccounts(employeeId)
+fun Database.Read.getEmployeeNestedMessageAccounts(employeeId: UUID): Set<NestedMessageAccount> {
+    val accountIds = getEmployeeMessageAccountIds(employeeId)
 
     val sql = """
-SELECT acc.id,
-       name_view.account_name AS name,
-       CASE
-           WHEN dg.id IS NOT NULL THEN 'group'
-           ELSE 'personal'
-       END                    AS type,
+SELECT acc.id AS account_id,
+       name_view.account_name AS account_name,
+       acc.type               AS account_type,
        dg.id                  AS group_id,
        dg.name                AS group_name,
        dc.id                  AS group_unitId,
-       dc.name                AS group_unitName,
-       COUNT(rec.id)          AS unreadCount
+       dc.name                AS group_unitName
 FROM message_account acc
     JOIN message_account_name_view name_view ON name_view.id = acc.id
-    LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND acl.role = 'UNIT_SUPERVISOR'
@@ -75,11 +71,10 @@ AND (
     'MESSAGING' = ANY(dc.enabled_pilot_features)
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
 )
-GROUP BY acc.id, account_name, 3, group_id, group_name, group_unitId, group_unitName
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())
-        .mapTo<DetailedMessageAccount>()
+        .mapTo<NestedMessageAccount>()
         .toSet()
 }
 

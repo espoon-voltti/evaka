@@ -5,8 +5,8 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.getTransferablePersonReferences
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -18,7 +18,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Service
-class MergeService(private val asyncJobRunner: AsyncJobRunner) {
+class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     fun mergePeople(tx: Database.Transaction, master: UUID, duplicate: UUID) {
         // language=sql
         val feeAffectingDatesSQL =
@@ -138,6 +138,6 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     private fun sendFamilyUpdatedMessage(tx: Database.Transaction, adultId: UUID, dateRange: DateRange) {
-        asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(adultId, dateRange)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)))
     }
 }

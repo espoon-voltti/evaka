@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -16,13 +20,10 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { useLang, useTranslation } from 'citizen-frontend/localization'
-import {
-  ErrorsOf,
-  errorToInputInfo,
-  getErrorCount
-} from 'citizen-frontend/form-validation'
+import { useLang, useTranslation } from '../localization'
+import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsencesRequest, postAbsences, ReservationChild } from './api'
+import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
   close: () => void
@@ -90,6 +91,7 @@ export default React.memo(function AbsenceModal({
                   : form.selectedChildren.filter((id) => id !== child.id)
               })
             }
+            data-qa={`child-${child.id}`}
           />
         ))}
       </FixedSpaceColumn>
@@ -105,6 +107,7 @@ export default React.memo(function AbsenceModal({
             errors && errorToInputInfo(errors.startDate, i18n.validationErrors)
           }
           hideErrorsBeforeTouched={!showAllErrors}
+          data-qa="start-date"
         />
         <DatePickerSpacer />
         <DatePicker
@@ -116,35 +119,26 @@ export default React.memo(function AbsenceModal({
             errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
           }
           hideErrorsBeforeTouched={!showAllErrors}
+          data-qa="end-date"
         />
       </FixedSpaceRow>
       <Gap size="m" />
       <Label>{i18n.calendar.absenceModal.absenceType}</Label>
       <Gap size="s" />
       <FixedSpaceFlexWrap verticalSpacing="xs">
-        <ChoiceChip
-          text={i18n.calendar.absenceModal.absenceTypes.sickness}
-          selected={form.absenceType === 'SICKLEAVE'}
-          onChange={(selected) =>
-            updateForm({ absenceType: selected ? 'SICKLEAVE' : undefined })
-          }
-        />
-        <ChoiceChip
-          text={i18n.calendar.absenceModal.absenceTypes.other}
-          selected={form.absenceType === 'OTHER_ABSENCE'}
-          onChange={(selected) =>
-            updateForm({ absenceType: selected ? 'OTHER_ABSENCE' : undefined })
-          }
-        />
-        <ChoiceChip
-          text={i18n.calendar.absenceModal.absenceTypes.planned}
-          selected={form.absenceType === 'PLANNED_ABSENCE'}
-          onChange={(selected) =>
-            updateForm({
-              absenceType: selected ? 'PLANNED_ABSENCE' : undefined
-            })
-          }
-        />
+        {(['SICKLEAVE', 'OTHER_ABSENCE', 'PLANNED_ABSENCE'] as const).map(
+          (type) => (
+            <ChoiceChip
+              key={type}
+              text={i18n.calendar.absenceModal.absenceTypes[type]}
+              selected={form.absenceType === type}
+              onChange={(selected) =>
+                updateForm({ absenceType: selected ? type : undefined })
+              }
+              data-qa={`absence-${type}`}
+            />
+          )
+        )}
       </FixedSpaceFlexWrap>
       {showAllErrors && !form.absenceType ? (
         <Warning>{i18n.validationErrors.requiredSelection}</Warning>

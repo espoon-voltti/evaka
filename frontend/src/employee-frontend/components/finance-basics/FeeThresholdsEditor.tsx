@@ -35,7 +35,7 @@ import {
   FeeThresholds,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
-import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
+import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import { FormState } from './FeesSection'
 
 export default React.memo(function FeeThresholdsEditor({

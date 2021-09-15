@@ -42,14 +42,14 @@ const Actions = React.memo(function Actions({
   allInvoicesToggle
 }: Props) {
   const { i18n } = useTranslation()
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string>()
   const checkedIds = Object.keys(checkedInvoices)
 
   return status === 'DRAFT' ? (
     <StickyActionBar align={'right'}>
       {error ? (
         <>
-          <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage>
+          <ErrorMessage>{error}</ErrorMessage>
           <Gap size="s" horizontal />
         </>
       ) : null}
@@ -65,9 +65,17 @@ const Actions = React.memo(function Actions({
         text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
         disabled={checkedIds.length === 0}
         onClick={() =>
-          deleteInvoices(checkedIds)
-            .then(() => setError(false))
-            .catch(() => setError(true))
+          deleteInvoices(checkedIds).then((result) => {
+            if (result.isSuccess) {
+              setError(undefined)
+            }
+
+            if (result.isFailure) {
+              setError(i18n.common.error.unknown)
+            }
+
+            return result
+          })
         }
         onSuccess={() => {
           actions.clearChecked()

@@ -17,7 +17,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -178,7 +177,9 @@ val testIncome = Income(
 
 val testDecisionIncome = DecisionIncome(
     effect = IncomeEffect.INCOME,
-    data = mapOf(IncomeType.MAIN_INCOME to 314100),
+    data = mapOf("MAIN_INCOME" to 314100),
+    totalIncome = 314100,
+    totalExpenses = 0,
     total = 314100,
     validFrom = LocalDate.of(2000, 1, 1),
     validTo = null

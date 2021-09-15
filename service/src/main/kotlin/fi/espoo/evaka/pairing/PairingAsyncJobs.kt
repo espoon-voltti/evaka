@@ -4,20 +4,20 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
 
 @Component
 class PairingAsyncJobs(
-    asyncJobRunner: AsyncJobRunner
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
-        asyncJobRunner.garbageCollectPairing = ::runGarbageCollectPairing
+        asyncJobRunner.registerHandler(::runGarbageCollectPairing)
     }
 
-    private fun runGarbageCollectPairing(db: Database, msg: GarbageCollectPairing) {
+    private fun runGarbageCollectPairing(db: Database, msg: AsyncJob.GarbageCollectPairing) {
         db.transaction {
             it.createUpdate("DELETE FROM pairing WHERE id = :id")
                 .bind("id", msg.pairingId)

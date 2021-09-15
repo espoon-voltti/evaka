@@ -9,8 +9,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -227,9 +227,9 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
     }
 }
 
-fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner, childRange: ServiceNeedChildRange) {
+fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner<AsyncJob>, childRange: ServiceNeedChildRange) {
     asyncJobRunner.plan(
         tx,
-        listOf(GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange()))
+        listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange()))
     )
 }

@@ -17,17 +17,22 @@ import fi.espoo.evaka.invoicing.data.searchValueDecisions
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.DRAFT
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.SENT
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.europeHelsinki
@@ -51,7 +56,7 @@ import java.util.UUID
 @RequestMapping("/value-decisions")
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
     fun search(
@@ -122,7 +127,6 @@ class VoucherValueDecisionController(
                 ids = decisionIds
             )
         }
-        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -132,7 +136,7 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val decisions = tx.getValueDecisionsByIds(ids)
-            if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
+            if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
                 throw BadRequest("Voucher value decision cannot be marked sent")
             tx.markVoucherValueDecisionsSent(ids, Instant.now())
         }
@@ -154,7 +158,7 @@ class VoucherValueDecisionController(
 
 fun sendVoucherValueDecisions(
     tx: Database.Transaction,
-    asyncJobRunner: AsyncJobRunner,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser,
     now: Instant,
     ids: List<VoucherValueDecisionId>
@@ -163,7 +167,7 @@ fun sendVoucherValueDecisions(
     val decisions = tx.getValueDecisionsByIds(ids)
     if (decisions.isEmpty()) return
 
-    if (decisions.any { it.status != VoucherValueDecisionStatus.DRAFT }) {
+    if (decisions.any { it.status != DRAFT }) {
         throw BadRequest("Some voucher value decisions were not drafts")
     }
 
@@ -177,18 +181,25 @@ fun sendVoucherValueDecisions(
             tx.findValueDecisionsForChild(
                 it.child.id,
                 DateRange(it.validFrom, it.validTo),
-                listOf(VoucherValueDecisionStatus.SENT)
+                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
             )
         }
         .distinctBy { it.id }
         .filter { !ids.contains(it.id) }
+
+    if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) throw Conflict(
+        "Some children have overlapping value decisions waiting for manual sending",
+        "WAITING_FOR_MANUAL_SENDING"
+    )
+
+    if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some children have overlapping value decisions still waiting for sending")
 
     val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
     tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
 
     val validIds = decisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, user.id, now)
-    asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
+    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }
 
 enum class VoucherValueDecisionSortParam {
