@@ -110,7 +110,9 @@ class FamilyInitializerService(
     ): FridgeFamilyMembers {
         val headOfFamilyId = application.guardianId
 
-        val otherGuardianId = application.otherGuardianId
+        val otherGuardianId = personService.getGuardians(tx, user, application.childId)
+            .firstOrNull { it.id != application.guardianId }?.id
+
         val fridgePartnerSSN = if (
             otherGuardianId != null &&
             personService.personsLiveInTheSameAddress(tx, headOfFamilyId, otherGuardianId)
