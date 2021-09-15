@@ -20,8 +20,7 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -48,7 +47,6 @@ import java.util.UUID
 class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
 ) {
     @PostMapping
@@ -66,6 +64,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.READ, PersonId(personId))
         return db.transaction { it.getPersonById(personId) }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()

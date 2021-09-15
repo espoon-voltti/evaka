@@ -68,7 +68,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
 
     // language=SQL
     val sql = """
-        SELECT DISTINCT
+        SELECT
             id,
             social_security_number,
             first_name,
@@ -96,8 +96,8 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
             force_manual_fee_decisions,
             oph_person_oid
         FROM person
-        ${if (scopedRole) "JOIN child_acl_view acl ON acl.child_id = person.id AND acl.employee_id = :userId" else ""}
         WHERE $freeTextQuery
+        ${if (scopedRole) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
         ORDER BY $orderBy
         LIMIT 100
     """.trimIndent()
