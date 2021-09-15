@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Home from '../../pages/home'
+import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
@@ -13,12 +13,10 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { logConsoleMessages } from '../../utils/fixture'
-import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
-
-const home = new Home()
+import Home from '../../pages/employee/home'
+import { logConsoleMessages } from '../../utils/fixture'
 
 let fixtures: AreaAndPersonFixtures
 
@@ -27,7 +25,7 @@ fixture('Employee searches applications')
   .beforeEach(async (t) => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
+    await employeeLogin(t, seppoAdmin, new Home().homePage('admin'))
   })
   .afterEach(logConsoleMessages)
 

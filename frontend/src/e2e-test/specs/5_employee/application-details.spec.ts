@@ -22,7 +22,7 @@ import {
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
-import AdminHome from '../../pages/home'
+import Home from '../../pages/employee/home'
 import { ApplicationDetailsPage } from '../../pages/admin/application-details-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Application } from 'e2e-test-common/dev-api/types'
@@ -31,7 +31,7 @@ import assert from 'assert'
 const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationDetailsPage = new ApplicationDetailsPage()
 const applicationReadView = new ApplicationReadView()
-const adminHome = new AdminHome()
+const home = new Home()
 
 let fixtures: AreaAndPersonFixtures
 
@@ -99,7 +99,7 @@ fixture('Application - employee application details')
   .afterEach(logConsoleMessages)
 
 test('Admin can view application details', async (t) => {
-  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t
     .expect(applicationDetailsPage.guardianName.innerText)
@@ -109,13 +109,13 @@ test('Admin can view application details', async (t) => {
 })
 
 test('Other VTJ guardian is shown as empty if there is no other guardian', async (t) => {
-  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t.expect(applicationDetailsPage.noOtherVtjGuardianText.visible).ok()
 })
 
 test('Other VTJ guardian in same address is shown', async (t) => {
-  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await applicationWorkbench.openApplicationById(
     familyWithTwoGuardiansApplication.id
   )
@@ -130,7 +130,7 @@ test('Other VTJ guardian in same address is shown', async (t) => {
 })
 
 test('Other VTJ guardian in different address is shown', async (t) => {
-  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await applicationWorkbench.openApplicationById(separatedFamilyApplication.id)
   await t
     .expect(applicationDetailsPage.vtjGuardianName.innerText)

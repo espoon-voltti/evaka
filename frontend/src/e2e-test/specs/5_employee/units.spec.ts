@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import AdminHome from '../../pages/home'
-import EmployeeHome from '../../pages/employee/home'
+import Home from '../../pages/employee/home'
 import UnitsPage from '../../pages/employee/units/units-page'
 import UnitPage, {
   daycareGroupElement,
@@ -33,8 +32,7 @@ import {
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
 
-const adminHome = new AdminHome()
-const employeeHome = new EmployeeHome()
+const home = new Home()
 const unitsPage = new UnitsPage()
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
@@ -58,8 +56,8 @@ fixture('Employee - Units')
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
-    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
-    await employeeHome.navigateToUnits()
+    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
+    await home.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
 

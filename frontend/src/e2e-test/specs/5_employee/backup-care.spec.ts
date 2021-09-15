@@ -10,8 +10,7 @@ import {
   createBackupCareFixture,
   daycareGroupFixture
 } from 'e2e-test-common/dev-api/fixtures'
-import AdminHome from '../../pages/home'
-import EmployeeHome from '../../pages/employee/home'
+import Home from '../../pages/employee/home'
 import UnitPage, {
   daycareGroupElement,
   daycareGroupPlacementElement,
@@ -32,8 +31,7 @@ import { formatISODateString } from '../../utils/dates'
 import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
 
-const adminHome = new AdminHome()
-const employeeHome = new EmployeeHome()
+const home = new Home()
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 let fixtures: AreaAndPersonFixtures
@@ -63,8 +61,8 @@ fixture('Employee - Backup care')
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertBackupCareFixtures([backupCareFixture])
 
-    await employeeLogin(t, seppoManager, adminHome.homePage('manager'))
-    await employeeHome.navigateToUnits()
+    await employeeLogin(t, seppoManager, home.homePage('manager'))
+    await home.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
 

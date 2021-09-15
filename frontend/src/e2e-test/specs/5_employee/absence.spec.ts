@@ -7,7 +7,6 @@ import {
   daycareGroupFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage, {
   daycareGroupElement
@@ -31,8 +30,7 @@ import AbsencesPage from '../../pages/employee/absences/absences-page'
 import { t } from 'testcafe'
 import { employeeLogin, seppoManager } from '../../config/users'
 
-const adminHome = new AdminHome()
-const employeeHome = new EmployeeHome()
+const home = new EmployeeHome()
 const unitPage = new UnitPage()
 const absencesPage = new AbsencesPage()
 
@@ -64,8 +62,8 @@ fixture('Employee - Absences')
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
-    await employeeLogin(t, seppoManager, adminHome.homePage('admin'))
-    await employeeHome.navigateToUnits()
+    await employeeLogin(t, seppoManager, home.homePage('admin'))
+    await home.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Home from '../../pages/home'
+import Home from '../../pages/employee/home'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
