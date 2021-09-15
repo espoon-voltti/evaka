@@ -221,6 +221,8 @@ sealed interface Action {
     }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_INCOME(FINANCE_ADMIN),
         READ_INCOME_STATEMENTS(FINANCE_ADMIN);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

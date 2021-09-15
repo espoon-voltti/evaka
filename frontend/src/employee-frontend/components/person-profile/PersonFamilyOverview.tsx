@@ -38,8 +38,7 @@ function mapPersonToRow(
     personId,
     firstName,
     lastName,
-    incomeTotal,
-    incomeEffect,
+    income,
     dateOfBirth,
     restrictedDetailsEnabled,
     streetAddress,
@@ -55,10 +54,9 @@ function mapPersonToRow(
     name: formatName(firstName, lastName, i18n),
     role,
     age,
-    incomeTotal,
-    incomeEffect,
     restrictedDetailsEnabled,
-    address: `${streetAddress} ${postalCode} ${postOffice}`
+    address: `${streetAddress} ${postalCode} ${postOffice}`,
+    income
   }
 }
 
@@ -84,8 +82,8 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
   const { family, setFamily, reloadFamily } = useContext(PersonContext)
 
   function getIncomeString(
-    incomeTotal?: number,
-    incomeEffect?: string
+    incomeTotal: number | undefined,
+    incomeEffect: string | undefined
   ): string {
     if (incomeEffect === 'INCOME') {
       const formattedTotal = formatCents(incomeTotal)
@@ -107,6 +105,10 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
     void reloadFamily(id)
   }, [id, setFamily]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const familyIncomeTotal = family
+    .map(({ totalIncome }) => formatCents(totalIncome?.total))
+    .getOrElse(undefined)
+
   return (
     <div>
       {family.isSuccess && (
@@ -127,13 +129,18 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                     family.value.children.length
                   )
                 },
-                {
-                  label: i18n.personProfile.familyOverview.incomeTotalLabel,
-                  value: getIncomeString(
-                    family.value.totalIncome,
-                    family.value.totalIncomeEffect
-                  )
-                }
+                ...(familyIncomeTotal !== undefined
+                  ? [
+                      {
+                        label:
+                          i18n.personProfile.familyOverview.incomeTotalLabel,
+                        value:
+                          i18n.personProfile.familyOverview.incomeValue(
+                            familyIncomeTotal
+                          )
+                      }
+                    ]
+                  : [])
               ]}
             />
           </LabelValueListContainer>
@@ -144,7 +151,9 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                   <Th>{i18n.personProfile.familyOverview.colName}</Th>
                   <Th>{i18n.personProfile.familyOverview.colRole}</Th>
                   <Th>{i18n.personProfile.familyOverview.colAge}</Th>
-                  <Th>{i18n.personProfile.familyOverview.colIncome}</Th>
+                  {family.value.totalIncome ? (
+                    <Th>{i18n.personProfile.familyOverview.colIncome}</Th>
+                  ) : null}
                   <Th>{i18n.personProfile.familyOverview.colAddress}</Th>
                 </Tr>
               </Thead>
@@ -155,10 +164,9 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                     name,
                     role,
                     age,
-                    incomeTotal,
-                    incomeEffect,
                     restrictedDetailsEnabled,
-                    address
+                    address,
+                    income
                   }) => (
                     <Tr
                       key={personId}
@@ -175,10 +183,12 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                       </Td>
                       <Td>{i18n.personProfile.familyOverview.role[role]}</Td>
                       <Td data-qa="person-age">{age}</Td>
-                      <Td data-qa="person-income-total">
-                        {role !== 'CHILD' &&
-                          getIncomeString(incomeTotal, incomeEffect)}
-                      </Td>
+                      {family.value.totalIncome ? (
+                        <Td data-qa="person-income-total">
+                          {role !== 'CHILD' &&
+                            getIncomeString(income?.total, income?.effect)}
+                        </Td>
+                      ) : null}
                       <Td>
                         {restrictedDetailsEnabled
                           ? i18n.personProfile.restrictedDetails

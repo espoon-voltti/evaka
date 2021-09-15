@@ -12,9 +12,8 @@ import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
@@ -26,7 +25,7 @@ class FamilyOverviewService(
     private val objectMapper: ObjectMapper,
     private val incomeTypesProvider: IncomeTypesProvider
 ) {
-    fun getFamilyByAdult(tx: Database.Read, adultId: UUID): FamilyOverview? {
+    fun getFamilyByAdult(tx: Database.Read, adultId: PersonId): FamilyOverview? {
         val sql =
             """
 WITH adult_ids AS
@@ -53,7 +52,6 @@ SELECT
     p.post_office,
     p.restricted_details_enabled,
     null as head_of_child,
-    i.id as income_id,
     i.effect as income_effect,
     i.data as income_data
 FROM person p 
@@ -72,7 +70,6 @@ SELECT
     p.post_office,
     p.restricted_details_enabled,
     fc.head_of_child as head_of_child,
-    i.id as income_id,
     i.effect as income_effect,
     i.data as income_data
 FROM fridge_child fc
@@ -102,13 +99,15 @@ ORDER BY date_of_birth ASC
             headOfFamily = headOfFamily,
             partner = partner,
             children = children,
-            totalIncomeEffect = getTotalIncomeEffect(partner != null, headOfFamily.incomeEffect, partner?.incomeEffect),
-            totalIncome = getTotalIncome(
-                partner != null,
-                headOfFamily.incomeEffect,
-                headOfFamily.incomeTotal,
-                partner?.incomeEffect,
-                partner?.incomeTotal
+            totalIncome = FamilyOverviewIncome(
+                effect = getTotalIncomeEffect(partner != null, headOfFamily.income?.effect, partner?.income?.effect),
+                total = getTotalIncome(
+                    partner != null,
+                    headOfFamily.income?.effect,
+                    headOfFamily.income?.total,
+                    partner?.income?.effect,
+                    partner?.income?.total
+                )
             )
         )
     }
@@ -119,8 +118,7 @@ data class FamilyOverview(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val partner: FamilyOverviewPerson?,
     val children: List<FamilyOverviewPerson>,
-    val totalIncomeEffect: IncomeEffect,
-    val totalIncome: Int?
+    val totalIncome: FamilyOverviewIncome?
 )
 
 data class FamilyOverviewPerson(
@@ -134,12 +132,14 @@ data class FamilyOverviewPerson(
     val postOffice: String,
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val headOfChild: UUID?,
+    val income: FamilyOverviewIncome?
+)
+
+data class FamilyOverviewIncome(
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val incomeTotal: Int? = null,
+    val effect: IncomeEffect?,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val incomeId: IncomeId? = null,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val incomeEffect: IncomeEffect? = null
+    val total: Int?
 )
 
 fun toFamilyOverviewPerson(
@@ -157,10 +157,11 @@ fun toFamilyOverviewPerson(
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
         headOfChild = rs.getString("head_of_child")?.let { UUID.fromString(it) },
-        incomeId = rs.getNullableUUID("income_id")?.let(::IncomeId),
-        incomeEffect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
-        incomeTotal = rs.getString("income_data")?.let {
-            incomeTotal(parseIncomeDataJson(it, objectMapper, incomeTypesProvider.get()))
-        }
+        income = FamilyOverviewIncome(
+            effect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
+            total = rs.getString("income_data")?.let {
+                incomeTotal(parseIncomeDataJson(it, objectMapper, incomeTypesProvider.get()))
+            }
+        )
     )
 }
