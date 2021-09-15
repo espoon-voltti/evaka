@@ -18,10 +18,15 @@ parameters:
   builder_aws_version:
     type: string
     default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
-
   nodejs_image:
     type: string
     default: cimg/node:14.15
+  ecr:
+    type: string
+    default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  cache_e2e_image:
+    type: boolean
+    default: true
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -398,24 +403,47 @@ commands:
           version: *remote_docker_version
           docker_layer_caching: false
       - run:
-          name: Build and push E2E << parameters.test_runner >> image
-          working_directory: *workspace_compose
+          name: "Setup E2E_IMAGE and store date"
           command: |
-            ecr-login
-            # The image is not expected to chage too often so we use :latest for all cache
-            E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
-            docker pull "$E2E_IMAGE"
-            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
-            docker push "$E2E_IMAGE"
+            echo 'export E2E_IMAGE="<< pipeline.parameters.ecr >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
+            date +%F > date
+      - when:
+          condition: << pipeline.parameters.cache_e2e_image >>
+          steps:
+            - restore_cache:
+                name: Restore Docker image from cache
+                key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
+            - run:
+                name: Build E2E image
+                working_directory: *workspace_compose
+                command: |
+                  docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar" || true
+                  docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
+      - when:
+          condition:
+            not: << pipeline.parameters.cache_e2e_image >>
+          steps:
+            - run:
+                name: Build and push E2E << parameters.test_runner >> image
+                working_directory: *workspace_compose
+                command: |
+                  ecr-login
+                  docker pull "$E2E_IMAGE"
+                  docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
+                  docker push "$E2E_IMAGE"
       - run:
           name: Package E2E << parameters.test_runner >> image
           working_directory: << pipeline.parameters.workspace_root >>
           command: |
-            E2E_IMAGE="307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-<< parameters.test_runner >>:latest"
             docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
       - save_cache:
           name: Store Docker image in cache
           key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          paths:
+            - "e2e-<< parameters.test_runner >>.tar"
+      - save_cache:
+          name: Store Docker image in daily cache
+          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
           paths:
             - "e2e-<< parameters.test_runner >>.tar"
       - notify_slack
