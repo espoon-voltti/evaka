@@ -22,7 +22,7 @@ export class PairingFlow {
   #unitPageLink = this.page.locator('[data-qa="unit-page-link"]')
   #unitName = this.page.locator('[data-qa="unit-name"]')
 
-  async clickStartPairing() {
+  async startPairing() {
     await this.#mobileStartPairingBtn.click()
     await waitUntilVisible(this.#mobilePairingTitle1)
   }
@@ -37,8 +37,8 @@ export class PairingFlow {
     return this.#responseKey.innerText()
   }
 
-  async assertPairingSuccess() {
-    await waitUntilVisible(this.#mobilePairingTitle3)
+  isPairingWizardFinished() {
+    return this.#mobilePairingTitle3.isVisible()
   }
 
   async navigateToUnitPage() {

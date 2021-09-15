@@ -18,6 +18,7 @@ import {
 import { Page } from 'playwright'
 import { newBrowserContext } from '../../browser'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
+import { waitUntilTrue } from '../../utils'
 
 const employeeExternalIds = [
   'espoo-ad:df979243-f081-4241-bc4f-e93a019bddfa',
@@ -67,7 +68,7 @@ describe('Mobile pairing', () => {
   test('User can add a mobile device mobile side', async () => {
     await page.goto(config.mobileUrl)
 
-    await pairingFlow.clickStartPairing()
+    await pairingFlow.startPairing()
     const res = await postPairing(fixtures.daycareFixture.id)
 
     await pairingFlow.submitChallengeKey(res.challengeKey)
@@ -76,7 +77,7 @@ describe('Mobile pairing', () => {
 
     await postPairingResponse(res.id, res.challengeKey, responseKey)
 
-    await pairingFlow.assertPairingSuccess()
+    await waitUntilTrue(() => pairingFlow.isPairingWizardFinished())
     await pairingFlow.navigateToUnitPage()
   })
 })
