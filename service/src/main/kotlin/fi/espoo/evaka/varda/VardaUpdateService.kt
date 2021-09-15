@@ -370,7 +370,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             )
         } catch (e: Exception) {
-            error { "VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+            error("VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
     }
 
@@ -390,7 +390,7 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
                 guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
             )
         } catch (e: Exception) {
-            error { "VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}" }
+            error("VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
     }
 
@@ -943,27 +943,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         .mapTo<EvakaServiceNeedInfoForVarda>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
-
-data class UnsuccessfullyUploadedServiceNeed(
-    val evakaServiceNeedId: ServiceNeedId,
-    val existsInEvaka: Boolean,
-    val childId: UUID?
-)
-
-fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<UnsuccessfullyUploadedServiceNeed> =
-    createQuery(
-        """
-SELECT 
-    vsn.evaka_service_need_id, 
-    EXISTS(SELECT 1 FROM service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
-    p.child_id
-FROM varda_service_need vsn 
-    LEFT JOIN service_need sn ON sn.id = vsn.evaka_service_need_id
-    LEFT JOIN placement p ON p.id = sn.placement_id
-WHERE update_failed = true"""
-    )
-        .mapTo<UnsuccessfullyUploadedServiceNeed>()
-        .list()
 
 fun Database.Read.getVardaChildrenToReset(): List<UUID> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")

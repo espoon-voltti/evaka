@@ -13,34 +13,34 @@ class VardaUnitModelTest {
 
     @Test
     fun `data output is in correct form`() {
-        assertEquals(listOf("jm01"), getVardaUnitRequest(testUnit).jarjestamismuoto_koodi)
-        assertEquals("tm01", getVardaUnitRequest(testUnit).toimintamuoto_koodi)
-        assertEquals(listOf("FI"), getVardaUnitRequest(testUnit).asiointikieli_koodi)
+        assertEquals(listOf("jm01"), testUnit.toVardaUnitRequest().jarjestamismuoto_koodi)
+        assertEquals("tm01", testUnit.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals(listOf("FI"), testUnit.toVardaUnitRequest().asiointikieli_koodi)
     }
 
     @Test
     fun `unit types are printed correctly`() {
-        assertEquals("tm01", getVardaUnitRequest(testUnitPreschool).toimintamuoto_koodi)
-        assertEquals("tm02", getVardaUnitRequest(testUnitFamily).toimintamuoto_koodi)
-        assertEquals("tm03", getVardaUnitRequest(testUnitGroupFamily).toimintamuoto_koodi)
-        assertEquals("tm02", getVardaUnitRequest(testUnitPreparatoryFamily).toimintamuoto_koodi)
-        assertEquals("tm02", getVardaUnitRequest(testUnitPreschoolFamily).toimintamuoto_koodi)
+        assertEquals("tm01", testUnitPreschool.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm03", testUnitGroupFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitPreparatoryFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm02", testUnitPreschoolFamily.toVardaUnitRequest().toimintamuoto_koodi)
     }
 
     @Test
     fun `also municipal school should have provider type printed`() {
-        assertEquals(listOf("jm01"), getVardaUnitRequest(testUnitMunicipalSchool).jarjestamismuoto_koodi)
+        assertEquals(listOf("jm01"), testUnitMunicipalSchool.toVardaUnitRequest().jarjestamismuoto_koodi)
     }
 
     @Test
     fun `non Varda unit types returns null`() {
-        assertEquals(null, getVardaUnitRequest(testUnitPreparatory).toimintamuoto_koodi)
+        assertEquals(null, testUnitPreparatory.toVardaUnitRequest().toimintamuoto_koodi)
     }
 
     @Test
     fun `json output is correct`() {
         val parsed = mapper.readValue(testUnitJson, VardaUnitRequest::class.java)
-        assertEquals(parsed, getVardaUnitRequest(testUnit))
+        assertEquals(parsed, testUnit.toVardaUnitRequest())
     }
 }
 

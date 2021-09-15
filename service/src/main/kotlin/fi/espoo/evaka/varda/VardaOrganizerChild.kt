@@ -112,7 +112,17 @@ data class VardaChildPayload(
     val personOid: String,
     val organizerOid: String,
     val sourceSystem: String
-)
+) {
+    fun toVardaChildRequest(evakaPersonId: UUID) = VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = personUrl,
+        henkilo_oid = personOid,
+        vakatoimija_oid = organizerOid,
+        oma_organisaatio_oid = null,
+        paos_organisaatio_oid = null,
+        lahdejarjestelma = sourceSystem
+    )
+}
 
 data class VardaPaosChildPayload(
     val personUrl: String,
@@ -120,7 +130,17 @@ data class VardaPaosChildPayload(
     val organizerOid: String,
     val paosOrganizationOid: String,
     val sourceSystem: String
-)
+) {
+    fun toVardaChildRequest(evakaPersonId: UUID) = VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = personUrl,
+        henkilo_oid = personOid,
+        vakatoimija_oid = null,
+        oma_organisaatio_oid = organizerOid,
+        paos_organisaatio_oid = paosOrganizationOid,
+        lahdejarjestelma = sourceSystem
+    )
+}
 
 private fun createVardaChildWhenPersonExists(
     tx: Database.Transaction,
@@ -143,7 +163,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+            client.createChild(vardaChildPayload.toVardaChildRequest(evakaPersonId)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create PAOS child: ${e.message}")
         }
@@ -167,7 +187,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload)).id.toLong()
+            client.createChild(vardaChildPayload.toVardaChildRequest(evakaPersonId)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create child: ${e.message}")
         }
@@ -280,27 +300,3 @@ data class VardaChildRequest(
 data class VardaChildResponse(
     val id: Int
 )
-
-fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
-    return VardaChildRequest(
-        id = evakaPersonId,
-        henkilo = payload.personUrl,
-        henkilo_oid = payload.personOid,
-        vakatoimija_oid = payload.organizerOid,
-        oma_organisaatio_oid = null,
-        paos_organisaatio_oid = null,
-        lahdejarjestelma = payload.sourceSystem
-    )
-}
-
-fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
-    return VardaChildRequest(
-        id = evakaPersonId,
-        henkilo = payload.personUrl,
-        henkilo_oid = payload.personOid,
-        vakatoimija_oid = null,
-        oma_organisaatio_oid = payload.organizerOid,
-        paos_organisaatio_oid = payload.paosOrganizationOid,
-        lahdejarjestelma = payload.sourceSystem
-    )
-}
