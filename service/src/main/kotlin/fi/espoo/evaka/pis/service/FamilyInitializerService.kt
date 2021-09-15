@@ -41,66 +41,29 @@ class FamilyInitializerService(
     fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: AsyncJob.InitializeFamilyFromApplication) {
         val user = msg.user
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
-        if (application != null) {
-            val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
-            db.transaction { tryInitFamilyFromApplication(it, members) }
-        } else {
-            logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
-        }
+            ?: error("Could not initialize family, application ${msg.applicationId} not found")
+
+        val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
+        db.transaction { initFamilyFromApplication(it, members) }
     }
 
-    private fun tryInitFamilyFromApplication(tx: Database.Transaction, members: FridgeFamilyMembers) {
-        try {
-            if (members.headOfFamilyId == null) {
-                logger.warn("Cannot create family because head of family could not be found")
-                return
-            }
-            if (members.fridgeChildId == null) {
-                logger.warn("Cannot create family because the main child on application could not be found")
-                return
-            }
+    private fun initFamilyFromApplication(tx: Database.Transaction, members: FridgeFamilyMembers) {
+        tx.subTransaction { createParentship(tx, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
 
-            try {
-                tx.subTransaction {
-                    createParentship(
-                        tx,
-                        childId = members.fridgeChildId,
-                        headOfChildId = members.headOfFamilyId
-                    )
-                }
-            } catch (e: Throwable) {
-                logger.warn("Adding ${members.fridgeChildId} as the main fridge child to ${members.headOfFamilyId} failed.")
-            }
+        if (members.fridgePartner != null) {
+            tx.subTransaction { createPartnership(tx, members.headOfFamily.id, members.fridgePartner.id) }
+        }
 
-            if (members.fridgePartnerId != null) {
-                try {
-                    tx.subTransaction {
-                        createPartnership(tx, members.headOfFamilyId, members.fridgePartnerId)
-                    }
-                } catch (e: Throwable) {
-                    logger.warn("Adding fridge partner ${members.fridgePartnerId} to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
-                }
-            }
-
-            members.fridgeSiblingIds.forEach { siblingId ->
-                try {
-                    tx.subTransaction {
-                        createParentship(tx, childId = siblingId, headOfChildId = members.headOfFamilyId)
-                    }
-                } catch (e: Throwable) {
-                    logger.warn("Adding $siblingId as a fridge child to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
-                }
-            }
-        } catch (e: Throwable) {
-            logger.warn("Unexpected error when initializing family from application", e)
+        members.fridgeSiblings.forEach { sibling ->
+            tx.subTransaction { createParentship(tx, child = sibling, headOfChildId = members.headOfFamily.id) }
         }
     }
 
     private data class FridgeFamilyMembers(
-        val headOfFamilyId: UUID?,
-        val fridgePartnerId: UUID?,
-        val fridgeChildId: UUID?,
-        val fridgeSiblingIds: List<UUID>
+        val headOfFamily: PersonDTO,
+        val fridgePartner: PersonDTO?,
+        val fridgeChild: PersonDTO,
+        val fridgeSiblings: List<PersonDTO>
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
@@ -108,33 +71,28 @@ class FamilyInitializerService(
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
-        val headOfFamilyId = application.guardianId
+        val headOfFamily = tx.getPersonById(application.guardianId)
+            ?: error("Application guardian not found with id ${application.guardianId}")
+        val child = tx.getPersonById(application.childId)
+            ?: error("Application child not found with id ${application.childId}")
 
-        val otherGuardianId = personService.getGuardians(tx, user, application.childId)
-            .firstOrNull { it.id != application.guardianId }?.id
+        val otherGuardian = personService.getGuardians(tx, user, application.childId)
+            .firstOrNull { it.id != application.guardianId }
+            ?.takeIf { otherGuardian -> personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian) }
 
-        val fridgePartnerSSN = if (
-            otherGuardianId != null &&
-            personService.personsLiveInTheSameAddress(tx, headOfFamilyId, otherGuardianId)
-        ) {
-            (tx.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
-        } else {
-            application.form.otherPartner?.socialSecurityNumber
-        }
+        val fridgePartnerSSN = application.form.otherPartner?.socialSecurityNumber
+            ?: (otherGuardian?.identity as? SSN)?.ssn
 
-        val fridgePartnerId = fridgePartnerSSN
+        val fridgePartner = fridgePartnerSSN
             ?.let { stringToSSN(it) }
             ?.let { personService.getOrCreatePerson(tx, user, it) }
-            ?.id
 
-        val fridgeChildId = application.childId
-
-        val fridgeSiblingIds = application.form.otherChildren
+        val fridgeSiblings = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(tx, user, it)?.id }
+            .mapNotNull { personService.getOrCreatePerson(tx, user, it) }
 
-        return FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
+        return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
     }
 
     private fun stringToSSN(ssn: String): SSN? {
@@ -145,11 +103,11 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(tx: Database.Transaction, childId: UUID, headOfChildId: UUID) {
+    private fun createParentship(tx: Database.Transaction, child: PersonDTO, headOfChildId: UUID) {
         val startDate = LocalDate.now()
         val alreadyExists = tx.getParentships(
             headOfChildId = headOfChildId,
-            childId = childId,
+            childId = child.id,
             includeConflicts = true
         )
             .any {
@@ -157,10 +115,8 @@ class FamilyInitializerService(
                     (it.endDate.isAfter(startDate))
             }
         if (alreadyExists) {
-            logger.debug("Similar parentship already exists between $headOfChildId and $childId")
+            logger.debug("Similar parentship already exists between $headOfChildId and ${child.id}")
         } else {
-            val child = tx.getPersonById(childId)
-                ?: error("Couldn't find child ($childId) to create parentship")
             val endDate = child.dateOfBirth.plusYears(18).minusDays(1)
             if (startDate > endDate) {
                 logger.debug("Skipped adding a child that is at least 18 years old to a family")
@@ -169,7 +125,7 @@ class FamilyInitializerService(
             try {
                 tx.subTransaction {
                     tx.createParentship(
-                        childId = childId,
+                        childId = child.id,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
                         endDate = endDate,
@@ -180,9 +136,9 @@ class FamilyInitializerService(
                 when (e.psqlCause()?.sqlState) {
                     PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn("Creating conflict parentship between $headOfChildId and $childId (conflicting constraint is $constraint)")
+                        logger.warn("Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)")
                         tx.createParentship(
-                            childId = childId,
+                            childId = child.id,
                             headOfChildId = headOfChildId,
                             startDate = startDate,
                             endDate = endDate,
