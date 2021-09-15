@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -52,7 +53,7 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
 
-    enum class Application(private val roles: EnumSet<UserRole>) : Action {
+    enum class Application(private val roles: EnumSet<UserRole>) : ScopedAction<ApplicationId> {
         READ_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         READ_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE(SERVICE_WORKER),

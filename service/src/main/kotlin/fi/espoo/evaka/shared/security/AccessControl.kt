@@ -47,6 +47,17 @@ class AccessControl(
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
+    private val application = ActionConfig(
+        """
+SELECT av.id, role
+FROM application_view av
+LEFT JOIN placement_plan pp ON pp.application_id = av.id
+JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
+WHERE employee_id = :userId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+        """.trimIndent(),
+        "av.id",
+        permittedRoleActions::applicationActions,
+    )
     private val backupCare = ActionConfig(
         """
 SELECT bc.id, role
@@ -189,6 +200,7 @@ WHERE employee_id = :userId
     @Suppress("UNCHECKED_CAST")
     fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, id: I): Boolean =
         when (action) {
+            is Action.Application -> this.application.hasPermission(user, action, id as ApplicationId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
@@ -212,15 +224,6 @@ WHERE employee_id = :userId
             }
             else -> false
         }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForApplication(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::applicationActions
-        )
-    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
         assertPermission(
