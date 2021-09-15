@@ -63,27 +63,6 @@ class NoteController(private val acl: AccessControlList) {
         return ResponseEntity.ok(NoteJSON.toJSON(newNote))
     }
 
-    @PutMapping("/update")
-    @Deprecated("use updateNote instead (PUT /note/:id)")
-    fun updateNotes(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestBody notes: List<NoteJSON>
-    ): ResponseEntity<NotesWrapperJSON> {
-        Audit.NoteUpdate.log(targetId = notes.map { it.id })
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        // This endpoint is never used with multiple notes in reality
-        val note = notes.first()
-        val updatedNote = db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx, user, note.id)) {
-                tx.updateApplicationNote(note.id, note.text, user.id)
-            } else {
-                throw Forbidden("User is not allowed to edit the note")
-            }
-        }
-        return ResponseEntity.ok(NotesWrapperJSON(listOf(NoteJSON.toJSON(updatedNote))))
-    }
-
     @PutMapping("/{noteId}")
     fun updateNote(
         db: Database.Connection,
@@ -143,10 +122,6 @@ data class NoteSearchDTO(
 
 data class NoteRequest(
     val text: String
-)
-
-data class NotesWrapperJSON(
-    val notes: List<NoteJSON>
 )
 
 data class NoteJSON(
