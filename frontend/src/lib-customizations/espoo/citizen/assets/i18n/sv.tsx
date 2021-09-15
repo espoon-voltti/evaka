@@ -713,10 +713,10 @@ const sv: Translations = {
           'Berätta om barnets behov av stöd för utveckling och lärande',
         assistanceNeedInstructions: {
           DAYCARE:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
-          CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
+          CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
           PRESCHOOL:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
+            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.'
         },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen.',
