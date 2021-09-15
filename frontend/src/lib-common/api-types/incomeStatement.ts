@@ -108,9 +108,12 @@ type IncomeStatementType = IncomeStatement['type']
 
 export interface IncomeStatementAwaitingHandler {
   id: UUID
+  startDate: LocalDate
+  created: Date
   type: IncomeStatementType
   personId: UUID
   personName: string
+  primaryCareArea: string | null
 }
 
 type IncomeJson = JsonOf<Income>
@@ -185,3 +188,11 @@ function deserializeEstimatedIncome(
       : null
   }
 }
+
+export const deserializeIncomeStatementAwaitingHandler = (
+  data: JsonOf<IncomeStatementAwaitingHandler>
+): IncomeStatementAwaitingHandler => ({
+  ...data,
+  startDate: LocalDate.parseIso(data.startDate),
+  created: new Date(data.created)
+})

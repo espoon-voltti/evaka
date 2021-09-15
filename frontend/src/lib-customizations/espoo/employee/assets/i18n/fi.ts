@@ -1336,10 +1336,15 @@ export const fi = {
     statementTypes: {
       HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
       INCOME: 'Huoltajan toimittamat tulotiedot'
+    },
+    table: {
+      title: 'Käsittelyä odottavat tuloselvitykset',
+      customer: 'Asiakas',
+      area: 'Alue',
+      created: 'Luotu',
+      startDate: 'Voimassa',
+      type: 'Tyyppi'
     }
-  },
-  incomeStatements: {
-    title: 'Käsittelyä odottavat tuloselvitykset'
   },
   units: {
     name: 'Nimi',

@@ -5,6 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
+  deserializeIncomeStatementAwaitingHandler,
   IncomeStatement,
   IncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
@@ -29,7 +30,8 @@ export async function getIncomeStatementsAwaitingHandler(): Promise<
     .get<JsonOf<IncomeStatementAwaitingHandler[]>>(
       '/income-statements/awaiting-handler'
     )
-    .then((res) => Success.of(res.data))
+    .then((res) => res.data.map(deserializeIncomeStatementAwaitingHandler))
+    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
 
