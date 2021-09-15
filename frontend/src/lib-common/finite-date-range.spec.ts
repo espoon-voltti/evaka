@@ -112,12 +112,11 @@ describe('FiniteDateRange', () => {
     })
   })
 
+  const localDate = (startDay: number) => LocalDate.of(2000, 1, startDay)
+  const range = (startDay: number, endDay: number) =>
+    new FiniteDateRange(localDate(startDay), localDate(endDay))
+
   describe('getGaps', () => {
-    const range = (startDay: number, endDay: number) =>
-      new FiniteDateRange(
-        LocalDate.of(2000, 1, startDay),
-        LocalDate.of(2000, 1, endDay)
-      )
     const parent = range(1, 30)
 
     it('should return parent range when no child ranges exists', () => {
@@ -165,6 +164,47 @@ describe('FiniteDateRange', () => {
           range(20, 25)
         ])
       ).toEqual([range(1, 2), range(6, 7), range(16, 19), range(26, 30)])
+    })
+  })
+
+  describe('overlaps', () => {
+    const expectOverlap = (
+      start: FiniteDateRange,
+      end: FiniteDateRange,
+      expected: boolean
+    ) => {
+      expect(start.overlaps(end)).toEqual(expected)
+      expect(end.overlaps(start)).toEqual(expected)
+    }
+
+    it('should overlap when there is actual overlap', () => {
+      expectOverlap(range(1, 15), range(14, 27), true)
+    })
+
+    it('should overlap when adjacent', () => {
+      expectOverlap(range(1, 14), range(14, 27), true)
+    })
+
+    it('should not overlap when there is a gap', () => {
+      expectOverlap(range(1, 13), range(14, 27), false)
+    })
+  })
+
+  describe('includes', () => {
+    it('should include start day', () => {
+      expect(range(7, 15).includes(localDate(7))).toEqual(true)
+    })
+    it('should include end day', () => {
+      expect(range(7, 15).includes(localDate(15))).toEqual(true)
+    })
+    it('should include day within range', () => {
+      expect(range(7, 15).includes(localDate(10))).toEqual(true)
+    })
+    it('should not include when date is before', () => {
+      expect(range(7, 15).includes(localDate(1))).toEqual(false)
+    })
+    it('should not include when date is after', () => {
+      expect(range(7, 15).includes(localDate(24))).toEqual(false)
     })
   })
 })
