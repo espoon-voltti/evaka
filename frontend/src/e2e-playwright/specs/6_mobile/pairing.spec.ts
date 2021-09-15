@@ -18,7 +18,6 @@ import {
 import { Page } from 'playwright'
 import { newBrowserContext } from '../../browser'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
-import { waitUntilVisible } from '../../utils'
 
 const employeeExternalIds = [
   'espoo-ad:df979243-f081-4241-bc4f-e93a019bddfa',
@@ -68,20 +67,16 @@ describe('Mobile pairing', () => {
   test('User can add a mobile device mobile side', async () => {
     await page.goto(config.mobileUrl)
 
-    await pairingFlow.mobileStartPairingBtn.click()
-    await waitUntilVisible(pairingFlow.mobilePairingTitle1)
+    await pairingFlow.clickStartPairing()
     const res = await postPairing(fixtures.daycareFixture.id)
 
-    await pairingFlow.challengeKeyInput.type(res.challengeKey)
-    await pairingFlow.submitChallengeKeyBtn.click()
-
-    await waitUntilVisible(pairingFlow.responseKey)
-    const responseKey = await pairingFlow.responseKey.innerText()
+    await pairingFlow.submitChallengeKey(res.challengeKey)
+    const responseKey = await pairingFlow.getResponseKey()
     expect(responseKey).toBeTruthy()
+
     await postPairingResponse(res.id, res.challengeKey, responseKey)
 
-    await waitUntilVisible(pairingFlow.mobilePairingTitle3)
-    await pairingFlow.unitPageLink.click()
-    await waitUntilVisible(pairingFlow.unitName)
+    await pairingFlow.assertPairingSuccess()
+    await pairingFlow.navigateToUnitPage()
   })
 })
