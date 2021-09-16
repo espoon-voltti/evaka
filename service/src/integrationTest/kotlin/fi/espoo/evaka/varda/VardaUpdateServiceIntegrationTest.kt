@@ -784,7 +784,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         assertVardaServiceNeedIds(snId, 1, 1)
     }
 
-    // TODO: find better way to run update process now that the implementation uses async jobs
+    // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
         val diffs = getChildrenToUpdate(db, feeDecisionMinDate)
         diffs.entries.forEach { updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate) }

@@ -90,7 +90,7 @@ class ScheduledJobs(
     }
 
     fun vardaUpdate(db: Database.Connection) {
-        vardaUpdateService.initVardaUpdate(db)
+        vardaUpdateService.startVardaUpdate(db)
     }
 
     fun removeOldDraftApplications(db: Database.Connection) {

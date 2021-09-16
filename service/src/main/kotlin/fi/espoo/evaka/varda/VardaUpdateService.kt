@@ -56,17 +56,13 @@ class VardaUpdateService(
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
     }
 
-    fun initVardaUpdate(db: Database.Connection) {
+    fun startVardaUpdate(db: Database.Connection) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
         updateOrganizer(db, client, organizer)
         updateUnits(db, client, organizer)
 
         planVardaChildrenUpdate(db)
-    }
-
-    fun initVardaReset(db: Database.Connection) {
-        planVardaReset(db)
     }
 
     /*
@@ -91,8 +87,9 @@ class VardaUpdateService(
     }
 
     fun planVardaReset(db: Database.Connection) {
-        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = 1000) }
-        logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
+        val RESET_LIMIT = 1000
+        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = RESET_LIMIT) }
+        logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $RESET_LIMIT)")
 
         db.transaction { tx ->
             asyncJobRunner.plan(tx, resetChildIds.map { AsyncJob.ResetVardaChild(it) })
