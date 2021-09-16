@@ -8,13 +8,13 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class MessageNotificationEmailService(
@@ -38,7 +38,7 @@ class MessageNotificationEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun getMessageNotifications(tx: Database.Transaction, messageId: UUID): List<AsyncJob.SendMessageNotificationEmail> {
+    fun getMessageNotifications(tx: Database.Transaction, messageId: MessageId): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
             """
             SELECT DISTINCT
@@ -66,7 +66,7 @@ class MessageNotificationEmailService(
             .toList()
     }
 
-    fun scheduleSendingMessageNotifications(tx: Database.Transaction, messageId: UUID) {
+    fun scheduleSendingMessageNotifications(tx: Database.Transaction, messageId: MessageId) {
         asyncJobRunner.plan(
             tx,
             payloads = getMessageNotifications(tx, messageId),

@@ -5,33 +5,34 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
+fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
 """
     return this.createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .one()
 }
 
-fun Database.Read.getCitizenMessageAccount(personId: UUID): UUID {
+fun Database.Read.getCitizenMessageAccount(personId: UUID): MessageAccountId {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
 """
     return this.createQuery(sql)
         .bind("personId", personId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .one()
 }
 
-fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<UUID> {
+fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<MessageAccountId> {
     val sql = """
 SELECT acc.id,
        acc.type
@@ -45,7 +46,7 @@ WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId OR gacl.em
 """
     return this.createQuery(sql)
         .bind("employeeId", employeeId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .toSet()
 }
 
@@ -78,7 +79,7 @@ AND (
         .toSet()
 }
 
-fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
+fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<String> {
     val sql = """
         SELECT account_name
         FROM message_account_name_view
@@ -91,7 +92,7 @@ fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
         .list()
 }
 
-fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
+fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     // language=SQL
     val sql = """
         INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
@@ -99,7 +100,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupI
     """.trimIndent()
     return createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .one()
 }
 
@@ -113,7 +114,7 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupI
         .execute()
 }
 
-fun Database.Transaction.createPersonMessageAccount(personId: UUID): UUID {
+fun Database.Transaction.createPersonMessageAccount(personId: UUID): MessageAccountId {
     // language=SQL
     val sql = """
         INSERT INTO message_account (person_id) VALUES (:personId)
@@ -121,11 +122,11 @@ fun Database.Transaction.createPersonMessageAccount(personId: UUID): UUID {
     """.trimIndent()
     return createQuery(sql)
         .bind("personId", personId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .one()
 }
 
-fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): UUID {
+fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): MessageAccountId {
     // language=SQL
     val sql = """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
@@ -134,7 +135,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): UUID {
     """.trimIndent()
     return createQuery(sql)
         .bind("employeeId", employeeId)
-        .mapTo<UUID>()
+        .mapTo<MessageAccountId>()
         .one()
 }
 
@@ -149,8 +150,8 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: UUID) {
         .execute()
 }
 
-fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<UUID>): Set<Set<UUID>> {
-    data class AccountToChild(val id: UUID, val childId: UUID? = null)
+fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<MessageAccountId>): Set<Set<MessageAccountId>> {
+    data class AccountToChild(val id: MessageAccountId, val childId: UUID? = null)
 
     val accountsWithCommonChildren = createQuery(
         """     

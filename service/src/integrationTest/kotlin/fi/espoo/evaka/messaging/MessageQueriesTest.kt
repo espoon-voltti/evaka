@@ -31,6 +31,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -109,7 +111,7 @@ class MessageQueriesTest : PureJdbiTest() {
 
         assertEquals(
             setOf(person1Account, person2Account),
-            db.read { it.createQuery("SELECT recipient_id FROM message_recipients").mapTo<UUID>().toSet() }
+            db.read { it.createQuery("SELECT recipient_id FROM message_recipients").mapTo<MessageAccountId>().toSet() }
         )
         assertEquals(
             content,
@@ -318,7 +320,7 @@ class MessageQueriesTest : PureJdbiTest() {
         val participants = db.read {
             val messageId =
                 it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
-                    .bind("threadId", threadId).mapTo<UUID>().one()
+                    .bind("threadId", threadId).mapTo<MessageId>().one()
             it.getThreadByMessageId(messageId)
         }
         assertEquals(
@@ -513,8 +515,8 @@ class MessageQueriesTest : PureJdbiTest() {
     private fun createThread(
         title: String,
         content: String,
-        sender: UUID,
-        recipientAccounts: List<UUID>
+        sender: MessageAccountId,
+        recipientAccounts: List<MessageAccountId>
     ) =
         db.transaction { tx ->
             val contentId = tx.insertMessageContent(content, sender)

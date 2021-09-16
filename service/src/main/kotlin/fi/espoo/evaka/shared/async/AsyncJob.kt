@@ -13,6 +13,7 @@ import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -80,7 +81,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendMessageNotificationEmail(val messageRecipientId: UUID, val personEmail: String, val language: Language) : AsyncJob {
+    data class SendMessageNotificationEmail(val messageRecipientId: MessageAccountId, val personEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
