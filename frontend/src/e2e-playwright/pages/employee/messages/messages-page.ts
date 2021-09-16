@@ -73,13 +73,16 @@ export default class MessagesPage {
     await this.page.click(`:nth-match(:text("Saapuneet"), ${index})`)
   }
 
-  async sendNewMessage(title: string, content: string) {
+  async sendNewMessage(title: string, content: string, attachmentCount = 0) {
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())
     await this.#inputTitle.fill(title)
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
     await this.page.keyboard.press('Enter')
+    if (attachmentCount > 0) {
+      expect(false).toBeTruthy() // TODO implement
+    }
     await this.#sendMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), false)
 
