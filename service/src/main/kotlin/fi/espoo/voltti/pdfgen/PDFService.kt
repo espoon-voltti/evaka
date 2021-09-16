@@ -8,11 +8,13 @@ import com.lowagie.text.pdf.BaseFont
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
+import org.xhtmlrenderer.pdf.ITextFontResolver
 import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Paths
+import java.util.Locale
 
 class Template(val value: String)
 class Page(val template: Template, val context: Context)
@@ -22,10 +24,9 @@ fun ITemplateEngine.process(page: Page): String = this.process(page.template.val
 @Component
 class PDFService(private val templateEngine: ITemplateEngine) {
 
-    private fun getResourcePath(fileName: String): String {
+    private fun getResourceFile(fileName: String): File {
         val res = javaClass.classLoader.getResource(fileName)
-        val file: File = Paths.get(res.toURI()).toFile()
-        return file.absolutePath
+        return Paths.get(res.toURI()).toFile()
     }
 
     fun render(page: Page): ByteArray {
@@ -36,18 +37,23 @@ class PDFService(private val templateEngine: ITemplateEngine) {
 
     private fun renderHtmlPageToPDF(pages: String, os: OutputStream) {
         with(ITextRenderer()) {
-            val montserrat = getResourcePath("ttf/Montserrat-Regular.ttf")
-            val montserratBold = getResourcePath("ttf/Montserrat-Regular.ttf")
-            val openSans = getResourcePath("ttf/OpenSans-Regular.ttf")
-            val openSansBold = getResourcePath("ttf/OpenSans-Bold.ttf")
+            fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
             setDocumentFromString(pages)
-            fontResolver.addFont(montserrat, BaseFont.IDENTITY_H, true)
-            fontResolver.addFont(montserratBold, BaseFont.IDENTITY_H, true)
-            fontResolver.addFont(openSans, BaseFont.IDENTITY_H, true)
-            fontResolver.addFont(openSansBold, BaseFont.IDENTITY_H, true)
             layout()
             createPDF(os, false)
             finishPDF()
         }
+    }
+}
+
+/**
+ * mostly copy from [ITextFontResolver.addFontDirectory] to add encoding support
+ */
+fun ITextFontResolver.addFontDirectory(f: File, encoding: String, embedded: Boolean) {
+    if (f.isDirectory) {
+        f.listFiles { _, name ->
+            val lower = name.lowercase(Locale.getDefault())
+            lower.endsWith(".otf") || lower.endsWith(".ttf")
+        }.forEach { file -> addFont(file.absolutePath, encoding, embedded) }
     }
 }
