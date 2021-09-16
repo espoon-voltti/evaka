@@ -17,6 +17,7 @@ import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { modalZIndex } from 'lib-components/layout/z-helpers'
 import Select, { SelectOption } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import {
@@ -350,7 +351,7 @@ const Container = styled.div`
   max-height: 900px;
   height: 105%;
   position: absolute;
-  z-index: 100;
+  z-index: ${modalZIndex - 1};
   right: 0;
   bottom: 0;
   box-shadow: 0 8px 8px 8px rgba(15, 15, 15, 0.15);
