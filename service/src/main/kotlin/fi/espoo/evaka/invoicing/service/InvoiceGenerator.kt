@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByPeriod
+import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -29,8 +29,9 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
-import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -47,35 +48,35 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun Database.Transaction.createAllDraftInvoices(period: DateRange = getPreviousMonthRange()) {
-    val effectiveDecisions = getInvoiceableFeeDecisions(period).groupBy { it.headOfFamily.id }
-    val placements = getInvoiceablePlacements(period).groupBy { it.headOfFamily.id }
-    val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(period)
+fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMonthRange()) {
+    val effectiveDecisions = getInvoiceableFeeDecisions(range).groupBy { it.headOfFamily.id }
+    val placements = getInvoiceablePlacements(range).groupBy { it.headOfFamily.id }
+    val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(range)
 
     val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val daycareCodes = getDaycareCodes()
-    val operationalDays = operationalDays(period.start.year, period.start.month)
+    val operationalDays = operationalDays(range.start.year, range.start.month)
 
-    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
+    val absences: List<AbsenceStub> = getAbsenceStubs(range, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
 
     val freeChildren: List<UUID> =
-        if (period.start.month == Month.JULY && (period.end != null && period.end.month == Month.JULY && period.start.year == period.end.year)) {
-            getFreeJulyChildren(period.start.year)
+        if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
+            getFreeJulyChildren(range.start.year)
         } else emptyList()
 
     val invoices =
         generateDraftInvoices(
             unhandledDecisions,
             unhandledPlacements,
-            period,
+            range,
             daycareCodes,
             operationalDays,
             absences,
             freeChildren
         )
 
-    deleteDraftInvoicesByPeriod(period)
+    deleteDraftInvoicesByDateRange(range)
     upsertInvoices(invoices)
 }
 
@@ -542,14 +543,7 @@ fun Database.Read.getAbsenceStubs(spanningRange: DateRange, careTypes: List<Abse
         .bind("range", spanningRange)
         .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
         .bind("careTypes", careTypes.toTypedArray())
-        .map { rs, _ ->
-            AbsenceStub(
-                childId = rs.getUUID("child_id"),
-                date = rs.getDate("date").toLocalDate(),
-                careType = rs.getEnum("care_type"),
-                absenceType = rs.getEnum("absence_type")
-            )
-        }
+        .mapTo<AbsenceStub>()
         .toList()
 }
 
@@ -567,10 +561,12 @@ data class Placements(
 internal fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange
 ): List<Placements> {
+    data class PlacementRow(val dateRange: DateRange, val unitId: DaycareId, val type: PlacementType)
+
     val placements = createQuery(
         // language=sql
         """
-            SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
+            SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
             AND p.type = ANY(:invoicedTypes::placement_type[])
@@ -578,24 +574,12 @@ internal fun Database.Read.getInvoiceablePlacements(
     )
         .bind("period", spanningPeriod)
         .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
-        .map { rs, _ ->
-            Pair(
-                rs.getUUID("child_id"),
-                Triple(
-                    DateRange(
-                        rs.getObject("start_date", LocalDate::class.java),
-                        rs.getObject("end_date", LocalDate::class.java)
-                    ),
-                    DaycareId(rs.getUUID("unit_id")),
-                    rs.getEnum<PlacementType>("type")
-                )
-            )
-        }
+        .map { row -> row.mapColumn<UUID>("child_id") to row.mapRow<PlacementRow>() }
         .groupBy { (childId) -> childId }
-        .mapValues { it.value.map { (_, triple) -> triple } }
+        .mapValues { it.value.map { (_, placements) -> placements } }
 
     val familyCompositions = toFamilyCompositions(
-        getChildrenWithHeadOfFamilies(placements.keys.toList(), spanningPeriod),
+        getChildrenWithHeadOfFamilies(placements.keys, spanningPeriod),
         spanningPeriod
     )
 
@@ -604,7 +588,7 @@ internal fun Database.Read.getInvoiceablePlacements(
             val relevantPlacements = families.flatMap { (period, children) ->
                 children.flatMap { child ->
                     (placements[child.id] ?: listOf())
-                        .filter { it.first.overlaps(period) }
+                        .filter { it.dateRange.overlaps(period) }
                         .map { (placementPeriod, placementUnit, placementType) ->
                             val placement = when (placementType) {
                                 PlacementType.TEMPORARY_DAYCARE ->
@@ -665,8 +649,8 @@ internal fun toFamilyCompositions(
 }
 
 fun Database.Read.getChildrenWithHeadOfFamilies(
-    childIds: List<UUID>,
-    period: DateRange
+    childIds: Collection<UUID>,
+    dateRange: DateRange
 ): List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>> {
     if (childIds.isEmpty()) return listOf()
 
@@ -680,15 +664,14 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
             fridge_child.end_date
         FROM fridge_child
         INNER JOIN person AS child ON fridge_child.child_id = child.id
-        WHERE fridge_child.child_id IN (<childIds>)
-            AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && daterange(:start, :end, '[]')
+        WHERE fridge_child.child_id = ANY(:childIds)
+            AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && :dateRange
             AND conflict = false
     """
 
     return createQuery(sql)
-        .bind("start", period.start)
-        .bind("end", period.end)
-        .bindList("childIds", childIds)
+        .bind("dateRange", dateRange)
+        .bind("childIds", childIds.toTypedArray())
         .map { rs, _ ->
             Triple(
                 DateRange(
@@ -712,13 +695,7 @@ fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
     return createQuery(sql)
-        .map { rs, _ ->
-            DaycareId(rs.getUUID("id")) to DaycareCodes(
-                areaCode = rs.getObject("area_code") as Int?,
-                costCenter = rs.getString("cost_center"),
-                subCostCenter = rs.getString("sub_cost_center")
-            )
-        }
+        .map { row -> row.mapColumn<DaycareId>("id") to row.mapRow<DaycareCodes>() }
         .toMap()
 }
 
@@ -763,7 +740,7 @@ WHERE
 
     return createQuery(sql)
         .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
-        .mapTo(UUID::class.java)
+        .mapTo<UUID>()
         .list()
 }
 
