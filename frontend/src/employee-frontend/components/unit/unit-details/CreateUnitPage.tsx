@@ -46,7 +46,7 @@ export default function CreateUnitPage(): JSX.Element {
     void createDaycare(fields).then((result) => {
       setSubmitState(result.map(() => undefined))
       if (result.isSuccess) {
-        history.push(`/employee/units/${result.value}/details`)
+        history.push(`/units/${result.value}/unit-info`)
       }
     })
   }
