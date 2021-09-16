@@ -59,6 +59,8 @@ class VardaUpdateService(
     fun startVardaUpdate(db: Database.Connection) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
+        logger.info("VardaUpdate: starting update process")
+
         updateOrganizer(db, client, organizer)
         updateUnits(db, client, organizer)
 
@@ -88,6 +90,7 @@ class VardaUpdateService(
 
     fun planVardaReset(db: Database.Connection) {
         val RESET_LIMIT = 1000
+        logger.info("VardaUpdate: starting reset process")
         val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = RESET_LIMIT) }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $RESET_LIMIT)")
 
@@ -98,11 +101,13 @@ class VardaUpdateService(
 
     fun updateVardaChildByAsyncJob(db: Database, msg: AsyncJob.UpdateVardaChild) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
         db.connect { updateVardaChild(it, client, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
     }
 
     fun resetVardaChildByAsyncJob(db: Database, msg: AsyncJob.ResetVardaChild) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        logger.info("VardaUpdate: starting to reset child ${msg.childId}")
         db.connect { resetVardaChild(it, client, msg.childId, feeDecisionMinDate) }
     }
 }
