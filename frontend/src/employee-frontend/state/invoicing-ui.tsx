@@ -24,11 +24,11 @@ import { Loading, Result } from 'lib-common/api'
 import { CareArea } from '../types/unit'
 import { UUID } from '../types'
 
-interface Checked {
+export interface Checked {
   [id: string]: boolean
 }
 
-interface PageState {
+export interface PageState {
   checked: Checked
   toggleChecked: (id: string) => void
   checkIds: (ids: string[]) => void
@@ -200,20 +200,6 @@ export const InvoicingUIContextProvider = React.memo(
         setFeeDecisionSearchFilters(defaultState.feeDecisions.searchFilters),
       [setFeeDecisionSearchFilters]
     )
-    const [feeDecisionChecked, setFeeDecisionChecked] = useState<Checked>({})
-    const toggleFeeDecisionChecked = (id: string) =>
-      setFeeDecisionChecked({
-        ...feeDecisionChecked,
-        [id]: !feeDecisionChecked[id]
-      })
-    const checkFeeDecisionIds = (ids: string[]) => {
-      const idsChecked = ids.map((id) => ({ [id]: true }))
-      setFeeDecisionChecked({
-        ...feeDecisionChecked,
-        ...Object.assign({}, ...idsChecked)
-      })
-    }
-    const clearFeeDecisionChecked = () => setFeeDecisionChecked({})
 
     const [valueDecisionSearchFilters, setValueDecisionSearchFilters] =
       useState<ValueDecisionSearchFilters>(
@@ -278,12 +264,7 @@ export const InvoicingUIContextProvider = React.memo(
           searchTerms: feeDecisionFreeTextSearch,
           setSearchTerms: setFeeDecisionFreeTextSearch,
           debouncedSearchTerms: feeDecisionDebouncedFreeText,
-          clearSearchFilters: clearFeeDecisionSearchFilters,
-          checked: feeDecisionChecked,
-          setChecked: setFeeDecisionChecked,
-          toggleChecked: toggleFeeDecisionChecked,
-          checkIds: checkFeeDecisionIds,
-          clearChecked: clearFeeDecisionChecked
+          clearSearchFilters: clearFeeDecisionSearchFilters
         },
         valueDecisions: {
           searchFilters: valueDecisionSearchFilters,
@@ -323,10 +304,6 @@ export const InvoicingUIContextProvider = React.memo(
         setFeeDecisionFreeTextSearch,
         feeDecisionDebouncedFreeText,
         clearFeeDecisionSearchFilters,
-        feeDecisionChecked,
-        setFeeDecisionChecked,
-        feeDecisionChecked,
-        setFeeDecisionChecked,
         valueDecisionSearchFilters,
         setValueDecisionSearchFilters,
         valueDecisionFreeTextSearch,

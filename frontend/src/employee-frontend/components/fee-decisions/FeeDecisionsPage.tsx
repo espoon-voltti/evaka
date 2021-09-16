@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Gap } from 'lib-components/white-space'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {Checked, InvoicingUiContext} from '../../state/invoicing-ui'
 import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
@@ -51,13 +51,24 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   const {
     feeDecisions: {
       searchFilters,
-      debouncedSearchTerms,
-      checked,
-      toggleChecked,
-      checkIds,
-      clearChecked
+      debouncedSearchTerms
     }
   } = useContext(InvoicingUiContext)
+
+  const [checked, setChecked] = useState<Checked>({})
+  const toggleChecked = (id: string) =>
+    setChecked({
+      ...checked,
+      [id]: !checked[id]
+    })
+  const checkIds = (ids: string[]) => {
+    const idsChecked = ids.map((id) => ({ [id]: true }))
+    setChecked({
+      ...checked,
+      ...Object.assign({}, ...idsChecked)
+    })
+  }
+  const clearChecked = () => setChecked({})
 
   const loadDecisions = useCallback(() => {
     const status = searchFilters.status
