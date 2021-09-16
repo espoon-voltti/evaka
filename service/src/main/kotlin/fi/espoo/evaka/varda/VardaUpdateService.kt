@@ -931,27 +931,34 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
 }
 
 fun Database.Transaction.getVardaChildrenToReset(limit: Int): List<UUID> {
+    // We aim to include children by daycare units, capping each batch with <limit>
     val updateCount = createUpdate(
         """
         with varda_daycare as (
             select id, name from daycare
             where upload_children_to_varda = true
             order by name asc
-        )
-        insert into varda_reset_child(evaka_child_id)
-        select child_id 
-        from (
+        ),
+        child_daycare as (
             select distinct p.child_id, d.name
-            from service_need sn
-            join placement p on sn.placement_id = p.id
+            from placement p
             join varda_daycare d on d.id = p.unit_id
             where not exists (
                 select 1 from varda_reset_child where evaka_child_id = p.child_id
             )
-            order by d.name
-        ) sub
-        on conflict (evaka_child_id) do nothing
-        limit :limit
+            order by d.name asc
+            limit :limit
+        ),
+        last_daycare as (
+            select name from child_daycare order by name desc limit 1
+        ),
+        daycare_count as (
+            select count(distinct name) from child_daycare
+        )
+        select distinct child_id
+        from child_daycare
+        where name not in (select name from last_daycare)
+        or 1 in (select count from daycare_count)
         """.trimIndent()
     )
         .bind("limit", limit)
