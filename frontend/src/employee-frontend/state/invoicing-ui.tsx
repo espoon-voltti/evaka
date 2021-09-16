@@ -110,8 +110,8 @@ interface SharedState {
 }
 
 interface UiState {
-  feeDecisions: PageState & FeeDecisionSearchFilterState
-  valueDecisions: PageState & ValueDecisionSearchFilterState
+  feeDecisions: FeeDecisionSearchFilterState
+  valueDecisions: ValueDecisionSearchFilterState
   invoices: InvoiceSearchFilterState
   shared: SharedState
 }
@@ -131,11 +131,7 @@ const defaultState: UiState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined,
-    checked: {},
-    toggleChecked: () => undefined,
-    checkIds: () => undefined,
-    clearChecked: () => undefined
+    clearSearchFilters: () => undefined
   },
   valueDecisions: {
     searchFilters: {
@@ -149,11 +145,7 @@ const defaultState: UiState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined,
-    checked: {},
-    toggleChecked: () => undefined,
-    checkIds: () => undefined,
-    clearChecked: () => undefined
+    clearSearchFilters: () => undefined
   },
   invoices: {
     searchFilters: {
@@ -218,22 +210,6 @@ export const InvoicingUIContextProvider = React.memo(
         ),
       [setValueDecisionSearchFilters]
     )
-    const [valueDecisionChecked, setValueDecisionChecked] = useState<Checked>(
-      {}
-    )
-    const toggleValueDecisionChecked = (id: string) =>
-      setValueDecisionChecked({
-        ...valueDecisionChecked,
-        [id]: !valueDecisionChecked[id]
-      })
-    const checkValueDecisionIds = (ids: string[]) => {
-      const idsChecked = ids.map((id) => ({ [id]: true }))
-      setValueDecisionChecked({
-        ...valueDecisionChecked,
-        ...Object.assign({}, ...idsChecked)
-      })
-    }
-    const clearValueDecisionChecked = () => setValueDecisionChecked({})
 
     const [invoiceSearchFilters, setInvoiceSearchFilters] =
       useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
@@ -272,12 +248,7 @@ export const InvoicingUIContextProvider = React.memo(
           searchTerms: valueDecisionFreeTextSearch,
           setSearchTerms: setValueDecisionFreeTextSearch,
           debouncedSearchTerms: valueDecisionDebouncedFreeText,
-          clearSearchFilters: clearValueDecisionSearchFilters,
-          checked: valueDecisionChecked,
-          setChecked: setValueDecisionChecked,
-          toggleChecked: toggleValueDecisionChecked,
-          checkIds: checkValueDecisionIds,
-          clearChecked: clearValueDecisionChecked
+          clearSearchFilters: clearValueDecisionSearchFilters
         },
         invoices: {
           searchFilters: invoiceSearchFilters,
@@ -310,10 +281,6 @@ export const InvoicingUIContextProvider = React.memo(
         setValueDecisionFreeTextSearch,
         valueDecisionDebouncedFreeText,
         clearValueDecisionSearchFilters,
-        valueDecisionChecked,
-        setValueDecisionChecked,
-        valueDecisionChecked,
-        setValueDecisionChecked,
         invoiceSearchFilters,
         setInvoiceSearchFilters,
         invoiceFreeTextSearch,

@@ -14,7 +14,7 @@ import {
   VoucherValueDecisionSearchParams,
   SortByVoucherValueDecisions
 } from '../../api/invoicing'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { Checked, InvoicingUiContext } from '../../state/invoicing-ui'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -54,13 +54,28 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const {
     valueDecisions: {
       searchFilters,
-      debouncedSearchTerms,
+      debouncedSearchTerms /*,
       checked,
       toggleChecked,
       checkIds,
-      clearChecked
+      clearChecked*/
     }
   } = useContext(InvoicingUiContext)
+
+  const [checked, setChecked] = useState<Checked>({})
+  const toggleChecked = (id: string) =>
+    setChecked({
+      ...checked,
+      [id]: !checked[id]
+    })
+  const checkIds = (ids: string[]) => {
+    const idsChecked = ids.map((id) => ({ [id]: true }))
+    setChecked({
+      ...checked,
+      ...Object.assign({}, ...idsChecked)
+    })
+  }
+  const clearChecked = () => setChecked({})
 
   const loadDecisions = useCallback(() => {
     const status = searchFilters.status

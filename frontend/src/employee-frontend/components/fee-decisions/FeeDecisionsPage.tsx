@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Gap } from 'lib-components/white-space'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import {Checked, InvoicingUiContext} from '../../state/invoicing-ui'
+import { Checked, InvoicingUiContext } from '../../state/invoicing-ui'
 import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
@@ -49,10 +49,7 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   const reloadDecisions = useRestApi(getFeeDecisions, setDecisionsResult)
 
   const {
-    feeDecisions: {
-      searchFilters,
-      debouncedSearchTerms
-    }
+    feeDecisions: { searchFilters, debouncedSearchTerms }
   } = useContext(InvoicingUiContext)
 
   const [checked, setChecked] = useState<Checked>({})

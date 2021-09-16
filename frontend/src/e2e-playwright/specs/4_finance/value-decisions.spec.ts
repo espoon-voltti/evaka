@@ -119,6 +119,13 @@ describe('Value decisions', () => {
     await valueDecisionsPage.navigateBackFromDetails()
   })
 
+  test('Send value decision from details page', async () => {
+    await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionsPage.sendValueDecision()
+    await valueDecisionsPage.navigateBackFromDetails()
+    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
+  })
+
   test('Voucher value decisions are toggled and sent', async () => {
     await valueDecisionsPage.toggleAllValueDecisions(true)
     await valueDecisionsPage.sendValueDecisions()

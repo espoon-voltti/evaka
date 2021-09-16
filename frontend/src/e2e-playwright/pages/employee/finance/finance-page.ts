@@ -157,6 +157,16 @@ export class ValueDecisionsPage {
     sent: new Radio(this.page, '[data-qa="value-decision-status-filter-SENT"]')
   }
 
+  #sendDecisionButton = new RawElement(
+    this.page,
+    '[data-qa="button-send-decision"]'
+  )
+
+  async sendValueDecision() {
+    await this.#sendDecisionButton.click()
+    await waitUntilFalse(() => this.#sendDecisionButton.visible)
+  }
+
   async openFirstValueDecision() {
     await this.#valueDecisionRow.click()
     await waitUntilTrue(() => this.#valueDecisionDetailsPage.visible)

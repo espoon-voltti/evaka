@@ -1,4 +1,4 @@
-import {useTranslation} from "../../state/i18n";
+import { useTranslation } from '../../state/i18n'
 
 {
   /*
@@ -8,12 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import StickyActionBar from '../../components/common/StickyActionBar'
-import {markVoucherValueDecisionSent, sendVoucherValueDecisions} from '../../api/invoicing'
+import {
+  markVoucherValueDecisionSent,
+  sendVoucherValueDecisions
+} from '../../api/invoicing'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import styled from "styled-components";
+import styled from 'styled-components'
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.orangeDark};
@@ -36,6 +39,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
     <StickyActionBar align="right">
       {error ? <ErrorMessage>{error}</ErrorMessage> : null}
       <AsyncButton
+        data-qa={'button-mark-decision-sent'}
         primary
         text="Merkitse lähetetyksi"
         onClick={() => markVoucherValueDecisionSent([decision.id])}
@@ -46,6 +50,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
     <StickyActionBar align="right">
       <AsyncButton
         primary
+        data-qa={'button-send-decision'}
         text="Lähetä"
         onClick={() =>
           sendVoucherValueDecisions([decision.id]).then((result) => {
@@ -56,7 +61,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
             if (result.isFailure) {
               setError(
                 i18n.valueDecisions.buttons.errors[result.errorCode ?? ''] ??
-                i18n.common.error.unknown
+                  i18n.common.error.unknown
               )
             }
 
