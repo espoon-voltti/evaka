@@ -6,6 +6,7 @@ package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -442,9 +443,9 @@ LIMIT 50
         .mapTo<IncomeStatementAwaitingHandler>()
         .list()
 
-fun Database.Read.isOwnIncomeStatement(id: IncomeStatementId, personId: UUID): Boolean =
+fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")
         .bind("id", id)
-        .bind("personId", personId)
+        .bind("personId", user.id)
         .mapTo<Int>()
         .any()

@@ -1008,3 +1008,11 @@ WHERE application.id = :applicationId AND daycare.round_the_clock AND attachment
         .bind("attachmentTypes", arrayOf(AttachmentType.EXTENDED_CARE))
         .mapTo<ApplicationAttachment>()
         .toList()
+
+fun Database.Read.isOwnApplication(user: AuthenticatedUser.Citizen, applicationId: ApplicationId): Boolean {
+    return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
+        .bind("id", applicationId)
+        .bind("userId", user.id)
+        .mapTo<Int>()
+        .any()
+}

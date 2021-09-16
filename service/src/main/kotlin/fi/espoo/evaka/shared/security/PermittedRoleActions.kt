@@ -18,6 +18,7 @@ interface PermittedRoleActions {
     fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote>
     fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
     fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed>
+    fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun backupCareActions(role: UserRole): Set<Action.BackupCare>
     fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
     fun childActions(role: UserRole): Set<Action.Child>
@@ -49,6 +50,7 @@ class StaticPermittedRoleActions(
     val applicationNote: ActionsByRole<Action.ApplicationNote> = getDefaults(),
     val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
     val assistanceNeed: ActionsByRole<Action.AssistanceNeed> = getDefaults(),
+    val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val backupCare: ActionsByRole<Action.BackupCare> = getDefaults(),
     val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
     val child: ActionsByRole<Action.Child> = getDefaults(),
@@ -73,6 +75,7 @@ class StaticPermittedRoleActions(
     override fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote> = applicationNote[role] ?: emptySet()
     override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
     override fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed> = assistanceNeed[role] ?: emptySet()
+    override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun backupCareActions(role: UserRole): Set<Action.BackupCare> = backupCare[role] ?: emptySet()
     override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
     override fun childActions(role: UserRole): Set<Action.Child> = child[role] ?: emptySet()
