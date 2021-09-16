@@ -87,9 +87,14 @@ private fun createVardaPersonAndChild(
     }
 
     val vardaPerson = try {
-        client.createPerson(personPayload)
+        client.createPerson(personPayload.toVardaPersonRequest())
     } catch (e: Exception) {
-        client.getPersonFromVardaBySsnOrOid(VardaClient.VardaPersonSearchRequest(personPayload.ssn, personPayload.personOid))
+        client.getPersonFromVardaBySsnOrOid(
+            VardaClient.VardaPersonSearchRequest(
+                henkilotunnus = personPayload.ssn,
+                henkilo_oid = if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null
+            )
+        )
     } catch (e: Exception) {
         error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
     }
@@ -222,7 +227,7 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
     )
         .bind("evakaPersonId", evakaPersonId)
         .bind("organizerOid", organizerOid)
-        .mapTo<VardaPersonRequest>()
+        .mapTo<VardaPerson>()
         .toList()
         .first()
 
@@ -249,21 +254,34 @@ fun insertVardaOrganizerChild(
         .execute()
 }
 
+data class VardaPerson(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val nickName: String,
+    val ssn: String? = null,
+    val personOid: String? = null
+) {
+    fun toVardaPersonRequest() = VardaPersonRequest(
+        id = id,
+        etunimet = firstName,
+        sukunimi = lastName,
+        kutsumanimi = nickName,
+        henkilotunnus = ssn,
+        henkilo_oid = if (ssn.isNullOrBlank()) personOid else null
+    )
+}
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaPersonRequest(
     val id: UUID,
-    @JsonProperty("etunimet")
-    val firstName: String,
-    @JsonProperty("sukunimi")
-    val lastName: String,
-    @JsonProperty("kutsumanimi")
-    val nickName: String,
+    val etunimet: String,
+    val sukunimi: String,
+    val kutsumanimi: String,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("henkilotunnus")
-    val ssn: String? = null,
+    val henkilotunnus: String? = null,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("henkilo_oid")
-    val personOid: String? = null
+    val henkilo_oid: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

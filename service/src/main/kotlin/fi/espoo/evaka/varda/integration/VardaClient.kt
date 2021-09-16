@@ -121,9 +121,9 @@ class VardaClient(
 
     data class VardaPersonSearchRequest(
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        val henkilotunnus: String?,
+        val henkilotunnus: String? = null,
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        val henkilo_oid: String?
+        val henkilo_oid: String? = null
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
