@@ -88,6 +88,7 @@ interface Props {
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId?: UUID) => void
   draftContent?: DraftContent
+  sending: boolean
 }
 
 export default React.memo(function MessageEditor({
@@ -98,7 +99,8 @@ export default React.memo(function MessageEditor({
   onSend,
   onDiscard,
   onClose,
-  draftContent
+  draftContent,
+  sending
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -204,7 +206,7 @@ export default React.memo(function MessageEditor({
     setContentTouched(true)
   }, [])
 
-  const sendEnabled = areRequiredFieldsFilledForMessage(message)
+  const sendEnabled = !sending && areRequiredFieldsFilledForMessage(message)
   const sendHandler = useCallback(() => {
     const {
       sender: { value: senderId },
@@ -326,7 +328,11 @@ export default React.memo(function MessageEditor({
               data-qa="discard-draft-btn"
             />
             <Button
-              text={i18n.messages.messageEditor.send}
+              text={
+                sending
+                  ? i18n.messages.messageEditor.sending
+                  : i18n.messages.messageEditor.send
+              }
               primary
               disabled={!sendEnabled}
               onClick={sendHandler}
