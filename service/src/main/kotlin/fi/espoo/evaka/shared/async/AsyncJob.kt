@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -150,6 +151,18 @@ sealed interface AsyncJob : AsyncJobPayload {
             data class Adult(val adultId: UUID) : Person()
             data class Child(val childId: UUID) : Person()
         }
+    }
+
+    data class UpdateVardaChild(
+        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class ResetVardaChild(
+        val childId: UUID
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
     }
 }
 

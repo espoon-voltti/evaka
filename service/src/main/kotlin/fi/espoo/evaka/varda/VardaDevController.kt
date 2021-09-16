@@ -19,7 +19,7 @@ class VardaDevController(
     fun runFullVardaUpdate(
         db: Database.Connection
     ): ResponseEntity<Unit> {
-        vardaUpdateService.scheduleVardaUpdate(db, runNow = true)
+        vardaUpdateService.startVardaUpdate(db)
         return ResponseEntity.noContent().build()
     }
 
@@ -27,6 +27,6 @@ class VardaDevController(
     fun resetChildren(
         db: Database.Connection
     ) {
-        vardaUpdateService.resetChildren(db)
+        vardaUpdateService.planVardaReset(db)
     }
 }
