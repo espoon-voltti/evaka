@@ -957,6 +957,7 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int): List<UUID> {
         daycare_count as (
             select count(distinct name) from child_daycare
         )
+        insert into varda_reset_child(evaka_child_id)
         select distinct child_id
         from child_daycare
         where name not in (select name from last_daycare)
