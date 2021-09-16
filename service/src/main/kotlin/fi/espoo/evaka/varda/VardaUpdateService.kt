@@ -139,7 +139,7 @@ fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID,
             val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
             logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
             childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
-                logger.info { "VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})" }
+                logger.info("VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})")
                 if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
                     error("VardaUpdate: failed to send service need for child $childId")
             }
@@ -158,36 +158,36 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
 
     val successfulDeletes: List<Boolean> = vardaChildIds.map { vardaChildId ->
         try {
-            logger.info { "VardaUpdate: deleting varda data for evaka child $evakaChildId, varda child $vardaChildId" }
+            logger.info("VardaUpdate: deleting varda data for evaka child $evakaChildId, varda child $vardaChildId")
 
             val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
-            logger.info { "VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $evakaChildId (varda id $vardaChildId)" }
+            logger.info("VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $evakaChildId (varda id $vardaChildId)")
 
             val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
-            logger.info { "VardaUpdate: found ${placementIds.size} placements to be deleted for child $evakaChildId (varda id $vardaChildId)" }
+            logger.info("VardaUpdate: found ${placementIds.size} placements to be deleted for child $evakaChildId (varda id $vardaChildId)")
 
             val feeIds = vardaClient.getFeeDataByChild(vardaChildId)
-            logger.info { "VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)" }
+            logger.info("VardaUpdate: found ${feeIds.size} fee data to be deleted for child $evakaChildId (varda id $vardaChildId)")
 
             feeIds.forEachIndexed { index, feeId ->
-                logger.info { "VardaUpdate: deleting fee data $feeId for child $vardaChildId (${index + 1} / ${feeIds.size})" }
+                logger.info("VardaUpdate: deleting fee data $feeId for child $vardaChildId (${index + 1} / ${feeIds.size})")
                 vardaClient.deleteFeeData(feeId)
             }
 
             placementIds.forEachIndexed { index, placementId ->
-                logger.info { "VardaUpdate: deleting placement $placementId for child $vardaChildId (${index + 1} / ${placementIds.size})" }
+                logger.info("VardaUpdate: deleting placement $placementId for child $vardaChildId (${index + 1} / ${placementIds.size})")
                 vardaClient.deletePlacement(placementId)
             }
 
             decisionIds.forEachIndexed { index, decisionId ->
-                logger.info { "VardaUpdate: deleting decision $decisionId for child $vardaChildId (${index + 1} / ${decisionIds.size})" }
+                logger.info("VardaUpdate: deleting decision $decisionId for child $vardaChildId (${index + 1} / ${decisionIds.size})")
                 vardaClient.deleteDecision(decisionId)
             }
 
-            logger.info { "VardaUpdate: deleting from varda_service_need for child $evakaChildId (varda id $vardaChildId)" }
+            logger.info("VardaUpdate: deleting from varda_service_need for child $evakaChildId (varda id $vardaChildId)")
             db.transaction { it.deleteVardaServiceNeedByVardaChildId(vardaChildId) }
 
-            logger.info { "VardaUpdate: successfully deleted data for child $evakaChildId (varda id $vardaChildId)" }
+            logger.info("VardaUpdate: successfully deleted data for child $evakaChildId (varda id $vardaChildId)")
             true
         } catch (e: Exception) {
             logger.warn("VardaUpdate: failed to delete varda data for child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}")
@@ -343,12 +343,12 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
 
     val feeResponseIds: List<Long> = feeDataByServiceNeed.feeDecisionIds.mapNotNull { feeId ->
         try {
-            logger.info { "VardaUpdate: trying to send fee data $feeId" }
+            logger.info("VardaUpdate: trying to send fee data $feeId")
             val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
 
             // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
             if (guardians.none { it.id == decision.headOfFamily.id }) {
-                logger.info { "VardaUpdate: refusing to send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}" }
+                logger.info("VardaUpdate: refusing to send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
             } else sendFeeDecisionToVarda(
                 client = vardaClient,
@@ -364,11 +364,11 @@ fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVar
 
     val voucherResponseIds = feeDataByServiceNeed.voucherValueDecisionIds.mapNotNull { feeId ->
         try {
-            logger.info { "VardaUpdate: trying to send voucher data $feeId" }
+            logger.info("VardaUpdate: trying to send voucher data $feeId")
             val decision = db.read { it.getVoucherValueDecision(feeId) }!!
 
             if (guardians.none { it.id == decision.headOfFamily.id }) {
-                logger.info { "VardaUpdate: refusing to send fee data for voucher decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}" }
+                logger.info("VardaUpdate: refusing to send fee data for voucher decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
             } else sendVoucherDecisionToVarda(
                 client = vardaClient,
@@ -967,7 +967,7 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int): List<UUID> {
         .bind("limit", limit)
         .execute()
 
-    logger.info { "VardaUpdate: added $updateCount new children to be reset later" }
+    logger.info("VardaUpdate: added $updateCount new children to be reset later")
 
     return createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit")
         .bind("limit", limit)
