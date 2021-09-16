@@ -497,28 +497,53 @@ commands:
       target_env:
         type: string
     steps:
+      - run:
+          name: Configure AWS CLI
+          command: replace-credentials
+      - deploy_s3:
+          target_env: << parameters.target_env >>
+          from: "frontend/citizen/${CIRCLE_SHA1}"
+          to: citizen
+      - deploy_s3:
+          target_env: << parameters.target_env >>
+          from: "frontend/employee/${CIRCLE_SHA1}"
+          to: employee
+      - deploy_s3:
+          target_env: << parameters.target_env >>
+          from: "frontend/employee/mobile/${CIRCLE_SHA1}"
+          to: employee/mobile
+      - deploy_s3:
+          target_env: << parameters.target_env >>
+          from: "frontend/maintenance-page/${CIRCLE_SHA1}"
+          to: maintenance-page
+
+  install_frontend:
+    parameters:
+      target_env:
+        type: string
+    steps:
       - attach_root_workspace
       - run:
           name: Configure AWS CLI
           command: replace-credentials
-      - deploy_to_s3:
+      - copy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/dist/bundle/citizen-frontend
-          to: citizen
-      - deploy_to_s3:
+          to: "frontend/citizen/${CIRCLE_SHA1}"
+      - copy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/dist/bundle/employee-frontend
-          to: employee
-      - deploy_to_s3:
+          to: "frontend/employee/${CIRCLE_SHA1}"
+      - copy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/dist/bundle/employee-mobile-frontend
-          to: employee/mobile
-      - deploy_to_s3:
+          to: "frontend/employee/mobile/${CIRCLE_SHA1}"
+      - copy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/src/maintenance-page-frontend
-          to: maintenance-page
+          to: "frontend/maintenance-page/${CIRCLE_SHA1}"
 
-  deploy_to_s3:
+  copy_to_s3:
     parameters:
       target_env:
         type: string
@@ -531,10 +556,6 @@ commands:
           name: Deploy (<< parameters.from >>)
           working_directory: << pipeline.parameters.workspace_root >>/<< parameters.from >>
           command: |
-            aws s3 cp ./index.html s3://evaka-static-<< parameters.target_env >>/<< parameters.to >>/index.html \
-              --acl public-read \
-              --profile voltti-<< parameters.target_env >>
-
             if [ "<< parameters.target_env >>" = "prod" ]; then
               echo 'Target environment is prod, excluding source maps from deploy'
               EXTRA_ARGS=(
@@ -545,8 +566,31 @@ commands:
             aws s3 sync . s3://evaka-static-<< parameters.target_env >>/<< parameters.to >> \
               --acl public-read \
               --exact-timestamps \
-              --exclude "*index.html" \
               "${EXTRA_ARGS[@]}" \
+              --profile voltti-<< parameters.target_env >>
+
+  deploy_s3:
+    parameters:
+      target_env:
+        type: string
+      from:
+        type: string
+      to:
+        type: string
+    steps:
+      - run:
+          name: Deploy (<< parameters.from >>)
+          command: |
+            aws s3 cp s3://evaka-static-<< parameters.target_env >>/<< parameters.from >>/index.html \
+                s3://evaka-static-<< parameters.target_env >>/<< parameters.to >>/index.html \
+              --acl public-read \
+              --profile voltti-<< parameters.target_env >>
+
+            aws s3 sync s3://evaka-static-<< parameters.target_env >>/<< parameters.from >> \
+                s3://evaka-static-<< parameters.target_env >>/<< parameters.to >> \
+              --acl public-read \
+              --exact-timestamps \
+              --exclude "*index.html" \
               --profile voltti-<< parameters.target_env >>
 
   load_base_image:
@@ -883,6 +927,8 @@ jobs:
       target_env:
         type: string
     steps:
+      - install_frontend:
+          target_env: << parameters.target_env >>
       - deploy_frontend:
           target_env: << parameters.target_env >>
       - notify_slack
