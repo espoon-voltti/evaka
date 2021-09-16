@@ -784,6 +784,28 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         assertVardaServiceNeedIds(snId, 1, 1)
     }
 
+    @Test
+    fun `parseVardaErrorBody works`() {
+        val errors = mockEndpoint.getMockErrorResponses()
+
+        vardaClient.parseVardaErrorBody(errors["DY004"]!!).let { (codes, descriptions) ->
+            assertEquals("DY004", codes.first())
+            assertEquals("Ensure this value is greater than or equal to 1.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["VS009"]!!).let { (codes, descriptions) ->
+            assertEquals("VS009", codes.first())
+            assertEquals("Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["MA003"]!!).let { (codes, descriptions) ->
+            assertEquals("MA003", codes.first())
+            assertEquals("No matching huoltaja found.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["HE012"]!!).let { (codes, descriptions) ->
+            assertEquals("HE012", codes.first())
+            assertEquals("Name has disallowed characters.", descriptions.first())
+        }
+    }
+
     // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
         getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
