@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -29,19 +30,17 @@ import java.util.UUID
 @RestController
 @RequestMapping("/note")
 class NoteController(private val accessControl: AccessControl) {
-    @PostMapping("/search")
+    @GetMapping("/application/{applicationId}")
     fun getNotes(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody search: NoteSearchDTO
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<NoteJSON>> {
-        Audit.NoteRead.log(targetId = search.applicationIds)
-        search.applicationIds.forEach { applicationId ->
-            accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
-        }
+        Audit.NoteRead.log(targetId = applicationId)
+        accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
         val notes = db.read {
-            it.getApplicationNotes(search.applicationIds.first())
+            it.getApplicationNotes(applicationId)
         }
         return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))
     }
@@ -90,14 +89,6 @@ class NoteController(private val accessControl: AccessControl) {
             tx.deleteApplicationNote(noteId)
         }
         return ResponseEntity.noContent().build()
-    }
-}
-
-data class NoteSearchDTO(
-    val applicationIds: Set<ApplicationId> = emptySet()
-) {
-    companion object {
-        val All = NoteSearchDTO()
     }
 }
 
