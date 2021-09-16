@@ -553,7 +553,7 @@ commands:
         type: string
     steps:
       - run:
-          name: Deploy (<< parameters.from >>)
+          name: Install (<< parameters.from >>)
           working_directory: << pipeline.parameters.workspace_root >>/<< parameters.from >>
           command: |
             if [ "<< parameters.target_env >>" = "prod" ]; then
@@ -1303,6 +1303,50 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
+
+      - frontend_approve_dev_deploy_branch:
+          type: approval
+          requires:
+            - lint_scripts
+            - frontend_build_misc_and_test
+            - e2e-test-testcafe
+            - e2e-test-playwright
+            - apigw_build_and_push_image
+            - proxy_build_and_push_image
+            - service_build_and_push_image
+            - message_service_build_and_push_image
+          filters:
+            branches:
+              ignore: master
+
+      - clone_infra_repo:
+          <<: *aws_contexts
+          name: clone_infra_repo_branch
+          requires:
+            - frontend_approve_dev_deploy_branch
+          filters:
+            branches:
+              ignore: master
+
+      - frontend_deploy:
+          <<: *aws_contexts
+          name: frontend_deploy_dev_branch
+          requires:
+            - clone_infra_repo_branch
+          filters:
+            branches:
+              ignore: master
+          target_env: dev
+
+      - services_deploy:
+          <<: *aws_contexts
+          name: services_deploy_dev_branch
+          requires:
+            - clone_infra_repo_branch
+          filters:
+            branches:
+              ignore: master
+          target_env: dev
 
       - frontend_deploy:
           <<: *aws_contexts
