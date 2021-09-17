@@ -15,17 +15,14 @@ export interface FamilyOverviewPerson {
   postalCode: string
   postOffice: string
   headOfChild: string
-  incomeTotal: number
-  incomeId: string
-  incomeEffect?: IncomeEffect
+  income?: FamilyOverviewIncome
 }
 
 export interface FamilyOverview {
   headOfFamily: FamilyOverviewPerson
   partner?: FamilyOverviewPerson
   children: FamilyOverviewPerson[]
-  totalIncomeEffect: IncomeEffect
-  totalIncome?: number
+  totalIncome?: FamilyOverviewIncome
 }
 
 export type FamilyOverviewPersonRole = 'HEAD' | 'PARTNER' | 'CHILD'
@@ -35,10 +32,14 @@ export interface FamilyOverviewRow {
   name: string
   role: FamilyOverviewPersonRole
   age: number
-  incomeTotal?: number
-  incomeEffect?: IncomeEffect
   restrictedDetailsEnabled: boolean
   address: string
+  income?: FamilyOverviewIncome
+}
+
+interface FamilyOverviewIncome {
+  effect?: IncomeEffect
+  total?: number
 }
 
 export type FamilyContactRole =

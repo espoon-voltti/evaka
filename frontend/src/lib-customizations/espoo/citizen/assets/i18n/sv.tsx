@@ -982,6 +982,12 @@ const sv: Translations = {
       },
       contactInfo: {
         title: 'Personuppgifter',
+        familyInfo: (
+          <P>
+            Meddela på ansökningen alla de vuxna och barn som bor i samma
+            hushåll.
+          </P>
+        ),
         info: function ContactInfoInfoText() {
           return (
             <P>

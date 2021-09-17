@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -25,6 +26,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -42,17 +45,16 @@ import java.util.UUID
 class IncomeController(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val mapper: ObjectMapper,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
+    fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
         Audit.PersonIncomeRead.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val parsedId = personId?.let { parseUUID(personId) }
-            ?: throw BadRequest("Query parameter personId is mandatory")
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
 
-        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, parsedId) }
-        return ResponseEntity.ok(Wrapper(incomes))
+        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId.raw) }
+        return Wrapper(incomes)
     }
 
     @PostMapping

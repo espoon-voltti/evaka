@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.currentDateInFinland
-import fi.espoo.evaka.daycare.getNextPreschoolTerm
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -128,26 +127,7 @@ class ApplicationControllerCitizen(
                 childId = body.childId,
                 origin = ApplicationOrigin.ELECTRONIC
             )
-            val form = ApplicationForm.initForm(
-                type = body.type,
-                guardian = guardian,
-                child = child
-            ).let {
-                if (body.type == ApplicationType.PRESCHOOL) {
-                    it.copy(
-                        preferences = it.preferences.copy(
-                            preferredStartDate = tx.getNextPreschoolTerm()?.finnishPreschool?.start
-                        )
-                    )
-                } else it
-            }
-            tx.updateForm(
-                applicationId,
-                form,
-                body.type,
-                child.restrictedDetailsEnabled,
-                guardian.restrictedDetailsEnabled
-            )
+            applicationStateService.initializeApplicationForm(tx, user, applicationId, body.type, guardian, child)
 
             ResponseEntity.ok(applicationId)
         }

@@ -1322,6 +1322,12 @@ export default {
       },
       contactInfo: {
         title: 'Henkilötiedot',
+        familyInfo: (
+          <P>
+            Ilmoita hakemuksella kaikki samassa taloudessa asuvat aikuiset ja
+            lapset.
+          </P>
+        ),
         info: function ContactInfoInfoText() {
           return (
             <P>

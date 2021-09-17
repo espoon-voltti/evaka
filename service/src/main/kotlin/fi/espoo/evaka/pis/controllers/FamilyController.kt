@@ -10,10 +10,10 @@ import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_GUARDIAN
 import fi.espoo.evaka.pis.FamilyContactRole.REMOTE_GUARDIAN
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.pis.service.FamilyOverviewService
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
@@ -31,20 +31,27 @@ import java.util.UUID
 @RequestMapping("/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
-    private val acl: AccessControlList,
     private val accessControl: AccessControl
 ) {
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID
-    ): ResponseEntity<FamilyOverview> {
+        @PathVariable(value = "id") id: PersonId
+    ): FamilyOverview {
         Audit.PisFamilyRead.log(targetId = id)
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val result = db.read { familyOverviewService.getFamilyByAdult(it, id) }
-            ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(result)
+        accessControl.requirePermissionFor(user, Action.Person.READ_FAMILY_OVERVIEW, id)
+        val includeIncome = accessControl.hasPermissionFor(user, Action.Person.READ_INCOME, id)
+
+        return db.read {
+            val overview = familyOverviewService.getFamilyByAdult(it, id)
+            if (includeIncome) overview
+            else overview?.copy(
+                headOfFamily = overview.headOfFamily.copy(income = null),
+                partner = overview.partner?.copy(income = null),
+                totalIncome = null
+            )
+        } ?: throw NotFound("No family overview found for person $id")
     }
 
     @GetMapping("/contacts")
