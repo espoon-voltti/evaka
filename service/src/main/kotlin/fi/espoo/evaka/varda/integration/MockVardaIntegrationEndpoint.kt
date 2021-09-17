@@ -277,7 +277,7 @@ class MockVardaIntegrationEndpoint {
         lock.withLock {
             logger.info { "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId" }
             val childDecisions = decisions.entries.filter { (_, decision) ->
-                decision.childUrl.contains("/lapset/$childId/")
+                decision.lapsi.contains("/lapset/$childId/")
             }
             ResponseEntity.ok(
                 VardaClient.PaginatedResponse(
@@ -285,7 +285,7 @@ class MockVardaIntegrationEndpoint {
                     next = null,
                     previous = null,
                     results = childDecisions.map { (vardaId, decision) ->
-                        DecisionPeriod(vardaId, decision.startDate, decision.endDate)
+                        DecisionPeriod(vardaId, decision.alkamis_pvm, decision.paattymis_pvm)
                     }
                 )
             )

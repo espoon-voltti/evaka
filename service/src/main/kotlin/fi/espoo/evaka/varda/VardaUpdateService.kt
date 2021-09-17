@@ -853,17 +853,17 @@ data class EvakaServiceNeedInfoForVarda(
     val asPeriod = DateRange(startDate, endDate)
 
     fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision = VardaDecision(
-        childUrl = vardaChildUrl,
-        applicationDate = this.applicationDate,
-        startDate = this.startDate,
-        endDate = this.endDate,
-        urgent = this.urgent,
-        hoursPerWeek = this.hoursPerWeek,
-        temporary = this.temporary,
-        daily = this.daily,
-        shiftCare = this.shiftCare,
-        providerTypeCode = this.providerTypeCode,
-        sourceSystem = sourceSystem
+        lapsi = vardaChildUrl,
+        hakemus_pvm = this.applicationDate,
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        pikakasittely_kytkin = this.urgent,
+        tuntimaara_viikossa = this.hoursPerWeek,
+        tilapainen_vaka_kytkin = this.temporary,
+        paivittainen_vaka_kytkin = this.daily,
+        vuorohoito_kytkin = this.shiftCare,
+        jarjestamismuoto_koodi = this.providerTypeCode,
+        lahdejarjestelma = sourceSystem
     )
 
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(

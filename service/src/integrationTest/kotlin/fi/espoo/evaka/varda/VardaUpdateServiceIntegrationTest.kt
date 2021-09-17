@@ -872,11 +872,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         expectedChildId: Long,
         expectedHoursPerWeek: Double
     ) {
-        assertEquals(true, vardaDecision.childUrl.endsWith("$expectedChildId/"), "Expected ${vardaDecision.childUrl} to end with $expectedChildId")
-        assertEquals(expectedStartDate, vardaDecision.startDate)
-        assertEquals(expectedEndDate, vardaDecision.endDate)
-        assertEquals(expectedApplicationDate, vardaDecision.applicationDate)
-        assertEquals(expectedHoursPerWeek, vardaDecision.hoursPerWeek)
+        assertEquals(true, vardaDecision.lapsi.endsWith("$expectedChildId/"), "Expected ${vardaDecision.lapsi} to end with $expectedChildId")
+        assertEquals(expectedStartDate, vardaDecision.alkamis_pvm)
+        assertEquals(expectedEndDate, vardaDecision.paattymis_pvm)
+        assertEquals(expectedApplicationDate, vardaDecision.hakemus_pvm)
+        assertEquals(expectedHoursPerWeek, vardaDecision.tuntimaara_viikossa)
     }
 
     private fun assertVardaFeeData(expectedVardaFeeData: VardaFeeData, vardaFeeData: VardaFeeData) {
