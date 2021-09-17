@@ -12,31 +12,19 @@ import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaDecision(
-    @JsonProperty("lapsi")
-    val childUrl: String,
-    @JsonProperty("hakemus_pvm")
-    val applicationDate: LocalDate,
-    @JsonProperty("alkamis_pvm")
-    val startDate: LocalDate,
-    @JsonProperty("paattymis_pvm")
-    val endDate: LocalDate,
-    @JsonProperty("pikakasittely_kytkin")
-    val urgent: Boolean,
-    @JsonProperty("tuntimaara_viikossa")
-    val hoursPerWeek: Double,
-    @JsonProperty("tilapainen_vaka_kytkin")
-    val temporary: Boolean,
-    @JsonProperty("paivittainen_vaka_kytkin")
-    val daily: Boolean,
-    @JsonProperty("vuorohoito_kytkin")
-    val shiftCare: Boolean,
-    @JsonProperty("jarjestamismuoto_koodi")
-    val providerTypeCode: String,
-    @JsonProperty("lahdejarjestelma")
-    val sourceSystem: String
+    val lapsi: String,
+    val hakemus_pvm: LocalDate,
+    val alkamis_pvm: LocalDate,
+    val paattymis_pvm: LocalDate,
+    val pikakasittely_kytkin: Boolean,
+    val tuntimaara_viikossa: Double,
+    val tilapainen_vaka_kytkin: Boolean,
+    val paivittainen_vaka_kytkin: Boolean,
+    val vuorohoito_kytkin: Boolean,
+    val jarjestamismuoto_koodi: String,
+    val lahdejarjestelma: String
 ) {
-    @JsonProperty("kokopaivainen_vaka_kytkin")
-    val fullDay: Boolean = hoursPerWeek >= 25
+    val kokopaivainen_vaka_kytkin: Boolean = tuntimaara_viikossa >= 25
 }
 
 data class VardaDecisionResponse(
@@ -45,16 +33,11 @@ data class VardaDecisionResponse(
 )
 
 data class VardaPlacement(
-    @JsonProperty("varhaiskasvatuspaatos")
-    val decisionUrl: String,
-    @JsonProperty("toimipaikka_oid")
-    val unitOid: String,
-    @JsonProperty("alkamis_pvm")
-    val startDate: LocalDate,
-    @JsonProperty("paattymis_pvm")
-    val endDate: LocalDate?,
-    @JsonProperty("lahdejarjestelma")
-    val sourceSystem: String
+    val varhaiskasvatuspaatos: String,
+    val toimipaikka_oid: String,
+    val alkamis_pvm: LocalDate,
+    val paattymis_pvm: LocalDate?,
+    val lahdejarjestelma: String
 )
 
 data class VardaPlacementResponse(

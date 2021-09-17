@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -112,7 +113,7 @@ class VardaUpdateService(
     }
 }
 
-fun getChildrenToUpdate(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
+fun getChildrenToUpdate(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
     val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         .filter { includedChildIds.contains(it.key) }
@@ -401,7 +402,7 @@ data class VardaGuardianWithId(
     )
 }
 
-fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
+fun getChildVardaGuardians(db: Database.Connection, childId: ChildId): List<VardaGuardianWithId> {
     return db.read {
         it.createQuery(
             """
@@ -429,7 +430,7 @@ fun sendFeeDecisionToVarda(
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
     guardians: List<VardaGuardianWithId>
 ): Long {
-    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
+    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId.raw }
 
     check(childPart != null) {
         "VardaUpdate: fee decision ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}, service need ${evakaServiceNeedInfoForVarda.id}"
@@ -483,7 +484,7 @@ private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDa
     return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
 }
 
-fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
+fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
     val evakaServiceNeedDeletionsByChild = calculateDeletedChildServiceNeeds(db)
 
     val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(feeDecisionMinDate) }
@@ -517,7 +518,7 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, feeD
 }
 
 data class VardaChildCalculatedServiceNeedChanges(
-    val childId: UUID,
+    val childId: ChildId,
     val additions: List<ServiceNeedId>,
     val updates: List<ServiceNeedId>,
     val deletes: List<ServiceNeedId>
@@ -604,7 +605,7 @@ WHERE evaka_service_need_id = :serviceNeedId
     .bind("errors", errors.toTypedArray())
     .execute()
 
-private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
+private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<ChildId, List<ServiceNeedId>> {
     return db.read { it ->
         it.createQuery(
             """
@@ -629,13 +630,13 @@ GROUP BY evaka_child_id
             """.trimIndent()
         )
             .bind("vardaPlacementTypes", vardaPlacementTypes)
-            .map { row -> row.mapColumn<UUID>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
+            .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
             .toMap()
     }
 }
 
 data class VardaServiceNeed(
-    val evakaChildId: UUID,
+    val evakaChildId: ChildId,
     val evakaServiceNeedId: ServiceNeedId,
     var evakaServiceNeedUpdated: HelsinkiDateTime? = null,
     var vardaChildId: Long? = null,
@@ -647,7 +648,7 @@ data class VardaServiceNeed(
 )
 
 data class ChangedChildServiceNeed(
-    val evakaChildId: UUID,
+    val evakaChildId: ChildId,
     val evakaServiceNeedId: ServiceNeedId
 )
 
@@ -739,7 +740,7 @@ WHERE update_failed = true
         .mapTo<ChangedChildServiceNeed>()
         .list()
 
-fun Database.Read.getChildVardaServiceNeeds(evakaChildId: UUID): List<VardaServiceNeed> =
+fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
         """
 SELECT *
@@ -834,7 +835,7 @@ data class FeeDataByServiceNeed(
 data class EvakaServiceNeedInfoForVarda(
     val id: ServiceNeedId,
     val serviceNeedUpdated: Instant,
-    val childId: UUID,
+    val childId: ChildId,
     val applicationDate: LocalDate,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -852,25 +853,25 @@ data class EvakaServiceNeedInfoForVarda(
     val asPeriod = DateRange(startDate, endDate)
 
     fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision = VardaDecision(
-        childUrl = vardaChildUrl,
-        applicationDate = this.applicationDate,
-        startDate = this.startDate,
-        endDate = this.endDate,
-        urgent = this.urgent,
-        hoursPerWeek = this.hoursPerWeek,
-        temporary = this.temporary,
-        daily = this.daily,
-        shiftCare = this.shiftCare,
-        providerTypeCode = this.providerTypeCode,
-        sourceSystem = sourceSystem
+        lapsi = vardaChildUrl,
+        hakemus_pvm = this.applicationDate,
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        pikakasittely_kytkin = this.urgent,
+        tuntimaara_viikossa = this.hoursPerWeek,
+        tilapainen_vaka_kytkin = this.temporary,
+        paivittainen_vaka_kytkin = this.daily,
+        vuorohoito_kytkin = this.shiftCare,
+        jarjestamismuoto_koodi = this.providerTypeCode,
+        lahdejarjestelma = sourceSystem
     )
 
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(
-        decisionUrl = vardaDecisionUrl,
-        unitOid = this.ophUnitOid ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
-        startDate = this.startDate,
-        endDate = this.endDate,
-        sourceSystem = sourceSystem
+        varhaiskasvatuspaatos = vardaDecisionUrl,
+        toimipaikka_oid = this.ophUnitOid ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        lahdejarjestelma = sourceSystem
     )
 
     fun toVardaServiceNeed(): VardaServiceNeed =
@@ -1021,6 +1022,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         .toList()
 }
 
-fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<UUID> = createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
-    .mapTo<UUID>()
-    .list()
+fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
+    createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
+        .mapTo<ChildId>()
+        .list()
