@@ -134,6 +134,13 @@ function configurePage(page: Page) {
         if (args.length === 0) {
           args.push(msg.text())
         }
+        // Unnecessary spam
+        if (
+          typeof args[0] === 'string' &&
+          args[0].includes('Download the React DevTools')
+        ) {
+          return
+        }
         console.log(`page ${page.url()} console.${msg.type()}`, ...args)
       })()
   )

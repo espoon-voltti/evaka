@@ -18,6 +18,15 @@ parameters:
   builder_aws_version:
     type: string
     default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+  nodejs_image:
+    type: string
+    default: cimg/node:14.15
+  ecr:
+    type: string
+    default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  cache_e2e_image:
+    type: boolean
+    default: true
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -35,7 +44,7 @@ aliases:
   - &remote_docker_version "20.10.6"
   - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
-  - &nodejs_image cimg/node:14.15
+  - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202104-01
   - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
@@ -48,6 +57,11 @@ aliases:
       - voltti-dockerhub
   - &aws_contexts
     context:
+      - voltti-slack
+      - org-global
+  - &aws_docker_contexts
+    context:
+      - voltti-dockerhub
       - voltti-slack
       - org-global
 
@@ -365,6 +379,64 @@ commands:
             ICONS=pro yarn build
             ls -lRa ./dist/bundle
 
+  e2e_build:
+    parameters:
+      test_runner:
+        type: enum
+        enum:
+          - testcafe
+          - playwright
+    steps:
+      - restore_repo
+      - setup_remote_docker:
+          version: *remote_docker_version
+          docker_layer_caching: false
+      - run:
+          name: "Setup E2E_IMAGE and store date"
+          command: |
+            echo 'export E2E_IMAGE="<< pipeline.parameters.ecr >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
+            date +%F > date
+      - when:
+          condition: << pipeline.parameters.cache_e2e_image >>
+          steps:
+            - restore_cache:
+                name: Restore Docker image from cache
+                key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
+            - run:
+                name: Build E2E image
+                working_directory: *workspace_compose
+                command: |
+                  docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar" || true
+                  docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
+      - when:
+          condition:
+            not: << pipeline.parameters.cache_e2e_image >>
+          steps:
+            - run:
+                name: Build and push E2E << parameters.test_runner >> image
+                working_directory: *workspace_compose
+                command: |
+                  ecr-login
+                  docker pull "$E2E_IMAGE"
+                  docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
+                  docker push "$E2E_IMAGE"
+      - run:
+          name: Package E2E << parameters.test_runner >> image
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: |
+            docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
+      - save_cache:
+          name: Store Docker image in cache
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          paths:
+            - "e2e-<< parameters.test_runner >>.tar"
+      - save_cache:
+          name: Store Docker image in daily cache
+          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
+          paths:
+            - "e2e-<< parameters.test_runner >>.tar"
+      - notify_slack
+
   e2e_test:
     parameters:
       yarn_version:
@@ -389,101 +461,20 @@ commands:
           command: |
             docker-compose build
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
-      - run:
-          name: Install Node.js and yarn
-          command: |
-            export DEBIAN_FRONTEND=noninteractive
-            nvm install
-            node --version
-
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
-            yarn --version
-      - when:
-          condition:
-            equal: ["testcafe", "<< parameters.test_runner >>"]
-          steps:
-            - run:
-                name: Install browsers
-                command: |
-                  set -e
-                  curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://voltti-public.s3.eu-west-1.amazonaws.com/google-chrome-stable_current_amd64.deb \
-                    && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
-                    && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
-                    && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
-                        "/opt/google/chrome/google-chrome" \
-                    && google-chrome --version
-                  CHROME_VERSION="$(google-chrome --version)" \
-                    && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
-                    && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
-                    && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
-                    && cd /tmp \
-                    && unzip chromedriver_linux64.zip \
-                    && rm -rf chromedriver_linux64.zip \
-                    && sudo mv chromedriver /usr/local/bin/chromedriver \
-                    && sudo chmod +x /usr/local/bin/chromedriver \
-                    && chromedriver --version
-      - when:
-          condition:
-            equal: ["playwright", "<< parameters.test_runner >>"]
-          steps:
-            - run:
-                name: Install Playwright dependencies
-                command: |
-                  sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
       - restore_frontend_deps
       - restore_frontend_comm_deps
+      - restore_cache:
+          name: Restore Docker image from cache
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
       - run:
-          name: Install frontend dependencies from Yarn cache
-          working_directory: *workspace_frontend
-          command: yarn install --immutable --immutable-cache
-      - run:
-          name: Wait for compose stack to be up
-          working_directory: *workspace_frontend
+          name: Load E2E image
           command: |
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
+            docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar"
       - run:
-          name: Run e2e tests against compose
-          working_directory: *workspace_frontend
-          environment:
-            # Use LANG env variable to set browser locale to fi-FI because Playwright's locale override does not affect time inputs
-            LANG: fi-FI
+          name: Run E2E tests against compose inside a docker-compose
+          working_directory: << pipeline.parameters.workspace_root >>
           command: |
-            nvm use
-
-            if [ "<< parameters.test_runner >>" = "playwright" ]; then
-              # Get list of test files that should run on this node.
-              FILENAMES=($(circleci tests glob \
-                  'src/e2e-playwright/specs/**/*.spec.ts' \
-                  | sort -h \
-                  | circleci tests split --split-by=timings --timings-type=filename))
-              echo -e "Spec files selected for node:\n$(echo "${FILENAMES[@]}" | tr ' ' '\n')"
-              yarn e2e-ci-playwright "${FILENAMES[@]}"
-            elif [ "<< parameters.test_runner >>" = "testcafe" ]; then
-              # Get list of test files that should run on this node.
-              # NOTE: Currently testcafe-reporter-junit doesn't provide
-              # filenames in its output so they can't be used for splitting
-              # -> use fixture names instead.
-              FIXTURE_NAMES=$(git grep '^\w*fixture(' -- src/e2e-test/specs/ \
-                | awk -F "'" '{print $2}' \
-                | sort -h | uniq \
-                | circleci tests split --split-by=timings --timings-type classname)
-              echo -e "Fixtures selected for node:\n${FIXTURE_NAMES[@]}"
-              # NOTE: This is extremely brittle but necessary as Testcafe
-              # doesn't support multiple --fixture arguments (+ the above
-              # report issue) -> everything must be a single regex.
-              TESTCAFE_FIXTURE_REGEX=$(echo "$FIXTURE_NAMES" | sed 's/[^-A-Za-z0-9_]/\\&/g' | awk '{print "^"$0"$"}' | tr '\n' '|')
-              # Strip the last "|"
-              TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
-              echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
-
-              yarn e2e-ci-testcafe --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
-
-            else
-              echo 'ERROR: Invalid test_runner: "<< parameters.test_runner >>"'
-              exit 1
-            fi
+            CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
       - run:
           name: Collect docker-compose logs
           working_directory: *workspace_compose
@@ -844,6 +835,20 @@ jobs:
 
   # E2E JOBS
 
+  e2e-build-testcafe:
+    executor: aws_docker_executor
+    steps:
+      - e2e_build:
+          test_runner: testcafe
+      - notify_slack
+
+  e2e-build-playwright:
+    executor: aws_docker_executor
+    steps:
+      - e2e_build:
+          test_runner: playwright
+      - notify_slack
+
   e2e-test-testcafe:
     executor: e2e_executor
     parallelism: 8
@@ -1150,10 +1155,7 @@ workflows:
             - apigw_build_and_test
 
       - frontend_build_core:
-          context:
-            - voltti-slack
-            - voltti-dockerhub
-            - sentry-release
+          <<: *aws_docker_contexts
           requires:
             - fetch_private_dependencies
       - frontend_build_misc_and_test:
@@ -1161,15 +1163,25 @@ workflows:
           requires:
             - fetch_private_dependencies
 
+      - e2e-build-testcafe:
+          <<: *aws_docker_contexts
+          requires:
+            - checkout_repo
+      - e2e-build-playwright:
+          <<: *aws_docker_contexts
+          requires:
+            - checkout_repo
       - e2e-test-testcafe:
           <<: *default_contexts
           requires:
+            - e2e-build-testcafe
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
+            - e2e-build-playwright
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image

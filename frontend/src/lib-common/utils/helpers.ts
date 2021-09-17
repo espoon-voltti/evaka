@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export const getEnvironment = (): string => {
-  if (window.location.host.startsWith('localhost')) {
+  if (
+    window.location.host.startsWith('localhost') ||
+    window.location.host.includes(':8080')
+  ) {
     return 'local'
   }
 
