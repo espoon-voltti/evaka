@@ -78,8 +78,8 @@ class VardaClient(
     }
 
     fun parseVardaErrorBody(errorString: String): Pair<List<String>, List<String>> {
-        val codes = Regex("\"error_code\":\"(.+)\"").findAll(errorString).map { it.groupValues[1] }.toList()
-        val descriptions = Regex("\"description\":\"(.+)\"").findAll(errorString).map { it.groupValues[1] }.toList()
+        val codes = Regex("\"error_code\":\"(\\w+)\"").findAll(errorString).map { it.groupValues[1] }.toList()
+        val descriptions = Regex("\"description\":\"([^\"]+)\"").findAll(errorString).map { it.groupValues[1] }.toList()
         return Pair(codes, descriptions)
     }
 

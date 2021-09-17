@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -25,8 +26,9 @@ class VardaDevController(
 
     @PostMapping("/reset-children")
     fun resetChildren(
-        db: Database.Connection
+        db: Database.Connection,
+        @RequestParam(defaultValue = "true") addNewChildren: Boolean,
     ) {
-        vardaUpdateService.planVardaReset(db)
+        vardaUpdateService.planVardaReset(db, addNewChildren)
     }
 }
