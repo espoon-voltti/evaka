@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
@@ -16,7 +17,7 @@ import kotlin.Exception
 fun getOrCreateVardaChildByOrganizer(
     db: Database.Connection,
     client: VardaClient,
-    evakaPersonId: UUID,
+    evakaPersonId: ChildId,
     organizerOid: String,
     sourceSystem: String
 ): Long {
@@ -41,7 +42,7 @@ fun getOrCreateVardaChildByOrganizer(
 }
 
 data class VardaChildOrganizerRow(
-    val evakaPersonId: UUID,
+    val evakaPersonId: ChildId,
     val vardaPersonId: Int,
     val vardaPersonOid: String,
     val vardaChildId: Long,
@@ -50,7 +51,7 @@ data class VardaChildOrganizerRow(
 
 private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
-    evakaPersonId: UUID,
+    evakaPersonId: ChildId,
 ): List<VardaChildOrganizerRow> {
     val sql = """
         SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
@@ -74,7 +75,7 @@ private fun getMunicipalOrganizerOid(tx: Database.Transaction): String {
 private fun createVardaPersonAndChild(
     tx: Database.Transaction,
     client: VardaClient,
-    evakaPersonId: UUID,
+    evakaPersonId: ChildId,
     municipalOrganizerOid: String,
     organizerOid: String,
     isPaosChild: Boolean,
@@ -102,7 +103,7 @@ private fun createVardaPersonAndChild(
     return createVardaChildWhenPersonExists(
         tx = tx,
         client = client,
-        evakaPersonId = evakaPersonId,
+        evakaChildId = evakaPersonId,
         vardaPersonId = vardaPerson!!.vardaId,
         vardaPersonOid = vardaPerson.personOid,
         municipalOrganizerOid = municipalOrganizerOid,
@@ -118,8 +119,8 @@ data class VardaChildPayload(
     val organizerOid: String,
     val sourceSystem: String
 ) {
-    fun toVardaChildRequest(evakaPersonId: UUID) = VardaChildRequest(
-        id = evakaPersonId,
+    fun toVardaChildRequest(evakaChildId: ChildId) = VardaChildRequest(
+        id = evakaChildId,
         henkilo = personUrl,
         henkilo_oid = personOid,
         vakatoimija_oid = organizerOid,
@@ -136,8 +137,8 @@ data class VardaPaosChildPayload(
     val paosOrganizationOid: String,
     val sourceSystem: String
 ) {
-    fun toVardaChildRequest(evakaPersonId: UUID) = VardaChildRequest(
-        id = evakaPersonId,
+    fun toVardaChildRequest(evakaChildId: ChildId) = VardaChildRequest(
+        id = evakaChildId,
         henkilo = personUrl,
         henkilo_oid = personOid,
         vakatoimija_oid = null,
@@ -150,7 +151,7 @@ data class VardaPaosChildPayload(
 private fun createVardaChildWhenPersonExists(
     tx: Database.Transaction,
     client: VardaClient,
-    evakaPersonId: UUID,
+    evakaChildId: ChildId,
     vardaPersonId: Int,
     vardaPersonOid: String,
     municipalOrganizerOid: String,
@@ -168,14 +169,14 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChild(vardaChildPayload.toVardaChildRequest(evakaPersonId)).id.toLong()
+            client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create PAOS child: ${e.message}")
         }
 
         insertVardaOrganizerChild(
             tx,
-            evakaPersonId,
+            evakaChildId,
             vardaChildId,
             vardaPersonId,
             vardaPersonOid,
@@ -192,14 +193,14 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = try {
-            client.createChild(vardaChildPayload.toVardaChildRequest(evakaPersonId)).id.toLong()
+            client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
         } catch (e: Exception) {
             error("VardaUpdate: failed to create child: ${e.message}")
         }
 
         insertVardaOrganizerChild(
             tx,
-            evakaPersonId,
+            evakaChildId,
             vardaChildId,
             vardaPersonId,
             vardaPersonOid,
@@ -210,7 +211,7 @@ private fun createVardaChildWhenPersonExists(
     }
 }
 
-private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID, organizerOid: String) =
+private fun getVardaPersonPayload(tx: Database.Transaction, evakaChildId: ChildId, organizerOid: String) =
     tx.createQuery(
         """
             SELECT 
@@ -225,7 +226,7 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
             WHERE id = :evakaPersonId
         """.trimIndent()
     )
-        .bind("evakaPersonId", evakaPersonId)
+        .bind("evakaPersonId", evakaChildId)
         .bind("organizerOid", organizerOid)
         .mapTo<VardaPerson>()
         .toList()
@@ -233,7 +234,7 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
 
 fun insertVardaOrganizerChild(
     tx: Database.Transaction,
-    evakaPersonId: UUID,
+    evakaPersonId: ChildId,
     vardaChildId: Long,
     vardaPersonId: Int,
     vardaPersonOid: String,
@@ -305,7 +306,7 @@ data class VardaPersonResponse(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaChildRequest(
-    val id: UUID,
+    val id: ChildId,
     val henkilo: String? = null,
     val henkilo_oid: String? = null,
     val vakatoimija_oid: String?,

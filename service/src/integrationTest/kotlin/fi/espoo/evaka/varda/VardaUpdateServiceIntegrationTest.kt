@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -181,12 +182,12 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds removed evaka service needs that exists in varda and there are no other changes`() {
         val since = HelsinkiDateTime.now()
-        val childId: UUID = UUID.randomUUID()
+        val childId: ChildId = ChildId(UUID.randomUUID())
         val deletedSnId = ServiceNeedId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(
                 DevPerson(
-                    id = childId,
+                    id = childId.raw,
                     dateOfBirth = since.plusYears(-5).toLocalDate(),
                     ssn = "260718A384E"
                 )
@@ -203,8 +204,8 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
-        assertServiceNeedDiffSizes(diffs.get(childId), 0, 0, 1)
-        assertEquals(deletedSnId, diffs.get(childId)?.deletes?.get(0))
+        assertServiceNeedDiffSizes(diffs[childId], 0, 0, 1)
+        assertEquals(deletedSnId, diffs[childId]?.deletes?.get(0))
     }
 
     @Test
@@ -988,13 +989,13 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): UUID? = createQuery(
+private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): ChildId? = createQuery(
     """
 SELECT p.child_id FROM placement p LEFT JOIN service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .mapTo<UUID>()
+    .mapTo<ChildId>()
     .first()
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
