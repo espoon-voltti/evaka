@@ -379,17 +379,6 @@ commands:
             ICONS=pro yarn build
             ls -lRa ./dist/bundle
 
-  build_storybook:
-    steps:
-      - run:
-          name: yarn build-storybook
-          working_directory: *workspace_frontend
-          environment:
-            SENTRY_NO_PROGRESS_BAR: "1"
-          command: |
-            ICONS=pro yarn build-storybook
-            ls -lRa ./storybook-build
-
   e2e_build:
     parameters:
       test_runner:
