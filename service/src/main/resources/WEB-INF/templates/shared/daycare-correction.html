@@ -46,23 +46,31 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div class="col-row" th:text="#{address.title}"></div>
     <br />
     <div class="row">
-        <div class="column left">
-            <div class="col-row" th:text="#{address.street.caption}"></div>
-            <div class="col-row" th:text="#{address.opening.caption}"></div>
-            <div class="col-row" th:text="#{address.postal.caption}"></div>
-            <div class="col-row" th:text="#{address.email.caption}"></div>
-            <div class="col-row" th:text="#{address.fax.caption}"></div>
-            <div class="col-row" th:text="#{address.phone.caption}"></div>
+        <div class="col-row">
+            <div class="left" th:text="#{address.street.caption}"></div>
+            <div class="right" th:text="#{address.street.value}"></div>
         </div>
-        <div class="column right">
-            <div class="col-row" th:text="#{address.street.value}"></div>
-            <div class="col-row" th:text="#{address.opening.value}"></div>
-            <div class="col-row" th:text="#{address.postal.value}"></div>
-            <div class="col-row">
+        <div class="col-row">
+            <div class="left" th:text="#{address.opening.caption}"></div>
+            <div class="right" th:text="#{address.opening.value}"></div>
+        </div>
+        <div class="col-row">
+            <div class="left" th:text="#{address.postal.caption}"></div>
+            <div class="right" th:text="#{address.postal.value}"></div>
+        </div>
+        <div class="col-row">
+            <div class="left" th:text="#{address.email.caption}"></div>
+            <div class="right">
                 <a th:href="'mailto:' + #{address.email.value}" th:text="#{address.email.value}"></a>
             </div>
-            <div class="col-row" th:text="#{address.fax.value}"></div>
-            <div class="col-row" th:text="#{address.phone.value}"></div>
+        </div>
+        <div class="col-row">
+            <div class="left" th:text="#{address.fax.caption}"></div>
+            <div class="right" th:text="#{address.fax.value}"></div>
+        </div>
+        <div class="col-row">
+            <div class="left" th:text="#{address.phone.caption}"></div>
+            <div class="right" th:text="#{address.phone.value}"></div>
         </div>
     </div>
 </th:block>
