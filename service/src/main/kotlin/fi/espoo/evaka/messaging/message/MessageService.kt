@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import java.util.UUID
 
 class MessageService(
     private val notificationEmailService: MessageNotificationEmailService
@@ -18,36 +20,37 @@ class MessageService(
         title: String,
         content: String,
         type: MessageType,
-        sender: UUID,
-        recipientGroups: Set<Set<UUID>>,
-        recipientNames: List<String>,
-    ): List<UUID> {
+        sender: MessageAccountId,
+        recipientGroups: Set<Set<MessageAccountId>>,
+        recipientNames: List<String>
+    ): List<MessageThreadId> =
         // for each recipient group, create a thread, message and message_recipients while re-using content
-        val contentId = tx.insertMessageContent(content, sender)
-        val sentAt = HelsinkiDateTime.now()
-        return recipientGroups.map {
-            val threadId = tx.insertThread(type, title)
-            val messageId =
-                tx.insertMessage(
-                    contentId = contentId,
-                    threadId = threadId,
-                    sender = sender,
-                    sentAt = sentAt,
-                    recipientNames = recipientNames
-                )
-            tx.insertRecipients(it, messageId)
-            notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
-            threadId
-        }
-    }
+        tx.insertMessageContent(content, sender)
+            .let { contentId ->
+                val sentAt = HelsinkiDateTime.now()
+                return recipientGroups.map {
+                    val threadId = tx.insertThread(type, title)
+                    val messageId =
+                        tx.insertMessage(
+                            contentId = contentId,
+                            threadId = threadId,
+                            sender = sender,
+                            sentAt = sentAt,
+                            recipientNames = recipientNames
+                        )
+                    tx.insertRecipients(it, messageId)
+                    notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
+                    threadId
+                }
+            }
 
-    data class ThreadReply(val threadId: UUID, val message: Message)
+    data class ThreadReply(val threadId: MessageThreadId, val message: Message)
 
     fun replyToThread(
         db: Database.Connection,
-        replyToMessageId: UUID,
-        senderAccount: UUID,
-        recipientAccountIds: Set<UUID>,
+        replyToMessageId: MessageId,
+        senderAccount: MessageAccountId,
+        recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ): ThreadReply {
         val (threadId, type, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }

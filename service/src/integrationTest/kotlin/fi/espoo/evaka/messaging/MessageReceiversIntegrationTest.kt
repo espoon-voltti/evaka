@@ -22,6 +22,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -259,8 +260,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     }
 
     private fun postNewThread(
-        sender: UUID,
-        recipients: Set<UUID>,
+        sender: MessageAccountId,
+        recipients: Set<MessageAccountId>,
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
         .jsonBody(
@@ -277,7 +278,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         .asUser(user)
         .response()
 
-    private fun getEmployeeOwnMessageAccount(user: AuthenticatedUser): UUID {
+    private fun getEmployeeOwnMessageAccount(user: AuthenticatedUser): MessageAccountId {
         // language=SQL
         val sql = """
 SELECT acc.id FROM message_account acc
@@ -286,7 +287,7 @@ WHERE acc.employee_id = :userId AND acc.active = true
         return db.read {
             it.createQuery(sql)
                 .bind("userId", user.id)
-                .mapTo<UUID>()
+                .mapTo<MessageAccountId>()
                 .one()
         }
     }

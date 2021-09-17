@@ -19,6 +19,7 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -132,8 +133,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun postNewThread(
-        sender: UUID,
-        recipients: List<UUID>,
+        sender: MessageAccountId,
+        recipients: List<MessageAccountId>,
         user: AuthenticatedUser.Employee,
     ) {
         val (_, response) = http.post("/messages/$sender")

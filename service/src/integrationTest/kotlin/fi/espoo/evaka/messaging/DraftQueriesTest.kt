@@ -12,6 +12,8 @@ import fi.espoo.evaka.messaging.message.getDrafts
 import fi.espoo.evaka.messaging.message.initDraft
 import fi.espoo.evaka.messaging.message.upsertDraft
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import org.junit.jupiter.api.AfterEach
@@ -22,7 +24,7 @@ import kotlin.test.assertEquals
 
 class DraftQueriesTest : PureJdbiTest() {
 
-    private val accountId: UUID = UUID.randomUUID()
+    private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
@@ -45,7 +47,7 @@ class DraftQueriesTest : PureJdbiTest() {
         val content = "Content"
         val title = "Hello"
         val type = MessageType.MESSAGE
-        val recipients = setOf(UUID.randomUUID(), UUID.randomUUID())
+        val recipients = setOf(MessageAccountId(UUID.randomUUID()), MessageAccountId(UUID.randomUUID()))
         val recipientNames = listOf("Auringonkukat", "Hippiäiset")
 
         val id = db.transaction { it.initDraft(accountId) }
@@ -67,7 +69,7 @@ class DraftQueriesTest : PureJdbiTest() {
         assertEquals(0, db.read { it.getDrafts(accountId) }.size)
     }
 
-    private fun upsert(draftId: UUID, content: UpsertableDraftContent) =
+    private fun upsert(draftId: MessageDraftId, content: UpsertableDraftContent) =
         db.transaction { it.upsertDraft(accountId, draftId, content) }
 
     private fun assertContent(expected: UpsertableDraftContent) {

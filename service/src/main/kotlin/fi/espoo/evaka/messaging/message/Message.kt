@@ -6,6 +6,10 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -14,7 +18,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class Message(
-    val id: UUID,
+    val id: MessageId,
     val sender: MessageAccount,
     val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
@@ -23,7 +27,7 @@ data class Message(
 )
 
 data class MessageThread(
-    val id: UUID,
+    val id: MessageThreadId,
     val type: MessageType,
     val title: String,
     @Json
@@ -31,7 +35,7 @@ data class MessageThread(
 )
 
 data class SentMessage(
-    val contentId: UUID,
+    val contentId: MessageContentId,
     val content: String,
     val sentAt: HelsinkiDateTime,
     val threadTitle: String,
@@ -67,7 +71,7 @@ enum class AccountType {
 }
 
 data class MessageAccount(
-    val id: UUID,
+    val id: MessageAccountId,
     val name: String,
     val type: AccountType
 )
@@ -88,7 +92,7 @@ data class NestedMessageAccount(
 )
 
 data class MessageReceiverPerson(
-    val accountId: UUID,
+    val accountId: MessageAccountId,
     val receiverFirstName: String,
     val receiverLastName: String
 )

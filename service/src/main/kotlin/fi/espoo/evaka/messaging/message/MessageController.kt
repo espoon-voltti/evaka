@@ -6,6 +6,10 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -21,9 +25,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
-data class UnreadCountByAccount(val accountId: UUID, val unreadCount: Int)
+data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
 
 @RestController
 @RequestMapping("/messages")
@@ -44,7 +47,7 @@ class MessageController(
     fun getReceivedMessages(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
+        @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
@@ -57,7 +60,7 @@ class MessageController(
     fun getSentMessages(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
+        @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
@@ -80,7 +83,7 @@ class MessageController(
         val title: String,
         val content: String,
         val type: MessageType,
-        val recipientAccountIds: Set<UUID>,
+        val recipientAccountIds: Set<MessageAccountId>,
         val recipientNames: List<String>,
     )
 
@@ -88,9 +91,9 @@ class MessageController(
     fun createMessage(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
+        @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
-    ): List<UUID> {
+    ): List<MessageThreadId> {
         Audit.MessagingNewMessageWrite.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
 
@@ -114,7 +117,7 @@ class MessageController(
     fun getDrafts(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
+        @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> {
         Audit.MessagingDraftsRead.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
@@ -125,8 +128,8 @@ class MessageController(
     fun initDraft(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
-    ): UUID {
+        @PathVariable accountId: MessageAccountId,
+    ): MessageDraftId {
         Audit.MessagingCreateDraft.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.initDraft(accountId) }
@@ -136,8 +139,8 @@ class MessageController(
     fun upsertDraft(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
-        @PathVariable draftId: UUID,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable draftId: MessageDraftId,
         @RequestBody content: UpsertableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
@@ -149,8 +152,8 @@ class MessageController(
     fun deleteDraft(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
-        @PathVariable draftId: UUID,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable draftId: MessageDraftId,
     ) {
         Audit.MessagingDeleteDraft.log(accountId, draftId)
         requireMessageAccountAccess(db, user, accountId)
@@ -159,15 +162,15 @@ class MessageController(
 
     data class ReplyToMessageBody(
         val content: String,
-        val recipientAccountIds: Set<UUID>,
+        val recipientAccountIds: Set<MessageAccountId>,
     )
 
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
-        @PathVariable messageId: UUID,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(accountId, messageId)
@@ -186,8 +189,8 @@ class MessageController(
     fun markThreadRead(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable accountId: UUID,
-        @PathVariable threadId: UUID,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
         requireMessageAccountAccess(db, user, accountId)
@@ -218,7 +221,7 @@ class MessageController(
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser,
-        accountId: UUID
+        accountId: MessageAccountId
     ) {
         requireAuthorizedMessagingRole(user)
         db.read { it.getEmployeeMessageAccountIds(user.id) }.find { it == accountId }
@@ -228,7 +231,7 @@ class MessageController(
     private fun checkAuthorizedRecipients(
         db: Database.Connection,
         user: AuthenticatedUser,
-        recipientAccountIds: Set<UUID>
+        recipientAccountIds: Set<MessageAccountId>
     ) {
         db.read {
             it.isEmployeeAuthorizedToSendTo(

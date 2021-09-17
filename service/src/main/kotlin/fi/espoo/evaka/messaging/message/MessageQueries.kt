@@ -6,6 +6,10 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
@@ -17,7 +21,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getUnreadMessagesCounts(accountIds: Set<UUID>): Set<UnreadCountByAccount> {
+fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Set<UnreadCountByAccount> {
     // language=SQL
     val sql = """
         SELECT 
@@ -35,7 +39,7 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<UUID>): Set<UnreadCoun
         .mapTo<UnreadCountByAccount>().toSet()
 }
 
-fun Database.Transaction.markThreadRead(accountId: UUID, threadId: UUID): Int {
+fun Database.Transaction.markThreadRead(accountId: MessageAccountId, threadId: MessageThreadId): Int {
     // language=SQL
     val sql = """
 UPDATE message_recipients rec
@@ -54,13 +58,13 @@ WHERE rec.message_id = msg.id
 }
 
 fun Database.Transaction.insertMessage(
-    contentId: UUID,
-    threadId: UUID,
-    sender: UUID,
+    contentId: MessageContentId,
+    threadId: MessageThreadId,
+    sender: MessageAccountId,
     recipientNames: List<String>,
-    repliesToMessageId: UUID? = null,
+    repliesToMessageId: MessageId? = null,
     sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
-): UUID {
+): MessageId {
     // language=SQL
     val insertMessageSql = """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
@@ -76,26 +80,26 @@ fun Database.Transaction.insertMessage(
         .bind("senderId", sender)
         .bind("sentAt", sentAt)
         .bind("recipientNames", recipientNames.toTypedArray())
-        .mapTo<UUID>()
+        .mapTo<MessageId>()
         .one()
 }
 
 fun Database.Transaction.insertMessageContent(
     content: String,
-    sender: UUID
-): UUID {
+    sender: MessageAccountId
+): MessageContentId {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
     return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender)
-        .mapTo<UUID>()
+        .mapTo<MessageContentId>()
         .one()
 }
 
 fun Database.Transaction.insertRecipients(
-    recipientAccountIds: Set<UUID>,
-    messageId: UUID,
+    recipientAccountIds: Set<MessageAccountId>,
+    messageId: MessageId,
 ) {
     // language=SQL
     val insertRecipientsSql =
@@ -109,34 +113,34 @@ fun Database.Transaction.insertRecipients(
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
-): UUID {
+): MessageThreadId {
     // language=SQL
     val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
-        .mapTo<UUID>()
+        .mapTo<MessageThreadId>()
         .one()
 }
 
 data class ReceivedMessageResultItem(
     val count: Int,
-    val id: UUID,
+    val id: MessageThreadId,
     val title: String,
     val type: MessageType,
-    val messageId: UUID,
+    val messageId: MessageId,
     val sentAt: HelsinkiDateTime,
     val content: String,
-    val senderId: UUID,
+    val senderId: MessageAccountId,
     val senderName: String,
     val senderAccountType: AccountType,
     val readAt: HelsinkiDateTime? = null,
-    val recipientId: UUID,
+    val recipientId: MessageAccountId,
     val recipientName: String,
     val recipientAccountType: AccountType
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
+fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
     val params = mapOf(
         "accountId" to accountId,
         "offset" to (page - 1) * pageSize,
@@ -245,18 +249,18 @@ SELECT
 }
 
 data class MessageResultItem(
-    val id: UUID,
-    val senderId: UUID,
+    val id: MessageId,
+    val senderId: MessageAccountId,
     val senderName: String,
     val senderAccountType: AccountType,
-    val recipientId: UUID,
+    val recipientId: MessageAccountId,
     val recipientName: String,
     val recipientAccountType: AccountType,
     val sentAt: HelsinkiDateTime,
     val content: String,
 )
 
-fun Database.Read.getMessage(id: UUID): Message {
+fun Database.Read.getMessage(id: MessageId): Message {
     val sql = """
         SELECT 
             m.id,
@@ -297,7 +301,7 @@ fun Database.Read.getMessage(id: UUID): Message {
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(accountId: UUID): List<MessageAccount> {
+fun Database.Read.getCitizenReceivers(accountId: MessageAccountId): List<MessageAccount> {
     val params = mapOf(
         "accountId" to accountId,
     )
@@ -406,7 +410,7 @@ ON g.id = msg.daycare_group_id
         .toList()
 }
 
-fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<SentMessage> {
+fun Database.Read.getMessagesSentByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<SentMessage> {
     val params = mapOf(
         "accountId" to accountId,
         "offset" to (page - 1) * pageSize,
@@ -469,13 +473,13 @@ ORDER BY msg.sent_at DESC
 }
 
 data class ThreadWithParticipants(
-    val threadId: UUID,
+    val threadId: MessageThreadId,
     val type: MessageType,
-    val senders: Set<UUID>,
-    val recipients: Set<UUID>
+    val senders: Set<MessageAccountId>,
+    val recipients: Set<MessageAccountId>
 )
 
-fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants? {
+fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
     val sql = """
         SELECT
             t.id AS threadId,
@@ -502,7 +506,7 @@ data class MessageReceiversResult(
     val childFirstName: String,
     val childLastName: String,
     val childDateOfBirth: LocalDate,
-    val accountId: UUID,
+    val accountId: MessageAccountId,
     val receiverFirstName: String,
     val receiverLastName: String
 )
@@ -592,7 +596,7 @@ fun Database.Read.getReceiversForNewMessage(
         }
 }
 
-fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set<UUID>): Boolean {
+fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set<MessageAccountId>): Boolean {
     // language=SQL
     val sql = """
         WITH children AS (
@@ -635,7 +639,7 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set
     return numAccounts == accountIds.size
 }
 
-fun Database.Transaction.markNotificationAsSent(messageRecipientId: UUID) {
+fun Database.Transaction.markNotificationAsSent(messageRecipientId: MessageAccountId) {
     val sql = """
         UPDATE message_recipients
         SET notification_sent_at = now()

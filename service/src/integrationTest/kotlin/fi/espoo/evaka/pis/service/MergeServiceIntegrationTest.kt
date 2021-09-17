@@ -20,6 +20,7 @@ import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.defaultObjectMapper
@@ -230,7 +231,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         )
     }
 
-    private fun sentMessageCounts(vararg accountIds: UUID): List<Int> = db.read { tx ->
+    private fun sentMessageCounts(vararg accountIds: MessageAccountId): List<Int> = db.read { tx ->
         accountIds.map { tx.getMessagesSentByAccount(it, 10, 1).total }
     }
 
@@ -277,7 +278,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         )
     }
 
-    private fun receivedMessageCounts(accountIds: List<UUID>, isEmployee: Boolean): List<Int> = db.read { tx ->
+    private fun receivedMessageCounts(accountIds: List<MessageAccountId>, isEmployee: Boolean): List<Int> = db.read { tx ->
         accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
     }
 

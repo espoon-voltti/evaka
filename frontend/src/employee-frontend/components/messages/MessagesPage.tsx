@@ -4,9 +4,11 @@
 
 import { UUID } from 'lib-common/types'
 import Container from 'lib-components/layout/Container'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { deleteDraft, postMessage } from './api'
 import { MessageContext } from './MessageContext'
 import MessageEditor from './MessageEditor'
@@ -44,8 +46,12 @@ export default function MessagesPage() {
     refreshMessages
   } = useContext(MessageContext)
 
+  const { setErrorMessage } = useContext(UIContext)
+  const { i18n } = useTranslation()
+
   useEffect(() => loadNestedAccounts(), [loadNestedAccounts])
   useEffect(() => refreshMessages(), [refreshMessages])
+  const [sending, setSending] = useState(false)
 
   // pre-select first account on page load and on unit change
   useEffect(() => {
@@ -80,29 +86,34 @@ export default function MessagesPage() {
 
   const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
 
-  const hideEditor = () => {
+  const hideEditor = useCallback(() => {
     setSelectedReceivers((old) => (old ? deselectAll(old) : old))
     setShowEditor(false)
     setSelectedDraft(undefined)
-  }
+  }, [setSelectedDraft])
 
-  const onSend = (
-    accountId: UUID,
-    messageBody: MessageBody,
-    draftId?: UUID
-  ) => {
-    // TODO state and error handling
-    void postMessage(accountId, messageBody)
-      .then(() => {
-        if (draftId) {
-          void deleteDraft(accountId, draftId)
+  const onSend = useCallback(
+    (accountId: UUID, messageBody: MessageBody, draftId?: UUID) => {
+      setSending(true)
+      void postMessage(accountId, messageBody).then((res) => {
+        if (res.isSuccess) {
+          const maybeDeleteDraft = draftId
+            ? deleteDraft(accountId, draftId)
+            : Promise.resolve()
+          void maybeDeleteDraft.then(() => refreshMessages(accountId))
+          hideEditor()
+        } else {
+          setErrorMessage({
+            type: 'error',
+            title: i18n.common.error.unknown,
+            resolveLabel: i18n.common.ok
+          })
         }
+        setSending(false)
       })
-      .finally(() => {
-        refreshMessages(accountId)
-        hideEditor()
-      })
-  }
+    },
+    [hideEditor, i18n, refreshMessages, setErrorMessage]
+  )
 
   const onDiscard = (accountId: UUID, draftId?: UUID) => {
     hideEditor()
@@ -152,6 +163,7 @@ export default function MessagesPage() {
               selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
+              sending={sending}
               onDiscard={onDiscard}
               onClose={onHide}
               draftContent={selectedDraft}

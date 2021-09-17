@@ -5,6 +5,9 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 data class CitizenMessageBody(
     val recipients: Set<MessageAccount>,
@@ -38,7 +40,7 @@ class MessageControllerCitizen(
     fun getMyAccount(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): UUID {
+    ): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
         return requireMessageAccountAccess(db, user)
     }
@@ -56,7 +58,7 @@ class MessageControllerCitizen(
     fun markThreadRead(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("threadId") threadId: UUID
+        @PathVariable("threadId") threadId: MessageThreadId
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
         val accountId = requireMessageAccountAccess(db, user)
@@ -97,13 +99,13 @@ class MessageControllerCitizen(
         return db.read { it.getCitizenReceivers(accountId) }
     }
 
-    data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
+    data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<MessageAccountId>)
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable messageId: UUID,
+        @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
@@ -123,7 +125,7 @@ class MessageControllerCitizen(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: CitizenMessageBody,
-    ): List<UUID> {
+    ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
         val accountId = requireMessageAccountAccess(db, user)
         val validReceivers = db.read { it.getCitizenReceivers(accountId) }
@@ -154,7 +156,7 @@ class MessageControllerCitizen(
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): UUID {
+    ): MessageAccountId {
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         return db.read { it.getCitizenMessageAccount(user.id) }
     }
