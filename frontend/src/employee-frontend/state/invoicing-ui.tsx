@@ -24,11 +24,11 @@ import { Loading, Result } from 'lib-common/api'
 import { CareArea } from '../types/unit'
 import { UUID } from '../types'
 
-interface Checked {
+export interface Checked {
   [id: string]: boolean
 }
 
-interface PageState {
+export interface PageState {
   checked: Checked
   toggleChecked: (id: string) => void
   checkIds: (ids: string[]) => void
@@ -110,8 +110,8 @@ interface SharedState {
 }
 
 interface UiState {
-  feeDecisions: PageState & FeeDecisionSearchFilterState
-  valueDecisions: PageState & ValueDecisionSearchFilterState
+  feeDecisions: FeeDecisionSearchFilterState
+  valueDecisions: ValueDecisionSearchFilterState
   invoices: InvoiceSearchFilterState
   shared: SharedState
 }
@@ -131,11 +131,7 @@ const defaultState: UiState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined,
-    checked: {},
-    toggleChecked: () => undefined,
-    checkIds: () => undefined,
-    clearChecked: () => undefined
+    clearSearchFilters: () => undefined
   },
   valueDecisions: {
     searchFilters: {
@@ -149,11 +145,7 @@ const defaultState: UiState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined,
-    checked: {},
-    toggleChecked: () => undefined,
-    checkIds: () => undefined,
-    clearChecked: () => undefined
+    clearSearchFilters: () => undefined
   },
   invoices: {
     searchFilters: {
@@ -200,20 +192,6 @@ export const InvoicingUIContextProvider = React.memo(
         setFeeDecisionSearchFilters(defaultState.feeDecisions.searchFilters),
       [setFeeDecisionSearchFilters]
     )
-    const [feeDecisionChecked, setFeeDecisionChecked] = useState<Checked>({})
-    const toggleFeeDecisionChecked = (id: string) =>
-      setFeeDecisionChecked({
-        ...feeDecisionChecked,
-        [id]: !feeDecisionChecked[id]
-      })
-    const checkFeeDecisionIds = (ids: string[]) => {
-      const idsChecked = ids.map((id) => ({ [id]: true }))
-      setFeeDecisionChecked({
-        ...feeDecisionChecked,
-        ...Object.assign({}, ...idsChecked)
-      })
-    }
-    const clearFeeDecisionChecked = () => setFeeDecisionChecked({})
 
     const [valueDecisionSearchFilters, setValueDecisionSearchFilters] =
       useState<ValueDecisionSearchFilters>(
@@ -232,22 +210,6 @@ export const InvoicingUIContextProvider = React.memo(
         ),
       [setValueDecisionSearchFilters]
     )
-    const [valueDecisionChecked, setValueDecisionChecked] = useState<Checked>(
-      {}
-    )
-    const toggleValueDecisionChecked = (id: string) =>
-      setValueDecisionChecked({
-        ...valueDecisionChecked,
-        [id]: !valueDecisionChecked[id]
-      })
-    const checkValueDecisionIds = (ids: string[]) => {
-      const idsChecked = ids.map((id) => ({ [id]: true }))
-      setValueDecisionChecked({
-        ...valueDecisionChecked,
-        ...Object.assign({}, ...idsChecked)
-      })
-    }
-    const clearValueDecisionChecked = () => setValueDecisionChecked({})
 
     const [invoiceSearchFilters, setInvoiceSearchFilters] =
       useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
@@ -278,12 +240,7 @@ export const InvoicingUIContextProvider = React.memo(
           searchTerms: feeDecisionFreeTextSearch,
           setSearchTerms: setFeeDecisionFreeTextSearch,
           debouncedSearchTerms: feeDecisionDebouncedFreeText,
-          clearSearchFilters: clearFeeDecisionSearchFilters,
-          checked: feeDecisionChecked,
-          setChecked: setFeeDecisionChecked,
-          toggleChecked: toggleFeeDecisionChecked,
-          checkIds: checkFeeDecisionIds,
-          clearChecked: clearFeeDecisionChecked
+          clearSearchFilters: clearFeeDecisionSearchFilters
         },
         valueDecisions: {
           searchFilters: valueDecisionSearchFilters,
@@ -291,12 +248,7 @@ export const InvoicingUIContextProvider = React.memo(
           searchTerms: valueDecisionFreeTextSearch,
           setSearchTerms: setValueDecisionFreeTextSearch,
           debouncedSearchTerms: valueDecisionDebouncedFreeText,
-          clearSearchFilters: clearValueDecisionSearchFilters,
-          checked: valueDecisionChecked,
-          setChecked: setValueDecisionChecked,
-          toggleChecked: toggleValueDecisionChecked,
-          checkIds: checkValueDecisionIds,
-          clearChecked: clearValueDecisionChecked
+          clearSearchFilters: clearValueDecisionSearchFilters
         },
         invoices: {
           searchFilters: invoiceSearchFilters,
@@ -323,20 +275,12 @@ export const InvoicingUIContextProvider = React.memo(
         setFeeDecisionFreeTextSearch,
         feeDecisionDebouncedFreeText,
         clearFeeDecisionSearchFilters,
-        feeDecisionChecked,
-        setFeeDecisionChecked,
-        feeDecisionChecked,
-        setFeeDecisionChecked,
         valueDecisionSearchFilters,
         setValueDecisionSearchFilters,
         valueDecisionFreeTextSearch,
         setValueDecisionFreeTextSearch,
         valueDecisionDebouncedFreeText,
         clearValueDecisionSearchFilters,
-        valueDecisionChecked,
-        setValueDecisionChecked,
-        valueDecisionChecked,
-        setValueDecisionChecked,
         invoiceSearchFilters,
         setInvoiceSearchFilters,
         invoiceFreeTextSearch,
