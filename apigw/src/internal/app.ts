@@ -42,7 +42,11 @@ app.use(
     contentSecurityPolicy: false
   })
 )
-app.get('/health', (_, res) => res.status(200).json({ status: 'UP' }))
+app.get('/health', (_, res) => {
+  redisClient.connected !== true && redisClient.ping() !== true
+    ? res.status(503).json({ status: 'DOWN' })
+    : res.status(200).json({ status: 'UP' })
+})
 app.use(tracing)
 app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
