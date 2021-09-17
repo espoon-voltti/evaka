@@ -21,6 +21,9 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -521,7 +524,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     }
 
     private fun getUnreadMessages(
-        accountId: UUID,
+        accountId: MessageAccountId,
         user: AuthenticatedUser
     ) = getMessageThreads(
         accountId,
@@ -532,8 +535,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         title: String,
         message: String,
         messageType: MessageType,
-        sender: UUID,
-        recipients: List<UUID>,
+        sender: MessageAccountId,
+        recipients: List<MessageAccountId>,
         recipientNames: List<String> = listOf(),
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
@@ -553,8 +556,8 @@ class MessageIntegrationTest : FullApplicationTest() {
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
-        messageId: UUID,
-        recipientAccountIds: Set<UUID>,
+        messageId: MessageId,
+        recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ) =
         http.post(
@@ -573,9 +576,9 @@ class MessageIntegrationTest : FullApplicationTest() {
 
     private fun replyAsEmployee(
         user: AuthenticatedUser.Employee,
-        sender: UUID,
-        messageId: UUID,
-        recipientAccountIds: Set<UUID>,
+        sender: MessageAccountId,
+        messageId: MessageId,
+        recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ) =
         http.post(
@@ -594,8 +597,8 @@ class MessageIntegrationTest : FullApplicationTest() {
 
     private fun markThreadRead(
         user: AuthenticatedUser,
-        accountId: UUID,
-        threadId: UUID
+        accountId: MessageAccountId,
+        threadId: MessageThreadId
     ) =
         http.put(
             if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
@@ -603,14 +606,14 @@ class MessageIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .response()
 
-    private fun getMessageThreads(accountId: UUID, user: AuthenticatedUser): List<MessageThread> = http.get(
+    private fun getMessageThreads(accountId: MessageAccountId, user: AuthenticatedUser): List<MessageThread> = http.get(
         if (user.isEndUser) "/citizen/messages/received" else "/messages/$accountId/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
 
-    private fun getSentMessages(accountId: UUID, user: AuthenticatedUser): List<SentMessage> = http.get(
+    private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
         if (user.isEndUser) "/citizen/messages/sent" else "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
@@ -618,6 +621,6 @@ class MessageIntegrationTest : FullApplicationTest() {
         .responseObject<Paged<SentMessage>>(objectMapper).third.get().data
 }
 
-fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.sender.id, it.content) }
-fun SentMessage.toContentRecipientsPair(): Pair<String, Set<UUID>> =
+fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }
+fun SentMessage.toContentRecipientsPair(): Pair<String, Set<MessageAccountId>> =
     Pair(this.content, this.recipients.map { it.id }.toSet())

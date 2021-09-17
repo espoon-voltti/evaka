@@ -277,7 +277,7 @@ class MockVardaIntegrationEndpoint {
         lock.withLock {
             logger.info { "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId" }
             val childDecisions = decisions.entries.filter { (_, decision) ->
-                decision.childUrl.contains("/lapset/$childId/")
+                decision.lapsi.contains("/lapset/$childId/")
             }
             ResponseEntity.ok(
                 VardaClient.PaginatedResponse(
@@ -285,7 +285,7 @@ class MockVardaIntegrationEndpoint {
                     next = null,
                     previous = null,
                     results = childDecisions.map { (vardaId, decision) ->
-                        DecisionPeriod(vardaId, decision.startDate, decision.endDate)
+                        DecisionPeriod(vardaId, decision.alkamis_pvm, decision.paattymis_pvm)
                     }
                 )
             )
@@ -436,6 +436,93 @@ class MockVardaIntegrationEndpoint {
            ]
         }
         """
+
+    fun getMockErrorResponses() = mapOf(
+        "DY004" to """
+        {
+            "tuntimaara_viikossa":[
+            {
+                "error_code":"DY004",
+                "description":"Ensure this value is greater than or equal to 1.",
+                "translations":[
+                {
+                    "language":"SV",
+                    "description":"Värdet ska vara större eller lika stort som {{}}."
+                },
+                {
+                    "language":"FI",
+                    "description":"Arvon pitää olla suurempi tai yhtäsuuri kuin {{}}."
+                }
+                ]
+            }
+            ]
+        }
+        """.trimIndent(),
+        "VS009" to """
+            {
+               "errors":[
+                  {
+                     "error_code":"VS009",
+                     "description":"Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.",
+                     "translations":[
+                        {
+                           "language":"FI",
+                           "description":"Varhaiskasvatussuhteen alkamispäivämäärä ei voi olla toimipaikan päättymispäivämäärän jälkeen."
+                        },
+                        {
+                           "language":"SV",
+                           "description":"Begynnelsedatumet för deltagande i småbarnspedagogik kan inte vara senare än verksamhetsställets slutdatum."
+                        }
+                     ]
+                  }
+               ]
+            }
+        """.trimIndent(),
+        "MA003" to """
+            {
+               "huoltajat":[
+                  {
+                     "error_code":"MA003",
+                     "description":"No matching huoltaja found.",
+                     "translations":[
+                        {
+                           "language":"FI",
+                           "description":"Väestötietojärjestelmästä ei löydy lapsen ilmoitettua huoltajaa."
+                        },
+                        {
+                           "language":"SV",
+                           "description":"Det gick inte att hitta vårdnadshavaren till barnet i Befolkningsdatasystemet."
+                        }
+                     ]
+                  }
+               ]
+            }
+        """.trimIndent(),
+        "HE012" to """
+            {
+               "huoltajat":{
+                  "1":{
+                     "etunimet":[
+                        {
+                           "error_code":"HE012",
+                           "description":"Name has disallowed characters.",
+                           "translations":[
+                              {
+                                 "language":"SV",
+                                 "description":"Namnet innehåller förbjudna tecken. "
+                              },
+                              {
+                                 "language":"FI",
+                                 "description":"Nimessä on merkkejä, jotka eivät ole sallittuja."
+                              }
+                           ]
+                        }
+                     ]
+                  }
+               }
+            }
+        """.trimIndent()
+    )
 
     private fun getMockDecisionResponse(id: Long): String {
         return """

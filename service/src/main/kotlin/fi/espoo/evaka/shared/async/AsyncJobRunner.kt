@@ -26,7 +26,7 @@ import kotlin.concurrent.withLock
 
 private val logger = KotlinLogging.logger { }
 
-private const val threadPoolSize = 1
+private const val threadPoolSize = 4
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 

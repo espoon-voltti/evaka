@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -45,6 +46,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
+import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -180,12 +182,12 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds removed evaka service needs that exists in varda and there are no other changes`() {
         val since = HelsinkiDateTime.now()
-        val childId: UUID = UUID.randomUUID()
+        val childId: ChildId = ChildId(UUID.randomUUID())
         val deletedSnId = ServiceNeedId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(
                 DevPerson(
-                    id = childId,
+                    id = childId.raw,
                     dateOfBirth = since.plusYears(-5).toLocalDate(),
                     ssn = "260718A384E"
                 )
@@ -202,8 +204,8 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
-        assertServiceNeedDiffSizes(diffs.get(childId), 0, 0, 1)
-        assertEquals(deletedSnId, diffs.get(childId)?.deletes?.get(0))
+        assertServiceNeedDiffSizes(diffs[childId], 0, 0, 1)
+        assertEquals(deletedSnId, diffs[childId]?.deletes?.get(0))
     }
 
     @Test
@@ -783,6 +785,35 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         assertVardaServiceNeedIds(snId, 1, 1)
     }
 
+    @Test
+    fun `parseVardaErrorBody works`() {
+        val errors = mockEndpoint.getMockErrorResponses()
+
+        vardaClient.parseVardaErrorBody(errors["DY004"]!!).let { (codes, descriptions) ->
+            assertEquals("DY004", codes.first())
+            assertEquals("Ensure this value is greater than or equal to 1.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["VS009"]!!).let { (codes, descriptions) ->
+            assertEquals("VS009", codes.first())
+            assertEquals("Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["MA003"]!!).let { (codes, descriptions) ->
+            assertEquals("MA003", codes.first())
+            assertEquals("No matching huoltaja found.", descriptions.first())
+        }
+        vardaClient.parseVardaErrorBody(errors["HE012"]!!).let { (codes, descriptions) ->
+            assertEquals("HE012", codes.first())
+            assertEquals("Name has disallowed characters.", descriptions.first())
+        }
+    }
+
+    // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
+    private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
+        getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
+            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate)
+        }
+    }
+
     private fun insertServiceNeedWithFeeDecision(): ServiceNeedId {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
@@ -841,11 +872,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         expectedChildId: Long,
         expectedHoursPerWeek: Double
     ) {
-        assertEquals(true, vardaDecision.childUrl.endsWith("$expectedChildId/"), "Expected ${vardaDecision.childUrl} to end with $expectedChildId")
-        assertEquals(expectedStartDate, vardaDecision.startDate)
-        assertEquals(expectedEndDate, vardaDecision.endDate)
-        assertEquals(expectedApplicationDate, vardaDecision.applicationDate)
-        assertEquals(expectedHoursPerWeek, vardaDecision.hoursPerWeek)
+        assertEquals(true, vardaDecision.lapsi.endsWith("$expectedChildId/"), "Expected ${vardaDecision.lapsi} to end with $expectedChildId")
+        assertEquals(expectedStartDate, vardaDecision.alkamis_pvm)
+        assertEquals(expectedEndDate, vardaDecision.paattymis_pvm)
+        assertEquals(expectedApplicationDate, vardaDecision.hakemus_pvm)
+        assertEquals(expectedHoursPerWeek, vardaDecision.tuntimaara_viikossa)
     }
 
     private fun assertVardaFeeData(expectedVardaFeeData: VardaFeeData, vardaFeeData: VardaFeeData) {
@@ -958,13 +989,13 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): UUID? = createQuery(
+private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): ChildId? = createQuery(
     """
 SELECT p.child_id FROM placement p LEFT JOIN service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .mapTo<UUID>()
+    .mapTo<ChildId>()
     .first()
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(

@@ -4,29 +4,30 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
-fun Database.Read.getDrafts(accountId: UUID): List<DraftContent> {
+fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> {
     return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId ORDER BY created DESC")
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
         .list()
 }
 
-fun Database.Transaction.initDraft(accountId: UUID): UUID {
+fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
     return this.createQuery(
         """
         INSERT INTO message_draft (account_id) VALUES (:accountId) RETURNING id
         """.trimIndent()
     )
         .bind("accountId", accountId)
-        .mapTo<UUID>()
+        .mapTo<MessageDraftId>()
         .one()
 }
 
-fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: UpsertableDraftContent) {
+fun Database.Transaction.upsertDraft(accountId: MessageAccountId, id: MessageDraftId, draft: UpsertableDraftContent) {
     this.createUpdate(
         """
         INSERT INTO message_draft (id, account_id, title, content, type, recipient_ids, recipient_names)
@@ -54,7 +55,7 @@ fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: Upsertabl
         .execute()
 }
 
-fun Database.Transaction.deleteDraft(accountId: UUID, draftId: UUID) {
+fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: MessageDraftId) {
     this.createUpdate("DELETE FROM message_draft WHERE id = :id AND account_id = :accountId")
         .bind("accountId", accountId)
         .bind("id", draftId)

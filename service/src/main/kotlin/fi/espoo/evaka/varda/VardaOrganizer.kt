@@ -19,15 +19,16 @@ private val logger = KotlinLogging.logger {}
 
 fun updateOrganizer(db: Database.Connection, client: VardaClient, organizerName: String) {
     try {
-        val organizer = db.read { getStaleOrganizer(it, organizerName) }!!
-        client.updateOrganizer(organizer.toUpdateObject())
-        db.transaction { setOrganizerUploaded(it, organizer) }
+        db.read { getChangedOrganizer(it, organizerName) }?.let { organizer ->
+            client.updateOrganizer(organizer.toUpdateObject())
+            db.transaction { setOrganizerUploaded(it, organizer) }
+        }
     } catch (e: Exception) {
         logger.error { "VardaUpdate: failed to update organizer: $e" }
     }
 }
 
-fun getStaleOrganizer(tx: Database.Read, organizerName: String): VardaOrganizer? {
+fun getChangedOrganizer(tx: Database.Read, organizerName: String): VardaOrganizer? {
     //language=SQL
     val sql =
         """

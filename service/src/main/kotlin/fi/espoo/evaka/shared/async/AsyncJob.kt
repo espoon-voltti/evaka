@@ -13,12 +13,14 @@ import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -79,7 +81,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendMessageNotificationEmail(val messageRecipientId: UUID, val personEmail: String, val language: Language) : AsyncJob {
+    data class SendMessageNotificationEmail(val messageRecipientId: MessageAccountId, val personEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -150,6 +152,18 @@ sealed interface AsyncJob : AsyncJobPayload {
             data class Adult(val adultId: UUID) : Person()
             data class Child(val childId: UUID) : Person()
         }
+    }
+
+    data class UpdateVardaChild(
+        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class ResetVardaChild(
+        val childId: UUID
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
     }
 }
 

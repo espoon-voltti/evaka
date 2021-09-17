@@ -17,6 +17,7 @@ import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { modalZIndex } from 'lib-components/layout/z-helpers'
 import Select, { SelectOption } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import {
@@ -88,6 +89,7 @@ interface Props {
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId?: UUID) => void
   draftContent?: DraftContent
+  sending: boolean
 }
 
 export default React.memo(function MessageEditor({
@@ -98,7 +100,8 @@ export default React.memo(function MessageEditor({
   onSend,
   onDiscard,
   onClose,
-  draftContent
+  draftContent,
+  sending
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -204,7 +207,7 @@ export default React.memo(function MessageEditor({
     setContentTouched(true)
   }, [])
 
-  const sendEnabled = areRequiredFieldsFilledForMessage(message)
+  const sendEnabled = !sending && areRequiredFieldsFilledForMessage(message)
   const sendHandler = useCallback(() => {
     const {
       sender: { value: senderId },
@@ -326,7 +329,11 @@ export default React.memo(function MessageEditor({
               data-qa="discard-draft-btn"
             />
             <Button
-              text={i18n.messages.messageEditor.send}
+              text={
+                sending
+                  ? i18n.messages.messageEditor.sending
+                  : i18n.messages.messageEditor.send
+              }
               primary
               disabled={!sendEnabled}
               onClick={sendHandler}
@@ -344,7 +351,7 @@ const Container = styled.div`
   max-height: 900px;
   height: 105%;
   position: absolute;
-  z-index: 100;
+  z-index: ${modalZIndex - 1};
   right: 0;
   bottom: 0;
   box-shadow: 0 8px 8px 8px rgba(15, 15, 15, 0.15);

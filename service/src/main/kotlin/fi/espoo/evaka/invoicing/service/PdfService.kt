@@ -15,6 +15,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
+import fi.espoo.voltti.pdfgen.addFontDirectory
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
@@ -83,22 +84,14 @@ class PDFService(
         return os.toByteArray()
     }
 
-    private fun getResourcePath(fileName: String): String {
+    private fun getResourceFile(fileName: String): File {
         val res = javaClass.classLoader.getResource(fileName)
-        val file: File = Paths.get(res.toURI()).toFile()
-        return file.absolutePath
+        return Paths.get(res.toURI()).toFile()
     }
 
     private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
-        val montserrat = getResourcePath("ttf/Montserrat-Regular.ttf")
-        val montserratBold = getResourcePath("ttf/Montserrat-Regular.ttf")
-        val openSans = getResourcePath("ttf/OpenSans-Regular.ttf")
-        val openSansBold = getResourcePath("ttf/OpenSans-Bold.ttf")
-        textRenderer.fontResolver.addFont(montserrat, BaseFont.IDENTITY_H, true)
-        textRenderer.fontResolver.addFont(montserratBold, BaseFont.IDENTITY_H, true)
-        textRenderer.fontResolver.addFont(openSans, BaseFont.IDENTITY_H, true)
-        textRenderer.fontResolver.addFont(openSansBold, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
         textRenderer.setDocumentFromString(pages)
         textRenderer.layout()
         textRenderer.createPDF(os, false)

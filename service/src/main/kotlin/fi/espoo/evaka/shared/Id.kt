@@ -31,6 +31,11 @@ sealed interface DatabaseTable {
     sealed class GroupPlacement : DatabaseTable
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
+    sealed class Message : DatabaseTable
+    sealed class MessageAccount : DatabaseTable
+    sealed class MessageContent : DatabaseTable
+    sealed class MessageDraft : DatabaseTable
+    sealed class MessageThread : DatabaseTable
     sealed class MobileDevice : DatabaseTable
     sealed class Pairing : DatabaseTable
     sealed class Parentship : DatabaseTable
@@ -67,6 +72,11 @@ typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
+typealias MessageId = Id<DatabaseTable.Message>
+typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
+typealias MessageContentId = Id<DatabaseTable.MessageContent>
+typealias MessageDraftId = Id<DatabaseTable.MessageDraft>
+typealias MessageThreadId = Id<DatabaseTable.MessageThread>
 typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 typealias PairingId = Id<DatabaseTable.Pairing>
 typealias ParentshipId = Id<DatabaseTable.Parentship>
