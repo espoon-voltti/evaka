@@ -14,10 +14,11 @@ import {
   VoucherValueDecisionSearchParams,
   SortByVoucherValueDecisions
 } from '../../api/invoicing'
-import { Checked, InvoicingUiContext } from '../../state/invoicing-ui'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useCheckedState } from '../../state/invoicing'
 
 const pageSize = 200
 
@@ -52,30 +53,10 @@ export default React.memo(function VoucherValueDecisionsPage() {
   )
 
   const {
-    valueDecisions: {
-      searchFilters,
-      debouncedSearchTerms /*,
-      checked,
-      toggleChecked,
-      checkIds,
-      clearChecked*/
-    }
+    valueDecisions: { searchFilters, debouncedSearchTerms }
   } = useContext(InvoicingUiContext)
 
-  const [checked, setChecked] = useState<Checked>({})
-  const toggleChecked = (id: string) =>
-    setChecked({
-      ...checked,
-      [id]: !checked[id]
-    })
-  const checkIds = (ids: string[]) => {
-    const idsChecked = ids.map((id) => ({ [id]: true }))
-    setChecked({
-      ...checked,
-      ...Object.assign({}, ...idsChecked)
-    })
-  }
-  const clearChecked = () => setChecked({})
+  const checkedState = useCheckedState()
 
   const loadDecisions = useCallback(() => {
     const status = searchFilters.status
@@ -115,9 +96,9 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const checkAll = useCallback(() => {
     const currentPage = decisions[page]
     if (currentPage?.isSuccess) {
-      checkIds(currentPage.value.map((decision) => decision.id))
+      checkedState.checkIds(currentPage.value.map((decision) => decision.id))
     }
-  }, [decisions, checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [decisions, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container data-qa="voucher-value-decisions-page">
@@ -137,16 +118,18 @@ export default React.memo(function VoucherValueDecisionsPage() {
           sortDirection={sortDirection}
           setSortDirection={setSortDirection}
           showCheckboxes={searchFilters.status === 'DRAFT'}
-          checked={checked}
-          toggleChecked={toggleChecked}
+          checked={checkedState.checked}
+          toggleChecked={checkedState.toggleChecked}
           checkAll={checkAll}
-          clearChecked={clearChecked}
+          clearChecked={checkedState.clearChecked}
         />
       </ContentArea>
       <VoucherValueDecisionActions
         status={searchFilters.status}
-        checkedIds={Object.keys(checked).filter((id) => !!checked[id])}
-        clearChecked={clearChecked}
+        checkedIds={Object.keys(checkedState.checked).filter(
+          (id) => !!checkedState.checked[id]
+        )}
+        clearChecked={checkedState.clearChecked}
         loadDecisions={loadDecisions}
       />
     </Container>

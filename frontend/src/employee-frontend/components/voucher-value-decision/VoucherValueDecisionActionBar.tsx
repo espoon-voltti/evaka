@@ -1,12 +1,6 @@
-import { useTranslation } from '../../state/i18n'
-
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -17,6 +11,7 @@ import {
 } from '../../api/invoicing'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import styled from 'styled-components'
+import { useTranslation } from '../../state/i18n'
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.orangeDark};

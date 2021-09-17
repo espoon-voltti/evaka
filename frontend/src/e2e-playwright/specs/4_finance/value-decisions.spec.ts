@@ -11,7 +11,8 @@ import {
 import {
   insertEmployeeFixture,
   insertVoucherValueDecisionFixtures,
-  resetDatabase
+  resetDatabase,
+  runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
@@ -122,13 +123,15 @@ describe('Value decisions', () => {
   test('Send value decision from details page', async () => {
     await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionsPage.sendValueDecision()
+    await runPendingAsyncJobs()
     await valueDecisionsPage.navigateBackFromDetails()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
+    await valueDecisionsPage.assertSentDecisionsCount(1)
   })
 
   test('Voucher value decisions are toggled and sent', async () => {
     await valueDecisionsPage.toggleAllValueDecisions(true)
     await valueDecisionsPage.sendValueDecisions()
+    await runPendingAsyncJobs()
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 })
