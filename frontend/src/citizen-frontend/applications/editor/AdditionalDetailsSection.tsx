@@ -61,7 +61,7 @@ export default React.memo(function AdditionalDetailsSection({
 
           <FixedSpaceColumn spacing="xs">
             <ExpandingInfo
-              data-qa="diet-info"
+              data-qa="diet-expanding-info"
               info={t.applications.editor.additionalDetails.dietInfo()}
               ariaLabel={t.common.openExpandingInfo}
             >

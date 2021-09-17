@@ -98,7 +98,7 @@ export default function ExpandingInfo({
               size="s"
             />
 
-            <InfoContainer data-qa={`${dataQa ?? ''}-text`}>
+            <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
               {info}
             </InfoContainer>
 
