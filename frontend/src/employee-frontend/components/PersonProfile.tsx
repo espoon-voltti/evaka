@@ -101,6 +101,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'decisions', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
+    { component: 'family-overview', open: true },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },

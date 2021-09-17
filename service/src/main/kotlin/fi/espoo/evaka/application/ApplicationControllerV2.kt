@@ -155,12 +155,7 @@ class ApplicationControllerV2(
                 hideFromGuardian = body.hideFromGuardian,
                 sentDate = body.sentDate
             )
-            val form = ApplicationForm.initForm(
-                type = body.type,
-                guardian = guardian,
-                child = child
-            )
-            tx.updateForm(id, form, body.type, child.restrictedDetailsEnabled, guardian.restrictedDetailsEnabled)
+            applicationStateService.initializeApplicationForm(tx, user, id, body.type, guardian, child)
             id
         }
 

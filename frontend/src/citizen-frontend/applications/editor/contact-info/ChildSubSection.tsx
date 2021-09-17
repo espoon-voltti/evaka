@@ -22,7 +22,8 @@ export default React.memo(function ChildSubSection({
   formData,
   updateFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  fullFamily
 }: ContactInfoSectionProps) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -30,6 +31,7 @@ export default React.memo(function ChildSubSection({
   return (
     <>
       <Gap size={'m'} />
+      {fullFamily ? t.applications.editor.contactInfo.familyInfo : null}
       {t.applications.editor.contactInfo.info()}
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
       <Gap size={'xs'} />

@@ -75,6 +75,8 @@ describe('Citizen preschool applications', () => {
     await editorPage.verifyAndSend()
 
     const application = await getApplication(applicationId)
-    fullPreschoolForm.validateResult(application)
+    fullPreschoolForm.validateResult(application, [
+      fixtures.enduserChildFixtureKaarina
+    ])
   })
 })

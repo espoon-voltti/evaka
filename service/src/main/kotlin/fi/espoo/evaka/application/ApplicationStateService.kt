@@ -26,6 +26,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
 import fi.espoo.evaka.decision.DecisionDraftService
@@ -46,6 +47,7 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -72,6 +74,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -95,6 +98,66 @@ class ApplicationStateService(
     env: BucketEnv
 ) {
     private val filesBucket = env.attachments
+
+    fun initializeApplicationForm(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        applicationId: ApplicationId,
+        type: ApplicationType,
+        guardian: PersonDTO,
+        child: PersonDTO
+    ) {
+        val form = ApplicationForm.initForm(type, guardian, child)
+            .let { form -> withDefaultStartDate(tx, type, form) }
+            .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
+
+        tx.updateForm(
+            applicationId,
+            form,
+            type,
+            child.restrictedDetailsEnabled,
+            guardian.restrictedDetailsEnabled
+        )
+    }
+
+    private fun withDefaultStartDate(
+        tx: Database.Transaction,
+        type: ApplicationType,
+        form: ApplicationForm
+    ): ApplicationForm {
+        val today = dateNow()
+
+        val startDate = when (type) {
+            ApplicationType.PRESCHOOL -> tx.getPreschoolTerms().firstOrNull { it.extendedTerm.start.isAfter(today) }
+                ?.extendedTerm?.start
+            ApplicationType.CLUB -> tx.getClubTerms().firstOrNull { it.term.start.isAfter(today) }
+                ?.term?.start
+            else -> null
+        }
+
+        return form.copy(preferences = form.preferences.copy(preferredStartDate = startDate))
+    }
+
+    private fun withDefaultOtherChildren(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        guardian: PersonDTO,
+        child: PersonDTO,
+        form: ApplicationForm
+    ): ApplicationForm {
+        val vtjOtherChildren = personService.getPersonWithChildren(tx, user, guardian.id)?.children
+            ?.filter { it.id != child.id }
+            ?.filter { personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO()) }
+            ?.map {
+                PersonBasics(
+                    firstName = it.firstName,
+                    lastName = it.lastName,
+                    socialSecurityNumber = it.socialSecurityNumber
+                )
+            }
+
+        return form.copy(otherChildren = vtjOtherChildren ?: listOf())
+    }
 
     // STATE TRANSITIONS
 

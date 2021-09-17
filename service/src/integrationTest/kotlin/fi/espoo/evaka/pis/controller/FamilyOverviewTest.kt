@@ -6,7 +6,11 @@ package fi.espoo.evaka.pis.controller
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.service.FamilyOverview
@@ -14,10 +18,16 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -112,11 +122,33 @@ class FamilyOverviewTest : FullApplicationTest() {
         )
     }
 
-    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    @Test
+    fun `show income total if user is finance admin`() {
+        val incomeTotal = addIncome(testAdult_1.id)
+        createTestFixture1plus1()
+        val result = fetchAndParseFamilyDetails(testAdult_1.id, financeUser)
 
-    private fun fetchAndParseFamilyDetails(personId: UUID): FamilyOverview {
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(IncomeEffect.INCOME, result.headOfFamily.income?.effect)
+        assertEquals(incomeTotal, result.headOfFamily.income?.total)
+    }
+
+    @Test
+    fun `hide income total if user is unit supervisor`() {
+        val unitSupervisor = initializeUnitSupervisorUserAndRights(testChild_1.id)
+        addIncome(testAdult_1.id)
+        createTestFixture1plus1()
+        val result = fetchAndParseFamilyDetails(testAdult_1.id, unitSupervisor)
+
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(null, result.headOfFamily.income)
+    }
+
+    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+
+    private fun fetchAndParseFamilyDetails(personId: UUID, user: AuthenticatedUser = financeUser): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")
-            .asUser(testUser)
+            .asUser(user)
             .responseString()
 
         assertEquals(200, response.statusCode)
@@ -149,5 +181,34 @@ class FamilyOverviewTest : FullApplicationTest() {
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
             it.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
         }
+    }
+
+    private fun initializeUnitSupervisorUserAndRights(childId: UUID): AuthenticatedUser {
+        val externalId = ExternalId.of("test", "id")
+        val unitSupervisor = DevEmployee(externalId = externalId)
+        db.transaction {
+            it.insertTestPlacement(
+                childId = childId,
+                unitId = testDaycare.id,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusYears(1)
+            )
+            it.insertTestEmployee(unitSupervisor)
+            it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)
+        }
+        return AuthenticatedUser.Employee(unitSupervisor.id, setOf())
+    }
+
+    private fun addIncome(personId: UUID): Int {
+        val incomeTotal = 500000
+        db.transaction {
+            it.insertTestIncome(
+                objectMapper,
+                personId,
+                effect = IncomeEffect.INCOME,
+                data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1))
+            )
+        }
+        return incomeTotal
     }
 }
