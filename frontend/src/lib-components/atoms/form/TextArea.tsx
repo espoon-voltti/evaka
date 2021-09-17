@@ -90,7 +90,9 @@ export function TextArea({
       </InputRow>
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
-          <span data-qa={`${dataQa ?? ''}-info`}>{infoText}</span>
+          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+            {infoText}
+          </span>
           <UnderRowStatusIcon status={info?.status} />
         </InputFieldUnderRow>
       )}

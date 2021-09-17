@@ -59,6 +59,7 @@ export default React.memo(function ChildSubSection({
       <Gap size={'m'} />
 
       <ExpandingInfo
+        data-qa={'child-future-address-info'}
         info={t.applications.editor.contactInfo.futureAddressInfo}
         ariaLabel={t.common.openExpandingInfo}
         margin="xs"
