@@ -166,7 +166,7 @@ class AttachmentsController(
                 name,
                 contentType,
                 attachTo,
-                uploadedByEnduser = user.id.takeIf { user.isEndUser },
+                uploadedByPerson = user.id.takeIf { user.isEndUser },
                 uploadedByEmployee = user.id.takeUnless { user.isEndUser },
                 type = type
             )

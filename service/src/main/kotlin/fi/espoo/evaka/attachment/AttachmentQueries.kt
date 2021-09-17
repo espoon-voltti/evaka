@@ -10,18 +10,24 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
+
+data class AttachmentParentColumn(
+    val applicationId: ApplicationId? = null,
+    val incomeStatementId: IncomeStatementId? = null,
+    val messageDraftId: MessageDraftId? = null
+)
 
 fun Database.Transaction.insertAttachment(
     id: AttachmentId,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
-    uploadedByEnduser: UUID?,
+    uploadedByPerson: UUID?,
     uploadedByEmployee: UUID?,
     type: AttachmentType?
 ) {
@@ -29,38 +35,22 @@ fun Database.Transaction.insertAttachment(
     val sql =
         """
         INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, uploaded_by_person, uploaded_by_employee, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByEnduser, :uploadedByEmployee, :type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByPerson, :uploadedByEmployee, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
         .bind("id", id)
         .bind("name", name)
         .bind("contentType", contentType)
-        .let {
+        .bindKotlin(
             when (attachTo) {
-                is AttachmentParent.Application ->
-                    it
-                        .bind("applicationId", attachTo.applicationId)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
-                is AttachmentParent.IncomeStatement ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bind("incomeStatementId", attachTo.incomeStatementId)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
-                is AttachmentParent.MessageDraft ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bind("messageDraftId", attachTo.draftId)
-                is AttachmentParent.None ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
+                is AttachmentParent.Application -> AttachmentParentColumn(applicationId = attachTo.applicationId)
+                is AttachmentParent.IncomeStatement -> AttachmentParentColumn(incomeStatementId = attachTo.incomeStatementId)
+                is AttachmentParent.MessageDraft -> AttachmentParentColumn(messageDraftId = attachTo.draftId)
+                is AttachmentParent.None -> AttachmentParentColumn()
             }
-        }
-        .bind("uploadedByEnduser", uploadedByEnduser)
+        )
+        .bind("uploadedByPerson", uploadedByPerson)
         .bind("uploadedByEmployee", uploadedByEmployee)
         .bind("type", type ?: "")
         .execute()
