@@ -89,10 +89,10 @@ class VardaUpdateService(
         }
     }
 
-    fun planVardaReset(db: Database.Connection) {
+    fun planVardaReset(db: Database.Connection, addNewChildren: Boolean) {
         val RESET_LIMIT = 1000
         logger.info("VardaUpdate: starting reset process")
-        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = RESET_LIMIT) }
+        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = RESET_LIMIT, addNewChildren = addNewChildren) }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $RESET_LIMIT)")
 
         db.transaction { tx ->
@@ -933,9 +933,9 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-fun Database.Transaction.getVardaChildrenToReset(limit: Int): List<UUID> {
+fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boolean): List<UUID> {
     // We aim to include children by daycare units, capping each batch with <limit>
-    val updateCount = createUpdate(
+    val updateCount = if (!addNewChildren) 0 else createUpdate(
         """
         with varda_daycare as (
             select id, name from daycare
@@ -968,7 +968,7 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int): List<UUID> {
         .bind("limit", limit)
         .execute()
 
-    logger.info("VardaUpdate: added $updateCount new children to be reset later")
+    if (updateCount > 0) logger.info("VardaUpdate: added $updateCount new children to be reset")
 
     return createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit")
         .bind("limit", limit)
