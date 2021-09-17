@@ -20,8 +20,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -42,7 +42,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateService(
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
@@ -83,7 +83,7 @@ class VardaUpdateService(
             asyncJobRunner.plan(
                 tx,
                 serviceNeedDiffsByChild.values.map {
-                    AsyncJob.UpdateVardaChild(it)
+                    VardaAsyncJob.UpdateVardaChild(it)
                 }
             )
         }
@@ -96,17 +96,17 @@ class VardaUpdateService(
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $RESET_LIMIT)")
 
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, resetChildIds.map { AsyncJob.ResetVardaChild(it) })
+            asyncJobRunner.plan(tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) })
         }
     }
 
-    fun updateVardaChildByAsyncJob(db: Database, msg: AsyncJob.UpdateVardaChild) {
+    fun updateVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.UpdateVardaChild) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
         logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
         db.connect { updateVardaChild(it, client, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
     }
 
-    fun resetVardaChildByAsyncJob(db: Database, msg: AsyncJob.ResetVardaChild) {
+    fun resetVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.ResetVardaChild) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
         db.connect { resetVardaChild(it, client, msg.childId, feeDecisionMinDate) }

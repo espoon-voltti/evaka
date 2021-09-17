@@ -44,8 +44,6 @@ data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
         AsyncJob.ScheduleKoskiUploads::class -> listOf("SCHEDULE_KOSKI_UPLOADS")
         AsyncJob.SendApplicationEmail::class -> listOf("SEND_APPLICATION_EMAIL")
         AsyncJob.GarbageCollectPairing::class -> listOf("GARBAGE_COLLECT_PAIRING")
-        AsyncJob.VardaUpdate::class -> listOf("VARDA_UPDATE")
-        AsyncJob.VardaUpdateV2::class -> listOf("VARDA_UPDATE_V2")
         AsyncJob.SendPendingDecisionEmail::class -> listOf("SEND_PENDING_DECISION_EMAIL")
         AsyncJob.SendMessageNotificationEmail::class -> listOf("SEND_UNREAD_MESSAGE_NOTIFICATION")
         AsyncJob.RunScheduledJob::class -> listOf("RUN_SCHEDULED_JOB")
@@ -61,6 +59,20 @@ data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
 
 interface AsyncJobPayload {
     val user: AuthenticatedUser?
+}
+
+sealed interface VardaAsyncJob : AsyncJobPayload {
+    data class UpdateVardaChild(
+        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    ) : VardaAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class ResetVardaChild(
+        val childId: UUID
+    ) : VardaAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 @JsonIgnoreProperties("asyncJobType") // only present in old jobs in db
@@ -122,14 +134,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    class VardaUpdate : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    class VardaUpdateV2 : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class RunScheduledJob(val job: ScheduledJob) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -152,18 +156,6 @@ sealed interface AsyncJob : AsyncJobPayload {
             data class Adult(val adultId: UUID) : Person()
             data class Child(val childId: UUID) : Person()
         }
-    }
-
-    data class UpdateVardaChild(
-        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class ResetVardaChild(
-        val childId: UUID
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
     }
 }
 
