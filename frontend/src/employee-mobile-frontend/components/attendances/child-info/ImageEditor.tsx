@@ -133,7 +133,7 @@ export default React.memo(function ImageEditor({
     <Container>
       <Gap />
 
-      <div style={{ flexGrow: 1, flexShrink: 1, height: '100px' }}>
+      <CropWrapper>
         <ReactCrop
           src={image}
           crop={crop}
@@ -151,7 +151,7 @@ export default React.memo(function ImageEditor({
             display: 'none'
           }}
         />
-      </div>
+      </CropWrapper>
 
       <Gap />
 
@@ -186,4 +186,55 @@ const ButtonRow = styled(FixedSpaceRow)`
   width: 100%;
   justify-content: space-around;
   padding: ${defaultMargins.s};
+`
+
+const CropWrapper = styled.div`
+  flex-grow: 1;
+  flex-shrink: 1;
+  height: 100px;
+
+  .ReactCrop .ord-nw {
+    top: -24px;
+    left: -24px;
+  }
+
+  .ReactCrop .ord-nw::after {
+    top: 24px;
+    left: 24px;
+  }
+
+  .ReactCrop .ord-ne {
+    top: -24px;
+    right: -24px;
+  }
+
+  .ReactCrop .ord-ne::after {
+    top: 24px;
+    right: 24px;
+  }
+
+  .ReactCrop .ord-se {
+    bottom: -24px;
+    right: -24px;
+  }
+
+  .ReactCrop .ord-se::after {
+    bottom: 24px;
+    right: 24px;
+  }
+
+  .ReactCrop .ord-sw {
+    bottom: -24px;
+    left: -24px;
+  }
+
+  .ReactCrop .ord-sw::after {
+    bottom: 24px;
+    left: 24px;
+  }
+
+  .ReactCrop__drag-handle {
+    width: 64px;
+    height: 64px;
+  }
 `
