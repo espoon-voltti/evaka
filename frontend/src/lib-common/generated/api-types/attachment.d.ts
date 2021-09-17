@@ -5,16 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-import { UUID } from '../../types'
 
-/**
-* Generated from fi.espoo.evaka.attachment.Attachment
-*/
-export interface Attachment {
-  contentType: string
-  id: UUID
-  name: string
-}
 
 /**
 * Generated from fi.espoo.evaka.attachment.AttachmentType

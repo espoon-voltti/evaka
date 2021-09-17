@@ -401,20 +401,6 @@ export interface NoteRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteSearchDTO
-*/
-export interface NoteSearchDTO {
-  applicationIds: UUID[]
-}
-
-/**
-* Generated from fi.espoo.evaka.application.notes.NotesWrapperJSON
-*/
-export interface NotesWrapperJSON {
-  notes: NoteJSON[]
-}
-
-/**
 * Generated from fi.espoo.evaka.application.OtherGuardianAgreementStatus
 */
 export type OtherGuardianAgreementStatus = 

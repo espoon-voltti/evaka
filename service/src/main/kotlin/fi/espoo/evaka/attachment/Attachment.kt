@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -16,6 +17,7 @@ sealed class AttachmentParent {
     object None : AttachmentParent()
 }
 
+@ExcludeCodeGen
 data class Attachment(
     val id: AttachmentId,
     val name: String,
