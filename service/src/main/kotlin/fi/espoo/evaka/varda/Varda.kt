@@ -33,16 +33,11 @@ data class VardaDecisionResponse(
 )
 
 data class VardaPlacement(
-    @JsonProperty("varhaiskasvatuspaatos")
-    val decisionUrl: String,
-    @JsonProperty("toimipaikka_oid")
-    val unitOid: String,
-    @JsonProperty("alkamis_pvm")
-    val startDate: LocalDate,
-    @JsonProperty("paattymis_pvm")
-    val endDate: LocalDate?,
-    @JsonProperty("lahdejarjestelma")
-    val sourceSystem: String
+    val varhaiskasvatuspaatos: String,
+    val toimipaikka_oid: String,
+    val alkamis_pvm: LocalDate,
+    val paattymis_pvm: LocalDate?,
+    val lahdejarjestelma: String
 )
 
 data class VardaPlacementResponse(

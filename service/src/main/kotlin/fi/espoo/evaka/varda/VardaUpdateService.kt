@@ -867,11 +867,11 @@ data class EvakaServiceNeedInfoForVarda(
     )
 
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(
-        decisionUrl = vardaDecisionUrl,
-        unitOid = this.ophUnitOid ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
-        startDate = this.startDate,
-        endDate = this.endDate,
-        sourceSystem = sourceSystem
+        varhaiskasvatuspaatos = vardaDecisionUrl,
+        toimipaikka_oid = this.ophUnitOid ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        lahdejarjestelma = sourceSystem
     )
 
     fun toVardaServiceNeed(): VardaServiceNeed =
