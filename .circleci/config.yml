@@ -921,7 +921,7 @@ jobs:
           env: << parameters.target_env >>
       - notify_slack
 
-  frontend_deploy:
+  frontend_install:
     executor: aws_core_executor
     parameters:
       target_env:
@@ -929,7 +929,15 @@ jobs:
     steps:
       - install_frontend:
           target_env: << parameters.target_env >>
-      - deploy_frontend:
+      - notify_slack
+
+  frontend_deploy:
+    executor: aws_core_executor
+    parameters:
+      target_env:
+        type: string
+    steps:
+      - install_frontend:
           target_env: << parameters.target_env >>
       - notify_slack
 
@@ -1280,14 +1288,7 @@ workflows:
       - clone_infra_repo:
           <<: *aws_contexts
           requires:
-            - lint_scripts
-            - frontend_build_misc_and_test
-            - e2e-test-testcafe
-            - e2e-test-playwright
-            - apigw_build_and_push_image
-            - proxy_build_and_push_image
-            - service_build_and_push_image
-            - message_service_build_and_push_image
+            - frontend_install
           filters:
             branches:
               only: master
@@ -1307,14 +1308,7 @@ workflows:
       - frontend_approve_dev_deploy_branch:
           type: approval
           requires:
-            - lint_scripts
-            - frontend_build_misc_and_test
-            - e2e-test-testcafe
-            - e2e-test-playwright
-            - apigw_build_and_push_image
-            - proxy_build_and_push_image
-            - service_build_and_push_image
-            - message_service_build_and_push_image
+            - frontend_install
           filters:
             branches:
               ignore: master
@@ -1348,6 +1342,22 @@ workflows:
               ignore: master
           target_env: dev
 
+      - frontend_install:
+          <<: *aws_contexts
+          name: frontend_install_<< matrix.target_env >>
+          requires:
+            - lint_scripts
+            - frontend_build_misc_and_test
+            - e2e-test-testcafe
+            - e2e-test-playwright
+            - apigw_build_and_push_image
+            - proxy_build_and_push_image
+            - service_build_and_push_image
+            - message_service_build_and_push_image
+          matrix:
+            parameters:
+              target_env: [dev, test, staging, prod]
+
       - frontend_deploy:
           <<: *aws_contexts
           name: frontend_deploy_<< matrix.target_env >>
@@ -1359,6 +1369,7 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
+
       - frontend_approve_staging_deploy:
           type: approval
           requires:
