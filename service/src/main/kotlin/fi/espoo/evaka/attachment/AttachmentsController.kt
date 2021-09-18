@@ -15,6 +15,7 @@ import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -78,6 +79,18 @@ class AttachmentsController(
         return handleFileUpload(db, user, AttachToIncomeStatement(incomeStatementId), file)
     }
 
+    @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadMessageAttachment(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable draftId: MessageDraftId,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        Audit.AttachmentsUploadForMessage.log()
+        accessControl.requirePermissionFor(user, Action.Global.UPLOAD_MESSAGE_ATTACHMENT)
+        return handleFileUpload(db, user, AttachToMessageDraft(draftId), file)
+    }
+
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
         db: Database,
@@ -85,7 +98,7 @@ class AttachmentsController(
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<AttachmentId> {
+    ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
@@ -94,10 +107,8 @@ class AttachmentsController(
         val attachTo = AttachToApplication(applicationId)
         checkAttachmentCount(db, attachTo, user)
 
-        val id = handleFileUpload(db, user, attachTo, file, type)
-        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
-
-        return ResponseEntity.ok(id)
+        return handleFileUpload(db, user, attachTo, file, type)
+            .also { db.transaction { stateService.reCalculateDueDate(it, applicationId) } }
     }
 
     @PostMapping(
@@ -127,6 +138,7 @@ class AttachmentsController(
                 is AttachToNothing -> it.userUnparentedAttachmentCount(user.id)
                 is AttachToApplication -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
                 is AttachToIncomeStatement -> it.userIncomeStatementAttachmentCount(attachTo.incomeStatementId, user.id)
+                is AttachToMessageDraft -> 0
             }
         }
         if (count >= maxAttachmentsPerUser) {

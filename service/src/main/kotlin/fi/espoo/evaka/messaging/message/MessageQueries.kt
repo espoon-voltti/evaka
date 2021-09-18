@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -63,12 +64,11 @@ fun Database.Transaction.insertMessage(
     sender: MessageAccountId,
     recipientNames: List<String>,
     repliesToMessageId: MessageId? = null,
-    sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
 ): MessageId {
     // language=SQL
     val insertMessageSql = """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
-        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, :sentAt, :recipientNames
+        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, now(), :recipientNames
         FROM message_account_name_view name_view
         WHERE name_view.id = :senderId
         RETURNING id
@@ -78,7 +78,6 @@ fun Database.Transaction.insertMessage(
         .bind("threadId", threadId)
         .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
-        .bind("sentAt", sentAt)
         .bind("recipientNames", recipientNames.toTypedArray())
         .mapTo<MessageId>()
         .one()
@@ -121,6 +120,22 @@ fun Database.Transaction.insertThread(
         .bind("title", title)
         .mapTo<MessageThreadId>()
         .one()
+}
+
+fun Database.Transaction.reAssociateMessageAttachments(attachmentIds: Set<AttachmentId>, messageContentId: MessageContentId): Int {
+    return createUpdate(
+        """
+UPDATE attachment
+SET
+    message_content_id = :messageContentId,
+    message_draft_id = NULL
+WHERE
+    id = ANY(:attachmentIds)
+        """.trimIndent()
+    )
+        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("messageContentId", messageContentId)
+        .execute()
 }
 
 data class ReceivedMessageResultItem(

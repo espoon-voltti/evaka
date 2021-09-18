@@ -15,8 +15,8 @@ import MessageEditor from './MessageEditor'
 import MessageList from './ThreadListContainer'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
-import { MessageBody } from './types'
 import ReceiverSelection from './ReceiverSelection'
+import { MessageBody } from './types'
 
 // TODO is fixed header height possible?
 // If not, replace with a stretching flex container with scrollable children
@@ -93,14 +93,11 @@ export default function MessagesPage() {
   }, [setSelectedDraft])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: MessageBody, draftId?: UUID) => {
+    (accountId: UUID, messageBody: MessageBody) => {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          const maybeDeleteDraft = draftId
-            ? deleteDraft(accountId, draftId)
-            : Promise.resolve()
-          void maybeDeleteDraft.then(() => refreshMessages(accountId))
+          refreshMessages(accountId)
           hideEditor()
         } else {
           setErrorMessage({
@@ -115,13 +112,9 @@ export default function MessagesPage() {
     [hideEditor, i18n, refreshMessages, setErrorMessage]
   )
 
-  const onDiscard = (accountId: UUID, draftId?: UUID) => {
+  const onDiscard = (accountId: UUID, draftId: UUID) => {
     hideEditor()
-    if (draftId) {
-      void deleteDraft(accountId, draftId).then(() =>
-        refreshMessages(accountId)
-      )
-    }
+    void deleteDraft(accountId, draftId).then(() => refreshMessages(accountId))
   }
 
   const onHide = (didChanges: boolean) => {

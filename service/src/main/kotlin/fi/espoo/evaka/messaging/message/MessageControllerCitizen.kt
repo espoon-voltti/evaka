@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -133,14 +132,12 @@ class MessageControllerCitizen(
         if (allReceiversValid) {
             return db.transaction { tx ->
                 val contentId = tx.insertMessageContent(body.content, accountId)
-                val sentAt = HelsinkiDateTime.now()
                 val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
                 val messageId =
                     tx.insertMessage(
                         contentId = contentId,
                         threadId = threadId,
                         sender = accountId,
-                        sentAt = sentAt,
                         recipientNames = body.recipients.map { it.name }
                     )
                 body.recipients.map {

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -85,6 +86,8 @@ class MessageController(
         val type: MessageType,
         val recipientAccountIds: Set<MessageAccountId>,
         val recipientNames: List<String>,
+        val attachmentIds: Set<AttachmentId> = setOf(),
+        val draftId: MessageDraftId? = null
     )
 
     @PostMapping("/{accountId}")
@@ -100,16 +103,19 @@ class MessageController(
         checkAuthorizedRecipients(db, user, body.recipientAccountIds)
         val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
 
-        return db.transaction {
+        return db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
-                it,
+                tx,
                 title = body.title,
                 content = body.content,
                 sender = accountId,
                 type = body.type,
                 recipientNames = body.recipientNames,
                 recipientGroups = groupedRecipients,
-            )
+                attachmentIds = body.attachmentIds,
+            ).also {
+                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+            }
         }
     }
 
@@ -157,7 +163,7 @@ class MessageController(
     ) {
         Audit.MessagingDeleteDraft.log(accountId, draftId)
         requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.deleteDraft(accountId, draftId) }
+        return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
 
     data class ReplyToMessageBody(

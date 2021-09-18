@@ -7,14 +7,32 @@ package fi.espoo.evaka.messaging.message
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.db.Database
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> {
-    return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId ORDER BY created DESC")
+fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
+    this.createQuery(
+        """
+        SELECT
+            draft.*,
+            (SELECT coalesce(jsonb_agg(json_build_object(
+                    'id', id,
+                    'name', name,
+                    'contentType', content_type
+                )), '[]'::jsonb) FROM (
+                SELECT id, name, content_type
+                FROM attachment a
+                WHERE a.message_draft_id = draft.id
+                ORDER BY a.created
+            ) s) AS attachments
+        FROM message_draft draft
+        WHERE draft.account_id = :accountId
+        ORDER BY draft.created DESC
+        """
+    )
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
         .list()
-}
 
 fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
     return this.createQuery(
@@ -41,17 +59,9 @@ fun Database.Transaction.upsertDraft(accountId: MessageAccountId, id: MessageDra
              recipient_ids = excluded.recipient_ids,
              recipient_names = excluded.recipient_names
         """.trimIndent()
-    ).bindMap(
-        mapOf(
-            "id" to id,
-            "accountId" to accountId,
-            "type" to draft.type,
-            "title" to draft.title,
-            "content" to draft.content,
-            "recipientIds" to draft.recipientIds.toTypedArray(),
-            "recipientNames" to draft.recipientNames.toTypedArray()
-        )
-    )
+    ).bindKotlin(draft)
+        .bind("id", id)
+        .bind("accountId", accountId)
         .execute()
 }
 
