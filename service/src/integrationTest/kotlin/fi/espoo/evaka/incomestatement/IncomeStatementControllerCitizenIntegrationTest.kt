@@ -56,7 +56,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                 )
             ),
             incomeStatements,
@@ -148,7 +148,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                     attachments = listOf(),
                 )
             ),
@@ -319,7 +319,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -488,7 +488,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 otherInfo = "",
                 created = incomeStatement.created,
                 updated = updated,
-                handlerName = null,
+                handled = false,
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
             getIncomeStatement(incomeStatement.id),

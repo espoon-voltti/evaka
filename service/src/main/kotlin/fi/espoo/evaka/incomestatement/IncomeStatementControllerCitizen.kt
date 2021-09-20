@@ -117,7 +117,7 @@ class IncomeStatementControllerCitizen {
         id: IncomeStatementId
     ) {
         val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, excludeEmployeeAttachments = true) ?: throw NotFound("Income statement not found")
-        if (incomeStatement.handlerName != null) {
+        if (incomeStatement.handled) {
             throw Forbidden("Handled income statement cannot be modified or removed")
         }
     }

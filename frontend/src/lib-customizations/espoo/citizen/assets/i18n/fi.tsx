@@ -289,7 +289,7 @@ export const INCOME_I18N = {
     incomeStatementForm: 'Tuloselvityslomake',
     startDate: 'Voimassa alkaen',
     endDate: 'Voimassa asti',
-    handler: 'Käsittelijä',
+    handled: 'Käsitelty',
     openIncomeStatement: 'Avaa lomake',
     deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
     deleteDescription:

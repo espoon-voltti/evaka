@@ -58,7 +58,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement1.updated,
-                handlerName = null,
+                handled = false,
             ),
             incomeStatement1
         )
@@ -73,7 +73,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement2.updated,
-                handlerName = "Test Person",
+                handled = true,
             ),
             incomeStatement2
         )
@@ -88,7 +88,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement3.updated,
-                handlerName = null,
+                handled = false,
             ),
             incomeStatement3
         )
@@ -145,7 +145,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 ),
                 created = incomeStatement.created,
                 updated = incomeStatement.updated,
-                handlerName = null,
+                handled = false,
             ),
             getIncomeStatement(id)
         )

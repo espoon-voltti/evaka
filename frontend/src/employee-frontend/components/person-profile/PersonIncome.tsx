@@ -213,7 +213,7 @@ function IncomeStatementRow({
         <Checkbox
           data-qa="set-handled-checkbox"
           label={i18n.handled}
-          checked={incomeStatement.handlerName !== null}
+          checked={incomeStatement.handled}
           disabled={loading}
           onChange={setHandled}
         />

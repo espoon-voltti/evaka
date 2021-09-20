@@ -41,7 +41,7 @@ interface Base {
   endDate: LocalDate | null
   created: Date
   updated: Date
-  handlerName: string | null
+  handled: boolean
 }
 
 export interface HighestFee extends Base {

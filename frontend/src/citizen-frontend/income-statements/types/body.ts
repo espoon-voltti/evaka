@@ -8,7 +8,7 @@ import { UUID } from 'lib-common/types'
 import { HighestFee, Income } from 'lib-common/api-types/incomeStatement'
 import * as Form from './form'
 
-type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handlerName'
+type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled'
 
 export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
 

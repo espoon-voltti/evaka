@@ -56,7 +56,7 @@ SELECT
     other_info,
     ist.created,
     ist.updated,
-    e.first_name || ' ' || e.last_name as handler_name,
+    handler_id IS NOT NULL AS handled,
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
@@ -70,7 +70,6 @@ SELECT
         ORDER BY a.created
     ) s) AS attachments
 FROM income_statement ist
-LEFT JOIN employee e on ist.handler_id = e.id
 WHERE person_id = :personId
 ${if (single) "AND ist.id = :id" else ""}
 ORDER BY start_date DESC
@@ -83,7 +82,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
     val endDate = row.mapColumn<LocalDate?>("end_date")
     val created = row.mapColumn<HelsinkiDateTime>("created")
     val updated = row.mapColumn<HelsinkiDateTime>("updated")
-    val handlerName = row.mapColumn<String?>("handler_name")
+    val handled = row.mapColumn<Boolean>("handled")
     return when (row.mapColumn<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
@@ -92,7 +91,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 endDate = endDate,
                 created = created,
                 updated = updated,
-                handlerName = handlerName,
+                handled = handled,
             )
 
         IncomeStatementType.INCOME -> {
@@ -154,7 +153,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 otherInfo = row.mapColumn("other_info"),
                 created = created,
                 updated = updated,
-                handlerName = handlerName,
+                handled = handled,
                 attachments = row.mapJsonColumn("attachments")
             )
         }

@@ -159,7 +159,7 @@ sealed class IncomeStatement(
     open val endDate: LocalDate?,
     open val created: HelsinkiDateTime,
     open val updated: HelsinkiDateTime,
-    open val handlerName: String?
+    open val handled: Boolean
 ) {
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
@@ -168,8 +168,8 @@ sealed class IncomeStatement(
         override val endDate: LocalDate?,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handlerName: String?
-    ) : IncomeStatement(id, startDate, endDate, created, updated, handlerName)
+        override val handled: Boolean
+    ) : IncomeStatement(id, startDate, endDate, created, updated, handled)
 
     @JsonTypeName("INCOME")
     data class Income(
@@ -183,7 +183,7 @@ sealed class IncomeStatement(
         val otherInfo: String,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handlerName: String?,
+        override val handled: Boolean,
         val attachments: List<Attachment>,
-    ) : IncomeStatement(id, startDate, endDate, created, updated, handlerName)
+    ) : IncomeStatement(id, startDate, endDate, created, updated, handled)
 }
