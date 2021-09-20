@@ -20,7 +20,7 @@ export default class CitizenHeader {
     '[data-qa="button-select-language"]'
   )
   #languageOptionList = new RawElement(this.page, '[data-qa="select-lang"]')
-  applicationsTab = new RawElement(this.page, '[data-qa="nav-applications"]')
+  applyingTab = new RawElement(this.page, '[data-qa="nav-applying"]')
 
   async logIn() {
     if (this.type === 'mobile') {
@@ -30,14 +30,32 @@ export default class CitizenHeader {
   }
 
   async selectTab(tab: 'applications' | 'decisions' | 'income' | 'calendar') {
+    const isContainedInApplyingSubheader = [
+      'applications',
+      'decisions'
+    ].includes(tab)
     if (this.type === 'mobile') {
       await this.#menuButton.click()
     }
     if (tab !== 'income') {
-      await this.page
-        .locator(`[data-qa="${this.type}-nav"]`)
-        .locator(`[data-qa="nav-${tab}"]`)
-        .click()
+      if (isContainedInApplyingSubheader) {
+        await this.page
+          .locator(`[data-qa="${this.type}-nav"]`)
+          .locator(`[data-qa="nav-applying"]`)
+          .click()
+        await this.page.waitForSelector('[data-qa="applying-subnavigation"]', {
+          state: 'visible'
+        })
+        await this.page
+          .locator(`[data-qa="applying-subnavigation"]`)
+          .locator(`[data-qa="${tab}-tab"]`)
+          .click()
+      } else {
+        await this.page
+          .locator(`[data-qa="${this.type}-nav"]`)
+          .locator(`[data-qa="nav-${tab}"]`)
+          .click()
+      }
     } else {
       await this.page
         .locator(`[data-qa="${this.type}-nav"]`)

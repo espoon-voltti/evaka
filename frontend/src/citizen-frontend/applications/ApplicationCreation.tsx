@@ -179,7 +179,7 @@ export default React.memo(function ApplicationCreation() {
             />
             <Button
               text={t.common.cancel}
-              onClick={() => history.push('/applications')}
+              onClick={() => history.push('/applying/applications')}
             />
           </ButtonContainer>
         </ContentArea>

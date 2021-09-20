@@ -16,14 +16,15 @@ type Props = {
     counter?: number
   }>
   mobile?: boolean
+  dataQa?: string
 }
 
-export default React.memo(function Tabs({ tabs, mobile }: Props) {
+export default React.memo(function Tabs({ tabs, mobile, dataQa }: Props) {
   const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Background>
       <Container>
-        <TabsContainer>
+        <TabsContainer data-qa={dataQa}>
           {tabs.map(({ id, link, label, counter }) => (
             <TabContainer
               key={id}

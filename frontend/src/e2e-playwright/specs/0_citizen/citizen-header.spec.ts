@@ -31,18 +31,18 @@ describe('Citizen page', () => {
   test('UI language can be changed', async () => {
     await header.selectLanguage('fi')
     await waitUntilEqual(
-      async () => (await header.applicationsTab.innerText).toLowerCase(),
-      'hakemukset'
+      async () => (await header.applyingTab.innerText).toLowerCase(),
+      'hakeminen'
     )
     await header.selectLanguage('sv')
     await waitUntilEqual(
-      async () => (await header.applicationsTab.innerText).toLowerCase(),
-      'ansökningar'
+      async () => (await header.applyingTab.innerText).toLowerCase(),
+      'ansöker'
     )
     await header.selectLanguage('en')
     await waitUntilEqual(
-      async () => (await header.applicationsTab.innerText).toLowerCase(),
-      'applications'
+      async () => (await header.applyingTab.innerText).toLowerCase(),
+      'applying'
     )
   })
 })
