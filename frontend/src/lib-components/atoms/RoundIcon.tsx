@@ -214,7 +214,11 @@ function WithLabel({
       />
       <Text color={color}>{label}</Text>
       {bubble && (size === 'L' || size === 'XL') && (
-        <Circle smaller={size === 'L'} color={bubblecolor}>
+        <Circle
+          smaller={size === 'L'}
+          color={bubblecolor}
+          data-qa={dataQa ? `${dataQa}-bubble` : ''}
+        >
           {number}
         </Circle>
       )}

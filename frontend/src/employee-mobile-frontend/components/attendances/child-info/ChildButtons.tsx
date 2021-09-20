@@ -58,6 +58,7 @@ export default React.memo(function ChildButtons({
             size="XL"
             label={i18n.common.dailyNotes}
             bubble={noteFound}
+            data-qa={'daily-note-icon'}
           />
         </Link>
         <Link

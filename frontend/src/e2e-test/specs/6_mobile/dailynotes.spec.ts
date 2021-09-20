@@ -149,55 +149,6 @@ test('Daycare group empty list indicator is shown', async (t) => {
   await t.expect(mobileGroupsPage.noChildrenIndicator.visible).ok()
 })
 
-test('User can create a daily note for a child', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
-    note: 'Testi viesti',
-    feedingNote: 'MEDIUM',
-    sleepingMinutes: '13',
-    sleepingNote: 'NONE',
-    reminders: ['DIAPERS'],
-    reminderNote: 'Ei enää pähkinöitä antaa saa',
-    modifiedBy: 'e2e-test'
-  }
-  const hours =
-    Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60) > 0
-      ? Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60).toString()
-      : ''
-  const minutes =
-    Number(daycareDailyNote.sleepingMinutes) % 60 > 0
-      ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
-      : ''
-
-  await t
-    .expect(
-      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-        .visible
-    )
-    .notOk()
-
-  await childPage.createDailyNote(
-    fixtures.enduserChildFixtureJari,
-    mobileGroupsPage,
-    daycareDailyNote
-  )
-
-  await t.click(
-    mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-  )
-  await t
-    .expect(childPage.dailyNoteNoteInput.textContent)
-    .eql(daycareDailyNote.note)
-  await t.expect(childPage.dailyNoteSleepingTimeHoursInput.value).eql(hours)
-  await t.expect(childPage.dailyNoteSleepingTimeMinutesInput.value).eql(minutes)
-  await t
-    .expect(childPage.dailyNoteReminderNoteInput.textContent)
-    .eql(daycareDailyNote.reminderNote)
-})
-
 test('User can delete a daily note for a child', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
