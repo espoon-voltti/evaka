@@ -116,7 +116,7 @@ export default React.memo(function ThreadListContainer({
           id: message.contentId,
           sender: { ...account },
           sentAt: message.sentAt,
-          recipients: message.recipients.map((r) => ({ ...r.account })),
+          recipients: message.recipients,
           readAt: new Date(),
           content: message.content
         }
