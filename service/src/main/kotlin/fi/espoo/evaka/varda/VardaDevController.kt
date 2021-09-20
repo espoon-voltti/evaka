@@ -28,7 +28,8 @@ class VardaDevController(
     fun resetChildren(
         db: Database.Connection,
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
+        @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaUpdateService.planVardaReset(db, addNewChildren)
+        vardaUpdateService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
     }
 }

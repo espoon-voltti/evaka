@@ -43,6 +43,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
     RemoveOldDraftApplications(ScheduledJobs::removeOldDraftApplications),
     SendPendingDecisionReminderEmails(ScheduledJobs::sendPendingDecisionReminderEmails),
     VardaUpdate(ScheduledJobs::vardaUpdate),
+    VardaReset(ScheduledJobs::vardaReset),
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset)
 }
@@ -91,6 +92,10 @@ class ScheduledJobs(
 
     fun vardaUpdate(db: Database.Connection) {
         vardaUpdateService.startVardaUpdate(db)
+    }
+
+    fun vardaReset(db: Database.Connection) {
+        vardaUpdateService.planVardaReset(db, addNewChildren = true)
     }
 
     fun removeOldDraftApplications(db: Database.Connection) {
