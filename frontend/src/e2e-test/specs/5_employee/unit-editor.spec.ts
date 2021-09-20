@@ -6,11 +6,11 @@ import { UnitDetailsPage } from '../../pages/admin/unit-details-page'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import { employeeLogin, seppoAdmin } from '../../config/users'
-import AdminHome from '../../pages/home'
+import Home from '../../pages/employee/home'
 import { Daycare } from 'e2e-test-common/dev-api/types'
 import { insertCareAreaFixtures, resetDatabase } from 'e2e-test-common/dev-api'
 
-const adminHome = new AdminHome()
+const home = new Home()
 const unitDetailsPage = new UnitDetailsPage()
 
 let daycare1: Daycare
@@ -30,7 +30,7 @@ fixture('Unit - unit details')
       }
     ])
     daycare1 = fixtures.daycareFixture
-    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   })
   .afterEach(logConsoleMessages)
 

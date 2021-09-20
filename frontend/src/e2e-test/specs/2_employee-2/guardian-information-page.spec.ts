@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import {
   AreaAndPersonFixtures,
@@ -37,7 +36,6 @@ import {
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import GuardianPage from '../../pages/employee/guardian-page'
 
-const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const guardianPage = new GuardianPage()
 
@@ -74,7 +72,7 @@ fixture('Employee - Guardian Information')
         employeeId: supervisorId
       }
     ])
-    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+    await employeeLogin(t, seppoAdmin)
     await employeeHome.navigateToGuardianInformation(enduserGuardianFixture.id)
   })
   .afterEach(logConsoleMessages)

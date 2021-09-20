@@ -18,7 +18,7 @@ import {
   daycareFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import Home from '../../pages/home'
+import Home from '../../pages/employee/home'
 import { format, sub } from 'date-fns'
 import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 import ReportsPage from '../../pages/reports'

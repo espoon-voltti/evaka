@@ -4,12 +4,8 @@
 
 // This will be used with Testcafe's useRole.
 
-import { Role } from 'testcafe'
-import Home from '../pages/home'
 import config from 'e2e-test-common/config'
 import { UUID } from 'e2e-test-common/dev-api/types'
-
-const home = new Home()
 
 export interface DevLoginUser {
   aad: UUID
@@ -86,11 +82,3 @@ export async function mobileLogin(t: TestController, token: string) {
     `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${token}`
   )
 }
-
-export const enduserRole = Role(
-  config.enduserUrl,
-  async () => {
-    await home.enduserLogin()
-  },
-  { preserveUrl: true }
-)

@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import AdminHome from '../../pages/home'
-import EmployeeHome from '../../pages/employee/home'
+import Home from '../../pages/employee/home'
 import FridgeHeadInformationPage from '../../pages/employee/fridge-head-information/fridge-head-information-page'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import {
@@ -24,8 +23,7 @@ import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 
-const adminHome = new AdminHome()
-const employeeHome = new EmployeeHome()
+const home = new Home()
 const fridgeHeadInformation = new FridgeHeadInformationPage()
 const childInformation = new ChildInformationPage()
 
@@ -67,24 +65,22 @@ fixture('Employee - Head of family details')
       minFee: 2700,
       maxFee: 28900
     })
-    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
+    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   })
   .afterEach(logConsoleMessages)
 
 test('guardian has restriction details enabled', async () => {
-  await employeeHome.navigateToGuardianInformation(
-    fixtures.restrictedPersonFixture.id
-  )
+  await home.navigateToGuardianInformation(fixtures.restrictedPersonFixture.id)
   await fridgeHeadInformation.verifyRestrictedDetails(true)
 })
 
 test('guardian does not have restriction details enabled', async () => {
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.verifyRestrictedDetails(false)
 })
 
 test('Zero-year-old child is shown as age 0', async () => {
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.addChild({
     searchWord: fixtures.personFixtureChildZeroYearOld.firstName,
     startDate: '01.01.2020'
@@ -101,13 +97,13 @@ test('Zero-year-old child is shown as age 0', async () => {
 })
 
 test('Retroactive fee decisions can start before the minimum fee decision date', async () => {
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.addChild({
     searchWord: child.firstName,
     startDate: '01.01.2020'
   })
 
-  await employeeHome.navigateToChildInformation(child.id)
+  await home.navigateToChildInformation(child.id)
   await childInformation.createNewPlacement({
     unitName: fixtures.daycareFixture.name,
     startDate: '01.01.2020',
@@ -115,7 +111,7 @@ test('Retroactive fee decisions can start before the minimum fee decision date',
   })
 
   await runPendingAsyncJobs()
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.verifyFeeDecision({
     startDate: '01.03.2020',
     endDate: '31.07.2020',
@@ -131,7 +127,7 @@ test('Retroactive fee decisions can start before the minimum fee decision date',
 })
 
 test('Added partner is shown n family overview', async () => {
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.addPartner({
     searchWord: fridgePartner.firstName,
     startDate: '01.01.2020'
@@ -143,7 +139,7 @@ test('Added partner is shown n family overview', async () => {
 test('Manually added income is shown in family overview', async () => {
   const income = 1000
 
-  await employeeHome.navigateToGuardianInformation(regularPerson.id)
+  await home.navigateToGuardianInformation(regularPerson.id)
   await fridgeHeadInformation.addIncome({
     mainIncome: income
   })

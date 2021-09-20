@@ -9,7 +9,7 @@ import {
 } from '../../../e2e-test-common/dev-api/data-init'
 import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
 import { employeeLogin, seppoAdmin } from '../../config/users'
-import Home from '../../pages/home'
+import Home from '../../pages/employee/home'
 import ReportsPage from '../../pages/reports'
 import { logConsoleMessages } from '../../utils/fixture'
 

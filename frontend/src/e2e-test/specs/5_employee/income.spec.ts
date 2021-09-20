@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import 'testcafe'
-import EmployeeHome from '../../pages/employee/home'
+import Home from '../../pages/employee/home'
 import { Selector } from 'testcafe'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import FridgeHeadInformationPage from '../../pages/employee/fridge-head-information/fridge-head-information-page'
 
-const page = new EmployeeHome()
+const home = new Home()
 const fridgeHeadInformation = new FridgeHeadInformationPage()
 
 let personId: string
@@ -21,7 +21,7 @@ fixture('Invoicing - income')
     await resetDatabase()
     const fixtures = await initializeAreaAndPersonData()
     personId = fixtures.enduserGuardianFixture.id
-    await employeeLogin(t, seppoAdmin, page.url)
+    await employeeLogin(t, seppoAdmin, home.url)
   })
 
 const newIncomeButton = Selector('[data-qa="add-income-button"]')
@@ -58,7 +58,7 @@ async function chooseCoefficient(
 }
 
 test('Create a new max fee accepted income.', async (t) => {
-  await page.navigateToGuardianInformation(personId)
+  await home.navigateToGuardianInformation(personId)
 
   await fridgeHeadInformation.openIncomesCollapsible()
   await t.click(newIncomeButton)
@@ -77,7 +77,7 @@ test('Create a new max fee accepted income.', async (t) => {
 })
 
 test('Create a new income with multiple values.', async (t) => {
-  await page.navigateToGuardianInformation(personId)
+  await home.navigateToGuardianInformation(personId)
 
   await fridgeHeadInformation.openIncomesCollapsible()
   await t.click(newIncomeButton)
@@ -104,7 +104,7 @@ test('Create a new income with multiple values.', async (t) => {
 })
 
 test('Income editor save button is disabled with invalid values', async (t) => {
-  await page.navigateToGuardianInformation(personId)
+  await home.navigateToGuardianInformation(personId)
 
   await fridgeHeadInformation.openIncomesCollapsible()
   await t.click(newIncomeButton)
@@ -131,7 +131,7 @@ test('Income editor save button is disabled with invalid values', async (t) => {
 })
 
 test('Existing income item can have its values updated.', async (t) => {
-  await page.navigateToGuardianInformation(personId)
+  await home.navigateToGuardianInformation(personId)
 
   // create new income item
   await fridgeHeadInformation.openIncomesCollapsible()
@@ -163,7 +163,7 @@ test('Existing income item can have its values updated.', async (t) => {
 })
 
 test('Income coefficients are saved and affect the sum.', async (t) => {
-  await page.navigateToGuardianInformation(personId)
+  await home.navigateToGuardianInformation(personId)
 
   await fridgeHeadInformation.openIncomesCollapsible()
   await t.click(newIncomeButton)

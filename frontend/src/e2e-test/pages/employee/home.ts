@@ -5,10 +5,18 @@
 import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
 
+type EvakaRole = 'manager' | 'admin' | 'enduser'
+
 export default class EmployeeHome {
-  readonly loginBtn = Selector('[data-qa="login-btn"]')
-  readonly userNameBtn = Selector('[data-qa="username"]')
-  readonly logoutBtn = Selector('[data-qa="logout-btn"]')
+  homePage(role: EvakaRole) {
+    switch (role) {
+      case 'manager':
+      case 'admin':
+        return config.adminUrl
+      case 'enduser':
+        return config.enduserUrl
+    }
+  }
 
   readonly url = config.employeeUrl
 
