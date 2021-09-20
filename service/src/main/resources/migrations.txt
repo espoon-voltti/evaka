@@ -140,3 +140,4 @@ V139__absence_modified_by_citizen.sql
 V140__message_account_type.sql
 V141__attendance_reservation.sql
 V142__message_attachments.sql
+V143__income_statement_changes.sql
