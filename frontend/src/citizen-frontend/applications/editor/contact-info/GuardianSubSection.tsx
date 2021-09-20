@@ -99,7 +99,7 @@ export default React.memo(function GuardianSubSection({
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing={'xs'}>
             <Checkbox
-              label={t.applications.editor.contactInfo.noEmail + ' *'}
+              label={t.applications.editor.contactInfo.noEmail}
               checked={formData.noGuardianEmail}
               data-qa={'noGuardianEmail-input'}
               onChange={(checked) =>
