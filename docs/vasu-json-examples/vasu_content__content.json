@@ -1,0 +1,154 @@
+{
+  "sections": [
+    {
+      "name": "Näkemyksien huomioiminen",
+      "questions": [
+        {
+          "info": "Tässä lukee ohjeet kysymykseen vastaamista varten",
+          "name": "Miten lapsen näkökulma ja mielipiteet on otettu huomioon",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        },
+        {
+          "info": "",
+          "name": "Miten huoltajien näkemykset otetaan huomioon ja miten yhteistyö on järjestetty",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "name": "Aiemman varhaiskasvatussuunnitelman tavoitteet ja toimenpiteet",
+      "questions": [
+        {
+          "info": "Tässä lukee ohjeet kysymykseen vastaamista varten",
+          "name": "Tavoitteiden toteutuminen",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        },
+        {
+          "info": "",
+          "name": "Muut havainnot lapsen edellisestä vasusta",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "name": "Tavoitteet pedagogiselle toiminnalle ja toimenpiteet tavoitteiden saavuttamiseksi",
+      "questions": [
+        {
+          "info": "Tässä lukee ohjeet kysymykseen vastaamista varten",
+          "name": "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        },
+        {
+          "info": "Tässä lukee ohjeet kysymykseen vastaamista varten",
+          "name": "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        },
+        {
+          "info": "Tässä lukee ohjeet kysymykseen vastaamista varten",
+          "name": "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "name": "Lapsen hyvinvoinnin tukemiseen liittyvät muut huomioitavat asiat",
+      "questions": [
+        {
+          "info": "",
+          "name": "Esimerkiksi päiväuniin, ruokailuun tai ulkoiluun liittyvät asiat",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "name": "Muut asiakirjat ja suunnitelmat",
+      "questions": [
+        {
+          "info": "",
+          "name": "Varhaiskasvatussuunitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "name": "Tiedonsaajatahot",
+      "questions": [
+        {
+          "info": "",
+          "name": "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:",
+          "type": "MULTISELECT",
+          "value": [],
+          "ophKey": null,
+          "options": [
+            {
+              "key": "Tulevaan esiopetusryhmään",
+              "name": "Tulevaan esiopetusryhmään"
+            },
+            {
+              "key": "Neuvolaan",
+              "name": "Neuvolaan"
+            },
+            {
+              "key": "Lasten terapiapalveluihin",
+              "name": "Lasten terapiapalveluihin"
+            },
+            {
+              "key": "Erikoissairaanhoitoon",
+              "name": "Erikoissairaanhoitoon"
+            }
+          ],
+          "maxSelections": null,
+          "minSelections": 0
+        },
+        {
+          "info": "",
+          "name": "Muualle, minne?",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "name": "Lisätietoja",
+      "questions": [
+        {
+          "info": "",
+          "name": "Lisätietoja suunnitelmaan, sen laatimiseen tai keskusteluihin liittyen",
+          "type": "TEXT",
+          "value": "",
+          "ophKey": null,
+          "multiline": true
+        }
+      ]
+    }
+  ]
+}
