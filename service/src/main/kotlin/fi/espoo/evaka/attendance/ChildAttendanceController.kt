@@ -13,6 +13,12 @@ import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.PREPARATORY
+import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -85,7 +91,8 @@ class ChildAttendanceController(
         val employeeUser = db.read { it.getEmployeeUser(body.staffId) }
         if (employeeUser != null) {
             try {
-                acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId).requireOneOfRoles(*authorizedRoles)
+                acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId)
+                    .requireOneOfRoles(*authorizedRoles)
             } catch (e: Forbidden) {
                 logger.warn("Unallowed user ${body.staffId} tried to access child info for $childId")
                 return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
@@ -133,6 +140,7 @@ class ChildAttendanceController(
     data class ArrivalRequest(
         @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
+
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
         db: Database.Connection,
@@ -197,17 +205,13 @@ class ChildAttendanceController(
         }.let { ResponseEntity.ok(it) }
     }
 
-    data class DepartureInfoResponse(
-        val absentFrom: Set<AbsenceCareType>
-    )
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID,
-        @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
-    ): ResponseEntity<DepartureInfoResponse> {
+        @PathVariable childId: UUID
+    ): List<AbsenceThreshold> {
         Audit.ChildAttendancesDepartureRead.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -225,16 +229,17 @@ class ChildAttendanceController(
 
             // temporary hotfix for case where scheduled job was missing and child arrived yesterday
             val forgottenToDepart = attendance.arrived.toLocalDate() != dateNow()
-            DepartureInfoResponse(
-                absentFrom = if (forgottenToDepart) emptySet() else getPartialAbsenceCareTypes(placementBasics, arrived, time)
-            )
-        }.let { ResponseEntity.ok(it) }
+
+            if (forgottenToDepart) listOf()
+            else getPartialAbsenceThresholds(placementBasics, arrived)
+        }
     }
 
     data class DepartureRequest(
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
         val absenceType: AbsenceType?
     )
+
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
         db: Database.Connection,
@@ -263,14 +268,15 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val absentFrom = getPartialAbsenceCareTypes(placementBasics, attendance.arrived.toLocalTime(), body.departed)
+            val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime())
+                .filter { body.departed <= it.time }
             tx.deleteAbsencesByDate(childId, dateNow())
             if (absentFrom.isNotEmpty()) {
                 if (body.absenceType == null) {
                     throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
                 }
 
-                absentFrom.forEach { careType ->
+                absentFrom.forEach { (careType, _) ->
                     tx.insertAbsence(user, childId, dateNow(), careType, body.absenceType)
                 }
             } else if (body.absenceType != null) {
@@ -323,6 +329,7 @@ class ChildAttendanceController(
     data class FullDayAbsenceRequest(
         val absenceType: AbsenceType
     )
+
     @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
         db: Database.Connection,
@@ -354,11 +361,13 @@ class ChildAttendanceController(
             tx.getAttendancesResponse(unitId, dateNow())
         }.let { ResponseEntity.ok(it) }
     }
+
     data class AbsenceRangeRequest(
         val absenceType: AbsenceType,
         val startDate: LocalDate,
         val endDate: LocalDate
     )
+
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
         db: Database.Connection,
@@ -408,6 +417,7 @@ data class ChildPlacementBasics(
     val placementType: PlacementType,
     val dateOfBirth: LocalDate
 )
+
 private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: DaycareId): ChildPlacementBasics {
     // language=sql
     val sql =
@@ -429,11 +439,18 @@ private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: Dayca
         .list()
         .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
 }
+
 data class PlacementTypeDate(
     val date: LocalDate,
     val placementType: PlacementType
 )
-private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): List<PlacementTypeDate> {
+
+private fun Database.Read.fetchChildPlacementTypeDates(
+    childId: UUID,
+    unitId: DaycareId,
+    startDate: LocalDate,
+    endDate: LocalDate
+): List<PlacementTypeDate> {
 
     // language=sql
     val sql = """
@@ -490,7 +507,11 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, date: LocalD
     return AttendanceResponse(unitInfo, children)
 }
 
-private fun getChildAttendanceStatus(placementBasics: ChildPlacementBasics, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
+private fun getChildAttendanceStatus(
+    placementBasics: ChildPlacementBasics,
+    attendance: ChildAttendance?,
+    absences: List<ChildAbsence>
+): AttendanceStatus {
     if (attendance != null) {
         return if (attendance.departed == null) AttendanceStatus.PRESENT else AttendanceStatus.DEPARTED
     }
@@ -510,12 +531,12 @@ private fun getCareTypes(placementType: PlacementType): List<AbsenceCareType> =
     when (placementType) {
         PlacementType.SCHOOL_SHIFT_CARE ->
             listOf(AbsenceCareType.SCHOOL_SHIFT_CARE)
-        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
+        PRESCHOOL, PREPARATORY ->
             listOf(AbsenceCareType.PRESCHOOL)
-        PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
+        PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE ->
             listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE)
-        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+        DAYCARE_FIVE_YEAR_OLDS,
+        DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
             listOf(AbsenceCareType.DAYCARE_5YO_FREE, AbsenceCareType.DAYCARE)
         PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
@@ -524,67 +545,67 @@ private fun getCareTypes(placementType: PlacementType): List<AbsenceCareType> =
             listOf(AbsenceCareType.CLUB)
     }
 
-private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Set<AbsenceCareType> {
+data class AbsenceThreshold(
+    val type: AbsenceCareType,
+    val time: LocalTime
+)
+
+private fun getPartialAbsenceThresholds(
+    placementBasics: ChildPlacementBasics,
+    arrived: LocalTime
+): List<AbsenceThreshold> {
+    val placementType = placementBasics.placementType
+
     return listOfNotNull(
-        AbsenceCareType.PRESCHOOL.takeIf {
-            wasAbsentFromPreschool(placementBasics.placementType, arrived, departed)
-        },
-        AbsenceCareType.PRESCHOOL_DAYCARE.takeIf {
-            wasAbsentFromPreschoolDaycare(placementBasics.placementType, arrived, departed)
-        },
-        AbsenceCareType.DAYCARE.takeIf {
-            wasAbsentFrom5yoPaidDaycare(placementBasics.placementType, arrived, departed)
-        }
-    ).toSet()
+        preschoolAbsenceThreshold(placementType, arrived),
+        preschoolDaycareAbsenceThreshold(placementType, arrived),
+        daycareAbsenceThreshold(placementType, arrived)
+    )
 }
 
-fun wasAbsentFromPreschool(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
-    if (placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)) {
-        val presentAtPreschoolDuration = Duration.between(
-            maxOf(arrived, preschoolStart),
-            minOf(departed, preschoolEnd)
-        )
-
-        return presentAtPreschoolDuration < preschoolMinimumDuration
+private fun preschoolAbsenceThreshold(placementType: PlacementType, arrived: LocalTime): AbsenceThreshold? {
+    if (placementType in listOf(PRESCHOOL, PRESCHOOL_DAYCARE)) {
+        val threshold =
+            if (arrived > preschoolEnd || Duration.between(arrived, preschoolEnd) < preschoolMinimumDuration)
+                LocalTime.of(23, 59)
+            else minOf(maxOf(arrived, preschoolStart).plus(preschoolMinimumDuration), preschoolEnd)
+        return AbsenceThreshold(AbsenceCareType.PRESCHOOL, threshold)
     }
 
-    if (placementType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)) {
-        val presentAtPreparatoryDuration = Duration.between(
-            maxOf(arrived, preschoolStart),
-            minOf(departed, preparatoryEnd)
-        )
-
-        return presentAtPreparatoryDuration < preparatoryMinimumDuration
+    if (placementType in listOf(PREPARATORY, PREPARATORY_DAYCARE)) {
+        val threshold =
+            if (arrived > preparatoryEnd || Duration.between(arrived, preparatoryEnd) < preparatoryMinimumDuration)
+                LocalTime.of(23, 59)
+            else minOf(maxOf(arrived, preschoolStart).plus(preparatoryMinimumDuration), preparatoryEnd)
+        return AbsenceThreshold(AbsenceCareType.PRESCHOOL, threshold)
     }
 
-    return false
+    return null
 }
 
-fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
-    if (placementType == PlacementType.PRESCHOOL_DAYCARE) {
-        val presentBeforePreschool = Duration.between(arrived, preschoolStart) > connectedDaycareBuffer
-        val presentAfterPreschool = Duration.between(preschoolEnd, departed) > connectedDaycareBuffer
+private fun preschoolDaycareAbsenceThreshold(placementType: PlacementType, arrived: LocalTime): AbsenceThreshold? {
+    if (placementType == PRESCHOOL_DAYCARE) {
+        if (Duration.between(arrived, preschoolStart) > connectedDaycareBuffer) return null
 
-        return !presentBeforePreschool && !presentAfterPreschool
+        val threshold = preschoolEnd.plus(connectedDaycareBuffer)
+        return AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, threshold)
     }
 
-    if (placementType == PlacementType.PREPARATORY_DAYCARE) {
-        val presentBeforePreparatory = Duration.between(arrived, preparatoryStart) > connectedDaycareBuffer
-        val presentAfterPreparatory = Duration.between(preparatoryEnd, departed) > connectedDaycareBuffer
+    if (placementType == PREPARATORY_DAYCARE) {
+        if (Duration.between(arrived, preparatoryStart) > connectedDaycareBuffer) return null
 
-        return !presentBeforePreparatory && !presentAfterPreparatory
+        val threshold = preparatoryEnd.plus(connectedDaycareBuffer)
+        return AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, threshold)
     }
 
-    return false
+    return null
 }
 
-private val fiveYearOldPlacementTypes =
-    listOf(PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS)
-
-fun wasAbsentFrom5yoPaidDaycare(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
-    if (fiveYearOldPlacementTypes.contains(placementType)) {
-        return Duration.between(arrived, departed) <= fiveYearOldFreeLimit
+private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: LocalTime): AbsenceThreshold? {
+    if (placementType in listOf(DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS)) {
+        val threshold = arrived.plus(fiveYearOldFreeLimit)
+        return AbsenceThreshold(AbsenceCareType.DAYCARE, threshold)
     }
 
-    return false
+    return null
 }

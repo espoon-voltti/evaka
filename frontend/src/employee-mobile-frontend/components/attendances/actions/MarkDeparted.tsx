@@ -54,7 +54,6 @@ export default React.memo(function MarkDeparted() {
     useContext(AttendanceUIContext)
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
-  const [timeError, setTimeError] = useState<boolean>(false)
   const [childDepartureInfo, setChildDepartureInfo] = useState<
     Result<DepartureInfoResponse>
   >(Loading.of())
@@ -68,9 +67,9 @@ export default React.memo(function MarkDeparted() {
     groupId: string
   }>()
 
-  const child =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.children.find((ac) => ac.id === childId)
+  const child = attendanceResponse
+    .map((response) => response.children.find((ac) => ac.id === childId))
+    .getOrElse(undefined)
 
   const groupNote =
     attendanceResponse.isSuccess &&
@@ -84,8 +83,7 @@ export default React.memo(function MarkDeparted() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-    void getChildDeparture(unitId, childId, time).then(setChildDepartureInfo)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [unitId, loadDaycareAttendances])
 
   function markDeparted() {
     return childDeparts(unitId, childId, time)
@@ -95,20 +93,39 @@ export default React.memo(function MarkDeparted() {
     return postDeparture(unitId, childId, absenceType, time)
   }
 
-  function updateTime(newTime: string) {
-    if (child && child.attendance !== null) {
-      const newDate = parse(newTime, 'HH:mm', new Date())
-      if (isBefore(newDate, child.attendance.arrived)) {
-        setTimeError(true)
-      } else {
-        setTimeError(false)
-        void getChildDeparture(unitId, child.id, newTime).then(
-          setChildDepartureInfo
-        )
-      }
+  function validateTime() {
+    if (!child?.attendance) return
+
+    if (!isValidTime(time)) {
+      return i18n.attendances.timeError
     }
-    setTime(newTime)
+
+    try {
+      const parsedTime = parse(time, 'HH:mm', new Date())
+
+      if (isBefore(parsedTime, child.attendance.arrived)) {
+        return `${i18n.attendances.arrived} ${formatTime(
+          child.attendance.arrived
+        )}`
+      }
+    } catch (e) {
+      return i18n.attendances.timeError
+    }
+
+    return
   }
+
+  const timeError = validateTime()
+
+  useEffect(() => {
+    void getChildDeparture(unitId, childId).then(setChildDepartureInfo)
+  }, [unitId, childId, setChildDepartureInfo])
+
+  const absentFrom = childDepartureInfo.map((thresholds) =>
+    thresholds
+      .filter((threshold) => time <= threshold.time)
+      .map(({ type }) => type)
+  )
 
   return (
     <>
@@ -140,26 +157,19 @@ export default React.memo(function MarkDeparted() {
             <TimeWrapper>
               <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
               <InputField
-                onChange={updateTime}
+                onChange={setTime}
                 value={time}
                 width="s"
                 type="time"
                 data-qa="set-time"
                 info={
-                  timeError
-                    ? { text: i18n.attendances.timeError, status: 'warning' }
-                    : undefined
+                  timeError ? { text: timeError, status: 'warning' } : undefined
                 }
               />
             </TimeWrapper>
-            {childDepartureInfo.isSuccess &&
-            childDepartureInfo.value.absentFrom.length > 0 &&
-            child ? (
+            {child && absentFrom.isSuccess && absentFrom.value.length > 0 ? (
               <FixedSpaceColumn>
-                <AbsentFrom
-                  child={child}
-                  absentFrom={childDepartureInfo.value.absentFrom}
-                />
+                <AbsentFrom child={child} absentFrom={absentFrom.value} />
                 <AbsenceSelector
                   selectedAbsenceType={selectedAbsenceType}
                   setSelectedAbsenceType={setSelectedAbsenceType}
@@ -203,7 +213,7 @@ export default React.memo(function MarkDeparted() {
                     onClick={() => markDeparted()}
                     onSuccess={() => history.go(-2)}
                     data-qa="mark-departed-btn"
-                    disabled={timeError || !isValidTime(time)}
+                    disabled={timeError !== undefined}
                   />
                 </FixedSpaceRow>
               </Actions>
