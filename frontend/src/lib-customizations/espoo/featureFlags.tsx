@@ -27,6 +27,7 @@ const features: Features = {
     experimental: {
       ai: true,
       incomeStatements: true,
+      messageAttachments: true,
       vasu: true
     }
   },
@@ -45,6 +46,7 @@ const features: Features = {
     experimental: {
       ai: true,
       incomeStatements: true,
+      messageAttachments: true,
       vasu: true
     }
   },
@@ -63,6 +65,7 @@ const features: Features = {
     experimental: {
       ai: false,
       incomeStatements: false,
+      messageAttachments: false,
       vasu: false
     }
   }

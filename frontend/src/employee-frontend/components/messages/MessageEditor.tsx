@@ -21,6 +21,7 @@ import { modalZIndex } from 'lib-components/layout/z-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { Failure } from 'lib-common/api'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   deleteAttachment,
   getAttachmentBlob,
@@ -354,8 +355,7 @@ export default React.memo(function MessageEditor({
             onChange={(e) => updateMessage({ content: e.target.value })}
             data-qa={'input-content'}
           />
-          {/* TODO slim looks for file upload component*/}
-          {draftId && (
+          {featureFlags.experimental?.messageAttachments && draftId && (
             <FileUpload
               data-qa="upload-message-attachment"
               files={message.attachments}
