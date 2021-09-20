@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
@@ -89,7 +90,7 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
     }
 
     fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
-        return tx.getInvoiceIdsByDates(from, to, areas)
+        return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
     }
 }
 

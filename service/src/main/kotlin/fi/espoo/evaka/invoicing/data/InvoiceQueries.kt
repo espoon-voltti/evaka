@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -148,18 +149,17 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: UUID): List<Invoice>
         .let(::flatten)
 }
 
-fun Database.Read.getInvoiceIdsByDates(from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
+fun Database.Read.getInvoiceIdsByDates(range: FiniteDateRange, areas: List<String>): List<UUID> {
     val sql =
         """
         SELECT id FROM invoice
-        WHERE daterange(:from, :to, '[]') @> invoice_date
+        WHERE between_start_and_end(:range, invoice_date)
         AND agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:areas))
         AND status = :draft::invoice_status
     """
 
     return createQuery(sql)
-        .bind("from", from)
-        .bind("to", to)
+        .bind("range", range)
         .bind("areas", areas.toTypedArray())
         .bind("draft", InvoiceStatus.DRAFT)
         .mapTo<UUID>()

@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -32,11 +33,11 @@ class DecisionsReportController {
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.read { it.getDecisionsRows(from, to) }.let(::ok)
+        return db.read { it.getDecisionsRows(FiniteDateRange(from, to)) }.let(::ok)
     }
 }
 
-private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List<DecisionsReportRow> {
+private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
     // language=sql
     val sql =
         """
@@ -57,7 +58,7 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
                 date_part('year', age(de.sent_date, ch.date_of_birth)) AS age
             FROM care_area ca
             JOIN daycare u ON u.care_area_id = ca.id
-            LEFT JOIN decision de ON de.unit_id = u.id AND de.sent_date IS NOT NULL AND daterange(:from, :to, '[]') @> de.sent_date 
+            LEFT JOIN decision de ON de.unit_id = u.id AND de.sent_date IS NOT NULL AND between_start_and_end(:range, de.sent_date)
             LEFT JOIN application a ON a.id = de.application_id
             LEFT JOIN application_form af ON af.application_id = a.id AND af.latest IS TRUE
             LEFT JOIN person ch ON ch.id = a.child_id
@@ -84,8 +85,7 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
         ORDER BY care_area_name, unit_name
         """.trimIndent()
     return createQuery(sql)
-        .bind("from", from)
-        .bind("to", to)
+        .bind("range", range)
         .mapTo<DecisionsReportRow>()
         .toList()
 }

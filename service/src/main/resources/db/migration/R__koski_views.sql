@@ -60,7 +60,7 @@ TABLE (
         FROM absence a
         WHERE a.child_id = p.child_id
         AND a.care_type = 'PRESCHOOL'
-        AND a.date <@ full_range
+        AND between_start_and_end(full_range, a.date)
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'
     JOIN LATERAL (

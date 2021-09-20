@@ -10,11 +10,12 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters.lastDayOfMonth
+import java.time.Month
 
 @Service
 class StaffAttendanceService {
@@ -25,14 +26,13 @@ class StaffAttendanceService {
     }
 
     fun getGroupAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: GroupId): StaffAttendanceForDates {
-        val rangeStart = LocalDate.of(year, month, 1)
-        val rangeEnd = rangeStart.with(lastDayOfMonth())
+        val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
         return db.read { tx ->
             val groupInfo = tx.getGroupInfo(groupId) ?: throw BadRequest("Couldn't find group info with id $groupId")
             val endDate = groupInfo.endDate.let { if (it.isBefore(maxDate)) it else null }
 
-            val attendanceList = tx.getStaffAttendanceByRange(rangeStart, rangeEnd, groupId)
+            val attendanceList = tx.getStaffAttendanceByRange(range, groupId)
             val attendanceMap = attendanceList.associateBy { it.date }
 
             StaffAttendanceForDates(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
@@ -147,8 +147,7 @@ fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceU
 }
 
 fun Database.Read.getStaffAttendanceByRange(
-    rangeStart: LocalDate,
-    rangeEnd: LocalDate,
+    range: FiniteDateRange,
     groupId: GroupId
 ): List<GroupStaffAttendance> {
     //language=SQL
@@ -157,13 +156,12 @@ fun Database.Read.getStaffAttendanceByRange(
         SELECT group_id, date, count, count_other, updated
         FROM staff_attendance
         WHERE group_id = :groupId
-          AND date BETWEEN :rangeStart AND :rangeEnd
+        AND between_start_and_end(:range, date)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("groupId", groupId)
-        .bind("rangeStart", rangeStart)
-        .bind("rangeEnd", rangeEnd)
+        .bind("range", range)
         .mapTo<GroupStaffAttendance>()
         .list()
 }

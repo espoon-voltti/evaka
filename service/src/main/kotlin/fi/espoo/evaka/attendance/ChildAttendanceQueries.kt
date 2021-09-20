@@ -392,7 +392,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
     val sql =
         """
         DELETE FROM absence
-        WHERE child_id = :childId AND :dateRange @> date
+        WHERE child_id = :childId AND between_start_and_end(:dateRange, date)
         """.trimIndent()
 
     createUpdate(sql)

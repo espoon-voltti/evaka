@@ -12,6 +12,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 
 fun orMax(date: LocalDate?): LocalDate = date ?: LocalDate.MAX
 
@@ -112,6 +113,14 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
      * Returns the total duration of this date range counted in days.
      */
     fun durationInDays(): Long = ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
+
+    companion object {
+        fun ofMonth(year: Int, month: Month): FiniteDateRange {
+            val start = LocalDate.of(year, month, 1)
+            val end = start.with(lastDayOfMonth())
+            return FiniteDateRange(start, end)
+        }
+    }
 }
 
 /**
@@ -137,6 +146,14 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
         val start = maxOf(this.start, other.start)
         val end = if (this.end == null || other.end == null) null else minOf(this.end, other.end)
         return if (start <= end) DateRange(start, end) else null
+    }
+
+    companion object {
+        fun ofMonth(year: Int, month: Month): DateRange {
+            val start = LocalDate.of(year, month, 1)
+            val end = start.with(lastDayOfMonth())
+            return DateRange(start, end)
+        }
     }
 }
 
@@ -197,6 +214,7 @@ data class OperationalDays(
 }
 
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
+    val range = FiniteDateRange.ofMonth(year, month)
     val firstDayOfMonth = LocalDate.of(year, month, 1)
     val daysOfMonth = generateSequence(firstDayOfMonth) { it.plusDays(1) }
         .takeWhile { date -> date.month == month }
@@ -207,9 +225,8 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
         .map { (id, days) -> id to days.map { it as Int }.map { DayOfWeek.of(it) } }
         .toList()
 
-    val holidays = createQuery("SELECT date FROM holiday WHERE daterange(:start, :end, '[]') @> date")
-        .bind("start", firstDayOfMonth)
-        .bind("end", firstDayOfMonth.plusMonths(1))
+    val holidays = createQuery("SELECT date FROM holiday WHERE between_start_and_end(:range, date)")
+        .bind("range", range)
         .mapTo<LocalDate>()
         .list()
 
