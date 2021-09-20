@@ -1,0 +1,20 @@
+{
+  "child": {
+    "id": "639d5af8-179c-11ec-a023-8fea843945af",
+    "lastName": "Karhula",
+    "firstName": "Kaarina Veera Nelli",
+    "dateOfBirth": [
+      2016,
+      6,
+      16
+    ]
+  },
+  "guardians": [
+    {
+      "id": "635ce702-179c-11ec-a023-f35faaf0ceb6",
+      "lastName": "Karhula",
+      "firstName": "Johannes Olavi Antero Tapio"
+    }
+  ],
+  "placements": null
+}
