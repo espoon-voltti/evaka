@@ -25,6 +25,7 @@ interface PermittedRoleActions {
     fun groupActions(role: UserRole): Set<Action.Group>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
+    fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
     fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice>
     fun pairingActions(role: UserRole): Set<Action.Pairing>
     fun personActions(role: UserRole): Set<Action.Person>
@@ -53,6 +54,7 @@ class StaticPermittedRoleActions(
     val group: ActionsByRole<Action.Group> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
+    val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
     val mobileDevice: ActionsByRole<Action.MobileDevice> = getDefaults(),
     val pairing: ActionsByRole<Action.Pairing> = getDefaults(),
     val person: ActionsByRole<Action.Person> = getDefaults(),
@@ -74,6 +76,7 @@ class StaticPermittedRoleActions(
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
+    override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()
     override fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice> = mobileDevice[role] ?: emptySet()
     override fun pairingActions(role: UserRole): Set<Action.Pairing> = pairing[role] ?: emptySet()
     override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()

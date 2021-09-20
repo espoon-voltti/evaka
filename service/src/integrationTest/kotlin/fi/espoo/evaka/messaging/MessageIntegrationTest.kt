@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
@@ -15,13 +16,17 @@ import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
+import fi.espoo.evaka.messaging.message.getDrafts
 import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
+import fi.espoo.evaka.messaging.message.initDraft
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
@@ -57,6 +62,7 @@ import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -523,6 +529,42 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals(0, getUnreadMessages(person2Account, person2).size)
     }
 
+    @Test
+    fun `messages can have attachments`() {
+        // given
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
+                it.getCitizenMessageAccount(person2Id)
+            )
+        }
+
+        val draftId = db.transaction { it.initDraft(employee1Account) }
+
+        assertEquals(1, db.read { it.getDrafts(employee1Account) }.size)
+
+        val attachmentIds = setOf(uploadMessageAttachment(employee1, draftId), uploadMessageAttachment(employee1, draftId))
+        // when a message thread with attachment is created
+        postNewThread(
+            title = "t1",
+            message = "m1",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(person1Account, person2Account),
+            user = employee1,
+            attachmentIds = attachmentIds,
+            draftId = draftId
+        )
+
+        // then
+        // the draft is deleted
+        assertEquals(0, db.read { it.getDrafts(employee1Account) }.size)
+
+        // the attachments are associated to a message
+        assertEquals(2, db.read { it.createQuery("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL").mapTo<Int>().one() })
+    }
+
     private fun getUnreadMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser
@@ -530,6 +572,12 @@ class MessageIntegrationTest : FullApplicationTest() {
         accountId,
         user
     ).flatMap { it.messages.filter { m -> m.sender.id != accountId && m.readAt == null } }
+
+    private fun uploadMessageAttachment(user: AuthenticatedUser.Employee, draftId: MessageDraftId): AttachmentId =
+        http.upload("/attachments/messages/$draftId")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .responseObject<AttachmentId>(objectMapper).third.get()
 
     private fun postNewThread(
         title: String,
@@ -539,6 +587,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         recipients: List<MessageAccountId>,
         recipientNames: List<String> = listOf(),
         user: AuthenticatedUser.Employee,
+        attachmentIds: Set<AttachmentId> = setOf(),
+        draftId: MessageDraftId? = null,
     ) = http.post("/messages/$sender")
         .jsonBody(
             objectMapper.writeValueAsString(
@@ -547,7 +597,9 @@ class MessageIntegrationTest : FullApplicationTest() {
                     content = message,
                     type = messageType,
                     recipientNames = recipientNames,
-                    recipientAccountIds = recipients.toSet()
+                    recipientAccountIds = recipients.toSet(),
+                    attachmentIds = attachmentIds,
+                    draftId = draftId
                 )
             )
         )

@@ -22,7 +22,6 @@ import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
-import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFalse
@@ -79,8 +78,6 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
         }
         assertFalse(uploadUnparentedAttachment())
     }
-
-    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")!!
 
     private fun uploadAttachment(path: String, parameters: List<Pair<String, Any?>>? = null): Boolean {
         val (_, res, _) = http.upload(path, parameters = parameters)

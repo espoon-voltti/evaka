@@ -36,7 +36,7 @@ enum class Audit(
     AttachmentsRead("evaka.attachments.read"),
     AttachmentsUploadForApplication("evaka.attachments.upload-for-application"),
     AttachmentsUploadForIncomeStatement("evaka.attachments.upload-for-income-statement"),
-    AttachmentsUploadForMessage("evaka.attachments.upload-for-message"),
+    AttachmentsUploadForMessageDraft("evaka.attachments.upload-for-message-draft"),
     AttendanceReservationCitizenCreate("evaka.attendance-reservation.citizen.create"),
     AttendanceReservationCitizenRead("evaka.attendance-reservation.citizen.read"),
     AttendanceReservationEmployeeCreate("evaka.attendance-reservation.employee.create"),

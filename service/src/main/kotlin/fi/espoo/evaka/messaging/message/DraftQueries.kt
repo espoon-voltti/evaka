@@ -71,3 +71,17 @@ fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: Messa
         .bind("id", draftId)
         .execute()
 }
+
+fun Database.Read.draftBelongsToAnyAccount(draftId: MessageDraftId, accountIds: Set<MessageAccountId>): Boolean =
+    this.createQuery(
+        """
+SELECT 1 
+FROM message_draft
+WHERE
+    id = :id AND
+    account_id = ANY(:accountIds)
+        """.trimIndent()
+    )
+        .bind("id", draftId)
+        .bind("accountIds", accountIds.toTypedArray())
+        .mapTo<Int>().any()

@@ -5,6 +5,8 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.messaging.message.draftBelongsToAnyAccount
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
@@ -17,6 +19,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PersonId
@@ -191,8 +194,23 @@ WHERE employee_id = :userId
             is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
+            is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
             else -> error("Unsupported action type")
         }.exhaust()
+
+    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.MessageDraft, id: MessageDraftId): Boolean =
+        when (user) {
+            is AuthenticatedUser.Citizen -> false // drafts are employee-only
+            is AuthenticatedUser.Employee -> when (action) {
+                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read {
+                    it.draftBelongsToAnyAccount(
+                        id,
+                        it.getEmployeeMessageAccountIds(user.id)
+                    )
+                }
+            }
+            else -> false
+        }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
         assertPermission(

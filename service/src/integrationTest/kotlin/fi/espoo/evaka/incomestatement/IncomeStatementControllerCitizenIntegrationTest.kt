@@ -22,7 +22,6 @@ import fi.espoo.evaka.testAdult_2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
-import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -662,8 +661,6 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 assertEquals(expectedStatus, res.statusCode)
             }
     }
-
-    private val pngFile: URL = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")!!
 
     private fun uploadAttachment(user: AuthenticatedUser = citizen): AttachmentId {
         val (_, _, result) = http.upload("/attachments/citizen/income-statements")

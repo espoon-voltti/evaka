@@ -86,8 +86,8 @@ class AttachmentsController(
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        Audit.AttachmentsUploadForMessage.log()
-        accessControl.requirePermissionFor(user, Action.Global.UPLOAD_MESSAGE_ATTACHMENT)
+        Audit.AttachmentsUploadForMessageDraft.log(draftId)
+        accessControl.requirePermissionFor(user, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
         return handleFileUpload(db, user, AttachToMessageDraft(draftId), file)
     }
 
