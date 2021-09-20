@@ -205,9 +205,16 @@ function GrossIncome({ gross }: { gross: Gross }) {
                 {i18n.incomeStatement.otherIncomeTypes[incomeType]}
               </Item>
             ))}
+            {gross.otherIncome.length === 0 && '-'}
           </>
         }
       />
+      {gross.otherIncome.length > 0 && (
+        <Row
+          label={i18n.incomeStatement.otherIncomeInfo}
+          value={gross.otherIncomeInfo}
+        />
+      )}
     </>
   )
 }

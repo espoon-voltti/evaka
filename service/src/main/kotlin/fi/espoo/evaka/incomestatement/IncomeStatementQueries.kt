@@ -34,6 +34,7 @@ SELECT
     gross_income_source,
     gross_estimated_monthly_income,
     gross_other_income,
+    gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -100,6 +101,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 incomeSource = grossIncomeSource,
                 estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
                 otherIncome = row.mapColumn<Array<OtherIncome>>("gross_other_income").toSet(),
+                otherIncomeInfo = row.mapColumn("gross_other_income_info"),
             ) else null
 
             val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
@@ -185,6 +187,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("grossIncomeSource", null as IncomeSource?)
         .bindNullable("grossEstimatedMonthlyIncome", null as Int?)
         .bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
+        .bind("grossOtherIncomeInfo", "")
         .bindNullable("fullTime", null as Boolean?)
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
         .bindNullable("spouseWorksInCompany", null as Boolean?)
@@ -223,6 +226,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gros
     bind("grossIncomeSource", gross.incomeSource)
         .bindNullable("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
         .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
+        .bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
     run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
@@ -268,6 +272,7 @@ INSERT INTO income_statement (
     gross_income_source, 
     gross_estimated_monthly_income,
     gross_other_income, 
+    gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -295,6 +300,7 @@ INSERT INTO income_statement (
     :grossIncomeSource,
     :grossEstimatedMonthlyIncome,
     :grossOtherIncome :: other_income_type[],
+    :grossOtherIncomeInfo,
     :fullTime,
     :startOfEntrepreneurship,
     :spouseWorksInCompany,
@@ -338,6 +344,7 @@ UPDATE income_statement SET
     gross_income_source = :grossIncomeSource,
     gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
     gross_other_income = :grossOtherIncome :: other_income_type[],
+    gross_other_income_info = :grossOtherIncomeInfo,
     entrepreneur_full_time = :fullTime,
     start_of_entrepreneurship = :startOfEntrepreneurship,
     spouse_works_in_company = :spouseWorksInCompany,

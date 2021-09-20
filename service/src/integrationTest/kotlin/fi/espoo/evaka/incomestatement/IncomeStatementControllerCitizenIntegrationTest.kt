@@ -73,6 +73,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -116,6 +117,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -178,7 +180,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = null,
-                    otherIncome = setOf()
+                    otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -287,6 +290,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -307,6 +311,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = null,
                         otherIncome = setOf(),
+                        otherIncomeInfo = "",
                     ),
                     entrepreneur = null,
                     student = false,
@@ -334,6 +339,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -358,6 +364,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -383,6 +390,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -553,6 +561,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,

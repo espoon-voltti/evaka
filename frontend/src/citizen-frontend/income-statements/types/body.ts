@@ -76,7 +76,8 @@ function validateGross(formData: Form.Gross) {
   return {
     incomeSource: formData.incomeSource,
     estimatedMonthlyIncome,
-    otherIncome: formData.otherIncome ?? []
+    otherIncome: formData.otherIncome ?? [],
+    otherIncomeInfo: formData.otherIncomeInfo
   }
 }
 

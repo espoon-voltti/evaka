@@ -117,7 +117,7 @@ export const INCOME_I18N = {
       'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
     estimate: 'Arvio bruttotuloistani',
     otherIncome: 'Muut tulot',
-    otherIncomeInfo:
+    otherIncomeDescription:
       'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
     choosePlaceholder: 'Valitse',
     otherIncomeTypes: {
@@ -146,7 +146,10 @@ export const INCOME_I18N = {
       APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
       ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
       OTHER_INCOME: 'Muut tulot'
-    }
+    },
+    otherIncomeInfoLabel: 'Arviot muista tuloista',
+    otherIncomeInfoDescription:
+      'Kirjoita tähän arviot muiden tulojen määristä €/kk, esim. "Vuokratulot 150, lasten kotihoidontuki 300"'
   },
   entrepreneurIncome: {
     title: 'Yrittäjän tulotietojen täyttäminen',
@@ -305,6 +308,7 @@ export const INCOME_I18N = {
       'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
     grossEstimatedIncome: 'Arvio bruttotuloista',
     otherIncome: 'Muut tulot',
+    otherIncomeInfo: 'Arviot muista tuloista',
 
     entrepreneurTitle: 'Yrittäjän tulotiedot',
     fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',

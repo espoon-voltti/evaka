@@ -398,7 +398,7 @@ function GrossIncomeSelection({
         <Gap size="L" />
         <Label>{t.income.grossIncome.otherIncome}</Label>
         <Gap size="s" />
-        {t.income.grossIncome.otherIncomeInfo}
+        {t.income.grossIncome.otherIncomeDescription}
         <Gap size="s" />
         <OtherIncomeWrapper>
           <MultiSelect
@@ -412,6 +412,24 @@ function GrossIncomeSelection({
             placeholder={t.income.grossIncome.choosePlaceholder}
           />
         </OtherIncomeWrapper>
+        {formData.otherIncome.length > 0 && (
+          <>
+            <Gap size="s" />
+            <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
+            <Gap size="s" />
+            <P noMargin>{t.income.grossIncome.otherIncomeInfoDescription}</P>
+            <Gap size="s" />
+            <InputField
+              value={formData.otherIncomeInfo}
+              onChange={(value) =>
+                onChange({
+                  ...formData,
+                  otherIncomeInfo: value
+                })
+              }
+            />
+          </>
+        )}
       </FixedSpaceColumn>
     </ContentArea>
   )

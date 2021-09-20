@@ -1284,6 +1284,7 @@ export const fi = {
       ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
       OTHER_INCOME: 'Muut tulot'
     },
+    otherIncomeInfo: 'Arviot muista tuloista',
 
     entrepreneurTitle: 'Yrittäjän tulotiedot',
     fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',

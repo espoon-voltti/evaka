@@ -25,6 +25,7 @@ export interface Gross {
   incomeSource: IncomeSource | null
   estimatedMonthlyIncome: string
   otherIncome: OtherIncome[]
+  otherIncomeInfo: string
 }
 
 export interface Entrepreneur {
@@ -70,7 +71,8 @@ export const empty: IncomeStatementForm = {
     selected: false,
     incomeSource: null,
     estimatedMonthlyIncome: '',
-    otherIncome: []
+    otherIncome: [],
+    otherIncomeInfo: ''
   },
   entrepreneur: {
     selected: false,
@@ -134,7 +136,8 @@ function mapGross(gross: IncomeStatement.Gross | null): Gross {
     selected: true,
     incomeSource: gross.incomeSource,
     estimatedMonthlyIncome: gross.estimatedMonthlyIncome?.toString() ?? '',
-    otherIncome: gross.otherIncome
+    otherIncome: gross.otherIncome,
+    otherIncomeInfo: gross.otherIncomeInfo
   }
 }
 

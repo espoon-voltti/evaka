@@ -144,9 +144,18 @@ function GrossIncome({ gross }: { gross: Gross }) {
                 {t.income.grossIncome.otherIncomeTypes[incomeType]}
               </Item>
             ))}
+            {gross.otherIncome.length === 0 && '-'}
           </>
         }
       />
+      {gross.otherIncome.length > 0 && (
+        <>
+          <Row
+            label={t.income.view.otherIncomeInfo}
+            value={gross.otherIncomeInfo}
+          />
+        </>
+      )}
     </>
   )
 }

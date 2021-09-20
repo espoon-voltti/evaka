@@ -62,6 +62,7 @@ export interface Gross {
   incomeSource: IncomeSource
   estimatedMonthlyIncome: number | null
   otherIncome: OtherIncome[]
+  otherIncomeInfo: string
 }
 
 export interface Entrepreneur {
