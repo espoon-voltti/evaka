@@ -25,7 +25,11 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
         fun default(job: ScheduledJob) = when (job) {
             ScheduledJob.VardaUpdate -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(23, 0))
+                schedule = JobSchedule.daily(LocalTime.of(23, 30))
+            )
+            ScheduledJob.VardaReset -> ScheduledJobSettings(
+                enabled = true,
+                schedule = JobSchedule.daily(LocalTime.of(20, 0))
             )
             ScheduledJob.EndOfDayAttendanceUpkeep -> ScheduledJobSettings(
                 enabled = true,
