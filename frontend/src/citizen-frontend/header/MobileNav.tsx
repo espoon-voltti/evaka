@@ -187,27 +187,17 @@ const Navigation = React.memo(function Navigation({
   )
   return (
     <Nav>
-      <StyledNavLink to="/" exact onClick={close}>
-        {t.header.nav.map}
-      </StyledNavLink>
       {user && (
         <>
           <StyledNavLink
-            to="/applications"
+            to="/applying"
             onClick={close}
             data-qa="nav-applications"
           >
-            {t.header.nav.applications} {maybeLockElem}
-          </StyledNavLink>
-          <StyledNavLink
-            to="/decisions"
-            onClick={close}
-            data-qa="nav-decisions"
-          >
-            {t.header.nav.decisions} {maybeLockElem}
+            {t.header.nav.applying} {maybeLockElem}
           </StyledNavLink>
           {featureFlags.experimental?.incomeStatements && (
-            <StyledNavLink to="/income" data-qa="nav-income">
+            <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
               {t.header.nav.income} {maybeLockElem}
             </StyledNavLink>
           )}

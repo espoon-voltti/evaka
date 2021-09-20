@@ -9,7 +9,6 @@ import React, { ReactNode, useContext } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import ApplicationCreation from './applications/ApplicationCreation'
-import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { Authentication } from './auth'
@@ -19,7 +18,6 @@ import DecisionResponseList from './decisions/decision-response-page/DecisionRes
 import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
 import { Localization } from './localization'
-import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
 import CalendarPage from './calendar/CalendarPage'
 import { MessageContextProvider } from './messages/state'
@@ -30,6 +28,7 @@ import IncomeStatements from './income-statements/IncomeStatements'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import { featureFlags } from 'lib-customizations/citizen'
+import Applying from './applying/Applying'
 
 export default function App() {
   return (
@@ -42,11 +41,16 @@ export default function App() {
                 <Header />
                 <Main>
                   <Switch>
-                    <Route exact path="/" component={MapView} />
+                    <Route exact path="/applying/map" component={Applying} />
                     <Route
                       exact
-                      path="/applications"
-                      component={requireAuth(Applications)}
+                      path="/applying/applications"
+                      component={requireAuth(Applying)}
+                    />
+                    <Route
+                      exact
+                      path="/applying/decisions"
+                      component={requireAuth(Applying)}
                     />
                     <Route
                       exact
@@ -126,6 +130,8 @@ function Main({ children }: { children: ReactNode }) {
 
 function RedirectToMap() {
   window.location.href =
-    window.location.host === 'localhost:9094' ? 'http://localhost:9094' : '/'
+    window.location.host === 'localhost:9094'
+      ? 'http://localhost:9094/applying/map'
+      : '/applying/map'
   return null
 }

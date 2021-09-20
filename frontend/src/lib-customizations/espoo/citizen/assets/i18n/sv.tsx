@@ -71,7 +71,8 @@ const sv: Translations = {
       decisions: 'Beslut',
       income: 'Inkomst',
       messages: 'Meddelanden',
-      calendar: 'Kalender'
+      calendar: 'Kalender',
+      applying: 'Ansöker'
     },
     lang: {
       fi: 'Suomeksi',
