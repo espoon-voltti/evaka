@@ -89,11 +89,10 @@ class VardaUpdateService(
         }
     }
 
-    fun planVardaReset(db: Database.Connection, addNewChildren: Boolean) {
-        val RESET_LIMIT = 1000
+    fun planVardaReset(db: Database.Connection, addNewChildren: Boolean, maxChildren: Int = 1000) {
         logger.info("VardaUpdate: starting reset process")
-        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = RESET_LIMIT, addNewChildren = addNewChildren) }
-        logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $RESET_LIMIT)")
+        val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = maxChildren, addNewChildren = addNewChildren) }
+        logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $maxChildren)")
 
         db.transaction { tx ->
             asyncJobRunner.plan(tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) })
