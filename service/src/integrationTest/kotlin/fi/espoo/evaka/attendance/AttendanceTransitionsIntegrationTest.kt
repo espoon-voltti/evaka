@@ -113,105 +113,139 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get child departure info - preschool_daycare placement and present from 8 to 14 means no absence`() {
-        val arrived = LocalTime.of(8, 0)
-        val departed = LocalTime.of(14, 0)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfoAssertOk(departed)
-        assertTrue(info.absentFrom.isEmpty())
-    }
-
-    @Test
-    fun `get child departure info - preschool_daycare placement and present from 9 to 13 means absence from preschool_daycare`() {
+    fun `get child departure info - preschool daycare placement and present from preschool start`() {
         val arrived = LocalTime.of(9, 0)
-        val departed = LocalTime.of(13, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+            ),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preschool_daycare placement and present from 1230 to 17 means absence from preschool`() {
+    fun `get child departure info - preschool daycare placement and present hour before preschool start`() {
+        val arrived = LocalTime.of(8, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1230`() {
         val arrived = LocalTime.of(12, 30)
-        val departed = LocalTime.of(17, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+            ),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preschool_daycare placement and present from 0850 to 0930 means absence from preschool and preschool_daycare`() {
+    fun `get child departure info - preschool daycare placement and present from 0850`() {
         val arrived = LocalTime.of(8, 50)
-        val departed = LocalTime.of(9, 30)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+            ),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preparatory_daycare placement and present from 8 to 15 means no absence`() {
+    fun `get child departure info - preparatory daycare placement and present from 8`() {
         val arrived = LocalTime.of(8, 0)
-        val departed = LocalTime.of(15, 0)
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertTrue(info.absentFrom.isEmpty())
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preparatory_daycare placement and present from 9 to 14 means absence from preschool_daycare`() {
+    fun `get child departure info - preparatory daycare placement and present from 9`() {
         val arrived = LocalTime.of(9, 0)
-        val departed = LocalTime.of(14, 0)
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+            ),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preparatory_daycare placement and present from 1330 to 17 means absence from preschool`() {
+    fun `get child departure info - preparatory daycare placement and present from 1330`() {
         val arrived = LocalTime.of(13, 30)
-        val departed = LocalTime.of(17, 0)
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+            ),
+            info
+        )
     }
 
     @Test
-    fun `get child departure info - preparatory_daycare placement and present from 0850 to 0930 means absence from preschool and preschool_daycare`() {
+    fun `get child departure info - preparatory daycare placement and present from 0850`() {
         val arrived = LocalTime.of(8, 50)
-        val departed = LocalTime.of(9, 30)
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk(departed)
-        assertEquals(setOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), info.absentFrom)
+        val info = getDepartureInfoAssertOk()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+            ),
+            info
+        )
     }
 
     @Test
     fun `get child departure info - not yet present is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        getDepartureInfoAssertFail(roundedTimeNow(), 409)
+        getDepartureInfoAssertFail(409)
     }
 
     @Test
     fun `get child departure info - already departed is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
-        getDepartureInfoAssertFail(roundedTimeNow(), 409)
+        getDepartureInfoAssertFail(409)
     }
 
     @Test
@@ -547,21 +581,19 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun getDepartureInfoAssertOk(departed: LocalTime): ChildAttendanceController.DepartureInfoResponse {
-        val time = departed.format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
+    private fun getDepartureInfoAssertOk(): List<AbsenceThreshold> {
+        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .asUser(mobileUser)
-            .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
+            .responseObject<List<AbsenceThreshold>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun getDepartureInfoAssertFail(departed: LocalTime, status: Int) {
-        val time = departed.format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
+    private fun getDepartureInfoAssertFail(status: Int) {
+        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .asUser(mobileUser)
-            .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
+            .responseObject<AbsenceThreshold>(objectMapper)
 
         assertEquals(status, res.statusCode)
     }

@@ -83,8 +83,7 @@ export default React.memo(function MarkDeparted() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-    void getChildDeparture(unitId, childId, time).then(setChildDepartureInfo)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [unitId, loadDaycareAttendances])
 
   function markDeparted() {
     return childDeparts(unitId, childId, time)
@@ -119,10 +118,14 @@ export default React.memo(function MarkDeparted() {
   const timeError = validateTime()
 
   useEffect(() => {
-    if (!timeError) {
-      void getChildDeparture(unitId, childId, time).then(setChildDepartureInfo)
-    }
-  }, [unitId, childId, setChildDepartureInfo, time, timeError])
+    void getChildDeparture(unitId, childId).then(setChildDepartureInfo)
+  }, [unitId, childId, setChildDepartureInfo])
+
+  const absentFrom = childDepartureInfo.map((thresholds) =>
+    thresholds
+      .filter((threshold) => time <= threshold.time)
+      .map(({ type }) => type)
+  )
 
   return (
     <>
@@ -164,14 +167,9 @@ export default React.memo(function MarkDeparted() {
                 }
               />
             </TimeWrapper>
-            {childDepartureInfo.isSuccess &&
-            childDepartureInfo.value.absentFrom.length > 0 &&
-            child ? (
+            {child && absentFrom.isSuccess && absentFrom.value.length > 0 ? (
               <FixedSpaceColumn>
-                <AbsentFrom
-                  child={child}
-                  absentFrom={childDepartureInfo.value.absentFrom}
-                />
+                <AbsentFrom child={child} absentFrom={absentFrom.value} />
                 <AbsenceSelector
                   selectedAbsenceType={selectedAbsenceType}
                   setSelectedAbsenceType={setSelectedAbsenceType}

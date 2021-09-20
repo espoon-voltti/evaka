@@ -14,11 +14,12 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/generated/enums'
+import { AbsenceCareType, PlacementType } from 'lib-common/generated/enums'
 
-export interface DepartureInfoResponse {
-  absentFrom: CareType[]
-}
+export type DepartureInfoResponse = {
+  type: AbsenceCareType
+  time: string
+}[]
 
 export interface AttendanceResponse {
   unit: Unit
@@ -296,15 +297,11 @@ export async function getFutureAbsencesByChild(
 
 export async function getChildDeparture(
   unitId: string,
-  childId: string,
-  time: string
+  childId: string
 ): Promise<Result<DepartureInfoResponse>> {
   return client
     .get<JsonOf<DepartureInfoResponse>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`,
-      {
-        params: { time }
-      }
+      `/attendances/units/${unitId}/children/${childId}/departure`
     )
     .then((res) => res.data)
     .then((v) => Success.of(v))
