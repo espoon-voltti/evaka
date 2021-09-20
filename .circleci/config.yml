@@ -499,7 +499,7 @@ commands:
     steps:
       - run:
           name: Configure AWS CLI
-          command: replace-credentials
+          command: . replace-credentials
       - deploy_s3:
           target_env: << parameters.target_env >>
           from: "frontend/citizen/${CIRCLE_SHA1}"
@@ -525,7 +525,7 @@ commands:
       - attach_root_workspace
       - run:
           name: Configure AWS CLI
-          command: replace-credentials
+          command: . replace-credentials
       - copy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/dist/bundle/citizen-frontend
@@ -745,7 +745,7 @@ jobs:
     steps:
       - restore_repo
       - restore_frontend_comm_deps
-      - run: replace-credentials
+      - run: . replace-credentials
       - run:
           name: Fetch commercial frontend dependencies
           working_directory: *workspace_frontend
