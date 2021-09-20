@@ -33,10 +33,21 @@ export default class CitizenHeader {
     if (this.type === 'mobile') {
       await this.#menuButton.click()
     }
-    await this.page
-      .locator(`[data-qa="${this.type}-nav"]`)
-      .locator(`[data-qa="nav-${tab}"]`)
-      .click()
+    if (tab !== 'income') {
+      await this.page
+        .locator(`[data-qa="${this.type}-nav"]`)
+        .locator(`[data-qa="nav-${tab}"]`)
+        .click()
+    } else {
+      await this.page
+        .locator(`[data-qa="${this.type}-nav"]`)
+        .locator(`[data-qa="user-menu-title"]`)
+        .click()
+      await this.page.waitForSelector('[data-qa="user-menu-income"]', {
+        state: 'visible'
+      })
+      await this.page.locator(`[data-qa="user-menu-income"]`).click()
+    }
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
