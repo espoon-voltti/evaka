@@ -97,7 +97,7 @@ export interface SentMessage {
   type: MessageType
   threadTitle: string
   content: string
-  recipients: NestedMessageAccount[]
+  recipients: MessageAccount[]
   recipientNames: string[]
   sentAt: Date
 }
