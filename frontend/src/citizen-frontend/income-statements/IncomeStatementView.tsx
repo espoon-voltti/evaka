@@ -210,10 +210,12 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
         label={t.income.view.startupGrant}
         value={yesno(entrepreneur.startupGrant)}
       />
-      <Row
-        label={t.income.view.kelaInspectionConsent}
-        value={yesno(entrepreneur.checkupConsent)}
-      />
+      {entrepreneur.checkupConsent && (
+        <Row
+          label={t.income.view.checkupConsentLabel}
+          value={t.income.view.checkupConsent}
+        />
+      )}
       <H3>{t.income.view.companyInfoTitle}</H3>
       <Row
         label={t.income.view.companyType}

@@ -269,10 +269,12 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
         label={i18n.incomeStatement.startupGrant}
         value={yesno(entrepreneur.startupGrant)}
       />
-      <Row
-        label={i18n.incomeStatement.kelaInspectionConsent}
-        value={yesno(entrepreneur.checkupConsent)}
-      />
+      {entrepreneur.checkupConsent && (
+        <Row
+          label={i18n.incomeStatement.checkupConsentLabel}
+          value={i18n.incomeStatement.checkupConsent}
+        />
+      )}
       <H3>{i18n.incomeStatement.companyInfoTitle}</H3>
       <Row
         label={i18n.incomeStatement.companyType}

@@ -345,7 +345,7 @@ function GrossIncomeSelection({
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.grossIncome.title}</H2>
         <Gap size="m" />
-        <P noMargin>{t.income.grossIncome.description}</P>
+        {t.income.grossIncome.description}
         <Gap size="m" />
         <LabelWithError
           label={`${t.income.grossIncome.incomeSource} *`}
