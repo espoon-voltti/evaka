@@ -5,3 +5,7 @@ ALTER TABLE attachment
     ADD CONSTRAINT attachment_message_draft_id_fkey FOREIGN KEY (message_draft_id) REFERENCES message_draft (id) ON DELETE CASCADE,
     DROP CONSTRAINT created_for_fk,
     ADD CONSTRAINT created_for_fk CHECK (num_nonnulls(application_id, income_statement_id, message_content_id, message_draft_id) <= 1);
+
+CREATE INDEX idx$attachment_message_content ON attachment (message_content_id);
+CREATE INDEX idx$attachment_message_draft ON attachment (message_draft_id);
+CREATE INDEX idx$attachment_income_statement ON attachment (income_statement_id);
