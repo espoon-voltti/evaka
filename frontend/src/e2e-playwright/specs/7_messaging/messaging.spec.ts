@@ -172,23 +172,6 @@ describe('Sending and receiving messages', () => {
       await messagesPage.openInbox(2)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     })
-
-    test('Employee can send attachments', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content, 2)
-
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.assertThreadContent(title, content)
-      await waitUntilEqual(
-        () => citizenMessagesPage.getThreadAttachmentCount(),
-        2
-      )
-    })
   })
 
   describe('Drafts', () => {
