@@ -192,12 +192,10 @@ function GrossIncome({ gross }: { gross: Gross }) {
             : i18n.incomeStatement.attachmentsAndKela
         }
       />
-      {gross.estimatedIncome && (
-        <Row
-          label={i18n.incomeStatement.grossEstimatedIncome}
-          value={<EstimatedIncome estimatedIncome={gross.estimatedIncome} />}
-        />
-      )}
+      <Row
+        label={i18n.incomeStatement.grossEstimatedIncome}
+        value={gross.estimatedMonthlyIncome}
+      />
       <Row
         label={i18n.incomeStatement.otherIncome}
         value={

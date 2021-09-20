@@ -104,7 +104,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedIncome = null,
+                        estimatedMonthlyIncome = null,
                         otherIncome = setOf(),
                     ),
                     entrepreneur = null,
@@ -126,7 +126,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedIncome = null,
+                    estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
                 ),
                 entrepreneur = null,
@@ -173,6 +173,4 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
 
         return result.get()
     }
-
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "evaka-logo.png", "image/png", true)
 }

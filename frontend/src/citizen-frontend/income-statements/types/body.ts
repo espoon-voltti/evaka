@@ -66,18 +66,16 @@ function validateGross(formData: Form.Gross) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
 
-  const estimatedIncome =
-    formData.estimatedMonthlyIncome ||
-    formData.incomeStartDate ||
-    formData.incomeEndDate
-      ? validateEstimatedIncome(formData)
+  const estimatedMonthlyIncome =
+    formData.estimatedMonthlyIncome.trim() != ''
+      ? stringToInt(formData.estimatedMonthlyIncome) ?? invalid
       : null
 
-  if (estimatedIncome === invalid) return invalid
+  if (estimatedMonthlyIncome === invalid) return invalid
 
   return {
     incomeSource: formData.incomeSource,
-    estimatedIncome,
+    estimatedMonthlyIncome,
     otherIncome: formData.otherIncome ?? []
   }
 }

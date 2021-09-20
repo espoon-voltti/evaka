@@ -33,8 +33,6 @@ SELECT
     type,
     gross_income_source,
     gross_estimated_monthly_income,
-    gross_income_start_date,
-    gross_income_end_date,
     gross_other_income,
     entrepreneur_full_time,
     start_of_entrepreneurship,
@@ -98,14 +96,9 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
 
         IncomeStatementType.INCOME -> {
             val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
-            val grossEstimatedMonthlyIncome = row.mapColumn<Int?>("gross_estimated_monthly_income")
             val gross = if (grossIncomeSource != null) Gross(
                 incomeSource = grossIncomeSource,
-                estimatedIncome = if (grossEstimatedMonthlyIncome != null) EstimatedIncome(
-                    grossEstimatedMonthlyIncome,
-                    incomeStartDate = row.mapColumn("gross_income_start_date"),
-                    incomeEndDate = row.mapColumn("gross_income_end_date")
-                ) else null,
+                estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
                 otherIncome = row.mapColumn<Array<OtherIncome>>("gross_other_income").toSet(),
             ) else null
 
@@ -191,8 +184,6 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("endDate", body.endDate)
         .bindNullable("grossIncomeSource", null as IncomeSource?)
         .bindNullable("grossEstimatedMonthlyIncome", null as Int?)
-        .bindNullable("grossIncomeStartDate", null as LocalDate?)
-        .bindNullable("grossIncomeEndDate", null as LocalDate?)
         .bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
         .bindNullable("fullTime", null as Boolean?)
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
@@ -230,13 +221,8 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gross): This =
     bind("grossIncomeSource", gross.incomeSource)
-        .run { if (gross.estimatedIncome != null) bindGrossEstimation(gross.estimatedIncome) else this }
+        .bindNullable("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
         .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
-
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindGrossEstimation(estimation: EstimatedIncome): This =
-    bind("grossEstimatedMonthlyIncome", estimation.estimatedMonthlyIncome)
-        .bind("grossIncomeStartDate", estimation.incomeStartDate)
-        .bindNullable("grossIncomeEndDate", estimation.incomeEndDate)
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
     run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
@@ -281,8 +267,6 @@ INSERT INTO income_statement (
     type, 
     gross_income_source, 
     gross_estimated_monthly_income,
-    gross_income_start_date,
-    gross_income_end_date,
     gross_other_income, 
     entrepreneur_full_time,
     start_of_entrepreneurship,
@@ -310,8 +294,6 @@ INSERT INTO income_statement (
     :type,
     :grossIncomeSource,
     :grossEstimatedMonthlyIncome,
-    :grossIncomeStartDate,
-    :grossIncomeEndDate,
     :grossOtherIncome :: other_income_type[],
     :fullTime,
     :startOfEntrepreneurship,
@@ -355,8 +337,6 @@ UPDATE income_statement SET
     type = :type,
     gross_income_source = :grossIncomeSource,
     gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
-    gross_income_start_date = :grossIncomeStartDate,
-    gross_income_end_date = :grossIncomeEndDate,
     gross_other_income = :grossOtherIncome :: other_income_type[],
     entrepreneur_full_time = :fullTime,
     start_of_entrepreneurship = :startOfEntrepreneurship,

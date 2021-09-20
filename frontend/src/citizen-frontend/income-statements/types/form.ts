@@ -20,15 +20,10 @@ export interface IncomeStatementForm {
   assure: boolean
 }
 
-export interface Estimation {
-  estimatedMonthlyIncome: string
-  incomeStartDate: string
-  incomeEndDate: string
-}
-
-export interface Gross extends Estimation {
+export interface Gross {
   selected: boolean
   incomeSource: IncomeSource | null
+  estimatedMonthlyIncome: string
   otherIncome: OtherIncome[]
 }
 
@@ -46,10 +41,13 @@ export interface Entrepreneur {
   accountant: Accountant
 }
 
-export interface SelfEmployed extends Estimation {
+export interface SelfEmployed {
   selected: boolean
   attachments: boolean
   estimation: boolean
+  estimatedMonthlyIncome: string
+  incomeStartDate: string
+  incomeEndDate: string
 }
 
 export interface LimitedCompany {
@@ -72,8 +70,6 @@ export const empty: IncomeStatementForm = {
     selected: false,
     incomeSource: null,
     estimatedMonthlyIncome: '',
-    incomeStartDate: '',
-    incomeEndDate: '',
     otherIncome: []
   },
   entrepreneur: {
@@ -137,14 +133,18 @@ function mapGross(gross: IncomeStatement.Gross | null): Gross {
   return {
     selected: true,
     incomeSource: gross.incomeSource,
-    ...mapEstimation(gross.estimatedIncome),
+    estimatedMonthlyIncome: gross.estimatedMonthlyIncome?.toString() ?? '',
     otherIncome: gross.otherIncome
   }
 }
 
 function mapEstimation(
   estimatedIncome: IncomeStatement.EstimatedIncome | null
-): Estimation {
+): {
+  estimatedMonthlyIncome: string
+  incomeStartDate: string
+  incomeEndDate: string
+} {
   return {
     estimatedMonthlyIncome:
       estimatedIncome?.estimatedMonthlyIncome?.toString() ?? '',

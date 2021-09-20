@@ -131,12 +131,10 @@ function GrossIncome({ gross }: { gross: Gross }) {
             : t.income.view.attachmentsAndKela
         }
       />
-      {gross.estimatedIncome && (
-        <Row
-          label={t.income.view.grossEstimatedIncome}
-          value={<EstimatedIncome estimatedIncome={gross.estimatedIncome} />}
-        />
-      )}
+      <Row
+        label={t.income.view.grossEstimatedIncome}
+        value={gross.estimatedMonthlyIncome}
+      />
       <Row
         label={t.income.view.otherIncome}
         value={

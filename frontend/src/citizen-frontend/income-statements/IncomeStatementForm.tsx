@@ -340,8 +340,6 @@ function GrossIncomeSelection({
   onChange: (value: Form.Gross) => void
 }) {
   const t = useTranslation()
-  const [lang] = useLang()
-  const incomeStartDate = LocalDate.parseFiOrNull(formData.incomeStartDate)
   return (
     <ContentArea opaque paddingVertical="L">
       <FixedSpaceColumn spacing="zero">
@@ -395,50 +393,6 @@ function GrossIncomeSelection({
                   : undefined
               }
             />
-          </FixedSpaceColumn>
-          <FixedSpaceColumn>
-            <LightLabel htmlFor="income-start-date">
-              {t.income.selfEmployed.timeRange}
-            </LightLabel>
-            <FixedSpaceRow>
-              <DatePicker
-                id="income-start-date"
-                date={formData.incomeStartDate}
-                onChange={(value) =>
-                  onChange({ ...formData, incomeStartDate: value })
-                }
-                locale={lang}
-                hideErrorsBeforeTouched
-                info={
-                  formData.incomeStartDate
-                    ? errorToInputInfo(
-                        validDate(formData.incomeStartDate),
-                        t.validationErrors
-                      )
-                    : undefined
-                }
-              />
-              <span>{' - '}</span>
-              <DatePicker
-                date={formData.incomeEndDate}
-                onChange={(value) =>
-                  onChange({ ...formData, incomeEndDate: value })
-                }
-                isValidDate={(date) =>
-                  incomeStartDate === null || incomeStartDate <= date
-                }
-                locale={lang}
-                hideErrorsBeforeTouched
-                info={
-                  formData.incomeEndDate
-                    ? errorToInputInfo(
-                        validDate(formData.incomeEndDate),
-                        t.validationErrors
-                      )
-                    : undefined
-                }
-              />
-            </FixedSpaceRow>
           </FixedSpaceColumn>
         </FixedSpaceRow>
         <Gap size="L" />

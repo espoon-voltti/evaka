@@ -45,7 +45,7 @@ enum class IncomeSource {
 
 data class Gross(
     val incomeSource: IncomeSource,
-    val estimatedIncome: EstimatedIncome?,
+    val estimatedMonthlyIncome: Int?,
     val otherIncome: Set<OtherIncome>,
 )
 
@@ -136,7 +136,7 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
                                 } &&
                                 validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome)
                             )
-                } && validateEstimatedIncome(body.gross?.estimatedIncome)
+                }
     }
 }
 
