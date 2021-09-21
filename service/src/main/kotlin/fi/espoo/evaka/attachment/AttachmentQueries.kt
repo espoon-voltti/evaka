@@ -16,12 +16,6 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-data class AttachmentParentColumn(
-    val applicationId: ApplicationId? = null,
-    val incomeStatementId: IncomeStatementId? = null,
-    val messageDraftId: MessageDraftId? = null
-)
-
 fun Database.Transaction.insertAttachment(
     id: AttachmentId,
     name: String,
@@ -31,6 +25,12 @@ fun Database.Transaction.insertAttachment(
     uploadedByEmployee: UUID?,
     type: AttachmentType?
 ) {
+    data class AttachmentParentColumn(
+        val applicationId: ApplicationId? = null,
+        val incomeStatementId: IncomeStatementId? = null,
+        val messageDraftId: MessageDraftId? = null
+    )
+
     // language=sql
     val sql =
         """
