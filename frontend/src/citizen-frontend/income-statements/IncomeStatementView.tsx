@@ -34,12 +34,17 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { getAttachmentBlob } from '../attachments'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { useHistory } from 'react-router-dom'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faPen } from 'lib-icons'
 
 export default React.memo(function IncomeStatementView({
   match
 }: RouteComponentProps<{ incomeStatementId: UUID }>) {
   const { incomeStatementId } = match.params
   const t = useTranslation()
+  const history = useHistory()
   const [incomeStatement, setIncomeStatement] = React.useState<
     Result<IncomeStatement>
   >(Loading.of())
@@ -49,6 +54,10 @@ export default React.memo(function IncomeStatementView({
   React.useEffect(() => {
     loadIncomeStatement(incomeStatementId)
   }, [loadIncomeStatement, incomeStatementId])
+
+  const handleEdit = () => {
+    history.push('edit')
+  }
 
   return incomeStatement.mapAll({
     loading() {
@@ -60,9 +69,24 @@ export default React.memo(function IncomeStatementView({
     success(incomeStatement) {
       return (
         <Container>
-          <Gap size="s" />
+          <ReturnButton label={t.common.return} />
           <ContentArea opaque>
-            <H1>{t.income.view.title}</H1>
+            <FixedSpaceRow spacing="L">
+              <H1>{t.income.view.title}</H1>
+              {!incomeStatement.handled && (
+                <FixedSpaceRow
+                  fullWidth
+                  alignItems="flex-start"
+                  justifyContent="flex-end"
+                >
+                  <InlineButton
+                    text={t.common.edit}
+                    icon={faPen}
+                    onClick={handleEdit}
+                  />
+                </FixedSpaceRow>
+              )}
+            </FixedSpaceRow>
             <Row
               label={t.income.view.startDate}
               value={incomeStatement.startDate.format()}
