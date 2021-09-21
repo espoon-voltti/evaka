@@ -78,7 +78,7 @@ abstract class FullApplicationTest {
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
         vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
-        vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv)
+        vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv, evakaEnv.feeDecisionMinDate, null)
         vardaOrganizerName = vardaEnv.organizer
     }
 

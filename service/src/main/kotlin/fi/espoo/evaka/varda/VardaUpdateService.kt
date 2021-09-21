@@ -53,12 +53,11 @@ class VardaUpdateService(
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
 
     init {
-        asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
     }
 
     fun startVardaUpdate(db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv, feeDecisionMinDate, asyncJobRunner)
 
         logger.info("VardaUpdate: starting update process")
 
@@ -99,14 +98,8 @@ class VardaUpdateService(
         }
     }
 
-    fun updateVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.UpdateVardaChild) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-        logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
-        db.connect { updateVardaChild(it, client, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
-    }
-
     fun resetVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.ResetVardaChild) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv, feeDecisionMinDate, asyncJobRunner)
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
         db.connect { resetVardaChild(it, client, msg.childId, feeDecisionMinDate) }
     }

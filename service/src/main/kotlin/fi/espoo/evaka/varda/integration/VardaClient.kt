@@ -16,6 +16,9 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.VardaAsyncJob
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
 import fi.espoo.evaka.varda.VardaChildRequest
@@ -31,8 +34,10 @@ import fi.espoo.evaka.varda.VardaPlacementResponse
 import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
+import fi.espoo.evaka.varda.updateVardaChild
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -41,6 +46,8 @@ class VardaClient(
     private val fuel: FuelManager,
     private val objectMapper: ObjectMapper,
     env: VardaEnv,
+    private val feeDecisionMinDate: LocalDate,
+    private val asyncJobRunner: AsyncJobRunner<VardaAsyncJob>?
 ) {
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
     private val unitUrl = "${env.url}/v1/toimipaikat/"
@@ -56,6 +63,15 @@ class VardaClient(
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
     val sourceSystem: String = env.sourceSystem
+
+    init {
+        asyncJobRunner?.registerHandler(::updateVardaChildByAsyncJob)
+    }
+
+    fun updateVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.UpdateVardaChild) {
+        logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
+        db.connect { updateVardaChild(it, this, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
+    }
 
     data class VardaRequestError(
         val method: String,

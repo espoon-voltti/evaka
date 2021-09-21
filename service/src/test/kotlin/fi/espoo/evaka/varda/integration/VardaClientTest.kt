@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.`when`
 import java.io.ByteArrayInputStream
 import java.net.URL
+import java.time.LocalDate
 import kotlin.test.assertTrue
 
 class MockVardaTokenProvider : VardaTokenProvider {
@@ -66,7 +67,8 @@ class VardaClientTest {
                 url = "https://example.com/mock-integration/varda/api",
                 basicAuth = Sensitive(""),
                 sourceSystem = "SourceSystemVarda"
-            )
+            ),
+            feeDecisionMinDate = LocalDate.MIN, null
         )
 
         assertTrue(client.deleteFeeData(0))

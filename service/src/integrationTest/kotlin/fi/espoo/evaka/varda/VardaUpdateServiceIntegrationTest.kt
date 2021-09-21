@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -567,7 +568,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateChildData sends child service need to varda without the fee data if service need ends before the fee data handling started in evaka`() {
         insertVardaChild(db, testChild_1.id)
-        val since = HelsinkiDateTime.now()
+        val since = HelsinkiDateTime.of(feeDecisionMinDate.atStartOfDay())
         val tenDaysAgoFeeDecisionMinDate = since.minusDays(10)
         val serviceNeedPeriod = DateRange(tenDaysAgoFeeDecisionMinDate.minusDays(10).toLocalDate(), tenDaysAgoFeeDecisionMinDate.minusDays(1).toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
@@ -807,10 +808,9 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         }
     }
 
-    // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
         getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
-            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate)
+            vardaClient.updateVardaChildByAsyncJob(Database(jdbi), VardaAsyncJob.UpdateVardaChild(it.value))
         }
     }
 
