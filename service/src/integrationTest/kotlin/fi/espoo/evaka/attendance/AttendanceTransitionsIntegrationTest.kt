@@ -118,7 +118,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
@@ -134,7 +134,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
             info
@@ -147,7 +147,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
@@ -163,7 +163,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
@@ -179,7 +179,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
             info
@@ -192,7 +192,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
@@ -208,7 +208,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
@@ -224,7 +224,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfoAssertOk()
+        val info = getDepartureThresholds()
         assertEquals(
             listOf(
                 AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
@@ -238,14 +238,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     fun `get child departure info - not yet present is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        getDepartureInfoAssertFail(409)
+        getDepartureThresholdsAssertFail(409)
     }
 
     @Test
     fun `get child departure info - already departed is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
-        getDepartureInfoAssertFail(409)
+        getDepartureThresholdsAssertFail(409)
     }
 
     @Test
@@ -581,8 +581,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun getDepartureInfoAssertOk(): List<AbsenceThreshold> {
-        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+    private fun getDepartureThresholds(): List<AbsenceThreshold> {
+        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure/thresholds")
             .asUser(mobileUser)
             .responseObject<List<AbsenceThreshold>>(objectMapper)
 
@@ -590,8 +590,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getDepartureInfoAssertFail(status: Int) {
-        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+    private fun getDepartureThresholdsAssertFail(status: Int) {
+        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure/thresholds")
             .asUser(mobileUser)
             .responseObject<AbsenceThreshold>(objectMapper)
 

@@ -151,6 +151,13 @@ export interface ContactInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureInfoResponse
+*/
+export interface DepartureInfoResponse {
+  absentFrom: AbsenceCareType[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureRequest
 */
 export interface DepartureRequest {

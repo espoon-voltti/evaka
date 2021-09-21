@@ -29,7 +29,7 @@ import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childDeparts,
   DepartureInfoResponse,
-  getChildDeparture,
+  getChildDepartureThresholds,
   getDaycareAttendances,
   postDeparture
 } from '../../../api/attendances'
@@ -118,7 +118,9 @@ export default React.memo(function MarkDeparted() {
   const timeError = validateTime()
 
   useEffect(() => {
-    void getChildDeparture(unitId, childId).then(setChildDepartureInfo)
+    void getChildDepartureThresholds(unitId, childId).then(
+      setChildDepartureInfo
+    )
   }, [unitId, childId, setChildDepartureInfo])
 
   const absentFrom = childDepartureInfo.map((thresholds) =>

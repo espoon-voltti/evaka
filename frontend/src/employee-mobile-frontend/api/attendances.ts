@@ -295,13 +295,13 @@ export async function getFutureAbsencesByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getChildDeparture(
+export async function getChildDepartureThresholds(
   unitId: string,
   childId: string
 ): Promise<Result<DepartureInfoResponse>> {
   return client
     .get<JsonOf<DepartureInfoResponse>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`
+      `/attendances/units/${unitId}/children/${childId}/departure/thresholds`
     )
     .then((res) => res.data)
     .then((v) => Success.of(v))

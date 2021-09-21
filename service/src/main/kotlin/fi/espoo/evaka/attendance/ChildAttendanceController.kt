@@ -205,8 +205,28 @@ class ChildAttendanceController(
         }.let { ResponseEntity.ok(it) }
     }
 
+    data class DepartureInfoResponse(
+        val absentFrom: Set<AbsenceCareType>
+    )
+
+    // Old endpoint replaced by the the one below left for backwards compatibility
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @PathVariable childId: UUID,
+        @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
+    ): DepartureInfoResponse {
+        val thresholds = getChildDepartureThresholds(db, user, unitId, childId)
+        return thresholds
+            .filter { time <= it.time }
+            .map { it.type }
+            .let { DepartureInfoResponse(it.toSet()) }
+    }
+
+    @GetMapping("/units/{unitId}/children/{childId}/departure/thresholds")
+    fun getChildDepartureThresholds(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
