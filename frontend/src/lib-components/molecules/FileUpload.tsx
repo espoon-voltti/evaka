@@ -6,7 +6,7 @@ import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
@@ -16,6 +16,7 @@ import {
   faFilePdf,
   faFileWord,
   faInfo,
+  faPaperclip,
   faTimes
 } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -24,6 +25,7 @@ import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
+import InlineButton from '../atoms/buttons/InlineButton'
 
 type FileUploadError = 'FILE_TOO_LARGE' | 'SERVER_ERROR'
 
@@ -73,12 +75,14 @@ export interface FileUploadProps {
   onDelete: (id: UUID) => Promise<Result<void>>
   onDownloadFile: (id: UUID) => Promise<Result<BlobPart>>
   i18n: FileUploadI18n
+  disabled?: boolean
+  slim?: boolean
   'data-qa'?: string
 }
 
-const FileUploadContainer = styled.div`
+const FileUploadContainer = styled.div<{ slim: boolean }>`
   display: flex;
-  flex-direction: row;
+  flex-direction: ${({ slim }) => (slim ? 'column' : 'row')};
   flex-wrap: wrap;
   align-items: flex-start;
 `
@@ -100,6 +104,14 @@ const FileInputLabel = styled.label`
   & h4 {
     font-size: 18px;
     margin-bottom: 14px;
+  }
+`
+
+const SlimInputLabel = styled.label`
+  padding: ${defaultMargins.xs} 0;
+
+  & input {
+    display: none;
   }
 `
 
@@ -244,12 +256,15 @@ export default React.memo(function FileUpload({
   onUpload,
   onDelete,
   onDownloadFile,
+  slim = false,
+  disabled = false,
   'data-qa': dataQa
 }: FileUploadProps) {
   const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [modalVisible, setModalVisible] = useState<boolean>(false)
+  const [unavailableModalVisible, setUnavailableModalVisible] =
+    useState<boolean>(false)
 
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
     files.map(attachmentToFile)
@@ -290,9 +305,7 @@ export default React.memo(function FileUpload({
         ? Success.of(true)
         : await onDelete(file.id)
       if (isSuccess) {
-        setUploadedFiles((old) => {
-          return old.filter((item) => item.id !== file.id)
-        })
+        setUploadedFiles((old) => old.filter((item) => item.id !== file.id))
       }
     } catch (e) {
       console.error(e)
@@ -370,88 +383,117 @@ export default React.memo(function FileUpload({
     }
   }
 
+  const fileInput = (
+    <input
+      disabled={disabled}
+      type="file"
+      accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
+      onChange={onChange}
+      data-qa="btn-upload-file"
+      ref={inputRef}
+      id={ariaId}
+    />
+  )
+
   return (
-    <FileUploadContainer data-qa={dataQa}>
-      {modalVisible && (
+    <FileUploadContainer data-qa={dataQa} slim={slim}>
+      {unavailableModalVisible && (
         <InfoModal
           title={i18n.download.modalHeader}
           text={i18n.download.modalMessage}
-          close={() => setModalVisible(false)}
+          close={() => setUnavailableModalVisible(false)}
           icon={faInfo}
         />
       )}
-      <FileInputLabel
-        className="file-input-label"
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        htmlFor={ariaId}
-        onKeyDown={onKeyDown}
-      >
-        <span role="button" tabIndex={0}>
-          <input
-            type="file"
-            accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
-            onChange={onChange}
-            data-qa="btn-upload-file"
-            ref={inputRef}
-            id={ariaId}
+      {slim ? (
+        <SlimInputLabel
+          className="file-input-label"
+          htmlFor={ariaId}
+          onKeyDown={onKeyDown}
+        >
+          <InlineButton
+            disabled={disabled}
+            icon={faPaperclip}
+            text={i18n.upload.input.title}
+            onClick={() => inputRef?.current?.click()}
           />
-          <h4>{i18n.upload.input.title}</h4>
-          <p>{i18n.upload.input.text.join('\n')}</p>
-        </span>
-      </FileInputLabel>
-      <Gap horizontal size={'s'} />
-      <UploadedFiles data-qa={'uploaded-files'}>
-        {uploadedFiles.map((file) => (
-          <File key={file.key}>
-            <FileIcon icon={fileIcon(file)} />
-            <FileDetails>
-              <FileHeader>
-                {!inProgress(file) && !file.error && !file.deleteInProgress ? (
-                  <FileDownloadButton
-                    file={file}
-                    fileFetchFn={onDownloadFile}
-                    onFileUnavailable={() => setModalVisible(true)}
-                    data-qa={'file-download-button'}
-                  />
-                ) : (
-                  <span data-qa={'file-download-unavailable-text'}>
-                    {file.name}
-                  </span>
-                )}
-                <FileDeleteButton
-                  icon={faTimes}
-                  disabled={file.deleteInProgress}
-                  onClick={() => deleteFile(file)}
-                  altText={`${i18n.upload.deleteFile} ${file.name}`}
-                  data-qa={`file-delete-button-${file.name}`}
-                />
-              </FileHeader>
-              {inProgress(file) && (
-                <ProgressBarContainer>
-                  <ProgressBar progress={file.progress} />
-                  {file.error && (
-                    <ProgressBarError>
-                      <span>{errorMessage(file)}</span>
-                      <Icon icon={faExclamationTriangle} />
-                    </ProgressBarError>
-                  )}
-                  {!file.error && (
-                    <ProgressBarDetails>
-                      <span>
-                        {inProgress(file)
-                          ? i18n.upload.loading
-                          : i18n.upload.loaded}
+          {fileInput}
+        </SlimInputLabel>
+      ) : (
+        <FileInputLabel
+          className="file-input-label"
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          htmlFor={ariaId}
+          onKeyDown={onKeyDown}
+        >
+          <span role="button" tabIndex={0}>
+            {fileInput}
+            <h4>{i18n.upload.input.title}</h4>
+            <p>{i18n.upload.input.text.join('\n')}</p>
+          </span>
+        </FileInputLabel>
+      )}
+      {uploadedFiles.length > 0 && (
+        <>
+          <Gap horizontal size={'s'} />
+          <UploadedFiles data-qa={'uploaded-files'}>
+            {uploadedFiles.map((file) => (
+              <File key={file.key}>
+                <FileIcon icon={fileIcon(file)} />
+                <FileDetails>
+                  <FileHeader>
+                    {!inProgress(file) &&
+                    !file.error &&
+                    !file.deleteInProgress ? (
+                      <FileDownloadButton
+                        file={file}
+                        fileFetchFn={onDownloadFile}
+                        onFileUnavailable={() =>
+                          setUnavailableModalVisible(true)
+                        }
+                        data-qa={'file-download-button'}
+                      />
+                    ) : (
+                      <span data-qa={'file-download-unavailable-text'}>
+                        {file.name}
                       </span>
-                      <span>{file.progress} %</span>
-                    </ProgressBarDetails>
+                    )}
+                    <FileDeleteButton
+                      icon={faTimes}
+                      disabled={file.deleteInProgress}
+                      onClick={() => deleteFile(file)}
+                      altText={`${i18n.upload.deleteFile} ${file.name}`}
+                      data-qa={`file-delete-button-${file.name}`}
+                    />
+                  </FileHeader>
+                  {inProgress(file) && (
+                    <ProgressBarContainer>
+                      <ProgressBar progress={file.progress} />
+                      {file.error && (
+                        <ProgressBarError>
+                          <span>{errorMessage(file)}</span>
+                          <Icon icon={faExclamationTriangle} />
+                        </ProgressBarError>
+                      )}
+                      {!file.error && (
+                        <ProgressBarDetails>
+                          <span>
+                            {inProgress(file)
+                              ? i18n.upload.loading
+                              : i18n.upload.loaded}
+                          </span>
+                          <span>{file.progress} %</span>
+                        </ProgressBarDetails>
+                      )}
+                    </ProgressBarContainer>
                   )}
-                </ProgressBarContainer>
-              )}
-            </FileDetails>
-          </File>
-        ))}
-      </UploadedFiles>
+                </FileDetails>
+              </File>
+            ))}
+          </UploadedFiles>
+        </>
+      )}
     </FileUploadContainer>
   )
 })
