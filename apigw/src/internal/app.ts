@@ -121,6 +121,10 @@ function internalApiRouter() {
     '/attachments/income-statements/:incomeStatementId',
     createProxy({ multipart: true })
   )
+  router.post(
+    '/attachments/messages/:draftId',
+    createProxy({ multipart: true })
+  )
   router.put('/children/:childId/image', createProxy({ multipart: true }))
   router.use(createProxy())
   return router

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Attachment } from 'lib-common/api-types/attachment'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -71,6 +72,8 @@ export interface MessageBody {
   type: MessageType
   recipientAccountIds: UUID[]
   recipientNames: string[]
+  attachmentIds: UUID[]
+  draftId?: UUID
 }
 
 export interface UpsertableDraftContent {
@@ -83,6 +86,7 @@ export interface UpsertableDraftContent {
 export interface DraftContent extends UpsertableDraftContent {
   id: UUID
   created: Date
+  attachments: Attachment[]
 }
 export const deserializeDraftContent = ({
   created,

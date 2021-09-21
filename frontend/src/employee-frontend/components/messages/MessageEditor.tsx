@@ -18,6 +18,15 @@ import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { Failure } from 'lib-common/api'
+import { featureFlags } from 'lib-customizations/employee'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveMessageAttachment
+} from '../../api/attachments'
 import Select, { SelectOption } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import {
@@ -33,15 +42,16 @@ import {
 import {
   DraftContent,
   NestedMessageAccount,
-  MessageBody,
   UpsertableDraftContent,
-  isNestedGroupMessageAccount
+  isNestedGroupMessageAccount,
+  MessageBody
 } from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
   sender: SelectOption
   recipientAccountIds: UUID[]
+  attachments: Attachment[]
 }
 
 const messageToUpsertableDraftWithAccount = ({
@@ -55,6 +65,7 @@ const emptyMessage = {
   recipientIds: [],
   recipientNames: [],
   recipientAccountIds: [],
+  attachments: [],
   title: '',
   type: 'MESSAGE' as const
 }
@@ -67,7 +78,7 @@ const getInitialMessage = (
     ? { ...draft, sender, recipientAccountIds: [] }
     : { sender, ...emptyMessage }
 
-const areRequiredFieldsFilledForMessage = (msg: Message): boolean =>
+const areRequiredFieldsFilled = (msg: Message): boolean =>
   !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
 
 const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
@@ -81,13 +92,9 @@ interface Props {
   nestedAccounts: NestedMessageAccount[]
   selectedUnit: SelectOption
   availableReceivers: SelectorNode
-  onSend: (
-    accountId: UUID,
-    messageBody: MessageBody,
-    draftId: string | undefined
-  ) => void
+  onSend: (accountId: UUID, msg: MessageBody) => void
   onClose: (didChanges: boolean) => void
-  onDiscard: (accountId: UUID, draftId?: UUID) => void
+  onDiscard: (accountId: UUID, draftId: UUID) => void
   draftContent?: DraftContent
   sending: boolean
 }
@@ -145,7 +152,6 @@ export default React.memo(function MessageEditor({
         newSelection.map((s) => s.value)
       )
     )
-    setContentTouched(true)
   }, [])
 
   useEffect(
@@ -207,22 +213,48 @@ export default React.memo(function MessageEditor({
     setContentTouched(true)
   }, [])
 
-  const sendEnabled = !sending && areRequiredFieldsFilledForMessage(message)
   const sendHandler = useCallback(() => {
     const {
+      attachments,
       sender: { value: senderId },
-      content,
-      title,
-      type,
-      recipientAccountIds,
-      recipientNames
+      ...rest
     } = message
-    onSend(
-      senderId,
-      { content, title, type, recipientAccountIds, recipientNames },
-      draftId
-    )
+    const attachmentIds = attachments.map(({ id }) => id)
+    onSend(senderId, { ...rest, attachmentIds, draftId })
   }, [onSend, message, draftId])
+
+  const handleAttachmentUpload = useCallback(
+    async (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ) =>
+      draftId
+        ? (await saveMessageAttachment(draftId, file, onUploadProgress)).map(
+            (id) => {
+              setMessage(({ attachments, ...rest }) => ({
+                ...rest,
+                attachments: [
+                  ...attachments,
+                  { id, name: file.name, contentType: file.type }
+                ]
+              }))
+              return id
+            }
+          )
+        : Failure.of<UUID>({ message: 'Should not happen' }),
+    [draftId]
+  )
+
+  const handleAttachmentDelete = useCallback(
+    async (id: UUID) =>
+      (await deleteAttachment(id)).map(() =>
+        setMessage(({ attachments, ...rest }) => ({
+          ...rest,
+          attachments: attachments.filter((a) => a.id !== id)
+        }))
+      ),
+    []
+  )
 
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
@@ -250,6 +282,9 @@ export default React.memo(function MessageEditor({
         })),
     [nestedAccounts, availableReceivers, selectedUnit.value]
   )
+
+  const sendEnabled =
+    !sending && draftState === 'clean' && areRequiredFieldsFilled(message)
 
   return (
     <Container data-qa="message-editor" data-status={draftState}>
@@ -320,14 +355,28 @@ export default React.memo(function MessageEditor({
             onChange={(e) => updateMessage({ content: e.target.value })}
             data-qa={'input-content'}
           />
+          {featureFlags.experimental?.messageAttachments && draftId && (
+            <FileUpload
+              data-qa="upload-message-attachment"
+              files={message.attachments}
+              i18n={i18n.fileUpload}
+              onDownloadFile={getAttachmentBlob}
+              onUpload={handleAttachmentUpload}
+              onDelete={handleAttachmentDelete}
+            />
+          )}
           <Gap size={'L'} />
           <BottomRow>
-            <InlineButton
-              onClick={() => onDiscard(message.sender.value, draftId)}
-              text={i18n.messages.messageEditor.deleteDraft}
-              icon={faTrash}
-              data-qa="discard-draft-btn"
-            />
+            {draftId ? (
+              <InlineButton
+                onClick={() => onDiscard(message.sender.value, draftId)}
+                text={i18n.messages.messageEditor.deleteDraft}
+                icon={faTrash}
+                data-qa="discard-draft-btn"
+              />
+            ) : (
+              <Gap horizontal />
+            )}
             <Button
               text={
                 sending

@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -200,6 +201,14 @@ sealed interface Action {
         UPDATE_HANDLED(FINANCE_ADMIN),
         UPLOAD_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN),
         DELETE_EMPLOYEE_ATTACHMENT(FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class MessageDraft(private val roles: EnumSet<UserRole>) : ScopedAction<MessageDraftId> {
+        UPLOAD_ATTACHMENT
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

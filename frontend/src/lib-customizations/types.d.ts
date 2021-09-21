@@ -112,6 +112,7 @@ interface BaseFeatureFlags {
   experimental?: {
     ai?: boolean
     incomeStatements?: boolean
+    messageAttachments?: boolean
     vasu?: boolean
   }
 }

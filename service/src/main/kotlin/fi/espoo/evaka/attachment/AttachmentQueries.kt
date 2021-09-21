@@ -7,6 +7,7 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -18,6 +19,7 @@ sealed interface AttachTo
 
 data class AttachToApplication(val applicationId: ApplicationId) : AttachTo
 data class AttachToIncomeStatement(val incomeStatementId: IncomeStatementId) : AttachTo
+data class AttachToMessageDraft(val draftId: MessageDraftId) : AttachTo
 object AttachToNothing : AttachTo
 
 fun Database.Transaction.insertAttachment(
@@ -32,8 +34,8 @@ fun Database.Transaction.insertAttachment(
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, uploaded_by_person, uploaded_by_employee, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :uploadedByEnduser, :uploadedByEmployee, :type)
+        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, uploaded_by_person, uploaded_by_employee, type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByEnduser, :uploadedByEmployee, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -46,14 +48,22 @@ fun Database.Transaction.insertAttachment(
                     it
                         .bind("applicationId", attachTo.applicationId)
                         .bindNullable("incomeStatementId", null as IncomeStatementId?)
+                        .bindNullable("messageDraftId", null as MessageDraftId?)
                 is AttachToIncomeStatement ->
                     it
                         .bindNullable("applicationId", null as ApplicationId?)
                         .bind("incomeStatementId", attachTo.incomeStatementId)
+                        .bindNullable("messageDraftId", null as MessageDraftId?)
+                is AttachToMessageDraft ->
+                    it
+                        .bindNullable("applicationId", null as ApplicationId?)
+                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
+                        .bind("messageDraftId", attachTo.draftId)
                 is AttachToNothing ->
                     it
                         .bindNullable("applicationId", null as ApplicationId?)
                         .bindNullable("incomeStatementId", null as IncomeStatementId?)
+                        .bindNullable("messageDraftId", null as MessageDraftId?)
             }
         }
         .bind("uploadedByEnduser", uploadedByEnduser)

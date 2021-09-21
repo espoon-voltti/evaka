@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
 class MessageService(
@@ -22,20 +22,20 @@ class MessageService(
         type: MessageType,
         sender: MessageAccountId,
         recipientGroups: Set<Set<MessageAccountId>>,
-        recipientNames: List<String>
+        recipientNames: List<String>,
+        attachmentIds: Set<AttachmentId> = setOf()
     ): List<MessageThreadId> =
         // for each recipient group, create a thread, message and message_recipients while re-using content
         tx.insertMessageContent(content, sender)
+            .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
-                val sentAt = HelsinkiDateTime.now()
-                return recipientGroups.map {
+                recipientGroups.map {
                     val threadId = tx.insertThread(type, title)
                     val messageId =
                         tx.insertMessage(
                             contentId = contentId,
                             threadId = threadId,
                             sender = sender,
-                            sentAt = sentAt,
                             recipientNames = recipientNames
                         )
                     tx.insertRecipients(it, messageId)

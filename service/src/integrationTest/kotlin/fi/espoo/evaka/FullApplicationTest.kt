@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 import java.io.File
+import java.net.URL
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -65,7 +66,7 @@ abstract class FullApplicationTest {
 
     protected fun dbInstance(): Database = Database(jdbi)
 
-    private val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")
+    protected val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png") as URL
 
     @BeforeAll
     protected fun beforeAll() {

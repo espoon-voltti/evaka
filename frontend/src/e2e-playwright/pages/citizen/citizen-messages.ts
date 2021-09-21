@@ -45,18 +45,16 @@ export default class CitizenMessagesPage {
     await waitUntilEqual(() => this.#threadContent.innerText, content)
   }
 
+  getThreadAttachmentCount(): Promise<number> {
+    return this.page.locator('[data-qa="attachment"]').count()
+  }
+
   async getThreadCount() {
-    return this.page.$$eval(
-      '[data-qa="thread-list-item"]',
-      (messages) => messages.length
-    )
+    return this.page.locator('[data-qa="thread-list-item"]').count()
   }
 
   async isEditorVisible() {
-    return this.page.$$eval(
-      '[data-qa="input-content"]',
-      (contentInput) => contentInput.length > 0
-    )
+    return this.page.locator('[data-qa="input-content"]').isVisible()
   }
 
   async replyToFirstThread(content: string) {
