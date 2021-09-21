@@ -2,19 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import { faFile, faInfo } from 'lib-icons'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useTranslation } from '../../../localization'
 import { featureFlags } from 'lib-customizations/citizen'
 import { getAttachmentBlob } from '../../../attachments'
+import { OverlayContext } from '../../../overlay/state'
 
 type Props = {
   formData: ApplicationFormData
@@ -31,7 +28,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
 }: Props) {
   const t = useTranslation()
 
-  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(false)
+  const { setErrorMessage } = useContext(OverlayContext)
 
   return (
     <>
@@ -47,14 +44,6 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
 
       {formData.serviceNeed.urgent && featureFlags.urgencyAttachmentsEnabled && (
         <>
-          {errorModalVisible && (
-            <InfoModal
-              title={t.fileDownload.modalHeader}
-              text={t.fileDownload.modalMessage}
-              close={() => setErrorModalVisible(false)}
-              icon={faInfo}
-            />
-          )}
           <>
             <Label>
               {t.applications.editor.verification.serviceNeed.attachments.label}
@@ -64,15 +53,18 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                 <AttachmentList>
                   {formData.serviceNeed.urgencyAttachments.map((file) => (
                     <li key={file.id}>
-                      <span className="attachment-icon">
-                        <FontAwesomeIcon icon={faFile} />
-                      </span>
-                      <Gap horizontal size={'xs'} />
                       <FileDownloadButton
                         file={file}
                         fileFetchFn={getAttachmentBlob}
-                        onFileUnavailable={() => setErrorModalVisible(true)}
+                        onFileUnavailable={() =>
+                          setErrorMessage({
+                            type: 'error',
+                            title: t.fileDownload.modalHeader,
+                            text: t.fileDownload.modalMessage
+                          })
+                        }
                         data-qa={'service-need-urgency-attachment-download'}
+                        icon
                       />
                     </li>
                   ))}
@@ -94,7 +86,7 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
 }: Props) {
   const t = useTranslation()
 
-  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(false)
+  const { setErrorMessage } = useContext(OverlayContext)
 
   return (
     <>
@@ -111,14 +103,6 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
 
       {formData.serviceNeed.shiftCare && (
         <>
-          {errorModalVisible && (
-            <InfoModal
-              title={t.fileDownload.modalHeader}
-              text={t.fileDownload.modalMessage}
-              close={() => setErrorModalVisible(false)}
-              icon={faInfo}
-            />
-          )}
           <Label>
             {t.applications.editor.verification.serviceNeed.attachments.label}
           </Label>
@@ -127,15 +111,18 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
               <AttachmentList>
                 {formData.serviceNeed.shiftCareAttachments.map((file) => (
                   <li key={file.id}>
-                    <span className="attachment-icon">
-                      <FontAwesomeIcon icon={faFile} />
-                    </span>
-                    <Gap horizontal size={'xs'} />
                     <FileDownloadButton
                       file={file}
                       fileFetchFn={getAttachmentBlob}
-                      onFileUnavailable={() => setErrorModalVisible(true)}
+                      onFileUnavailable={() =>
+                        setErrorMessage({
+                          type: 'error',
+                          title: t.fileDownload.modalHeader,
+                          text: t.fileDownload.modalMessage
+                        })
+                      }
                       data-qa={'service-need-shift-care-attachment-download'}
+                      icon
                     />
                   </li>
                 ))}

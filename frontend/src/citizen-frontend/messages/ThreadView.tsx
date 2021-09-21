@@ -29,9 +29,10 @@ import { faReply } from '@fortawesome/free-solid-svg-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { MessageType } from 'lib-common/generated/enums'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import {FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from "../../lib-components/molecules/FileDownloadButton";
-import {getAttachmentBlob} from "../attachments";
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { getAttachmentBlob } from '../attachments'
+import { OverlayContext } from '../overlay/state'
 
 const TitleRow = styled.div`
   display: flex;
@@ -69,6 +70,8 @@ function SingleMessage({
   title?: string
 }) {
   const i18n = useTranslation()
+  const { setErrorMessage } = useContext(OverlayContext)
+
   return (
     <MessageContainer>
       {title && type && (
@@ -87,14 +90,20 @@ function SingleMessage({
       </MessageContent>
       {message.attachments.length > 0 && (
         <>
-          <HorizontalLine slim/>
-          <FixedSpaceColumn spacing='xs'>
+          <HorizontalLine slim />
+          <FixedSpaceColumn spacing="xs">
             {message.attachments.map((attachment) => (
               <FileDownloadButton
                 key={attachment.id}
                 file={attachment}
                 fileFetchFn={getAttachmentBlob}
-                onFileUnavailable={() => console.error('oops')}
+                onFileUnavailable={() =>
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.fileDownload.modalHeader,
+                    text: i18n.fileDownload.modalMessage
+                  })
+                }
                 icon
               />
             ))}
