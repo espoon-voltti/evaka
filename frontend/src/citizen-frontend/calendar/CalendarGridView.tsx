@@ -12,6 +12,7 @@ import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faCalendarPlus, faUserMinus } from 'lib-icons'
+import { Holiday, NoReservation } from './calendar-elements'
 
 export interface Props {
   weeklyData: WeekProps[]
@@ -73,15 +74,15 @@ export default React.memo(function CalendarGridView({
                   </DayCellDate>
                 </DayCellHeader>
                 <DayCellReservations data-qa="reservations">
-                  {d.reservations.length === 0 &&
-                    (d.isHoliday ? (
-                      <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
+                  {d.reservations.length === 0 ? (
+                    d.isHoliday ? (
+                      <Holiday />
                     ) : (
-                      <NoReservation>
-                        {i18n.calendar.noReservation}
-                      </NoReservation>
-                    ))}
-                  {d.reservations.join(', ')}
+                      <NoReservation />
+                    )
+                  ) : (
+                    d.reservations.join(', ')
+                  )}
                 </DayCellReservations>
                 {d.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
               </DayCell>
@@ -173,13 +174,4 @@ const HistoryOverlay = styled.div`
   z-index: 1;
   opacity: 0.6;
   background-color: ${colors.greyscale.white};
-`
-
-const HolidayNote = styled.div`
-  font-style: italic;
-  color: ${colors.greyscale.dark};
-`
-
-const NoReservation = styled.span`
-  color: ${colors.accents.orangeDark};
 `

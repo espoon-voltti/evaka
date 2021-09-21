@@ -13,6 +13,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { Holiday, NoReservation } from './calendar-elements'
 
 export interface WeekProps {
   weekNumber: number
@@ -92,10 +93,15 @@ const DayElem = React.memo(function DayElem({
         <div>{date.format('dd.MM.')}</div>
       </DayColumn>
       <div data-qa="reservations">
-        {reservations.length === 0 && isHoliday && (
-          <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
+        {reservations.length === 0 ? (
+          isHoliday ? (
+            <Holiday />
+          ) : (
+            <NoReservation />
+          )
+        ) : (
+          reservations.join(', ')
         )}
-        {reservations.join(', ')}
       </div>
       {date.isBefore(LocalDate.today()) && <HistoryOverlay />}
     </DayDiv>
@@ -115,11 +121,6 @@ const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`
   width: 3rem;
   color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
   font-weight: ${fontWeights.semibold};
-`
-
-const HolidayNote = styled.div`
-  font-style: italic;
-  color: ${colors.greyscale.dark};
 `
 
 const HistoryOverlay = styled.div`
