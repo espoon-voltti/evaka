@@ -12,7 +12,7 @@ import { UUID } from 'lib-common/types'
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FixedSpaceRow} from "../layout/flex-helpers";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faFile, faFileImage, faFilePdf} from "../../lib-icons";
+import {fileIcon} from "./FileUpload";
 
 const DownloadButton = styled.button`
   background: none;
@@ -24,18 +24,6 @@ const DownloadButton = styled.button`
   text-align: start;
   text-decoration: none;
 `
-
-function getIcon(contentType: string): IconDefinition {
-  switch (contentType) {
-    case 'pdf':
-      return faFilePdf
-    case 'jpeg':
-    case 'png':
-      return faFileImage
-    default:
-      return faFile
-  }
-}
 
 interface FileDownloadButtonProps {
   file: Attachment
@@ -76,7 +64,7 @@ export default React.memo(function FileDownloadButton({
     <DownloadButton onClick={() => getFileIfAvailable(file)} data-qa={dataQa}>
       <FixedSpaceRow spacing='xs' alignItems='center' key={file.id}>
         { icon && (
-          <FontAwesomeIcon icon={icon === true ? getIcon(file.contentType) : icon} />
+          <FontAwesomeIcon icon={icon === true ? fileIcon(file) : icon} />
         )}
         <div>{file.name}</div>
       </FixedSpaceRow>
