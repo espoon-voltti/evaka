@@ -67,8 +67,7 @@ data class VoucherValueDecision(
             this.familySize == decision.familySize &&
             this.child == decision.child &&
             this.placement == decision.placement &&
-            this.serviceNeed.feeCoefficient == decision.serviceNeed.feeCoefficient &&
-            this.serviceNeed.voucherValueCoefficient == decision.serviceNeed.voucherValueCoefficient &&
+            this.serviceNeed == decision.serviceNeed &&
             this.baseCoPayment == decision.baseCoPayment &&
             this.siblingDiscount == decision.siblingDiscount &&
             this.coPayment == decision.coPayment &&
