@@ -229,6 +229,21 @@ commands:
             - yarn-cache-apigw-v1-
             - yarn-cache-apigw-
 
+  store_espoo_build_customizations:
+    steps:
+      - save_cache:
+          name: Store private Espoo build customizations
+          key: espoo-build-customization-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - espoo-customizations
+  restore_espoo_build_customizations:
+    steps:
+      - restore_cache:
+          name: Restore private Espoo build customizations
+          keys:
+            # Not really intended to be a real cache, so use exact matches
+            - espoo-build-customization-v1-{{ .Branch }}-{{ .Revision }}
+
   store_frontend_deps:
     steps:
       - save_cache:
@@ -354,6 +369,7 @@ commands:
       - restore_repo
       - restore_frontend_deps
       - restore_frontend_comm_deps
+      - restore_espoo_build_customizations
       - run:
           working_directory: *workspace_frontend
           command: yarn install --immutable
@@ -747,6 +763,12 @@ jobs:
       - restore_frontend_comm_deps
       - run: . replace-credentials
       - run:
+          name: Fetch Espoo-specific build customizations
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: |
+            ./bin/fetch-espoo-build-customizations.sh
+      - store_espoo_build_customizations
+      - run:
           name: Fetch commercial frontend dependencies
           working_directory: *workspace_frontend
           command: |
@@ -807,6 +829,7 @@ jobs:
     steps:
       - restore_repo
       - restore_apigw_deps
+      - restore_espoo_build_customizations
       - run:
           working_directory: *workspace_apigw
           command: yarn install --immutable
@@ -965,6 +988,7 @@ jobs:
     executor: service_executor
     steps:
       - restore_repo
+      - restore_espoo_build_customizations
       - restore_service_gradle
       - run:
           working_directory: *workspace_service
@@ -1092,6 +1116,7 @@ jobs:
     executor: service_executor
     steps:
       - restore_repo
+      - restore_espoo_build_customizations
       - restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
@@ -1201,7 +1226,7 @@ workflows:
       - apigw_build_and_test:
           <<: *default_contexts
           requires:
-            - checkout_repo
+            - fetch_private_dependencies
       - apigw_build_and_push_image:
           <<: *aws_contexts
           requires:
@@ -1251,7 +1276,7 @@ workflows:
       - service_build:
           <<: *default_contexts
           requires:
-            - checkout_repo
+            - fetch_private_dependencies
       - service_build_and_push_image:
           <<: *aws_contexts
           requires:
@@ -1269,7 +1294,7 @@ workflows:
       - message_service_build:
           <<: *default_contexts
           requires:
-            - checkout_repo
+            - fetch_private_dependencies
       - message_service_test:
           <<: *default_contexts
           requires:
