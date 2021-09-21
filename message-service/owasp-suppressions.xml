@@ -90,4 +90,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2021-36090</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Affects windows hosts, we run tomcat on linux
+        ]]></notes>
+        <cve>CVE-2020-0822</cve>
+    </suppress>
 </suppressions>
