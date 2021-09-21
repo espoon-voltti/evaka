@@ -40,7 +40,7 @@ export default React.memo(function Header() {
 })
 
 const HeaderContainer = styled.header<{ fixed: boolean }>`
-  z-index: 99;
+  z-index: 9;
   color: ${colors.greyscale.white};
   background-color: ${colors.blues.primary};
   position: ${({ fixed }) => (fixed ? 'fixed' : 'relative')};

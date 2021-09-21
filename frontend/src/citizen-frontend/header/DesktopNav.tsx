@@ -244,8 +244,7 @@ const DropDownIcon = styled(FontAwesomeIcon)`
 
 const DropDown = styled.ul`
   position: absolute;
-  z-index: 9999;
-  top: 85px;
+  z-index: 10;
   list-style: none;
   margin: 0;
   padding: 0;
