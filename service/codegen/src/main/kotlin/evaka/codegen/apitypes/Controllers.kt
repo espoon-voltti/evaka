@@ -5,10 +5,6 @@
 package evaka.codegen.apitypes
 
 import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.daycare.controllers.utils.Wrapper
-import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.varda.integration.VardaClient
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,6 +20,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
 import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 
 fun getApiClasses(packageName: String): Set<KClass<*>> {
@@ -99,7 +96,7 @@ private fun getRealType(type: KType): KClass<*>? {
 
 private fun unwrap(type: KType): KType {
     return (
-        if (type.jvmErasure in listOf(ResponseEntity::class, List::class, Set::class, Paged::class, VardaClient.PaginatedResponse::class, Wrapper::class, fi.espoo.evaka.invoicing.controller.Wrapper::class)) {
+        if (classesToUnwrap.any { type.jvmErasure.isSubclassOf(it) }) {
             type.arguments.first().type!!
         } else type
         )

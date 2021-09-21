@@ -45,6 +45,7 @@ tasks {
     }
 
     create("codegen", JavaExec::class) {
+        shouldRunAfter("assemble")
         mainClass.set("evaka.codegen.GenerateKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
