@@ -9,7 +9,7 @@ import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.varda.integration.VardaClient.DecisionPeriod
+* Generated from fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint.DecisionPeriod
 */
 export interface DecisionPeriod {
   alkamis_pvm: LocalDate
@@ -34,18 +34,18 @@ export interface VardaChildRequest {
 * Generated from fi.espoo.evaka.varda.VardaDecision
 */
 export interface VardaDecision {
-  applicationDate: LocalDate
-  childUrl: string
-  daily: boolean
-  endDate: LocalDate
-  fullDay: boolean
-  hoursPerWeek: number
-  providerTypeCode: string
-  shiftCare: boolean
-  sourceSystem: string
-  startDate: LocalDate
-  temporary: boolean
-  urgent: boolean
+  alkamis_pvm: LocalDate
+  hakemus_pvm: LocalDate
+  jarjestamismuoto_koodi: string
+  kokopaivainen_vaka_kytkin: boolean
+  lahdejarjestelma: string
+  lapsi: string
+  paattymis_pvm: LocalDate
+  paivittainen_vaka_kytkin: boolean
+  pikakasittely_kytkin: boolean
+  tilapainen_vaka_kytkin: boolean
+  tuntimaara_viikossa: number
+  vuorohoito_kytkin: boolean
 }
 
 /**
@@ -77,23 +77,23 @@ export interface VardaGuardian {
 * Generated from fi.espoo.evaka.varda.VardaPersonRequest
 */
 export interface VardaPersonRequest {
-  firstName: string
+  etunimet: string
+  henkilo_oid: string | null
+  henkilotunnus: string | null
   id: UUID
-  lastName: string
-  nickName: string
-  personOid: string | null
-  ssn: string | null
+  kutsumanimi: string
+  sukunimi: string
 }
 
 /**
 * Generated from fi.espoo.evaka.varda.VardaPlacement
 */
 export interface VardaPlacement {
-  decisionUrl: string
-  endDate: LocalDate | null
-  sourceSystem: string
-  startDate: LocalDate
-  unitOid: string
+  alkamis_pvm: LocalDate
+  lahdejarjestelma: string
+  paattymis_pvm: LocalDate | null
+  toimipaikka_oid: string
+  varhaiskasvatuspaatos: string
 }
 
 /**

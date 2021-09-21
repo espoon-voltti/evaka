@@ -80,6 +80,7 @@ export type ScheduledJob =
   | 'RemoveOldDraftApplications'
   | 'SendPendingDecisionReminderEmails'
   | 'VardaUpdate'
+  | 'VardaReset'
   | 'InactivePeopleCleanup'
   | 'InactiveEmployeesRoleReset'
 

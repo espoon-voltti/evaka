@@ -167,8 +167,15 @@ export interface FamilyOverview {
   children: FamilyOverviewPerson[]
   headOfFamily: FamilyOverviewPerson
   partner: FamilyOverviewPerson | null
-  totalIncome: number | null
-  totalIncomeEffect: IncomeEffect
+  totalIncome: FamilyOverviewIncome | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.service.FamilyOverviewIncome
+*/
+export interface FamilyOverviewIncome {
+  effect: IncomeEffect | null
+  total: number | null
 }
 
 /**
@@ -178,9 +185,7 @@ export interface FamilyOverviewPerson {
   dateOfBirth: LocalDate
   firstName: string
   headOfChild: UUID | null
-  incomeEffect: IncomeEffect | null
-  incomeId: UUID | null
-  incomeTotal: number | null
+  income: FamilyOverviewIncome | null
   lastName: string
   personId: UUID
   postOffice: string

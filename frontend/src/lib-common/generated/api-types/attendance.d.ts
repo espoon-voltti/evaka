@@ -23,6 +23,14 @@ export interface AbsenceRangeRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.AbsenceThreshold
+*/
+export interface AbsenceThreshold {
+  time: string
+  type: AbsenceCareType
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalRequest
 */
 export interface ArrivalRequest {
@@ -140,13 +148,6 @@ export interface ContactInfo {
   lastName: string
   phone: string
   priority: number | null
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureInfoResponse
-*/
-export interface DepartureInfoResponse {
-  absentFrom: AbsenceCareType[]
 }
 
 /**

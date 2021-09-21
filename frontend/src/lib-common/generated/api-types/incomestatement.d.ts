@@ -5,15 +5,19 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
+import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
+  created: Date
   id: UUID
   personId: UUID
   personName: string
+  primaryCareArea: string | null
+  startDate: LocalDate
   type: IncomeStatementType
 }
 
