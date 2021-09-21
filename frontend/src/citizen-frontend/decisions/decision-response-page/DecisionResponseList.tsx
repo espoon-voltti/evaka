@@ -146,7 +146,6 @@ export default React.memo(function DecisionResponseList() {
                 setDisplayDecisionWithNoResponseWarning(false)
               }
             }}
-            size={'md'}
           />
         )}
       </Container>

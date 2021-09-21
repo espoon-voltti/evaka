@@ -32,28 +32,11 @@ export const BackgroundOverlay = styled.div<zIndexProps>`
 `
 
 interface ModalContainerProps {
-  size: ModalSize
-  customSize?: string
   mobileFullScreen?: boolean
 }
 
 export const ModalContainer = styled.div<ModalContainerProps>`
-  max-width: ${(props: ModalContainerProps) => {
-    switch (props.size) {
-      case 'xs':
-        return '300px'
-      case 'sm':
-        return '400px'
-      case 'md':
-        return '500px'
-      case 'lg':
-        return '600px'
-      case 'xlg':
-        return '700px'
-      case 'custom':
-        return props.customSize ?? '500px'
-    }
-  }};
+  max-width: 500px;
   background: white;
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
@@ -149,12 +132,9 @@ export const ModalTitle = styled.div`
   margin-top: ${defaultMargins.XXL};
 `
 
-export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'
-
 type CommonProps = {
   title?: string
   text?: string
-  size?: ModalSize
   resolve: {
     action: () => void
     label: string
@@ -178,18 +158,15 @@ function ModalBase({
   text,
   className,
   icon,
-  size = 'md',
   mobileFullScreen,
   children,
   iconColour = 'blue',
-  resolve,
-  onSubmit
-}: CommonProps & { onSubmit?: () => void }) {
+  resolve
+}: CommonProps) {
   return (
     <ModalBackground>
       <ModalWrapper className={className} data-qa={dataQa}>
         <ModalContainer
-          size={size}
           mobileFullScreen={mobileFullScreen}
           data-qa="form-modal"
         >
@@ -220,9 +197,7 @@ function ModalBase({
           <form
             onSubmit={(event) => {
               event.preventDefault()
-              if (onSubmit) {
-                if (!resolve.disabled) onSubmit()
-              }
+              if (!resolve.disabled) resolve.action()
             }}
           >
             {children}
@@ -240,7 +215,7 @@ export default React.memo(function FormModal({
   ...props
 }: CommonProps) {
   return (
-    <ModalBase {...props} resolve={resolve} onSubmit={resolve.action}>
+    <ModalBase {...props} resolve={resolve}>
       {children}
       <ModalButtons $singleButton={!reject}>
         {reject && (

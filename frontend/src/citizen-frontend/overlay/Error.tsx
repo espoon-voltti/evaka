@@ -21,7 +21,6 @@ function GlobalErrorDialog() {
             label: errorMessage.resolveLabel ?? 'Ok',
             action: () => clearErrorMessage()
           }}
-          size={'md'}
         />
       )}
     </div>

@@ -15,7 +15,6 @@ import {
   ModalIcon,
   ModalContainer,
   ModalTitle,
-  ModalSize,
   IconColour
 } from './FormModal'
 import Title from 'lib-components/atoms/Title'
@@ -23,16 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { fontWeights, P } from 'lib-components/typography'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
-interface SizeProps {
-  size: ModalSize
-  customSize?: string
-}
-
-interface ModalContentProps {
-  marginBottom: number
-}
-
-const ModalContent = styled.div<ModalContentProps>`
+const ModalContent = styled.div<{ marginBottom: number }>`
   position: relative;
   max-height: calc(100vh - 40px);
   width: auto;
@@ -40,29 +30,10 @@ const ModalContent = styled.div<ModalContentProps>`
   margin-bottom: ${(p) => `${p.marginBottom}px`};
 `
 
-const ButtonContainer = styled.div<SizeProps>`
-  display: flex;
-  width: ${(props: SizeProps) => {
-    switch (props.size) {
-      case 'xs':
-        return '300px'
-      case 'sm':
-        return '400px'
-      case 'md':
-        return '500px'
-      case 'lg':
-        return '600px'
-      case 'xlg':
-        return '700px'
-      case 'custom':
-        return props.customSize ?? '500px'
-    }
-  }};
-  justify-content: flex-end;
-  position: relative;
-`
-
 const CloseButton = styled.button`
+  position: absolute;
+  top: -20px;
+  right: 0px;
   background: none;
   border: none;
   text-transform: uppercase;
@@ -90,8 +61,6 @@ interface Props {
   icon?: IconProp
   iconColour?: IconColour
   children?: React.ReactNode
-  size?: ModalSize
-  customSize?: string
   text?: string | React.ReactNode
   resolve?: {
     action: () => void
@@ -112,8 +81,6 @@ function InfoModal({
   children = null,
   icon,
   iconColour = 'blue',
-  size = 'lg',
-  customSize,
   text,
   resolve,
   reject,
@@ -123,15 +90,13 @@ function InfoModal({
   return (
     <ModalBackground zIndex={zIndex}>
       <ModalWrapper data-qa={dataQa} zIndex={zIndex}>
-        {close && (
-          <ButtonContainer size={size} customSize={customSize} onClick={close}>
+        <ModalContainer data-qa="modal">
+          {close && (
             <CloseButton>
               <CloseButtonText>Sulje</CloseButtonText>
               <FontAwesomeIcon icon={faTimes} />
             </CloseButton>
-          </ButtonContainer>
-        )}
-        <ModalContainer size={size} customSize={customSize} data-qa="modal">
+          )}
           <ModalContent marginBottom={resolve ? 0 : 80}>
             <ModalTitle>
               {icon && (
