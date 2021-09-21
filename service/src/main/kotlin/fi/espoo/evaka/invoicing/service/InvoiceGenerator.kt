@@ -49,6 +49,8 @@ import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
 fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMonthRange()) {
+    createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
+
     val effectiveDecisions = getInvoiceableFeeDecisions(range).groupBy { it.headOfFamily.id }
     val placements = getInvoiceablePlacements(range).groupBy { it.headOfFamily.id }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(range)

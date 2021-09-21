@@ -25,7 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { InvoiceSummary } from '../../types/invoicing'
-import { Result } from 'lib-common/api'
+import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { formatCents } from 'lib-common/money'
 import Tooltip from '../../components/common/Tooltip'
 import { StatusIconContainer } from '../common/StatusIconContainer'
@@ -67,19 +67,24 @@ export default React.memo(function Invoices({
   allInvoicesToggleDisabled
 }: Props) {
   const { i18n } = useTranslation()
-  const [refreshError, setRefreshError] = useState(false)
+  const [refreshResult, setRefreshResult] = useState<Result<void>>(
+    Success.of(undefined)
+  )
 
   return (
     <div className="invoices">
       <RefreshInvoices>
-        {refreshError ? (
+        {refreshResult.isFailure ? (
           <RefreshError>{i18n.common.error.unknown}</RefreshError>
         ) : null}
         <InlineButton
           icon={faSync}
+          disabled={refreshResult.isLoading}
           onClick={() => {
-            setRefreshError(false)
-            refreshInvoices().catch(() => setRefreshError(true))
+            setRefreshResult(Loading.of())
+            refreshInvoices()
+              .then(() => setRefreshResult(Success.of()))
+              .catch((err) => setRefreshResult(Failure.of(err)))
           }}
           text={i18n.invoices.buttons.createInvoices}
           data-qa="create-invoices"
