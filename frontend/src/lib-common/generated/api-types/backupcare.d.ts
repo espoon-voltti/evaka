@@ -14,84 +14,84 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.backupcare.BackupCareChild
 */
 export interface BackupCareChild {
-    birthDate: LocalDate
-    firstName: string
-    id: UUID
-    lastName: string
+  birthDate: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareCreateResponse
 */
 export interface BackupCareCreateResponse {
-    id: UUID
+  id: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareGroup
 */
 export interface BackupCareGroup {
-    id: UUID
-    name: string
+  id: UUID
+  name: string
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareUnit
 */
 export interface BackupCareUnit {
-    id: UUID
-    name: string
+  id: UUID
+  name: string
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 */
 export interface BackupCareUpdateRequest {
-    groupId: UUID | null
-    period: FiniteDateRange
+  groupId: UUID | null
+  period: FiniteDateRange
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.ChildBackupCare
 */
 export interface ChildBackupCare {
-    group: BackupCareGroup | null
-    id: UUID
-    period: FiniteDateRange
-    unit: BackupCareUnit
+  group: BackupCareGroup | null
+  id: UUID
+  period: FiniteDateRange
+  unit: BackupCareUnit
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.ChildBackupCaresResponse
 */
 export interface ChildBackupCaresResponse {
-    backupCares: ChildBackupCare[]
+  backupCares: ChildBackupCare[]
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.NewBackupCare
 */
 export interface NewBackupCare {
-    groupId: UUID | null
-    period: FiniteDateRange
-    unitId: UUID
+  groupId: UUID | null
+  period: FiniteDateRange
+  unitId: UUID
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.UnitBackupCare
 */
 export interface UnitBackupCare {
-    child: BackupCareChild
-    group: BackupCareGroup | null
-    id: UUID
-    missingServiceNeedDays: number
-    period: FiniteDateRange
-    serviceNeeds: ServiceNeed[]
+  child: BackupCareChild
+  group: BackupCareGroup | null
+  id: UUID
+  missingServiceNeedDays: number
+  period: FiniteDateRange
+  serviceNeeds: ServiceNeed[]
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.UnitBackupCaresResponse
 */
 export interface UnitBackupCaresResponse {
-    backupCares: UnitBackupCare[]
+  backupCares: UnitBackupCare[]
 }

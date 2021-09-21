@@ -11,70 +11,97 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.shared.security.CitizenFeatures
 */
 export interface CitizenFeatures {
-    messages: boolean
-    reservations: boolean
+  messages: boolean
+  reservations: boolean
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Coordinate
 */
 export interface Coordinate {
-    lat: number
-    lon: number
+  lat: number
+  lon: number
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRow
 */
 export interface DaycareAclRow {
-    employee: DaycareAclRowEmployee
-    groupIds: UUID[]
-    role: UserRole
+  employee: DaycareAclRowEmployee
+  groupIds: UUID[]
+  role: UserRole
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 */
 export interface DaycareAclRowEmployee {
-    email: string | null
-    firstName: string
-    id: UUID
-    lastName: string
+  email: string | null
+  firstName: string
+  id: UUID
+  lastName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.security.EmployeeFeatures
 */
 export interface EmployeeFeatures {
-    applications: boolean
-    employees: boolean
-    finance: boolean
-    financeBasics: boolean
-    messages: boolean
-    personSearch: boolean
-    reports: boolean
-    units: boolean
-    vasuTemplates: boolean
+  applications: boolean
+  employees: boolean
+  finance: boolean
+  financeBasics: boolean
+  messages: boolean
+  personSearch: boolean
+  reports: boolean
+  units: boolean
+  vasuTemplates: boolean
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature
 */
-export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
+export type PilotFeature = 
+  | 'MESSAGING'
+  | 'MOBILE'
+  | 'RESERVATIONS'
 
 /**
 * Generated from fi.espoo.evaka.shared.job.ScheduledJob
 */
-export type ScheduledJob = 'CancelOutdatedTransferApplications' | 'DvvUpdate' | 'EndOfDayAttendanceUpkeep' | 'EndOutdatedVoucherValueDecisions' | 'FreezeVoucherValueReports' | 'KoskiUpdate' | 'RemoveOldAsyncJobs' | 'RemoveOldDaycareDailyNotes' | 'RemoveOldDraftApplications' | 'SendPendingDecisionReminderEmails' | 'VardaUpdate' | 'InactivePeopleCleanup' | 'InactiveEmployeesRoleReset'
+export type ScheduledJob = 
+  | 'CancelOutdatedTransferApplications'
+  | 'DvvUpdate'
+  | 'EndOfDayAttendanceUpkeep'
+  | 'EndOutdatedVoucherValueDecisions'
+  | 'FreezeVoucherValueReports'
+  | 'KoskiUpdate'
+  | 'RemoveOldAsyncJobs'
+  | 'RemoveOldDaycareDailyNotes'
+  | 'RemoveOldDraftApplications'
+  | 'SendPendingDecisionReminderEmails'
+  | 'VardaUpdate'
+  | 'InactivePeopleCleanup'
+  | 'InactiveEmployeesRoleReset'
 
 /**
 * Generated from fi.espoo.evaka.shared.controllers.ScheduledJobTriggerController.TriggerBody
 */
 export interface TriggerBody {
-    type: ScheduledJob
+  type: ScheduledJob
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.UserRole
 */
-export type UserRole = 'END_USER' | 'CITIZEN_WEAK' | 'ADMIN' | 'DIRECTOR' | 'FINANCE_ADMIN' | 'SERVICE_WORKER' | 'UNIT_SUPERVISOR' | 'STAFF' | 'SPECIAL_EDUCATION_TEACHER' | 'MOBILE' | 'GROUP_STAFF'
+export type UserRole = 
+  | 'END_USER'
+  | 'CITIZEN_WEAK'
+  | 'ADMIN'
+  | 'DIRECTOR'
+  | 'FINANCE_ADMIN'
+  | 'SERVICE_WORKER'
+  | 'UNIT_SUPERVISOR'
+  | 'STAFF'
+  | 'SPECIAL_EDUCATION_TEACHER'
+  | 'MOBILE'
+  | 'GROUP_STAFF'

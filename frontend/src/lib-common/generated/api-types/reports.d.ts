@@ -15,454 +15,461 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow
 */
 export interface ApplicationsReportRow {
-    careAreaName: string
-    club: number
-    over3Years: number
-    preschool: number
-    total: number
-    under3Years: number
-    unitId: UUID
-    unitName: string
-    unitProviderType: string
+  careAreaName: string
+  club: number
+  over3Years: number
+  preschool: number
+  total: number
+  under3Years: number
+  unitId: UUID
+  unitName: string
+  unitProviderType: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
-    assistanceServiceChild: number
-    assistanceServiceUnit: number
-    autism: number
-    careAreaName: string
-    developmentMonitoring: number
-    developmentMonitoringPending: number
-    developmentalDisability1: number
-    developmentalDisability2: number
-    disability: number
-    focusChallenge: number
-    groupId: UUID
-    groupName: string
-    linguisticChallenge: number
-    longTermCondition: number
-    multiDisability: number
-    noAssistanceActions: number
-    noAssistanceNeeds: number
-    otherAssistanceAction: number
-    otherAssistanceNeed: number
-    periodicalVeoSupport: number
-    pervasiveVeoSupport: number
-    ratioDecrease: number
-    regulationSkillChallenge: number
-    resourcePerson: number
-    smallerGroup: number
-    specialGroup: number
-    unitId: UUID
-    unitName: string
-    unitProviderType: string
-    unitType: UnitType | null
+  assistanceServiceChild: number
+  assistanceServiceUnit: number
+  autism: number
+  careAreaName: string
+  developmentMonitoring: number
+  developmentMonitoringPending: number
+  developmentalDisability1: number
+  developmentalDisability2: number
+  disability: number
+  focusChallenge: number
+  groupId: UUID
+  groupName: string
+  linguisticChallenge: number
+  longTermCondition: number
+  multiDisability: number
+  noAssistanceActions: number
+  noAssistanceNeeds: number
+  otherAssistanceAction: number
+  otherAssistanceNeed: number
+  periodicalVeoSupport: number
+  pervasiveVeoSupport: number
+  ratioDecrease: number
+  regulationSkillChallenge: number
+  resourcePerson: number
+  smallerGroup: number
+  specialGroup: number
+  unitId: UUID
+  unitName: string
+  unitProviderType: string
+  unitType: UnitType | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ChildAgeLanguageReportRow
 */
 export interface ChildAgeLanguageReportRow {
-    careAreaName: string
-    fi_0y: number
-    fi_1y: number
-    fi_2y: number
-    fi_3y: number
-    fi_4y: number
-    fi_5y: number
-    fi_6y: number
-    fi_7y: number
-    other_0y: number
-    other_1y: number
-    other_2y: number
-    other_3y: number
-    other_4y: number
-    other_5y: number
-    other_6y: number
-    other_7y: number
-    sv_0y: number
-    sv_1y: number
-    sv_2y: number
-    sv_3y: number
-    sv_4y: number
-    sv_5y: number
-    sv_6y: number
-    sv_7y: number
-    unitId: UUID
-    unitName: string
-    unitProviderType: string
-    unitType: UnitType | null
+  careAreaName: string
+  fi_0y: number
+  fi_1y: number
+  fi_2y: number
+  fi_3y: number
+  fi_4y: number
+  fi_5y: number
+  fi_6y: number
+  fi_7y: number
+  other_0y: number
+  other_1y: number
+  other_2y: number
+  other_3y: number
+  other_4y: number
+  other_5y: number
+  other_6y: number
+  other_7y: number
+  sv_0y: number
+  sv_1y: number
+  sv_2y: number
+  sv_3y: number
+  sv_4y: number
+  sv_5y: number
+  sv_6y: number
+  sv_7y: number
+  unitId: UUID
+  unitName: string
+  unitProviderType: string
+  unitType: UnitType | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportRow
 */
 export interface ChildrenInDifferentAddressReportRow {
-    addressChild: string
-    addressParent: string
-    careAreaName: string
-    childId: UUID
-    firstNameChild: string | null
-    firstNameParent: string | null
-    lastNameChild: string | null
-    lastNameParent: string | null
-    parentId: UUID
-    unitId: UUID
-    unitName: string
+  addressChild: string
+  addressParent: string
+  careAreaName: string
+  childId: UUID
+  firstNameChild: string | null
+  firstNameParent: string | null
+  lastNameChild: string | null
+  lastNameParent: string | null
+  parentId: UUID
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.Contact
 */
 export interface Contact {
-    email: string
-    firstName: string
-    lastName: string
-    phone: string
+  email: string
+  firstName: string
+  lastName: string
+  phone: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.DecisionsReportRow
 */
 export interface DecisionsReportRow {
-    careAreaName: string
-    club: number
-    daycareOver3: number
-    daycareUnder3: number
-    preference1: number
-    preference2: number
-    preference3: number
-    preferenceNone: number
-    preparatory: number
-    preparatoryDaycare: number
-    preschool: number
-    preschoolDaycare: number
-    providerType: string
-    total: number
-    unitId: UUID
-    unitName: string
+  careAreaName: string
+  club: number
+  daycareOver3: number
+  daycareUnder3: number
+  preference1: number
+  preference2: number
+  preference3: number
+  preferenceNone: number
+  preparatory: number
+  preparatoryDaycare: number
+  preschool: number
+  preschoolDaycare: number
+  providerType: string
+  total: number
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.DuplicatePeopleReportRow
 */
 export interface DuplicatePeopleReportRow {
-    dateOfBirth: LocalDate
-    duplicateNumber: number
-    firstName: string | null
-    groupIndex: number
-    id: UUID
-    lastName: string | null
-    referenceCounts: ReferenceCount[]
-    socialSecurityNumber: string | null
-    streetAddress: string | null
+  dateOfBirth: LocalDate
+  duplicateNumber: number
+  firstName: string | null
+  groupIndex: number
+  id: UUID
+  lastName: string | null
+  referenceCounts: ReferenceCount[]
+  socialSecurityNumber: string | null
+  streetAddress: string | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.EndedPlacementsReportRow
 */
 export interface EndedPlacementsReportRow {
-    childId: UUID
-    firstName: string | null
-    lastName: string | null
-    nextPlacementStart: LocalDate | null
-    placementEnd: LocalDate
-    ssn: string | null
+  childId: UUID
+  firstName: string | null
+  lastName: string | null
+  nextPlacementStart: LocalDate | null
+  placementEnd: LocalDate
+  ssn: string | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.FamilyConflictReportRow
 */
 export interface FamilyConflictReportRow {
-    careAreaName: string
-    childConflictCount: number
-    firstName: string | null
-    id: UUID
-    lastName: string | null
-    partnerConflictCount: number
-    socialSecurityNumber: string | null
-    unitId: UUID
-    unitName: string
+  careAreaName: string
+  childConflictCount: number
+  firstName: string | null
+  id: UUID
+  lastName: string | null
+  partnerConflictCount: number
+  socialSecurityNumber: string | null
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.FamilyContactReportRow
 */
 export interface FamilyContactReportRow {
-    firstName: string
-    group: string | null
-    guardian1: Contact | null
-    guardian2: Contact | null
-    headOfChild: Contact | null
-    id: UUID
-    lastName: string
-    postOffice: string
-    postalCode: string
-    ssn: string | null
-    streetAddress: string
+  firstName: string
+  group: string | null
+  guardian1: Contact | null
+  guardian2: Contact | null
+  headOfChild: Contact | null
+  id: UUID
+  lastName: string
+  postOffice: string
+  postalCode: string
+  ssn: string | null
+  streetAddress: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.InvoiceReport
 */
 export interface InvoiceReport {
-    reportRows: InvoiceReportRow[]
-    totalAmountOfInvoices: number
-    totalAmountWithZeroPrice: number
-    totalAmountWithoutAddress: number
-    totalAmountWithoutSSN: number
-    totalSumCents: number
+  reportRows: InvoiceReportRow[]
+  totalAmountOfInvoices: number
+  totalAmountWithZeroPrice: number
+  totalAmountWithoutAddress: number
+  totalAmountWithoutSSN: number
+  totalSumCents: number
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.InvoiceReportRow
 */
 export interface InvoiceReportRow {
-    amountOfInvoices: number
-    amountWithZeroPrice: number
-    amountWithoutAddress: number
-    amountWithoutSSN: number
-    areaCode: number
-    totalSumCents: number
+  amountOfInvoices: number
+  amountWithZeroPrice: number
+  amountWithoutAddress: number
+  amountWithoutSSN: number
+  areaCode: number
+  totalSumCents: number
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
-    careAreaName: string
-    childId: UUID
-    daysWithoutHead: number
-    firstName: string | null
-    lastName: string | null
-    unitId: UUID
-    unitName: string
+  careAreaName: string
+  childId: UUID
+  daysWithoutHead: number
+  firstName: string | null
+  lastName: string | null
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.MissingServiceNeedReportRow
 */
 export interface MissingServiceNeedReportRow {
-    careAreaName: string
-    childId: UUID
-    daysWithoutServiceNeed: number
-    firstName: string | null
-    lastName: string | null
-    unitId: UUID
-    unitName: string
+  careAreaName: string
+  childId: UUID
+  daysWithoutServiceNeed: number
+  firstName: string | null
+  lastName: string | null
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.PartnersInDifferentAddressReportRow
 */
 export interface PartnersInDifferentAddressReportRow {
-    address1: string
-    address2: string
-    careAreaName: string
-    firstName1: string | null
-    firstName2: string | null
-    lastName1: string | null
-    lastName2: string | null
-    personId1: UUID
-    personId2: UUID
-    unitId: UUID
-    unitName: string
+  address1: string
+  address2: string
+  careAreaName: string
+  firstName1: string | null
+  firstName2: string | null
+  lastName1: string | null
+  lastName2: string | null
+  personId1: UUID
+  personId2: UUID
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
-    applicationId: UUID | null
-    areaName: string
-    assistanceNeeded: boolean | null
-    childDob: string | null
-    childFirstName: string | null
-    childId: UUID
-    childLastName: string | null
-    childStreetAddr: string | null
-    connectedDaycare: boolean | null
-    currentUnitId: UUID | null
-    currentUnitName: string | null
-    guardianEmail: string | null
-    guardianPhoneNumber: string | null
-    otherPreferredUnits: string[]
-    preferredStartDate: LocalDate
-    preparatoryEducation: boolean | null
-    requestedUnitId: UUID
-    requestedUnitName: string
-    sentDate: LocalDate
-    siblingBasis: boolean | null
+  applicationId: UUID | null
+  areaName: string
+  assistanceNeeded: boolean | null
+  childDob: string | null
+  childFirstName: string | null
+  childId: UUID
+  childLastName: string | null
+  childStreetAddr: string | null
+  connectedDaycare: boolean | null
+  currentUnitId: UUID | null
+  currentUnitName: string | null
+  guardianEmail: string | null
+  guardianPhoneNumber: string | null
+  otherPreferredUnits: string[]
+  preferredStartDate: LocalDate
+  preparatoryEducation: boolean | null
+  requestedUnitId: UUID
+  requestedUnitName: string
+  sentDate: LocalDate
+  siblingBasis: boolean | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.PresenceReportRow
 */
 export interface PresenceReportRow {
-    date: LocalDate
-    daycareGroupName: string | null
-    daycareId: UUID | null
-    present: boolean | null
-    socialSecurityNumber: string | null
+  date: LocalDate
+  daycareGroupName: string | null
+  daycareId: UUID | null
+  present: boolean | null
+  socialSecurityNumber: string | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.RawReportRow
 */
 export interface RawReportRow {
-    absenceFree: AbsenceType | null
-    absencePaid: AbsenceType | null
-    age: number
-    backupGroupId: UUID | null
-    backupUnitId: UUID | null
-    capacity: number
-    capacityFactor: number
-    careArea: string
-    caretakersPlanned: number | null
-    caretakersRealized: number | null
-    childId: UUID
-    costCenter: string | null
-    dateOfBirth: LocalDate
-    day: LocalDate
-    daycareGroupId: UUID | null
-    groupName: string | null
-    hasAssistanceNeed: boolean
-    hasServiceNeed: boolean
-    hoursPerWeek: number | null
-    language: string | null
-    partDay: boolean | null
-    partWeek: boolean | null
-    placementType: PlacementType
-    postOffice: string
-    shiftCare: boolean | null
-    unitId: UUID
-    unitName: string
-    unitProviderType: string
-    unitType: UnitType | null
+  absenceFree: AbsenceType | null
+  absencePaid: AbsenceType | null
+  age: number
+  backupGroupId: UUID | null
+  backupUnitId: UUID | null
+  capacity: number
+  capacityFactor: number
+  careArea: string
+  caretakersPlanned: number | null
+  caretakersRealized: number | null
+  childId: UUID
+  costCenter: string | null
+  dateOfBirth: LocalDate
+  day: LocalDate
+  daycareGroupId: UUID | null
+  groupName: string | null
+  hasAssistanceNeed: boolean
+  hasServiceNeed: boolean
+  hoursPerWeek: number | null
+  language: string | null
+  partDay: boolean | null
+  partWeek: boolean | null
+  placementType: PlacementType
+  postOffice: string
+  shiftCare: boolean | null
+  unitId: UUID
+  unitName: string
+  unitProviderType: string
+  unitType: UnitType | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ReferenceCount
 */
 export interface ReferenceCount {
-    column: string
-    count: number
-    table: string
+  column: string
+  count: number
+  table: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceNeedReportRow
 */
 export interface ServiceNeedReportRow {
-    age: number
-    careAreaName: string
-    fullDay: number
-    fullWeek: number
-    missingServiceNeed: number
-    partDay: number
-    partWeek: number
-    shiftCare: number
-    total: number
-    unitName: string
-    unitProviderType: string
-    unitType: UnitType | null
+  age: number
+  careAreaName: string
+  fullDay: number
+  fullWeek: number
+  missingServiceNeed: number
+  partDay: number
+  partWeek: number
+  shiftCare: number
+  total: number
+  unitName: string
+  unitProviderType: string
+  unitType: UnitType | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherReport
 */
 export interface ServiceVoucherReport {
-    locked: LocalDate | null
-    rows: ServiceVoucherValueUnitAggregate[]
+  locked: LocalDate | null
+  rows: ServiceVoucherValueUnitAggregate[]
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherUnitReport
 */
 export interface ServiceVoucherUnitReport {
-    locked: LocalDate | null
-    rows: ServiceVoucherValueRow[]
-    voucherTotal: number
+  locked: LocalDate | null
+  rows: ServiceVoucherValueRow[]
+  voucherTotal: number
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueRow
 */
 export interface ServiceVoucherValueRow {
-    areaId: UUID
-    areaName: string
-    childDateOfBirth: LocalDate
-    childFirstName: string
-    childGroupName: string | null
-    childId: UUID
-    childLastName: string
-    isNew: boolean
-    numberOfDays: number
-    realizedAmount: number
-    realizedPeriod: FiniteDateRange
-    serviceNeedDescription: string
-    serviceVoucherCoPayment: number
-    serviceVoucherDecisionId: UUID
-    serviceVoucherValue: number
-    type: VoucherReportRowType
-    unitId: UUID
-    unitName: string
+  areaId: UUID
+  areaName: string
+  childDateOfBirth: LocalDate
+  childFirstName: string
+  childGroupName: string | null
+  childId: UUID
+  childLastName: string
+  isNew: boolean
+  numberOfDays: number
+  realizedAmount: number
+  realizedPeriod: FiniteDateRange
+  serviceNeedDescription: string
+  serviceVoucherCoPayment: number
+  serviceVoucherDecisionId: UUID
+  serviceVoucherValue: number
+  type: VoucherReportRowType
+  unitId: UUID
+  unitName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate
 */
 export interface ServiceVoucherValueUnitAggregate {
-    childCount: number
-    monthlyPaymentSum: number
-    unit: UnitData
+  childCount: number
+  monthlyPaymentSum: number
+  unit: UnitData
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.StartingPlacementsRow
 */
 export interface StartingPlacementsRow {
-    careAreaName: string
-    childId: UUID
-    dateOfBirth: LocalDate
-    firstName: string
-    lastName: string
-    placementStart: LocalDate
-    ssn: string | null
+  careAreaName: string
+  childId: UUID
+  dateOfBirth: LocalDate
+  firstName: string
+  lastName: string
+  placementStart: LocalDate
+  ssn: string | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate.UnitData
 */
 export interface UnitData {
-    areaId: UUID
-    areaName: string
-    id: UUID
-    name: string
+  areaId: UUID
+  areaName: string
+  id: UUID
+  name: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.UnitType
 */
-export type UnitType = 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB'
+export type UnitType = 
+  | 'DAYCARE'
+  | 'FAMILY'
+  | 'GROUP_FAMILY'
+  | 'CLUB'
 
 /**
 * Generated from fi.espoo.evaka.reports.VardaErrorReportRow
 */
 export interface VardaErrorReportRow {
-    childId: UUID
-    errors: string[]
-    serviceNeedEndDate: string
-    serviceNeedId: UUID
-    serviceNeedOptionName: string
-    serviceNeedStartDate: string
-    updated: Date
+  childId: UUID
+  errors: string[]
+  serviceNeedEndDate: string
+  serviceNeedId: UUID
+  serviceNeedOptionName: string
+  serviceNeedStartDate: string
+  updated: Date
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.VoucherReportRowType
 */
-export type VoucherReportRowType = 'ORIGINAL' | 'REFUND' | 'CORRECTION'
+export type VoucherReportRowType = 
+  | 'ORIGINAL'
+  | 'REFUND'
+  | 'CORRECTION'

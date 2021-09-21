@@ -11,13 +11,15 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
-    id: UUID
-    personId: UUID
-    personName: string
-    type: IncomeStatementType
+  id: UUID
+  personId: UUID
+  personName: string
+  type: IncomeStatementType
 }
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
 */
-export type IncomeStatementType = 'HIGHEST_FEE' | 'INCOME'
+export type IncomeStatementType = 
+  | 'HIGHEST_FEE'
+  | 'INCOME'

@@ -34,7 +34,7 @@ fun getApiTypesInTypeScript(): Map<Path, String> {
 ${getImports(classes).sorted().joinToString("\n")}
 
 ${classes.sortedBy { it.name.substringAfterLast('.') }.joinToString("\n\n") { it.toTs() }}
-        """.trimMargin()
+"""
 
         path to content
     }
@@ -150,7 +150,7 @@ private sealed class AnalyzedClass(
 * Generated from $name
 */
 export interface ${name.split('.').last()} {
-${properties.joinToString("\n") { "    " + it.toTs() }}
+${properties.joinToString("\n") { "  " + it.toTs() }}
 }"""
         }
     }
@@ -163,7 +163,8 @@ ${properties.joinToString("\n") { "    " + it.toTs() }}
             return """/**
 * Generated from $name
 */
-export type ${name.split('.').last()} = ${values.joinToString(" | ") { "'$it'" }}"""
+export type ${name.split('.').last()} = 
+${values.joinToString("\n") { "  | '$it'" }}"""
         }
     }
 }

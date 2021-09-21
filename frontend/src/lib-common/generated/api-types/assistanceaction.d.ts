@@ -12,35 +12,41 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceAction
 */
 export interface AssistanceAction {
-    actions: string[]
-    childId: UUID
-    endDate: LocalDate
-    id: UUID
-    measures: AssistanceMeasure[]
-    otherAction: string
-    startDate: LocalDate
+  actions: string[]
+  childId: UUID
+  endDate: LocalDate
+  id: UUID
+  measures: AssistanceMeasure[]
+  otherAction: string
+  startDate: LocalDate
 }
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOption
 */
 export interface AssistanceActionOption {
-    nameFi: string
-    value: string
+  nameFi: string
+  value: string
 }
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceActionRequest
 */
 export interface AssistanceActionRequest {
-    actions: string[]
-    endDate: LocalDate
-    measures: AssistanceMeasure[]
-    otherAction: string
-    startDate: LocalDate
+  actions: string[]
+  endDate: LocalDate
+  measures: AssistanceMeasure[]
+  otherAction: string
+  startDate: LocalDate
 }
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceMeasure
 */
-export type AssistanceMeasure = 'SPECIAL_ASSISTANCE_DECISION' | 'INTENSIFIED_ASSISTANCE' | 'EXTENDED_COMPULSORY_EDUCATION' | 'CHILD_SERVICE' | 'CHILD_ACCULTURATION_SUPPORT' | 'TRANSPORT_BENEFIT'
+export type AssistanceMeasure = 
+  | 'SPECIAL_ASSISTANCE_DECISION'
+  | 'INTENSIFIED_ASSISTANCE'
+  | 'EXTENDED_COMPULSORY_EDUCATION'
+  | 'CHILD_SERVICE'
+  | 'CHILD_ACCULTURATION_SUPPORT'
+  | 'TRANSPORT_BENEFIT'

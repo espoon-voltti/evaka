@@ -14,68 +14,68 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.reservations.AbsenceRequest
 */
 export interface AbsenceRequest {
-    absenceType: AbsenceType
-    childIds: UUID[]
-    dateRange: FiniteDateRange
+  absenceType: AbsenceType
+  childIds: UUID[]
+  dateRange: FiniteDateRange
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.ChildDailyData
 */
 export interface ChildDailyData {
-    absence: AbsenceType | null
-    childId: UUID
-    reservation: Reservation | null
+  absence: AbsenceType | null
+  childId: UUID
+  reservation: Reservation | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.DailyReservationData
 */
 export interface DailyReservationData {
-    children: ChildDailyData[]
-    date: LocalDate
-    isHoliday: boolean
+  children: ChildDailyData[]
+  date: LocalDate
+  isHoliday: boolean
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.DailyReservationRequest
 */
 export interface DailyReservationRequest {
-    childId: UUID
-    date: LocalDate
-    reservation: TimeRange | null
+  childId: UUID
+  date: LocalDate
+  reservation: TimeRange | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.Reservation
 */
 export interface Reservation {
-    endTime: string
-    startTime: string
+  endTime: string
+  startTime: string
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationChild
 */
 export interface ReservationChild {
-    firstName: string
-    id: UUID
-    preferredName: string | null
+  firstName: string
+  id: UUID
+  preferredName: string | null
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationsResponse
 */
 export interface ReservationsResponse {
-    children: ReservationChild[]
-    dailyData: DailyReservationData[]
-    reservableDays: FiniteDateRange
+  children: ReservationChild[]
+  dailyData: DailyReservationData[]
+  reservableDays: FiniteDateRange
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.TimeRange
 */
 export interface TimeRange {
-    endTime: string
-    startTime: string
+  endTime: string
+  startTime: string
 }

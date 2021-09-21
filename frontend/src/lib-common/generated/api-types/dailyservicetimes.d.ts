@@ -11,5 +11,5 @@ import { DailyServiceTimes } from '../../api-types/child/common'
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
 */
 export interface DailyServiceTimesResponse {
-    dailyServiceTimes: DailyServiceTimes | null
+  dailyServiceTimes: DailyServiceTimes | null
 }

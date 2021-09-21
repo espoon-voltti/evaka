@@ -10,4 +10,6 @@
 /**
 * Generated from fi.espoo.evaka.attachment.AttachmentType
 */
-export type AttachmentType = 'URGENCY' | 'EXTENDED_CARE'
+export type AttachmentType = 
+  | 'URGENCY'
+  | 'EXTENDED_CARE'

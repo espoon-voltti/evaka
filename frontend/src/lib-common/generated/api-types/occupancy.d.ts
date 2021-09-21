@@ -12,26 +12,26 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.occupancy.OccupancyPeriod
 */
 export interface OccupancyPeriod {
-    caretakers: number | null
-    headcount: number
-    percentage: number | null
-    period: FiniteDateRange
-    sum: number
+  caretakers: number | null
+  headcount: number
+  percentage: number | null
+  period: FiniteDateRange
+  sum: number
 }
 
 /**
 * Generated from fi.espoo.evaka.occupancy.OccupancyResponse
 */
 export interface OccupancyResponse {
-    max: OccupancyPeriod | null
-    min: OccupancyPeriod | null
-    occupancies: OccupancyPeriod[]
+  max: OccupancyPeriod | null
+  min: OccupancyPeriod | null
+  occupancies: OccupancyPeriod[]
 }
 
 /**
 * Generated from fi.espoo.evaka.occupancy.OccupancyResponseGroupLevel
 */
 export interface OccupancyResponseGroupLevel {
-    groupId: UUID
-    occupancies: OccupancyResponse
+  groupId: UUID
+  occupancies: OccupancyResponse
 }

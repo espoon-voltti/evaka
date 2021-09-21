@@ -12,36 +12,36 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.Child
 */
 export interface Child {
-    firstName: string
-    id: UUID
-    lastName: string
-    socialSecurityNumber: string
+  firstName: string
+  id: UUID
+  lastName: string
+  socialSecurityNumber: string
 }
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.CitizenUserDetails
 */
 export interface CitizenUserDetails {
-    accessibleFeatures: CitizenFeatures
-    children: Child[]
-    firstName: string
-    id: UUID
-    lastName: string
-    socialSecurityNumber: string
+  accessibleFeatures: CitizenFeatures
+  children: Child[]
+  firstName: string
+  id: UUID
+  lastName: string
+  socialSecurityNumber: string
 }
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.dto.Nationality
 */
 export interface Nationality {
-    countryCode: string
-    countryName: string
+  countryCode: string
+  countryName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.dto.NativeLanguage
 */
 export interface NativeLanguage {
-    code: string
-    languageName: string
+  code: string
+  languageName: string
 }

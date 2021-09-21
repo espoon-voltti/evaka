@@ -11,6 +11,6 @@
 * Generated from fi.espoo.evaka.identity.ExternalId
 */
 export interface ExternalId {
-    namespace: string
-    value: string
+  namespace: string
+  value: string
 }
