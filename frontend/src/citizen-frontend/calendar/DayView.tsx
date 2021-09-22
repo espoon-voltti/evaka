@@ -9,6 +9,7 @@ import LocalDate from 'lib-common/local-date'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
@@ -91,9 +92,20 @@ export default React.memo(function DayView({
         <H2 noMargin>Varaukset ja toteuma</H2>
         {editable ? (
           editing ? (
-            <IconButton icon={faCheck} disabled={saving} onClick={save} />
+            <InlineButton
+              icon={faCheck}
+              disabled={saving}
+              onClick={save}
+              text={i18n.common.save}
+              iconRight
+            />
           ) : (
-            <IconButton icon={faPen} onClick={startEditing} />
+            <InlineButton
+              icon={faPen}
+              onClick={startEditing}
+              text={i18n.common.edit}
+              iconRight
+            />
           )
         ) : null}
       </ReservationTitle>
