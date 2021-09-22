@@ -119,6 +119,9 @@ export default React.memo(function AbsenceModal({
             errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
           }
           hideErrorsBeforeTouched={!showAllErrors}
+          initialMonth={
+            LocalDate.parseFiOrNull(form.startDate) ?? LocalDate.today()
+          }
           data-qa="end-date"
         />
       </FixedSpaceRow>
