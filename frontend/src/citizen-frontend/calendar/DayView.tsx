@@ -79,8 +79,8 @@ export default React.memo(function DayView({
           onClick={navigate(() => selectDate(date.subDays(1)))}
         />
         <DayOfWeek>{`${
-          i18n.common.datetime.weekdays[date.getIsoDayOfWeek() - 1]
-        } ${date.format()}`}</DayOfWeek>
+          i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]
+        } ${date.format('d.M.yyyy')}`}</DayOfWeek>
         <IconButton
           icon={faChevronRight}
           onClick={navigate(() => selectDate(date.addDays(1)))}
