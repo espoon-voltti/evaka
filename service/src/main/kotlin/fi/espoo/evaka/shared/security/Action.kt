@@ -289,6 +289,14 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : Action {
+        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPSERT(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
