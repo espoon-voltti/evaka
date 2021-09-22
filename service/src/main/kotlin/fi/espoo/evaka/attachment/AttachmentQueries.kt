@@ -7,6 +7,7 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import java.lang.IllegalArgumentException
 import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
@@ -48,6 +50,7 @@ fun Database.Transaction.insertAttachment(
                 is AttachmentParent.IncomeStatement -> AttachmentParentColumn(incomeStatementId = attachTo.incomeStatementId)
                 is AttachmentParent.MessageDraft -> AttachmentParentColumn(messageDraftId = attachTo.draftId)
                 is AttachmentParent.None -> AttachmentParentColumn()
+                is AttachmentParent.MessageContent -> throw IllegalArgumentException("attachments are saved via draft")
             }
         )
         .bind("uploadedByPerson", uploadedByPerson)
@@ -59,7 +62,7 @@ fun Database.Transaction.insertAttachment(
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .createQuery(
         """
-        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id
+        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id, message_draft_id, message_content_id
         FROM attachment
         WHERE id = :id
         """
@@ -68,9 +71,13 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .map { row ->
         val applicationId = row.mapColumn<ApplicationId?>("application_id")
         val incomeStatementId = row.mapColumn<IncomeStatementId?>("income_statement_id")
+        val messageDraftId = row.mapColumn<MessageDraftId?>("message_draft_id")
+        val messageContentId = row.mapColumn<MessageContentId?>("message_content_id")
         val attachedTo =
             if (applicationId != null) AttachmentParent.Application(applicationId)
             else if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
+            else if (messageDraftId != null) AttachmentParent.MessageDraft(messageDraftId)
+            else if (messageContentId != null) AttachmentParent.MessageContent(messageContentId)
             else AttachmentParent.None
 
         Attachment(
@@ -94,22 +101,6 @@ fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: Authenticate
     return this.createQuery(sql)
         .bind("attachmentId", attachmentId)
         .bind("personId", user.id)
-        .mapTo<Boolean>()
-        .first()
-}
-
-fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser.Employee): Boolean {
-    val sql =
-        """
-        SELECT EXISTS 
-            (SELECT 1 FROM attachment 
-             WHERE id = :attachmentId 
-             AND uploaded_by_employee = :userId)
-        """.trimIndent()
-
-    return this.createQuery(sql)
-        .bind("attachmentId", attachmentId)
-        .bind("userId", user.id)
         .mapTo<Boolean>()
         .first()
 }

@@ -33,18 +33,7 @@ WHERE acc.person_id = :personId AND acc.active = true
 }
 
 fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<MessageAccountId> {
-    val sql = """
-SELECT acc.id,
-       acc.type
-FROM message_account acc
-LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
-    LEFT JOIN daycare dc ON dc.id = dg.daycare_id
-    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = 'UNIT_SUPERVISOR'
-    LEFT JOIN daycare_group_acl gacl on gacl.daycare_group_id = dg.id
-WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId OR gacl.employee_id = :employeeId)
-    AND acc.active = true
-"""
-    return this.createQuery(sql)
+    return this.createQuery("SELECT account_id FROM message_account_access_view WHERE employee_id = :employeeId")
         .bind("employeeId", employeeId)
         .mapTo<MessageAccountId>()
         .toSet()
