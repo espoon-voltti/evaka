@@ -119,8 +119,6 @@ describe('Child and group notes', () => {
       modifiedBy: 'e2e-test'
     }
 
-    await page.pause()
-
     await notePage.fillNote(daycareDailyNote)
     await notePage.saveNote()
     await childPage.assertNotesExist()

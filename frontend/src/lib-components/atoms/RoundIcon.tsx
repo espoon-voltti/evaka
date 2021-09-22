@@ -13,7 +13,7 @@ import { BaseProps } from '../utils'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
-export type IconSize = 's' | 'm' | 'L' | 'XL' | 'XXL'
+export type IconSize = 'xs' | 's' | 'm' | 'L' | 'XL' | 'XXL'
 
 type IconContainerProps = {
   color: string
@@ -55,6 +55,10 @@ const IconContainer = styled.div<IconContainerProps>`
     cursor: pointer;
   }
 
+  &.xs {
+    font-size: 8px;
+    ${diameter(16)}
+  }
   &.s {
     font-size: 12px;
     ${diameter(20)}

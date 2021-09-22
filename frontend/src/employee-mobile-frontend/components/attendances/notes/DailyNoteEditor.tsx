@@ -45,6 +45,7 @@ import { BackButtonInline } from '../components'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import colors from 'lib-customizations/common'
 import Button from 'lib-components/atoms/buttons/Button'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -306,10 +307,24 @@ export default React.memo(function DailyNoteEditor() {
                 paddingVertical={'0px'}
               >
                 <NoteTypeTab type={'NOTE'}>
-                  <span>{'Lapsi'}</span>
+                  <TabTitle>{i18n.common.child}</TabTitle>
+                  {dailyNote.id && (
+                    <RoundIcon
+                      content={'1'}
+                      color={colors.accents.orange}
+                      size={'xs'}
+                    />
+                  )}
                 </NoteTypeTab>
                 <NoteTypeTab type={'GROUP_NOTE'}>
-                  <span>{'Ryhmä'}</span>
+                  <TabTitle>{i18n.common.group}</TabTitle>
+                  {groupNote.id && (
+                    <RoundIcon
+                      content={'1'}
+                      color={colors.accents.orange}
+                      size={'xs'}
+                    />
+                  )}
                 </NoteTypeTab>
               </TabContainer>
 
@@ -322,13 +337,13 @@ export default React.memo(function DailyNoteEditor() {
                           fullWidth={true}
                           justifyContent={'flex-end'}
                           spacing={'xxs'}
+                          onClick={() => {
+                            setDeleteType('GROUP_NOTE')
+                            setUiMode('confirmDelete')
+                          }}
                         >
                           <IconButton
                             icon={faTrash}
-                            onClick={() => {
-                              setDeleteType('GROUP_NOTE')
-                              setUiMode('confirmDelete')
-                            }}
                             data-qa="open-delete-groupnote-dialog-btn"
                             gray
                           />
@@ -369,13 +384,13 @@ export default React.memo(function DailyNoteEditor() {
                         fullWidth={true}
                         justifyContent={'flex-end'}
                         spacing={'xxs'}
+                        onClick={() => {
+                          setDeleteType('NOTE')
+                          setUiMode('confirmDelete')
+                        }}
                       >
                         <IconButton
                           icon={faTrash}
-                          onClick={() => {
-                            setDeleteType('NOTE')
-                            setUiMode('confirmDelete')
-                          }}
                           data-qa="open-delete-dialog-btn"
                           gray
                         />
@@ -571,11 +586,7 @@ export default React.memo(function DailyNoteEditor() {
                       }
                       text={i18n.common.save}
                       data-qa="create-daily-note-btn"
-                      disabled={
-                        dailyNote.sleepingMinutes === undefined
-                          ? false
-                          : dailyNote.sleepingMinutes > 0
-                      }
+                      disabled={dailyNote.sleepingMinutes === undefined}
                     />
                   </FixedSpaceRow>
                 </FixedSpaceColumn>
@@ -751,4 +762,8 @@ const TopRow = styled.div`
   button {
     margin-right: ${defaultMargins.s};
   }
+`
+
+const TabTitle = styled.span`
+  margin-right: ${defaultMargins.xxs};
 `
