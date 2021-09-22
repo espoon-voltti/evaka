@@ -14,6 +14,7 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '../../api/unit'
+import { P } from 'lib-components/typography'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import InputField from 'lib-components/atoms/form/InputField'
 import Loader from 'lib-components/atoms/Loader'
@@ -120,18 +121,16 @@ export default React.memo(function MobilePairingModal({
           iconColour={'blue'}
           title={i18n.unit.accessControl.mobileDevices.modalTitle}
           icon={faPlus}
-          text={
-            <Fragment>
-              {i18n.unit.accessControl.mobileDevices.modalText1}
-              <br />
-              <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
-              <br />
-              {i18n.unit.accessControl.mobileDevices.modalText2}
-            </Fragment>
-          }
           resolve={{ action: closeModal, label: i18n.common.cancel }}
           data-qa="mobile-pairing-modal-phase-1"
         >
+          <P centered>
+            {i18n.unit.accessControl.mobileDevices.modalText1}
+            <br />
+            <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
+            <br />
+            {i18n.unit.accessControl.mobileDevices.modalText2}
+          </P>
           {pairingResponse.isLoading && <Loader />}
           {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
           {pairingResponse.isSuccess && (
@@ -147,9 +146,9 @@ export default React.memo(function MobilePairingModal({
           iconColour={'blue'}
           title={i18n.unit.accessControl.mobileDevices.modalTitle}
           icon={faPlus}
-          text={i18n.unit.accessControl.mobileDevices.modalText3}
           resolve={{ action: closeModal, label: i18n.common.cancel }}
         >
+          <P centered>{i18n.unit.accessControl.mobileDevices.modalText3}</P>
           {pairingResponse.isLoading && <Loader />}
           {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
           {pairingResponse.isSuccess && (
@@ -171,10 +170,10 @@ export default React.memo(function MobilePairingModal({
           iconColour={'green'}
           title={i18n.unit.accessControl.mobileDevices.modalTitle}
           icon={faPlus}
-          text={i18n.unit.accessControl.mobileDevices.modalText4}
           reject={{ action: closeModal, label: i18n.common.cancel }}
           resolve={{ action: saveDeviceName, label: i18n.common.ready }}
         >
+          <P centered>{i18n.unit.accessControl.mobileDevices.modalText4}</P>
           {pairingResponse.isLoading && <Loader />}
           {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
           {pairingResponse.isSuccess && (

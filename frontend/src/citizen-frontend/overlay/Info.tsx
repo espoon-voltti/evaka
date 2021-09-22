@@ -4,25 +4,22 @@
 
 import React, { useContext } from 'react'
 import { OverlayContext } from './state'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 function GlobalInfoDialog() {
-  const { infoMessage } = useContext(OverlayContext)
-  return (
-    <div>
-      {infoMessage && (
-        <FormModal
-          title={infoMessage.title}
-          icon={infoMessage.icon}
-          iconColour={infoMessage.iconColour}
-          text={infoMessage.text}
-          resolve={infoMessage.resolve}
-          reject={infoMessage.reject}
-          data-qa={infoMessage['data-qa']}
-        />
-      )}
-    </div>
-  )
+  const { infoMessage, clearInfoMessage } = useContext(OverlayContext)
+  return infoMessage ? (
+    <InfoModal
+      title={infoMessage.title}
+      icon={infoMessage.icon}
+      iconColour={infoMessage.iconColour}
+      text={infoMessage.text}
+      resolve={infoMessage.resolve}
+      reject={infoMessage.reject}
+      close={clearInfoMessage}
+      data-qa={infoMessage['data-qa']}
+    />
+  ) : null
 }
 
 export default GlobalInfoDialog

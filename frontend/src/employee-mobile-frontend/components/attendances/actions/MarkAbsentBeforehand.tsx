@@ -139,16 +139,17 @@ export default React.memo(function MarkAbsentBeforehand() {
           },
           label: i18n.common.doNotSave
         }}
-        resolve={
-          selectedAbsenceType && {
-            action: () => {
+        resolve={{
+          action: () => {
+            if (selectedAbsenceType) {
               void postAbsence(selectedAbsenceType).then(() => {
                 history.goBack()
               })
-            },
-            label: i18n.common.save
-          }
-        }
+            }
+          },
+          label: i18n.common.save,
+          disabled: !selectedAbsenceType
+        }}
       />
     )
   }

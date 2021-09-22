@@ -77,10 +77,10 @@ export function VasuStateTransitionButtons({
               ? i18n.vasu.transitions.guardiansWillBeNotified
               : undefined
           }
-          resolveDisabled={updateResult?.isLoading}
           resolve={{
             action: () => update(selectedEventType),
-            label: i18n.vasu.transitions[selectedEventType].confirmAction
+            label: i18n.vasu.transitions[selectedEventType].confirmAction,
+            disabled: updateResult?.isLoading
           }}
           reject={{
             action: () => {

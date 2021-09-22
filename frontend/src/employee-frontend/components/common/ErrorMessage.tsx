@@ -18,9 +18,10 @@ function ErrorMessage() {
       iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
       text={errorMessage.text}
       resolve={{
-        action: () => clearErrorMessage(),
+        action: clearErrorMessage,
         label: errorMessage.resolveLabel
       }}
+      close={clearErrorMessage}
       zIndex={errorModalZIndex}
     />
   ) : null

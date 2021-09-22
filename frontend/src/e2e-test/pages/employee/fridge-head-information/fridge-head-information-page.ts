@@ -209,7 +209,7 @@ export default class FridgeHeadInformationPage {
     }
 
     await t.click(this.feeDecisionsCollapsible.find('button'))
-    const modal = Selector('[data-qa="form-modal"]')
+    const modal = Selector('[data-qa="modal"]')
     await t.typeText(modal.find('input'), date, { replace: true, paste: true })
     await t.click(modal.find('[data-qa="modal-okBtn"]'))
   }
@@ -227,7 +227,7 @@ export default class FridgeHeadInformationPage {
       await t.click(collapsible)
     }
     await t.click(collapsible.find('button'))
-    const modal = Selector('[data-qa="form-modal"]')
+    const modal = Selector('[data-qa="modal"]')
     await selectFirstComboboxOption(modal, searchWord)
     await t.typeText(
       modal.find('.react-datepicker__input-container').nth(0).find('input'),

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, Fragment } from 'react'
+import React, { useState } from 'react'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faTimes } from 'lib-icons'
 import { useHistory } from 'react-router-dom'
@@ -34,27 +34,21 @@ export const LoginErrorModal = React.memo(function LoginErrorModal() {
     }
   }
 
-  return (
-    <>
-      {errorModalVisible && (
-        <InfoModal
-          title={t.login.failedModal.header}
-          close={closeErrorModal}
-          iconColour="red"
-          icon={faTimes}
-        >
-          <Fragment>
-            <P centered>{t.login.failedModal.message}</P>
-            <ReturnContainer>
-              <P centered>
-                <a href="#" onClick={closeErrorModal}>
-                  {t.login.failedModal.returnMessage}
-                </a>
-              </P>
-            </ReturnContainer>
-          </Fragment>
-        </InfoModal>
-      )}
-    </>
-  )
+  return errorModalVisible ? (
+    <InfoModal
+      title={t.login.failedModal.header}
+      close={closeErrorModal}
+      iconColour="red"
+      icon={faTimes}
+    >
+      <P centered>{t.login.failedModal.message}</P>
+      <ReturnContainer>
+        <P centered>
+          <a href="#" onClick={closeErrorModal}>
+            {t.login.failedModal.returnMessage}
+          </a>
+        </P>
+      </ReturnContainer>
+    </InfoModal>
+  ) : null
 })
