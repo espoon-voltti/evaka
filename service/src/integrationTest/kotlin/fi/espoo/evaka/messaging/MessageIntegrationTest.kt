@@ -568,6 +568,9 @@ class MessageIntegrationTest : FullApplicationTest() {
         downloadAttachment(employee1, attachmentId, 200)
         deleteAttachment(employee1, attachmentId, 204)
 
+        // a user cannot upload attachments to another user's draft
+        assertAttachmentUploadFails(employee2, draftId)
+
         val attachmentIds = setOf(uploadMessageAttachment(employee1, draftId), uploadMessageAttachment(employee1, draftId))
 
         // when a message thread with attachment is created
@@ -623,11 +626,27 @@ class MessageIntegrationTest : FullApplicationTest() {
         user
     ).flatMap { it.messages.filter { m -> m.sender.id != accountId && m.readAt == null } }
 
-    private fun uploadMessageAttachment(user: AuthenticatedUser.Employee, draftId: MessageDraftId): AttachmentId =
+    private fun uploadMessageAttachment(
+        user: AuthenticatedUser.Employee,
+        draftId: MessageDraftId
+    ): AttachmentId =
         http.upload("/attachments/messages/$draftId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
-            .responseObject<AttachmentId>(objectMapper).third.get()
+            .responseObject<AttachmentId>(objectMapper)
+            .also { assertEquals(200, it.second.statusCode) }
+            .third.get()
+
+    private fun assertAttachmentUploadFails(
+        user: AuthenticatedUser.Employee,
+        draftId: MessageDraftId,
+        expectedStatus: Int = 403
+    ) =
+        http.upload("/attachments/messages/$draftId")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .response()
+            .also { assertEquals(expectedStatus, it.second.statusCode) }
 
     private fun postNewThread(
         title: String,
