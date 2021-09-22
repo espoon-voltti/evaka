@@ -594,8 +594,20 @@ class MessageIntegrationTest : FullApplicationTest() {
 
         // the author can read the attachment
         downloadAttachment(employee1, attachmentIds.first(), 200)
-        // another user cannot read the attachment
+        // another employee cannot read the attachment
         downloadAttachment(employee2, attachmentIds.first(), 403)
+
+        // the recipient can read the attachment
+        val threads = getMessageThreads(person1Account, person1)
+        assertEquals(1, threads.size)
+        val messages = threads.first().messages
+        assertEquals(1, messages.size)
+        val receivedAttachments = messages.first().attachments
+        assertEquals(attachmentIds, receivedAttachments.map { it.id }.toSet())
+        downloadAttachment(person1, attachmentIds.first(), 200)
+
+        // another citizen cannot read the attachment
+        downloadAttachment(person3, attachmentIds.first(), 403)
     }
 
     private fun deleteAttachment(
@@ -609,7 +621,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             .also { assertEquals(expectedStatus, it.second.statusCode) }
 
     private fun downloadAttachment(
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser,
         attachmentId: AttachmentId,
         expectedStatus: Int = 200
     ) =
