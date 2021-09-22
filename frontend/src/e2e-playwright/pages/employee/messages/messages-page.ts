@@ -82,8 +82,19 @@ export default class MessagesPage {
     await this.#receiverSelection.click()
     await this.page.keyboard.press('Enter')
     if (attachmentCount > 0) {
-      for (let i = 0; i < attachmentCount; i++) {
+      for (let i = 1; i <= attachmentCount; i++) {
         await this.addAttachment()
+        await waitUntilEqual(
+          () =>
+            this.page
+              .locator(
+                `${
+                  this.#messageAttachmentFileUploadSelector
+                } [data-qa="file-download-button"]`
+              )
+              .count(),
+          i
+        )
       }
     }
     await this.#sendMessageButton.click()
