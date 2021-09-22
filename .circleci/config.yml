@@ -1317,6 +1317,9 @@ workflows:
             - proxy_build_and_push_image
             - service_build_and_push_image
             - message_service_build_and_push_image
+          filters:
+            branches:
+              only: master
           matrix:
             parameters:
               target_env: [dev, test, staging, prod]
