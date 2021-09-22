@@ -5,7 +5,7 @@
 import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 import { faTimes } from 'lib-icons'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 
@@ -26,6 +26,7 @@ export default React.memo(function CalendarModal({
         <CloseButton icon={faTimes} onClick={close} />
       </TopBar>
       <Content highlight={highlight}>{children}</Content>
+      <Gap size="XXL" />
     </Modal>
   )
 })
