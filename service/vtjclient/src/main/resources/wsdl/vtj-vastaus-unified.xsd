@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- equivalent: https://liityntakatalogi.suomi.fi/dataset/vtjrajapinta/resource/f2bf15c6-bd19-4d1e-85f9-678a1b203c2c -->
 <xs:schema xmlns="http://xml.vrk.fi/schema/vtjkysely" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vtj="http://xml.vrk.fi/schema/vtj/henkilotiedot/1" targetNamespace="http://xml.vrk.fi/schema/vtjkysely" elementFormDefault="qualified" attributeFormDefault="unqualified">
     <xs:import namespace="http://xml.vrk.fi/schema/vtj/henkilotiedot/1" schemaLocation="VTJHenkilotiedotKatalogi.xsd"/>
     <xs:element name="VTJHenkiloVastaussanoma">

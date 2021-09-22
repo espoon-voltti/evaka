@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- equivalent: https://liityntakatalogi.suomi.fi/dataset/vtjrajapinta/resource/bfec3b9f-5639-4a39-8260-fbc3320a55f6 -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
             xmlns:tns="http://xml.vrk.fi/ws/vtj/vtjkysely/1"
             xmlns:vtjres="http://xml.vrk.fi/schema/vtjkysely"
