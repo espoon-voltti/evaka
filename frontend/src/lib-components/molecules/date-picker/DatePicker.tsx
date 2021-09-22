@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { defaultMargins } from '../../white-space'
@@ -91,20 +91,6 @@ function DatePicker({
     onChange(LocalDate.fromSystemTzDate(day).format())
   }
 
-  function onInputBlur(e: React.FocusEvent<HTMLInputElement>) {
-    if (e.relatedTarget === null) {
-      setShow(false)
-    }
-
-    if (e.relatedTarget instanceof Element) {
-      if (
-        wrapperRef.current === null ||
-        !wrapperRef.current?.contains(e.relatedTarget)
-      )
-        setShow(false)
-    }
-  }
-
   useLayoutEffect(() => {
     const realignPicker = () => {
       if (wrapperRef.current) {
@@ -130,6 +116,30 @@ function DatePicker({
     return () => removeEventListener('resize', realignPicker)
   }, [])
 
+  useEffect(() => {
+    function handleEvent(event: { target: EventTarget | null }) {
+      if (event.target instanceof Element) {
+        if (wrapperRef.current?.contains(event.target)) {
+          return
+        }
+      }
+
+      setShow(false)
+    }
+
+    if (show) {
+      addEventListener('focusin', handleEvent)
+      addEventListener('pointerup', handleEvent)
+
+      return () => {
+        removeEventListener('focusin', handleEvent)
+        removeEventListener('pointerup', handleEvent)
+      }
+    }
+
+    return () => undefined
+  }, [show])
+
   return (
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
@@ -145,8 +155,7 @@ function DatePicker({
           setShow(true)
           onFocus()
         }}
-        onBlur={(e) => {
-          onInputBlur(e)
+        onBlur={() => {
           onBlur()
         }}
         info={info}
