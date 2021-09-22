@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import Loader from 'lib-components/atoms/Loader'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Title from 'lib-components/atoms/Title'
 import {
@@ -44,6 +43,8 @@ import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
 import { BackButtonInline } from '../components'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import colors from 'lib-customizations/common'
+import Button from 'lib-components/atoms/buttons/Button'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -108,7 +109,11 @@ export default React.memo(function DailyNoteEditor() {
     modifiedBy: user?.id ?? 'unknown user'
   })
 
-  const [deleteType, setDeleteType] = useState<'NOTE' | 'GROUP_NOTE'>('NOTE')
+  type NoteType = 'NOTE' | 'GROUP_NOTE'
+
+  const [deleteType, setDeleteType] = useState<NoteType>('NOTE')
+
+  const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -245,6 +250,17 @@ export default React.memo(function DailyNoteEditor() {
     )
   }
 
+  interface NoteTypeTabProps {
+    type: NoteType
+    children?: React.ReactNode
+  }
+
+  const NoteTypeTab = ({ type, children }: NoteTypeTabProps) => (
+    <Tab selected={type == selectedTab} onClick={() => setSelectedTab(type)}>
+      {children}
+    </Tab>
+  )
+
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
@@ -272,20 +288,6 @@ export default React.memo(function DailyNoteEditor() {
                     : i18n.common.back
                 }
               />
-              <InlineButton
-                onClick={() =>
-                  void saveNotes().then(() => {
-                    history.goBack()
-                  })
-                }
-                text={i18n.common.save}
-                data-qa="create-daily-note-btn"
-                disabled={
-                  dailyNote.sleepingMinutes === undefined
-                    ? false
-                    : dailyNote.sleepingMinutes > 59
-                }
-              />
             </TopRow>
             <FixedSpaceColumn>
               <TitleArea
@@ -297,10 +299,72 @@ export default React.memo(function DailyNoteEditor() {
                 <Title>{i18n.attendances.notes.dailyNotes}</Title>
               </TitleArea>
 
-              <ContentArea shadow opaque paddingHorizontal={'s'}>
-                <FixedSpaceColumn spacing={'m'}>
-                  {groupNote.id && (
-                    <>
+              <TabContainer
+                shadow
+                opaque
+                paddingHorizontal={'0px'}
+                paddingVertical={'0px'}
+              >
+                <NoteTypeTab type={'NOTE'}>
+                  <span>{'Lapsi'}</span>
+                </NoteTypeTab>
+                <NoteTypeTab type={'GROUP_NOTE'}>
+                  <span>{'Ryhmä'}</span>
+                </NoteTypeTab>
+              </TabContainer>
+
+              {selectedTab == 'GROUP_NOTE' && (
+                <ContentArea shadow opaque paddingHorizontal={'s'}>
+                  <FixedSpaceColumn spacing={'m'}>
+                    {groupNote.id && (
+                      <>
+                        <FixedSpaceRow
+                          fullWidth={true}
+                          justifyContent={'flex-end'}
+                          spacing={'xxs'}
+                        >
+                          <IconButton
+                            icon={faTrash}
+                            onClick={() => {
+                              setDeleteType('GROUP_NOTE')
+                              setUiMode('confirmDelete')
+                            }}
+                            data-qa="open-delete-groupnote-dialog-btn"
+                            gray
+                          />
+                          <span>{i18n.common.clear}</span>
+                        </FixedSpaceRow>
+                      </>
+                    )}
+
+                    <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
+
+                    <FixedSpaceColumn spacing={'xxs'}>
+                      <Label>
+                        {i18n.attendances.notes.labels.groupNotesHeader}
+                      </Label>
+                      <TextArea
+                        value={groupNote.note ?? ''}
+                        onChange={(
+                          e: React.ChangeEvent<HTMLTextAreaElement>
+                        ) => {
+                          setDirty(true)
+                          setGroupNote({ ...groupNote, note: e.target.value })
+                        }}
+                        placeholder={
+                          i18n.attendances.notes.placeholders.groupNote
+                        }
+                        data-qa={'daily-note-group-note-input'}
+                      />
+                    </FixedSpaceColumn>
+                  </FixedSpaceColumn>
+                </ContentArea>
+              )}
+
+              {selectedTab == 'NOTE' && (
+                <ContentArea shadow opaque paddingHorizontal={'s'}>
+                  <FixedSpaceColumn spacing={'m'}>
+                    {dailyNote.id && (
                       <FixedSpaceRow
                         fullWidth={true}
                         justifyContent={'flex-end'}
@@ -309,210 +373,211 @@ export default React.memo(function DailyNoteEditor() {
                         <IconButton
                           icon={faTrash}
                           onClick={() => {
-                            setDeleteType('GROUP_NOTE')
+                            setDeleteType('NOTE')
                             setUiMode('confirmDelete')
                           }}
-                          data-qa="open-delete-groupnote-dialog-btn"
+                          data-qa="open-delete-dialog-btn"
                           gray
                         />
                         <span>{i18n.common.clear}</span>
                       </FixedSpaceRow>
-                    </>
-                  )}
+                    )}
 
-                  <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
+                    <H2 noMargin>{i18n.attendances.notes.note}</H2>
 
-                  <FixedSpaceColumn spacing={'xxs'}>
-                    <Label>
-                      {i18n.attendances.notes.labels.groupNotesHeader}
-                    </Label>
-                    <TextArea
-                      value={groupNote.note ?? ''}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                        setDirty(true)
-                        setGroupNote({ ...groupNote, note: e.target.value })
-                      }}
-                      placeholder={
-                        i18n.attendances.notes.placeholders.groupNote
-                      }
-                      data-qa={'daily-note-group-note-input'}
-                    />
-                  </FixedSpaceColumn>
-                </FixedSpaceColumn>
-              </ContentArea>
-
-              <ContentArea shadow opaque paddingHorizontal={'s'}>
-                <FixedSpaceColumn spacing={'m'}>
-                  {dailyNote.id && (
-                    <FixedSpaceRow
-                      fullWidth={true}
-                      justifyContent={'flex-end'}
-                      spacing={'xxs'}
-                    >
-                      <IconButton
-                        icon={faTrash}
-                        onClick={() => {
-                          setDeleteType('NOTE')
-                          setUiMode('confirmDelete')
-                        }}
-                        data-qa="open-delete-dialog-btn"
-                        gray
-                      />
-                      <span>{i18n.common.clear}</span>
-                    </FixedSpaceRow>
-                  )}
-
-                  <H2 noMargin>{i18n.attendances.notes.note}</H2>
-
-                  <FixedSpaceColumn spacing={'xxs'}>
-                    <Label>{i18n.attendances.notes.labels.note}</Label>
-                    <TextArea
-                      value={dailyNote.note}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        editNote({ ...dailyNote, note: e.target.value })
-                      }
-                      placeholder={i18n.attendances.notes.placeholders.note}
-                      data-qa={'daily-note-note-input'}
-                    />
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn spacing={'s'}>
-                    <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-                    <ChipWrapper $noMargin>
-                      {levelInfoValues.map((levelInfo) => (
-                        <Fragment key={levelInfo}>
-                          <ChoiceChip
-                            text={
-                              i18n.attendances.notes.feedingValues[levelInfo]
-                            }
-                            selected={dailyNote.feedingNote === levelInfo}
-                            onChange={() => {
-                              editNote({
-                                ...dailyNote,
-                                feedingNote:
-                                  dailyNote.feedingNote === levelInfo
-                                    ? undefined
-                                    : levelInfo
-                              })
-                            }}
-                            data-qa={`feeding-note-${levelInfo}`}
-                          />
-                          <Gap horizontal size={'xxs'} />
-                        </Fragment>
-                      ))}
-                    </ChipWrapper>
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn spacing={'s'}>
-                    <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-                    <ChipWrapper $noMargin>
-                      {levelInfoValues.map((levelInfo) => (
-                        <Fragment key={levelInfo}>
-                          <ChoiceChip
-                            text={
-                              i18n.attendances.notes.sleepingValues[levelInfo]
-                            }
-                            selected={dailyNote.sleepingNote === levelInfo}
-                            onChange={() => {
-                              editNote({
-                                ...dailyNote,
-                                sleepingNote:
-                                  dailyNote.sleepingNote === levelInfo
-                                    ? undefined
-                                    : levelInfo
-                              })
-                            }}
-                            data-qa={`sleeping-note-${levelInfo}`}
-                          />
-                          <Gap horizontal size={'xxs'} />
-                        </Fragment>
-                      ))}
-                    </ChipWrapper>
-                  </FixedSpaceColumn>
-                  <Time>
-                    <InputField
-                      value={
-                        dailyNote.sleepingHours
-                          ? dailyNote.sleepingHours.toString()
-                          : ''
-                      }
-                      onChange={(value) =>
-                        editNote({
-                          ...dailyNote,
-                          sleepingHours: parseInt(value)
-                        })
-                      }
-                      placeholder={i18n.attendances.notes.placeholders.hours}
-                      data-qa="sleeping-time-hours-input"
-                      width={'s'}
-                      type={'number'}
-                    />
-                    <span>{i18n.common.hourShort}</span>
-                    <InputField
-                      value={
-                        dailyNote.sleepingMinutes
-                          ? dailyNote.sleepingMinutes.toString()
-                          : ''
-                      }
-                      onChange={(value) =>
-                        editNote({
-                          ...dailyNote,
-                          sleepingMinutes: parseInt(value)
-                        })
-                      }
-                      placeholder={i18n.attendances.notes.placeholders.minutes}
-                      data-qa="sleeping-time-minutes-input"
-                      width={'s'}
-                      type={'number'}
-                      info={
-                        dailyNote.sleepingMinutes &&
-                        dailyNote.sleepingMinutes > 59
-                          ? {
-                              text: i18n.common.errors.minutes,
-                              status: 'warning'
-                            }
-                          : undefined
-                      }
-                    />
-                    <span>{i18n.common.minuteShort}</span>
-                  </Time>
-                  <FixedSpaceColumn spacing={'s'}>
-                    <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
-                    <FixedSpaceColumn spacing={'xs'}>
-                      {reminderValues.map((reminder) => (
-                        <Checkbox
-                          key={reminder}
-                          label={i18n.attendances.notes.reminders[reminder]}
-                          onChange={(checked) => {
-                            checked
-                              ? editNote({
-                                  ...dailyNote,
-                                  reminders: [...dailyNote.reminders, reminder]
-                                })
-                              : editNote({
-                                  ...dailyNote,
-                                  reminders: dailyNote.reminders.filter(
-                                    (v) => v !== reminder
-                                  )
-                                })
-                          }}
-                          checked={dailyNote.reminders.includes(reminder)}
-                          data-qa={`reminders-${reminder}`}
-                        />
-                      ))}
+                    <FixedSpaceColumn spacing={'xxs'}>
+                      <Label>{i18n.attendances.notes.labels.note}</Label>
                       <TextArea
-                        value={dailyNote.reminderNote}
+                        value={dailyNote.note}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          editNote({ ...dailyNote, note: e.target.value })
+                        }
+                        placeholder={i18n.attendances.notes.placeholders.note}
+                        data-qa={'daily-note-note-input'}
+                      />
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing={'s'}>
+                      <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
+                      <ChipWrapper $noMargin>
+                        {levelInfoValues.map((levelInfo) => (
+                          <Fragment key={levelInfo}>
+                            <ChoiceChip
+                              text={
+                                i18n.attendances.notes.feedingValues[levelInfo]
+                              }
+                              selected={dailyNote.feedingNote === levelInfo}
+                              onChange={() => {
+                                editNote({
+                                  ...dailyNote,
+                                  feedingNote:
+                                    dailyNote.feedingNote === levelInfo
+                                      ? undefined
+                                      : levelInfo
+                                })
+                              }}
+                              data-qa={`feeding-note-${levelInfo}`}
+                            />
+                            <Gap horizontal size={'xxs'} />
+                          </Fragment>
+                        ))}
+                      </ChipWrapper>
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing={'s'}>
+                      <Label>
+                        {i18n.attendances.notes.labels.sleepingNote}
+                      </Label>
+                      <ChipWrapper $noMargin>
+                        {levelInfoValues.map((levelInfo) => (
+                          <Fragment key={levelInfo}>
+                            <ChoiceChip
+                              text={
+                                i18n.attendances.notes.sleepingValues[levelInfo]
+                              }
+                              selected={dailyNote.sleepingNote === levelInfo}
+                              onChange={() => {
+                                editNote({
+                                  ...dailyNote,
+                                  sleepingNote:
+                                    dailyNote.sleepingNote === levelInfo
+                                      ? undefined
+                                      : levelInfo
+                                })
+                              }}
+                              data-qa={`sleeping-note-${levelInfo}`}
+                            />
+                            <Gap horizontal size={'xxs'} />
+                          </Fragment>
+                        ))}
+                      </ChipWrapper>
+                    </FixedSpaceColumn>
+                    <Time>
+                      <InputField
+                        value={
+                          dailyNote.sleepingHours
+                            ? dailyNote.sleepingHours.toString()
+                            : ''
+                        }
+                        onChange={(value) =>
                           editNote({
                             ...dailyNote,
-                            reminderNote: e.target.value
+                            sleepingHours: parseInt(value)
+                          })
+                        }
+                        placeholder={i18n.attendances.notes.placeholders.hours}
+                        data-qa="sleeping-time-hours-input"
+                        width={'s'}
+                        type={'number'}
+                      />
+                      <span>{i18n.common.hourShort}</span>
+                      <InputField
+                        value={
+                          dailyNote.sleepingMinutes
+                            ? dailyNote.sleepingMinutes.toString()
+                            : ''
+                        }
+                        onChange={(value) =>
+                          editNote({
+                            ...dailyNote,
+                            sleepingMinutes: parseInt(value)
                           })
                         }
                         placeholder={
-                          i18n.attendances.notes.placeholders.reminderNote
+                          i18n.attendances.notes.placeholders.minutes
                         }
-                        data-qa="reminder-note-input"
+                        data-qa="sleeping-time-minutes-input"
+                        width={'s'}
+                        type={'number'}
+                        info={
+                          dailyNote.sleepingMinutes &&
+                          dailyNote.sleepingMinutes > 59
+                            ? {
+                                text: i18n.common.errors.minutes,
+                                status: 'warning'
+                              }
+                            : undefined
+                        }
                       />
+                      <span>{i18n.common.minuteShort}</span>
+                    </Time>
+                    <FixedSpaceColumn spacing={'s'}>
+                      <Label>
+                        {i18n.attendances.notes.labels.reminderNote}
+                      </Label>
+                      <FixedSpaceColumn spacing={'xs'}>
+                        {reminderValues.map((reminder) => (
+                          <Checkbox
+                            key={reminder}
+                            label={i18n.attendances.notes.reminders[reminder]}
+                            onChange={(checked) => {
+                              checked
+                                ? editNote({
+                                    ...dailyNote,
+                                    reminders: [
+                                      ...dailyNote.reminders,
+                                      reminder
+                                    ]
+                                  })
+                                : editNote({
+                                    ...dailyNote,
+                                    reminders: dailyNote.reminders.filter(
+                                      (v) => v !== reminder
+                                    )
+                                  })
+                            }}
+                            checked={dailyNote.reminders.includes(reminder)}
+                            data-qa={`reminders-${reminder}`}
+                          />
+                        ))}
+                        <TextArea
+                          value={dailyNote.reminderNote}
+                          onChange={(
+                            e: React.ChangeEvent<HTMLTextAreaElement>
+                          ) =>
+                            editNote({
+                              ...dailyNote,
+                              reminderNote: e.target.value
+                            })
+                          }
+                          placeholder={
+                            i18n.attendances.notes.placeholders.reminderNote
+                          }
+                          data-qa="reminder-note-input"
+                        />
+                      </FixedSpaceColumn>
                     </FixedSpaceColumn>
                   </FixedSpaceColumn>
+                </ContentArea>
+              )}
+
+              <ContentArea shadow paddingHorizontal={'s'} opaque={false}>
+                <FixedSpaceColumn spacing={'m'}>
+                  <FixedSpaceRow
+                    fullWidth={true}
+                    justifyContent={'space-evenly'}
+                    spacing={'xxs'}
+                  >
+                    <Button
+                      onClick={() => history.goBack()}
+                      text={i18n.common.cancel}
+                      data-qa="cancel-daily-note-btn"
+                    />
+
+                    <Button
+                      primary={true}
+                      onClick={() =>
+                        void saveNotes().then(() => {
+                          history.goBack()
+                        })
+                      }
+                      text={i18n.common.save}
+                      data-qa="create-daily-note-btn"
+                      disabled={
+                        dailyNote.sleepingMinutes === undefined
+                          ? false
+                          : dailyNote.sleepingMinutes > 0
+                      }
+                    />
+                  </FixedSpaceRow>
                 </FixedSpaceColumn>
               </ContentArea>
             </FixedSpaceColumn>
@@ -634,12 +699,51 @@ const Time = styled.div`
 `
 
 const TitleArea = styled(ContentArea)`
+  font-family: Montserrat;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 36px;
   text-align: center;
+  color: ${colors.blues.dark};
 
   h1 {
     margin: 0;
   }
 `
+
+const TabContainer = styled(ContentArea)`
+  display: flex;
+  height: 60px;
+`
+
+interface TabProps {
+  selected: boolean
+}
+
+const Tab = styled.div<TabProps>`
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-family: Montserrat;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 16px;
+  text-align: center;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  background: ${(props) =>
+    props.selected ? colors.blues.lighter : colors.greyscale.white};
+
+  color: ${colors.blues.dark};
+`
+
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
