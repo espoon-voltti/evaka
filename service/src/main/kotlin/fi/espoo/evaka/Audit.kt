@@ -183,6 +183,8 @@ enum class Audit(
     PartnerShipsRetry("evaka.partnerships.retry"),
     PartnerShipsUpdate("evaka.partnerships.update"),
     PartnersInDifferentAddressReportRead("evaka.partners-in-different-address-report.read"),
+    PedagogicalDocumentInsert("evaka.pedagogical-document.insert", securityEvent = true, securityLevel = "high"),
+    PedagogicalDocumentUpdate("evaka.pedagogical-document.update", securityEvent = true, securityLevel = "high"),
     PersonContactInfoUpdate("evaka.person-contact-info.update", securityEvent = true, securityLevel = "high"),
     PersonCreate("evaka.person.create", securityEvent = true, securityLevel = "high"),
     PersonDelete("evaka.person.delete", securityEvent = true, securityLevel = "high"),

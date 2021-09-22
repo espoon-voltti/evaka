@@ -435,6 +435,15 @@ WHERE employee_id = :userId
         )
     }
 
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: ChildId) {
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::pedagogicalDocumentActions
+        )
+    }
+
     fun getPermittedPlacementActions(
         user: AuthenticatedUser,
         ids: Collection<PlacementId>
