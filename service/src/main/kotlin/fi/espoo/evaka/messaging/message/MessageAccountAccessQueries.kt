@@ -26,6 +26,23 @@ WHERE
         .mapTo<Int>()
         .any()
 
+fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Citizen, attachmentId: AttachmentId): Boolean =
+    this.createQuery(
+        """
+SELECT 1 
+FROM attachment att
+JOIN message_content content ON att.message_content_id = content.id
+JOIN message msg ON content.id = msg.content_id
+JOIN message_recipients rec ON msg.id = rec.message_id
+JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
+WHERE att.id = :attachmentId AND access.person_id = :personId
+        """.trimIndent()
+    )
+        .bind("personId", user.id)
+        .bind("attachmentId", attachmentId)
+        .mapTo<Int>()
+        .any()
+
 fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Employee, attachmentId: AttachmentId): Boolean =
     this.createQuery(
         """

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
@@ -11,6 +12,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 sealed class AttachmentParent {
     data class Application(val applicationId: ApplicationId) : AttachmentParent()
     data class IncomeStatement(val incomeStatementId: IncomeStatementId) : AttachmentParent()

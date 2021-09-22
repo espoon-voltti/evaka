@@ -230,7 +230,10 @@ SELECT
         SELECT coalesce(jsonb_agg(json_build_object(
            'id', att.id,
            'name', att.name,
-           'contentType', att.content_type
+           'contentType', att.content_type,
+           'attachedTo', json_build_object(
+                'messageContentId', att.message_content_id
+           )
         )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
         FROM attachment att WHERE att.message_content_id = msg.content_id
     ) AS attachments
@@ -307,7 +310,10 @@ fun Database.Read.getMessage(id: MessageId): Message {
                 SELECT coalesce(jsonb_agg(json_build_object(
                    'id', att.id,
                    'name', att.name,
-                   'contentType', att.content_type
+                   'contentType', att.content_type,
+                   'attachedTo', json_build_object(
+                        'messageContentId', att.message_content_id
+                   )
                 )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
                 FROM attachment att WHERE att.message_content_id = m.content_id
             ) AS attachments

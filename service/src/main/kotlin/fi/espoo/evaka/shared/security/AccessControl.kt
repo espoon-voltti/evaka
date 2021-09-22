@@ -276,7 +276,16 @@ WHERE employee_id = :userId
 
     private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
         when (user) {
-            is AuthenticatedUser.Citizen -> Database(jdbi).read { it.isOwnAttachment(id, user) }
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
+                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
+                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
+                    Database(jdbi).read { it.isOwnAttachment(id, user) }
+                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
+                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                else -> false
+            }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.Attachment.READ_APPLICATION_ATTACHMENT ->
                     this.applicationAttachment.hasPermission(user, action, id)
