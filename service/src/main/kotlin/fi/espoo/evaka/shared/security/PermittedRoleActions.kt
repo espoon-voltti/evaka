@@ -15,13 +15,16 @@ import java.util.EnumSet
 interface PermittedRoleActions {
     fun globalActions(role: UserRole): Set<Action.Global>
     fun applicationActions(role: UserRole): Set<Action.Application>
+    fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote>
     fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
     fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed>
+    fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun backupCareActions(role: UserRole): Set<Action.BackupCare>
     fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
     fun childActions(role: UserRole): Set<Action.Child>
     fun dailyNoteActions(role: UserRole): Set<Action.DailyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
+    fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds>
     fun groupActions(role: UserRole): Set<Action.Group>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
@@ -44,13 +47,16 @@ interface PermittedRoleActions {
 class StaticPermittedRoleActions(
     val global: ActionsByRole<Action.Global> = getDefaults(),
     val application: ActionsByRole<Action.Application> = getDefaults(),
+    val applicationNote: ActionsByRole<Action.ApplicationNote> = getDefaults(),
     val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
     val assistanceNeed: ActionsByRole<Action.AssistanceNeed> = getDefaults(),
+    val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val backupCare: ActionsByRole<Action.BackupCare> = getDefaults(),
     val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
     val child: ActionsByRole<Action.Child> = getDefaults(),
     val dailyNote: ActionsByRole<Action.DailyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
+    val feeThresholds: ActionsByRole<Action.FeeThresholds> = getDefaults(),
     val group: ActionsByRole<Action.Group> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
@@ -66,13 +72,16 @@ class StaticPermittedRoleActions(
 ) : PermittedRoleActions {
     override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
+    override fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote> = applicationNote[role] ?: emptySet()
     override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
     override fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed> = assistanceNeed[role] ?: emptySet()
+    override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun backupCareActions(role: UserRole): Set<Action.BackupCare> = backupCare[role] ?: emptySet()
     override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
     override fun childActions(role: UserRole): Set<Action.Child> = child[role] ?: emptySet()
     override fun dailyNoteActions(role: UserRole): Set<Action.DailyNote> = dailyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
+    override fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds> = feeThresholds[role] ?: emptySet()
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()

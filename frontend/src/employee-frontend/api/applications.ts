@@ -317,9 +317,7 @@ export async function getApplicationNotes(
   applicationId: UUID
 ): Promise<Result<ApplicationNote[]>> {
   return client
-    .post<JsonOf<ApplicationNote[]>>('/note/search', {
-      applicationIds: [applicationId]
-    })
+    .get<JsonOf<ApplicationNote[]>>(`/note/application/${applicationId}`)
     .then((res) =>
       res.data.map((note) => ({
         ...note,

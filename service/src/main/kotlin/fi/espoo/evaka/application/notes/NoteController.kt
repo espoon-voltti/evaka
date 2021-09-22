@@ -9,13 +9,13 @@ import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -29,20 +29,18 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/note")
-class NoteController(private val acl: AccessControlList) {
-    @PostMapping("/search")
+class NoteController(private val accessControl: AccessControl) {
+    @GetMapping("/application/{applicationId}")
     fun getNotes(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody search: NoteSearchDTO
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<NoteJSON>> {
-        Audit.NoteRead.log(targetId = search.applicationIds)
-        search.applicationIds.forEach { applicationId ->
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
-        }
+        Audit.NoteRead.log(targetId = applicationId)
+        accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
         val notes = db.read {
-            it.getApplicationNotes(search.applicationIds.first())
+            it.getApplicationNotes(applicationId)
         }
         return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))
     }
@@ -55,33 +53,12 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<NoteJSON> {
         Audit.NoteCreate.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Application.CREATE_NOTE, applicationId)
 
         val newNote = db.transaction {
             it.createApplicationNote(applicationId, note.text, user.id)
         }
         return ResponseEntity.ok(NoteJSON.toJSON(newNote))
-    }
-
-    @PutMapping("/update")
-    @Deprecated("use updateNote instead (PUT /note/:id)")
-    fun updateNotes(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestBody notes: List<NoteJSON>
-    ): ResponseEntity<NotesWrapperJSON> {
-        Audit.NoteUpdate.log(targetId = notes.map { it.id })
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        // This endpoint is never used with multiple notes in reality
-        val note = notes.first()
-        val updatedNote = db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx, user, note.id)) {
-                tx.updateApplicationNote(note.id, note.text, user.id)
-            } else {
-                throw Forbidden("User is not allowed to edit the note")
-            }
-        }
-        return ResponseEntity.ok(NotesWrapperJSON(listOf(NoteJSON.toJSON(updatedNote))))
     }
 
     @PutMapping("/{noteId}")
@@ -92,14 +69,10 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<Unit> {
         Audit.NoteUpdate.log(targetId = noteId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.ApplicationNote.UPDATE, noteId)
 
         db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx, user, noteId)) {
-                tx.updateApplicationNote(noteId, note.text, user.id)
-            } else {
-                throw Forbidden("User is not allowed to edit the note")
-            }
+            tx.updateApplicationNote(noteId, note.text, user.id)
         }
         return ResponseEntity.noContent().build()
     }
@@ -111,42 +84,16 @@ class NoteController(private val acl: AccessControlList) {
         @PathVariable("noteId") noteId: ApplicationNoteId
     ): ResponseEntity<Unit> {
         Audit.NoteDelete.log(targetId = noteId)
+        accessControl.requirePermissionFor(user, Action.ApplicationNote.DELETE, noteId)
         db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx, user, noteId)) {
-                tx.deleteApplicationNote(noteId)
-            }
+            tx.deleteApplicationNote(noteId)
         }
         return ResponseEntity.noContent().build()
     }
 }
 
-private fun userIsAllowedToEditNote(tx: Database.Read, user: AuthenticatedUser, noteId: ApplicationNoteId): Boolean {
-    return if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)) {
-        true
-    } else {
-        val createdBy = tx.getApplicationNoteCreatedBy(noteId)
-        if (user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR)) {
-            createdBy == user.id
-        } else {
-            false
-        }
-    }
-}
-
-data class NoteSearchDTO(
-    val applicationIds: Set<ApplicationId> = emptySet()
-) {
-    companion object {
-        val All = NoteSearchDTO()
-    }
-}
-
 data class NoteRequest(
     val text: String
-)
-
-data class NotesWrapperJSON(
-    val notes: List<NoteJSON>
 )
 
 data class NoteJSON(

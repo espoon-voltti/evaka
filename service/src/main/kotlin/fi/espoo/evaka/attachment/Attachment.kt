@@ -4,12 +4,25 @@
 
 package fi.espoo.evaka.attachment
 
+import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageDraftId
 
+sealed class AttachmentParent {
+    data class Application(val applicationId: ApplicationId) : AttachmentParent()
+    data class IncomeStatement(val incomeStatementId: IncomeStatementId) : AttachmentParent()
+    data class MessageDraft(val draftId: MessageDraftId) : AttachmentParent()
+    object None : AttachmentParent()
+}
+
+@ExcludeCodeGen
 data class Attachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
+    val attachedTo: AttachmentParent
 )
 
 enum class AttachmentType {

@@ -8,7 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
-import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
+import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
@@ -17,14 +17,12 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -60,8 +58,8 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
-        return handleFileUpload(db, user, AttachToApplication(applicationId), file, type).also {
+        accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
+        return handleFileUpload(db, user, AttachmentParent.Application(applicationId), file, type).also {
             db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
         }
     }
@@ -74,9 +72,8 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_EMPLOYEE_ATTACHMENT, incomeStatementId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-        return handleFileUpload(db, user, AttachToIncomeStatement(incomeStatementId), file)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
+        return handleFileUpload(db, user, AttachmentParent.IncomeStatement(incomeStatementId), file)
     }
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -88,7 +85,7 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForMessageDraft.log(draftId)
         accessControl.requirePermissionFor(user, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
-        return handleFileUpload(db, user, AttachToMessageDraft(draftId), file)
+        return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -100,11 +97,9 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
 
-        if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
-
-        val attachTo = AttachToApplication(applicationId)
+        val attachTo = AttachmentParent.Application(applicationId)
         checkAttachmentCount(db, attachTo, user)
 
         return handleFileUpload(db, user, attachTo, file, type)
@@ -117,28 +112,32 @@ class AttachmentsController(
     )
     fun uploadAttachmentCitizen(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
-        user.requireOneOfRoles(UserRole.END_USER)
+        if (incomeStatementId != null) {
+            accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
+        }
 
-        if (incomeStatementId != null && !db.read { it.isOwnIncomeStatement(incomeStatementId, user.id) }) throw Forbidden("Permission denied")
-
-        val attachTo = if (incomeStatementId != null) AttachToIncomeStatement(incomeStatementId) else AttachToNothing
+        val attachTo =
+            if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId) else AttachmentParent.None
         checkAttachmentCount(db, attachTo, user)
 
         return handleFileUpload(db, user, attachTo, file, null)
     }
 
-    private fun checkAttachmentCount(db: Database, attachTo: AttachTo, user: AuthenticatedUser) {
+    private fun checkAttachmentCount(db: Database, attachTo: AttachmentParent, user: AuthenticatedUser) {
         val count = db.read {
             when (attachTo) {
-                is AttachToNothing -> it.userUnparentedAttachmentCount(user.id)
-                is AttachToApplication -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
-                is AttachToIncomeStatement -> it.userIncomeStatementAttachmentCount(attachTo.incomeStatementId, user.id)
-                is AttachToMessageDraft -> 0
+                AttachmentParent.None -> it.userUnparentedAttachmentCount(user.id)
+                is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
+                is AttachmentParent.IncomeStatement -> it.userIncomeStatementAttachmentCount(
+                    attachTo.incomeStatementId,
+                    user.id
+                )
+                is AttachmentParent.MessageDraft -> 0
             }
         }
         if (count >= maxAttachmentsPerUser) {
@@ -149,7 +148,7 @@ class AttachmentsController(
     private fun handleFileUpload(
         db: Database,
         user: AuthenticatedUser,
-        attachTo: AttachTo,
+        attachTo: AttachmentParent,
         file: MultipartFile,
         type: AttachmentType? = null
     ): AttachmentId {
@@ -167,7 +166,7 @@ class AttachmentsController(
                 name,
                 contentType,
                 attachTo,
-                uploadedByEnduser = user.id.takeIf { user.isEndUser },
+                uploadedByPerson = user.id.takeIf { user.isEndUser },
                 uploadedByEmployee = user.id.takeUnless { user.isEndUser },
                 type = type
             )
@@ -191,10 +190,17 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<ByteArray> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
-        db.authorizeAttachmentDownload(user, attachmentId)
 
         val attachment =
-            db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
+            db.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
+
+        val action = when (attachment.attachedTo) {
+            is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
+            is AttachmentParent.IncomeStatement,
+            is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
+            is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
+        }.exhaust()
+        accessControl.requirePermissionFor(user, action, attachmentId)
 
         return try {
             documentClient.get(filesBucket, "$attachmentId").let { document ->
@@ -209,68 +215,31 @@ class AttachmentsController(
         }
     }
 
-    @DeleteMapping("/citizen/{id}")
-    fun deleteAttachmentCitizen(db: Database, user: AuthenticatedUser, @PathVariable id: AttachmentId): ResponseEntity<Unit> {
-        Audit.AttachmentsDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.END_USER)
-        if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")
+    @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])
+    fun deleteAttachmentHandler(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable attachmentId: AttachmentId
+    ): ResponseEntity<Unit> {
+        Audit.AttachmentsDelete.log(targetId = attachmentId)
 
-        db.transaction { deleteAttachment(it, id) }
+        val attachment =
+            db.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
 
+        val action = when (attachment.attachedTo) {
+            is AttachmentParent.Application -> Action.Attachment.DELETE_APPLICATION_ATTACHMENT
+            is AttachmentParent.IncomeStatement,
+            is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
+            is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
+        }.exhaust()
+        accessControl.requirePermissionFor(user, action, attachmentId)
+
+        db.transaction { deleteAttachment(it, attachmentId) }
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/{id}")
-    fun deleteAttachmentEmployee(db: Database, user: AuthenticatedUser, @PathVariable id: AttachmentId): ResponseEntity<Unit> {
-        Audit.AttachmentsDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
-        if (!db.read { it.isSelfUploadedAttachment(id, user) }) throw Forbidden("Permission denied")
-
-        db.transaction { deleteAttachment(it, id) }
-
-        return ResponseEntity.noContent().build()
+    fun deleteAttachment(tx: Database.Transaction, attachmentId: AttachmentId) {
+        tx.deleteAttachment(attachmentId)
+        documentClient.delete(filesBucket, "$attachmentId")
     }
-
-    fun deleteAttachment(db: Database.Transaction, id: AttachmentId) {
-        db.deleteAttachment(id)
-        documentClient.delete(filesBucket, "$id")
-    }
-}
-
-private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attachmentId: AttachmentId) {
-    if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) return
-    if (user.hasOneOfRoles(UserRole.END_USER) && read { it.isOwnAttachment(attachmentId, user) }) return
-    if (read { it.userHasSupervisorRights(user, attachmentId) }) return
-
-    throw NotFound("Attachment $attachmentId not found")
-}
-
-fun Database.Read.isOwnApplication(applicationId: ApplicationId, user: AuthenticatedUser): Boolean {
-    return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
-        .bind("id", applicationId)
-        .bind("userId", user.id)
-        .mapTo<Int>()
-        .any()
-}
-
-fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: AttachmentId): Boolean {
-    return this.createQuery(
-        """
-SELECT 1
-FROM attachment
-JOIN placement_plan ON attachment.application_id = placement_plan.application_id
-JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
-JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId
-    AND role = :unitSupervisor
-    AND attachment.id = :attachmentId
-    AND attachment.type = :extendedCare
-"""
-    )
-        .bind("userId", user.id)
-        .bind("unitSupervisor", UserRole.UNIT_SUPERVISOR)
-        .bind("attachmentId", attachmentId)
-        .bind("extendedCare", AttachmentType.EXTENDED_CARE)
-        .mapTo<Int>()
-        .any()
 }

@@ -4,18 +4,26 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.application.isOwnApplication
+import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.attachment.isOwnAttachment
+import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
+import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.message.draftBelongsToAnyAccount
 import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -46,6 +54,30 @@ class AccessControl(
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
+    private val application = ActionConfig(
+        """
+SELECT av.id, role
+FROM application_view av
+LEFT JOIN placement_plan pp ON pp.application_id = av.id
+JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
+WHERE employee_id = :userId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+        """.trimIndent(),
+        "av.id",
+        permittedRoleActions::applicationActions,
+    )
+    private val applicationAttachment = ActionConfig(
+        """
+SELECT attachment.id, role
+FROM attachment
+JOIN placement_plan ON attachment.application_id = placement_plan.application_id
+JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
+JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+  AND attachment.type = 'EXTENDED_CARE'
+        """.trimIndent(),
+        "attachment.id",
+        permittedRoleActions::attachmentActions,
+    )
     private val backupCare = ActionConfig(
         """
 SELECT bc.id, role
@@ -188,9 +220,13 @@ WHERE employee_id = :userId
     @Suppress("UNCHECKED_CAST")
     fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, id: I): Boolean =
         when (action) {
+            is Action.Application -> hasPermissionFor(user, action, id as ApplicationId)
+            is Action.ApplicationNote -> hasPermissionFor(user, action, id as ApplicationNoteId)
+            is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
+            is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
             is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
@@ -198,28 +234,24 @@ WHERE employee_id = :userId
             else -> error("Unsupported action type")
         }.exhaust()
 
-    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.MessageDraft, id: MessageDraftId): Boolean =
+    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) =
         when (user) {
-            is AuthenticatedUser.Citizen -> false // drafts are employee-only
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read {
-                    it.draftBelongsToAnyAccount(
-                        id,
-                        it.getEmployeeMessageAccountIds(user.id)
-                    )
-                }
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).read { it.isOwnApplication(user, id) }
+                else -> false
             }
+            is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, id)
             else -> false
         }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForApplication(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::applicationActions
-        )
-    }
+    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
+        user is AuthenticatedUser.Employee && when (action) {
+            Action.ApplicationNote.UPDATE,
+            Action.ApplicationNote.DELETE -> user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.SERVICE_WORKER
+            ) || Database(jdbi).read { it.getApplicationNoteCreatedBy(id) == user.id }
+        }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
         assertPermission(
@@ -238,6 +270,31 @@ WHERE employee_id = :userId
             mapping = permittedRoleActions::assistanceNeedActions
         )
     }
+
+    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
+        when (user) {
+            is AuthenticatedUser.Citizen -> Database(jdbi).read { it.isOwnAttachment(id, user) }
+            is AuthenticatedUser.Employee -> when (action) {
+                Action.Attachment.READ_APPLICATION_ATTACHMENT ->
+                    this.applicationAttachment.hasPermission(user, action, id)
+                Action.Attachment.DELETE_APPLICATION_ATTACHMENT ->
+                    this.applicationAttachment.hasPermission(
+                        user,
+                        action,
+                        id
+                    ) && Database(jdbi).read { it.wasUploadedByAnyEmployee(id) }
+                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT ->
+                    hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions)
+                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
+                    hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions) && Database(
+                        jdbi
+                    ).read { it.wasUploadedByAnyEmployee(id) }
+                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT ->
+                    Database(jdbi).read { it.isOwnAttachment(id, user) }
+            }
+            else -> false
+        }
 
     fun getPermittedBackupCareActions(
         user: AuthenticatedUser,
@@ -283,6 +340,14 @@ WHERE employee_id = :userId
         )
     }
 
+    fun requirePermissionFor(
+        user: AuthenticatedUser,
+        action: Action.FeeThresholds,
+        @Suppress("UNUSED_PARAMETER") id: FeeThresholdsId
+    ) {
+        assertPermissionUsingAllRoles(user, action, permittedRoleActions::feeThresholdsActions)
+    }
+
     fun getPermittedGroupActions(
         user: AuthenticatedUser,
         ids: Collection<GroupId>
@@ -293,10 +358,39 @@ WHERE employee_id = :userId
         ids: Collection<GroupPlacementId>
     ): Map<GroupPlacementId, Set<Action.GroupPlacement>> = this.groupPlacement.getPermittedActions(user, ids)
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.IncomeStatement, @Suppress("UNUSED_PARAMETER") id: IncomeStatementId) {
-        // IncomeStatement actions in Espoo are global so the id parameter is ignored
-        assertPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)
-    }
+    private fun hasPermissionFor(
+        user: AuthenticatedUser,
+        action: Action.IncomeStatement,
+        id: IncomeStatementId
+    ) =
+        when (user) {
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.IncomeStatement.UPLOAD_ATTACHMENT ->
+                    Database(jdbi).read { it.isOwnIncomeStatement(user, id) }
+                else -> false
+            }
+            is AuthenticatedUser.Employee ->
+                hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)
+            else -> false
+        }
+
+    private fun hasPermissionFor(
+        user: AuthenticatedUser,
+        action: Action.MessageDraft,
+        id: MessageDraftId
+    ): Boolean =
+        when (user) {
+            is AuthenticatedUser.Citizen -> false // drafts are employee-only
+            is AuthenticatedUser.Employee -> when (action) {
+                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read {
+                    it.draftBelongsToAnyAccount(
+                        id,
+                        it.getEmployeeMessageAccountIds(user.id)
+                    )
+                }
+            }
+            else -> false
+        }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(
@@ -442,19 +536,41 @@ WHERE employee_id = :userId
         throw Forbidden("Permission denied")
     }
 
+    private inline fun <reified A> hasPermissionThroughRoles(
+        roles: Set<UserRole>,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> =
+        roles.any { it == UserRole.ADMIN || mapping(it).contains(action) }
+
+    private inline fun <reified A> hasPermissionUsingGlobalRoles(
+        user: AuthenticatedUser,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> =
+        if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(user.globalRoles, action, mapping)
+        else false
+
+    private inline fun <reified A> hasPermissionUsingAllRoles(
+        user: AuthenticatedUser,
+        action: A,
+        crossinline mapping: (role: UserRole) -> Set<A>
+    ): Boolean where A : Action, A : Enum<A> =
+        if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(
+            user.globalRoles + user.allScopedRoles,
+            action,
+            mapping
+        )
+        else false
+
     private inline fun <reified A> assertPermissionUsingAllRoles(
         user: AuthenticatedUser,
         action: A,
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
-        if (user is AuthenticatedUser.Employee) {
-            val userRoles = user.globalRoles + user.allScopedRoles
-            if (userRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
-                return
-            }
+        if (!hasPermissionUsingAllRoles(user, action, mapping)) {
+            throw Forbidden("Permission denied")
         }
-
-        throw Forbidden("Permission denied")
     }
 }
 

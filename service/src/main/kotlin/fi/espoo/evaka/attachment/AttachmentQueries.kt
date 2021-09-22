@@ -10,63 +10,47 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
-
-sealed interface AttachTo
-
-data class AttachToApplication(val applicationId: ApplicationId) : AttachTo
-data class AttachToIncomeStatement(val incomeStatementId: IncomeStatementId) : AttachTo
-data class AttachToMessageDraft(val draftId: MessageDraftId) : AttachTo
-object AttachToNothing : AttachTo
 
 fun Database.Transaction.insertAttachment(
     id: AttachmentId,
     name: String,
     contentType: String,
-    attachTo: AttachTo,
-    uploadedByEnduser: UUID?,
+    attachTo: AttachmentParent,
+    uploadedByPerson: UUID?,
     uploadedByEmployee: UUID?,
     type: AttachmentType?
 ) {
+    data class AttachmentParentColumn(
+        val applicationId: ApplicationId? = null,
+        val incomeStatementId: IncomeStatementId? = null,
+        val messageDraftId: MessageDraftId? = null
+    )
+
     // language=sql
     val sql =
         """
         INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, uploaded_by_person, uploaded_by_employee, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByEnduser, :uploadedByEmployee, :type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByPerson, :uploadedByEmployee, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
         .bind("id", id)
         .bind("name", name)
         .bind("contentType", contentType)
-        .let {
+        .bindKotlin(
             when (attachTo) {
-                is AttachToApplication ->
-                    it
-                        .bind("applicationId", attachTo.applicationId)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
-                is AttachToIncomeStatement ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bind("incomeStatementId", attachTo.incomeStatementId)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
-                is AttachToMessageDraft ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bind("messageDraftId", attachTo.draftId)
-                is AttachToNothing ->
-                    it
-                        .bindNullable("applicationId", null as ApplicationId?)
-                        .bindNullable("incomeStatementId", null as IncomeStatementId?)
-                        .bindNullable("messageDraftId", null as MessageDraftId?)
+                is AttachmentParent.Application -> AttachmentParentColumn(applicationId = attachTo.applicationId)
+                is AttachmentParent.IncomeStatement -> AttachmentParentColumn(incomeStatementId = attachTo.incomeStatementId)
+                is AttachmentParent.MessageDraft -> AttachmentParentColumn(messageDraftId = attachTo.draftId)
+                is AttachmentParent.None -> AttachmentParentColumn()
             }
-        }
-        .bind("uploadedByEnduser", uploadedByEnduser)
+        )
+        .bind("uploadedByPerson", uploadedByPerson)
         .bind("uploadedByEmployee", uploadedByEmployee)
         .bind("type", type ?: "")
         .execute()
@@ -75,26 +59,36 @@ fun Database.Transaction.insertAttachment(
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .createQuery(
         """
-        SELECT id, name, content_type
+        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id
         FROM attachment
         WHERE id = :id
         """
     )
     .bind("id", id)
-    .mapTo<Attachment>()
+    .map { row ->
+        val applicationId = row.mapColumn<ApplicationId?>("application_id")
+        val incomeStatementId = row.mapColumn<IncomeStatementId?>("income_statement_id")
+        val attachedTo =
+            if (applicationId != null) AttachmentParent.Application(applicationId)
+            else if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
+            else AttachmentParent.None
+
+        Attachment(
+            id = row.mapColumn("id"),
+            name = row.mapColumn("name"),
+            contentType = row.mapColumn("content_type"),
+            attachedTo = attachedTo,
+        )
+    }
     .firstOrNull()
 
-fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
+fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser.Citizen): Boolean {
     val sql =
         """
         SELECT EXISTS 
             (SELECT 1 FROM attachment 
              WHERE id = :attachmentId 
-             AND (
-               application_id IN (SELECT id FROM application WHERE guardian_id = :personId) OR 
-               income_statement_id IN (SELECT id FROM income_statement WHERE person_id = :personId) OR
-               (application_id IS NULL AND income_statement_id IS NULL AND uploaded_by_person = :personId)
-             ))
+             AND uploaded_by_person = :personId)
         """.trimIndent()
 
     return this.createQuery(sql)
@@ -104,18 +98,33 @@ fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: Authenticate
         .first()
 }
 
-fun Database.Read.isSelfUploadedAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
+fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser.Employee): Boolean {
     val sql =
         """
-        SELECT EXISTS
-            (SELECT 1 FROM attachment
-             WHERE id = :attachmentId
-             AND (uploaded_by_employee = :userId OR uploaded_by_person = :userId))
+        SELECT EXISTS 
+            (SELECT 1 FROM attachment 
+             WHERE id = :attachmentId 
+             AND uploaded_by_employee = :userId)
         """.trimIndent()
 
     return this.createQuery(sql)
         .bind("attachmentId", attachmentId)
         .bind("userId", user.id)
+        .mapTo<Boolean>()
+        .first()
+}
+
+fun Database.Read.wasUploadedByAnyEmployee(attachmentId: AttachmentId): Boolean {
+    val sql =
+        """
+        SELECT EXISTS
+            (SELECT 1 FROM attachment
+             WHERE id = :attachmentId
+             AND uploaded_by_employee IS NOT NULL)
+        """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("attachmentId", attachmentId)
         .mapTo<Boolean>()
         .first()
 }

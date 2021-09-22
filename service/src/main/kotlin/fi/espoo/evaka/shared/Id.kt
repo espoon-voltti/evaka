@@ -27,6 +27,7 @@ sealed interface DatabaseTable {
     sealed class Decision : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class FeeDecision : DatabaseTable
+    sealed class FeeThresholds : DatabaseTable
     sealed class Group : DatabaseTable
     sealed class GroupPlacement : DatabaseTable
     sealed class Income : DatabaseTable
@@ -68,6 +69,7 @@ typealias DaycareDailyNoteId = Id<DatabaseTable.DaycareDailyNote>
 typealias DecisionId = Id<DatabaseTable.Decision>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
+typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias IncomeId = Id<DatabaseTable.Income>

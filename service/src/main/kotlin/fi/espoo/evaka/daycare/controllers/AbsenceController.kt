@@ -15,7 +15,6 @@ import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -54,10 +53,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        absences.data.map { it.childId }.forEach {
-            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Group.CREATE_ABSENCES, groupId)
+        absences.data.forEach {
+            accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, it.childId)
         }
 
         db.transaction { absenceService.upsertAbsences(it, absences.data, user.id) }
@@ -72,10 +70,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-        deletions.map { it.childId }.forEach {
-            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        accessControl.requirePermissionFor(user, Action.Group.DELETE_ABSENCES, groupId)
+        deletions.forEach {
+            accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, it.childId)
         }
 
         db.transaction { it.batchDeleteAbsences(deletions) }
@@ -91,7 +88,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestParam month: Int
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
         Audit.AbsenceRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Child.READ_ABSENCES, childId)
         val absences = db.read { absenceService.getAbsencesByChild(it, childId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
@@ -103,7 +100,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable childId: UUID
     ): ResponseEntity<List<Absence>> {
         Audit.AbsenceRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
         val absences = db.read { absenceService.getFutureAbsencesByChild(it, childId) }
         return ResponseEntity.ok(absences)
     }

@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
+@ExcludeCodeGen
 data class DraftContent(
     val id: MessageDraftId,
     val created: HelsinkiDateTime,
