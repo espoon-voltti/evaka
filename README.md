@@ -127,7 +127,6 @@ always fail for the following files:
 
 - [Digital and population data services agency (DVV)](https://dvv.fi/henkiloasiakkaat)
   owned WSDL and related files (`message-service/**/wsdl/*`, `service/**/wsdl/*`)
-- All logos of the city of Espoo (`service/src/main/resources/static/espoo-logo*.png`)
 
 ### Automatically add licensing headers
 
