@@ -76,18 +76,32 @@ function DatePicker({
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
+  const [showErrors, setShowErrors] = useState(!hideErrorsBeforeTouched)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (!hideErrorsBeforeTouched) {
+      setShowErrors(true)
+    }
+  }, [hideErrorsBeforeTouched])
+
+  function hideDatePicker() {
+    setShow(false)
+    setShowErrors(true)
+  }
+
   function handleUserKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Esc' || e.key === 'Escape') setShow(false)
+    if (e.key === 'Esc' || e.key === 'Escape') {
+      hideDatePicker()
+    }
   }
 
   function handleDayClick(day: Date, modifiers?: DayModifiers) {
     if (modifiers?.disabled) {
       return
     }
-    setShow(false)
+    hideDatePicker()
     onChange(LocalDate.fromSystemTzDate(day).format())
   }
 
@@ -124,7 +138,7 @@ function DatePicker({
         }
       }
 
-      setShow(false)
+      hideDatePicker()
     }
 
     if (show) {
@@ -146,7 +160,7 @@ function DatePicker({
         date={date}
         setDate={(date) => {
           if (LocalDate.parseFiOrNull(date) !== null) {
-            setShow(false)
+            hideDatePicker()
           }
           onChange(date)
         }}
@@ -158,8 +172,7 @@ function DatePicker({
         onBlur={() => {
           onBlur()
         }}
-        info={info}
-        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        info={showErrors ? info : undefined}
         data-qa={props['data-qa']}
         id={id}
         required={required}
