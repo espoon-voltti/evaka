@@ -34,6 +34,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -84,7 +85,9 @@ class VardaUpdateService(
                 tx,
                 serviceNeedDiffsByChild.values.map {
                     VardaAsyncJob.UpdateVardaChild(it)
-                }
+                },
+                retryCount = 2,
+                retryInterval = Duration.ofMinutes(10)
             )
         }
     }
@@ -95,7 +98,11 @@ class VardaUpdateService(
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $maxChildren)")
 
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) })
+            asyncJobRunner.plan(
+                tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) },
+                retryCount = 2,
+                retryInterval = Duration.ofMinutes(10)
+            )
         }
     }
 
