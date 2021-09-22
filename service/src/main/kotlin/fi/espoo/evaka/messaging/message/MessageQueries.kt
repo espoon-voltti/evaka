@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -152,7 +154,9 @@ data class ReceivedMessageResultItem(
     val readAt: HelsinkiDateTime? = null,
     val recipientId: MessageAccountId,
     val recipientName: String,
-    val recipientAccountType: AccountType
+    val recipientAccountType: AccountType,
+    @Json
+    val attachments: List<Attachment>
 )
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
@@ -173,6 +177,7 @@ participated_messages AS (
         m.sender_name,
         m.sender_id,
         sender_acc.type AS sender_account_type,
+        m.content_id,
         c.content,
         rec.read_at,
         rec.recipient_id,
@@ -220,9 +225,17 @@ SELECT
     msg.read_at,
     msg.recipient_id,
     msg.recipient_name,
-    msg.recipient_account_type
+    msg.recipient_account_type,
+    (
+        SELECT coalesce(jsonb_agg(json_build_object(
+           'id', att.id,
+           'name', att.name,
+           'contentType', att.content_type
+        )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
+        FROM attachment att WHERE att.message_content_id = msg.content_id
+    ) AS attachments
     FROM threads t
-          JOIN participated_messages msg ON msg.thread_id = t.id
+    JOIN participated_messages msg ON msg.thread_id = t.id
     ORDER BY t.last_message DESC, msg.sent_at ASC
     """.trimIndent()
 
@@ -254,7 +267,8 @@ SELECT
                                     .groupBy { it.recipientId }
                                     .map { (recipientId, recipients) ->
                                         MessageAccount(recipientId, recipients[0].recipientName, recipients[0].recipientAccountType)
-                                    }.toSet()
+                                    }.toSet(),
+                                attachments = messages[0].attachments
                             )
                         }
                 )
@@ -273,6 +287,8 @@ data class MessageResultItem(
     val recipientAccountType: AccountType,
     val sentAt: HelsinkiDateTime,
     val content: String,
+    @Json
+    val attachments: List<Attachment>
 )
 
 fun Database.Read.getMessage(id: MessageId): Message {
@@ -286,7 +302,15 @@ fun Database.Read.getMessage(id: MessageId): Message {
             c.content,
             rec.recipient_id,
             recipient_acc_name.account_name recipient_name,
-            recipient_acc.type AS recipient_account_type
+            recipient_acc.type AS recipient_account_type,
+            (
+                SELECT coalesce(jsonb_agg(json_build_object(
+                   'id', att.id,
+                   'name', att.name,
+                   'contentType', att.content_type
+                )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
+                FROM attachment att WHERE att.message_content_id = m.content_id
+            ) AS attachments
         FROM message m
         JOIN message_content c ON m.content_id = c.id
         JOIN message_recipients rec ON m.id = rec.message_id
@@ -310,7 +334,8 @@ fun Database.Read.getMessage(id: MessageId): Message {
                     name = messages[0].senderName,
                     type = messages[0].senderAccountType
                 ),
-                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet()
+                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet(),
+                attachments = messages[0].attachments
             )
         }
         .single()

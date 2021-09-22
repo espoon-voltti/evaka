@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -23,7 +24,8 @@ data class Message(
     val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
     val content: String,
-    val readAt: HelsinkiDateTime? = null
+    val readAt: HelsinkiDateTime? = null,
+    val attachments: List<Attachment>
 )
 
 data class MessageThread(
