@@ -105,6 +105,7 @@ function SingleMessage({
                   })
                 }
                 icon
+                data-qa={'attachment'}
               />
             ))}
           </FixedSpaceColumn>
