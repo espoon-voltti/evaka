@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -121,9 +122,11 @@ sealed interface Action {
     enum class Attachment(private val roles: EnumSet<UserRole>) : ScopedAction<AttachmentId> {
         READ_APPLICATION_ATTACHMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
         READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_MESSAGE_CONTENT_ATTACHMENT,
         READ_MESSAGE_DRAFT_ATTACHMENT,
         DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
         DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
+        DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT
         ;
 
@@ -250,6 +253,13 @@ sealed interface Action {
     enum class IncomeStatement(private val roles: EnumSet<UserRole>) : ScopedAction<IncomeStatementId> {
         UPDATE_HANDLED(FINANCE_ADMIN),
         UPLOAD_ATTACHMENT(FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class MessageContent(private val roles: EnumSet<UserRole>) : ScopedAction<MessageContentId> {
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

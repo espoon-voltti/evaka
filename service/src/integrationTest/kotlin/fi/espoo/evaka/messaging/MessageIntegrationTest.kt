@@ -59,6 +59,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -76,7 +77,9 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val person3Id: UUID = testAdult_3.id
     private val person4Id: UUID = testAdult_4.id
     private val employee1Id: UUID = UUID.randomUUID()
+    private val employee2Id: UUID = UUID.randomUUID()
     private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee2 = AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val person1 = AuthenticatedUser.Citizen(id = person1Id)
     private val person2 = AuthenticatedUser.Citizen(id = person2Id)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id)
@@ -122,6 +125,13 @@ class MessageIntegrationTest : FullApplicationTest() {
                     name = testDaycare.name,
                 )
             )
+            tx.insertTestDaycare(
+                DevDaycare(
+                    areaId = testAreaId,
+                    id = testDaycare2.id,
+                    name = testDaycare2.name,
+                )
+            )
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = groupId,
@@ -157,6 +167,10 @@ class MessageIntegrationTest : FullApplicationTest() {
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
             tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
+
+            tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor"))
+            tx.upsertEmployeeMessageAccount(employee2Id)
+            tx.insertDaycareAclRow(testDaycare2.id, employee2Id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -544,7 +558,21 @@ class MessageIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, db.read { it.getDrafts(employee1Account) }.size)
 
+        // when an attachment it uploaded
+        val attachmentId = uploadMessageAttachment(employee1, draftId)
+
+        // then another employee cannot read or delete the attachment
+        downloadAttachment(employee2, attachmentId, 403)
+        deleteAttachment(employee2, attachmentId, 403)
+        // then the author can read and delete the attachment
+        downloadAttachment(employee1, attachmentId, 200)
+        deleteAttachment(employee1, attachmentId, 204)
+
+        // a user cannot upload attachments to another user's draft
+        assertAttachmentUploadFails(employee2, draftId)
+
         val attachmentIds = setOf(uploadMessageAttachment(employee1, draftId), uploadMessageAttachment(employee1, draftId))
+
         // when a message thread with attachment is created
         postNewThread(
             title = "t1",
@@ -563,7 +591,32 @@ class MessageIntegrationTest : FullApplicationTest() {
 
         // the attachments are associated to a message
         assertEquals(2, db.read { it.createQuery("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL").mapTo<Int>().one() })
+
+        // the author can read the attachment
+        downloadAttachment(employee1, attachmentIds.first(), 200)
+        // another user cannot read the attachment
+        downloadAttachment(employee2, attachmentIds.first(), 403)
     }
+
+    private fun deleteAttachment(
+        user: AuthenticatedUser.Employee,
+        attachmentId: AttachmentId,
+        expectedStatus: Int = 204
+    ) =
+        http.delete("/attachments/$attachmentId")
+            .asUser(user)
+            .response()
+            .also { assertEquals(expectedStatus, it.second.statusCode) }
+
+    private fun downloadAttachment(
+        user: AuthenticatedUser.Employee,
+        attachmentId: AttachmentId,
+        expectedStatus: Int = 200
+    ) =
+        http.get("/attachments/$attachmentId/download")
+            .asUser(user)
+            .response()
+            .also { assertEquals(expectedStatus, it.second.statusCode) }
 
     private fun getUnreadMessages(
         accountId: MessageAccountId,
@@ -573,11 +626,27 @@ class MessageIntegrationTest : FullApplicationTest() {
         user
     ).flatMap { it.messages.filter { m -> m.sender.id != accountId && m.readAt == null } }
 
-    private fun uploadMessageAttachment(user: AuthenticatedUser.Employee, draftId: MessageDraftId): AttachmentId =
+    private fun uploadMessageAttachment(
+        user: AuthenticatedUser.Employee,
+        draftId: MessageDraftId
+    ): AttachmentId =
         http.upload("/attachments/messages/$draftId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
-            .responseObject<AttachmentId>(objectMapper).third.get()
+            .responseObject<AttachmentId>(objectMapper)
+            .also { assertEquals(200, it.second.statusCode) }
+            .third.get()
+
+    private fun assertAttachmentUploadFails(
+        user: AuthenticatedUser.Employee,
+        draftId: MessageDraftId,
+        expectedStatus: Int = 403
+    ) =
+        http.upload("/attachments/messages/$draftId")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .response()
+            .also { assertEquals(expectedStatus, it.second.statusCode) }
 
     private fun postNewThread(
         title: String,

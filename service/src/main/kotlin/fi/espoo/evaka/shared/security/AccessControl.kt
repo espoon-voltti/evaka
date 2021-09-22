@@ -10,8 +10,9 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
-import fi.espoo.evaka.messaging.message.draftBelongsToAnyAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
+import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageContent
+import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageDraft
+import fi.espoo.evaka.messaging.message.hasPermissionForMessageDraft
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -27,6 +28,7 @@ import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
@@ -230,6 +232,7 @@ WHERE employee_id = :userId
             is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
+            is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
             is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
             else -> error("Unsupported action type")
         }.exhaust()
@@ -291,7 +294,10 @@ WHERE employee_id = :userId
                     ).read { it.wasUploadedByAnyEmployee(id) }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT ->
-                    Database(jdbi).read { it.isOwnAttachment(id, user) }
+                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageDraft(user, id) }
+                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
+                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
             }
             else -> false
         }
@@ -382,12 +388,7 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Citizen -> false // drafts are employee-only
             is AuthenticatedUser.Employee -> when (action) {
-                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read {
-                    it.draftBelongsToAnyAccount(
-                        id,
-                        it.getEmployeeMessageAccountIds(user.id)
-                    )
-                }
+                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read { it.hasPermissionForMessageDraft(user, id) }
             }
             else -> false
         }

@@ -137,7 +137,8 @@ class AttachmentsController(
                     attachTo.incomeStatementId,
                     user.id
                 )
-                is AttachmentParent.MessageDraft -> 0
+                is AttachmentParent.MessageDraft,
+                is AttachmentParent.MessageContent -> 0
             }
         }
         if (count >= maxAttachmentsPerUser) {
@@ -198,6 +199,7 @@ class AttachmentsController(
             is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
             is AttachmentParent.IncomeStatement,
             is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
+            is AttachmentParent.MessageContent -> Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
@@ -231,6 +233,7 @@ class AttachmentsController(
             is AttachmentParent.IncomeStatement,
             is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
+            is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
