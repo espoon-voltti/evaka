@@ -238,6 +238,7 @@ export default React.memo(function MessageEditor({
                   { id, name: file.name, contentType: file.type }
                 ]
               }))
+              setContentTouched(true)
               return id
             }
           )
@@ -288,109 +289,109 @@ export default React.memo(function MessageEditor({
 
   return (
     <Container data-qa="message-editor" data-status={draftState}>
-      <InnerScroll>
-        <TopBar>
-          <Title>{title}</Title>
-          <IconButton
-            icon={faTimes}
-            onClick={onCloseHandler}
-            white
-            data-qa="close-message-editor-btn"
-          />
-        </TopBar>
-        <FormArea>
-          <Bold>{i18n.messages.messageEditor.sender}</Bold>
+      <TopBar>
+        <Title>{title}</Title>
+        <IconButton
+          icon={faTimes}
+          onClick={onCloseHandler}
+          white
+          data-qa="close-message-editor-btn"
+        />
+      </TopBar>
+      <ScrollableFormArea>
+        <Bold>{i18n.messages.messageEditor.sender}</Bold>
+        <Gap size={'xs'} />
+        <Select
+          items={senderOptions}
+          onChange={(sender) =>
+            sender ? updateMessage({ sender }) : undefined
+          }
+          selectedItem={message.sender}
+          data-qa="select-sender"
+          fullWidth
+        />
+        <div>
+          <Gap size={'s'} />
+          <Bold>{i18n.messages.messageEditor.receivers}</Bold>
           <Gap size={'xs'} />
-          <Select
-            items={senderOptions}
-            onChange={(sender) =>
-              sender ? updateMessage({ sender }) : undefined
-            }
-            selectedItem={message.sender}
-            data-qa="select-sender"
-            fullWidth
+        </div>
+        <MultiSelect
+          placeholder={i18n.common.search}
+          value={selectedReceivers}
+          options={receiverOptions}
+          onChange={updateReceiverTree}
+          noOptionsMessage={i18n.common.noResults}
+          getOptionId={({ value }) => value}
+          getOptionLabel={({ label }) => label}
+          data-qa="select-receiver"
+        />
+        <Gap size={'s'} />
+        <Bold>{i18n.messages.messageEditor.type.label}</Bold>
+        <Gap size={'xs'} />
+        <FixedSpaceRow>
+          <Radio
+            label={i18n.messages.messageEditor.type.message}
+            checked={message.type === 'MESSAGE'}
+            onChange={() => updateMessage({ type: 'MESSAGE' })}
           />
-          <div>
-            <Gap size={'s'} />
-            <Bold>{i18n.messages.messageEditor.receivers}</Bold>
-            <Gap size={'xs'} />
-          </div>
-          <MultiSelect
-            placeholder={i18n.common.search}
-            value={selectedReceivers}
-            options={receiverOptions}
-            onChange={updateReceiverTree}
-            noOptionsMessage={i18n.common.noResults}
-            getOptionId={({ value }) => value}
-            getOptionLabel={({ label }) => label}
-            data-qa="select-receiver"
+          <Radio
+            label={i18n.messages.messageEditor.type.bulletin}
+            checked={message.type === 'BULLETIN'}
+            onChange={() => updateMessage({ type: 'BULLETIN' })}
           />
-          <Gap size={'s'} />
-          <Bold>{i18n.messages.messageEditor.type.label}</Bold>
-          <Gap size={'xs'} />
-          <FixedSpaceRow>
-            <Radio
-              label={i18n.messages.messageEditor.type.message}
-              checked={message.type === 'MESSAGE'}
-              onChange={() => updateMessage({ type: 'MESSAGE' })}
-            />
-            <Radio
-              label={i18n.messages.messageEditor.type.bulletin}
-              checked={message.type === 'BULLETIN'}
-              onChange={() => updateMessage({ type: 'BULLETIN' })}
-            />
-          </FixedSpaceRow>
-          <Gap size={'s'} />
-          <Bold>{i18n.messages.messageEditor.title}</Bold>
-          <InputField
-            value={message.title ?? ''}
-            onChange={(title) => updateMessage({ title })}
-            data-qa={'input-title'}
+        </FixedSpaceRow>
+        <Gap size={'s'} />
+        <Bold>{i18n.messages.messageEditor.title}</Bold>
+        <InputField
+          value={message.title ?? ''}
+          onChange={(title) => updateMessage({ title })}
+          data-qa={'input-title'}
+        />
+        <Gap size="m" />
+        <Bold>{i18n.messages.messageEditor.message}</Bold>
+        <Gap size="xs" />
+        <StyledTextArea
+          value={message.content}
+          onChange={(e) => updateMessage({ content: e.target.value })}
+          data-qa="input-content"
+        />
+        {featureFlags.experimental?.messageAttachments && (
+          <FileUpload
+            slim
+            disabled={!draftId}
+            data-qa="upload-message-attachment"
+            files={message.attachments}
+            i18n={i18n.fileUpload}
+            onDownloadFile={getAttachmentBlob}
+            onUpload={handleAttachmentUpload}
+            onDelete={handleAttachmentDelete}
           />
-          <Gap size={'m'} />
-          <Bold>{i18n.messages.messageEditor.message}</Bold>
-          <Gap size={'s'} />
-          <StyledTextArea
-            value={message.content}
-            onChange={(e) => updateMessage({ content: e.target.value })}
-            data-qa={'input-content'}
+        )}
+        <Gap size={'L'} />
+      </ScrollableFormArea>
+      <BottomBar>
+        {draftId ? (
+          <InlineButton
+            onClick={() => onDiscard(message.sender.value, draftId)}
+            text={i18n.messages.messageEditor.deleteDraft}
+            icon={faTrash}
+            data-qa="discard-draft-btn"
           />
-          {featureFlags.experimental?.messageAttachments && draftId && (
-            <FileUpload
-              data-qa="upload-message-attachment"
-              files={message.attachments}
-              i18n={i18n.fileUpload}
-              onDownloadFile={getAttachmentBlob}
-              onUpload={handleAttachmentUpload}
-              onDelete={handleAttachmentDelete}
-            />
-          )}
-          <Gap size={'L'} />
-          <BottomRow>
-            {draftId ? (
-              <InlineButton
-                onClick={() => onDiscard(message.sender.value, draftId)}
-                text={i18n.messages.messageEditor.deleteDraft}
-                icon={faTrash}
-                data-qa="discard-draft-btn"
-              />
-            ) : (
-              <Gap horizontal />
-            )}
-            <Button
-              text={
-                sending
-                  ? i18n.messages.messageEditor.sending
-                  : i18n.messages.messageEditor.send
-              }
-              primary
-              disabled={!sendEnabled}
-              onClick={sendHandler}
-              data-qa="send-message-btn"
-            />
-          </BottomRow>
-        </FormArea>
-      </InnerScroll>
+        ) : (
+          <Gap horizontal />
+        )}
+        <Button
+          text={
+            sending
+              ? i18n.messages.messageEditor.sending
+              : i18n.messages.messageEditor.send
+          }
+          primary
+          disabled={!sendEnabled}
+          onClick={sendHandler}
+          data-qa="send-message-btn"
+        />
+      </BottomBar>
     </Container>
   )
 })
@@ -408,10 +409,6 @@ const Container = styled.div`
   flex-direction: column;
   background-color: ${colors.greyscale.white};
   overflow: scroll;
-`
-
-const InnerScroll = styled.div`
-  min-height: 800px;
 `
 
 const TopBar = styled.div`
@@ -432,26 +429,31 @@ const Title = styled.span`
   margin-right: ${defaultMargins.s};
 `
 
-const FormArea = styled.div`
+const ScrollableFormArea = styled.div`
   width: 100%;
-  flex-grow: 1;
   padding: ${defaultMargins.m};
   display: flex;
   flex-direction: column;
+
+  flex-grow: 1;
+  overflow: auto;
+  min-height: 0; // for Firefox
 `
 
 const StyledTextArea = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
-  min-height: 300px;
+  min-height: 280px;
 `
 
-const BottomRow = styled.div`
+const BottomBar = styled.div`
   width: 100%;
+  border-top: 1px solid ${colors.greyscale.medium};
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: ${defaultMargins.m};
 `
 
 const Bold = styled.span`
