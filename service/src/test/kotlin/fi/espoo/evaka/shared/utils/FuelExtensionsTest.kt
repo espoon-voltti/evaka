@@ -53,7 +53,7 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         val (_, response, result) = Fuel.get("https://example.com")
-            .responseStringWithRetries(1)
+            .responseStringWithRetries(1, false)
 
         assertEquals(200, response.statusCode)
         assertEquals("final", result.get())
@@ -70,7 +70,7 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         val (_, response, result) = Fuel.get("https://example.com")
-            .responseStringWithRetries(2) // Would have to be 3 to succeed
+            .responseStringWithRetries(2, false) // Would have to be 3 to succeed
         assertEquals(429, response.statusCode) // Status code of last response
         assertTrue(result is Result.Failure)
     }
@@ -82,7 +82,7 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         assertThrows<NumberFormatException> {
-            Fuel.get("https://example.com").responseStringWithRetries(1) // Would have to be 2 to succeed
+            Fuel.get("https://example.com").responseStringWithRetries(1, false) // Would have to be 2 to succeed
         }
     }
 
