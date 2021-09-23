@@ -23,7 +23,7 @@ export default class MessagesPage {
   #receiverSelection = new RawElement(this.page, '[data-qa="select-receiver"]')
   #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
   #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
-  #messageAttachmentFileUploadSelector = '[data-qa="upload-message-attachment"]'
+  #fileUpload = this.page.locator('[data-qa="upload-message-attachment"]')
   #sentMessagesBoxRow = new RawElement(
     this.page,
     '[data-qa="message-box-row-SENT"]'
@@ -86,12 +86,8 @@ export default class MessagesPage {
         await this.addAttachment()
         await waitUntilEqual(
           () =>
-            this.page
-              .locator(
-                `${
-                  this.#messageAttachmentFileUploadSelector
-                } [data-qa="file-download-button"]`
-              )
+            this.#fileUpload
+              .locator('[data-qa="file-download-button"]')
               .count(),
           i
         )
@@ -107,12 +103,9 @@ export default class MessagesPage {
   async addAttachment() {
     const testFileName = 'test_file.png'
     const testFilePath = `src/e2e-playwright/assets/${testFileName}`
-    await this.page.setInputFiles(
-      `${
-        this.#messageAttachmentFileUploadSelector
-      } [data-qa="btn-upload-file"]`,
-      testFilePath
-    )
+    await this.#fileUpload
+      .locator('[data-qa="btn-upload-file"]')
+      .setInputFiles(testFilePath)
   }
 
   async getEditorState() {

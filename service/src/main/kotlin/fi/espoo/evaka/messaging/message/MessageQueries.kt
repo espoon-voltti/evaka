@@ -231,7 +231,7 @@ SELECT
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
-        )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
+        )), '[]'::jsonb) 
         FROM attachment att WHERE att.message_content_id = msg.content_id
     ) AS attachments
     FROM threads t
@@ -308,7 +308,7 @@ fun Database.Read.getMessage(id: MessageId): Message {
                    'id', att.id,
                    'name', att.name,
                    'contentType', att.content_type
-                )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
+                )), '[]'::jsonb) 
                 FROM attachment att WHERE att.message_content_id = m.content_id
             ) AS attachments
         FROM message m
