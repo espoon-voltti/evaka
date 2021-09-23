@@ -85,7 +85,8 @@ data class DatabaseEnv(
     val flywayUsername: String,
     val flywayPassword: Sensitive<String>,
     val leakDetectionThreshold: Long,
-    val maximumPoolSize: Int
+    val maximumPoolSize: Int,
+    val logSql: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = DatabaseEnv(
@@ -99,7 +100,8 @@ data class DatabaseEnv(
                 "spring.datasource.hikari.leak-detection-threshold"
             ) ?: 0,
             maximumPoolSize = env.lookup("evaka.database.maximum_pool_size", "spring.datasource.hikari.maximumPoolSize")
-                ?: 10
+                ?: 10,
+            logSql = env.lookup("evaka.database.log_sql") ?: false
         )
     }
 }
