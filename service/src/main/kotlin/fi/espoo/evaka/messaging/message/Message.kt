@@ -44,7 +44,9 @@ data class SentMessage(
     val type: MessageType,
     @Json
     val recipients: Set<MessageAccount>,
-    val recipientNames: List<String>
+    val recipientNames: List<String>,
+    @Json
+    val attachments: List<MessageAttachment>,
 )
 
 enum class MessageType {

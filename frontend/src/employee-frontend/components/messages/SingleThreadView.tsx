@@ -16,7 +16,12 @@ import {
   Message,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
@@ -63,12 +68,14 @@ function SingleMessage({
   title,
   type,
   message,
-  index
+  index,
+  onAttachmentUnavailable
 }: {
   message: Message
   type?: MessageType
   title?: string
   index: number
+  onAttachmentUnavailable: () => void
 }) {
   return (
     <MessageContainer>
@@ -85,6 +92,23 @@ function SingleMessage({
       <MessageContent data-qa="message-content" data-index={index}>
         {message.content}
       </MessageContent>
+      {message.attachments.length > 0 && (
+        <>
+          <HorizontalLine slim />
+          <FixedSpaceColumn spacing="xs">
+            {message.attachments.map((attachment) => (
+              <FileDownloadButton
+                key={attachment.id}
+                file={attachment}
+                fileFetchFn={getAttachmentBlob}
+                onFileUnavailable={onAttachmentUnavailable}
+                icon
+                data-qa={'attachment'}
+              />
+            ))}
+          </FixedSpaceColumn>
+        </>
+      )}
     </MessageContainer>
   )
 }
@@ -114,6 +138,7 @@ export function SingleThreadView({
   const { i18n } = useTranslation()
   const { getReplyContent, sendReply, replyState, setReplyContent } =
     useContext(MessageContext)
+  const { setErrorMessage } = useContext(UIContext)
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(
@@ -143,6 +168,18 @@ export function SingleThreadView({
     }),
     [i18n]
   )
+
+  const onAttachmentUnavailable = useCallback(
+    () =>
+      setErrorMessage({
+        type: 'error',
+        resolveLabel: i18n.common.ok,
+        title: i18n.fileUpload.download.modalHeader,
+        text: i18n.fileUpload.download.modalMessage
+      }),
+    [i18n, setErrorMessage]
+  )
+
   return (
     <ThreadContainer>
       <ContentArea opaque>
@@ -162,6 +199,7 @@ export function SingleThreadView({
             title={idx === 0 ? title : undefined}
             type={idx === 0 ? type : undefined}
             index={idx}
+            onAttachmentUnavailable={onAttachmentUnavailable}
           />
         ))}
         {canReply && view === 'RECEIVED' && (

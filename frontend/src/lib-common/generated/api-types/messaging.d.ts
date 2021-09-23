@@ -212,6 +212,7 @@ export interface ReplyToMessageBody {
 * Generated from fi.espoo.evaka.messaging.message.SentMessage
 */
 export interface SentMessage {
+  attachments: MessageAttachment[]
   content: string
   contentId: UUID
   recipientNames: string[]
