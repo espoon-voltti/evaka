@@ -95,6 +95,7 @@ export interface Group {
 * Generated from fi.espoo.evaka.messaging.message.Message
 */
 export interface Message {
+  attachments: MessageAttachment[]
   content: string
   id: UUID
   readAt: Date | null

@@ -83,7 +83,7 @@ export default React.memo(function ThreadListContainer({
     thread: MessageThread,
     displayMessageCount: boolean,
     dataQa: string
-  ) => ({
+  ): ThreadListItem => ({
     id: thread.id,
     title: thread.title,
     content: thread.messages[thread.messages.length - 1].content,
@@ -97,22 +97,24 @@ export default React.memo(function ThreadListContainer({
   })
 
   // TODO: Sent messages should probably be threads. Non trivial due to thread-splitting.
-  const sentMessagesAsThreads = sentMessages.map((value) =>
-    value.map((message) => ({
-      id: message.contentId,
-      type: message.type,
-      title: message.threadTitle,
-      messages: [
-        {
-          id: message.contentId,
-          sender: { ...account },
-          sentAt: message.sentAt,
-          recipients: message.recipients,
-          readAt: new Date(),
-          content: message.content
-        }
-      ]
-    }))
+  const sentMessagesAsThreads: Result<MessageThread[]> = sentMessages.map(
+    (value) =>
+      value.map((message) => ({
+        id: message.contentId,
+        type: message.type,
+        title: message.threadTitle,
+        messages: [
+          {
+            id: message.contentId,
+            sender: { ...account },
+            sentAt: message.sentAt,
+            recipients: message.recipients,
+            readAt: new Date(),
+            content: message.content,
+            attachments: [] // todo
+          }
+        ]
+      }))
   )
 
   const receivedMessageItems: Result<ThreadListItem[]> = receivedMessages.map(

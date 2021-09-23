@@ -9,6 +9,10 @@ import { Result } from 'lib-common/api'
 import { downloadBlobAsFile } from 'lib-common/utils/file'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { FixedSpaceRow } from '../layout/flex-helpers'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fileIcon } from './FileUpload'
 
 const DownloadButton = styled.button`
   background: none;
@@ -25,6 +29,7 @@ interface FileDownloadButtonProps {
   file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
   onFileUnavailable: () => void
+  icon?: IconDefinition | boolean
   'data-qa'?: string
 }
 
@@ -36,6 +41,7 @@ export default React.memo(function FileDownloadButton({
   file,
   fileFetchFn,
   onFileUnavailable,
+  icon,
   'data-qa': dataQa
 }: FileDownloadButtonProps) {
   const getFileIfAvailable = async (file: Attachment) => {
@@ -56,7 +62,12 @@ export default React.memo(function FileDownloadButton({
 
   return (
     <DownloadButton onClick={() => getFileIfAvailable(file)} data-qa={dataQa}>
-      {file.name}
+      <FixedSpaceRow spacing="xs" alignItems="center" key={file.id}>
+        {icon && (
+          <FontAwesomeIcon icon={icon === true ? fileIcon(file) : icon} />
+        )}
+        <div>{file.name}</div>
+      </FixedSpaceRow>
     </DownloadButton>
   )
 })
