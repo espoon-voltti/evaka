@@ -1,19 +1,19 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
+import {
+  DraftContent,
+  Message,
+  MessageThread,
+  NestedMessageAccount,
+  SentMessage,
+  ThreadReply,
+  UnreadCountByAccount
+} from 'lib-common/generated/api-types/messaging'
 import { SelectOption } from '../common/Select'
 import { UserContext } from '../../state/user'
 import { Loading, Paged, Result } from 'lib-common/api'
-import {
-  Message,
-  MessageThread,
-  ReplyResponse
-} from 'lib-common/api-types/messaging/message'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
@@ -27,7 +27,7 @@ import React, {
 import { UUID } from '../../types'
 import {
   getMessageDrafts,
-  getMessagingAccounts as getNestedMessagingAccounts,
+  getMessagingAccounts,
   getReceivedMessages,
   getSentMessages,
   getUnreadCounts,
@@ -35,12 +35,6 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import {
-  DraftContent,
-  NestedMessageAccount,
-  SentMessage,
-  UnreadCountByAccount
-} from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
@@ -129,7 +123,7 @@ export const MessageContextProvider = React.memo(
     >(Loading.of())
 
     const getNestedAccounts = useRestApi(
-      getNestedMessagingAccounts,
+      getMessagingAccounts,
       setNestedMessagingAccounts
     )
     const loadNestedAccounts = useDebouncedCallback(getNestedAccounts, 100)
@@ -217,7 +211,7 @@ export const MessageContextProvider = React.memo(
     ])
 
     const [replyState, setReplyState] = useState<Result<void>>()
-    const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {
+    const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
       setReplyState(res.map(() => undefined))
       if (res.isSuccess) {
         const {

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
+import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { FeeAlteration } from '../types/fee-alteration'
 import {
   AdditionalInformation,
@@ -17,7 +18,6 @@ import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
-import { Recipient } from '../components/messages/types'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 

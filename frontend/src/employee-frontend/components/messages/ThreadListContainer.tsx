@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import EmptyMessageFolder from './EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
@@ -14,7 +15,6 @@ import { ThreadList, ThreadListItem } from './ThreadList'
 import { SingleThreadView } from './SingleThreadView'
 import { AccountView } from './types-view'
 import { Result } from 'lib-common/api'
-import { MessageThread } from 'lib-common/api-types/messaging/message'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -56,26 +56,17 @@ export default React.memo(function ThreadListContainer({
     [account.id, selectThread, view]
   )
 
-  const [messageCount, setMessageCount] = useState<number>(0)
-
-  useEffect(() => {
+  const hasMessages = useMemo<boolean>(() => {
     if (view === 'RECEIVED' && receivedMessages.isSuccess) {
-      setMessageCount(receivedMessages.value.length)
+      return receivedMessages.value.length > 0
     } else if (view === 'SENT' && sentMessages.isSuccess) {
-      setMessageCount(sentMessages.value.length)
+      return sentMessages.value.length > 0
     } else if (view === 'DRAFTS' && messageDrafts.isSuccess) {
-      setMessageCount(messageDrafts.value.length)
+      return messageDrafts.value.length > 0
     } else {
-      setMessageCount(0)
+      return false
     }
-  }, [
-    view,
-    messageCount,
-    setMessageCount,
-    receivedMessages,
-    sentMessages,
-    messageDrafts
-  ])
+  }, [view, receivedMessages, sentMessages, messageDrafts])
 
   if (selectedThread) {
     return (
@@ -154,7 +145,7 @@ export default React.memo(function ThreadListContainer({
     DRAFTS: draftMessageItems
   }[view]
 
-  return messageCount > 0 ? (
+  return hasMessages ? (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}

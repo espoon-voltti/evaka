@@ -6,13 +6,17 @@ import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
   deserializeMessageAccount,
   deserializeMessageThread,
-  deserializeReplyResponse,
-  MessageAccount,
-  MessageThread,
-  ReplyResponse
+  deserializeReplyResponse
 } from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import {
+  CitizenMessageBody,
+  MessageAccount,
+  MessageThread,
+  ReplyToMessageBody,
+  ThreadReply
+} from 'lib-common/generated/api-types/messaging'
 import { client } from '../api-client'
 
 export async function getReceivedMessages(
@@ -76,14 +80,8 @@ export async function getUnreadMessagesCount(): Promise<
     .catch((e) => Failure.fromError(e))
 }
 
-export interface SendMessageParams {
-  title: string
-  content: string
-  recipients: MessageAccount[]
-}
-
 export async function sendMessage(
-  message: SendMessageParams
+  message: CitizenMessageBody
 ): Promise<Result<UUID[]>> {
   return client
     .post<JsonOf<UUID[]>>(`/citizen/messages`, message)
@@ -91,10 +89,8 @@ export async function sendMessage(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface ReplyToThreadParams {
+export type ReplyToThreadParams = ReplyToMessageBody & {
   messageId: UUID
-  content: string
-  recipientAccountIds: UUID[]
   staffAnnotation: string
 }
 
@@ -103,9 +99,9 @@ export async function replyToThread({
   content,
   recipientAccountIds,
   staffAnnotation
-}: ReplyToThreadParams): Promise<Result<ReplyResponse>> {
+}: ReplyToThreadParams): Promise<Result<ThreadReply>> {
   return client
-    .post<JsonOf<ReplyResponse>>(`/citizen/messages/${messageId}/reply`, {
+    .post<JsonOf<ThreadReply>>(`/citizen/messages/${messageId}/reply`, {
       content,
       recipientAccountIds
     })

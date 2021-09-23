@@ -4,10 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import {
-  isNestedGroupMessageAccount,
-  NestedMessageAccount
-} from './messages/types'
+import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { isNestedGroupMessageAccount } from './messages/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

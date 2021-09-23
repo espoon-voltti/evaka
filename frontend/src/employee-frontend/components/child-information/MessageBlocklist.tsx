@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { getChildRecipients, updateChildRecipient } from '../../api/person'
-import { Recipient } from '../messages/types'
 import { ChildContext } from '../../state'
 import { Loading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
@@ -93,7 +92,7 @@ const MessageBlocklist = React.memo(function ChildDetails({
               </Tr>
             )}
             {recipients.isSuccess &&
-              recipients.value.map((recipient: Recipient) => (
+              recipients.value.map((recipient) => (
                 <Tr
                   key={recipient.personId}
                   data-qa={`recipient-${recipient.personId}`}

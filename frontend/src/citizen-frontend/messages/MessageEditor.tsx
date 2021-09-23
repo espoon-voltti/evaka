@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  CitizenMessageBody,
+  MessageAccount
+} from 'lib-common/generated/api-types/messaging'
 import { useUser } from '../auth'
-import { SendMessageParams } from './api'
-import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -17,18 +19,18 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 
-const emptyMessage: SendMessageParams = {
+const emptyMessage: CitizenMessageBody = {
   title: '',
   content: '',
   recipients: []
 }
 
-const areRequiredFieldsFilledForMessage = (msg: SendMessageParams): boolean =>
+const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
   !!(msg.recipients.length && msg.content && msg.title)
 
 interface Props {
   receiverOptions: MessageAccount[]
-  onSend: (messageBody: SendMessageParams) => Promise<void>
+  onSend: (messageBody: CitizenMessageBody) => Promise<void>
   onClose: () => void
   displaySendError: boolean
 }
@@ -42,7 +44,7 @@ export default React.memo(function MessageEditor({
   const i18n = useTranslation()
   const user = useUser()
 
-  const [message, setMessage] = useState<SendMessageParams>(emptyMessage)
+  const [message, setMessage] = useState<CitizenMessageBody>(emptyMessage)
 
   const title = message.title || i18n.messages.messageEditor.newMessage
 

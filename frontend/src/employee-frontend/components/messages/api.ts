@@ -5,38 +5,41 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
   deserializeMessageThread,
-  deserializeReplyResponse,
-  MessageThread,
-  ReplyResponse
+  deserializeReplyResponse
 } from 'lib-common/api-types/messaging/message'
+import {
+  DraftContent,
+  MessageReceiversResponse,
+  MessageThread,
+  NestedMessageAccount,
+  PostMessageBody,
+  ReplyToMessageBody,
+  SentMessage,
+  ThreadReply,
+  UnreadCountByAccount,
+  UpsertableDraftContent
+} from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { UUID } from '../../types'
 import {
   deserializeDraftContent,
-  deserializeReceiverChild,
-  deserializeSentMessage,
-  DraftContent,
-  NestedMessageAccount,
-  MessageBody,
-  ReceiverGroup,
-  SentMessage,
-  UnreadCountByAccount,
-  UpsertableDraftContent
+  deserializeReceiver,
+  deserializeSentMessage
 } from './types'
 
 export async function getReceivers(
   unitId: UUID
-): Promise<Result<ReceiverGroup[]>> {
+): Promise<Result<MessageReceiversResponse[]>> {
   return client
-    .get<JsonOf<ReceiverGroup[]>>('/messages/receivers', {
+    .get<JsonOf<MessageReceiversResponse[]>>('/messages/receivers', {
       params: { unitId }
     })
     .then((res) =>
       Success.of(
         res.data.map((receiverGroup) => ({
           ...receiverGroup,
-          receivers: receiverGroup.receivers.map(deserializeReceiverChild)
+          receivers: receiverGroup.receivers.map(deserializeReceiver)
         }))
       )
     )
@@ -140,20 +143,18 @@ export async function deleteDraft(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface ReplyToThreadParams {
+export type ReplyToThreadParams = ReplyToMessageBody & {
   messageId: UUID
-  content: string
   accountId: UUID
-  recipientAccountIds: UUID[]
 }
 export async function replyToThread({
   messageId,
   content,
   accountId,
   recipientAccountIds
-}: ReplyToThreadParams): Promise<Result<ReplyResponse>> {
+}: ReplyToThreadParams): Promise<Result<ThreadReply>> {
   return client
-    .post<JsonOf<ReplyResponse>>(`/messages/${accountId}/${messageId}/reply`, {
+    .post<JsonOf<ThreadReply>>(`/messages/${accountId}/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
@@ -163,7 +164,7 @@ export async function replyToThread({
 
 export async function postMessage(
   accountId: UUID,
-  body: MessageBody
+  body: PostMessageBody
 ): Promise<Result<void>> {
   return client
     .post(`/messages/${accountId}`, body)

@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageThread } from 'lib-common/api-types/messaging/message'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
 import { MessageTypeChip } from './MessageTypeChip'
 import { formatDate } from 'lib-common/date'

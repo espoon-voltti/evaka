@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  MessageReceiversResponse,
+  NestedMessageAccount
+} from 'lib-common/generated/api-types/messaging'
 import { getReceivers } from './api'
 import { SelectorNode, unitAsSelectorNode } from './SelectorNode'
 import { Result } from 'lib-common/api'
@@ -18,11 +22,7 @@ import Select from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
-import {
-  isNestedGroupMessageAccount,
-  NestedMessageAccount,
-  ReceiverGroup
-} from './types'
+import { isNestedGroupMessageAccount } from './types'
 import { messageBoxes } from './types-view'
 import { H1 } from 'lib-components/typography'
 
@@ -127,12 +127,14 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
       return
     }
     const { label: unitName, value: unitId } = selectedUnit
-    void getReceivers(unitId).then((result: Result<ReceiverGroup[]>) => {
-      if (result.isSuccess)
-        setSelectedReceivers(() =>
-          unitAsSelectorNode({ id: unitId, name: unitName }, result.value)
-        )
-    })
+    void getReceivers(unitId).then(
+      (result: Result<MessageReceiversResponse[]>) => {
+        if (result.isSuccess)
+          setSelectedReceivers(() =>
+            unitAsSelectorNode({ id: unitId, name: unitName }, result.value)
+          )
+      }
+    )
   }, [selectedUnit, setSelectedReceivers])
 
   const visibleGroupAccounts = selectedUnit

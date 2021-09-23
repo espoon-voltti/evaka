@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ReceiverGroup } from './types'
+import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { UUID } from '../../types'
 import LocalDate from 'lib-common/local-date'
 
@@ -111,12 +111,12 @@ export const isChildSelectorNode = (
 
 export const unitAsSelectorNode = (
   { id, name }: { id: UUID; name: string },
-  receiverGroups: ReceiverGroup[]
+  receiverGroups: MessageReceiversResponse[]
 ): SelectorNode => ({
   selectorId: id,
   selected: false,
   name,
-  childNodes: receiverGroups.map((group: ReceiverGroup) => ({
+  childNodes: receiverGroups.map((group: MessageReceiversResponse) => ({
     selectorId: group.groupId,
     selected: false,
     name: group.groupName,

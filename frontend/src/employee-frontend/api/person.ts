@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { Recipient } from 'lib-common/generated/api-types/messaging'
 import {
   deserializePersonDetails,
   PersonContactInfo,
@@ -16,7 +17,6 @@ import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { Recipient } from '../components/messages/types'
 import { Action } from 'lib-common/generated/action'
 
 export async function getPersonDetails(

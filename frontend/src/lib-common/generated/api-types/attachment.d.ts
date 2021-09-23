@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.attachment.AttachmentType
@@ -13,3 +13,12 @@
 export type AttachmentType = 
   | 'URGENCY'
   | 'EXTENDED_CARE'
+
+/**
+* Generated from fi.espoo.evaka.attachment.MessageAttachment
+*/
+export interface MessageAttachment {
+  contentType: string
+  id: UUID
+  name: string
+}
