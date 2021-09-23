@@ -37,6 +37,8 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { UUID } from 'lib-common/types'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import LocalDate from 'lib-common/local-date'
+import { StaticChip } from 'lib-components/atoms/Chip'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 interface Props {
   groupId: UUID
@@ -199,7 +201,7 @@ export default function Absences({
     <AbsencesPage data-qa="absences-page">
       {renderAbsenceModal()}
       {absences.isSuccess ? (
-        <div>
+        <FixedSpaceColumn spacing="zero">
           <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
           <AbsenceTable
             groupId={groupId}
@@ -207,19 +209,58 @@ export default function Absences({
             childList={absences.value.children}
             operationDays={absences.value.operationDays}
           />
+          <Gap />
           <AddAbsencesButton
             data-qa="add-absences-button"
             onClick={() => setModalVisible(true)}
             disabled={selectedCells.length === 0}
             text={i18n.absences.addAbsencesButton(selectedCells.length)}
           />
-        </div>
+          <Gap size="L" />
+          <AbsenceTypeLegend>
+            <StaticChip color={colors.blues.dark}>
+              {i18n.absences.absenceTypes.OTHER_ABSENCE}
+            </StaticChip>
+            <StaticChip color={colors.accents.violet}>
+              {i18n.absences.absenceTypes.SICKLEAVE}
+            </StaticChip>
+            <StaticChip color={colors.accents.green}>
+              {i18n.absences.absenceTypes.UNKNOWN_ABSENCE}
+            </StaticChip>
+            <StaticChip color={colors.accents.water}>
+              {i18n.absences.absenceTypes.PLANNED_ABSENCE}
+            </StaticChip>
+            <StaticChip color={colors.blues.primary}>
+              {i18n.absences.absenceTypes.PARENTLEAVE}
+            </StaticChip>
+            <StaticChip color={colors.accents.red}>
+              {i18n.absences.absenceTypes.FORCE_MAJEURE}
+            </StaticChip>
+            <StaticChip
+              color={colors.greyscale.medium}
+              textColor={colors.greyscale.white}
+            >
+              {i18n.absences.absenceTypes.PRESENCE}
+            </StaticChip>
+          </AbsenceTypeLegend>
+        </FixedSpaceColumn>
       ) : null}
       {absences.isLoading && <Loader />}
       {absences.isFailure && <ErrorSegment />}
     </AbsencesPage>
   )
 }
+
+const AbsenceTypeLegend = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  width: 66%;
+
+  > * {
+    margin-right: ${defaultMargins.xs};
+    margin-bottom: ${defaultMargins.s};
+  }
+`
 
 const AddAbsencesButton = styled(Button)`
   @media print {
