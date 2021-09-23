@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 ARG PLAYWRIGHT_VERSION=v1.14.1
 
 FROM mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal

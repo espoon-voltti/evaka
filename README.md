@@ -40,6 +40,16 @@ The applications consists of several sub-projects:
 - [`service-lib`](service-lib/) – A common library shared with `service` and
   `message-service` projects
 
+and a few other important directories:
+
+- [`bin`](bin/) – Helper shell scripts
+- [`docs`](docs/) – General eVaka documentation
+- [`evaka-bom`](evaka-bom/) – Shared BOM for eVaka Gradle projects, for
+  easier dependency updates and control
+- [`espoo-customizations`](espoo-customizations/) – A common directory with
+  placeholder files for anything specific to Espoo's eVaka implementation that
+  cannot be licensed alongside the core
+
 ## Contributing
 
 Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for further
@@ -117,7 +127,6 @@ always fail for the following files:
 
 - [Digital and population data services agency (DVV)](https://dvv.fi/henkiloasiakkaat)
   owned WSDL and related files (`message-service/**/wsdl/*`, `service/**/wsdl/*`)
-- All logos of the city of Espoo (`service/src/main/resources/static/espoo-logo*.png`)
 
 ### Automatically add licensing headers
 
