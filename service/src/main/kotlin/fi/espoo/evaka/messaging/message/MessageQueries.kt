@@ -498,7 +498,14 @@ SELECT
            'id', rec.recipient_id,
            'name', rec.account_name,
            'type', rec.account_type
-       ))) AS recipients
+       ))) AS recipients,
+    (SELECT coalesce(jsonb_agg(json_build_object(
+           'id', att.id,
+           'name', att.name,
+           'contentType', att.content_type
+        )), '[]'::jsonb) 
+        FROM attachment att WHERE att.message_content_id = msg.content_id
+        ) AS attachments
 FROM pageable_messages msg
 JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
