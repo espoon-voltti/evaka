@@ -2,26 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  Message,
+  MessageAccount,
+  MessageThread,
+  ThreadReply
+} from '../../generated/api-types/messaging'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
-import { MessageType } from 'lib-common/generated/enums'
-
-type AccountType = 'PERSONAL' | 'GROUP' | 'CITIZEN'
-
-export interface MessageAccount {
-  id: UUID
-  name: string
-  type: AccountType
-}
-
-export interface Message {
-  id: UUID
-  sender: MessageAccount
-  recipients: MessageAccount[]
-  sentAt: Date
-  readAt: Date | null
-  content: string
-}
 
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,
@@ -47,12 +34,6 @@ export const deserializeMessage = (
   readAt: message.readAt ? new Date(message.readAt) : null
 })
 
-export interface MessageThread {
-  id: UUID
-  type: MessageType
-  title: string
-  messages: Message[]
-}
 export const deserializeMessageThread = (
   json: JsonOf<MessageThread>,
   staffAnnotation?: string
@@ -61,14 +42,10 @@ export const deserializeMessageThread = (
   messages: json.messages.map((m) => deserializeMessage(m, staffAnnotation))
 })
 
-export interface ReplyResponse {
-  threadId: UUID
-  message: Message
-}
 export const deserializeReplyResponse = (
-  responseData: JsonOf<ReplyResponse>,
+  responseData: JsonOf<ThreadReply>,
   staffAnnotation?: string
-) => ({
+): ThreadReply => ({
   threadId: responseData.threadId,
   message: deserializeMessage(responseData.message, staffAnnotation)
 })

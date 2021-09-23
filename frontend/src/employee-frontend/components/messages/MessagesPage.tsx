@@ -7,6 +7,7 @@ import Container from 'lib-components/layout/Container'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
+import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { deleteDraft, postMessage } from './api'
@@ -16,7 +17,6 @@ import MessageList from './ThreadListContainer'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
 import ReceiverSelection from './ReceiverSelection'
-import { MessageBody } from './types'
 
 // TODO is fixed header height possible?
 // If not, replace with a stretching flex container with scrollable children
@@ -93,7 +93,7 @@ export default function MessagesPage() {
   }, [setSelectedDraft])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: MessageBody) => {
+    (accountId: UUID, messageBody: PostMessageBody) => {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {

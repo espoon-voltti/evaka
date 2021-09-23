@@ -14,9 +14,12 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
@@ -52,7 +55,7 @@ const ReplyToThreadButton = styled(InlineButton)`
   padding-left: 28px;
 `
 
-function Message({
+function SingleMessage({
   title,
   type,
   message
@@ -139,7 +142,7 @@ export default React.memo(function ThreadView({
   return (
     <ThreadContainer>
       {messages.map((message, idx) => (
-        <Message
+        <SingleMessage
           key={message.id}
           message={message}
           title={idx === 0 ? title : undefined}

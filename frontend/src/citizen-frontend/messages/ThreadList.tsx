@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageThread } from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -16,6 +15,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
 import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'

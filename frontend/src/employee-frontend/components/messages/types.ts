@@ -3,86 +3,34 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Attachment } from 'lib-common/api-types/attachment'
-import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import {
+  Group,
+  MessageReceiver,
+  NestedMessageAccount,
+  SentMessage,
+  UpsertableDraftContent
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from '../../types'
-import { MessageType } from 'lib-common/generated/enums'
 
-export interface Recipient {
-  personId: string
-  firstName: string
-  lastName: string
-  guardian: boolean
-  headOfChild: boolean
-  blocklisted: boolean
-}
-
-export type UnreadCountByAccount = {
-  accountId: UUID
-  unreadCount: number
-}
-
-export interface ReceiverChild {
-  childId: UUID
-  childFirstName: string
-  childLastName: string
-  childDateOfBirth: LocalDate
-  receiverPersons: {
-    accountId: UUID
-    receiverFirstName: string
-    receiverLastName: string
-  }[]
-}
-
-export interface ReceiverGroup {
-  groupId: UUID
-  groupName: string
-  receivers: ReceiverChild[]
-}
-
-export const deserializeReceiverChild = (
-  json: JsonOf<ReceiverChild>
-): ReceiverChild => ({
+export const deserializeReceiver = (
+  json: JsonOf<MessageReceiver>
+): MessageReceiver => ({
   ...json,
   childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })
 
-export interface NestedMessageAccount {
-  account: MessageAccount
-}
 export interface NestedGroupMessageAccount extends NestedMessageAccount {
-  daycareGroup: {
-    id: UUID
-    name: string
-    unitId: UUID
-    unitName: string
-  }
+  daycareGroup: Group
 }
 
-export function isNestedGroupMessageAccount(
+export const isNestedGroupMessageAccount = (
   nestedAccount: NestedMessageAccount
-): nestedAccount is NestedGroupMessageAccount {
-  return (nestedAccount as NestedGroupMessageAccount).account.type === 'GROUP'
-}
+): nestedAccount is NestedGroupMessageAccount =>
+  nestedAccount.account.type === 'GROUP' && nestedAccount.daycareGroup != null
 
-export interface MessageBody {
-  title: string
-  content: string
-  type: MessageType
-  recipientAccountIds: UUID[]
-  recipientNames: string[]
-  attachmentIds: UUID[]
-  draftId?: UUID
-}
-
-export interface UpsertableDraftContent {
-  title: string
-  content: string
-  type: MessageType
-  recipientIds: UUID[]
-  recipientNames: string[]
-}
+// TODO generate DraftContent type
 export interface DraftContent extends UpsertableDraftContent {
   id: UUID
   created: Date
@@ -96,15 +44,6 @@ export const deserializeDraftContent = ({
   created: new Date(created)
 })
 
-export interface SentMessage {
-  contentId: UUID
-  type: MessageType
-  threadTitle: string
-  content: string
-  recipients: MessageAccount[]
-  recipientNames: string[]
-  sentAt: Date
-}
 export const deserializeSentMessage = ({
   sentAt,
   ...rest

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
-import { getReceivers, sendMessage, SendMessageParams } from './api'
+import { getReceivers, sendMessage } from './api'
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import { Loading, Result } from 'lib-common/api'
-import { MessageAccount } from 'lib-common/api-types/messaging/message'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -88,7 +88,7 @@ export default React.memo(function MessagesPage() {
       {editorVisible && receivers.isSuccess && (
         <MessageEditor
           receiverOptions={receivers.value}
-          onSend={(message: SendMessageParams) =>
+          onSend={(message) =>
             sendMessage(message).then((result) => {
               if (result.isSuccess) {
                 refreshThreads()

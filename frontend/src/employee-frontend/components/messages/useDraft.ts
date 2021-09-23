@@ -6,10 +6,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { UpsertableDraftContent } from 'lib-common/generated/api-types/messaging'
 import * as api from './api'
 import { SaveDraftParams } from './api'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { UpsertableDraftContent } from './types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
@@ -22,15 +22,15 @@ const draftToSaveParams = ({ accountId, ...content }: Draft, id: string) => ({
   draftId: id
 })
 
-export function useDraft(initialId: UUID | undefined): {
-  draftId: string | undefined
+export function useDraft(initialId: UUID | null): {
+  draftId: string | null
   saveDraft: () => void
   wasModified: boolean
   state: 'clean' | 'dirty' | 'saving'
   setDraft: (draft: Draft) => void
 } {
   const [saveState, setSaveState] = useState<SaveState>('clean')
-  const [id, setId] = useState<UUID | undefined>(initialId)
+  const [id, setId] = useState<UUID | null>(initialId)
   const [draft, setDraft] = useState<Draft>()
   const [wasModified, setWasModified] = useState(false)
 

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Message, MessageThread } from 'lib-common/api-types/messaging/message'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
@@ -13,6 +12,10 @@ import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
 import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
@@ -56,7 +59,7 @@ const MessageContent = styled.div`
   white-space: pre-line;
 `
 
-function Message({
+function SingleMessage({
   title,
   type,
   message,
@@ -153,7 +156,7 @@ export function SingleThreadView({
       <Gap size="xs" />
       <ScrollContainer>
         {messages.map((message, idx) => (
-          <Message
+          <SingleMessage
             key={message.id}
             message={message}
             title={idx === 0 ? title : undefined}

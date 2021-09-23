@@ -2,12 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from '../localization/state'
 import { Loading, Paged, Result, Success } from 'lib-common/api'
-import {
-  MessageThread,
-  ReplyResponse
-} from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
@@ -17,6 +12,11 @@ import React, {
   useMemo,
   useState
 } from 'react'
+import {
+  MessageThread,
+  ThreadReply
+} from 'lib-common/generated/api-types/messaging'
+import { useTranslation } from '../localization'
 import {
   getMessageAccount,
   getReceivedMessages,
@@ -152,7 +152,7 @@ export const MessageContextProvider = React.memo(
     }, [accountId])
 
     const [replyState, setReplyState] = useState<Result<void>>()
-    const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {
+    const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
       setReplyState(res.map(() => undefined))
       if (res.isSuccess) {
         const {

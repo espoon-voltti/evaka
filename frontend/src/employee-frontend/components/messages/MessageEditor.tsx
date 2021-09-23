@@ -23,6 +23,11 @@ import { Attachment } from 'lib-common/api-types/attachment'
 import { Failure } from 'lib-common/api'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  NestedMessageAccount,
+  PostMessageBody,
+  UpsertableDraftContent
+} from 'lib-common/generated/api-types/messaging'
+import {
   deleteAttachment,
   getAttachmentBlob,
   saveMessageAttachment
@@ -39,13 +44,7 @@ import {
   SelectorNode,
   updateSelector
 } from './SelectorNode'
-import {
-  DraftContent,
-  NestedMessageAccount,
-  UpsertableDraftContent,
-  isNestedGroupMessageAccount,
-  MessageBody
-} from './types'
+import { DraftContent, isNestedGroupMessageAccount } from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
@@ -92,7 +91,7 @@ interface Props {
   nestedAccounts: NestedMessageAccount[]
   selectedUnit: SelectOption
   availableReceivers: SelectorNode
-  onSend: (accountId: UUID, msg: MessageBody) => void
+  onSend: (accountId: UUID, msg: PostMessageBody) => void
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId: UUID) => void
   draftContent?: DraftContent
@@ -136,7 +135,7 @@ export default React.memo(function MessageEditor({
     saveDraft,
     state: draftState,
     wasModified: draftWasModified
-  } = useDraft(draftContent?.id)
+  } = useDraft(draftContent?.id ?? null)
 
   useEffect(
     function syncDraftContentOnMessageChanges() {
