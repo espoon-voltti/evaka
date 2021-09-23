@@ -111,7 +111,7 @@ export default React.memo(function ThreadListContainer({
             recipients: message.recipients,
             readAt: new Date(),
             content: message.content,
-            attachments: message.attachments
+            attachments: [] // todo
           }
         ]
       }))

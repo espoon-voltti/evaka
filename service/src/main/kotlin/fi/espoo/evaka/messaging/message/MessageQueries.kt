@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
-import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -156,7 +156,7 @@ data class ReceivedMessageResultItem(
     val recipientName: String,
     val recipientAccountType: AccountType,
     @Json
-    val attachments: List<Attachment>
+    val attachments: List<MessageAttachment>
 )
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
@@ -230,10 +230,7 @@ SELECT
         SELECT coalesce(jsonb_agg(json_build_object(
            'id', att.id,
            'name', att.name,
-           'contentType', att.content_type,
-           'attachedTo', json_build_object(
-                'messageContentId', att.message_content_id
-           )
+           'contentType', att.content_type
         )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
         FROM attachment att WHERE att.message_content_id = msg.content_id
     ) AS attachments
@@ -291,7 +288,7 @@ data class MessageResultItem(
     val sentAt: HelsinkiDateTime,
     val content: String,
     @Json
-    val attachments: List<Attachment>
+    val attachments: List<MessageAttachment>
 )
 
 fun Database.Read.getMessage(id: MessageId): Message {
@@ -310,10 +307,7 @@ fun Database.Read.getMessage(id: MessageId): Message {
                 SELECT coalesce(jsonb_agg(json_build_object(
                    'id', att.id,
                    'name', att.name,
-                   'contentType', att.content_type,
-                   'attachedTo', json_build_object(
-                        'messageContentId', att.message_content_id
-                   )
+                   'contentType', att.content_type
                 )) FILTER ( WHERE att.id IS NOT NULL ), '[]') 
                 FROM attachment att WHERE att.message_content_id = m.content_id
             ) AS attachments

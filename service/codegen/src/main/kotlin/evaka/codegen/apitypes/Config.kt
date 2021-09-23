@@ -36,8 +36,7 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "java.time.LocalDate" to TSMapping("LocalDate", "import LocalDate from '../../local-date'"),
     "fi.espoo.evaka.shared.domain.FiniteDateRange" to TSMapping("FiniteDateRange", "import FiniteDateRange from '../../finite-date-range'"),
     "fi.espoo.evaka.shared.domain.DateRange" to TSMapping("DateRange", "import DateRange from '../../date-range'"),
-    "fi.espoo.evaka.dailyservicetimes.DailyServiceTimes" to TSMapping("DailyServiceTimes", "import { DailyServiceTimes } from '../../api-types/child/common'"),
-    "fi.espoo.evaka.attachment.Attachment" to TSMapping("Attachment", "import { Attachment } from '../../api-types/attachment'")
+    "fi.espoo.evaka.dailyservicetimes.DailyServiceTimes" to TSMapping("DailyServiceTimes", "import { DailyServiceTimes } from '../../api-types/child/common'")
 )
 
 private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->
