@@ -270,6 +270,8 @@ test('User can see group daily note for a backup care child in the group', async
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childDailyNoteLink2)
 
+  await t.click(mobileGroupsPage.groupNoteTab)
+
   await t
     .expect(childPage.dailyNoteGroupNoteInput.value)
     .eql(daycareDailyNote.note)

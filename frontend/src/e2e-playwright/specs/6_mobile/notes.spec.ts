@@ -125,4 +125,27 @@ describe('Child and group notes', () => {
     await childPage.openNotes()
     await notePage.assertNote(daycareDailyNote)
   })
+
+  test('Child group note can be created', async () => {
+    const groupNote: DaycareDailyNote = {
+      id: uuidv4(),
+      groupId: daycareGroup.data.id,
+      date: LocalDate.today(),
+      note: 'Testiryhmäviesti',
+      feedingNote: 'MEDIUM',
+      sleepingMinutes: '30',
+      sleepingNote: 'NONE',
+      reminders: [],
+      reminderNote: '',
+      modifiedBy: 'e2e-test'
+    }
+
+    await notePage.selectGroupTab()
+    await notePage.fillGroupNote(groupNote)
+    await notePage.saveNote()
+    await childPage.assertNotesExist()
+    await childPage.openNotes()
+    await notePage.selectGroupTab()
+    await notePage.assertGroupNote(groupNote)
+  })
 })

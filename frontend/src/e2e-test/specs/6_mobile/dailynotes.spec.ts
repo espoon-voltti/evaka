@@ -179,28 +179,3 @@ test('User can delete a daily note for a child', async (t) => {
     )
     .notOk()
 })
-
-test('User can see group daily note', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
-    groupId: daycareGroup.data.id,
-    childId: null,
-    date: LocalDate.today(),
-    note: 'Testi ryhmäviesti',
-    feedingNote: 'MEDIUM',
-    sleepingMinutes: '213',
-    sleepingNote: 'NONE',
-    reminders: [],
-    reminderNote: '',
-    modifiedBy: 'e2e-test'
-  }
-
-  await postDaycareDailyNote(daycareDailyNote)
-
-  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
-  await t.click(mobileGroupsPage.childDailyNoteLink2)
-
-  await t
-    .expect(childPage.dailyNoteGroupNoteInput.value)
-    .eql(daycareDailyNote.note)
-})

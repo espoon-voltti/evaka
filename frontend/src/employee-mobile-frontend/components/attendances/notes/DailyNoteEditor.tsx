@@ -254,10 +254,15 @@ export default React.memo(function DailyNoteEditor() {
   interface NoteTypeTabProps {
     type: NoteType
     children?: React.ReactNode
+    dataQa: string
   }
 
-  const NoteTypeTab = ({ type, children }: NoteTypeTabProps) => (
-    <Tab selected={type == selectedTab} onClick={() => setSelectedTab(type)}>
+  const NoteTypeTab = ({ type, children, dataQa }: NoteTypeTabProps) => (
+    <Tab
+      selected={type == selectedTab}
+      onClick={() => setSelectedTab(type)}
+      data-qa={dataQa}
+    >
       {children}
     </Tab>
   )
@@ -306,7 +311,7 @@ export default React.memo(function DailyNoteEditor() {
                 paddingHorizontal={'0px'}
                 paddingVertical={'0px'}
               >
-                <NoteTypeTab type={'NOTE'}>
+                <NoteTypeTab type={'NOTE'} dataQa={'tab-note'}>
                   <TabTitle>{i18n.common.child}</TabTitle>
                   {dailyNote.id && (
                     <RoundIcon
@@ -316,7 +321,7 @@ export default React.memo(function DailyNoteEditor() {
                     />
                   )}
                 </NoteTypeTab>
-                <NoteTypeTab type={'GROUP_NOTE'}>
+                <NoteTypeTab type={'GROUP_NOTE'} dataQa={'tab-group-note'}>
                   <TabTitle>{i18n.common.group}</TabTitle>
                   {groupNote.id && (
                     <RoundIcon
@@ -586,7 +591,6 @@ export default React.memo(function DailyNoteEditor() {
                       }
                       text={i18n.common.save}
                       data-qa="create-daily-note-btn"
-                      disabled={dailyNote.sleepingMinutes === undefined}
                     />
                   </FixedSpaceRow>
                 </FixedSpaceColumn>

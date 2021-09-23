@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElement } from 'e2e-playwright/utils/element'
 import {
   DaycareDailyNote,
   DaycareDailyNoteLevel,
@@ -16,10 +15,11 @@ export default class MobileNotePage {
   constructor(private readonly page: Page) {}
 
   #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
-  //#backBtn = this.page.locator( '[data-qa="go-back"]')
+  #groupTab = this.page.locator('[data-qa="tab-group-note"]')
 
   #note = {
     dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
+    groupNote: this.page.locator('[data-qa="daily-note-group-note-input"]'),
     sleepingTimeHours: this.page.locator(
       '[data-qa="sleeping-time-hours-input"]'
     ),
@@ -32,18 +32,15 @@ export default class MobileNotePage {
     sleepingNote: (dailyNoteLevel: DaycareDailyNoteLevel) =>
       this.page.locator(`[data-qa="sleeping-note-${dailyNoteLevel}"]`),
     reminders: (reminder: DaycareDailyNoteReminder) =>
-      this.page.locator(`[data-qa="reminders-${reminder}"]`),
+      this.page.locator(`[data-qa="reminders-${reminder}"]`)
+  }
 
-    backupPickupName: (n: number) =>
-      new RawElement(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-name"]`
-      ),
-    backupPickupPhone: (n: number) =>
-      new RawElement(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-phone"]`
-      )
+  async selectGroupTab() {
+    await this.#groupTab.click()
+  }
+
+  async fillGroupNote(groupNote: DaycareDailyNote) {
+    if (groupNote.note) await this.#note.groupNote.type(groupNote.note)
   }
 
   async fillNote(dailyNote: DaycareDailyNote) {
@@ -69,6 +66,12 @@ export default class MobileNotePage {
 
   async saveNote() {
     await this.#createNoteButton.click()
+  }
+  async assertGroupNote(expected: DaycareDailyNote) {
+    await waitUntilEqual(
+      () => this.#note.groupNote.inputValue(),
+      expected.note || ''
+    )
   }
 
   async assertNote(expected: DaycareDailyNote) {
