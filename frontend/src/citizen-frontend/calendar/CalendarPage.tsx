@@ -107,16 +107,14 @@ export default React.memo(function CalendarPage() {
                 </MobileOnly>
                 <DesktopOnly>
                   <Gap size="s" />
-                  <ContentArea opaque>
-                    <CalendarGridView
-                      weeklyData={weeklyData}
-                      onCreateReservationClicked={() =>
-                        setOpenModal('reservations')
-                      }
-                      onCreateAbsencesClicked={() => setOpenModal('absences')}
-                      selectDate={selectDate}
-                    />
-                  </ContentArea>
+                  <CalendarGridView
+                    weeklyData={weeklyData}
+                    onCreateReservationClicked={() =>
+                      setOpenModal('reservations')
+                    }
+                    onCreateAbsencesClicked={() => setOpenModal('absences')}
+                    selectDate={selectDate}
+                  />
                 </DesktopOnly>
                 {openModal === 'pickAction' && (
                   <ActionPickerModal
@@ -158,6 +156,7 @@ const MobileOnly = styled.div`
 `
 
 const DesktopOnly = styled.div`
+  position: relative;
   @media (max-width: ${desktopMin}) {
     display: none;
   }

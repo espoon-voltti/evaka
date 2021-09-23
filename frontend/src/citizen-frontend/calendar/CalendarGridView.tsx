@@ -10,6 +10,7 @@ import colors from 'lib-customizations/common'
 import { WeekProps } from './WeekElem'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { ContentArea } from 'lib-components/layout/Container'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import { Holiday, NoReservation } from './calendar-elements'
@@ -31,32 +32,34 @@ export default React.memo(function CalendarGridView({
 
   return (
     <>
-      <PageHeaderRow>
-        <H1 noMargin>{i18n.calendar.title}</H1>
-        <div>
-          <InlineButton
-            onClick={onCreateAbsencesClicked}
-            text={i18n.calendar.newAbsence}
-            icon={faUserMinus}
-            data-qa="open-absences-modal"
-          />
-          <Gap size="L" horizontal />
-          <InlineButton
-            onClick={onCreateReservationClicked}
-            text={i18n.calendar.newReservationBtn}
-            icon={faCalendarPlus}
-            data-qa="open-reservations-modal"
-          />
-        </div>
-      </PageHeaderRow>
-      <CalendarHeader>
-        <HeadingCell>{i18n.common.datetime.weekShort}</HeadingCell>
-        {[0, 1, 2, 3, 4].map((d) => (
-          <HeadingCell key={d}>
-            {i18n.common.datetime.weekdaysShort[d]}
-          </HeadingCell>
-        ))}
-      </CalendarHeader>
+      <StickyHeader>
+        <PageHeaderRow>
+          <H1 noMargin>{i18n.calendar.title}</H1>
+          <div>
+            <InlineButton
+              onClick={onCreateAbsencesClicked}
+              text={i18n.calendar.newAbsence}
+              icon={faUserMinus}
+              data-qa="open-absences-modal"
+            />
+            <Gap size="L" horizontal />
+            <InlineButton
+              onClick={onCreateReservationClicked}
+              text={i18n.calendar.newReservationBtn}
+              icon={faCalendarPlus}
+              data-qa="open-reservations-modal"
+            />
+          </div>
+        </PageHeaderRow>
+        <CalendarHeader>
+          <HeadingCell>{i18n.common.datetime.weekShort}</HeadingCell>
+          {[0, 1, 2, 3, 4].map((d) => (
+            <HeadingCell key={d}>
+              {i18n.common.datetime.weekdaysShort[d]}
+            </HeadingCell>
+          ))}
+        </CalendarHeader>
+      </StickyHeader>
       <Grid>
         {weeklyData.map((w) => (
           <Fragment key={w.weekNumber}>
@@ -94,6 +97,13 @@ export default React.memo(function CalendarGridView({
   )
 })
 
+const StickyHeader = styled(ContentArea).attrs({ opaque: true })`
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0px 4px 8px 2px #0000000a;
+`
+
 const PageHeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -106,7 +116,7 @@ const CalendarHeader = styled.div`
   grid-template-columns: 40px repeat(5, 1fr);
 `
 
-const Grid = styled.div`
+const Grid = styled(ContentArea).attrs({ opaque: true })`
   display: grid;
   grid-template-columns: 40px repeat(5, 1fr);
 `
