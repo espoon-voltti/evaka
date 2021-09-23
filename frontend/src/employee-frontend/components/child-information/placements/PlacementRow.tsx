@@ -278,7 +278,9 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             <DataValue data-qa="placement-details-unit">
               {currentGroupPlacement?.groupId &&
               currentGroupPlacement?.groupName ? (
-                <Link to={`/absences/${currentGroupPlacement.groupId}`}>
+                <Link
+                  to={`/units/${placement.daycare.id}/calendar?group=${currentGroupPlacement.groupId}`}
+                >
                   {currentGroupPlacement.groupName}
                 </Link>
               ) : (
