@@ -8,6 +8,7 @@ import {
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging/message'
 import {
+  DraftContent,
   MessageReceiversResponse,
   MessageThread,
   NestedMessageAccount,
@@ -24,8 +25,7 @@ import { UUID } from '../../types'
 import {
   deserializeDraftContent,
   deserializeReceiver,
-  deserializeSentMessage,
-  DraftContent
+  deserializeSentMessage
 } from './types'
 
 export async function getReceivers(

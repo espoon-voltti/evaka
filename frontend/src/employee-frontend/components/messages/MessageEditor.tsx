@@ -23,6 +23,7 @@ import { Attachment } from 'lib-common/api-types/attachment'
 import { Failure } from 'lib-common/api'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  DraftContent,
   NestedMessageAccount,
   PostMessageBody,
   UpsertableDraftContent
@@ -44,7 +45,7 @@ import {
   SelectorNode,
   updateSelector
 } from './SelectorNode'
-import { DraftContent, isNestedGroupMessageAccount } from './types'
+import { isNestedGroupMessageAccount } from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {

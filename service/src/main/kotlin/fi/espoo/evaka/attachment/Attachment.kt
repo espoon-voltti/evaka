@@ -27,6 +27,12 @@ data class Attachment(
     val attachedTo: AttachmentParent
 )
 
+data class MessageAttachment(
+    val id: AttachmentId,
+    val name: String,
+    val contentType: String,
+)
+
 enum class AttachmentType {
     URGENCY,
     EXTENDED_CARE

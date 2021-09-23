@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Attachment } from 'lib-common/api-types/attachment'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import {
+  DraftContent,
   Group,
   MessageReceiver,
   NestedMessageAccount,
-  SentMessage,
-  UpsertableDraftContent
+  SentMessage
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from '../../types'
 
 export const deserializeReceiver = (
   json: JsonOf<MessageReceiver>
@@ -30,12 +28,6 @@ export const isNestedGroupMessageAccount = (
 ): nestedAccount is NestedGroupMessageAccount =>
   nestedAccount.account.type === 'GROUP' && nestedAccount.daycareGroup != null
 
-// TODO generate DraftContent type
-export interface DraftContent extends UpsertableDraftContent {
-  id: UUID
-  created: Date
-  attachments: Attachment[]
-}
 export const deserializeDraftContent = ({
   created,
   ...rest

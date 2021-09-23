@@ -1,12 +1,9 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  DraftContent,
   Message,
   MessageThread,
   NestedMessageAccount,
@@ -30,7 +27,7 @@ import React, {
 import { UUID } from '../../types'
 import {
   getMessageDrafts,
-  getMessagingAccounts as getNestedMessagingAccounts,
+  getMessagingAccounts,
   getReceivedMessages,
   getSentMessages,
   getUnreadCounts,
@@ -38,7 +35,6 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { DraftContent } from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
@@ -127,7 +123,7 @@ export const MessageContextProvider = React.memo(
     >(Loading.of())
 
     const getNestedAccounts = useRestApi(
-      getNestedMessagingAccounts,
+      getMessagingAccounts,
       setNestedMessagingAccounts
     )
     const loadNestedAccounts = useDebouncedCallback(getNestedAccounts, 100)

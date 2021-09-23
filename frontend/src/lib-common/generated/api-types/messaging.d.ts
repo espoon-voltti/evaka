@@ -6,6 +6,7 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { MessageAttachment } from './attachment'
 import { UUID } from '../../types'
 
 /**
@@ -58,6 +59,20 @@ export type DaycareDailyNoteReminder =
   | 'DIAPERS'
   | 'CLOTHES'
   | 'LAUNDRY'
+
+/**
+* Generated from fi.espoo.evaka.messaging.message.DraftContent
+*/
+export interface DraftContent {
+  attachments: MessageAttachment[]
+  content: string
+  created: Date
+  id: UUID
+  recipientIds: UUID[]
+  recipientNames: string[]
+  title: string
+  type: MessageType
+}
 
 /**
 * Generated from fi.espoo.evaka.messaging.message.ChildRecipientsController.EditRecipientRequest

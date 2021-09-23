@@ -4,14 +4,12 @@
 
 package fi.espoo.evaka.messaging.message
 
-import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
-@ExcludeCodeGen
 data class DraftContent(
     val id: MessageDraftId,
     val created: HelsinkiDateTime,
@@ -21,7 +19,7 @@ data class DraftContent(
     val recipientIds: Set<MessageAccountId>,
     val recipientNames: List<String>,
     @Json
-    val attachments: List<Attachment>,
+    val attachments: List<MessageAttachment>,
 )
 
 data class UpsertableDraftContent(
