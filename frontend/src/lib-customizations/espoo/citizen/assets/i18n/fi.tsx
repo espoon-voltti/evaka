@@ -202,7 +202,7 @@ export const INCOME_I18N = {
       'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
   },
   selfEmployed: {
-    info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
+    info: 'Jos yritystoiminta on jatkunut yli 3 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava. Jos yritystoiminta on kestänyt alle 3 kuukautta etkä toimita liitteitä nyt, ne on toimitettava viimeistään 3 kuukauden kuluttua täyttämällä tämä tuloselvityslomake uudestaan.',
     attachments:
       'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
     estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
