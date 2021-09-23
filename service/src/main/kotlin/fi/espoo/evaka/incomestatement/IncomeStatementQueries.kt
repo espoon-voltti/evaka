@@ -6,12 +6,15 @@ package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
@@ -401,11 +404,15 @@ data class IncomeStatementAwaitingHandler(
     val primaryCareArea: String?
 )
 
-fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAwaitingHandler> =
+fun Database.Read.fetchIncomeStatementsAwaitingHandler(
+    areas: List<String>,
+    page: Int,
+    pageSize: Int
+): Paged<IncomeStatementAwaitingHandler> =
     createQuery(
         """
 WITH areas AS (
-    SELECT area.name, puv.head_of_child
+    SELECT area.name, area.short_name, puv.head_of_child
     FROM care_area area
         JOIN daycare daycare ON area.id = daycare.care_area_id
         JOIN primary_units_view puv ON puv.unit_id = daycare.id
@@ -417,17 +424,22 @@ SELECT i.id,
        i.start_date,
        p.id AS personId,
        p.first_name || ' ' || p.last_name AS personName,
-       areas.name AS primaryCareArea
+       a.name AS primaryCareArea,
+       COUNT(*) OVER () AS count
 FROM income_statement i
     JOIN person p ON i.person_id = p.id
-    LEFT JOIN areas ON areas.head_of_child = p.id
+    LEFT JOIN areas a ON a.head_of_child = p.id
 WHERE handler_id IS NULL
-ORDER BY start_date DESC
-LIMIT 50
+AND (cardinality(:areas) = 0 OR a.short_name = ANY(:areas))
+ORDER BY start_date, created
+LIMIT :pageSize OFFSET :offset
         """.trimIndent()
     )
-        .mapTo<IncomeStatementAwaitingHandler>()
-        .list()
+        .bind("areas", areas.toTypedArray())
+        .bind("pageSize", pageSize)
+        .bind("offset", (page - 1) * pageSize)
+        .map(withCountMapper<IncomeStatementAwaitingHandler>())
+        .let(mapToPaged(pageSize))
 
 fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")
