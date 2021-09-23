@@ -2293,6 +2293,7 @@ export const fi = {
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
         'messaging_blocklist.blocked_recipient': 'Estettynä viestin saajana',
         'messaging_blocklist.child_id': 'Estettyjä viestin saajia',
+        'pedagogical_document.child_id': 'Pedagogisia dokumentteja',
         'placement.child_id': 'Sijoituksia',
         'varda_child.person_id': 'Varda lapsi',
         'varda_service_need.evaka_child_id': 'Varda palvelun -tarpeita',
