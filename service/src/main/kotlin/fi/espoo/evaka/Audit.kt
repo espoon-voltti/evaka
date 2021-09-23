@@ -40,6 +40,7 @@ enum class Audit(
     AttendanceReservationCitizenCreate("evaka.attendance-reservation.citizen.create"),
     AttendanceReservationCitizenRead("evaka.attendance-reservation.citizen.read"),
     AttendanceReservationEmployeeCreate("evaka.attendance-reservation.employee.create"),
+    AttachmentsUploadForPedagogicalDocument("evaka.attachments.upload-for-pedagogical-document"),
     BackupCareDelete("evaka.backup-care.delete"),
     BackupCareUpdate("evaka.backup-care.update"),
     ChildAdditionalInformationRead("evaka.child.additional-information.read"),
