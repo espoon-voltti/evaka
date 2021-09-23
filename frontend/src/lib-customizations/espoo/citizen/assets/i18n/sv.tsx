@@ -62,6 +62,20 @@ const sv: Translations = {
         'Fredag',
         'Lördag',
         'Söndag'
+      ],
+      months: [
+        'Januari',
+        'Februari',
+        'Mars',
+        'April',
+        'Maj',
+        'Juni',
+        'Juli',
+        'Augusti',
+        'September',
+        'Oktober',
+        'November',
+        'December'
       ]
     }
   },

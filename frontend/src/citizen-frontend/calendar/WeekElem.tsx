@@ -13,18 +13,11 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Holiday, NoReservation } from './calendar-elements'
+import { DailyReservationData } from './api'
+import { Reservations } from './calendar-elements'
+import { WeeklyData } from './CalendarListView'
 
-export interface WeekProps {
-  weekNumber: number
-  dailyReservations: Array<{
-    date: LocalDate
-    isHoliday: boolean
-    reservations: string[]
-  }>
-}
-
-interface Props extends WeekProps {
+interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
 }
 
@@ -65,16 +58,12 @@ const WeekDiv = styled.div`
 `
 
 interface DayProps {
-  dailyReservations: {
-    date: LocalDate
-    isHoliday: boolean
-    reservations: string[]
-  }
+  dailyReservations: DailyReservationData
   selectDate: (date: LocalDate) => void
 }
 
 const DayElem = React.memo(function DayElem({
-  dailyReservations: { date, isHoliday, reservations },
+  dailyReservations,
   selectDate
 }: DayProps) {
   const i18n = useTranslation()
@@ -82,28 +71,24 @@ const DayElem = React.memo(function DayElem({
   return (
     <DayDiv
       alignItems="center"
-      today={date.isToday()}
-      onClick={() => selectDate(date)}
-      data-qa={`mobile-calendar-day-${date.formatIso()}`}
+      today={dailyReservations.date.isToday()}
+      onClick={() => selectDate(dailyReservations.date)}
+      data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
-      <DayColumn spacing="xxs" holiday={isHoliday}>
+      <DayColumn spacing="xxs" holiday={dailyReservations.isHoliday}>
         <div>
-          {i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]}
+          {
+            i18n.common.datetime.weekdaysShort[
+              dailyReservations.date.getIsoDayOfWeek() - 1
+            ]
+          }
         </div>
-        <div>{date.format('dd.MM.')}</div>
+        <div>{dailyReservations.date.format('dd.MM.')}</div>
       </DayColumn>
       <div data-qa="reservations">
-        {reservations.length === 0 ? (
-          isHoliday ? (
-            <Holiday />
-          ) : (
-            <NoReservation />
-          )
-        ) : (
-          reservations.join(', ')
-        )}
+        <Reservations data={dailyReservations} />
       </div>
-      {date.isBefore(LocalDate.today()) && <HistoryOverlay />}
+      {dailyReservations.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
     </DayDiv>
   )
 })
