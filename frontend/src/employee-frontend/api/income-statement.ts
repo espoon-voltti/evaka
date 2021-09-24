@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
   deserializeIncomeStatementAwaitingHandler,
@@ -23,14 +23,21 @@ export async function getIncomeStatements(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getIncomeStatementsAwaitingHandler(): Promise<
-  Result<IncomeStatementAwaitingHandler[]>
-> {
+export async function getIncomeStatementsAwaitingHandler(
+  areas: string[] = [],
+  page = 1,
+  pageSize = 50
+): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
   return client
-    .get<JsonOf<IncomeStatementAwaitingHandler[]>>(
-      '/income-statements/awaiting-handler'
+    .get<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
+      '/income-statements/awaiting-handler',
+      { params: { areas: areas.join(','), page, pageSize } }
     )
-    .then((res) => res.data.map(deserializeIncomeStatementAwaitingHandler))
+    .then((res) => res.data)
+    .then((body) => ({
+      ...body,
+      data: body.data.map(deserializeIncomeStatementAwaitingHandler)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

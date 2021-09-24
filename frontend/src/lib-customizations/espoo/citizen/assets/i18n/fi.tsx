@@ -40,7 +40,8 @@ export const INCOME_I18N = {
       <P>
         Tuloselvitys liitteineen palautetaan kahden viikon kuluessa
         varhaiskasvatuksen aloittamisesta. Maksu voidaan määrätä puutteellisilla
-        tulotiedoilla korkeimpaan maksuun.
+        tulotiedoilla korkeimpaan maksuun. Puutteellisia tulotietoja ei korjata
+        takautuvasti oikaisuvaatimusajan jälkeen.
       </P>
       <P>
         Asiakasmaksu peritään päätöksen mukaisesta varhaiskasvatuksen
@@ -48,8 +49,8 @@ export const INCOME_I18N = {
       </P>
       <P>
         Asiakkaan on viipymättä ilmoitettava tulojen ja perhekoon muutoksista
-        asiakasmaksuyksikköön. Viranomainen on tarvittaessa oikeutettu perimään
-        varhaiskasvatusmaksuja myös takautuvasti.
+        varhaiskasvatuksen asiakasmaksuyksikköön. Viranomainen on tarvittaessa
+        oikeutettu perimään varhaiskasvatusmaksuja myös takautuvasti.
       </P>
       <P>
         <strong>Huomioitavaa:</strong>
@@ -63,7 +64,8 @@ export const INCOME_I18N = {
         </li>
         <li>
           Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava
-          tuloselvitys.
+          tuloselvitys tunnistautumalla eVakaan omilla henkilötiedoillaan ja
+          täyttämällä tämä lomake.
         </li>
       </UnorderedList>
       <P>
@@ -110,15 +112,27 @@ export const INCOME_I18N = {
   },
   grossIncome: {
     title: 'Bruttotulotietojen täyttäminen',
-    description:
-      'Valitse alta haluatko toimittaat tulotietosi liitteinä, vai katsooko viranomainen tietosi suoraan tulorekisteristä sekä Kelasta tarvittaessa.',
+    description: (
+      <>
+        <P noMargin>
+          Valitse alta haluatko toimittaa tulotietosi liitteinä, vai katsooko
+          viranomainen tietosi suoraan tulorekisteristä sekä Kelasta
+          tarvittaessa.
+        </P>
+        <P>
+          Jos olet aloittanut tai aloittamassa uudessa työssä, lähetä aina
+          liitteenä työsopimus, josta ilmenee palkka, koska tällöin tulosi
+          näkyvät tulorekisterissä viiveellä.
+        </P>
+      </>
+    ),
     incomeSource: 'Tulotietojen toimitus',
     provideAttachments:
       'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
     estimate: 'Arvio bruttotuloistani',
     otherIncome: 'Muut tulot',
-    otherIncomeInfo:
-      'Jos sinulla on muita tuloja on tiedot niistä toimitettavana liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+    otherIncomeDescription:
+      'Jos sinulla on muita tuloja on niistä toimitettavana tositteet liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
     choosePlaceholder: 'Valitse',
     otherIncomeTypes: {
       PENSION: 'Eläke',
@@ -146,7 +160,10 @@ export const INCOME_I18N = {
       APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
       ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
       OTHER_INCOME: 'Muut tulot'
-    }
+    },
+    otherIncomeInfoLabel: 'Arviot muista tuloista',
+    otherIncomeInfoDescription:
+      'Kirjoita tähän arviot muiden tulojen määristä €/kk, esim. "Vuokratulot 150, lasten kotihoidontuki 300"'
   },
   entrepreneurIncome: {
     title: 'Yrittäjän tulotietojen täyttäminen',
@@ -167,9 +184,9 @@ export const INCOME_I18N = {
     spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä?',
     yes: 'Kyllä',
     no: 'Ei',
-    startupGrantLabel: 'Onko yritys saanut starttirahaa?',
+    startupGrantLabel: 'Saako yrityksesi starttirahaa?',
     startupGrant:
-      'Yritykseni on saanut starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
+      'Yritykseni saa starttirahaa. Toimitan starttirahapäätöksen liitteenä.',
     checkupLabel: 'Tietojen tarkastus',
     checkupConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
@@ -185,7 +202,7 @@ export const INCOME_I18N = {
       'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
   },
   selfEmployed: {
-    info: 'Jos yritystoiminta on jatkunut yli 6 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava.',
+    info: 'Jos yritystoiminta on jatkunut yli 3 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava. Jos yritystoiminta on kestänyt alle 3 kuukautta etkä toimita liitteitä nyt, ne on toimitettava viimeistään 3 kuukauden kuluttua täyttämällä tämä tuloselvityslomake uudestaan.',
     attachments:
       'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
     estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
@@ -195,14 +212,17 @@ export const INCOME_I18N = {
   limitedCompany: {
     info: (
       <>
-        <strong>Tositteet osinkotuloista tulee toimittaa liitteenä. </strong>
+        <strong>
+          Kirjanpitäjän selvitys luontoiseduista ja osingoista tulee toimittaa
+          liitteenä.
+        </strong>{' '}
         Valitse alta sopiva tapa muiden tietojen toimittamiseen.
       </>
     ),
     incomesRegister:
-      'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      'Tuloni voi tarkastaa tulorekisteristä sekä tarvittaessa Kelasta.',
     attachments:
-      'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.'
+      'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa Kelasta.'
   },
   accounting: {
     title: 'Kirjanpitäjän yhteystiedot',
@@ -231,7 +251,7 @@ export const INCOME_I18N = {
   attachments: {
     title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
     description:
-      'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei yleensä tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+      'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
     required: {
       title: 'Tarvittavat liitteet'
     },
@@ -243,11 +263,11 @@ export const INCOME_I18N = {
       HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
       FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
       ALIMONY: 'Elatussopimus tai päätös elatustuesta',
-      UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäiväraha',
-      LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuki',
+      UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäivärahasta',
+      LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuesta',
       ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
       JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
-      REWARD_OR_BONUS: 'Uusi palkkatodistus tai palkkakuitti bonuksella',
+      REWARD_OR_BONUS: 'Palkkatosite bonuksesta tai/ja palkkiosta',
       RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
       BASIC_INCOME: 'Päätös perustulosta',
       FOREST_INCOME: 'Tosite metsätulosta',
@@ -261,7 +281,7 @@ export const INCOME_I18N = {
       OTHER_INCOME: 'Liitteet muista tuloista',
       ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
       INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
-      RENTAL_INCOME: 'Tositteet vuokratuloista',
+      RENTAL_INCOME: 'Tositteet vuokratuloista ja vastikkeesta',
       PAYSLIP: 'Viimeisin palkkakuitti',
       STARTUP_GRANT: 'Starttirahapäätös',
       ACCOUNTANT_REPORT: 'Kirjanpitäjän selvitys palkasta ja luontoiseduista',
@@ -286,7 +306,7 @@ export const INCOME_I18N = {
     incomeStatementForm: 'Tuloselvityslomake',
     startDate: 'Voimassa alkaen',
     endDate: 'Voimassa asti',
-    handler: 'Käsittelijä',
+    handled: 'Käsitelty',
     openIncomeStatement: 'Avaa lomake',
     deleteConfirm: 'Haluatko poistaa tuloselvityksen?',
     deleteDescription:
@@ -305,6 +325,7 @@ export const INCOME_I18N = {
       'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
     grossEstimatedIncome: 'Arvio bruttotuloista',
     otherIncome: 'Muut tulot',
+    otherIncomeInfo: 'Arviot muista tuloista',
 
     entrepreneurTitle: 'Yrittäjän tulotiedot',
     fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
@@ -313,7 +334,9 @@ export const INCOME_I18N = {
     startOfEntrepreneurship: 'Yrittäjyys alkanut',
     spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
     startupGrant: 'Starttiraha',
-    kelaInspectionConsent: 'Tiedot saa tarkastaa Kelasta',
+    checkupConsentLabel: 'Tietojen tarkastus',
+    checkupConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
     companyInfoTitle: 'Yrityksen tiedot',
     companyType: 'Toimintamuoto',
     selfEmployed: 'Toiminimi',
@@ -322,7 +345,7 @@ export const INCOME_I18N = {
     selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
     limitedCompany: 'Osakeyhtiö',
     limitedCompanyIncomesRegister:
-      'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      'Tuloni voi tarkastaa suoraan tulorekisteristä sekä Kelasta tarvittaessa.',
     limitedCompanyAttachments:
       'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
     partnership: 'Avoin yhtiö tai kommandiittiyhtiö',

@@ -1284,6 +1284,7 @@ export const fi = {
       ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
       OTHER_INCOME: 'Muut tulot'
     },
+    otherIncomeInfo: 'Arviot muista tuloista',
 
     entrepreneurTitle: 'Yrittäjän tulotiedot',
     fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
@@ -1292,8 +1293,10 @@ export const fi = {
     startOfEntrepreneurship: 'Yrittäjyys alkanut',
     spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
     startupGrant: 'Starttiraha',
-    kelaInspectionConsent: 'Tiedot saa tarkastaa Kelasta',
     companyInfoTitle: 'Yrityksen tiedot',
+    checkupConsentLabel: 'Tietojen tarkastus',
+    checkupConsent:
+      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
     companyType: 'Toimintamuoto',
     selfEmployed: 'Toiminimi',
     selfEmployedAttachments:
@@ -1301,7 +1304,7 @@ export const fi = {
     selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
     limitedCompany: 'Osakeyhtiö',
     limitedCompanyIncomesRegister:
-      'Tuloni voi tarkastaa suoraan Kelasta sekä tulorekisteristä.',
+      'Tuloni voi tarkastaa suoraan tulorekisteristä sekä tarvittaessa Kelasta.',
     limitedCompanyAttachments:
       'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
     partnership: 'Avoin yhtiö tai kommandiittiyhtiö',

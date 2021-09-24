@@ -6,12 +6,15 @@ package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
@@ -33,9 +36,8 @@ SELECT
     type,
     gross_income_source,
     gross_estimated_monthly_income,
-    gross_income_start_date,
-    gross_income_end_date,
     gross_other_income,
+    gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -57,7 +59,7 @@ SELECT
     other_info,
     ist.created,
     ist.updated,
-    e.first_name || ' ' || e.last_name as handler_name,
+    handler_id IS NOT NULL AS handled,
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
@@ -71,7 +73,6 @@ SELECT
         ORDER BY a.created
     ) s) AS attachments
 FROM income_statement ist
-LEFT JOIN employee e on ist.handler_id = e.id
 WHERE person_id = :personId
 ${if (single) "AND ist.id = :id" else ""}
 ORDER BY start_date DESC
@@ -84,7 +85,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
     val endDate = row.mapColumn<LocalDate?>("end_date")
     val created = row.mapColumn<HelsinkiDateTime>("created")
     val updated = row.mapColumn<HelsinkiDateTime>("updated")
-    val handlerName = row.mapColumn<String?>("handler_name")
+    val handled = row.mapColumn<Boolean>("handled")
     return when (row.mapColumn<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
@@ -93,20 +94,16 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 endDate = endDate,
                 created = created,
                 updated = updated,
-                handlerName = handlerName,
+                handled = handled,
             )
 
         IncomeStatementType.INCOME -> {
             val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
-            val grossEstimatedMonthlyIncome = row.mapColumn<Int?>("gross_estimated_monthly_income")
             val gross = if (grossIncomeSource != null) Gross(
                 incomeSource = grossIncomeSource,
-                estimatedIncome = if (grossEstimatedMonthlyIncome != null) EstimatedIncome(
-                    grossEstimatedMonthlyIncome,
-                    incomeStartDate = row.mapColumn("gross_income_start_date"),
-                    incomeEndDate = row.mapColumn("gross_income_end_date")
-                ) else null,
+                estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
                 otherIncome = row.mapColumn<Array<OtherIncome>>("gross_other_income").toSet(),
+                otherIncomeInfo = row.mapColumn("gross_other_income_info"),
             ) else null
 
             val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
@@ -159,7 +156,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 otherInfo = row.mapColumn("other_info"),
                 created = created,
                 updated = updated,
-                handlerName = handlerName,
+                handled = handled,
                 attachments = row.mapJsonColumn("attachments")
             )
         }
@@ -191,9 +188,8 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
         .bindNullable("endDate", body.endDate)
         .bindNullable("grossIncomeSource", null as IncomeSource?)
         .bindNullable("grossEstimatedMonthlyIncome", null as Int?)
-        .bindNullable("grossIncomeStartDate", null as LocalDate?)
-        .bindNullable("grossIncomeEndDate", null as LocalDate?)
         .bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
+        .bind("grossOtherIncomeInfo", "")
         .bindNullable("fullTime", null as Boolean?)
         .bindNullable("startOfEntrepreneurship", null as LocalDate?)
         .bindNullable("spouseWorksInCompany", null as Boolean?)
@@ -230,13 +226,9 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gross): This =
     bind("grossIncomeSource", gross.incomeSource)
-        .run { if (gross.estimatedIncome != null) bindGrossEstimation(gross.estimatedIncome) else this }
+        .bindNullable("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
         .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
-
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindGrossEstimation(estimation: EstimatedIncome): This =
-    bind("grossEstimatedMonthlyIncome", estimation.estimatedMonthlyIncome)
-        .bind("grossIncomeStartDate", estimation.incomeStartDate)
-        .bindNullable("grossIncomeEndDate", estimation.incomeEndDate)
+        .bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
     run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
@@ -281,9 +273,8 @@ INSERT INTO income_statement (
     type, 
     gross_income_source, 
     gross_estimated_monthly_income,
-    gross_income_start_date,
-    gross_income_end_date,
     gross_other_income, 
+    gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
     spouse_works_in_company,
@@ -310,9 +301,8 @@ INSERT INTO income_statement (
     :type,
     :grossIncomeSource,
     :grossEstimatedMonthlyIncome,
-    :grossIncomeStartDate,
-    :grossIncomeEndDate,
     :grossOtherIncome :: other_income_type[],
+    :grossOtherIncomeInfo,
     :fullTime,
     :startOfEntrepreneurship,
     :spouseWorksInCompany,
@@ -355,9 +345,8 @@ UPDATE income_statement SET
     type = :type,
     gross_income_source = :grossIncomeSource,
     gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
-    gross_income_start_date = :grossIncomeStartDate,
-    gross_income_end_date = :grossIncomeEndDate,
     gross_other_income = :grossOtherIncome :: other_income_type[],
+    gross_other_income_info = :grossOtherIncomeInfo,
     entrepreneur_full_time = :fullTime,
     start_of_entrepreneurship = :startOfEntrepreneurship,
     spouse_works_in_company = :spouseWorksInCompany,
@@ -415,11 +404,15 @@ data class IncomeStatementAwaitingHandler(
     val primaryCareArea: String?
 )
 
-fun Database.Read.fetchIncomeStatementsAwaitingHandler(): List<IncomeStatementAwaitingHandler> =
+fun Database.Read.fetchIncomeStatementsAwaitingHandler(
+    areas: List<String>,
+    page: Int,
+    pageSize: Int
+): Paged<IncomeStatementAwaitingHandler> =
     createQuery(
         """
 WITH areas AS (
-    SELECT area.name, puv.head_of_child
+    SELECT area.name, area.short_name, puv.head_of_child
     FROM care_area area
         JOIN daycare daycare ON area.id = daycare.care_area_id
         JOIN primary_units_view puv ON puv.unit_id = daycare.id
@@ -431,17 +424,22 @@ SELECT i.id,
        i.start_date,
        p.id AS personId,
        p.first_name || ' ' || p.last_name AS personName,
-       areas.name AS primaryCareArea
+       a.name AS primaryCareArea,
+       COUNT(*) OVER () AS count
 FROM income_statement i
     JOIN person p ON i.person_id = p.id
-    LEFT JOIN areas ON areas.head_of_child = p.id
+    LEFT JOIN areas a ON a.head_of_child = p.id
 WHERE handler_id IS NULL
-ORDER BY start_date DESC
-LIMIT 50
+AND (cardinality(:areas) = 0 OR a.short_name = ANY(:areas))
+ORDER BY start_date, created
+LIMIT :pageSize OFFSET :offset
         """.trimIndent()
     )
-        .mapTo<IncomeStatementAwaitingHandler>()
-        .list()
+        .bind("areas", areas.toTypedArray())
+        .bind("pageSize", pageSize)
+        .bind("offset", (page - 1) * pageSize)
+        .map(withCountMapper<IncomeStatementAwaitingHandler>())
+        .let(mapToPaged(pageSize))
 
 fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")

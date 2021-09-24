@@ -41,7 +41,7 @@ interface Base {
   endDate: LocalDate | null
   created: Date
   updated: Date
-  handlerName: string | null
+  handled: boolean
 }
 
 export interface HighestFee extends Base {
@@ -60,8 +60,9 @@ export interface Income extends Base {
 
 export interface Gross {
   incomeSource: IncomeSource
-  estimatedIncome: EstimatedIncome | null
+  estimatedMonthlyIncome: number | null
   otherIncome: OtherIncome[]
+  otherIncomeInfo: string
 }
 
 export interface Entrepreneur {
@@ -117,7 +118,6 @@ export interface IncomeStatementAwaitingHandler {
 }
 
 type IncomeJson = JsonOf<Income>
-type GrossJson = Exclude<IncomeJson['gross'], null>
 type EntrepreneurJson = Exclude<IncomeJson['entrepreneur'], null>
 type SelfEmployedJson = Exclude<EntrepreneurJson['selfEmployed'], null>
 type EstimatedIncomeJson = Exclude<SelfEmployedJson['estimatedIncome'], null>
@@ -137,19 +137,10 @@ export function deserializeIncomeStatement(
         ...data,
         startDate,
         endDate,
-        gross: deserializeGross(data.gross),
         entrepreneur: deserializeEntrepreneur(data.entrepreneur),
         created,
         updated
       }
-  }
-}
-
-function deserializeGross(gross: GrossJson | null): Gross | null {
-  if (!gross) return null
-  return {
-    ...gross,
-    estimatedIncome: deserializeEstimatedIncome(gross.estimatedIncome)
   }
 }
 

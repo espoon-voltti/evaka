@@ -10,15 +10,25 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -58,7 +68,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement1.updated,
-                handlerName = null,
+                handled = false,
             ),
             incomeStatement1
         )
@@ -73,7 +83,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement2.updated,
-                handlerName = "Test Person",
+                handled = true,
             ),
             incomeStatement2
         )
@@ -88,7 +98,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = endDate,
                 created = incomeStatement1.created,
                 updated = incomeStatement3.updated,
-                handlerName = null,
+                handled = false,
             ),
             incomeStatement3
         )
@@ -104,8 +114,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedIncome = null,
+                        estimatedMonthlyIncome = null,
                         otherIncome = setOf(),
+                        otherIncomeInfo = "",
                     ),
                     entrepreneur = null,
                     student = false,
@@ -126,8 +137,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedIncome = null,
+                    estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -143,9 +155,162 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 ),
                 created = incomeStatement.created,
                 updated = incomeStatement.updated,
-                handlerName = null,
+                handled = false,
             ),
             getIncomeStatement(id)
+        )
+    }
+
+    private fun createTestIncomeStatement(personId: UUID): IncomeStatement {
+        val id = db.transaction { tx ->
+            tx.createIncomeStatement(
+                personId,
+                IncomeStatementBody.HighestFee(
+                    startDate = LocalDate.now(),
+                    endDate = null,
+                )
+            )
+        }
+        return db.read { it.readIncomeStatementForPerson(personId, id, true)!! }
+    }
+
+    @Test
+    fun `list income statements awaiting handler - no income statements`() {
+        assertEquals(
+            Paged(listOf(), 0, 1),
+            getIncomeStatementsAwaitingHandler(listOf())
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - no area`() {
+        val incomeStatement = createTestIncomeStatement(testAdult_1.id)
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement.id.raw,
+                        created = incomeStatement.created,
+                        startDate = incomeStatement.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_1.id,
+                        personName = "John Doe",
+                        primaryCareArea = null,
+                    )
+                ),
+                1, 1
+            ),
+            getIncomeStatementsAwaitingHandler(listOf())
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - has area`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(testAdult_1.id, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        val incomeStatement1 = createTestIncomeStatement(testAdult_1.id)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement1.id.raw,
+                        created = incomeStatement1.created,
+                        startDate = incomeStatement1.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_1.id,
+                        personName = "John Doe",
+                        primaryCareArea = "Test Area",
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id.raw,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Joan Doe",
+                        primaryCareArea = "Lwiz Foo",
+                    )
+                ),
+                2, 1
+            ),
+            getIncomeStatementsAwaitingHandler(listOf())
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - area filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(testAdult_1.id, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        createTestIncomeStatement(testAdult_1.id)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id.raw,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Joan Doe",
+                        primaryCareArea = "Lwiz Foo",
+                    )
+                ),
+                1, 1
+            ),
+            // short name for the "Lwiz Foo" care area is "short name 2"
+            getIncomeStatementsAwaitingHandler(listOf("short name 2"))
         )
     }
 
@@ -165,6 +330,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             }
     }
 
+    private fun getIncomeStatementsAwaitingHandler(
+        areas: List<String>,
+        page: Int = 1,
+        pageSize: Int = 50
+    ): Paged<IncomeStatementAwaitingHandler> =
+        http.get("/income-statements/awaiting-handler?areas=${areas.joinToString(",")}&page=$page&pageSize=$pageSize")
+            .asUser(employee)
+            .responseObject<Paged<IncomeStatementAwaitingHandler>>(objectMapper)
+            .let { (_, _, body) -> body.get() }
+
     private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
         val (_, _, result) = http.upload("/attachments/income-statements/$id")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
@@ -173,6 +348,4 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
 
         return result.get()
     }
-
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "evaka-logo.png", "image/png", true)
 }

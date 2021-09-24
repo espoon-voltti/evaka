@@ -8,7 +8,7 @@ import { UUID } from 'lib-common/types'
 import { HighestFee, Income } from 'lib-common/api-types/incomeStatement'
 import * as Form from './form'
 
-type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handlerName'
+type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled'
 
 export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
 
@@ -66,19 +66,18 @@ function validateGross(formData: Form.Gross) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
 
-  const estimatedIncome =
-    formData.estimatedMonthlyIncome ||
-    formData.incomeStartDate ||
-    formData.incomeEndDate
-      ? validateEstimatedIncome(formData)
+  const estimatedMonthlyIncome =
+    formData.estimatedMonthlyIncome.trim() != ''
+      ? stringToInt(formData.estimatedMonthlyIncome) ?? invalid
       : null
 
-  if (estimatedIncome === invalid) return invalid
+  if (estimatedMonthlyIncome === invalid) return invalid
 
   return {
     incomeSource: formData.incomeSource,
-    estimatedIncome,
-    otherIncome: formData.otherIncome ?? []
+    estimatedMonthlyIncome,
+    otherIncome: formData.otherIncome ?? [],
+    otherIncomeInfo: formData.otherIncomeInfo
   }
 }
 

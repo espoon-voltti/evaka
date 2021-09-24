@@ -340,14 +340,12 @@ function GrossIncomeSelection({
   onChange: (value: Form.Gross) => void
 }) {
   const t = useTranslation()
-  const [lang] = useLang()
-  const incomeStartDate = LocalDate.parseFiOrNull(formData.incomeStartDate)
   return (
     <ContentArea opaque paddingVertical="L">
       <FixedSpaceColumn spacing="zero">
         <H2 noMargin>{t.income.grossIncome.title}</H2>
         <Gap size="m" />
-        <P noMargin>{t.income.grossIncome.description}</P>
+        {t.income.grossIncome.description}
         <Gap size="m" />
         <LabelWithError
           label={`${t.income.grossIncome.incomeSource} *`}
@@ -396,55 +394,11 @@ function GrossIncomeSelection({
               }
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn>
-            <LightLabel htmlFor="income-start-date">
-              {t.income.selfEmployed.timeRange}
-            </LightLabel>
-            <FixedSpaceRow>
-              <DatePicker
-                id="income-start-date"
-                date={formData.incomeStartDate}
-                onChange={(value) =>
-                  onChange({ ...formData, incomeStartDate: value })
-                }
-                locale={lang}
-                hideErrorsBeforeTouched
-                info={
-                  formData.incomeStartDate
-                    ? errorToInputInfo(
-                        validDate(formData.incomeStartDate),
-                        t.validationErrors
-                      )
-                    : undefined
-                }
-              />
-              <span>{' - '}</span>
-              <DatePicker
-                date={formData.incomeEndDate}
-                onChange={(value) =>
-                  onChange({ ...formData, incomeEndDate: value })
-                }
-                isValidDate={(date) =>
-                  incomeStartDate === null || incomeStartDate <= date
-                }
-                locale={lang}
-                hideErrorsBeforeTouched
-                info={
-                  formData.incomeEndDate
-                    ? errorToInputInfo(
-                        validDate(formData.incomeEndDate),
-                        t.validationErrors
-                      )
-                    : undefined
-                }
-              />
-            </FixedSpaceRow>
-          </FixedSpaceColumn>
         </FixedSpaceRow>
         <Gap size="L" />
         <Label>{t.income.grossIncome.otherIncome}</Label>
         <Gap size="s" />
-        {t.income.grossIncome.otherIncomeInfo}
+        {t.income.grossIncome.otherIncomeDescription}
         <Gap size="s" />
         <OtherIncomeWrapper>
           <MultiSelect
@@ -458,6 +412,24 @@ function GrossIncomeSelection({
             placeholder={t.income.grossIncome.choosePlaceholder}
           />
         </OtherIncomeWrapper>
+        {formData.otherIncome.length > 0 && (
+          <>
+            <Gap size="s" />
+            <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
+            <Gap size="s" />
+            <P noMargin>{t.income.grossIncome.otherIncomeInfoDescription}</P>
+            <Gap size="s" />
+            <InputField
+              value={formData.otherIncomeInfo}
+              onChange={(value) =>
+                onChange({
+                  ...formData,
+                  otherIncomeInfo: value
+                })
+              }
+            />
+          </>
+        )}
       </FixedSpaceColumn>
     </ContentArea>
   )

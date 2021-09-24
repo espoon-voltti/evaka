@@ -56,7 +56,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                 )
             ),
             incomeStatements,
@@ -71,12 +71,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.of(2021, 8, 9),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedIncome = EstimatedIncome(
-                        estimatedMonthlyIncome = 500,
-                        incomeStartDate = LocalDate.of(1992, 1, 2),
-                        incomeEndDate = LocalDate.of(2099, 9, 9),
-                    ),
+                    estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -118,12 +115,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = LocalDate.of(2021, 8, 9),
                     gross = Gross(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
-                        estimatedIncome = EstimatedIncome(
-                            estimatedMonthlyIncome = 500,
-                            incomeStartDate = LocalDate.of(1992, 1, 2),
-                            incomeEndDate = LocalDate.of(2099, 9, 9),
-                        ),
+                        estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -154,7 +148,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                     attachments = listOf(),
                 )
             ),
@@ -185,8 +179,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.of(2021, 4, 2),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedIncome = null,
-                    otherIncome = setOf()
+                    estimatedMonthlyIncome = null,
+                    otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -293,8 +288,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedIncome = null,
+                    estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -313,8 +309,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedIncome = null,
+                        estimatedMonthlyIncome = null,
                         otherIncome = setOf(),
+                        otherIncomeInfo = "",
                     ),
                     entrepreneur = null,
                     student = false,
@@ -322,7 +319,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handlerName = null,
+                    handled = false,
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -340,8 +337,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedIncome = null,
+                    estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -364,8 +362,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedIncome = null,
+                    estimatedMonthlyIncome = null,
                     otherIncome = setOf(),
+                    otherIncomeInfo = "",
                 ),
                 entrepreneur = null,
                 student = false,
@@ -389,12 +388,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.of(2021, 8, 9),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedIncome = EstimatedIncome(
-                        estimatedMonthlyIncome = 500,
-                        incomeStartDate = LocalDate.of(1992, 1, 2),
-                        incomeEndDate = LocalDate.of(2099, 9, 9),
-                    ),
+                    estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -492,7 +488,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 otherInfo = "",
                 created = incomeStatement.created,
                 updated = updated,
-                handlerName = null,
+                handled = false,
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
             getIncomeStatement(incomeStatement.id),
@@ -563,12 +559,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.of(2021, 8, 9),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedIncome = EstimatedIncome(
-                        estimatedMonthlyIncome = 500,
-                        incomeStartDate = LocalDate.of(1992, 1, 2),
-                        incomeEndDate = LocalDate.of(2099, 9, 9),
-                    ),
+                    estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,

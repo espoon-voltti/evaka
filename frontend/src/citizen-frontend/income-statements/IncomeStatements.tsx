@@ -34,9 +34,6 @@ const Buttons = styled.div`
   justify-content: space-around;
 `
 
-const isIncomeStatementEditable = ({ handlerName }: IncomeStatement) =>
-  handlerName == null
-
 function IncomeStatementsTable({
   items,
   onRemoveIncomeStatement
@@ -60,7 +57,6 @@ function IncomeStatementsTable({
           <Th>{t.incomeStatementForm}</Th>
           <Th>{t.startDate}</Th>
           <Th>{t.endDate}</Th>
-          <Th>{t.handler}</Th>
           <Th />
         </Tr>
       </Thead>
@@ -77,9 +73,8 @@ function IncomeStatementsTable({
             </Td>
             <Td>{item.startDate.format()}</Td>
             <Td>{item.endDate?.format()}</Td>
-            <Td>{item.handlerName}</Td>
             <Td>
-              {isIncomeStatementEditable(item) && (
+              {!item.handled ? (
                 <Buttons>
                   <IconButton icon={faPen} onClick={onOpen(item, 'edit')} />
                   <Gap size="xs" horizontal />
@@ -88,6 +83,8 @@ function IncomeStatementsTable({
                     onClick={() => onRemoveIncomeStatement(item.id)}
                   />
                 </Buttons>
+              ) : (
+                t.handled
               )}
             </Td>
           </Tr>
