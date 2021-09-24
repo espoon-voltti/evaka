@@ -164,7 +164,8 @@ const en: Translations = {
     noReservation: 'No reservations',
     reservationModal: {
       title: 'Make a reservation',
-      selectChildren: 'Selected children',
+      selectChildren: 'Children the reservation is made for',
+      selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
       times: 'Time',

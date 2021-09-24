@@ -163,7 +163,8 @@ export default {
     noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
-      selectChildren: 'Valitse lapset',
+      selectChildren: 'Lapset, joille varaus tehdään',
+      selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
       times: 'Kellonaika',

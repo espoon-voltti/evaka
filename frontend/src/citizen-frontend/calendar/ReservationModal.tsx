@@ -4,6 +4,7 @@
 
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
@@ -11,7 +12,7 @@ import React, { useEffect, useState } from 'react'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
 import { postReservations, ReservationChild } from './api'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
 import DatePicker, {
@@ -229,12 +230,13 @@ export default React.memo(function ReservationModal({
       }}
     >
       <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-      <FixedSpaceColumn>
+      <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
+      <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
-          <Checkbox
+          <SelectionChip
             key={child.id}
-            label={child.preferredName || child.firstName.split(' ')[0]}
-            checked={formData.selectedChildren.includes(child.id)}
+            text={child.preferredName || child.firstName.split(' ')[0]}
+            selected={formData.selectedChildren.includes(child.id)}
             onChange={(selected) => {
               if (selected) {
                 updateForm({
@@ -251,7 +253,7 @@ export default React.memo(function ReservationModal({
             data-qa={`child-${child.id}`}
           />
         ))}
-      </FixedSpaceColumn>
+      </FixedSpaceFlexWrap>
 
       <H2>{i18n.calendar.reservationModal.dateRange}</H2>
       <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>

@@ -164,7 +164,8 @@ const sv: Translations = {
     noReservation: 'Ingen reservation',
     reservationModal: {
       title: 'Reservera',
-      selectChildren: 'Utvalda barn',
+      selectChildren: 'Barn som reserveras för',
+      selectChildrenLabel: 'Utvalda barn',
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
       times: 'Tid',
