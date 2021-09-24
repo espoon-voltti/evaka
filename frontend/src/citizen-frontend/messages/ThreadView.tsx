@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'lib-common/types'
-import { H2 } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React, {
@@ -44,11 +44,11 @@ const TitleRow = styled.div`
   }
 `
 const SenderName = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 const SentDate = styled.div`
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.dark};
 `
 const MessageContent = styled.div`

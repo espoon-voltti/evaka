@@ -14,6 +14,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontWeights } from 'lib-components/typography'
 import { Placement } from '../../../types/child'
 import ToolbarAccordion, {
   RestrictedToolbar
@@ -49,7 +50,7 @@ const DataLabel = styled.div`
   width: 240px;
   padding: 0 40px 0 0;
   margin: 0;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const DataValue = styled.div`

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import {
   fasChevronUp,
   fasChevronDown
 } from 'lib-icons'
+import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 
 export const Table = styled.table`
@@ -28,7 +29,7 @@ interface ThProps {
 export const Th = styled.th<ThProps>`
   font-size: 14px;
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
-  font-weight: 700;
+  font-weight: ${fontWeights.bold};
   line-height: 1.3em;
   text-transform: uppercase;
   vertical-align: middle;
@@ -102,7 +103,7 @@ const CustomButton = styled.button`
   margin: 0;
   cursor: pointer;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: ${fontWeights.bold};
 `
 
 export const SortableTh = ({

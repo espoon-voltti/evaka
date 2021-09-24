@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { faEuroSign } from 'lib-icons'
 import { Gap } from 'lib-components/white-space'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { H4 } from 'lib-components/typography'
+import { fontWeights, H4 } from 'lib-components/typography'
 import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
 import VoucherValueDecisionCoPaymentSection from './VoucherValueDecisionCoPaymentSection'
 import VoucherValueDecisionValueSection from './VoucherValueDecisionValueSection'
@@ -54,5 +54,5 @@ const Total = styled.div`
 `
 
 const TotalTitle = styled(H4)`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `

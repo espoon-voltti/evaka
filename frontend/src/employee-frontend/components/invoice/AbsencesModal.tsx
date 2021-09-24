@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,6 +12,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { faAbacus } from 'lib-icons'
 import { Absence } from 'lib-common/api-types/child/Absences'
+import { fontWeights } from 'lib-components/typography'
 
 import { formatName } from '../../utils'
 import { getAbsencesByChild } from '../../api/invoicing'
@@ -35,19 +36,19 @@ const Table = styled.table`
 
 const FirstColumnTitle = styled.th`
   font-size: 14px;
-  font-weight: bold;
+  font-weight: ${fontWeights.bold};
   width: 320px;
 `
 
 const SecondColumnTitle = styled.th`
   font-size: 14px;
-  font-weight: bold;
+  font-weight: ${fontWeights.bold};
   width: 121px;
 `
 
 const ThirdColumnTitle = styled.th`
   font-size: 14px;
-  font-weight: bold;
+  font-weight: ${fontWeights.bold};
   width: 86px;
 `
 

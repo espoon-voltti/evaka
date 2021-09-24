@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,14 @@ import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { BaseProps } from './utils'
+
+export const fontWeights = {
+  light: 300,
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700
+}
 
 type HeadingProps = BaseProps & {
   fitted?: boolean
@@ -117,10 +125,11 @@ export const H5 = styled.h4<HeadingProps>`
 
 type LabelProps = {
   inputRow?: boolean
+  light?: boolean
 }
 
 export const Label = styled.label<LabelProps>`
-  font-weight: 600;
+  font-weight: ${(p) => (p.light ? fontWeights.normal : fontWeights.semibold)};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 
@@ -151,7 +160,7 @@ export const P = styled.p<ParagraphProps>`
     p.noMargin ? `margin: 0` : `margin-block: ${p.fitted ? `0` : '1.5em'}`};
 
   strong {
-    font-weight: 600;
+    font-weight: ${fontWeights.semibold};
   }
 
   a {

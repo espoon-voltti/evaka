@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,6 +16,7 @@ import {
   faFile
 } from 'lib-icons'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 import { Decision, DecisionSummary } from '../decisions/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
@@ -23,7 +24,7 @@ export const Status = styled.span`
   text-transform: uppercase;
   color: ${colors.greyscale.darkest}
   font-size: 16px;
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
 `
 
 export const decisionStatusIcon = {

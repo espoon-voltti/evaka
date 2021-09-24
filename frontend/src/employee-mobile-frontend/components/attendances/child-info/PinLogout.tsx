@@ -10,6 +10,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faTimes } from 'lib-icons'
+import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
 import { TallContentArea } from '../../mobile/components'
@@ -81,7 +82,7 @@ const LogoutButton = styled.button`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 16px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;
@@ -95,7 +96,7 @@ const LogoutButton = styled.button`
 `
 
 const Key = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 4px;
 `

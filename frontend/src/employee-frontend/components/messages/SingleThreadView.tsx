@@ -5,7 +5,7 @@
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
-import { H2 } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -52,11 +52,11 @@ const TitleRow = styled.div`
   }
 `
 const SenderName = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 const SentDate = styled.div`
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.dark};
 `
 const MessageContent = styled.div`

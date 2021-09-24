@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 
 interface DataListProps {
   labelWidth?: string
@@ -20,7 +21,7 @@ export const DataList = styled.div<DataListProps>`
     line-height: 2em;
 
     label {
-      font-weight: 600;
+      font-weight: ${fontWeights.semibold};
       width: ${(p) => p.labelWidth || '250px'};
     }
   }

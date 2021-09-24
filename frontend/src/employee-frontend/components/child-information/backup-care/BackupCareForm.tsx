@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,6 +13,7 @@ import _ from 'lodash'
 import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from 'lib-common/form-state'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { fontWeights } from 'lib-components/typography'
 import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -55,7 +56,7 @@ const FormField = styled.div`
 `
 
 const FormLabel = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   flex: 0 1 auto;
   width: 300px;
 `

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import colors from 'lib-customizations/common'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 
@@ -18,7 +19,7 @@ const Container = styled.div<{ status: StatusLabelType }>`
   border-radius: 12px;
   padding: 0 10px;
   text-align: center;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
   letter-spacing: 0;
 

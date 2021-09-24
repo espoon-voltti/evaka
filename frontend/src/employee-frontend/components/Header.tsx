@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { fontWeights } from 'lib-components/typography'
 import { isNestedGroupMessageAccount } from './messages/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
@@ -73,7 +74,7 @@ const LogoutLink = styled.a`
 
 const UnreadCount = styled.span`
   color: ${colors.blues.medium};
-  font-weight: 500;
+  font-weight: ${fontWeights.medium};
   margin-left: ${defaultMargins.xs};
   border: 1px solid ${colors.blues.medium};
   display: flex;
@@ -338,7 +339,7 @@ const NavbarContainer = styled.nav`
     width: 1344px;
   }
   color: ${colors.greyscale.darkest};
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
   line-height: 1.5;
   box-sizing: inherit;
   margin: 0 auto;
@@ -398,7 +399,7 @@ const NavbarLink = styled(NavLink)<NavbarLinkProps>`
 
   &.active {
     border-bottom: 4px solid ${colors.blues.primary};
-    font-weight: 700;
+    font-weight: ${fontWeights.bold};
     padding-bottom: 1rem;
   }
 
@@ -449,7 +450,7 @@ const HeaderTitleWrapper = styled.a`
 `
 
 const StyledTitle = styled(Title)`
-  font-weight: 300;
+  font-weight: ${fontWeights.light};
   padding-top: 1.4rem;
   margin: 0;
   @media screen and (max-width: 1023px) {

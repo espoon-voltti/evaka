@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
-import { H1, H2 } from 'lib-components/typography'
+import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
@@ -32,7 +32,7 @@ const StateAndConfidentiality = styled.div`
 `
 const Confidential = styled.div`
   margin-top: ${defaultMargins.xs};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 interface Props {

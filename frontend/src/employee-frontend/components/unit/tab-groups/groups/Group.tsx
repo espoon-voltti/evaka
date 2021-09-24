@@ -48,7 +48,7 @@ import { DataList } from '../../../common/DataList'
 import { Gap } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { H3 } from 'lib-components/typography'
+import { fontWeights, H3 } from 'lib-components/typography'
 import { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -786,7 +786,7 @@ const TitleSummary = React.memo(function TitleSummary({
 })
 
 const Label = styled.label`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 export default Group

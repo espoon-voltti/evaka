@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import Title from 'lib-components/atoms/Title'
 import { faChevronUp, fasExclamationTriangle } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { PlacementDraftPlacement } from '../../types/placementdraft'
@@ -41,7 +42,7 @@ const PlacementsContainer = styled.div`
 const Type = styled.span`
   display: inline-block;
   width: 225px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Name = styled.span`
@@ -81,7 +82,7 @@ const ToggleHeader = styled.div`
   }
 
   h2.is-4 {
-    font-weight: normal;
+    font-weight: ${fontWeights.normal};
     font-size: 18px;
   }
 `

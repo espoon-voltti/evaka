@@ -6,6 +6,7 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExternalLink } from 'lib-icons'
 import styled from 'styled-components'
+import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
 type ExternalLinkProps = {
@@ -34,7 +35,7 @@ export default React.memo(function ExternalLink({
 const StyledLink = styled.a`
   text-decoration: none;
   display: inline-block;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
   color: ${({ theme: { colors } }) => colors.main.primary};

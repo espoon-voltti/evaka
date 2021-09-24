@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, ReactNode } from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 
 type Spacing = 'small' | 'large'
 type LabelWidth = '25%' | 'fit-content(40%)'
@@ -63,7 +64,7 @@ const GridContainer = styled.div<{
 const Label = styled.div<{ index: number }>`
   grid-column: label;
   grid-row: ${({ index }) => index};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Value = styled.div<{ index: number; width?: string }>`

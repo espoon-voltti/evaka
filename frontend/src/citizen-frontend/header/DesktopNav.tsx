@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,6 +18,7 @@ import React, { useCallback, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
 import { featureFlags } from 'lib-customizations/employee'
+import { fontWeights } from 'lib-components/typography'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
@@ -110,7 +111,7 @@ const StyledNavLink = styled(NavLink)`
 
   &.active {
     border-color: ${colors.greyscale.white};
-    font-weight: 700;
+    font-weight: ${fontWeights.bold};
   }
 
   & > :last-child {
@@ -125,7 +126,7 @@ const Login = styled.a`
   align-items: center;
   color: inherit;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   padding: 0 ${defaultMargins.s};
   border-bottom: 3px solid transparent;
 `
@@ -266,7 +267,8 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   color: ${({ selected }) =>
     selected ? colors.brandEspoo.espooBlue : colors.greyscale.darkest};
   font-size: 1em;
-  font-weight: ${({ selected }) => (selected ? 600 : 400)};
+  font-weight: ${({ selected }) =>
+    selected ? fontWeights.semibold : fontWeights.normal};
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 10px;

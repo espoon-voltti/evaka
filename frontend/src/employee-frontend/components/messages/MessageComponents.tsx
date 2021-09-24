@@ -12,6 +12,7 @@ import {
   DATE_FORMAT_TIME_ONLY,
   formatDate
 } from 'lib-common/date'
+import { fontWeights } from 'lib-components/typography'
 
 export const MessageRow = styled.div<{ unread?: boolean }>`
   display: flex;
@@ -28,7 +29,7 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
 export const Participants = styled.div<{ unread?: boolean }>`
   color: ${(p) =>
     p.unread ? colors.greyscale.darkest : colors.greyscale.dark};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 export const Truncated = styled.div`
   white-space: nowrap;
@@ -36,10 +37,10 @@ export const Truncated = styled.div`
   text-overflow: ellipsis;
 `
 export const Title = styled.span<{ unread?: boolean }>`
-  font-weight: ${(p) => (p.unread ? 600 : 400)};
+  font-weight: ${(p) => (p.unread ? fontWeights.semibold : fontWeights.normal)};
 `
 export const Hyphen = styled.span<{ unread?: boolean }>`
-  font-weight: ${(p) => (p.unread ? 600 : 400)};
+  font-weight: ${(p) => (p.unread ? fontWeights.semibold : fontWeights.normal)};
   margin-left: 10px;
   margin-right: 10px;
 `

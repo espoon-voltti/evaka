@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,7 +28,7 @@ import { Translations, useTranslation } from '../../../state/i18n'
 import colors from 'lib-customizations/common'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faPen } from 'lib-icons'
-import { H1, H3 } from 'lib-components/typography'
+import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -110,7 +110,7 @@ const FormPart = styled.div`
   margin-bottom: 20px;
 
   & > :first-child {
-    font-weight: bold;
+    font-weight: ${fontWeights.bold};
     width: 250px;
     flex: 0 0 auto;
     margin-right: 20px;

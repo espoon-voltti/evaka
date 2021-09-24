@@ -11,7 +11,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import { P } from 'lib-components/typography'
+import { fontWeights, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
@@ -192,5 +192,5 @@ const BottomRow = styled.div`
 `
 
 const Bold = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `

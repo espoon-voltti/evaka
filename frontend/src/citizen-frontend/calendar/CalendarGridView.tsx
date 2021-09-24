@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import colors from 'lib-customizations/common'
 import { WeekProps } from './WeekElem'
-import { H1 } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faCalendarPlus, faUserMinus } from 'lib-icons'
@@ -114,7 +114,7 @@ const HeadingCell = styled.div`
   color: ${colors.blues.dark};
   font-family: 'Open Sans', sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   text-align: center;
   padding: ${defaultMargins.xs};
 `
@@ -158,7 +158,7 @@ const DayCellDate = styled.div<{ holiday: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `
 

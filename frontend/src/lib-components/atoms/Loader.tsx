@@ -1,13 +1,10 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled, { keyframes } from 'styled-components'
+import { fontWeights } from '../typography'
 
 const rotate = keyframes`
   from {
@@ -20,7 +17,7 @@ const rotate = keyframes`
 `
 
 const Spinner = styled.div`
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
   border-collapse: collapse;
   border-spacing: 0;
   color: #0f0f0f;
@@ -42,7 +39,7 @@ const Spinner = styled.div`
 const Wrapper = styled.div`
   font-family: Open Sans, Arial, sans-serif;
   font-size: 1em;
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
   border-collapse: collapse;
   border-spacing: 0;
   color: #0f0f0f;

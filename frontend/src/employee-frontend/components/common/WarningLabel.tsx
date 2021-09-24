@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import colors from 'lib-customizations/common'
 import { Gap } from 'lib-components/white-space'
+import { fontWeights } from 'lib-components/typography'
 
 interface Props {
   text: string
@@ -33,7 +34,7 @@ const Wrapper = styled.div`
   padding: 0 10px;
   text-align: center;
   line-height: 30px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   background: ${colors.accents.red};
   color: ${colors.greyscale.white};
 `

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 {
   /*
 SPDX-FileCopyrightText: 2017-2021 City of Espoo
@@ -12,7 +16,7 @@ import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { H2, H3, H4 } from 'lib-components/typography'
+import { fontWeights, H2, H3, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -356,7 +360,7 @@ const RowWithMargin = styled(FixedSpaceRow)`
 `
 
 const Label = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Indent = styled.span`

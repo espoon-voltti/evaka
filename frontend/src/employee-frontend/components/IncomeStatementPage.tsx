@@ -479,10 +479,9 @@ function makeYesNo(i18n: Translations) {
   }
 }
 
-const LabelColumn = styled(Label)<{ light?: boolean }>`
+const LabelColumn = styled(Label)`
   flex: 0 0 auto;
   width: 250px;
-  ${(p) => (p.light ? 'font-weight: 400;' : '')}
 `
 
 const Item = styled.div`

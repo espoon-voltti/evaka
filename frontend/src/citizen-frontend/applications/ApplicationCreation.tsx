@@ -7,7 +7,7 @@ import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { H1, H2 } from 'lib-components/typography'
+import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -194,6 +194,6 @@ const PreschoolDaycareInfo = styled.p`
   margin-left: calc(
     36px + ${defaultMargins.s}
   ); // width of the radio input's icon + the margin on label
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 0.875em;
 `

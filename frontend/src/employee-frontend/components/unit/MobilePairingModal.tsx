@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { Result, Loading } from 'lib-common/api'
+import { fontWeights } from 'lib-components/typography'
 import {
   getPairingStatus,
   PairingResponse,
@@ -26,7 +27,7 @@ interface Props {
 }
 
 const Bold = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Flex = styled.div`
@@ -38,7 +39,7 @@ const Flex = styled.div`
 const ResponseKey = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 30px;
   line-height: 30px;
   text-align: center;

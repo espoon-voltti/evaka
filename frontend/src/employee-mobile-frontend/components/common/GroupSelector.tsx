@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
+import { fontWeights } from 'lib-components/typography'
 
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
@@ -88,7 +89,7 @@ export default function GroupSelector({
 
 const Info = styled.span`
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
   color: ${colors.greyscale.dark};

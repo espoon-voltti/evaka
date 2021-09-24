@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import colors from 'lib-customizations/common'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../localization'
 import { defaultMargins } from 'lib-components/white-space'
 import {
@@ -57,7 +58,7 @@ const WeekDiv = styled.div`
   padding: ${defaultMargins.s} 0 ${defaultMargins.xs};
   background-color: ${colors.brandEspoo.espooTurquoiseLight};
   color: ${colors.blues.dark};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 0.875rem;
   border-bottom: 1px solid ${colors.greyscale.lighter};
 `
@@ -113,7 +114,7 @@ const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
 const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`
   width: 3rem;
   color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const HolidayNote = styled.div`

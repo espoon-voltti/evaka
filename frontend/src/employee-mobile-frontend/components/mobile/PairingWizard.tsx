@@ -16,7 +16,7 @@ import {
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import colors from 'lib-customizations/common'
-import { P } from 'lib-components/typography'
+import { fontWeights, P } from 'lib-components/typography'
 import { faArrowRight } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -41,7 +41,7 @@ const Img = styled.img`
 const PhaseTitle = styled.h1`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 20px;
   line-height: 30px;
   text-align: center;
@@ -51,7 +51,7 @@ const PhaseTitle = styled.h1`
 export const ResponseKey = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 30px;
   line-height: 30px;
   text-align: center;

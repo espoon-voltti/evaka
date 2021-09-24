@@ -10,6 +10,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../localization'
 import { MessageTypeChip } from './MessageTypeChip'
 import { formatDate } from 'lib-common/date'
@@ -116,7 +117,8 @@ const Container = styled.div<{ isRead: boolean; active: boolean }>`
 const Header = styled.div<{ isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: ${({ isRead }) => (isRead ? 'normal' : '600')};
+  font-weight: ${({ isRead }) =>
+    isRead ? fontWeights.normal : fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 12px;
 `
@@ -124,7 +126,8 @@ const Header = styled.div<{ isRead: boolean }>`
 const TitleAndDate = styled.div<{ isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: ${({ isRead }) => (isRead ? 'normal' : '600')};
+  font-weight: ${({ isRead }) =>
+    isRead ? fontWeights.normal : fontWeights.semibold};
   margin-bottom: ${defaultMargins.xxs};
 `
 

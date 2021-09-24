@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import leaflet from 'leaflet'
+import { fontWeights } from 'lib-components/typography'
 import { FooterContent } from '../Footer'
 import {
   MapContainer,
@@ -296,14 +297,14 @@ const UnitPopup = styled(Popup)`
 `
 
 const UnitName = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   margin-right: 20px;
 `
 
 const UnitDetails = styled.div`
   display: flex;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   line-height: 21px;
   color: #6e6e6e;
 `

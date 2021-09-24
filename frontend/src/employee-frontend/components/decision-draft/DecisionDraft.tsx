@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -21,6 +21,7 @@ import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
+import { fontWeights } from 'lib-components/typography'
 import {
   getDecisionDrafts,
   getDecisionUnits,
@@ -48,7 +49,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 
 const ColumnTitle = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   margin-bottom: 1em;
 `
 

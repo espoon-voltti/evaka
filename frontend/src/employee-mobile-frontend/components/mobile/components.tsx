@@ -9,6 +9,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import colors from 'lib-customizations/common'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
+import { fontWeights } from 'lib-components/typography'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100%;
@@ -26,7 +27,7 @@ export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 16px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;
