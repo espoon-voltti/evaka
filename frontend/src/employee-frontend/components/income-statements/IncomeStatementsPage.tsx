@@ -60,15 +60,23 @@ function IncomeStatementsList({
   )
 }
 
+interface SearchParams {
+  areas: string[]
+  page: number
+}
+
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
 
   const [incomeStatements, setIncomeStatements] = useState<
-    Result<Paged<IncomeStatementAwaitingHandler> & { currentPage: number }>
+    Result<Paged<IncomeStatementAwaitingHandler>>
   >(Loading.of())
-  const [toggledAreas, setToggledAreas] = useState<string[]>([])
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    areas: [],
+    page: 1
+  })
 
   const loadAreas = useRestApi(getAreas, setAreas)
   const loadData = useRestApi(
@@ -78,26 +86,27 @@ export default React.memo(function IncomeStatementsPage() {
 
   useEffect(() => {
     loadAreas()
-    loadData()
-  }, [loadAreas, loadData])
+  }, [loadAreas])
 
   useEffect(() => {
-    loadData(toggledAreas)
-  }, [loadData, toggledAreas])
+    loadData(searchParams.areas, searchParams.page)
+  }, [loadData, searchParams])
 
-  const toggleArea = (area: string) => () => {
-    setToggledAreas((prev) => {
-      if (prev.includes(area)) return prev.filter((t) => t !== area)
-      else return [...prev, area]
-    })
-  }
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      loadData(toggledAreas, page)
+  const toggleArea = useCallback(
+    (area: string) => () => {
+      setSearchParams((prev) => ({
+        ...prev,
+        areas: prev.areas.includes(area)
+          ? prev.areas.filter((t) => t !== area)
+          : [...prev.areas, area]
+      }))
     },
-    [loadData, toggledAreas]
+    []
   )
+
+  const handlePageChange = useCallback((page: number) => {
+    setSearchParams((prev) => ({ ...prev, page }))
+  }, [])
 
   return (
     <Container data-qa="income-statements-page">
@@ -106,7 +115,7 @@ export default React.memo(function IncomeStatementsPage() {
           <H1>{i18n.incomeStatement.table.title}</H1>
           <AreaFilter
             areas={availableAreas}
-            toggled={toggledAreas}
+            toggled={searchParams.areas}
             toggle={toggleArea}
           />
         </ContentArea>
@@ -118,7 +127,7 @@ export default React.memo(function IncomeStatementsPage() {
           <Gap size="s" />
           <Pagination
             pages={incomeStatements.pages}
-            currentPage={incomeStatements.currentPage}
+            currentPage={searchParams.page}
             setPage={handlePageChange}
             label={i18n.common.page}
           />

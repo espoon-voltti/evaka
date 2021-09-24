@@ -27,19 +27,16 @@ export async function getIncomeStatementsAwaitingHandler(
   areas: string[] = [],
   page = 1,
   pageSize = 50
-): Promise<
-  Result<Paged<IncomeStatementAwaitingHandler> & { currentPage: number }>
-> {
-  const areasParam = areas.join(',')
+): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
   return client
     .get<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
-      `/income-statements/awaiting-handler?areas=${areasParam}&page=${page}&pageSize=${pageSize}`
+      '/income-statements/awaiting-handler',
+      { params: { areas: areas.join(','), page, pageSize } }
     )
     .then((res) => res.data)
     .then((body) => ({
       ...body,
-      data: body.data.map(deserializeIncomeStatementAwaitingHandler),
-      currentPage: page
+      data: body.data.map(deserializeIncomeStatementAwaitingHandler)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
