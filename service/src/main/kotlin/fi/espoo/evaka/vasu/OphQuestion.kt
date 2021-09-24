@@ -32,7 +32,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Miten lapsen näkökulma ja mielipiteet on otettu huomioon"
                         VasuLanguage.SV -> "Miten lapsen näkökulma ja mielipiteet on otettu huomioon"
                     },
-                    info = "Lorem ipsum",
+                    info = "Lapsen näkökulma on läsnä keskustelussa koko ajan. Lapsi voi myös osallistua keskusteluun osan ajasta: ikätason mukaan lapsen osallisuutta vasukeskusteluissa lisätään. Lapsi voi esimerkiksi esitellä mielipaikkojaan, muuta oppimisympäristöä tai lempilelujaan sisällä tai ulkona.Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa ”lokeroa” mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa.",
                     multiline = true,
                     value = ""
                 ),
@@ -57,7 +57,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Tavoitteiden toteutuminen"
                         VasuLanguage.SV -> "Tavoitteiden toteutuminen"
                     },
-                    info = "Lorem ipsum",
+                    info = "Kirjoita tähän lyhyesti niistä asioista, joita edellisessä vasukeskustelussa, yhdessä huoltajien kanssa asetitte pedagogi-sen toiminnan tavoitteiksi. Jos jatkat toisen tekemää suunnitelmaa, mainitse siitä ja muista laittaa omat nimikirjaimesi tekstin perään.",
                     multiline = true,
                     value = ""
                 ),
@@ -82,7 +82,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
                         VasuLanguage.SV -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
                     },
-                    info = "Lorem ipsum",
+                    info = "Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa ”lokeroa” mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa. Luo huoltajien kanssa käytävään keskusteluun miellyttävä ilmapiiri. Valmistaudu niin, että myös hankalista asioista on mahdollista puhua.",
                     multiline = true,
                     value = ""
                 ),
@@ -91,7 +91,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
                         VasuLanguage.SV -> "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
                     },
-                    info = "Lorem ipsum",
+                    info = "Valitkaa yhdessä huoltajien kanssa 1-3 tavoitetta tulevalle pedagogiselle toiminnalle. Jotain sellaista, jolla on merkitystä juuri tämän lapsen kohdalla.",
                     multiline = true,
                     value = ""
                 ),
@@ -100,7 +100,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt"
                         VasuLanguage.SV -> "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt"
                     },
-                    info = "Lorem ipsum",
+                    info = "Kehitykseen ja oppimiseen liittyviä yksilöllisiä tarpeita voi kuvata myös sivulla kolme. Tähän kirjoitetaan rakenteelliset tukitoimet ja muu sellainen lapsen hyvinvointiin liittyvä tuki, joka ei käy ilmi pedagogisen toiminnan kuvauksessa.",
                     multiline = true,
                     value = ""
                 )
