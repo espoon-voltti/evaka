@@ -10,6 +10,8 @@ import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.db.configureJdbi
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.statement.Slf4JSqlLogger
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
@@ -18,7 +20,11 @@ import javax.sql.DataSource
 @Configuration
 class DatabaseConfig {
     @Bean
-    fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
+    fun jdbi(dataSource: DataSource, env: DatabaseEnv) = configureJdbi(Jdbi.create(dataSource)).apply {
+        if (env.logSql) {
+            setSqlLogger(Slf4JSqlLogger(LoggerFactory.getLogger("fi.espoo.evaka.sql")))
+        }
+    }
 
     @Bean
     fun dataSource(env: DatabaseEnv): DataSource {
