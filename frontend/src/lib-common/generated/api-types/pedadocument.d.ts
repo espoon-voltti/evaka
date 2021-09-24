@@ -26,5 +26,4 @@ export interface PedagogicalDocumentPostBody {
   attachmentId: UUID | null
   childId: UUID
   description: string
-  id: UUID
 }

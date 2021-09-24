@@ -34,8 +34,8 @@ class PedagogicalDocumentController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PedagogicalDocumentPostBody
-    ): ResponseEntity<PedagogicalDocumentId> {
-        Audit.PedagogicalDocumentUpdate.log(body.id)
+    ): ResponseEntity<PedagogicalDocument> {
+        Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPSERT, body.childId)
         val doc = createDocument(db, user, body)
         return ResponseEntity.ok(doc)
@@ -48,9 +48,9 @@ class PedagogicalDocumentController(
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
-        Audit.PedagogicalDocumentUpdate.log(body.id)
+        Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPSERT, body.childId)
-        val doc = updateDocument(db, user, body)
+        val doc = updateDocument(db, user, body, documentId)
         return ResponseEntity.ok(doc)
     }
 
@@ -77,7 +77,6 @@ data class PedagogicalDocument(
 )
 
 data class PedagogicalDocumentPostBody(
-    val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
     val attachmentId: AttachmentId?
@@ -87,21 +86,20 @@ private fun createDocument(
     db: Database,
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
-): PedagogicalDocumentId {
+): PedagogicalDocument {
     return db.transaction { tx ->
         tx.createUpdate(
             """
-                INSERT INTO pedagogical_document(id, child_id, created_by, description)
-                VALUES (:id, :child_id, :created_by, :description)
-                RETURNING id
+                INSERT INTO pedagogical_document(child_id, created_by, description)
+                VALUES (:child_id, :created_by, :description)
+                RETURNING *
             """.trimIndent()
         )
-            .bind("id", body.id)
             .bind("child_id", body.childId)
             .bind("created_by", user.id)
             .bind("description", body.description)
             .executeAndReturnGeneratedKeys()
-            .mapTo<PedagogicalDocumentId>()
+            .mapTo<PedagogicalDocument>()
             .first()
     }
 }
@@ -109,7 +107,8 @@ private fun createDocument(
 private fun updateDocument(
     db: Database,
     user: AuthenticatedUser,
-    body: PedagogicalDocumentPostBody
+    body: PedagogicalDocumentPostBody,
+    documentId: PedagogicalDocumentId
 ): PedagogicalDocument {
     return db.transaction { tx ->
         tx.createUpdate(
@@ -121,7 +120,7 @@ private fun updateDocument(
                 WHERE id = :id AND child_id = :child_id
             """.trimIndent()
         )
-            .bind("id", body.id)
+            .bind("id", documentId)
             .bind("child_id", body.childId)
             .bind("description", body.description)
             .bind("updated_by", user.id)
