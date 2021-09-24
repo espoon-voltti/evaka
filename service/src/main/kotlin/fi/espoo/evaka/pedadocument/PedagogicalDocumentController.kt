@@ -91,14 +91,15 @@ private fun createDocument(
     return db.transaction { tx ->
         tx.createUpdate(
             """
-                INSERT INTO pedagogical_document(id, child_id, created_by)
-                VALUES (:id, :child_id, :created_by)
+                INSERT INTO pedagogical_document(id, child_id, created_by, description)
+                VALUES (:id, :child_id, :created_by, :description)
                 RETURNING id
             """.trimIndent()
         )
             .bind("id", body.id)
             .bind("child_id", body.childId)
             .bind("created_by", user.id)
+            .bind("description", body.description)
             .executeAndReturnGeneratedKeys()
             .mapTo<PedagogicalDocumentId>()
             .first()
