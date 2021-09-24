@@ -20,6 +20,7 @@ import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
+import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
 
 export interface ChildState {
   person: Result<PersonDetails>
@@ -52,6 +53,8 @@ export interface ChildState {
   setRecipients: (r: Result<Recipient[]>) => void
   vasus: Result<VasuDocumentSummary[]>
   setVasus: (r: Result<VasuDocumentSummary[]>) => void
+  pedagogicalDocuments: Result<PedagogicalDocument[]>
+  setPedagogicalDocuments: (r: Result<PedagogicalDocument[]>) => void
 }
 
 const defaultState: ChildState = {
@@ -84,7 +87,9 @@ const defaultState: ChildState = {
   recipients: Loading.of(),
   setRecipients: () => undefined,
   vasus: Loading.of(),
-  setVasus: () => undefined
+  setVasus: () => undefined,
+  pedagogicalDocuments: Loading.of(),
+  setPedagogicalDocuments: () => undefined
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -141,6 +146,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     defaultState.recipients
   )
 
+  const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
+    Result<PedagogicalDocument[]>
+  >(defaultState.pedagogicalDocuments)
+
   const value = useMemo(
     () => ({
       person,
@@ -172,7 +181,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       applications,
       setApplications,
       recipients,
-      setRecipients
+      setRecipients,
+      pedagogicalDocuments,
+      setPedagogicalDocuments
     }),
     [
       person,
@@ -203,7 +214,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       applications,
       setApplications,
       recipients,
-      setRecipients
+      setRecipients,
+      pedagogicalDocuments,
+      setPedagogicalDocuments
     ]
   )
 
