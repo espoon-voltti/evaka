@@ -57,7 +57,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Tavoitteiden toteutuminen"
                         VasuLanguage.SV -> "Tavoitteiden toteutuminen"
                     },
-                    info = "Kirjoita tähän lyhyesti niistä asioista, joita edellisessä vasukeskustelussa, yhdessä huoltajien kanssa asetitte pedagogi-sen toiminnan tavoitteiksi. Jos jatkat toisen tekemää suunnitelmaa, mainitse siitä ja muista laittaa omat nimikirjaimesi tekstin perään.",
+                    info = "Kirjoita tähän lyhyesti niistä asioista, joita edellisessä vasukeskustelussa, yhdessä huoltajien kanssa asetitte pedagogisen toiminnan tavoitteiksi. Jos jatkat toisen tekemää suunnitelmaa, mainitse siitä ja muista laittaa omat nimikirjaimesi tekstin perään.",
                     multiline = true,
                     value = ""
                 ),
