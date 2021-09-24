@@ -18,6 +18,7 @@ import {
   isWeekend,
   lastDayOfMonth,
   setMonth,
+  startOfMonth,
   startOfToday,
   subDays,
   subMonths,
@@ -96,6 +97,9 @@ export default class LocalDate {
     return LocalDate.fromSystemTzDate(
       startOfWeek(this.toSystemTzDate(), { weekStartsOn: 1 })
     )
+  }
+  startOfMonth(): LocalDate {
+    return LocalDate.fromSystemTzDate(startOfMonth(this.toSystemTzDate()))
   }
   lastDayOfMonth(): LocalDate {
     return LocalDate.fromSystemTzDate(lastDayOfMonth(this.toSystemTzDate()))

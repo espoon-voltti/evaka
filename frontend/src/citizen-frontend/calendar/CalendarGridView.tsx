@@ -132,7 +132,22 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
       }))
 
       if (monthlyData.length === 0) {
-        return [weekMonths[weekMonths.length - 1]]
+        // The first week in the data can be the last and first week of a month.
+        // In that case we don't want to include the incomplete month.
+        const firstWeekOfTheMonth = weekMonths[weekMonths.length - 1]
+
+        // Drop the week altogether if it does not actually include the first
+        // days of the month. This can happen because the first day of the month
+        // can be eg. a sunday, which might not be shown on the calendar.
+        if (
+          firstWeekOfTheMonth.weeks[0].dailyReservations.some(
+            ({ date }) => date.date <= 3
+          )
+        ) {
+          return [firstWeekOfTheMonth]
+        }
+
+        return []
       }
 
       const lastMonth = monthlyData[monthlyData.length - 1]

@@ -40,8 +40,8 @@ export default React.memo(function CalendarPage() {
   const loadDefaultRange = useCallback(
     () =>
       loadData(
-        LocalDate.today().startOfWeek(),
-        LocalDate.today().addMonths(2).startOfWeek().subDays(1)
+        LocalDate.today().subMonths(1).startOfMonth().startOfWeek(),
+        LocalDate.today().addYears(1).lastDayOfMonth()
       ),
     [loadData]
   )
