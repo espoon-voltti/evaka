@@ -83,7 +83,7 @@ const DayElem = React.memo(function DayElem({
             ]
           }
         </div>
-        <div>{dailyReservations.date.format('dd.MM.')}</div>
+        <div>{dailyReservations.date.format('d.M.')}</div>
       </DayColumn>
       <div data-qa="reservations">
         <Reservations data={dailyReservations} />

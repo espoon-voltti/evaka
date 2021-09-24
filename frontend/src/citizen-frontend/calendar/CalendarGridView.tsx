@@ -83,7 +83,7 @@ export default React.memo(function CalendarGridView({
                     >
                       <DayCellHeader>
                         <DayCellDate holiday={d.isHoliday}>
-                          {d.date.format('d.M')}
+                          {d.date.format('d.M.')}
                         </DayCellDate>
                       </DayCellHeader>
                       <DayCellReservations data-qa="reservations">
