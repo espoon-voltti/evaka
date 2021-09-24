@@ -78,6 +78,7 @@ export interface FileUploadProps {
   disabled?: boolean
   slim?: boolean
   'data-qa'?: string
+  slimSingleFile?: boolean
 }
 
 const FileUploadContainer = styled.div<{ slim: boolean }>`
@@ -256,6 +257,7 @@ export default React.memo(function FileUpload({
   onUpload,
   onDelete,
   onDownloadFile,
+  slimSingleFile = false,
   slim = false,
   disabled = false,
   'data-qa': dataQa
@@ -405,7 +407,7 @@ export default React.memo(function FileUpload({
           icon={faInfo}
         />
       )}
-      {slim ? (
+      {slim || (slimSingleFile && uploadedFiles.length == 0) ? (
         <SlimInputLabel
           className="file-input-label"
           htmlFor={ariaId}
@@ -419,6 +421,8 @@ export default React.memo(function FileUpload({
           />
           {fileInput}
         </SlimInputLabel>
+      ) : slimSingleFile && uploadedFiles.length > 0 ? (
+        <></>
       ) : (
         <FileInputLabel
           className="file-input-label"
