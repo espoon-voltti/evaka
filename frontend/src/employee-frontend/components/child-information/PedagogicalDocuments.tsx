@@ -16,7 +16,10 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { RequireRole } from '../../utils/roles'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { getChildPedagogicalDocuments } from '../../api/child/pedagogical-documents'
+import {
+  createPedagogicalDocument,
+  getChildPedagogicalDocuments
+} from '../../api/child/pedagogical-documents'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { getAttachmentBlob } from '../../api/attachments'
@@ -43,6 +46,12 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
   }
 
   useEffect(loadData, [id, setPedagogicalDocuments])
+
+  const createNewDocument = () => {
+    const emptyDocument = { childId: id, description: '', attachmentId: null }
+    void createPedagogicalDocument(emptyDocument).then(loadData)
+    toggleUiMode('create-new-pedagogical-document')
+  }
 
   const handleAttachmentUpload = useCallback(
     async (
@@ -111,7 +120,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
         <AddButtonRow
           text={i18n.childInformation.pedagogicalDocument.create}
-          onClick={() => toggleUiMode('create-new-pedagogical-document')} // todo
+          onClick={() => createNewDocument()} // todo
           data-qa="button-create-pedagogical-document"
         />
       </RequireRole>

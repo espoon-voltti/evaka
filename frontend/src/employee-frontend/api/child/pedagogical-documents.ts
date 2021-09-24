@@ -1,6 +1,9 @@
 import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
+import {
+  PedagogicalDocument,
+  PedagogicalDocumentPostBody
+} from 'lib-common/generated/api-types/pedadocument'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 
@@ -20,5 +23,14 @@ export async function getChildPedagogicalDocuments(
         }))
       )
     )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createPedagogicalDocument(
+  data: PedagogicalDocumentPostBody
+): Promise<Result<PedagogicalDocument>> {
+  return client
+    .post(`/pedagogical-document`, data)
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
