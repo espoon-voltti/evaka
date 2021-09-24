@@ -82,7 +82,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
                         VasuLanguage.SV -> "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen"
                     },
-                    info = "Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa ”lokeroa” mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa. Luo huoltajien kanssa käytävään keskusteluun miellyttävä ilmapiiri. Valmistaudu niin, että myös hankalista asioista on mahdollista puhua.",
+                    info = "Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa \"lokeroa\" mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa. Luo huoltajien kanssa käytävään keskusteluun miellyttävä ilmapiiri. Valmistaudu niin, että myös hankalista asioista on mahdollista puhua.",
                     multiline = true,
                     value = ""
                 ),
