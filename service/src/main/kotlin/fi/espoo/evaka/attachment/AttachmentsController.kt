@@ -91,7 +91,7 @@ class AttachmentsController(
         return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file)
     }
 
-    @PostMapping("/pedagogical/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadPedagogicalDocumentAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -101,9 +101,9 @@ class AttachmentsController(
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
         val childId = db.read {
             it.createQuery("SELECT child_id FROM pedagogical_document WHERE id = :id")
-                    .bind("id", documentId)
-                    .mapTo<ChildId>()
-                    .first() 
+                .bind("id", documentId)
+                .mapTo<ChildId>()
+                .first()
         }
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPLOAD_ATTACHMENT, childId)
         val attachmentId = handleFileUpload(db, user, AttachmentParent.None, file)
