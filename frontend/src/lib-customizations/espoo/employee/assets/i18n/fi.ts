@@ -856,6 +856,13 @@ export const fi = {
         noTemplates: 'Yhtään vasupohjaa ei löytynyt',
         error: 'Vasun luonti epäonnistui'
       }
+    },
+    pedagogicalDocument: {
+      title: 'Pedagoginen dokumentointi',
+      date: 'Päivämäärä',
+      document: 'Dokumentti',
+      description: 'Pedagoginen kuvaus',
+      create: 'Lisää uusi dokumentti'
     }
   },
   vasu: {

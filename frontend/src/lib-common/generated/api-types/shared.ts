@@ -51,6 +51,7 @@ export interface EmployeeFeatures {
   finance: boolean
   financeBasics: boolean
   messages: boolean
+  pedagogicalDocuments: boolean
   personSearch: boolean
   reports: boolean
   unitFeatures: boolean
