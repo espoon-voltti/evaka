@@ -54,8 +54,8 @@ class PedagogicalDocumentController(
         return ResponseEntity.ok(doc)
     }
 
-    @GetMapping("/{childId}")
-    fun getPedagogicalDocument(
+    @GetMapping("/child/{childId}")
+    fun getChildPedagogicalDocuments(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
