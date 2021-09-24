@@ -8,11 +8,11 @@ import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
-  faCheck,
   faChevronDown,
   faChevronUp,
   faLockAlt,
-  faSignIn
+  faSignIn,
+  faSignOut
 } from 'lib-icons'
 import React, { useCallback, useState } from 'react'
 import { NavLink } from 'react-router-dom'
@@ -47,11 +47,6 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/decisions" data-qa="nav-decisions">
               {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
-            {featureFlags.experimental?.incomeStatements && (
-              <StyledNavLink to="/income" data-qa="nav-income">
-                {t.header.nav.income} {maybeLockElem}
-              </StyledNavLink>
-            )}
             {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}
@@ -72,14 +67,7 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
       </Nav>
       <LanguageMenu />
       {user ? (
-        <Logout href={getLogoutUri(user)} data-qa="logout-btn">
-          {user ? (
-            <UserName>
-              <span>{user.firstName}</span> <span>{user.lastName}</span>
-            </UserName>
-          ) : null}
-          <LogoutText>{t.header.logout}</LogoutText>
-        </Logout>
+        <UserMenu />
       ) : (
         <Login href={getLoginUri()} data-qa="login-btn">
           <Icon icon={faSignIn} />
@@ -146,23 +134,6 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
-const Logout = styled(Login)`
-  flex-direction: column;
-`
-
-const LogoutText = styled.div`
-  font-size: 0.75rem;
-  text-transform: uppercase;
-`
-
-const UserName = styled.span`
-  text-align: center;
-  text-transform: none;
-
-  span {
-    white-space: nowrap;
-  }
-`
 export const CircledChar = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
@@ -187,58 +158,98 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 
   return (
     <div ref={dropDownRef}>
-      <LanguageButton onClick={toggleOpen} data-qa={'button-select-language'}>
-        {lang}
-        <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
-      </LanguageButton>
+      <DropDownButton onClick={toggleOpen} data-qa={'button-select-language'}>
+        {lang.toUpperCase()}
+        <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
+      </DropDownButton>
       {open ? (
-        <LanguageDropDown data-qa={'select-lang'}>
+        <DropDown data-qa={'select-lang'}>
           {langs.map((l: Lang) => (
-            <LanguageListElement key={l}>
-              <LanguageDropDownButton
-                selected={lang === l}
-                onClick={() => {
-                  setLang(l)
-                  setOpen(false)
-                }}
-                data-qa={`lang-${l}`}
-              >
-                <LanguageShort>{l}</LanguageShort>
-                <span>{t.header.lang[l]}</span>
-                {lang === l ? <LanguageCheck icon={faCheck} /> : null}
-              </LanguageDropDownButton>
-            </LanguageListElement>
+            <DropDownItem
+              key={l}
+              selected={lang === l}
+              onClick={() => {
+                setLang(l)
+                setOpen(false)
+              }}
+              data-qa={`lang-${l}`}
+            >
+              <LanguageShort>{l}</LanguageShort>
+              <span>{t.header.lang[l]}</span>
+            </DropDownItem>
           ))}
-        </LanguageDropDown>
+        </DropDown>
       ) : null}
     </div>
   )
 })
 
-const LanguageButton = styled.button`
+const UserMenu = React.memo(function UserMenu() {
+  const t = useTranslation()
+  const user = useUser()
+  const [open, setOpen] = useState(false)
+  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
+  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+    setOpen(false)
+  )
+
+  return (
+    <div ref={dropDownRef} style={{ position: 'relative' }}>
+      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title'}>
+        {user?.firstName} {user?.lastName}
+        <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
+      </DropDownButton>
+      {open && user ? (
+        <DropDown data-qa={'user-menu'} style={{ width: '200px', right: '0' }}>
+          {featureFlags.experimental?.incomeStatements && (
+            <DropDownItem
+              selected={window.location.pathname.includes('/income')}
+              data-qa={'user-menu-income'}
+              onClick={() => (location.href = '/income')}
+            >
+              {t.header.nav.income}
+            </DropDownItem>
+          )}
+          <DropDownItem
+            key={'user-menu-logout'}
+            selected={false}
+            onClick={() => {
+              location.href = getLogoutUri(user)
+            }}
+          >
+            <div>
+              <span style={{ marginRight: '10px' }}>{t.header.logout}</span>{' '}
+              <FontAwesomeIcon icon={faSignOut} />
+            </div>
+          </DropDownItem>
+        </DropDown>
+      ) : null}
+    </div>
+  )
+})
+
+const DropDownButton = styled.button`
   color: inherit;
-  text-transform: uppercase;
-  font-family: Montserrat, sans-serif;
-  font-size: 1rem;
   background: transparent;
+  font-size: 1rem;
   height: 100%;
   padding: ${defaultMargins.s};
   border: none;
   border-bottom: 3px solid transparent;
   cursor: pointer;
   white-space: nowrap;
+  display: block;
 `
 
-const LanguageIcon = styled(FontAwesomeIcon)`
+const DropDownIcon = styled(FontAwesomeIcon)`
   height: 1em !important;
   width: 0.625em !important;
   margin-left: 8px;
 `
 
-const LanguageDropDown = styled.ul`
+const DropDown = styled.ul`
   position: absolute;
   z-index: 9999;
-  top: 64px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -246,20 +257,20 @@ const LanguageDropDown = styled.ul`
   box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
 `
 
-const LanguageListElement = styled.li`
-  display: block;
-  width: 10.5em;
-`
-
-const LanguageDropDownButton = styled.button<{ selected: boolean }>`
+const DropDownItem = styled.button<{ selected: boolean }>`
   display: flex;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: ${colors.greyscale.dark};
+  font-family: Open Sans;
+  color: ${({ selected }) =>
+    selected ? colors.brandEspoo.espooBlue : colors.greyscale.darkest};
   font-size: 1em;
   font-weight: ${({ selected }) => (selected ? 600 : 400)};
-  padding: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 10px;
+  padding-right: 50px;
   width: 100%;
 
   &:hover {
@@ -271,8 +282,4 @@ const LanguageShort = styled.span`
   width: 1.8rem;
   text-transform: uppercase;
   text-align: left;
-`
-
-const LanguageCheck = styled(FontAwesomeIcon)`
-  margin-left: 8px;
 `
