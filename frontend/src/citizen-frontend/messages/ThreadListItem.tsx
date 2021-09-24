@@ -9,22 +9,26 @@ import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { useTranslation } from '../localization'
 import { MessageTypeChip } from './MessageTypeChip'
 import { formatDate } from 'lib-common/date'
+import { getAttachmentBlob } from '../attachments'
 
 interface Props {
   thread: MessageThread
   active: boolean
   hasUnreadMessages: boolean
   onClick: () => void
+  onAttachmentUnavailable: () => void
 }
 
 export default React.memo(function ThreadListItem({
   thread,
   active,
   hasUnreadMessages,
-  onClick
+  onClick,
+  onAttachmentUnavailable
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
@@ -59,15 +63,28 @@ export default React.memo(function ThreadListItem({
         <Truncated>
           {lastMessage.content.substring(0, 200).replace('\n', ' ')}
         </Truncated>
+        {lastMessage.attachments.length > 0 && (
+          <FixedSpaceColumn spacing="xs">
+            {lastMessage.attachments.map((attachment) => (
+              <FileDownloadButton
+                key={attachment.id}
+                file={attachment}
+                fileFetchFn={getAttachmentBlob}
+                onFileUnavailable={onAttachmentUnavailable}
+                icon
+                data-qa="thread-list-attachment"
+              />
+            ))}
+          </FixedSpaceColumn>
+        )}
       </FixedSpaceColumn>
     </Container>
   )
 })
 
-const Container = styled.button<{ isRead: boolean; active: boolean }>`
+const Container = styled.div<{ isRead: boolean; active: boolean }>`
   text-align: left;
   width: 100%;
-  outline: none;
 
   background-color: ${colors.greyscale.white};
   padding: ${defaultMargins.s} ${defaultMargins.m};

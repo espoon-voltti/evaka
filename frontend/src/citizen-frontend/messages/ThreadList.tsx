@@ -13,10 +13,11 @@ import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
+import { OverlayContext } from '../overlay/state'
 import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
 
@@ -42,6 +43,17 @@ export default React.memo(function ThreadList({
     threadLoadingResult,
     loadMoreThreads
   } = useContext(MessageContext)
+
+  const { setErrorMessage } = useContext(OverlayContext)
+  const onAttachmentUnavailable = useCallback(
+    () =>
+      setErrorMessage({
+        title: t.fileDownload.modalHeader,
+        text: t.fileDownload.modalMessage,
+        type: 'error'
+      }),
+    [t, setErrorMessage]
+  )
 
   return (
     <>
@@ -92,6 +104,7 @@ export default React.memo(function ThreadList({
             onClick={() => selectThread(thread)}
             active={selectedThread?.id === thread.id}
             hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+            onAttachmentUnavailable={onAttachmentUnavailable}
           />
         ))}
         {threadLoadingResult.mapAll({
