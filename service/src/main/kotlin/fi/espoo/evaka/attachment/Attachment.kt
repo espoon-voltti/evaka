@@ -10,12 +10,14 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 
 sealed class AttachmentParent {
     data class Application(val applicationId: ApplicationId) : AttachmentParent()
     data class IncomeStatement(val incomeStatementId: IncomeStatementId) : AttachmentParent()
     data class MessageDraft(val draftId: MessageDraftId) : AttachmentParent()
     data class MessageContent(val messageContentId: MessageContentId) : AttachmentParent()
+    data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) : AttachmentParent()
     object None : AttachmentParent()
 }
 

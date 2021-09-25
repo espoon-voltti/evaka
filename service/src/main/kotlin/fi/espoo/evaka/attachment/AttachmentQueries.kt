@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -30,14 +31,15 @@ fun Database.Transaction.insertAttachment(
     data class AttachmentParentColumn(
         val applicationId: ApplicationId? = null,
         val incomeStatementId: IncomeStatementId? = null,
-        val messageDraftId: MessageDraftId? = null
+        val messageDraftId: MessageDraftId? = null,
+        val pedagogicalDocumentId: PedagogicalDocumentId? = null
     )
 
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, uploaded_by_person, uploaded_by_employee, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :uploadedByPerson, :uploadedByEmployee, :type)
+        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, pedagogical_document_id, uploaded_by_person, uploaded_by_employee, type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :pedagogicalDocumentId, :uploadedByPerson, :uploadedByEmployee, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -51,6 +53,7 @@ fun Database.Transaction.insertAttachment(
                 is AttachmentParent.MessageDraft -> AttachmentParentColumn(messageDraftId = attachTo.draftId)
                 is AttachmentParent.None -> AttachmentParentColumn()
                 is AttachmentParent.MessageContent -> throw IllegalArgumentException("attachments are saved via draft")
+                is AttachmentParent.PedagogicalDocument -> AttachmentParentColumn(pedagogicalDocumentId = attachTo.pedagogicalDocumentId)
             }
         )
         .bind("uploadedByPerson", uploadedByPerson)
@@ -211,6 +214,14 @@ fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, u
 fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: UUID): Int {
     return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by_person = :userId")
         .bind("incomeStatementId", incomeStatementId)
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
+}
+
+fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: PedagogicalDocumentId, userId: UUID): Int {
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE pedagogical_document_id = :pedagogicalDocumentId AND uploaded_by_person = :userId")
+        .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .bind("userId", userId)
         .mapTo<Int>()
         .first()

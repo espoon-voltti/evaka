@@ -10,11 +10,12 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.result.RowView
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -66,12 +67,17 @@ class PedagogicalDocumentController(
         return ResponseEntity.ok(docs)
     }
 }
+data class Attachment(
+    val id: AttachmentId,
+    val name: String,
+    val contentType: String
+)
 
 data class PedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
-    val attachmentId: AttachmentId?,
+    val attachment: Attachment?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime
 )
@@ -114,8 +120,7 @@ private fun updateDocument(
         tx.createUpdate(
             """
                 UPDATE pedagogical_document
-                SET attachment_id = :attachment_id, 
-                    description = :description, 
+                SET description = :description, 
                     updated_by = :updated_by
                 WHERE id = :id AND child_id = :child_id
             """.trimIndent()
@@ -124,7 +129,6 @@ private fun updateDocument(
             .bind("child_id", body.childId)
             .bind("description", body.description)
             .bind("updated_by", user.id)
-            .bindNullable("attachment_id", body.attachmentId)
             .executeAndReturnGeneratedKeys()
             .mapTo<PedagogicalDocument>()
             .first()
@@ -138,13 +142,39 @@ private fun findPedagogicalDocumentsByChild(
     return db.read {
         it.createQuery(
             """
-                SELECT id, child_id, description, attachment_id, created, updated
-                FROM pedagogical_document
+                SELECT 
+                    pd.id,
+                    pd.child_id,
+                    pd.description,
+                    pd.created,
+                    pd.updated,
+                    a.id attachment_id,
+                    a.name attachment_name,
+                    a.content_type attachment_content_type
+                FROM pedagogical_document pd
+                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
                 WHERE child_id = :child_id
             """.trimIndent()
         )
             .bind("child_id", childId)
-            .mapTo<PedagogicalDocument>()
+            .map { row -> mapPedagogicalDocument(row) }
             .toList()
     }
+}
+
+private fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
+    val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
+
+    return PedagogicalDocument(
+        id = row.mapColumn("id"),
+        childId = row.mapColumn("child_id"),
+        description = row.mapColumn("description"),
+        attachment = if (hasAttachment) Attachment(
+            id = row.mapColumn("attachment_id"),
+            name = row.mapColumn("attachment_name"),
+            contentType = row.mapColumn("attachment_content_type"),
+        ) else null,
+        created = row.mapColumn("created"),
+        updated = row.mapColumn("updated")
+    )
 }

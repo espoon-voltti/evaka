@@ -324,6 +324,8 @@ WHERE employee_id = :userId
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
                     Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> true
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> true
             }
             is AuthenticatedUser.MobileDevice -> false
             AuthenticatedUser.SystemInternalUser -> false
