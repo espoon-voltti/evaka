@@ -106,15 +106,8 @@ class AttachmentsController(
                 .first()
         }
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPLOAD_ATTACHMENT, childId)
-        val attachmentId = handleFileUpload(db, user, AttachmentParent.None, file)
-        db.transaction {
-            it.createUpdate("UPDATE pedagogical_document SET attachment_id = :attachmentId WHERE id = :id")
-                .bind("attachmentId", attachmentId)
-                .bind("id", documentId)
-                .execute()
-        }
 
-        return attachmentId
+        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -164,6 +157,10 @@ class AttachmentsController(
                 is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
                 is AttachmentParent.IncomeStatement -> it.userIncomeStatementAttachmentCount(
                     attachTo.incomeStatementId,
+                    user.id
+                )
+                is AttachmentParent.PedagogicalDocument -> it.userPedagogicalDocumentCount(
+                    attachTo.pedagogicalDocumentId,
                     user.id
                 )
                 is AttachmentParent.MessageDraft,
@@ -230,6 +227,7 @@ class AttachmentsController(
             is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageContent -> Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
+            is AttachmentParent.PedagogicalDocument -> Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
@@ -263,6 +261,7 @@ class AttachmentsController(
             is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
             is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
+            is AttachmentParent.PedagogicalDocument -> Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
