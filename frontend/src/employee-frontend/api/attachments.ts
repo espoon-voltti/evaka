@@ -63,6 +63,17 @@ export const saveMessageAttachment = (
     onUploadProgress
   )
 
+export const savePedagogicalDocumentAttachment = (
+  documentId: UUID,
+  file: File,
+  onUploadProgress: (progressEvent: ProgressEvent) => void
+): Promise<Result<UUID>> =>
+  doSaveAttachment(
+    { path: `/attachments/pedagogical-documents/${documentId}` },
+    file,
+    onUploadProgress
+  )
+
 export const deleteAttachment = (id: UUID): Promise<Result<void>> =>
   client
     .delete(`/attachments/${id}`)
