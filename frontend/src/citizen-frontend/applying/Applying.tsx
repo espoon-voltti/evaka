@@ -22,12 +22,12 @@ export default React.memo(function Applying() {
       label: t.header.nav.map
     },
     {
-      id: 'value-decisions',
+      id: 'applications',
       link: '/applying/applications',
       label: t.header.nav.applications
     },
     {
-      id: 'invoices',
+      id: 'decisions',
       link: '/applying/decisions',
       label: t.header.nav.decisions
     }
