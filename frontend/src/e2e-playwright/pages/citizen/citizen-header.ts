@@ -32,8 +32,7 @@ export default class CitizenHeader {
   async selectTab(tab: 'applications' | 'decisions' | 'income' | 'calendar') {
     const isContainedInApplyingSubheader = [
       'applications',
-      'decisions',
-      'income'
+      'decisions'
     ].includes(tab)
     if (this.type === 'mobile') {
       await this.#menuButton.click()
