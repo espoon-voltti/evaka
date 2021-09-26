@@ -50,6 +50,11 @@ export default class CitizenHeader {
           .locator(`[data-qa="applying-subnavigation"]`)
           .locator(`[data-qa="${tab}-tab"]`)
           .click()
+      } else {
+        await this.page
+          .locator(`[data-qa="${this.type}-nav"]`)
+          .locator(`[data-qa="nav-${tab}"]`)
+          .click()
       }
     } else {
       await this.page
