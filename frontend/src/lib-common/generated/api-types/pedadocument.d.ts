@@ -8,10 +8,19 @@
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.pedadocument.Attachment
+*/
+export interface Attachment {
+  contentType: string
+  id: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pedadocument.PedagogicalDocument
 */
 export interface PedagogicalDocument {
-  attachmentId: UUID | null
+  attachment: Attachment | null
   childId: UUID
   created: Date
   description: string
