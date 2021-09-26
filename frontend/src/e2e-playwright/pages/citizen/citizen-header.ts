@@ -41,7 +41,7 @@ export default class CitizenHeader {
     if (tab !== 'income') {
       if (isContainedInApplyingSubheader) {
         await this.page
-        .locator(`[data-qa="${this.type}-nav"]`)
+          .locator(`[data-qa="${this.type}-nav"]`)
           .locator(`[data-qa="nav-applying"]`)
           .click()
         await this.page.waitForSelector('[data-qa="applying-subnavigation"]', {
