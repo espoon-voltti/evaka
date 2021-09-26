@@ -30,10 +30,28 @@ export default class CitizenHeader {
   }
 
   async selectTab(tab: 'applications' | 'decisions' | 'income' | 'calendar') {
+    const isContainedInApplyingSubheader = [
+      'applications',
+      'decisions',
+      'income'
+    ].includes(tab)
     if (this.type === 'mobile') {
       await this.#menuButton.click()
     }
     if (tab !== 'income') {
+      if (isContainedInApplyingSubheader) {
+        await this.page
+          .locator(`[data-qa="applying-nav"]`)
+          .locator(`[data-qa="nav-${tab}"]`)
+          .click()
+        await this.page.waitForSelector('[data-qa="applying-subnavigation"]', {
+          state: 'visible'
+        })
+        await this.page
+          .locator(`[data-qa="applying-subnavigation"]`)
+          .locator(`[data-qa="nav-${tab}"]`)
+          .click()
+      }
       await this.page
         .locator(`[data-qa="${this.type}-nav"]`)
         .locator(`[data-qa="nav-${tab}"]`)

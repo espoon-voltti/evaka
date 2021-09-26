@@ -35,7 +35,7 @@ export default React.memo(function Applying() {
 
   return (
     <>
-      {loggedIn && <Tabs tabs={tabs} />}
+      {loggedIn && <Tabs tabs={tabs} data-qa="applying-subnavigation" />}
       <Switch>
         <Route exact path="/applying/map" component={MapView} />
         <Route exact path="/applying/applications" component={Applications} />
