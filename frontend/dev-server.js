@@ -24,7 +24,8 @@ const app = express()
 app.use(
   '/api/internal',
   proxy(process.env.API_PROXY_URL ?? 'http://localhost:3020', {
-    proxyReqPathResolver: ({ originalUrl }) => originalUrl
+    proxyReqPathResolver: ({ originalUrl }) => originalUrl,
+    limit: '100mb'
   })
 )
 app.use(
