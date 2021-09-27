@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -27,6 +27,7 @@ import {
   getPedagogicalDocument,
   updatePedagogicalDocument
 } from '../../api/child/pedagogical-documents'
+import { UIContext } from '../../state/ui'
 
 interface Props {
   id: UUID
@@ -61,6 +62,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     })
 
   const [editMode, setEditMode] = useState(initInEditMode)
+  const { clearUiMode } = useContext(UIContext)
 
   const updateDocument = () => {
     const { childId, description } = pedagogicalDocument
@@ -77,9 +79,9 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const deleteDocument = () => {
     const attachmentId = pedagogicalDocument?.attachment?.id
-    if (!attachmentId) deletePedagogicalDocument(id).then(handleRemovedDocument)
+    if (!attachmentId) void deletePedagogicalDocument(id).then(handleRemovedDocument)
     else {
-      deleteAttachment(attachmentId)
+      void deleteAttachment(attachmentId)
         .then(() => deletePedagogicalDocument(id))
         .then(handleRemovedDocument)
     }
@@ -90,7 +92,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
     ) => {
-      console.log(file)
       return (
         await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
       ).map((id) => {
@@ -114,6 +115,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       ),
     []
   )
+
+  const endEdit = () => {
+    setEditMode(false)
+    clearUiMode()
+  }
 
   return (
     <Tr
@@ -162,14 +168,14 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             <InlineButton
               onClick={() => {
                 updateDocument()
-                setEditMode(false)
+                endEdit()
               }}
               text={'Tallenna'}
             />
             <InlineButton
               onClick={() => {
                 cancelEdit()
-                setEditMode(false)
+                endEdit()
               }}
               text={'Peruuta'}
             />

@@ -20,6 +20,7 @@ import {
 } from '../../api/child/pedagogical-documents'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
+import { UIContext } from '../../state/ui'
 
 interface Props {
   id: UUID
@@ -35,6 +36,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
     useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
+  const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const loadData = () => {
     setPedagogicalDocuments(Loading.of())
@@ -45,7 +47,13 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
 
   const createNewDocument = () => {
     const emptyDocument = { childId: id, description: '', attachmentId: null }
-    void createPedagogicalDocument(emptyDocument).then(loadData)
+    void createPedagogicalDocument(emptyDocument)
+      .then(
+        (result) =>
+          result.isSuccess &&
+          toggleUiMode(`edit-pedagogical-document-${result.value.id}`)
+      )
+      .then(loadData)
   }
 
   function renderPedagigicalDocuments() {
@@ -64,7 +72,9 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
             description={pedagogicalDocument.description}
             created={pedagogicalDocument.created}
             updated={pedagogicalDocument.updated}
-            initInEditMode={false}
+            initInEditMode={
+              uiMode == `edit-pedagogical-document-${pedagogicalDocument.id}`
+            }
             handleRemovedDocument={loadData}
           />
         )
