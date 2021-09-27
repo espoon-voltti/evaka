@@ -15,7 +15,11 @@ fun checkFileContentType(file: InputStream, contentType: String) {
     val contentMatchesMagicNumbers = file.use { stream ->
         val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.maxOrNull() ?: 0)
         magicNumbers.any { numbers ->
-            fileBytes.slice(numbers.indices).toByteArray().contentEquals(numbers)
+            if (fileBytes.size < numbers.size) {
+                false
+            } else {
+                fileBytes.slice(numbers.indices).toByteArray().contentEquals(numbers)
+            }
         }
     }
 
