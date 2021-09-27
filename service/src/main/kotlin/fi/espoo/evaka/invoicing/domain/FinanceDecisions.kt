@@ -17,6 +17,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     fun withRandomId(): Decision
     fun withValidity(period: DateRange): Decision
     fun contentEquals(decision: Decision): Boolean
+    fun overlapsWith(other: Decision): Boolean
     fun isAnnulled(): Boolean
     fun isEmpty(): Boolean
     fun annul(): Decision
@@ -35,12 +36,7 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
         .sortedBy { it.validFrom }
         .fold(conflicting) { conflicts, newDecision ->
             val updatedConflicts = conflicts
-                .filter { conflict ->
-                    conflict.headOfFamily.id == newDecision.headOfFamily.id && DateRange(
-                        conflict.validFrom,
-                        conflict.validTo
-                    ).overlaps(DateRange(newDecision.validFrom, newDecision.validTo))
-                }
+                .filter { conflict -> conflict.overlapsWith(newDecision) }
                 .map { conflict ->
                     if (newDecision.validFrom <= conflict.validFrom) {
                         conflict.annul()

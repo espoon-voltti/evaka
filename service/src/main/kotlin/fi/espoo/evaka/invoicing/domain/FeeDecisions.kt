@@ -62,6 +62,13 @@ data class FeeDecision(
             this.feeThresholds == decision.feeThresholds
     }
 
+    override fun overlapsWith(other: FeeDecision): Boolean {
+        return this.headOfFamily.id == other.headOfFamily.id && DateRange(
+            this.validFrom,
+            this.validTo
+        ).overlaps(DateRange(other.validFrom, other.validTo))
+    }
+
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
     override fun isEmpty(): Boolean = this.children.isEmpty()
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
