@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -748,6 +749,25 @@ class KoskiIntegrationTest : FullApplicationTest() {
             ),
             opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
+    }
+
+    @Test
+    fun `if a child has no ssn but has an oid, study rights are sent normally`() {
+        val personOid = "1.2.246.562.24.23736347564"
+
+        insertPlacement(child = testChild_7)
+        db.transaction {
+            it.createUpdate("UPDATE person SET oph_person_oid = :oid WHERE id = :id")
+                .bind("id", testChild_7.id)
+                .bind("oid", personOid)
+                .execute()
+        }
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        val studyRights = koskiServer.getStudyRights()
+        assertEquals(1, studyRights.size)
+        val studyRightOid = studyRights.values.first().opiskeluoikeus.oid
+        assertEquals(setOf(studyRightOid), koskiServer.getPersonStudyRights(personOid))
     }
 
     private fun insertPlacement(

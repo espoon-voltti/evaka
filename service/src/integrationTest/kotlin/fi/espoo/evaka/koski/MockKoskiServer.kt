@@ -5,6 +5,8 @@
 package fi.espoo.evaka.koski
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.common.collect.Multimaps
+import com.google.common.collect.SetMultimap
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.post
@@ -16,7 +18,8 @@ import javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST
 import kotlin.concurrent.withLock
 import kotlin.random.Random
 
-private typealias Oid = String
+private typealias PersonOid = String
+private typealias StudyRightOid = String
 private typealias Ssn = String
 
 data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
@@ -26,8 +29,11 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
     private val logger = KotlinLogging.logger {}
 
     private val lock = ReentrantLock()
-    private val persons = HashMap<Ssn, Oid>()
-    private val studyRights = HashMap<Oid, MockStudyRight>()
+    private val persons = HashMap<Ssn, PersonOid>()
+    private val studyRights = HashMap<StudyRightOid, MockStudyRight>()
+    private val personStudyRights: SetMultimap<PersonOid, StudyRightOid> = Multimaps.newSetMultimap(HashMap()) {
+        HashSet()
+    }
     private var personOid = Random.nextInt(1_000_000)
     private var studyRightOid = Random.nextInt(1_000_000)
 
@@ -40,7 +46,8 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
         }
     }
 
-    fun getStudyRights(): HashMap<Oid, MockStudyRight> = lock.withLock { HashMap(studyRights) }
+    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> = lock.withLock { HashMap(studyRights) }
+    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> = lock.withLock { personStudyRights.get(oid) }
 
     fun clearData() = lock.withLock {
         persons.clear()
@@ -85,9 +92,11 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
 
                             if (it.tila.opiskeluoikeusjaksot.any { jakso -> jakso.tila.koodiarvo == OpiskeluoikeusjaksonTilaKoodi.VOIDED }) {
                                 studyRights.remove(studyRightOid)
+                                personStudyRights.get(personOid).remove(studyRightOid)
                             } else {
                                 studyRights[studyRightOid] =
                                     MockStudyRight(version, opiskeluoikeus = it.copy(oid = studyRightOid))
+                                personStudyRights.get(personOid).add(studyRightOid)
                             }
 
                             objectMapper.createObjectNode().apply {
