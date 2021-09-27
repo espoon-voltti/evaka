@@ -543,7 +543,7 @@ private data class Caretakers<K : OccupancyGroupingKey>(
     val caretakerCount: BigDecimal
 )
 
-private data class Placement(
+data class Placement(
     val groupingId: DaycareId,
     val placementId: PlacementId,
     val childId: UUID,
@@ -565,19 +565,19 @@ private data class Child(
     val dateOfBirth: LocalDate
 )
 
-private data class ServiceNeed(
+data class ServiceNeed(
     val placementId: PlacementId,
     val occupancyCoefficient: BigDecimal,
     val period: FiniteDateRange
 )
 
-private data class AssistanceNeed(
+data class AssistanceNeed(
     val childId: UUID,
     val capacityFactor: BigDecimal,
     val period: FiniteDateRange
 )
 
-private data class Absence(
+data class Absence(
     val childId: UUID,
     val date: LocalDate,
     val careType: AbsenceCareType
