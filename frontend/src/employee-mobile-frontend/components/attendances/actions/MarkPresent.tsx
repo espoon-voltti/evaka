@@ -20,6 +20,7 @@ import Title from 'lib-components/atoms/Title'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
+import { fontWeights } from 'lib-components/typography'
 
 import { TallContentArea } from '../../mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
@@ -157,14 +158,14 @@ const TimeWrapper = styled.div`
   align-items: center;
   font-size: 20px;
   color: ${colors.blues.dark};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 
   input {
     font-size: 60px;
     width: 100%;
     color: ${colors.blues.dark};
     font-family: Montserrat, sans-serif;
-    font-weight: 300;
+    font-weight: ${fontWeights.light};
     border-bottom: none;
   }
 `

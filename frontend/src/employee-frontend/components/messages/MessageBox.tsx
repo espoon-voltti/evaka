@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { espooBrandColors } from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { AccountView, View } from './types-view'
 import { MessageContext } from './MessageContext'
@@ -14,15 +15,15 @@ import { MessageContext } from './MessageContext'
 export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
-  font-weight: ${(p) => (p.active ? '600;' : 'unset')}
+  font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
   background-color: ${(p) =>
-    p.active ? espooBrandColors.espooTurquoiseLight : 'unset'}
+    p.active ? espooBrandColors.espooTurquoiseLight : 'unset'};
 `
 
 const UnreadCount = styled.span`
   color: ${espooBrandColors.espooBlue};
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   padding-left: ${defaultMargins.xxs};
 `
 

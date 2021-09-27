@@ -9,7 +9,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
-import { H4 } from 'lib-components/typography'
+import { fontWeights, H4 } from 'lib-components/typography'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -157,7 +157,7 @@ const MainColLeft = styled.div`
   flex-grow: 0;
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  font-weight: 300;
+  font-weight: ${fontWeights.light};
   color: ${colors.primary};
   text-align: center;
 

@@ -28,6 +28,7 @@ import {
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { fontWeights } from 'lib-components/typography'
 import {
   deleteAttachment,
   getAttachmentBlob,
@@ -457,5 +458,5 @@ const BottomBar = styled.div`
 `
 
 const Bold = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `

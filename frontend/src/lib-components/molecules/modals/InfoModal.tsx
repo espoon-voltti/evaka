@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -20,7 +20,7 @@ import {
 } from './FormModal'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
-import { P } from 'lib-components/typography'
+import { fontWeights, P } from 'lib-components/typography'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
 interface SizeProps {
@@ -68,7 +68,7 @@ const CloseButton = styled.button`
   text-transform: uppercase;
   color: white;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   cursor: pointer;
 
   svg {

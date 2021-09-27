@@ -1,10 +1,6 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
@@ -15,6 +11,7 @@ import { faTimes } from 'lib-icons'
 import Button from '../atoms/buttons/Button'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
+import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
 const MultiRowTextArea = styled(TextArea)`
@@ -32,7 +29,7 @@ const EditorRow = styled.div`
   }
 `
 const Label = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Recipient = styled.span<{ selected: boolean; toggleable: boolean }>`
@@ -41,7 +38,7 @@ const Recipient = styled.span<{ selected: boolean; toggleable: boolean }>`
   background-color: ${({ theme: { colors }, selected }) =>
     selected ? colors.greyscale.lighter : 'unset'};
   border-radius: 1000px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${({ theme: { colors }, selected }) =>
     selected ? 'unset' : colors.main.primary};
 

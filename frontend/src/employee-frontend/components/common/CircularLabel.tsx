@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 
 const RoundLabel = styled.div<{ background: string; color: string }>`
   border-radius: 15px;
@@ -11,7 +12,7 @@ const RoundLabel = styled.div<{ background: string; color: string }>`
   padding: 0 10px;
   text-align: center;
   line-height: 30px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   white-space: nowrap;
 
   background: ${({ background }) => background};

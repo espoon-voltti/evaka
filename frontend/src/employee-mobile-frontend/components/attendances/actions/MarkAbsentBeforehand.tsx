@@ -21,7 +21,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Absence } from 'lib-common/api-types/child/Absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Label, P } from 'lib-components/typography'
+import { fontWeights, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
@@ -334,7 +334,7 @@ const AbsenceRow = styled.div`
 `
 
 const AbsenceDate = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 4px;
 `

@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -56,7 +57,7 @@ const RoundImage = styled.img`
 const CustomTitle = styled.h2`
   font-family: Montserrat, 'Arial', sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 20px;
   line-height: 30px;
   margin-top: 0;
@@ -68,7 +69,7 @@ const CustomTitle = styled.h2`
 const GroupName = styled.div`
   font-family: 'Open Sans', 'Arial', sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 15px;
   line-height: 22px;
   text-transform: uppercase;
@@ -120,7 +121,7 @@ const LinkButtonWithIcon = styled(Link)``
 const LinkButtonText = styled.span`
   color: ${colors.blues.primary};
   margin-left: ${defaultMargins.s};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   line-height: 16px;
 `

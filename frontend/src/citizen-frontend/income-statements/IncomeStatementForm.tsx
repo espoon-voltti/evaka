@@ -5,7 +5,15 @@
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { H1, H2, H3, H4, Label, P } from 'lib-components/typography'
+import {
+  fontWeights,
+  H1,
+  H2,
+  H3,
+  H4,
+  Label,
+  P
+} from 'lib-components/typography'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { useLang, useTranslation } from '../localization'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -1046,7 +1054,7 @@ const HighestFeeInfo = styled(P).attrs({ noMargin: true })`
 `
 
 const LightLabel = styled(Label)`
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
 `
 
 const Indent = styled.div`
@@ -1087,7 +1095,7 @@ const LabelError = styled(function ({
   )
 })`
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${(p) => p.theme.colors.accents.orangeDark};
 
   > :first-child {

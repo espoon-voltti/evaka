@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import { faExclamationTriangle } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
+import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -37,7 +38,7 @@ const DateRowItem = styled.span`
   margin-bottom: auto;
   width: ${(props: DateRowItemProps) => props.width};
   font-weight: ${(props: DateRowItemProps) =>
-    props.strong ? '600' : 'normal'};
+    props.strong ? fontWeights.semibold : fontWeights.normal};
 
   .react-datepicker-wrapper > div > div > input {
     width: 150px;
@@ -58,7 +59,7 @@ const Container = styled.section`
 const OverlapError = styled.span`
   font-size: 12px;
   font-style: italic;
-  font-weight: normal;
+  font-weight: ${fontWeights.normal};
   color: ${colors.greyscale.dark};
   margin-bottom: auto;
   margin-top: auto;

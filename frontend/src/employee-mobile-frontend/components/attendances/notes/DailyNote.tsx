@@ -9,7 +9,7 @@ import colors from 'lib-customizations/common'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
-import { Label } from 'lib-components/typography'
+import { fontWeights, Label } from 'lib-components/typography'
 
 import { AttendanceChild, DailyNote } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
@@ -103,7 +103,7 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
 const NotesTitle = styled(Title)`
   font-family: Montserrat, sans-serif;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: ${fontWeights.medium};
   color: ${colors.blues.dark};
   margin-top: 0;
   margin-bottom: 0;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
@@ -27,7 +28,7 @@ import { EVAKA_START } from '../../../../constants'
 import FiniteDateRange from 'lib-common/finite-date-range'
 
 const Bold = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 interface Props {

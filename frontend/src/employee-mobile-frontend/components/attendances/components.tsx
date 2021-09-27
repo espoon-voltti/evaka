@@ -15,7 +15,7 @@ import {
   isSpacingSize,
   SpacingSize
 } from 'lib-components/white-space'
-import { Label } from 'lib-components/typography'
+import { fontWeights, Label } from 'lib-components/typography'
 import Title from 'lib-components/atoms/Title'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { useTranslation } from '../../state/i18n'
@@ -118,7 +118,7 @@ export const ArrivalTime = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: ${fontWeights.medium};
   line-height: 27px;
   letter-spacing: 0em;
   display: flex;
@@ -126,7 +126,7 @@ export const ArrivalTime = styled.span`
 
   span:first-child {
     margin-right: ${defaultMargins.xs};
-    font-weight: 600;
+    font-weight: ${fontWeights.semibold};
   }
 `
 
@@ -179,7 +179,7 @@ const AbsenceTitle = styled(Title)`
   color: ${colors};
   font-size: 18px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: ${fontWeights.medium};
   line-height: 27px;
   letter-spacing: 0em;
   text-align: left;

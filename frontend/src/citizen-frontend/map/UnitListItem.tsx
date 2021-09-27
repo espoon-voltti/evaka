@@ -7,8 +7,9 @@ import styled from 'styled-components'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { defaultMargins as dM } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../localization'
-import { formatCareTypes } from '../map/format'
+import { formatCareTypes } from './format'
 
 type Props = {
   unit: PublicUnit
@@ -73,7 +74,7 @@ const MainRow = styled.div`
 `
 
 const UnitName = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Distance = styled.div`
@@ -82,7 +83,7 @@ const Distance = styled.div`
 `
 
 const UnitDetails = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
   color: ${colors.greyscale.dark};

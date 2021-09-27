@@ -1,10 +1,6 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
@@ -12,6 +8,7 @@ import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'lib-icons'
+import { fontWeights } from 'lib-components/typography'
 
 const MenuBackground = styled.div`
   z-index: 100;
@@ -34,7 +31,7 @@ const TopRow = styled.div`
 
   color: ${colors.blues.dark};
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   line-height: 24px;
 `

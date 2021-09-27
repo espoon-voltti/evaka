@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect } from 'react'
 import { flatMap, partition } from 'lodash'
 import colors from 'lib-customizations/common'
+import { fontWeights } from 'lib-components/typography'
 import { Label, LabelText } from '../common/styled/common'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -278,7 +279,7 @@ const AbsencesPage = styled.div`
   }
 
   .table thead th {
-    font-weight: 600 !important;
+    font-weight: ${fontWeights.semibold} !important;
     font-size: 0.8rem !important;
   }
 
@@ -471,7 +472,7 @@ const AbsencesPage = styled.div`
   }
 
   .staff-attendance-row {
-    font-weight: 600;
+    font-weight: ${fontWeights.semibold};
 
     td {
       cursor: default;
@@ -491,7 +492,7 @@ const AbsencesPage = styled.div`
         text-align: center;
         margin: 0 auto;
         padding: 0;
-        font-weight: 600;
+        font-weight: ${fontWeights.semibold};
         font-size: 0.8rem;
         height: ${cellSize};
         width: ${cellSize};

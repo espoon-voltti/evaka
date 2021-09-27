@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 import Container from '../layout/Container'
 
@@ -92,7 +93,7 @@ const TabTitle = styled.span<TabContainerProps>`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &.active {
-    font-weight: 700;
+    font-weight: ${fontWeights.bold};
   }
 `
 
@@ -103,5 +104,5 @@ const TabCounter = styled.span`
   background-color: ${({ theme: { colors } }) => colors.accents.orange};
   color: ${({ theme: { colors } }) => colors.greyscale.white};
   margin-left: ${defaultMargins.s};
-  font-weight: 700;
+  font-weight: ${fontWeights.bold};
 `

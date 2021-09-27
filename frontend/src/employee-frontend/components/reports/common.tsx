@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
 import { Table } from 'lib-components/layout/Table'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import { GapVerticalSmall } from '../common/styled/separators'
@@ -57,7 +58,7 @@ export const FilterRow = styled.div`
   margin-bottom: 6px;
 `
 export const FilterLabel = styled.label`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   width: 150px;
   min-width: 150px;
 `

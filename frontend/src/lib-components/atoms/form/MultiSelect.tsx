@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { fontWeights } from '../../typography'
 import { StaticCheckBox } from './Checkbox'
 import { defaultMargins } from '../../white-space'
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
@@ -155,6 +156,6 @@ const OptionContents = React.memo(function Option({
 const SecondaryText = styled.span`
   font-size: 14px;
   line-height: 21px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `

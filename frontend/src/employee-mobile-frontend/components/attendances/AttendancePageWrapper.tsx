@@ -25,6 +25,7 @@ import { faTimes } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { fontWeights } from 'lib-components/typography'
 
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
@@ -368,7 +369,7 @@ const NoMarginTitle = styled(Title)`
 `
 
 const Bold = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const SearchBar = animated(styled.div`

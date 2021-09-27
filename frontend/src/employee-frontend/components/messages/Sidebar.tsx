@@ -24,7 +24,7 @@ import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import { isNestedGroupMessageAccount } from './types'
 import { messageBoxes } from './types-view'
-import { H1 } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -65,7 +65,7 @@ const AccountHeader = styled.div`
   color: ${colors.greyscale.dark};
   font-family: 'Montserrat', sans-serif;
   font-size: 20px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const NoAccounts = styled.div`
@@ -79,9 +79,9 @@ const UnitSelection = styled.div`
 const Receivers = styled.div<{ active: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
-  font-weight: ${(p) => (p.active ? '600;' : 'unset')}
+  font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
   background-color: ${(p) =>
-    p.active ? colors.brandEspoo.espooTurquoiseLight : 'unset'}
+    p.active ? colors.brandEspoo.espooTurquoiseLight : 'unset'};
 `
 
 interface AccountsParams {

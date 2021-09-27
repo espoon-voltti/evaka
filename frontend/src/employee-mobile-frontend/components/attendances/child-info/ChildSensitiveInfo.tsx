@@ -1,23 +1,17 @@
-import { PlacementType } from 'lib-common/generated/enums'
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
-import React from 'react'
-import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
+import { PlacementType } from 'lib-common/generated/enums'
 import Title from 'lib-components/atoms/Title'
+import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { ContentArea } from 'lib-components/layout/Container'
+import { fontWeights } from 'lib-components/typography'
 import { faPhone } from 'lib-icons'
-
+import React from 'react'
+import styled from 'styled-components'
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 
@@ -26,7 +20,7 @@ interface Props {
 }
 
 const Key = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 4px;
 `

@@ -22,8 +22,9 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { fasMapMarkerAlt } from 'lib-icons'
+import { fontWeights } from 'lib-components/typography'
 import { queryAutocomplete } from '../map/api'
-import { MapAddress } from '../map/MapView'
+import { MapAddress } from './MapView'
 import { useTranslation } from '../localization'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
@@ -229,6 +230,6 @@ const OptionContents = React.memo(function Option({
 const SecondaryText = styled.span`
   font-size: 14px;
   line-height: 21px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.dark};
 `

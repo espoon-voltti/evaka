@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
+import { fontWeights } from './typography'
 
 const NUMBER_OF_PAGES_TO_SHOW = 5
 
@@ -17,7 +18,7 @@ const PageSpacer = styled.span`
 
 const ActivePageItem = styled.span`
   margin-left: 4px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 interface Props {

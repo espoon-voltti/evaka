@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from './localization'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
@@ -67,7 +68,7 @@ const FooterContainer = styled(Container)`
   flex-wrap: wrap;
   padding: 20px 0 20px 0;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: ${fontWeights.normal};
   ${FooterItem}:nth-child(1) {
     grid-column-start: 2;
     @media (max-width: ${desktopMin}) {

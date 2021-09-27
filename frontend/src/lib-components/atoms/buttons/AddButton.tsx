@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from 'lib-icons'
+import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
@@ -67,7 +68,7 @@ const StyledButton = styled.button`
 
     font-size: 18px;
     color: ${({ theme: { colors } }) => colors.greyscale.white};
-    font-weight: normal;
+    font-weight: ${fontWeights.normal};
     background: ${({ theme: { colors } }) => colors.main.primary};
     border-radius: 100%;
   }

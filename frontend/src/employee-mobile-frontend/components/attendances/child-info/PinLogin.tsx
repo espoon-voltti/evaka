@@ -28,6 +28,7 @@ import Title from 'lib-components/atoms/Title'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
+import { fontWeights } from 'lib-components/typography'
 
 import { TallContentArea } from '../../mobile/components'
 
@@ -254,7 +255,7 @@ const TallContentAreaNoOverflow = styled(TallContentArea)`
 `
 
 const Key = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 4px;
 `

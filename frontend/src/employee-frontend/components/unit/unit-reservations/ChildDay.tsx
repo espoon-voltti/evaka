@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 import { ChildReservations, OperationalDay } from '../../../api/unit'
 import {
   getTimesOnWeekday,
@@ -93,7 +94,7 @@ export const TimesRow = styled.div`
 `
 
 const AttendanceTimesRow = styled(TimesRow)`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const ReservationTimesRow = styled(TimesRow)``

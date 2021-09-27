@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { shade } from 'polished'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fontWeights } from '../typography'
 import { BaseProps } from '../utils'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -64,7 +65,7 @@ const IconContainer = styled.div<IconContainerProps>`
 
     span.text {
       font-family: Montserrat, sans-serif;
-      font-weight: bold;
+      font-weight: ${fontWeights.bold};
     }
   }
   &.l {
@@ -223,7 +224,7 @@ function WithLabel({
 
 const Text = styled.span<{ color: string }>`
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   line-height: 21px;
   color: ${(props) => props.color};
@@ -243,7 +244,7 @@ const Circle = styled.span<{ smaller: boolean; color?: string }>`
   position: absolute;
   right: -3px;
   top: 0;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const FixedSpaceColumnRelative = styled(FixedSpaceColumn)`

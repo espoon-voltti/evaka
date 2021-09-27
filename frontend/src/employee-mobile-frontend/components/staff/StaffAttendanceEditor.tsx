@@ -1,15 +1,14 @@
-/*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H2, H5 } from 'lib-components/typography'
+import { fontWeights, H2, H5 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import PlusMinus from './PlusMinus'
 import { Result } from 'lib-common/api'
@@ -147,7 +146,7 @@ const dec = (value: number, setValue: (newValue: number) => void) => (): void =>
 
 const Subtitle = styled.h2`
   font-style: normal;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 16px;
   line-height: 24px;
   margin: 0;

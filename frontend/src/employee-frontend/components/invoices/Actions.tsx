@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { Gap } from 'lib-components/white-space'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { deleteInvoices } from '../../api/invoicing'
@@ -21,7 +22,7 @@ const ErrorMessage = styled.div`
 const CheckedRowsInfo = styled.div`
   color: ${colors.greyscale.medium};
   font-style: italic;
-  font-weight: bold;
+  font-weight: ${fontWeights.bold};
 `
 
 type Props = {

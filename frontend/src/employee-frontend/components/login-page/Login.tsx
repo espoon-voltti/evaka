@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import React from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 import { getLoginUrl } from '../../api/auth'
 import { useTranslation } from '../../state/i18n'
 import ErrorMessage from './login/ErrorMessage'
@@ -34,7 +35,7 @@ const LoginButton = styled.a`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 16px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;

@@ -8,7 +8,7 @@ import _ from 'lodash'
 import { Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import colors from 'lib-customizations/common'
-import { H3, H4 } from 'lib-components/typography'
+import { fontWeights, H3, H4 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { ContentArea } from 'lib-components/layout/Container'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -141,7 +141,7 @@ const Wrapper = styled(ContentArea)`
 
 const Info = styled.div`
   font-size: 14px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.medium};
 `
 

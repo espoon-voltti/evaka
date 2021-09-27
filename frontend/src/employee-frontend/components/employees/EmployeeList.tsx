@@ -10,6 +10,7 @@ import { sortBy } from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser as Employee } from '../../types/employee'
 import { useHistory } from 'react-router'
@@ -19,11 +20,11 @@ const LinkTr = styled(Tr)`
 `
 
 const Name = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const Email = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
 `
 

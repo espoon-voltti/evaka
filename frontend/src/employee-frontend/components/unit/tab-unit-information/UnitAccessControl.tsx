@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -41,7 +41,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../../../state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
-import { H2 } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import Button from 'lib-components/atoms/buttons/Button'
 import { UUID } from '../../../types'
 import { UIContext } from '../../../state/ui'
@@ -376,7 +376,7 @@ function DeviceRow({
 }
 
 const AddAclLabel = styled.p`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   margin-bottom: 0;
 `
 

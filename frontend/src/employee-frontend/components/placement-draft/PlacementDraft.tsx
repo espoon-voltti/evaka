@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,6 +14,7 @@ import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import Loader from 'lib-components/atoms/Loader'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { fontWeights } from 'lib-components/typography'
 
 import {
   PlacementDraftState,
@@ -83,7 +84,7 @@ const ChildDateOfBirth = styled.div``
 
 const DOBTitle = styled.span`
   width: 225px;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   display: inline-block;
 `
 

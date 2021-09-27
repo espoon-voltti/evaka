@@ -15,6 +15,7 @@ import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import Loader from 'lib-components/atoms/Loader'
+import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
@@ -76,7 +77,7 @@ const Values = styled.div`
 `
 
 const ValueHeading = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `
 
 const ValuePercentage = styled.span`

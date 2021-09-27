@@ -9,13 +9,14 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faCheck } from 'lib-icons'
+import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: ${defaultMargins.s};
   line-height: ${defaultMargins.s};
   user-select: none;
@@ -121,7 +122,7 @@ const StyledLabel = styled.label`
 
 const SelectionChipWrapper = styled.div`
   font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 18px;
   user-select: none;

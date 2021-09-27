@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,6 +13,7 @@ import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from 'lib-components/breakpoints'
 import { featureFlags } from 'lib-customizations/employee'
+import { fontWeights } from 'lib-components/typography'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
@@ -164,7 +165,8 @@ const LangButton = styled.button<{ active: boolean }>`
   font-family: Montserrat;
   font-size: 1em;
   text-transform: uppercase;
-  font-weight: ${(props) => (props.active ? 700 : 500)};
+  font-weight: ${(props) =>
+    props.active ? fontWeights.bold : fontWeights.medium};
   cursor: pointer;
   border: none;
   border-bottom: 2px solid;
@@ -254,7 +256,7 @@ const FloatingCircledChar = styled(CircledChar)`
 const StyledNavItem = (component: any) => styled(component)`
   color: inherit;
   font-family: Montserrat;
-  font-weight: 500;
+  font-weight: ${fontWeights.medium};
   text-decoration: none;
   text-transform: uppercase;
   padding: ${defaultMargins.xs} 0;
@@ -262,12 +264,12 @@ const StyledNavItem = (component: any) => styled(component)`
   border-bottom: 2px solid transparent;
 
   &:hover {
-    font-weight: 700;
+    font-weight: ${fontWeights.bold};
     border-color: ${colors.greyscale.white};
   }
 
   &.active {
-    font-weight: 700;
+    font-weight: ${fontWeights.bold};
     border-color: ${colors.greyscale.white};
   }
 
@@ -299,7 +301,7 @@ const LogInLogOutButton = styled.button`
   border: none;
   font-family: 'Open Sans', sans-serif;
   font-size: 1em;
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
   text-transform: uppercase;
   padding: ${defaultMargins.s};
   width: 100%;
@@ -310,5 +312,5 @@ const LogInLogOutButton = styled.button`
 `
 
 const UserName = styled.span`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `

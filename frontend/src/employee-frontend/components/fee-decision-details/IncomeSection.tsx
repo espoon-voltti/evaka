@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Gap } from 'lib-components/white-space'
-import { H3, H5 } from 'lib-components/typography'
+import { fontWeights, H3, H5 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { Income } from '../../types/income'
 import { FeeDecisionDetailed } from '../../types/invoicing'
@@ -174,5 +174,5 @@ const IncomeTotal = styled.div`
 `
 
 const IncomeTotalTitle = styled(H5)`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 `

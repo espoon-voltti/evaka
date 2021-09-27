@@ -4,6 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 
 import {
   AttendanceChild,
@@ -49,11 +50,11 @@ const ChildBoxInfo = styled.div`
 `
 
 const Bold = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 
   h2,
   h3 {
-    font-weight: 500;
+    font-weight: ${fontWeights.medium};
   }
 `
 
