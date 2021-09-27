@@ -53,6 +53,7 @@ export interface EmployeeFeatures {
   messages: boolean
   personSearch: boolean
   reports: boolean
+  unitFeatures: boolean
   units: boolean
   vasuTemplates: boolean
 }

@@ -74,6 +74,7 @@ import StateProvider from './state/StateProvider'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
 import VardaErrors from './components/reports/VardaErrors'
+import UnitFeaturesPage from './components/UnitFeaturesPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -129,6 +130,11 @@ export default function App() {
                 title={i18n.titles.ai}
               />
             )}
+            <Route
+              exact
+              path="/unit-features"
+              component={ensureAuthenticated(UnitFeaturesPage)}
+            />
             <RouteWithTitle
               exact
               path="/units"

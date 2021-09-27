@@ -9,6 +9,7 @@ import fi.espoo.evaka.ExcludeCodeGen
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
+import kotlin.io.path.createDirectory
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
@@ -22,6 +23,10 @@ import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
 fun generateApiTypes() {
+    val path = locateRoot() / "api-types"
+    path.toFile().deleteRecursively()
+    path.createDirectory()
+
     getApiTypesInTypeScript().entries.forEach { (path, content) ->
         path.writeText(content)
     }

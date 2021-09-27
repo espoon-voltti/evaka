@@ -329,6 +329,7 @@ fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
     """
     SELECT id, name, enabled_pilot_features AS features
     FROM daycare
+    ORDER BY name
     """.trimIndent()
 )
     .mapTo<UnitFeatures>()

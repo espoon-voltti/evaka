@@ -258,6 +258,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.vasuTemplates.title}
                 </Link>
               )}
+            {user?.accessibleFeatures.unitFeatures && (
+              <Link
+                to="/unit-features"
+                onClick={() => setPopupVisible(false)}
+                data-qa="user-popup-unit-features"
+              >
+                {i18n.unitFeatures.title}
+              </Link>
+            )}
             <Link
               to={`/pin-code`}
               onClick={() => setPopupVisible(false)}
