@@ -573,6 +573,19 @@ commands:
           target_env: << parameters.target_env >>
           from: frontend/src/maintenance-page-frontend
           to: "frontend/maintenance-page/${CIRCLE_SHA1}"
+      - run:
+          name: Create latest install metadata.yaml
+          command: |
+            cat <<EOF>>metadata.yaml
+            install:
+              hash: $CIRCLE_SHA1
+              date: $(date)
+              branch: $CIRCLE_BRANCH
+            EOF
+
+            aws s3 sync metadata.yaml s3://evaka-static-<< parameters.target_env >>/frontend/metadata.yaml \
+              --exact-timestamps \
+              --profile voltti-<< parameters.target_env >>
 
   copy_to_s3:
     parameters:
