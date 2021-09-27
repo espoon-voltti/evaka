@@ -11,7 +11,7 @@ import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from 'lib-components/async-rendering'
 
 interface Props {
   id: UUID
@@ -33,15 +33,13 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
         opaque
         paddingVertical="L"
       >
-        <UnwrapResult result={person}>
-          {(person) => (
-            <PersonDetails
-              person={person}
-              isChild={true}
-              onUpdateComplete={(p) => setPerson(Success.of(p))}
-            />
-          )}
-        </UnwrapResult>
+        {renderResult(person, (person) => (
+          <PersonDetails
+            person={person}
+            isChild={true}
+            onUpdateComplete={(p) => setPerson(Success.of(p))}
+          />
+        ))}
         {permittedActions.has('READ_ADDITIONAL_INFO') && (
           <div className="additional-information">
             <AdditionalInformation id={id} />

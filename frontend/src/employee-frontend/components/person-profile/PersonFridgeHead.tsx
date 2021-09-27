@@ -15,7 +15,7 @@ import { PersonDetails as PersonDetailsType } from '../../types/person'
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { faUser } from 'lib-icons'
 import { TitleContext, TitleState } from '../../state/title'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from 'lib-components/async-rendering'
 
 interface Props {
   id: UUID
@@ -56,15 +56,13 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
         icon={faUser}
         title={i18n.personProfile.personDetails}
       >
-        <UnwrapResult result={person}>
-          {(person) => (
-            <PersonDetails
-              person={person}
-              isChild={false}
-              onUpdateComplete={(p) => updateData(p)}
-            />
-          )}
-        </UnwrapResult>
+        {renderResult(person, (person) => (
+          <PersonDetails
+            person={person}
+            isChild={false}
+            onUpdateComplete={(p) => updateData(p)}
+          />
+        ))}
       </CollapsibleSection>
       {person.isLoading && <Loader />}
       {person.isFailure && <div>{i18n.common.loadingFailed}</div>}

@@ -8,11 +8,11 @@ import { getPersonDetails } from '../../api/person'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../../types/person'
 import { Dimmed, H4, Label } from 'lib-components/typography'
-import { renderResult } from '../async-rendering'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from 'lib-components/async-rendering'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null
