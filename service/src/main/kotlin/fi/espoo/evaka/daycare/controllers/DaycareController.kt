@@ -8,12 +8,14 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
+import fi.espoo.evaka.daycare.UnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
+import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.service.CaretakerAmount
 import fi.espoo.evaka.daycare.service.CaretakerService
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
@@ -57,6 +59,16 @@ class DaycareController(
         Audit.UnitSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) }
+    }
+
+    @GetMapping("/features")
+    fun getFeatures(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): List<UnitFeatures> {
+        Audit.UnitFeaturesRead.log()
+        accessControl.requirePermissionFor(user, Action.Global.READ_UNIT_FEATURES)
+        return db.read { it.getUnitFeatures() }
     }
 
     @GetMapping("/{daycareId}")

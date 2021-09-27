@@ -324,3 +324,12 @@ WHERE daycare_id = :daycareId
 ).bind("daycareId", daycareId)
     .mapTo<DaycareGroupSummary>()
     .list()
+
+fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
+    """
+    SELECT id, name, enabled_pilot_features AS features
+    FROM daycare
+    """.trimIndent()
+)
+    .mapTo<UnitFeatures>()
+    .list()

@@ -6,3 +6,6 @@ package fi.espoo.evaka
 
 @Target(AnnotationTarget.CLASS)
 annotation class ExcludeCodeGen
+
+@Target(AnnotationTarget.CLASS)
+annotation class ConstList(val name: String)

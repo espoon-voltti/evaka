@@ -4,6 +4,7 @@
 
 package evaka.codegen.apitypes
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -29,7 +30,7 @@ fun generateApiTypes() {
 fun getApiTypesInTypeScript(): Map<Path, String> {
     val root = locateRoot()
     return analyzeClasses().entries.associate { (mainPackage, classes) ->
-        val path = root / "api-types" / "$mainPackage.d.ts"
+        val path = root / "api-types" / "$mainPackage.ts"
         val content = """$header
 ${getImports(classes).sorted().joinToString("\n")}
 
@@ -103,7 +104,11 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
     return when {
         clazz.java.enumConstants?.isNotEmpty() == true -> AnalyzedClass.EnumClass(
             name = clazz.qualifiedName ?: error("no class name"),
-            values = clazz.java.enumConstants.map { it.toString() }
+            values = clazz.java.enumConstants.map { it.toString() },
+            constList = clazz.java.annotations
+                .find { it.annotationClass == ConstList::class }
+                ?.let { it as? ConstList }
+                ?.name
         )
         clazz.isData -> AnalyzedClass.DataClass(
             name = clazz.qualifiedName ?: error("no class name"),
@@ -157,12 +162,21 @@ ${properties.joinToString("\n") { "  " + it.toTs() }}
 
     class EnumClass(
         name: String,
-        val values: List<String>
+        val values: List<String>,
+        val constList: String?
     ) : AnalyzedClass(name) {
         override fun toTs(): String {
-            return """/**
+            val doc = """/**
 * Generated from $name
-*/
+*/"""
+            if (constList != null) return doc + """
+export const $constList = [
+${values.joinToString(",\n") { "  '$it'" }}
+] as const
+
+export type ${name.split('.').last()} = typeof $constList[number]"""
+
+            return doc + """
 export type ${name.split('.').last()} = 
 ${values.joinToString("\n") { "  | '$it'" }}"""
         }

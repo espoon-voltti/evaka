@@ -60,10 +60,13 @@ export interface EmployeeFeatures {
 /**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature
 */
-export type PilotFeature = 
-  | 'MESSAGING'
-  | 'MOBILE'
-  | 'RESERVATIONS'
+export const pilotFeatures = [
+  'MESSAGING',
+  'MOBILE',
+  'RESERVATIONS'
+] as const
+
+export type PilotFeature = typeof pilotFeatures[number]
 
 /**
 * Generated from fi.espoo.evaka.shared.job.ScheduledJob

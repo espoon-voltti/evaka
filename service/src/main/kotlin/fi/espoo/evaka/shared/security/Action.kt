@@ -50,6 +50,8 @@ sealed interface Action {
 
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
+
+        READ_UNIT_FEATURES()
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

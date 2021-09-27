@@ -375,6 +375,15 @@ export interface StaffAttendanceUpdate {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.UnitFeatures
+*/
+export interface UnitFeatures {
+  features: PilotFeature[]
+  id: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.UnitManager
 */
 export interface UnitManager {
