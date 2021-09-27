@@ -27,11 +27,16 @@ enum class KoskiOperation {
 }
 
 data class KoskiChildRaw(
-    val ssn: String,
+    val ssn: String?,
+    val personOid: String?,
     val firstName: String,
     val lastName: String
 ) {
-    fun toHenkilö() = UusiHenkilö(ssn, firstName, lastName)
+    fun toHenkilö(): Henkilö = when {
+        ssn != null && ssn.isNotBlank() -> UusiHenkilö(ssn, firstName, lastName)
+        personOid != null && personOid.isNotBlank() -> OidHenkilö(personOid)
+        else -> throw IllegalStateException("not enough information available to create Koski Henkilö")
+    }
 }
 
 data class KoskiUnitRaw(

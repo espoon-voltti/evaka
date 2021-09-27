@@ -64,8 +64,13 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
         }
 
         val response = lock.withLock {
-            val ssn = oppija.henkilö.hetu
-            val personOid = persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }
+            val personOid = when (oppija.henkilö) {
+                is OidHenkilö -> (oppija.henkilö as OidHenkilö).oid
+                is UusiHenkilö -> {
+                    val ssn = (oppija.henkilö as UusiHenkilö).hetu
+                    persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }
+                }
+            }
             // Raw Jackson databind API is used to generate the response, because we want to add some fields
             // that are missing in our data class -based representation to simulate a real response more accurately
             objectMapper.createObjectNode().apply {

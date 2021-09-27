@@ -117,7 +117,7 @@ TABLE (
         ) matching_assistance_action
     ) aa ON true
     WHERE d.upload_to_koski IS TRUE
-    AND pr.social_security_number IS NOT NULL
+    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organization_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
@@ -145,7 +145,7 @@ TABLE (
         FROM koski_active_study_right(today) kav
         WHERE (kav.child_id, kav.unit_id, kav.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
-    AND pr.social_security_number IS NOT NULL
+    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND d.upload_to_koski IS TRUE
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organization_oid, '') IS NOT NULL

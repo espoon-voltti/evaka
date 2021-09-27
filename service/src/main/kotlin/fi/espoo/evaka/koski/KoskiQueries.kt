@@ -81,7 +81,8 @@ RETURNING id, void_date IS NOT NULL AS voided
                 ksr.study_right_oid,
                 d.language AS daycare_language,
                 d.provider_type AS daycare_provider_type,
-                pr.social_security_number ssn,
+                nullif(pr.social_security_number, '') ssn,
+                nullif(pr.oph_person_oid, '') person_oid,
                 pr.first_name,
                 pr.last_name
             FROM koski_study_right ksr
@@ -104,7 +105,8 @@ RETURNING id, void_date IS NOT NULL AS voided
                 d.language AS daycare_language,
                 d.provider_type AS daycare_provider_type,
                 um.name AS approver_name,
-                pr.social_security_number ssn,
+                nullif(pr.social_security_number, '') ssn,
+                nullif(pr.oph_person_oid, '') person_oid,
                 pr.first_name,
                 pr.last_name,
                 holidays
