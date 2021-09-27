@@ -10,7 +10,10 @@ import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Loader from 'lib-components/atoms/Loader'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceFlexWrap
+} from 'lib-components/layout/flex-helpers'
 import { Loading } from 'lib-common/api'
 import {
   deleteGroupAbsences,
@@ -38,7 +41,7 @@ import { UUID } from 'lib-common/types'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 
 interface Props {
   groupId: UUID
@@ -217,7 +220,7 @@ export default function Absences({
             text={i18n.absences.addAbsencesButton(selectedCells.length)}
           />
           <Gap size="L" />
-          <AbsenceTypeLegend>
+          <FixedSpaceFlexWrap>
             <StaticChip color={colors.blues.dark}>
               {i18n.absences.absenceTypes.OTHER_ABSENCE}
             </StaticChip>
@@ -242,7 +245,7 @@ export default function Absences({
             >
               {i18n.absences.absenceTypes.PRESENCE}
             </StaticChip>
-          </AbsenceTypeLegend>
+          </FixedSpaceFlexWrap>
         </FixedSpaceColumn>
       ) : null}
       {absences.isLoading && <Loader />}
@@ -250,17 +253,6 @@ export default function Absences({
     </AbsencesPage>
   )
 }
-
-const AbsenceTypeLegend = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  width: 66%;
-
-  > * {
-    margin-right: ${defaultMargins.xs};
-    margin-bottom: ${defaultMargins.s};
-  }
-`
 
 const AddAbsencesButton = styled(Button)`
   @media print {
