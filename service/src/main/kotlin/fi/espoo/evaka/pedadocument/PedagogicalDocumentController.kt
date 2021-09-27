@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -55,6 +56,19 @@ class PedagogicalDocumentController(
         return ResponseEntity.ok(doc)
     }
 
+    @GetMapping("/{documentId}")
+    fun getPedagogicalDocument(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable documentId: PedagogicalDocumentId
+    ): ResponseEntity<PedagogicalDocument> {
+        val childId = findRelatedChild(db, documentId)
+        Audit.PedagogicalDocumentUpdate.log(childId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
+        val doc = getPedagogicalDocument(db, documentId)
+        return ResponseEntity.ok(doc)
+    }
+
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
         db: Database,
@@ -66,7 +80,21 @@ class PedagogicalDocumentController(
         val docs = findPedagogicalDocumentsByChild(db, childId)
         return ResponseEntity.ok(docs)
     }
+
+    @DeleteMapping("/{documentId}")
+    fun deletePedagogicalDocument(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable documentId: PedagogicalDocumentId
+    ): ResponseEntity<Unit> {
+        val childId = findRelatedChild(db, documentId)
+        Audit.PedagogicalDocumentUpdate.log(childId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
+        deleteDocument(db, documentId)
+        return ResponseEntity.ok().build()
+    }
 }
+
 data class Attachment(
     val id: AttachmentId,
     val name: String,
@@ -85,8 +113,16 @@ data class PedagogicalDocument(
 data class PedagogicalDocumentPostBody(
     val childId: ChildId,
     val description: String,
-    val attachmentId: AttachmentId?
 )
+
+fun findRelatedChild(db: Database, documentId: PedagogicalDocumentId): ChildId {
+    return db.read {
+        it.createQuery("SELECT child_id FROM pedagogical_document WHERE id = :id")
+            .bind("id", documentId)
+            .mapTo<ChildId>()
+            .first()
+    }
+}
 
 private fun createDocument(
     db: Database,
@@ -160,6 +196,49 @@ private fun findPedagogicalDocumentsByChild(
             .map { row -> mapPedagogicalDocument(row) }
             .toList()
     }
+}
+
+private fun getPedagogicalDocument(
+    db: Database,
+    documentId: PedagogicalDocumentId
+): PedagogicalDocument? {
+    return db.read {
+        it.createQuery(
+            """
+                SELECT 
+                    pd.id,
+                    pd.child_id,
+                    pd.description,
+                    pd.created,
+                    pd.updated,
+                    a.id attachment_id,
+                    a.name attachment_name,
+                    a.content_type attachment_content_type
+                FROM pedagogical_document pd
+                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+                WHERE pd.id = :document_id
+            """.trimIndent()
+        )
+            .bind("document_id", documentId)
+            .map { row -> mapPedagogicalDocument(row) }
+            .toList()
+            .firstOrNull()
+    }
+}
+
+private fun deleteDocument(
+    db: Database,
+    documentId: PedagogicalDocumentId
+) = db.transaction {
+    it.createUpdate(
+        """
+                DELETE
+                FROM pedagogical_document pd
+                WHERE pd.id = :document_id
+        """.trimIndent()
+    )
+        .bind("document_id", documentId)
+        .execute()
 }
 
 private fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {

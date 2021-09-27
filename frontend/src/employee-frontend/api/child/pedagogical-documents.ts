@@ -34,3 +34,38 @@ export async function createPedagogicalDocument(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function updatePedagogicalDocument(
+  documentId: UUID,
+  data: PedagogicalDocumentPostBody
+): Promise<Result<UUID>> {
+  return client
+    .put(`/pedagogical-document/${documentId}`, data)
+    .then(() => Success.of(documentId))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPedagogicalDocument(
+  documentId: UUID
+): Promise<Result<PedagogicalDocument>> {
+  return client
+    .get<JsonOf<PedagogicalDocument>>(`/pedagogical-document/${documentId}`)
+    .then((res) => {
+      const { created, updated, ...rest } = res.data
+      return Success.of({
+        ...rest,
+        created: new Date(created),
+        updated: new Date(updated)
+      })
+    })
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deletePedagogicalDocument(
+  documentId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/pedagogical-document/${documentId}`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

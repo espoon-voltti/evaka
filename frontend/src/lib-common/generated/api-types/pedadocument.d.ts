@@ -32,7 +32,6 @@ export interface PedagogicalDocument {
 * Generated from fi.espoo.evaka.pedadocument.PedagogicalDocumentPostBody
 */
 export interface PedagogicalDocumentPostBody {
-  attachmentId: UUID | null
   childId: UUID
   description: string
 }

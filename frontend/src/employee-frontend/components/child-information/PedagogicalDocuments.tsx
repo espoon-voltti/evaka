@@ -6,7 +6,6 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
 import { UUID } from '../../types'
-import { UIContext } from '../../state/ui'
 import { Loading } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import * as _ from 'lodash'
@@ -34,7 +33,6 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
   const { i18n } = useTranslation()
   const { pedagogicalDocuments, setPedagogicalDocuments } =
     useContext(ChildContext)
-  const { toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -48,7 +46,6 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
   const createNewDocument = () => {
     const emptyDocument = { childId: id, description: '', attachmentId: null }
     void createPedagogicalDocument(emptyDocument).then(loadData)
-    toggleUiMode('create-new-pedagogical-document')
   }
 
   function renderPedagigicalDocuments() {
@@ -67,6 +64,8 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
             description={pedagogicalDocument.description}
             created={pedagogicalDocument.created}
             updated={pedagogicalDocument.updated}
+            initInEditMode={false}
+            handleRemovedDocument={loadData}
           />
         )
       )
