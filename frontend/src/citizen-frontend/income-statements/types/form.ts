@@ -109,6 +109,14 @@ export const empty: IncomeStatementForm = {
   assure: false
 }
 
+export const initialFormData = (
+  isValidStartDate: (date: LocalDate) => boolean
+): IncomeStatementForm => {
+  let startDate = LocalDate.today()
+  while (!isValidStartDate(startDate)) startDate = startDate.addDays(1)
+  return { ...empty, startDate: startDate.format() }
+}
+
 export function fromIncomeStatement(
   incomeStatement: IncomeStatement.IncomeStatement
 ): IncomeStatementForm {

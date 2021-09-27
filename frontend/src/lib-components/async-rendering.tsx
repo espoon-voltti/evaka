@@ -5,7 +5,7 @@ import ErrorSegment from './atoms/state/ErrorSegment'
 
 export function renderResult<T>(
   result: Result<T>,
-  renderer: (data: T) => React.ReactNode
+  renderer: (data: T) => React.ReactElement | null
 ) {
   if (result.isLoading) return <SpinnerSegment />
 

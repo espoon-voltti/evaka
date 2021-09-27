@@ -2,125 +2,116 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import IncomeStatementForm, {
   IncomeStatementFormAPI
 } from './IncomeStatementForm'
 import * as Form from './types/form'
-import { empty } from './types/form'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { fromBody } from './types/body'
 import {
   createIncomeStatement,
-  getIncomeStatement,
+  getIncomeStatements,
   updateIncomeStatement
 } from './api'
-import { useHistory, useParams } from 'react-router-dom'
-import { Loading, Result } from 'lib-common/api'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { combine, Failure, Loading, Result, Success } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import LocalDate from 'lib-common/local-date'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { initialFormData } from './types/form'
+import { renderResult } from 'lib-components/async-rendering'
+import { RouteComponentProps } from 'react-router'
 
-interface New {
-  type: 'new'
+interface EditorState {
+  id: string | undefined
+  startDates: LocalDate[]
   formData: Form.IncomeStatementForm
 }
 
-type IncomeStatementAndForm = {
-  incomeStatement: IncomeStatement
-  formData: Form.IncomeStatementForm
-}
-
-interface Existing {
-  type: 'existing'
-  id: string
-  data: Result<IncomeStatementAndForm>
-}
-
-type EditorState = New | Existing
-
-function getFormData(state: EditorState): Form.IncomeStatementForm | undefined {
-  return state.type === 'new'
-    ? state.formData
-    : state.data.map((d) => d.formData).getOrElse(undefined)
+function isValidStartDate(otherStartDates: LocalDate[]) {
+  return (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date))
 }
 
 async function loadIncomeStatement(
-  id: UUID
-): Promise<Result<IncomeStatementAndForm>> {
-  return (await getIncomeStatement(id)).map((incomeStatement) => ({
-    incomeStatement,
-    formData: Form.fromIncomeStatement(incomeStatement)
-  }))
+  id: UUID | undefined
+): Promise<Result<EditorState>> {
+  const incomeStatements = await getIncomeStatements()
+
+  const startDates = incomeStatements.map((i) => i.map((s) => s.startDate))
+
+  const incomeStatement: Result<IncomeStatement | undefined> =
+    id === undefined
+      ? Success.of(undefined)
+      : incomeStatements.chain((i): Result<IncomeStatement> => {
+          const found = i.find((s) => s.id === id)
+          if (found === undefined) return Failure.of({ message: 'Not found' })
+          return Success.of(found)
+        })
+
+  return combine(incomeStatement, startDates).map(
+    ([incomeStatement, startDates]) => ({
+      id,
+      startDates,
+      formData:
+        incomeStatement === undefined
+          ? initialFormData(isValidStartDate(startDates))
+          : Form.fromIncomeStatement(incomeStatement)
+    })
+  )
 }
 
-export default function IncomeStatementEditor() {
-  const history = useHistory()
-  const { incomeStatementId } = useParams<{ incomeStatementId: string }>()
-  const form = React.useRef<IncomeStatementFormAPI | null>(null)
+export default function IncomeStatementEditor({
+  history,
+  match
+}: RouteComponentProps<{ incomeStatementId: string }>) {
+  const incomeStatementId =
+    match.params.incomeStatementId === 'new'
+      ? undefined
+      : match.params.incomeStatementId
+  const [state, setState] = useState<Result<EditorState>>(Loading.of())
 
-  const [state, setState] = React.useState<EditorState>(
-    incomeStatementId === 'new'
-      ? { type: 'new', formData: empty }
-      : { type: 'existing', id: incomeStatementId, data: Loading.of() }
-  )
-  const id = state.type === 'existing' ? state.id : null
+  useEffect(() => {
+    void loadIncomeStatement(incomeStatementId).then(setState)
+  }, [incomeStatementId])
 
-  React.useEffect(() => {
-    if (id) {
-      void loadIncomeStatement(id).then((incomeStatementAndForm) =>
-        setState((prev) =>
-          prev.type === 'existing'
-            ? { ...prev, data: incomeStatementAndForm }
-            : prev
-        )
-      )
-    }
-  }, [id])
+  const [showFormErrors, setShowFormErrors] = useState(false)
 
-  const updateFormData = (
-    fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
-  ): void =>
-    setState((prev) =>
-      prev.type === 'new'
-        ? { ...prev, formData: fn(prev.formData) }
-        : {
-            ...prev,
-            data: prev.data.map((prevData) => ({
-              ...prevData,
-              formData: fn(prevData.formData)
-            }))
-          }
-    )
-
-  const formData = getFormData(state)
-  const [showFormErrors, setShowFormErrors] = React.useState(false)
-
-  const save = React.useCallback(() => {
-    const validatedData = formData ? fromBody(formData) : undefined
-    if (validatedData) {
-      if (id) {
-        return updateIncomeStatement(id, validatedData)
-      } else {
-        return createIncomeStatement(validatedData)
-      }
-    } else {
-      setShowFormErrors(true)
-      if (form.current) form.current.scrollToErrors()
-      return Promise.resolve('AsyncButton.cancel' as const)
-    }
-  }, [id, formData])
-
-  const navigateToList = React.useCallback(() => {
+  const navigateToList = useCallback(() => {
     history.push('/income')
   }, [history])
 
-  if (formData) {
+  const form = useRef<IncomeStatementFormAPI | null>(null)
+
+  return renderResult(state, (state) => {
+    const { id, formData, startDates } = state
+
+    const updateFormData = (
+      fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
+    ): void =>
+      setState((prev) =>
+        prev.map((prev2) => ({ ...prev2, formData: fn(prev2.formData) }))
+      )
+
+    const save = () => {
+      const validatedData = formData ? fromBody(formData) : undefined
+      if (validatedData) {
+        if (id) {
+          return updateIncomeStatement(id, validatedData)
+        } else {
+          return createIncomeStatement(validatedData)
+        }
+      } else {
+        setShowFormErrors(true)
+        if (form.current) form.current.scrollToErrors()
+        return Promise.resolve('AsyncButton.cancel' as const)
+      }
+    }
+
     return (
       <IncomeStatementForm
         incomeStatementId={id}
         formData={formData}
         showFormErrors={showFormErrors}
+        isValidStartDate={isValidStartDate(startDates)}
         onChange={updateFormData}
         onSave={save}
         onSuccess={navigateToList}
@@ -128,9 +119,5 @@ export default function IncomeStatementEditor() {
         ref={form}
       />
     )
-  }
-  if (state.type === 'existing' && state.data.isFailure) {
-    return <ErrorSegment />
-  }
-  return <Loader />
+  })
 }

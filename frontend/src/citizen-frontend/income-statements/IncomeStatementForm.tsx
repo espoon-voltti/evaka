@@ -57,9 +57,10 @@ import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
-  incomeStatementId: UUID | null
+  incomeStatementId: UUID | undefined
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
+  isValidStartDate: (date: LocalDate) => boolean
   onChange: (
     fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
   ) => void
@@ -77,6 +78,7 @@ export default React.forwardRef(function IncomeStatementForm(
     incomeStatementId,
     formData,
     showFormErrors,
+    isValidStartDate,
     onChange,
     onSave,
     onSuccess,
@@ -151,6 +153,7 @@ export default React.forwardRef(function IncomeStatementForm(
         <Gap size="s" />
         <IncomeTypeSelection
           formData={formData}
+          isValidStartDate={isValidStartDate}
           showFormErrors={showFormErrors}
           onChange={handleChange}
           ref={scrollTarget}
@@ -221,10 +224,12 @@ export default React.forwardRef(function IncomeStatementForm(
 const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
   {
     formData,
+    isValidStartDate,
     showFormErrors,
     onChange
   }: {
     formData: Form.IncomeStatementForm
+    isValidStartDate: (date: LocalDate) => boolean
     showFormErrors: boolean
     onChange: (value: Form.IncomeStatementForm) => void
   },
@@ -262,6 +267,7 @@ const IncomeTypeSelection = React.forwardRef(function IncomeTypeSelection(
               )}
               hideErrorsBeforeTouched
               locale={lang}
+              isValidDate={isValidStartDate}
             />
           </div>
           <div>
@@ -937,7 +943,7 @@ function Attachments({
   onUploaded,
   onDeleted
 }: {
-  incomeStatementId: UUID | null
+  incomeStatementId: UUID | undefined
   requiredAttachments: Set<AttachmentType>
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
