@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
+import java.util.UUID
 
 fun Database.Read.hasPermissionForMessageDraft(user: AuthenticatedUser.Employee, draftId: MessageDraftId): Boolean =
     this.createQuery(
@@ -26,9 +27,11 @@ WHERE
         .mapTo<Int>()
         .any()
 
-fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Citizen, attachmentId: AttachmentId): Boolean =
-    this.createQuery(
-        """
+private fun Database.Read.hasCitizenPermissionForAttachmentThroughMessageContent(
+    personId: UUID,
+    attachmentId: AttachmentId
+) = this.createQuery(
+    """
 SELECT 1 
 FROM attachment att
 JOIN message_content content ON att.message_content_id = content.id
@@ -36,12 +39,17 @@ JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account ma ON ma.id = msg.sender_id OR ma.id = rec.recipient_id
 WHERE att.id = :attachmentId AND ma.person_id = :personId
-        """.trimIndent()
-    )
-        .bind("personId", user.id)
-        .bind("attachmentId", attachmentId)
-        .mapTo<Int>()
-        .any()
+    """.trimIndent()
+)
+    .bind("personId", personId)
+    .bind("attachmentId", attachmentId)
+    .mapTo<Int>()
+    .any()
+
+fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Citizen, attachmentId: AttachmentId): Boolean =
+    hasCitizenPermissionForAttachmentThroughMessageContent(user.id, attachmentId)
+fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.WeakCitizen, attachmentId: AttachmentId): Boolean =
+    hasCitizenPermissionForAttachmentThroughMessageContent(user.id, attachmentId)
 
 fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Employee, attachmentId: AttachmentId): Boolean =
     this.createQuery(

@@ -284,7 +284,20 @@ WHERE employee_id = :userId
                     Database(jdbi).read { it.isOwnAttachment(id, user) }
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
                     Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
-                else -> false
+                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
+            }
+            is AuthenticatedUser.WeakCitizen -> when (action) {
+                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
+                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
+                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
+                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
+                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
             }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.Attachment.READ_APPLICATION_ATTACHMENT ->
@@ -308,7 +321,8 @@ WHERE employee_id = :userId
                     Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
             }
-            else -> false
+            is AuthenticatedUser.MobileDevice -> false
+            AuthenticatedUser.SystemInternalUser -> false
         }
 
     fun getPermittedBackupCareActions(
