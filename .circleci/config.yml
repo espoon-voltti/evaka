@@ -561,7 +561,7 @@ commands:
       - run:
           name: Create latest install metadata.yaml
           command: |
-            cat <<EOF>>metadata.yaml
+            cat \<<EOF>>metadata.yaml
             install:
               hash: $CIRCLE_SHA1
               date: $(date)
