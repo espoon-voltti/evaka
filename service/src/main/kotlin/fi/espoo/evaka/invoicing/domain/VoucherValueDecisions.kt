@@ -78,6 +78,13 @@ data class VoucherValueDecision(
             this.voucherValue == decision.voucherValue
     }
 
+    override fun overlapsWith(other: VoucherValueDecision): Boolean {
+        return this.child.id == other.child.id && DateRange(
+            this.validFrom,
+            this.validTo
+        ).overlaps(DateRange(other.validFrom, other.validTo))
+    }
+
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
     override fun isEmpty(): Boolean = false
     override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)

@@ -9,10 +9,12 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
@@ -41,7 +43,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -160,6 +164,31 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
             assertEquals(newEndDate, decisions.first().validTo)
+        }
+    }
+
+    @Test
+    fun `sent value decision is annulled when a child's head of family changes`() {
+        createPlacement(startDate, endDate)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+        }
+
+        changeHeadOfFamily(testChild_1, testAdult_2.id)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(2, decisions.size)
+            val annulled = decisions.find { it.status == VoucherValueDecisionStatus.ANNULLED }
+            assertNotNull(annulled)
+            assertEquals(testAdult_1.id, annulled.headOfFamily.id)
+            val sent = decisions.find { it.status == VoucherValueDecisionStatus.SENT }
+            assertNotNull(sent)
+            assertEquals(testAdult_2.id, sent.headOfFamily.id)
         }
     }
 
@@ -288,6 +317,24 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
             }
+
+        asyncJobRunner.runPendingJobsSync()
+    }
+
+    private fun changeHeadOfFamily(child: PersonData.Detailed, headOfFamilyId: UUID) {
+        db.transaction { it.execute("DELETE FROM fridge_child WHERE child_id = ?", child.id) }
+
+        val body = ParentshipController.ParentshipRequest(
+            childId = child.id,
+            headOfChildId = headOfFamilyId,
+            startDate = child.dateOfBirth,
+            endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+        )
+
+        http.post("/parentships")
+            .asUser(serviceWorker)
+            .objectBody(body, mapper = objectMapper)
+            .response()
 
         asyncJobRunner.runPendingJobsSync()
     }
