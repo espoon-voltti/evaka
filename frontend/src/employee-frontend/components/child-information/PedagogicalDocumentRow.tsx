@@ -17,6 +17,16 @@ import {
   getAttachmentBlob,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faPen, faTrash } from 'lib-icons'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import styled from 'styled-components'
+import {
+  deletePedagogicalDocument,
+  getPedagogicalDocument,
+  updatePedagogicalDocument
+} from '../../api/child/pedagogical-documents'
 
 interface Props {
   id: UUID
@@ -25,6 +35,8 @@ interface Props {
   description: string
   created: Date
   updated: Date
+  initInEditMode: boolean
+  handleRemovedDocument: () => void
 }
 
 const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
@@ -33,7 +45,9 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   attachment,
   description,
   created,
-  updated
+  updated,
+  initInEditMode,
+  handleRemovedDocument
 }: Props) {
   const { i18n } = useTranslation()
   const [pedagogicalDocument, setPedagogicalDocument] =
@@ -45,6 +59,31 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       created,
       updated
     })
+
+  const [editMode, setEditMode] = useState(initInEditMode)
+
+  const updateDocument = () => {
+    const { childId, description } = pedagogicalDocument
+    void updatePedagogicalDocument(id, { childId, description })
+      .then(() => getPedagogicalDocument(id))
+      .then((res) => res.map(setPedagogicalDocument))
+  }
+
+  const cancelEdit = () => {
+    void getPedagogicalDocument(id).then((res) =>
+      res.map(setPedagogicalDocument)
+    )
+  }
+
+  const deleteDocument = () => {
+    const attachmentId = pedagogicalDocument?.attachment?.id
+    if (!attachmentId) deletePedagogicalDocument(id).then(handleRemovedDocument)
+    else {
+      deleteAttachment(attachmentId)
+        .then(() => deletePedagogicalDocument(id))
+        .then(handleRemovedDocument)
+    }
+  }
 
   const handleAttachmentUpload = useCallback(
     async (
@@ -103,11 +142,52 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         }
       </NameTd>
       <Td data-qa="pedagogical-document-description">
-        {pedagogicalDocument.description}
+        {editMode ? (
+          <TextArea
+            value={pedagogicalDocument.description}
+            onChange={(e) =>
+              setPedagogicalDocument((old) => ({
+                ...old,
+                description: e.target.value
+              }))
+            }
+          />
+        ) : (
+          pedagogicalDocument.description
+        )}
       </Td>
-      <Td data-qa="pedagogical-document-actions">{'todo actionit'}</Td>
+      <Td data-qa="pedagogical-document-actions">
+        {editMode ? (
+          <InlineButtons>
+            <InlineButton
+              onClick={() => {
+                updateDocument()
+                setEditMode(false)
+              }}
+              text={'Tallenna'}
+            />
+            <InlineButton
+              onClick={() => {
+                cancelEdit()
+                setEditMode(false)
+              }}
+              text={'Peruuta'}
+            />
+          </InlineButtons>
+        ) : (
+          <InlineButtons>
+            <IconButton onClick={() => setEditMode(true)} icon={faPen} />
+            <IconButton onClick={() => deleteDocument()} icon={faTrash} />
+          </InlineButtons>
+        )}
+      </Td>
     </Tr>
   )
 })
 
 export default PedagogicalDocumentRow
+
+const InlineButtons = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+`
