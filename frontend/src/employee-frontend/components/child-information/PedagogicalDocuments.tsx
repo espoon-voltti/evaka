@@ -43,7 +43,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
     void getChildPedagogicalDocuments(id).then(setPedagogicalDocuments)
   }
 
-  useEffect(loadData, [id, setPedagogicalDocuments])
+  useEffect(loadData, [id, open, setPedagogicalDocuments])
 
   const createNewDocument = () => {
     const emptyDocument = { childId: id, description: '', attachmentId: null }

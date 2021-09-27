@@ -79,7 +79,8 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const deleteDocument = () => {
     const attachmentId = pedagogicalDocument?.attachment?.id
-    if (!attachmentId) void deletePedagogicalDocument(id).then(handleRemovedDocument)
+    if (!attachmentId)
+      void deletePedagogicalDocument(id).then(handleRemovedDocument)
     else {
       void deleteAttachment(attachmentId)
         .then(() => deletePedagogicalDocument(id))
