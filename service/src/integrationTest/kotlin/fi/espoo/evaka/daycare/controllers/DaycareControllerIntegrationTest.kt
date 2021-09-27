@@ -226,11 +226,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
             .asUser(supervisor)
             .responseObject<DaycareGroup>(objectMapper)
 
-        assertEquals(201, res.statusCode)
+        assertEquals(200, res.statusCode)
         return body.get()
     }
 
-    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId, expectedStatus: Int = 204) {
+    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId, expectedStatus: Int = 200) {
         val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
             .asUser(supervisor)
             .response()
