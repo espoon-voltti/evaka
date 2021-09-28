@@ -53,7 +53,7 @@ async function initializeEditorState(
       startDates,
       formData:
         incomeStatement === undefined
-          ? initialFormData(isValidStartDate(startDates))
+          ? initialFormData(startDates)
           : Form.fromIncomeStatement(incomeStatement)
     })
   )
