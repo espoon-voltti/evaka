@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.MOBILE
@@ -126,12 +127,12 @@ sealed interface Action {
         READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_MESSAGE_CONTENT_ATTACHMENT,
         READ_MESSAGE_DRAFT_ATTACHMENT,
-        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
         DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT,
-        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
