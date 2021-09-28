@@ -547,6 +547,18 @@ commands:
           target_env: << parameters.target_env >>
           from: "frontend/maintenance-page/${CIRCLE_SHA1}"
           to: maintenance-page
+      - run:
+          name: Create deploy.metadata.yaml
+          command: |
+            cat \<<EOF>> deploy.metadata.yaml
+            version: '1'
+            updated: '$(date --iso-8601=seconds)'
+            sha1: $CIRCLE_SHA1
+            branch: $CIRCLE_BRANCH
+            EOF
+
+            aws s3 cp deploy.metadata.yaml s3://evaka-static-<< parameters.target_env >>/frontend/deploy.metadata.yaml \
+              --profile voltti-<< parameters.target_env >>
 
   install_frontend:
     parameters:
@@ -574,17 +586,16 @@ commands:
           from: frontend/src/maintenance-page-frontend
           to: "frontend/maintenance-page/${CIRCLE_SHA1}"
       - run:
-          name: Create latest install metadata.yaml
+          name: Create metadata.yaml
           command: |
-            cat \<<EOF>>metadata.yaml
-            install:
-              hash: $CIRCLE_SHA1
-              date: $(date)
-              branch: $CIRCLE_BRANCH
+            cat \<<EOF>> metadata.yaml
+            version: '1'
+            updated: '$(date --iso-8601=seconds)'
+            sha1: $CIRCLE_SHA1
+            branch: $CIRCLE_BRANCH
             EOF
 
-            aws s3 sync metadata.yaml s3://evaka-static-<< parameters.target_env >>/frontend/metadata.yaml \
-              --exact-timestamps \
+            aws s3 cp metadata.yaml "s3://evaka-static-<< parameters.target_env >>/frontend/metadata/${CIRCLE_SHA1}.yaml" \
               --profile voltti-<< parameters.target_env >>
 
   copy_to_s3:
@@ -608,7 +619,6 @@ commands:
             fi
 
             aws s3 sync . s3://evaka-static-<< parameters.target_env >>/<< parameters.to >> \
-              --acl public-read \
               --exact-timestamps \
               "${EXTRA_ARGS[@]}" \
               --profile voltti-<< parameters.target_env >>
