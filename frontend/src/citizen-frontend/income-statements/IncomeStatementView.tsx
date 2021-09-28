@@ -5,6 +5,7 @@
 import React, { useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
+import { tabletMin } from 'lib-components/breakpoints'
 import { Translations, useTranslation } from '../localization'
 import {
   FixedSpaceColumn,
@@ -371,6 +372,18 @@ const FileIcon = styled(FontAwesomeIcon)`
   margin-right: ${defaultMargins.s};
 `
 
+const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
+  @media (max-width: ${tabletMin}) {
+    flex-direction: column;
+    > * {
+      margin-bottom: ${defaultMargins.xs};
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+`
+
 function Row({
   label,
   light,
@@ -382,10 +395,10 @@ function Row({
 }) {
   return (
     <>
-      <FixedSpaceRow>
+      <ResponsiveFixedSpaceRow>
         <LabelColumn light={light}>{label}</LabelColumn>
         <div>{value}</div>
-      </FixedSpaceRow>
+      </ResponsiveFixedSpaceRow>
       <Gap size="s" />
     </>
   )
