@@ -203,7 +203,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                         }
                                     },
                                     {
-                                        "alku": "2019-01-01",
+                                        "alku": "2018-12-31",
                                         "tila": {
                                             "koodiarvo": "eronnut",
                                             "koodistoUri": "koskiopiskeluoikeudentila"
@@ -469,7 +469,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                         }
                                     },
                                     {
-                                        "alku": "2019-01-01",
+                                        "alku": "2018-12-31",
                                         "tila": {
                                             "koodiarvo": "eronnut",
                                             "koodistoUri": "koskiopiskeluoikeudentila"

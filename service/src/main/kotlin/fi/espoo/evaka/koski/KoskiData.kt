@@ -192,13 +192,13 @@ data class KoskiActiveDataRaw(
         result.addAll((present + gaps + holidays + absent))
 
         when {
-            today.isAfter(placementSpan.end) -> result.add(
-                if (qualifiedDate != null) Opiskeluoikeusjakso.valmistunut(qualifiedDate)
-                else Opiskeluoikeusjakso.eronnut(placementSpan.end.plusDays(1))
-            )
-            else -> {
-                // placements still ongoing
+            placementSpan.end.isAfter(today) -> {
+                // still ongoing
             }
+            else -> result.add(
+                if (qualifiedDate != null) Opiskeluoikeusjakso.valmistunut(qualifiedDate)
+                else Opiskeluoikeusjakso.eronnut(placementSpan.end)
+            )
         }
         result.sortBy { it.alku }
         return result
