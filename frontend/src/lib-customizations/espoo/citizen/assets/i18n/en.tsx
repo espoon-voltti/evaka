@@ -1350,8 +1350,9 @@ const en: Translations = {
             case, you do not need to submit an income statement.
           </li>
           <li>
-            If your family includes another adult, they must also submit an
-            income statement by personally logging into eVaka.
+            If there&apos;s another adult in your family, they must also submit
+            an income statement by personally logging into eVaka and filling out
+            this form.
           </li>
         </UnorderedList>
         <P>
@@ -1407,8 +1408,8 @@ const en: Translations = {
           </P>
           <P>
             If you have started or will start at a new job, always submit the
-            contract of employment as attachment, because the information of
-            Incomes Register is updated with a delay.
+            contract of employment as an attachment, because there is a delay
+            updating the Incomes Register.
           </P>
         </>
       ),
@@ -1581,7 +1582,7 @@ const en: Translations = {
         ACCOUNTANT_REPORT_LLC:
           'Accountant’s account of fringe benefits and dividends',
         PROFIT_AND_LOSS_STATEMENT: 'Profit and loss account and balance sheet',
-        SALARY: 'Last pay slip', // TODO i18n Maksutositteet palkoista ja työkorvauksista
+        SALARY: 'Payslips of salaries and trade incomes',
         PROOF_OF_STUDIES:
           'Certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund'
       }

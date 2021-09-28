@@ -1298,9 +1298,9 @@ const sv: Translations = {
             I detta fall behöver du inte alls reda ut dina inkomster.
           </li>
           <li>
-            Om din familj inkluderar en annan vuxen, måste hen också lämna in en
-            inkomstutredning.
-            {/*  TODO i18n by logging in to evaka */}
+            Om din familj inkluderar en annan vuxen måste de också skicka in en
+            inkomstutredning genom att personligen logga in på eVaka och fylla i
+            detta formulär.
           </li>
         </UnorderedList>
         <P>
@@ -1359,11 +1359,9 @@ const sv: Translations = {
             samt hos FPA vid behov.
           </P>
           <P>
-            {/*TODO i18n checkup*/}
             Om du har börjat eller är på väg att börja ett nytt jobb, skicka
-            alltid ett bifogat anställningsavtal som visar din lön, eftersom
-            detta kommer att få din inkomst att dyka upp i inkomstregistret med
-            en försening.
+            alltid med ett bifogat anställningsavtal som visar din lön, eftersom
+            informationen i Inkomstregistret uppdateras med en fördröjning.
           </P>
         </>
       ),
@@ -1534,7 +1532,7 @@ const sv: Translations = {
         ACCOUNTANT_REPORT_LLC:
           'Bokförarens utredning av naturaförmåner och dividender',
         PROFIT_AND_LOSS_STATEMENT: 'Resultaträkning och balansräkning',
-        SALARY: 'Bevis på betalning av löner', // TODO i18n Maksutositteet palkoista ja työkorvauksista
+        SALARY: 'Utbetalningsspecifikationer av lön och annan arbetsersättning',
         PROOF_OF_STUDIES:
           'Studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd'
       }
