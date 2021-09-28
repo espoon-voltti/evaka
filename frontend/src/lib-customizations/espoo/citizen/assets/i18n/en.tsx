@@ -6,7 +6,8 @@ import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { INCOME_I18N } from './fi'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { Gap } from 'lib-components/white-space'
 
 const en: Translations = {
   common: {
@@ -1295,7 +1296,387 @@ const en: Translations = {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later'
   },
-  income: INCOME_I18N,
+  income: {
+    title: 'Income information',
+    description: (
+      <>
+        <p>
+          On this page, you can submit statements on your earnings that affect
+          the early childhood education fee. You can also view, edit, or delete
+          income statements that you have submitted until the authority has
+          processed the information. After the form has been processed, you can
+          update your income information by submitting a new form.
+          <br />
+          More information on the fees:{' '}
+          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+            Early childhood education fees
+          </a>
+        </p>
+        <p>
+          The client fees for municipal early childhood education are determined
+          as a percentage of the family’s gross income. The fees vary according
+          to family size, income and time in early childhood education. Check
+          the table below to see if you need to submit an income statement, or
+          if your family is automatically covered by the highest early childhood
+          education fee.
+        </p>
+      </>
+    ),
+    formTitle: 'Reporting income information',
+    formDescription: (
+      <>
+        <P>
+          The income statement and its attachments must be submitted within two
+          weeks of the beginning of early childhood education. In case of
+          incomplete income information, the fee may be set at the highest fee.
+        </P>
+        <P>
+          The client fee is charged from the first day of early education in
+          accordance with the decision.
+        </P>
+        <P>
+          The client must immediately inform the client fee unit of changes in
+          income and family size. If necessary, the authority is also entitled
+          to collect early childhood education fees retrospectively.
+        </P>
+        <P>
+          <strong>To be noted:</strong>
+        </P>
+        <Gap size="xs" />
+        <UnorderedList>
+          <li>
+            If your income exceeds the income threshold according to family
+            size, accept the highest early childhood education fee. In this
+            case, you do not need to submit an income statement.
+          </li>
+          <li>
+            If your family includes another adult, they must also submit an
+            income statement.
+          </li>
+        </UnorderedList>
+        <P>
+          See current income thresholds{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+          >
+            here
+          </a>
+          .
+        </P>
+        <P>* The information denoted with an asterisk is mandatory.</P>
+      </>
+    ),
+    confidential: (
+      <P>
+        <strong>Confidential</strong>
+        <br />
+        (Act on the Openness of Government Activities, Section 24(1)(23))
+      </P>
+    ),
+    addNew: 'New income statement',
+    incomeInfo: 'Income information',
+    incomesRegisterConsent:
+      'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary',
+    incomeType: {
+      description: (
+        <>
+          If you are an entrepreneur but also have other income, choose both{' '}
+          <strong>Entrepreneur&apos;s income information</strong>, and{' '}
+          <strong>Determination of the client fee by gross income</strong>.
+        </>
+      ),
+      startDate: 'Valid as of',
+      endDate: 'Valid until',
+      title: 'Grounds for the client fee',
+      agreeToHighestFee: 'I agree to the highest early education fee',
+      highestFeeInfo:
+        'I agree to pay the highest early education fee in accordance with the early education time, the valid Act on Client Charges in Healthcare and Social Welfare and the decisions of the City Board for the time being until I declare otherwise or until the early education of my child ends. (No need to provide income information)',
+      grossIncome: 'Determination of the client fee by gross income',
+      entrepreneurIncome: "Entrepreneur's income information"
+    },
+    grossIncome: {
+      title: 'Filling in gross income data',
+      description: (
+        <>
+          <P noMargin>
+            Select below whether you want to submit your income information as
+            attachments, or whether the authority will check your information
+            directly from the Incomes Register and Kela, if necessary.
+          </P>
+          <P>
+            If you have started or will start at a new job, always submit the
+            contract of employment as attachment, because the information of
+            Incomes Register is updated with a delay.
+          </P>
+        </>
+      ),
+      incomeSource: 'Reporting income information',
+      provideAttachments:
+        'I will submit the information as attachments, and my information can be checked from Kela if necessary',
+      estimate: 'Estimate of my gross income',
+      otherIncome: 'Other income',
+      otherIncomeDescription:
+        'If you have other income, it must be itemised in an attachment. A list of the required attachments can be found at the bottom of the form under: Attachments related to income and early childhood education fees.',
+      choosePlaceholder: 'Select',
+      otherIncomeTypes: {
+        PENSION: 'Pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Adult education allowance',
+        SICKNESS_ALLOWANCE: 'Sickness benefit',
+        PARENTAL_ALLOWANCE: 'Maternity and parental allowance',
+        HOME_CARE_ALLOWANCE: 'Child home care allowance',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Flexible or partial care allowance',
+        ALIMONY: 'Maintenance allowance/support',
+        INTEREST_AND_INVESTMENT_INCOME: 'Income from interest and dividends',
+        RENTAL_INCOME: 'Rental income',
+        UNEMPLOYMENT_ALLOWANCE: 'Unemployment benefit',
+        LABOUR_MARKET_SUBSIDY: 'Labour market subsidy',
+        ADJUSTED_DAILY_ALLOWANCE: 'Adjusted unemployment benefit',
+        JOB_ALTERNATION_COMPENSATION: 'Job alternation leave',
+        REWARD_OR_BONUS: 'Fee or bonus',
+        RELATIVE_CARE_SUPPORT: 'Informal care allowance',
+        BASIC_INCOME: 'Guaranteed minimum income',
+        FOREST_INCOME: 'Forest income',
+        FAMILY_CARE_COMPENSATION: 'Fees received for family care',
+        REHABILITATION: 'Rehabilitation allowance or grant',
+        EDUCATION_ALLOWANCE: 'Training allowance',
+        GRANT: 'Grant/scholarship',
+        APPRENTICESHIP_SALARY: 'Earnings from apprenticeship training',
+        ACCIDENT_INSURANCE_COMPENSATION: 'Compensation from accident insurance',
+        OTHER_INCOME: 'Other income'
+      },
+      otherIncomeInfoLabel: 'Estimate of other income',
+      otherIncomeInfoDescription:
+        'Estimate of other income sources per month, eg. "Rent 150, child home care allowance 300"'
+    },
+    entrepreneurIncome: {
+      title: "Filling in the entrepreneur's income information",
+      description: (
+        <>
+          If necessary, you can fill in the information for more than one
+          company by ticking the boxes that apply to all of your companies.
+          Please provide more detailed company-specific information as
+          attachments.
+          <br />A list of the required attachments can be found at the bottom of
+          the form under &quot;Attachments related to income and early childhood
+          education fees&quot;.
+        </>
+      ),
+      fullTimeLabel: 'Are the business activities full-time or part-time?',
+      fullTime: 'Full-time',
+      partTime: 'Part-time',
+      startOfEntrepreneurship: 'Business activities started',
+      spouseWorksInCompany: 'Does your spouse work for your company?',
+      yes: 'Yes',
+      no: 'No',
+      startupGrantLabel: 'Has your company received a start-up grant?',
+      startupGrant:
+        'My company received a start-up grant. I will submit the start-up grant decision as an attachment.',
+      checkupLabel: 'Checking of information',
+      checkupConsent:
+        'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary.',
+      companyInfo: 'Company details',
+      companyForm: 'Company type',
+      selfEmployed: 'Proprietorship',
+      limitedCompany: 'Limited liability company',
+      partnership: 'General or limited partnership',
+      lightEntrepreneur: 'Light entrepreneurship',
+      lightEntrepreneurInfo:
+        'Proof of payment of salary and remuneration must be submitted as attachments.',
+      partnershipInfo:
+        'The profit and loss account, balance sheet and the accountant’s report on salary and fringe benefits must be submitted as attachments.'
+    },
+    selfEmployed: {
+      info: 'If the business activities have continued for more than 3 months, the company’s most recent profit and loss account or tax decision must be submitted.',
+      attachments:
+        'I will submit the company’s most recent profit and loss account and balance sheet statement or tax decision as attachments.',
+      estimatedIncome:
+        'I will fill out an estimate of my average monthly earnings.',
+      estimatedMonthlyIncome: 'Average earnings €/month',
+      timeRange: 'Time range'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>
+            Documents of dividend income must be submitted as an attachment.
+          </strong>{' '}
+          Select the appropriate method to provide other information below.
+        </>
+      ),
+      incomesRegister:
+        'My income can be checked directly from Kela and the Incomes Register.',
+      attachments:
+        'I will provide documents of my income as an attachment, and I agree that information related to my income will be checked from Kela.'
+    },
+    accounting: {
+      title: 'Contact information of the accountant',
+      description:
+        'The contact information of the accountant is required if you are involved in a limited company, limited partnership or general partnership.',
+      accountant: 'Accountant',
+      accountantPlaceholder: 'Name of the accountant/company',
+      email: 'E-mail address',
+      emailPlaceholder: 'E-mail',
+      address: 'Postal address',
+      addressPlaceholder: 'Street address, postal code, city/town',
+      phone: 'Telephone number',
+      phonePlaceholder: 'Telephone'
+    },
+    moreInfo: {
+      title: 'Other information related to the fee',
+      studentLabel: 'Are you a student?',
+      student: 'I am a student',
+      studentInfo:
+        'Students must submit a certificate of student status from the educational institute or a decision on a student benefit from an unemployment fund/training allowance from an employment fund.',
+      deductions: 'Deductions',
+      alimony:
+        'I pay child support. I will provide a copy of proof of payment as an attachment.',
+      otherInfoLabel: 'More information about income information'
+    },
+    attachments: {
+      title: 'Attachments related to income and early childhood education fees',
+      description:
+        'Here, you can electronically send the attachments related to your income or early childhood education fees, such as the income statement, pay slips or Kela’s certificate of support for private care. Note! Income-related attachments are usually not required if your family has agreed to pay the highest fee.',
+      required: {
+        title: 'Necessary attachments'
+      },
+      attachmentNames: {
+        PENSION: 'Decision on pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Decision on adult education allowance',
+        SICKNESS_ALLOWANCE: 'Decision on sickness benefit',
+        PARENTAL_ALLOWANCE: 'Decision on maternity or parental allowance',
+        HOME_CARE_ALLOWANCE: 'Decision on child home care allowance',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Decision on care allowance',
+        ALIMONY:
+          'Child maintenance agreement or decision on maintenance allowance',
+        UNEMPLOYMENT_ALLOWANCE: 'Decision on unemployment benefit',
+        LABOUR_MARKET_SUBSIDY: 'Decision on labour market subsidy',
+        ADJUSTED_DAILY_ALLOWANCE: 'Decision on the daily allowance',
+        JOB_ALTERNATION_COMPENSATION:
+          'Document of job alternation leave payment',
+        REWARD_OR_BONUS: 'New pay statement or pay slip with bonus',
+        RELATIVE_CARE_SUPPORT: 'Decision on informal care allowance',
+        BASIC_INCOME: 'Decision on guaranteed minimum income',
+        FOREST_INCOME: 'Document of forest income',
+        FAMILY_CARE_COMPENSATION: 'Documents of family care remuneration',
+        REHABILITATION:
+          'Decision on rehabilitation allowance or rehabilitation grant',
+        EDUCATION_ALLOWANCE: 'Decision on training allowance',
+        GRANT: 'Document of grant/scholarship',
+        APPRENTICESHIP_SALARY:
+          'Document of earnings from apprenticeship training',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Document of compensation for accident insurance',
+        OTHER_INCOME: 'Attachments on other income',
+        ALIMONY_PAYOUT: 'Proof of payment of child support',
+        INTEREST_AND_INVESTMENT_INCOME:
+          'Documents of interest and dividend income',
+        RENTAL_INCOME: 'Documents of rental income',
+        PAYSLIP: 'Last pay slip',
+        STARTUP_GRANT: 'Decision on a start-up grant',
+        ACCOUNTANT_REPORT:
+          'Accountant’s account of fringe benefits and dividends',
+        ACCOUNTANT_REPORT_LLC:
+          'Accountant’s account of fringe benefits and dividends',
+        PROFIT_AND_LOSS_STATEMENT: 'Profit and loss account and balance sheet',
+        SALARY: 'Last pay slip', // TODO i18n Maksutositteet palkoista ja työkorvauksista
+        PROOF_OF_STUDIES:
+          'Certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund'
+      }
+    },
+    assure: 'I testify that the information I have provided is correct.',
+    errors: {
+      invalidForm:
+        'The form is missing some required information or the information is incorrect. Please review the information you filled in.',
+      choose: 'Please select an option',
+      chooseAtLeastOne: 'Select at least one option',
+      deleteFailed: 'The income statement could not be deleted'
+    },
+    table: {
+      title: 'Income statements',
+      incomeStatementForm: 'Income statement form',
+      startDate: 'Valid as of',
+      endDate: 'Valid until',
+      handled: 'Processed',
+      openIncomeStatement: 'Open form',
+      deleteConfirm: 'Do you want to delete the income statement?',
+      deleteDescription:
+        'Are you sure you want to delete the income statement you submitted? All information on the deleted form will be lost.'
+    },
+    view: {
+      title: 'Income statement form',
+      startDate: 'Valid as of',
+      feeBasis: 'Grounds for the client fee',
+
+      grossTitle: 'Gross income',
+      incomeSource: 'Submission of information',
+      incomesRegister:
+        'I agree that information related to my income will be checked from Kela and the Incomes Register.',
+      attachmentsAndKela:
+        'I will submit the information as attachments, and my information can be checked from Kela',
+      grossEstimatedIncome: 'Estimate of gross income',
+      otherIncome: 'Other income',
+      otherIncomeInfo: 'Estimate of other income',
+
+      entrepreneurTitle: "Entrepreneur's income information",
+      fullTimeLabel: 'Are the business activities full-time or part-time',
+      fullTime: 'Full-time',
+      partTime: 'Part-time',
+      startOfEntrepreneurship: 'Business activities started',
+      spouseWorksInCompany: 'Does your spouse work for your company',
+      startupGrant: 'Start-up grant',
+      checkupConsentLabel: 'Checking of information',
+      checkupConsent:
+        'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary.',
+      companyInfoTitle: 'Company details',
+      companyType: 'Company type',
+      selfEmployed: 'Proprietorship',
+      selfEmployedAttachments:
+        "I will submit the company's most recent profit and loss account and balance sheet statement or tax decision as attachments.",
+      selfEmployedEstimation: 'Estimated average monthly earnings',
+      limitedCompany: 'Limited liability company',
+      limitedCompanyIncomesRegister:
+        'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary.',
+      limitedCompanyAttachments:
+        'I will submit the information as attachments, and my information can be checked from Kela if necessary.',
+      partnership: 'General or limited partnership',
+      lightEntrepreneur: 'Light entrepreneurship',
+      attachments: 'Attachments',
+
+      estimatedMonthlyIncome: 'Average earnings €/month',
+      timeRange: 'Time range',
+
+      accountantTitle: 'Information of the accountant',
+      accountant: 'Accountant',
+      email: 'E-mail address',
+      phone: 'Telephone number',
+      address: 'Postal address',
+
+      otherInfoTitle: 'Other information related to income',
+      student: 'Student',
+      alimonyPayer: 'Pays child support',
+      otherInfo: 'More information related to income information',
+
+      citizenAttachments: {
+        title:
+          'Attachments related to income and early childhood education fees',
+        noAttachments: 'No attachments'
+      },
+
+      employeeAttachments: {
+        title: 'Add attachments',
+        description:
+          ' Here, you can add attachments provided by the client in paper format to an income statement submitted via eVaka.'
+      },
+
+      statementTypes: {
+        HIGHEST_FEE: 'Consent for the highest fee category',
+        INCOME: 'Income information provided by parent/guardian'
+      }
+    }
+  },
   validationErrors: {
     required: 'Value missing',
     requiredSelection: 'Please select one of the options',
