@@ -380,17 +380,16 @@ fun Database.Transaction.updateInvoiceDates(invoiceIds: List<UUID>, invoiceDate:
         .execute()
 }
 
-fun Database.Transaction.deleteDraftInvoicesByPeriod(period: DateRange) {
+fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
     val sql =
         """
             DELETE FROM invoice
             WHERE status = :status::invoice_status
-            AND daterange(:periodStart, :periodEnd, '[]') && daterange(period_start, period_end, '[]')
+            AND daterange(period_start, period_end, '[]') && :range
         """
 
     createUpdate(sql)
-        .bind("periodStart", period.start)
-        .bind("periodEnd", period.end)
+        .bind("range", range)
         .bind("status", InvoiceStatus.DRAFT.toString())
         .execute()
 }
