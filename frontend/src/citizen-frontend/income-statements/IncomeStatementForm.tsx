@@ -15,6 +15,7 @@ import {
   P
 } from 'lib-components/typography'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { tabletMin } from 'lib-components/breakpoints'
 import { useLang, useTranslation } from '../localization'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
@@ -55,6 +56,33 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import LocalDate from 'lib-common/local-date'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import { errorToInputInfo } from '../input-info-helper'
+
+const ActionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: ${defaultMargins.m} 0;
+
+  > * {
+    margin: 0 ${defaultMargins.m};
+
+    &:not(:first-child) {
+      margin-top: ${defaultMargins.s};
+    }
+  }
+
+  @media (min-width: ${tabletMin}) {
+    flex-direction: row;
+
+    > * {
+      margin: ${defaultMargins.s} ${defaultMargins.m};
+    }
+  }
+`
+const AssureCheckbox = styled.div`
+  display: flex;
+  align-items: center;
+`
 
 interface Props {
   incomeStatementId: UUID | undefined
@@ -194,27 +222,26 @@ export default React.forwardRef(function IncomeStatementForm(
             />
           </>
         )}
-        <Gap size="L" />
-        <FixedSpaceRow
-          alignItems="center"
-          justifyContent="flex-end"
-          spacing="L"
-        >
-          <Checkbox
-            label={`${t.income.assure} *`}
-            checked={formData.assure}
-            data-qa="assure-checkbox"
-            onChange={(value) => handleChange({ ...formData, assure: value })}
-          />
-          <Button text={t.common.cancel} onClick={onCancel} />
-          <AsyncButton
-            text={t.common.save}
-            primary
-            onClick={onSave}
-            disabled={!saveButtonEnabled}
-            onSuccess={onSuccess}
-          />
-        </FixedSpaceRow>
+        <ActionContainer>
+          <AssureCheckbox>
+            <Checkbox
+              label={`${t.income.assure} *`}
+              checked={formData.assure}
+              data-qa="assure-checkbox"
+              onChange={(value) => handleChange({ ...formData, assure: value })}
+            />
+          </AssureCheckbox>
+          <FixedSpaceRow>
+            <Button text={t.common.cancel} onClick={onCancel} />
+            <AsyncButton
+              text={t.common.save}
+              primary
+              onClick={onSave}
+              disabled={!saveButtonEnabled}
+              onSuccess={onSuccess}
+            />
+          </FixedSpaceRow>
+        </ActionContainer>
       </Container>
       <Footer />
     </>
