@@ -227,7 +227,7 @@ const filterUnits = (
 const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
   top: calc(
-    ${headerHeightDesktop} + ${({ loggedIn }) => (loggedIn ? '76px' : '0px')}
+    ${headerHeightDesktop}px + ${({ loggedIn }) => (loggedIn ? '76px' : '0px')}
   );
   bottom: 0;
   left: 0;

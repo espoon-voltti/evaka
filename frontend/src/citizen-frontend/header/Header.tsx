@@ -47,11 +47,11 @@ const HeaderContainer = styled.header`
   top: 0;
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
-  height: ${headerHeightMobile};
+  height: ${headerHeightMobile}px;
   width: 100%;
 
   @media (min-width: ${desktopMin}) {
-    grid: minmax(${headerHeightDesktop}, min-content) / max-content max-content auto;
-    height: ${headerHeightDesktop};
+    grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;
+    height: ${headerHeightDesktop}px;
   }
 `

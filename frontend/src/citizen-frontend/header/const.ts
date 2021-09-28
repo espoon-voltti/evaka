@@ -21,5 +21,5 @@ export const getLogoutUri = (user: User) =>
     user?.userType === 'CITIZEN_WEAK' ? 'evaka-customer' : 'saml'
   }/logout`
 
-export const headerHeightDesktop = '80px'
-export const headerHeightMobile = '60px'
+export const headerHeightDesktop = 80
+export const headerHeightMobile = 60

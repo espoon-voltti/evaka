@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useMemo } from 'react'
+import React, { Fragment, useEffect, useMemo, useRef } from 'react'
 import LocalDate from 'lib-common/local-date'
 import styled, { css } from 'styled-components'
 import { useTranslation } from '../localization'
@@ -32,10 +32,27 @@ export default React.memo(function CalendarGridView({
 }: Props) {
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
+  const headerRef = useRef<HTMLDivElement>(null)
+  const todayRef = useRef<HTMLDivElement>()
+
+  useEffect(() => {
+    const pos = todayRef.current?.getBoundingClientRect().top
+
+    if (pos) {
+      const offset =
+        headerHeightDesktop + (headerRef.current?.clientHeight ?? 0) + 16
+
+      window.scrollTo({
+        left: 0,
+        top: pos - offset,
+        behavior: 'smooth'
+      })
+    }
+  }, [])
 
   return (
     <>
-      <StickyHeader>
+      <StickyHeader ref={headerRef}>
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
@@ -75,24 +92,33 @@ export default React.memo(function CalendarGridView({
               {weeks.map((w) => (
                 <Fragment key={`${w.weekNumber}${month}${year}`}>
                   <WeekNumber>{w.weekNumber}</WeekNumber>
-                  {w.dailyReservations.map((d) => (
-                    <DayCell
-                      key={`${d.date.formatIso()}${month}${year}`}
-                      today={d.date.isToday() && d.date.month === month}
-                      onClick={() => selectDate(d.date)}
-                      data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
-                    >
-                      <DayCellHeader>
-                        <DayCellDate holiday={d.isHoliday}>
-                          {d.date.format('d.M.')}
-                        </DayCellDate>
-                      </DayCellHeader>
-                      <DayCellReservations data-qa="reservations">
-                        <Reservations data={d} />
-                      </DayCellReservations>
-                      {d.date.month !== month ? <FadeOverlay /> : null}
-                    </DayCell>
-                  ))}
+                  {w.dailyReservations.map((d) => {
+                    const isToday = d.date.isToday() && d.date.month === month
+
+                    return (
+                      <DayCell
+                        key={`${d.date.formatIso()}${month}${year}`}
+                        ref={(e) => {
+                          if (isToday) {
+                            todayRef.current = e ?? undefined
+                          }
+                        }}
+                        today={isToday}
+                        onClick={() => selectDate(d.date)}
+                        data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
+                      >
+                        <DayCellHeader>
+                          <DayCellDate holiday={d.isHoliday}>
+                            {d.date.format('d.M.')}
+                          </DayCellDate>
+                        </DayCellHeader>
+                        <DayCellReservations data-qa="reservations">
+                          <Reservations data={d} />
+                        </DayCellReservations>
+                        {d.date.month !== month ? <FadeOverlay /> : null}
+                      </DayCell>
+                    )
+                  })}
                 </Fragment>
               ))}
             </Grid>
@@ -172,7 +198,7 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
 
 const StickyHeader = styled.div`
   position: sticky;
-  top: ${headerHeightDesktop};
+  top: ${headerHeightDesktop}px;
   z-index: 2;
   width: 100%;
   background: ${({ theme }) => theme.colors.greyscale.white};

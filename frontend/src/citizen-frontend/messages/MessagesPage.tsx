@@ -23,7 +23,7 @@ import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
 
 const FullHeightContainer = styled(Container)`
-  height: calc(100vh - ${headerHeightDesktop});
+  height: calc(100vh - ${headerHeightDesktop}px);
 `
 
 const StyledFlex = styled(AdaptiveFlex)`
