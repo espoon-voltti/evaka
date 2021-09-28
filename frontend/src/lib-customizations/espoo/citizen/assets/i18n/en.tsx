@@ -1352,6 +1352,7 @@ const en: Translations = {
           <li>
             If your family includes another adult, they must also submit an
             income statement.
+            {/*  TODO i18n by logging in to evaka */}
           </li>
         </UnorderedList>
         <P>
@@ -1668,7 +1669,7 @@ const en: Translations = {
       employeeAttachments: {
         title: 'Add attachments',
         description:
-          ' Here, you can add attachments provided by the client in paper format to an income statement submitted via eVaka.'
+          'Here, you can add attachments provided by the client in paper format to an income statement submitted via eVaka.'
       },
 
       statementTypes: {

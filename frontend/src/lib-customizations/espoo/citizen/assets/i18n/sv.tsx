@@ -6,7 +6,8 @@ import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { INCOME_I18N } from './fi'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { Gap } from 'lib-components/white-space'
 
 const sv: Translations = {
   common: {
@@ -1242,7 +1243,393 @@ const sv: Translations = {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
   },
-  income: INCOME_I18N,
+  income: {
+    title: 'Inkomstuppgifter',
+    description: (
+      <>
+        <p>
+          På denna sida kan du skicka utredningar om dina inkomster som påverkar
+          avgiften för småbarnspedagogik. Du kan också granska, redigera eller
+          radera inkomstutredningar som du har lämnat in tills myndigheten har
+          behandlat uppgifterna. Efter att blanketten har behandlats kan du
+          uppdatera dina inkomstuppgifter genom att lämna in en ny blankett.
+          <br />
+          Mer information om avgifterna:{' '}
+          <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/avgifter-inom-smabarnspedagogik">
+            Avgifter inom småbarnspedagogik
+          </a>
+        </p>
+        <p>
+          Avgifterna för kommunal småbarnspedagogik beräknas i procentandel av
+          familjens bruttoinkomster. Avgifterna varierar beroende på familjens
+          storlek och inkomster samt barnets vårdtid inom småbarnspedagogik.
+          Kontrollera tabellen nedan om du behöver lämna in en inkomstutredning,
+          eller om er familj automatiskt omfattas av den högsta avgiftsklassen
+          för småbarnspedagogik.
+        </p>
+      </>
+    ),
+    formTitle: 'Anmälan av inkomstuppgifter',
+    formDescription: (
+      <>
+        <P>
+          Inkomstutredningen jämte dess bilagor lämnas in inom två veckor efter
+          att småbarnspedagogiken startats. En bristfällig inkomstutredning kan
+          leda till den högsta avgiften.
+        </P>
+        <P>
+          Klientavgiften tas ut från och med den dag då småbarnspedagogiken
+          startar.
+        </P>
+        <P>
+          Klienten ska omedelbart informera om förändringar i inkomst och
+          familjestorlek till enheten för klientavgifter. Myndigheten har vid
+          behov rätt att bära upp avgifterna för småbarnspedagogiken även
+          retroaktivt.
+        </P>
+        <P>
+          <strong>Observera:</strong>
+        </P>
+        <Gap size="xs" />
+        <UnorderedList>
+          <li>
+            Om dina inkomster överskrider inkomstgränsen enligt
+            familjestorleken, godkänn den högsta avgiften för småbarnspedagogik.
+            I detta fall behöver du inte alls reda ut dina inkomster.
+          </li>
+          <li>
+            Om din familj inkluderar en annan vuxen, måste hen också lämna in en
+            inkomstutredning.
+            {/*  TODO i18n by logging in to evaka */}
+          </li>
+        </UnorderedList>
+        <P>
+          Se nuvarande inkomstgränserna{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+          >
+            här
+          </a>
+          .
+        </P>
+        <P>* Uppgifter markerade med en asterisk är obligatoriska</P>
+      </>
+    ),
+    confidential: (
+      <P>
+        <strong>Sekretessbelagt</strong>
+        <br />
+        (24.1 §, punkt 23 i offentlighetslagen)
+      </P>
+    ),
+    addNew: 'Ny inkomstutredning',
+    incomeInfo: 'Inkomstuppgifter',
+    incomesRegisterConsent:
+      'Jag samtycker till att uppgifterna som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov',
+    incomeType: {
+      description: (
+        <>
+          Om du är företagare men har också andra inkomster, välj både{' '}
+          <strong>Företagarens inkomstuppgifter</strong>, och{' '}
+          <strong>
+            Fastställande av klientavgiften enligt bruttoinkomster
+          </strong>
+          .
+        </>
+      ),
+      startDate: 'Gäller från och med',
+      endDate: 'Upphör att gälla',
+      title: 'Grunder för klientavgiften',
+      agreeToHighestFee:
+        'Jag samtycker till den högsta avgiften för småbarnspedagogik',
+      highestFeeInfo:
+        'Jag samtycker till att betala den högsta avgiften för småbarnspedagogik som gäller till vidare enligt vid den aktuella tidpunkten gällande lagen om klientavgifter och stadsstyrelsens beslut, tills jag meddelar något annat eller tills mitt barns småbarnspedagogik upphör. (Inkomstuppgifterna behöver inte lämnas in)',
+      grossIncome: 'Fastställande av avgiften enligt bruttoinkomster',
+      entrepreneurIncome: 'Uppgifter om företagarens inkomster'
+    },
+    grossIncome: {
+      title: 'Att fylla i uppgifterna om bruttoinkomster',
+      description: (
+        <>
+          <P noMargin>
+            Välj nedan om du vill skicka in dina inkomstuppgifter som bilaga,
+            eller om myndigheten ska se dina uppgifter direkt i inkomstregistret
+            samt hos FPA vid behov.
+          </P>
+          <P>
+            {/*TODO i18n checkup*/}
+            Om du har börjat eller är på väg att börja ett nytt jobb, skicka
+            alltid ett bifogat anställningsavtal som visar din lön, eftersom
+            detta kommer att få din inkomst att dyka upp i inkomstregistret med
+            en försening.
+          </P>
+        </>
+      ),
+      incomeSource: 'Inlämning av inkomstuppgifterna',
+      provideAttachments:
+        'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
+      estimate: 'Uppskattning av mina bruttoinkomster',
+      otherIncome: 'Övriga inkomster',
+      otherIncomeDescription:
+        'Om du har några andra inkomster, ska du lämna in uppgifterna som bilaga. En lista över nödvändiga bilagor finns längst ner på blanketten under: Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik.',
+      choosePlaceholder: 'Välj',
+      otherIncomeTypes: {
+        PENSION: 'Pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Vuxenutbildningsstöd',
+        SICKNESS_ALLOWANCE: 'Sjukdagpenning',
+        PARENTAL_ALLOWANCE: 'Moderskaps- och föräldrapenning',
+        HOME_CARE_ALLOWANCE: 'Stöd för hemvård av barn',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Flexibel eller partiell vårdpenning',
+        ALIMONY: 'Underhållsbidrag eller -stöd',
+        INTEREST_AND_INVESTMENT_INCOME: 'Ränte- och dividendinkomster',
+        RENTAL_INCOME: 'Hyresinkomster',
+        UNEMPLOYMENT_ALLOWANCE: 'Arbetslöshetsdagpenning',
+        LABOUR_MARKET_SUBSIDY: 'Arbetsmarknadsstöd',
+        ADJUSTED_DAILY_ALLOWANCE: 'Jämkad dagpenning',
+        JOB_ALTERNATION_COMPENSATION: 'Alterneringsersättning',
+        REWARD_OR_BONUS: 'Belöning eller bonus',
+        RELATIVE_CARE_SUPPORT: 'Stöd för närståendevård',
+        BASIC_INCOME: 'Basinkomst',
+        FOREST_INCOME: 'Skogsinkomst',
+        FAMILY_CARE_COMPENSATION: 'Arvoden för familjevård',
+        REHABILITATION: 'Rehabiliteringsstöd eller rehabiliteringspenning',
+        EDUCATION_ALLOWANCE: 'Utbildningsdagpenning',
+        GRANT: 'Stipendium',
+        APPRENTICESHIP_SALARY: 'Inkomster från läroavtalsutbildning',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Ersättning från olycksfallsförsäkring',
+        OTHER_INCOME: 'Övriga inkomster'
+      },
+      otherIncomeInfoLabel: 'Uppskattning av övriga inkomster',
+      otherIncomeInfoDescription:
+        'Skriv här uppskattningar av andra inkomster per månad, t.ex. "Hyresinkomster 150, vårdpenning 300"'
+    },
+    entrepreneurIncome: {
+      title: 'Att fylla i företagarens inkomstuppgifter',
+      description: (
+        <>
+          Med denna blankett kan du vid behov fylla i uppgifterna för flera
+          företag genom att välja de punkter som gäller alla dina företag.
+          Skicka mer detaljerade företagsspecifika uppgifter som bilaga.
+          <br />
+          En lista över obligatoriska bilagor finns längst ner på blanketten
+          under ”Bilagor som rör inkomsterna och avgifterna för
+          småbarnspedagogik”.
+        </>
+      ),
+      fullTimeLabel: 'Är företagsverksamheten en huvudsyssla eller bisyssla?',
+      fullTime: 'Huvudsyssla',
+      partTime: 'Bisyssla',
+      startOfEntrepreneurship: 'Entreprenörskap har börjat',
+      spouseWorksInCompany: 'Arbetar din maka/make i företaget?',
+      yes: 'Ja',
+      no: 'Nej',
+      startupGrantLabel: 'Har företaget fått startpeng?',
+      startupGrant:
+        'Mitt företag har fått startpeng. Jag skickar beslutet om startpeng som bilaga.',
+      checkupLabel: 'Kontroll av uppgifter',
+      checkupConsent:
+        'Jag samtycker till att uppgifter som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov.',
+      companyInfo: 'Företagets uppgifter',
+      companyForm: 'Företagets verksamhetsform',
+      selfEmployed: 'Firmanamn',
+      limitedCompany: 'Aktiebolag',
+      partnership: 'Öppet bolag eller kommanditbolag',
+      lightEntrepreneur: 'Lättföretagande',
+      lightEntrepreneurInfo:
+        'Betalningsverifikaten över löner och arbetsersättningar ska skickas som bilaga.',
+      partnershipInfo:
+        'Resultaträkningen och balansräkningen samt bokförarens utredning av lön och naturaförmåner ska skickas som bilaga.'
+    },
+    selfEmployed: {
+      info: 'Om företagsverksamheten har varat över tre månader, ska företagets senaste resultat- och balansräkning eller skattebeslut skickas in.',
+      attachments:
+        'Jag bifogar företagets senaste resultat- och balansräkning eller skattebeslut.',
+      estimatedIncome:
+        'Jag fyller i en uppskattning av min genomsnittliga månadsinkomst.',
+      estimatedMonthlyIncome: 'Genomsnittliga inkomster euro/månad',
+      timeRange: 'Under perioden'
+    },
+    limitedCompany: {
+      info: (
+        <>
+          <strong>
+            Verifikaten över dividendinkomster ska skickas som bilaga.
+          </strong>{' '}
+          Välj ett lämpligt sätt att överföra övriga uppgifter nedan.
+        </>
+      ),
+      incomesRegister:
+        'Mina inkomster kan kontrolleras direkt hos FPA och i inkomstregistret.',
+      attachments:
+        'Jag bifogar verifikaten över mina inkomster och samtycker till att uppgifter som rör mina inkomster kontrolleras hos FPA.'
+    },
+    accounting: {
+      title: 'Bokförarens kontaktuppgifter',
+      description:
+        'Bokförarens kontaktuppgifter krävs om du är verksam i ett aktiebolag, kommanditbolag eller öppet bolag.',
+      accountant: 'Bokförare',
+      accountantPlaceholder: 'Bokförarens namn / företagets namn',
+      email: 'E-postadress',
+      emailPlaceholder: 'E-post',
+      address: 'Postadress',
+      addressPlaceholder: 'Gatuadress, postnummer, postort',
+      phone: 'Telefonnummer',
+      phonePlaceholder: 'Telefonnummer'
+    },
+    moreInfo: {
+      title: 'Övriga uppgifter som rör betalningen',
+      studentLabel: 'Är du studerande?',
+      student: 'Jag är studerande.',
+      studentInfo:
+        'Studerandena lämnar in ett studieintyg från läroanstalten eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd.',
+      deductions: 'Avdrag',
+      alimony:
+        'Jag betalar underhållsbidrag. Jag bifogar en kopia av betalningsverifikatet.',
+      otherInfoLabel: 'Mer information om inkomstuppgifter'
+    },
+    attachments: {
+      title: 'Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik',
+      description:
+        'Här kan du elektroniskt skicka de begärda bilagor som rör dina inkomster eller avgifter för småbarnspedagogik, såsom inkomstutredningen, lönekvittona eller FPA:s intyg över stöd för privat vård. Obs! Bilagor som rör inkomsterna behövs i regel inte, om er familj har samtyckt till den högsta avgiften.',
+      required: {
+        title: 'Obligatoriska bilagor'
+      },
+      attachmentNames: {
+        PENSION: 'Beslut om pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Beslut om vuxenutbildningsstöd',
+        SICKNESS_ALLOWANCE: 'Beslut om sjukdagpenning',
+        PARENTAL_ALLOWANCE: 'Beslut om moderskaps- eller föräldrapenning',
+        HOME_CARE_ALLOWANCE: 'Beslut om hemvårdsstöd',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Beslut om vårdpenning',
+        ALIMONY: 'Underhållsavtal eller beslut om underhållsstöd',
+        UNEMPLOYMENT_ALLOWANCE: 'Beslut om arbetslöshetsdagpenning',
+        LABOUR_MARKET_SUBSIDY: 'Beslut om arbetsmarknadsstöd',
+        ADJUSTED_DAILY_ALLOWANCE: 'Beslut om dagpenning',
+        JOB_ALTERNATION_COMPENSATION: 'Verifikat över alterneringsersättning',
+        REWARD_OR_BONUS: 'Nytt löneintyg eller lönekvitto med bonus',
+        RELATIVE_CARE_SUPPORT: 'Beslut om stöd för närståendevård',
+        BASIC_INCOME: 'Beslut om basinkomst',
+        FOREST_INCOME: 'Verifikat över skogsinkomst',
+        FAMILY_CARE_COMPENSATION: 'Verifikat över arvoden för familjevård',
+        REHABILITATION:
+          'Beslut om rehabiliteringsstöd eller rehabiliteringspenning',
+        EDUCATION_ALLOWANCE: 'Beslut om utbildningsdagpenning',
+        GRANT: 'Verifikat över stipendium',
+        APPRENTICESHIP_SALARY:
+          'Verifikat över inkomster från läroavtalsutbildning',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Verifikat över ersättning från olycksfallsförsäkring',
+        OTHER_INCOME: 'Bilagor om övriga inkomster',
+        ALIMONY_PAYOUT: 'Betalningsverifikat för underhållsbidrag',
+        INTEREST_AND_INVESTMENT_INCOME:
+          'Verifikat över ränte- och dividendinkomster',
+        RENTAL_INCOME: 'Verifikat över hyresinkomster',
+        PAYSLIP: 'Senaste lönekvitto',
+        STARTUP_GRANT: 'Beslut om startpeng',
+        ACCOUNTANT_REPORT: 'Bokförarens utredning av lön och naturaförmåner',
+        ACCOUNTANT_REPORT_LLC:
+          'Bokförarens utredning av naturaförmåner och dividender',
+        PROFIT_AND_LOSS_STATEMENT: 'Resultaträkning och balansräkning',
+        SALARY: 'Bevis på betalning av löner', // TODO i18n Maksutositteet palkoista ja työkorvauksista
+        PROOF_OF_STUDIES:
+          'Studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd'
+      }
+    },
+    assure: 'Jag försäkrar att de uppgifter jag lämnat in är riktiga.',
+    errors: {
+      invalidForm:
+        'Blanketten saknar vissa nödvändiga uppgifter eller uppgifterna är felaktiga. Vänligen kontrollera den information som du har fyllt i.',
+      choose: 'Välj ett alternativ',
+      chooseAtLeastOne: 'Välj minst ett alternativ',
+      deleteFailed: 'Inkomstutredningen kunde inte raderas'
+    },
+    table: {
+      title: 'Inkomstutredningar',
+      incomeStatementForm: 'Blankett för inkomstutredning',
+      startDate: 'Gäller från och med',
+      endDate: 'Gäller till och med',
+      handled: 'Handläggare',
+      openIncomeStatement: 'Öppna blanketten',
+      deleteConfirm: 'Vill du radera inkomstutredningen?',
+      deleteDescription:
+        'Är du säker på att du vill radera den inkomstutredning som du har lämnat in? All information på den blankett som ska raderas förloras.'
+    },
+    view: {
+      title: 'Blankett för inkomstutredning',
+      startDate: 'Gäller från och med',
+      feeBasis: 'Grund för klientavgiften',
+
+      grossTitle: 'Bruttoinkomster',
+      incomeSource: 'Inlämning av uppgifter',
+      incomesRegister:
+        'Jag samtycker till att uppgifter som rör mina inkomster kontrolleras hos FPA samt i inkomstregistret.',
+      attachmentsAndKela:
+        'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA',
+      grossEstimatedIncome: 'Uppskattning av bruttoinkomsterna',
+      otherIncome: 'Övriga inkomster',
+      otherIncomeInfo: 'Uppskattning av övriga inkomster',
+
+      entrepreneurTitle: 'Uppgifter om företagarens inkomster',
+      fullTimeLabel: 'Är företagsverksamheten en huvudsyssla eller bisyssla',
+      fullTime: 'Huvudsyssla',
+      partTime: 'Bisyssla',
+      startOfEntrepreneurship: 'Entreprenörskap har börjat',
+      spouseWorksInCompany: 'Arbetar din maka/make i företaget',
+      startupGrant: 'Startpeng',
+      checkupConsentLabel: 'Kontroll av uppgifter',
+      checkupConsent:
+        'Mina inkomster kan kontrolleras direkt hos FPA och i inkomstregistret.',
+      companyInfoTitle: 'Företagets uppgifter',
+      companyType: 'Verksamhetsform',
+      selfEmployed: 'Firmanamn',
+      selfEmployedAttachments:
+        'Jag bifogar företagets senaste resultat- och balansräkning eller skattebeslut.',
+      selfEmployedEstimation: 'Uppskattning av genomsnittlig månadsinkomst',
+      limitedCompany: 'Aktiebolag',
+      limitedCompanyIncomesRegister:
+        'Mina inkomster kan kontrolleras direkt hos FPA och i inkomstregistret.',
+      limitedCompanyAttachments:
+        'Jag bifogar verifikaten över mina inkomster och samtycker till att uppgifter som rör mina inkomster kontrolleras hos FPA.',
+      partnership: 'Öppet bolag eller kommanditbolag',
+      lightEntrepreneur: 'Lättföretagande',
+      attachments: 'Bilagor',
+
+      estimatedMonthlyIncome: 'Genomsnittliga inkomster euro/månad',
+      timeRange: 'Under perioden',
+
+      accountantTitle: 'Uppgifter om bokföraren',
+      accountant: 'Bokförare',
+      email: 'E-postadress',
+      phone: 'Telefonnummer',
+      address: 'Postadress',
+
+      otherInfoTitle: 'Övriga uppgifter som rör inkomsterna',
+      student: 'Studerande',
+      alimonyPayer: 'Betalar underhållsbidrag',
+      otherInfo: 'Mer information om inkomstuppgifterna',
+
+      citizenAttachments: {
+        title:
+          'Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik',
+        noAttachments: 'Inga bilagor'
+      },
+
+      employeeAttachments: {
+        title: 'Lägg till bilagor',
+        description:
+          'Här kan du lägga till de bilagor som klienten har skickat in i pappersform till inkomstutredningen som lämnats in via eVaka.'
+      },
+
+      statementTypes: {
+        HIGHEST_FEE: 'Samtycke till den högsta avgiftsklassen',
+        INCOME: 'Inkomstuppgifter som vårdnadshavaren har skickat'
+      }
+    }
+  },
   validationErrors: {
     required: 'Värde saknas',
     requiredSelection: 'Val saknas',
