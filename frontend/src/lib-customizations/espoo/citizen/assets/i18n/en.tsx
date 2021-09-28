@@ -1351,8 +1351,7 @@ const en: Translations = {
           </li>
           <li>
             If your family includes another adult, they must also submit an
-            income statement.
-            {/*  TODO i18n by logging in to evaka */}
+            income statement by personally logging into eVaka.
           </li>
         </UnorderedList>
         <P>
