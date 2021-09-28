@@ -21,6 +21,7 @@ import fi.espoo.evaka.daycare.service.CaretakerService
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
@@ -33,6 +34,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -69,6 +71,18 @@ class DaycareController(
         Audit.UnitFeaturesRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_UNIT_FEATURES)
         return db.read { it.getUnitFeatures() }
+    }
+
+    @PutMapping("/{daycareId}/features")
+    fun putFeatures(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("daycareId") daycareId: DaycareId,
+        @RequestBody features: Set<PilotFeature>
+    ) {
+        Audit.UnitFeaturesUpdate.log(targetId = daycareId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_FEATURES, daycareId)
+        db.transaction { it.setUnitFeatures(daycareId, features) }
     }
 
     @GetMapping("/{daycareId}")

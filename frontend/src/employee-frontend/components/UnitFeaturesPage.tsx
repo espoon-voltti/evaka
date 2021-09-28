@@ -11,11 +11,15 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Table, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
-import { pilotFeatures } from 'lib-common/generated/api-types/shared'
+import {
+  PilotFeature,
+  pilotFeatures
+} from 'lib-common/generated/api-types/shared'
 import { UnwrapResult } from './async-rendering'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { client } from '../api/client'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
   return client
@@ -24,11 +28,56 @@ async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export default React.memo(function UnitFeaturesPage() {
-  const [units, setUnits] = useState<Result<UnitFeatures[]>>(Loading.of())
+async function putUnitFeatures(
+  unitId: UUID,
+  features: PilotFeature[]
+): Promise<Result<void>> {
+  return client
+    .put<JsonOf<UnitFeatures[]>>(`/daycares/${unitId}/features`, features)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
 
-  const load = useRestApi(getUnitFeatures, setUnits)
+export default React.memo(function UnitFeaturesPage() {
+  const [unitsResult, setUnitsResult] = useState<Result<UnitFeatures[]>>(
+    Loading.of()
+  )
+
+  const load = useRestApi(getUnitFeatures, setUnitsResult)
   useEffect(load, [load])
+
+  // editable live copy of data
+  const [units, setUnits] = useState<Result<UnitFeatures[]>>(Loading.of())
+  useEffect(() => setUnits(unitsResult), [unitsResult])
+
+  const [submitting, setSubmitting] = useState(false)
+
+  const updateFlag = (unitId: UUID, feature: PilotFeature, value: boolean) => {
+    if (!units.isSuccess) return
+
+    const currentFeatures = units.value.find((u) => u.id === unitId)?.features
+    if (!currentFeatures) return
+
+    const newFeatures = value
+      ? [...currentFeatures, feature]
+      : currentFeatures.filter((f) => f !== feature)
+
+    setSubmitting(true)
+    void putUnitFeatures(unitId, newFeatures).then((res) => {
+      setSubmitting(false)
+      if (res.isSuccess) {
+        setUnits((prev) =>
+          prev.map((rows) =>
+            rows.map((row) =>
+              row.id === unitId ? { ...row, features: newFeatures } : row
+            )
+          )
+        )
+      } else {
+        load()
+      }
+    })
+  }
 
   return (
     <Container verticalMargin={defaultMargins.L}>
@@ -53,9 +102,10 @@ export default React.memo(function UnitFeaturesPage() {
                       <Td key={f}>
                         <Checkbox
                           label={f}
-                          checked={unit.features.includes(f)}
                           hiddenLabel
-                          disabled
+                          checked={unit.features.includes(f)}
+                          onChange={(value) => updateFlag(unit.id, f, value)}
+                          disabled={submitting}
                         />
                       </Td>
                     ))}
