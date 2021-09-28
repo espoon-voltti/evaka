@@ -65,7 +65,7 @@ fun Database.Transaction.insertAttachment(
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .createQuery(
         """
-        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id, message_draft_id, message_content_id
+        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id, message_draft_id, message_content_id, pedagogical_document_id
         FROM attachment
         WHERE id = :id
         """
@@ -76,11 +76,13 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
         val incomeStatementId = row.mapColumn<IncomeStatementId?>("income_statement_id")
         val messageDraftId = row.mapColumn<MessageDraftId?>("message_draft_id")
         val messageContentId = row.mapColumn<MessageContentId?>("message_content_id")
+        val pedagogicalDocumentId = row.mapColumn<PedagogicalDocumentId?>("pedagogical_document_id")
         val attachedTo =
             if (applicationId != null) AttachmentParent.Application(applicationId)
             else if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
             else if (messageDraftId != null) AttachmentParent.MessageDraft(messageDraftId)
             else if (messageContentId != null) AttachmentParent.MessageContent(messageContentId)
+            else if (pedagogicalDocumentId != null) AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
             else AttachmentParent.None
 
         Attachment(

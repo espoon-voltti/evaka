@@ -13,16 +13,27 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
+import fi.espoo.evaka.shared.dev.updateDaycareGroupAclWithEmployee
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -30,6 +41,14 @@ import kotlin.test.assertNotNull
 class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
     private val employeeId = UUID.randomUUID()
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
+
+    private val supervisorId = UUID.randomUUID()
+    private val supervisor = AuthenticatedUser.Employee(supervisorId, setOf())
+
+    private val staffId = UUID.randomUUID()
+    private val staff = AuthenticatedUser.Employee(staffId, setOf())
+
+    val groupId = GroupId(UUID.randomUUID())
 
     private fun deserializeGetResult(json: String) = objectMapper.readValue<List<PedagogicalDocument>>(json)
     private fun deserializePutResult(json: String) = objectMapper.readValue<PedagogicalDocument>(json)
@@ -41,6 +60,18 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.ADMIN)))
+            tx.insertTestEmployee(DevEmployee(id = supervisorId, roles = setOf()))
+            tx.insertTestEmployee(DevEmployee(id = staffId, roles = setOf()))
+            tx.updateDaycareAclWithEmployee(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
+            tx.updateDaycareGroupAclWithEmployee(groupId, staffId)
+
+            val placementId = tx.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, endDate = LocalDate.MAX)
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                endDate = LocalDate.MAX
+            )
         }
     }
 
@@ -108,7 +139,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `find document with attachment`() {
+    fun `admin can read document with attachment`() {
         val (_, _, res) = http.post("/pedagogical-document")
             .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
             .asUser(employee)
@@ -130,6 +161,188 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
             attachmentId,
             attachment.id
         )
+    }
+
+    @Test
+    fun `supervisor can read pedagogical document by daycare`() {
+        val (_, _, res) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res.get()).id
+        val attachmentId = uploadAttachment(id)
+
+        val (_, _, result) = http.get("/pedagogical-document/child/${testChild_1.id}")
+            .asUser(supervisor)
+            .responseString()
+
+        val parsed = deserializeGetResult(result.get())
+        assertEquals(1, parsed.size)
+
+        val attachment = parsed.first().attachment
+        assertNotNull(attachment)
+        assertEquals(
+            attachmentId,
+            attachment.id
+        )
+    }
+
+    @Test
+    fun `employee can't read pedagogical document if child is in another unit`() {
+        db.transaction {
+            it.insertTestPlacement(childId = testChild_2.id, unitId = testDaycare2.id, endDate = LocalDate.MAX)
+        }
+        val (_, _, res1) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_2.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res1.get()).id
+        uploadAttachment(id)
+
+        val (_, res2, _) = http.get("/pedagogical-document/child/${testChild_2.id}")
+            .asUser(supervisor)
+            .responseString()
+
+        assertEquals(403, res2.statusCode)
+    }
+
+    @Test
+    fun `staff from group can read pedagogical document`() {
+        val (_, _, res) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res.get()).id
+        val attachmentId = uploadAttachment(id)
+
+        val (_, _, result) = http.get("/pedagogical-document/child/${testChild_1.id}")
+            .asUser(supervisor)
+            .responseString()
+
+        val parsed = deserializeGetResult(result.get())
+        assertEquals(1, parsed.size)
+
+        val attachment = parsed.first().attachment
+        assertNotNull(attachment)
+        assertEquals(
+            attachmentId,
+            attachment.id
+        )
+    }
+
+    @Test
+    fun `staff from group can read pedagogical document attachment`() {
+        val (_, _, res) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res.get()).id
+        val attachmentId = uploadAttachment(id)
+
+        val (_, _, result) = http.get("/pedagogical-document/child/${testChild_1.id}")
+            .asUser(staff)
+            .responseString()
+
+        val parsed = deserializeGetResult(result.get())
+        assertEquals(1, parsed.size)
+
+        val attachment = parsed.first().attachment
+        assertNotNull(attachment)
+        assertEquals(
+            attachmentId,
+            attachment.id
+        )
+
+        val (_, res2, _) = http.get("/attachments/${attachment.id}/download")
+            .asUser(staff)
+            .responseString()
+
+        assertEquals(200, res2.statusCode)
+    }
+
+    @Test
+    fun `staff from another daycare can't read pedagogical document`() {
+        val staff2Id = UUID.randomUUID()
+        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
+        db.transaction {
+            it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
+            it.updateDaycareAclWithEmployee(testDaycare2.id, staff2Id, UserRole.STAFF)
+
+            val group2Id = GroupId(UUID.randomUUID())
+            it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare2.id))
+            it.updateDaycareGroupAclWithEmployee(group2Id, staff2Id)
+        }
+        val (_, _, res1) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res1.get()).id
+        uploadAttachment(id)
+
+        val (_, res2, _) = http.get("/pedagogical-document/child/${testChild_1.id}")
+            .asUser(staff2)
+            .responseString()
+
+        assertEquals(403, res2.statusCode)
+    }
+
+    @Test
+    fun `staff from another group can't read pedagogical document`() {
+        val staff2Id = UUID.randomUUID()
+        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
+        db.transaction {
+            it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
+
+            val group2Id = GroupId(UUID.randomUUID())
+            it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare.id))
+            it.updateDaycareGroupAclWithEmployee(group2Id, staff2Id)
+        }
+
+        val (_, _, res1) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res1.get()).id
+        uploadAttachment(id)
+
+        val (_, res2, _) = http.get("/pedagogical-document/child/${testChild_1.id}")
+            .asUser(staff2)
+            .responseString()
+
+        assertEquals(403, res2.statusCode)
+    }
+
+    @Test
+    fun `staff from another group can't read pedagogical document attachment`() {
+        val staff2Id = UUID.randomUUID()
+        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
+        db.transaction {
+            it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
+
+            val group2Id = GroupId(UUID.randomUUID())
+            it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare.id))
+            it.updateDaycareGroupAclWithEmployee(group2Id, staff2Id)
+        }
+
+        val (_, _, res1) = http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "${testChild_1.id}", "description": ""}""")
+            .asUser(employee)
+            .responseString()
+
+        val id = deserializePostResult(res1.get()).id
+        val attachmentId = uploadAttachment(id)
+
+        val (_, res2, _) = http.get("/attachments/$attachmentId/download")
+            .asUser(staff2)
+            .responseString()
+
+        assertEquals(403, res2.statusCode)
     }
 
     private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {
