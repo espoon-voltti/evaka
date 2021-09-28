@@ -31,7 +31,7 @@ function isValidStartDate(otherStartDates: LocalDate[]) {
   return (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date))
 }
 
-async function loadIncomeStatement(
+async function initializeEditorState(
   id: UUID | undefined
 ): Promise<Result<EditorState>> {
   const incomeStatements = await getIncomeStatements()
@@ -70,7 +70,7 @@ export default function IncomeStatementEditor({
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
 
   useEffect(() => {
-    void loadIncomeStatement(incomeStatementId).then(setState)
+    void initializeEditorState(incomeStatementId).then(setState)
   }, [incomeStatementId])
 
   const [showFormErrors, setShowFormErrors] = useState(false)
@@ -88,7 +88,7 @@ export default function IncomeStatementEditor({
       fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
     ): void =>
       setState((prev) =>
-        prev.map((prev2) => ({ ...prev2, formData: fn(prev2.formData) }))
+        prev.map((state) => ({ ...state, formData: fn(state.formData) }))
       )
 
     const save = () => {

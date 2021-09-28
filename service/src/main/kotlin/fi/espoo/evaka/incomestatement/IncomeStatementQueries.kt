@@ -449,8 +449,8 @@ fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: Inco
         .any()
 
 fun Database.Read.incomeStatementExistsForStartDate(user: AuthenticatedUser.Citizen, startDate: LocalDate): Boolean =
-    createQuery("SELECT EXISTS(SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)")
+    createQuery("SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate")
         .bind("personId", user.id)
         .bind("startDate", startDate)
-        .mapTo<Boolean>()
-        .one()
+        .mapTo<Int>()
+        .any()
