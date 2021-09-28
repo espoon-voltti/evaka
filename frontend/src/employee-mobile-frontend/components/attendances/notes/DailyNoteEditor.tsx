@@ -714,13 +714,7 @@ const Time = styled.div`
 `
 
 const TitleArea = styled(ContentArea)`
-  font-family: Montserrat;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 36px;
   text-align: center;
-  color: ${colors.blues.dark};
 
   h1 {
     margin: 0;
@@ -746,7 +740,7 @@ const Tab = styled.div<TabProps>`
 
   font-family: Montserrat;
   font-style: normal;
-  font-weight: bold;
+  font-weight: ${(props) => (props.selected ? 700 : 600)};
   font-size: 14px;
   line-height: 16px;
   text-align: center;
@@ -756,7 +750,8 @@ const Tab = styled.div<TabProps>`
   background: ${(props) =>
     props.selected ? colors.blues.lighter : colors.greyscale.white};
 
-  color: ${colors.blues.dark};
+  color: ${(props) =>
+    props.selected ? colors.blues.dark : colors.greyscale.dark};
 `
 
 const TopRow = styled.div`

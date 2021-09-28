@@ -9,7 +9,6 @@ import {
 } from 'e2e-test-common/dev-api/types'
 import { Page } from 'playwright'
 import { waitUntilEqual } from '../../utils'
-import assert from 'assert'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
@@ -84,11 +83,14 @@ export default class MobileNotePage {
       expected.reminderNote || ''
     )
 
-    const hours = Number((await this.#note.sleepingTimeHours.inputValue()) || 0)
-    const minutes = Number(
-      (await this.#note.sleepingTimeMinutes.inputValue()) || 0
-    )
-    const sleepingMinutes = hours * 60 + minutes
-    assert(sleepingMinutes == (expected.sleepingMinutes || 0))
+    await waitUntilEqual(async () => {
+      const hours = Number(
+        (await this.#note.sleepingTimeHours.inputValue()) || 0
+      )
+      const minutes = Number(
+        (await this.#note.sleepingTimeMinutes.inputValue()) || 0
+      )
+      return (hours * 60 + minutes).toString()
+    }, expected.sleepingMinutes || '0')
   }
 }
