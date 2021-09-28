@@ -104,6 +104,7 @@ export default React.memo(function CalendarPage() {
                     setOpenModal('reservations')
                   }
                   onCreateAbsencesClicked={() => setOpenModal('absences')}
+                  selectedDate={selectedDate}
                   selectDate={selectDate}
                 />
               </DesktopOnly>

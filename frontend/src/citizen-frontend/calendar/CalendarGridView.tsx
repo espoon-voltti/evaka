@@ -21,6 +21,7 @@ export interface Props {
   dailyData: DailyReservationData[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: () => void
+  selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
 }
 
@@ -28,6 +29,7 @@ export default React.memo(function CalendarGridView({
   dailyData,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
+  selectedDate,
   selectDate
 }: Props) {
   const i18n = useTranslation()
@@ -93,7 +95,8 @@ export default React.memo(function CalendarGridView({
                 <Fragment key={`${w.weekNumber}${month}${year}`}>
                   <WeekNumber>{w.weekNumber}</WeekNumber>
                   {w.dailyReservations.map((d) => {
-                    const isToday = d.date.isToday() && d.date.month === month
+                    const dateIsOnMonth = d.date.month === month
+                    const isToday = d.date.isToday() && dateIsOnMonth
 
                     return (
                       <DayCell
@@ -104,6 +107,10 @@ export default React.memo(function CalendarGridView({
                           }
                         }}
                         today={isToday}
+                        selected={
+                          dateIsOnMonth &&
+                          d.date.formatIso() === selectedDate?.formatIso()
+                        }
                         onClick={() => selectDate(d.date)}
                         data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
                       >
@@ -115,7 +122,7 @@ export default React.memo(function CalendarGridView({
                         <DayCellReservations data-qa="reservations">
                           <Reservations data={d} />
                         </DayCellReservations>
-                        {d.date.month !== month ? <FadeOverlay /> : null}
+                        {!dateIsOnMonth ? <FadeOverlay /> : null}
                       </DayCell>
                     )
                   })}
@@ -240,7 +247,7 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
   color: ${({ theme }) => theme.colors.main.dark};
 `
 
-const DayCell = styled.div<{ today: boolean }>`
+const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   position: relative;
   min-height: 150px;
   padding: ${defaultMargins.s};
@@ -252,6 +259,17 @@ const DayCell = styled.div<{ today: boolean }>`
       ? css`
           border-left: 4px solid ${colors.brandEspoo.espooTurquoise};
           padding-left: calc(${defaultMargins.s} - 3px);
+        `
+      : ''}
+
+  ${({ selected }) =>
+    selected
+      ? css`
+          box-shadow: 0px 2px 3px 2px #00000030;
+          z-index: 1;
+          /* higher z-index causes right and bottom borders to shift when using outline */
+          margin-left: -1px;
+          margin-top: -1px;
         `
       : ''}
 `
