@@ -245,25 +245,15 @@ const DayCell = styled.div<{ today: boolean }>`
   min-height: 150px;
   padding: ${defaultMargins.s};
   background: ${({ theme }) => theme.colors.greyscale.white};
-  border-bottom: 1px solid ${colors.greyscale.lighter};
-  border-right: 1px solid ${colors.greyscale.lighter};
+  outline: 1px solid ${colors.greyscale.lighter};
+
   ${(p) =>
     p.today
-      ? `
-    border-left: 4px solid ${colors.brandEspoo.espooTurquoise};
-    padding-left: calc(${defaultMargins.s} - 3px);
-  `
-      : `
-    /* left border for second cell (first day cell) of each row */
-    &:nth-child(6n+2) {
-      border-left: 1px solid ${colors.greyscale.lighter};
-    }
-      `}
-
-  /* top border for every day cell of first row */
-  &:nth-child(-n + 7) {
-    border-top: 1px solid ${colors.greyscale.lighter};
-  }
+      ? css`
+          border-left: 4px solid ${colors.brandEspoo.espooTurquoise};
+          padding-left: calc(${defaultMargins.s} - 3px);
+        `
+      : ''}
 `
 
 const DayCellHeader = styled.div`
