@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.MOBILE
@@ -127,12 +126,12 @@ sealed interface Action {
         READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_MESSAGE_CONTENT_ATTACHMENT,
         READ_MESSAGE_DRAFT_ATTACHMENT,
-        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
         DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
         DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT,
-        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -295,9 +294,9 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : Action {
-        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        UPSERT(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        UPLOAD_ATTACHMENT(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER);
+        READ(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPSERT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPLOAD_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
