@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2012 Vaestorekisterikeskus
+
+SPDX-License-Identifier: EUPL-1.1
+
+NOTE: These licensing details are based on the assumption that we can use the
+same licensing as in this source:
+https://github.com/Opetushallitus/rajapinnat/blob/bc918e52057f0a7c2fba7549168a5d9fc258602b/vtj/vtj-remote-api/src/main/resources/wsdl/VTJHenkilotiedotKatalogi.xsd
+but these might change at a later date.
+-->
+
 <!-- equivalent: https://liityntakatalogi.suomi.fi/dataset/vtjrajapinta/resource/bfec3b9f-5639-4a39-8260-fbc3320a55f6 -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
             xmlns:tns="http://xml.vrk.fi/ws/vtj/vtjkysely/1"
