@@ -15,11 +15,11 @@ import {
   PilotFeature,
   pilotFeatures
 } from 'lib-common/generated/api-types/shared'
-import { UnwrapResult } from './async-rendering'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { client } from '../api/client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { renderResult } from 'lib-components/async-rendering'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
   return client
@@ -83,38 +83,36 @@ export default React.memo(function UnitFeaturesPage() {
     <Container verticalMargin={defaultMargins.L}>
       <ContentArea opaque>
         <H1>Yksiköille avatut toiminnot</H1>
-        <UnwrapResult result={units}>
-          {(units) => (
-            <Table>
-              <Thead>
-                <Td>Yksikkö</Td>
-                {pilotFeatures.map((f) => (
-                  <Td key={f}>{f}</Td>
-                ))}
-              </Thead>
-              <Tbody>
-                {units.map((unit) => (
-                  <Tr key={unit.id}>
-                    <Td>
-                      <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+        {renderResult(units, (units) => (
+          <Table>
+            <Thead>
+              <Td>Yksikkö</Td>
+              {pilotFeatures.map((f) => (
+                <Td key={f}>{f}</Td>
+              ))}
+            </Thead>
+            <Tbody>
+              {units.map((unit) => (
+                <Tr key={unit.id}>
+                  <Td>
+                    <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+                  </Td>
+                  {pilotFeatures.map((f) => (
+                    <Td key={f}>
+                      <Checkbox
+                        label={f}
+                        hiddenLabel
+                        checked={unit.features.includes(f)}
+                        onChange={(value) => updateFlag(unit.id, f, value)}
+                        disabled={submitting}
+                      />
                     </Td>
-                    {pilotFeatures.map((f) => (
-                      <Td key={f}>
-                        <Checkbox
-                          label={f}
-                          hiddenLabel
-                          checked={unit.features.includes(f)}
-                          onChange={(value) => updateFlag(unit.id, f, value)}
-                          disabled={submitting}
-                        />
-                      </Td>
-                    ))}
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          )}
-        </UnwrapResult>
+                  ))}
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        ))}
       </ContentArea>
     </Container>
   )
