@@ -15,6 +15,7 @@ import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import { DailyReservationData } from './api'
 import { Reservations } from './calendar-elements'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
+import { headerHeightDesktop } from 'citizen-frontend/header/const'
 
 export interface Props {
   dailyData: DailyReservationData[]
@@ -156,7 +157,7 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
 
 const StickyHeader = styled.div`
   position: sticky;
-  top: 0;
+  top: ${headerHeightDesktop};
   z-index: 2;
   width: 100%;
   background: ${({ theme }) => theme.colors.greyscale.white};

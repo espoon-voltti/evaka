@@ -10,10 +10,11 @@ import { UnitLanguage } from 'lib-common/api-types/units/enums'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Coordinate } from 'lib-common/api-types/units/Coordinate'
+import { defaultMargins } from 'lib-components/white-space'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
-import { headerHeight } from '../header/const'
+import { headerHeightDesktop } from '../header/const'
 import UnitSearchPanel from '../map/UnitSearchPanel'
 import MapBox from '../map/MapBox'
 import { mapViewBreakpoint, MobileMode } from '../map/const'
@@ -26,7 +27,6 @@ import { fetchUnits, queryDistances } from '../map/api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useUser } from 'citizen-frontend/auth'
-import { Gap } from 'lib-components/white-space'
 
 export type MapAddress = {
   coordinates: Coordinate
@@ -116,13 +116,11 @@ export default React.memo(function MapView() {
 
   return (
     <MapFullscreenContainer loggedIn={loggedIn}>
-      <Gap size="s" />
       <FlexContainer
         className={`mobile-mode-${mobileMode}`}
         breakpoint={mapViewBreakpoint}
         horizontalSpacing="zero"
         verticalSpacing="zero"
-        loggedIn={loggedIn}
       >
         {selectedUnit ? (
           <UnitDetailsPanel
@@ -228,30 +226,28 @@ const filterUnits = (
 
 const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
+  top: calc(
+    ${headerHeightDesktop} + ${({ loggedIn }) => (loggedIn ? '76px' : '0px')}
+  );
   bottom: 0;
-  top: ${({ loggedIn }) => (loggedIn ? '156px;' : '0')};
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: stretch;
+
   @media (max-width: ${mapViewBreakpoint}) {
-    margin-top: -21px;
+    position: static;
   }
 `
 
-const FlexContainer = styled(AdaptiveFlex)<{ loggedIn: boolean }>`
-  margin-top: 64px};
+const FlexContainer = styled(AdaptiveFlex)`
   align-items: stretch;
-
   width: 100%;
-  ${({ loggedIn }) => (loggedIn ? 'margin: 0;' : '')};
 
   @media (max-width: ${mapViewBreakpoint}) {
-    margin-top: ${headerHeight};
-    width: 100%;
+    margin-top: ${defaultMargins.s};
     margin-bottom: 0;
-    ${({ loggedIn }) => (loggedIn ? 'margin: 0;' : '')};
     &.mobile-mode-map {
       .unit-list {
         display: none;

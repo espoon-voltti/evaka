@@ -17,13 +17,13 @@ import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { headerHeight } from '../header/const'
+import { headerHeightDesktop } from '../header/const'
 import { MessageContext } from './state'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
 
 const FullHeightContainer = styled(Container)`
-  height: calc(100vh - ${headerHeight});
+  height: calc(100vh - ${headerHeightDesktop});
 `
 
 const StyledFlex = styled(AdaptiveFlex)`
