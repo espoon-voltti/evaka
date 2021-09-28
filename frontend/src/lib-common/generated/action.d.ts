@@ -143,6 +143,7 @@ export type Unit =
   | 'READ_PLACEMENT'
   | 'READ_PLACEMENT_PLAN'
   | 'UPDATE'
+  | 'UPDATE_FEATURES'
   | 'UPDATE_STAFF_GROUP_ACL'
 
 export type VasuDocument =
