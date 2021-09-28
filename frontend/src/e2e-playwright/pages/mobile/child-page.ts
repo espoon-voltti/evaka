@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
 import {
   Combobox,
   RawElement,
@@ -22,6 +22,13 @@ export default class MobileChildPage {
     this.page,
     '[data-qa="link-child-sensitive-info"]'
   )
+
+  #notesLink = this.page.locator('[data-qa="link-child-daycare-daily-note"]')
+
+  #notesExistsBubble = this.page.locator('[data-qa="daily-note-icon-bubble"]')
+
+  #saveNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
+
   #goBack = new RawElement(this.page, '[data-qa="go-back"]')
   #staffCombobox = new Combobox(this.page, '[data-qa="select-staff"]')
   #pinInput = new RawTextInput(this.page, '[data-qa="set-pin"]')
@@ -135,5 +142,14 @@ export default class MobileChildPage {
         backupPickup.phone
       )
     }
+  }
+
+  async openNotes() {
+    await this.#notesLink.click()
+    await waitUntilVisible(this.#saveNoteButton)
+  }
+
+  async assertNotesExist() {
+    await waitUntilVisible(this.#notesExistsBubble)
   }
 }
