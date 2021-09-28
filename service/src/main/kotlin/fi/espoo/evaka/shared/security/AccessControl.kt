@@ -119,6 +119,40 @@ WHERE employee_id = :userId
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
     )
+    private val pedagogicalAttachment = ActionConfig(
+        """
+WITH documents_by_daycare AS (
+    SELECT attachment.id, role, employee_id FROM
+    FROM attachment
+    JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
+    JOIN placement p ON pd.child_id = p.child_id
+        AND current_date BETWEEN p.start_date AND p.end_date
+    JOIN daycare d ON p.unit_id = d.id
+    JOIN daycare_acl_view ON d.id = daycare_acl_view.daycare_id
+    WHERE employee_id = :userId
+), documents_by_group AS (
+    SELECT attachment.id, role, employee_id
+    FROM attachment
+    JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
+    JOIN placement p ON pd.child_id = p.child_id
+    JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+        AND current_date BETWEEN dgp.start_date AND dgp.end_date
+    JOIN daycare_group_acl_view ON dgp.id = daycare_group_acl_view.daycare_group_id
+    WHERE employee_id = :userId
+)
+SELECT id, role
+FROM (
+    SELECT id, role, employee_id
+    FROM documents_by_daycare
+    UNION
+    SELECT id, role, employee_id
+    FROM documents_by_group
+)
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "attachment.id",
+        permittedRoleActions::attachmentActions,
+    )
     private val person = ActionConfig(
         """
 SELECT person_id AS id, role
@@ -322,8 +356,10 @@ WHERE employee_id = :userId
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
                     Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
-                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> true
-                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> true
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
+                    this.pedagogicalAttachment.hasPermission(user, action, id)
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
+                    this.pedagogicalAttachment.hasPermission(user, action, id)
             }
             is AuthenticatedUser.MobileDevice -> false
             AuthenticatedUser.SystemInternalUser -> false
