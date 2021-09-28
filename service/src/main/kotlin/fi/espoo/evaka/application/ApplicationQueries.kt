@@ -222,9 +222,9 @@ fun Database.Read.fetchApplicationSummaries(
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
         if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)" else null,
         if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)" else null,
-        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
-        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,
-        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.ARRIVAL)) "daterange(:periodStart, :periodEnd, '[]') @> a.sentdate" else null,
+        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), a.dueDate)" else null,
+        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), (f.document ->> 'preferredStartDate')::date)" else null,
+        if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.ARRIVAL)) "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), a.sentdate)" else null,
         if (searchTerms.isNotBlank()) freeTextQuery else null,
         when (transferApplications) {
             TransferApplicationFilter.TRANSFER_ONLY -> "a.transferApplication"

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.sql.ResultSet
 import java.time.LocalDate
+import java.time.Month
 import java.util.UUID
 
 @RestController
@@ -49,12 +50,6 @@ data class StartingPlacementsRow(
  * The preceding placement logic has to be checked if club placements are to be added to the placements table
  */
 private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List<StartingPlacementsRow> {
-    val beginningOfMonth = LocalDate.of(year, month, 1)
-    val period = FiniteDateRange(
-        beginningOfMonth,
-        beginningOfMonth.plusMonths(1).minusDays(1)
-    )
-
     //language=SQL
     val sql =
         """
@@ -64,12 +59,11 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
         JOIN daycare u ON p.unit_id = u.id
         JOIN care_area ca ON u.care_area_id = ca.id
         LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
-        WHERE daterange(:from, :to, '[]') @> p.start_date AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
+        WHERE between_start_and_end(:range, p.start_date) AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         """.trimIndent()
 
     return createQuery(sql)
-        .bind("from", period.start)
-        .bind("to", period.end)
+        .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
         .map(toRow)
         .toList()
 }

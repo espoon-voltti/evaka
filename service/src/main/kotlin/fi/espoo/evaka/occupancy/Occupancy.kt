@@ -356,12 +356,12 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     caretakerCounts: Map<K, List<Caretakers<K>>>,
     placements: Iterable<Placement>,
-    period: FiniteDateRange,
+    range: FiniteDateRange,
     type: OccupancyType
 ): List<DailyOccupancyValues<K>> {
     val placementPlans =
         if (type == OccupancyType.PLANNED)
-            this.getPlacementPlans(period, caretakerCounts.keys.map { it.unitId }.toTypedArray())
+            this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId }.toTypedArray())
         else
             listOf()
 
@@ -396,9 +396,9 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED)
-            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND :period @> date")
+            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
                 .bind("childIds", childIds)
-                .bind("period", period)
+                .bind("range", range)
                 .mapTo<Absence>()
                 .groupBy { it.childId }
         else

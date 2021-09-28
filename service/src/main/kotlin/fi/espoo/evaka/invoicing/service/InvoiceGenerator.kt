@@ -528,18 +528,18 @@ data class AbsenceStub(
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
 private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
 
-fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<AbsenceCareType>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(spanningRange: DateRange, careTypes: List<AbsenceCareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type
         FROM absence
-        WHERE :period @> date
+        WHERE between_start_and_end(:range, date)
         AND NOT absence_type = ANY(:absenceTypes)
         AND care_type = ANY(:careTypes)
         """
 
     return createQuery(sql)
-        .bind("period", spanningPeriod)
+        .bind("range", spanningRange)
         .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
         .bind("careTypes", careTypes.toTypedArray())
         .map { rs, _ ->
