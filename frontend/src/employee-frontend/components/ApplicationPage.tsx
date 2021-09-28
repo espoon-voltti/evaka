@@ -17,7 +17,6 @@ import {
   getPreschoolTerms
 } from '../api/applications'
 import { getApplicationUnits } from '../api/daycare'
-import { renderResult } from './async-rendering'
 import { TitleContext, TitleState } from '../state/title'
 import { useTranslation, Translations } from '../state/i18n'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -38,6 +37,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { renderResult } from 'lib-components/async-rendering'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;

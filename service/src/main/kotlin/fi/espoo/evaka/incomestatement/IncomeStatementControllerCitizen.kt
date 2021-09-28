@@ -47,19 +47,24 @@ class IncomeStatementControllerCitizen {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            tx.readIncomeStatementForPerson(user.id, incomeStatementId, excludeEmployeeAttachments = true) ?: throw NotFound("No such income statement")
+            tx.readIncomeStatementForPerson(user.id, incomeStatementId, excludeEmployeeAttachments = true)
+                ?: throw NotFound("No such income statement")
         }
     }
 
     @PostMapping
     fun createIncomeStatement(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementCreate.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
+
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
+        if (db.read { tx -> tx.incomeStatementExistsForStartDate(user, body.startDate) })
+            throw BadRequest("An income statement for this start date already exists")
+
         db.transaction { tx ->
             val incomeStatementId = tx.createIncomeStatement(user.id, body)
             when (body) {
@@ -116,7 +121,8 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         id: IncomeStatementId
     ) {
-        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, excludeEmployeeAttachments = true) ?: throw NotFound("Income statement not found")
+        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, excludeEmployeeAttachments = true)
+            ?: throw NotFound("Income statement not found")
         if (incomeStatement.handled) {
             throw Forbidden("Handled income statement cannot be modified or removed")
         }

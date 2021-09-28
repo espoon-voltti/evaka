@@ -27,7 +27,7 @@ async function doSaveAttachment(
 }
 
 export async function saveIncomeStatementAttachment(
-  incomeStatementId: UUID | null,
+  incomeStatementId: UUID | undefined,
   file: File,
   onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {

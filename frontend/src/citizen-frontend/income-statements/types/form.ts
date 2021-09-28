@@ -109,6 +109,22 @@ export const empty: IncomeStatementForm = {
   assure: false
 }
 
+function findValidStartDate(existingStartDates: LocalDate[]): LocalDate {
+  const yesterday = LocalDate.today().subDays(1)
+  return existingStartDates
+    .reduce((a, b) => (a.isAfter(b) ? a : b), yesterday)
+    .addDays(1)
+}
+
+export const initialFormData = (
+  existingStartDates: LocalDate[]
+): IncomeStatementForm => {
+  return {
+    ...empty,
+    startDate: findValidStartDate(existingStartDates).format()
+  }
+}
+
 export function fromIncomeStatement(
   incomeStatement: IncomeStatement.IncomeStatement
 ): IncomeStatementForm {

@@ -13,12 +13,12 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getIncomeStatementsAwaitingHandler } from '../../api/income-statement'
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
 import { Gap } from 'lib-components/white-space'
 import { AreaFilter } from '../common/Filters'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import Pagination from 'lib-components/Pagination'
+import { renderResult } from 'lib-components/async-rendering'
 
 function IncomeStatementsList({
   data

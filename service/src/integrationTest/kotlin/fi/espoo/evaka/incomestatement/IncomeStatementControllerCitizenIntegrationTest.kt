@@ -532,6 +532,23 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         deleteIncomeStatement(id, 403)
     }
 
+    @Test
+    fun `cannot create two income statements with the same startDate`() {
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+            )
+        )
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = null,
+            ),
+            400
+        )
+    }
+
     private fun markIncomeStatementHandled(id: IncomeStatementId) = db.transaction { tx ->
         tx.createUpdate(
             """
