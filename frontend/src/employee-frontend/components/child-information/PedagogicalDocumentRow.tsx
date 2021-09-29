@@ -6,7 +6,6 @@ import React, { useCallback, useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import { Td, Tr } from 'lib-components/layout/Table'
-import { DateTd, NameTd } from '../PersonProfile'
 import {
   Attachment,
   PedagogicalDocument
@@ -28,6 +27,7 @@ import {
   updatePedagogicalDocument
 } from '../../api/child/pedagogical-documents'
 import { UIContext } from '../../state/ui'
+import { defaultMargins } from 'lib-components/white-space'
 
 interface Props {
   id: UUID
@@ -148,7 +148,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           />
         }
       </NameTd>
-      <Td data-qa="pedagogical-document-description">
+      <DescriptionTd data-qa="pedagogical-document-description">
         {editMode ? (
           <TextArea
             value={pedagogicalDocument.description}
@@ -162,8 +162,8 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         ) : (
           pedagogicalDocument.description
         )}
-      </Td>
-      <Td data-qa="pedagogical-document-actions">
+      </DescriptionTd>
+      <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
           <InlineButtons>
             <InlineButton
@@ -187,7 +187,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             <IconButton onClick={() => deleteDocument()} icon={faTrash} />
           </InlineButtons>
         )}
-      </Td>
+      </ActionsTd>
     </Tr>
   )
 })
@@ -197,4 +197,21 @@ export default PedagogicalDocumentRow
 const InlineButtons = styled.div`
   display: flex;
   justify-content: space-evenly;
+  gap: ${defaultMargins.s};
+`
+
+export const DateTd = styled(Td)`
+  width: 15%;
+`
+
+export const NameTd = styled(Td)`
+  width: 20%;
+`
+
+export const DescriptionTd = styled(Td)`
+  width: 45%;
+`
+
+export const ActionsTd = styled(Td)`
+  width: 20%;
 `
