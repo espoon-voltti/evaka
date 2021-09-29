@@ -16,6 +16,7 @@ import {
 } from 'lib-components/typography'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { tabletMin } from 'lib-components/breakpoints'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { useLang, useTranslation } from '../localization'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
@@ -861,60 +862,57 @@ function Accounting({
     <>
       <H3 noMargin>{t.title}</H3>
       <Gap size="s" />
-      <FixedSpaceRow spacing="L" fullWidth maxWidth="400px">
-        <FixedSpaceColumn spacing="zero" fullWidth>
-          <Label>{t.accountant} *</Label>
-          <Gap size="s" />
-          <InputField
-            placeholder={t.accountantPlaceholder}
-            data-qa="accountant-name"
-            value={formData.name}
-            onChange={(value) => onChange({ ...formData, name: value })}
-            hideErrorsBeforeTouched={!showFormErrors}
-            info={errorToInputInfo(
-              validate(formData.name, required),
-              tr.validationErrors
-            )}
-          />
-          <Gap size="L" />
-          <Label>{t.email} *</Label>
-          <Gap size="s" />
-          <InputField
-            placeholder={t.emailPlaceholder}
-            data-qa="accountant-email"
-            value={formData.email}
-            onChange={(value) => onChange({ ...formData, email: value })}
-            hideErrorsBeforeTouched={!showFormErrors}
-            info={errorToInputInfo(
-              validate(formData.email, required),
-              tr.validationErrors
-            )}
-          />
-          <Gap size="L" />
-          <Label>{t.address}</Label>
-          <Gap size="s" />
-          <InputField
-            placeholder={t.addressPlaceholder}
-            value={formData.address}
-            onChange={(value) => onChange({ ...formData, address: value })}
-          />
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="zero" fullWidth>
-          <Label>{t.phone} *</Label>
-          <Gap size="s" />
-          <InputField
-            placeholder={t.phonePlaceholder}
-            data-qa="accountant-phone"
-            value={formData.phone}
-            onChange={(value) => onChange({ ...formData, phone: value })}
-            hideErrorsBeforeTouched={!showFormErrors}
-            info={errorToInputInfo(
-              validate(formData.phone, required),
-              tr.validationErrors
-            )}
-          />
-        </FixedSpaceColumn>
-      </FixedSpaceRow>
+      <ListGrid>
+        <Label>{t.accountant} *</Label>
+        <InputField
+          placeholder={t.accountantPlaceholder}
+          data-qa="accountant-name"
+          width="L"
+          value={formData.name}
+          onChange={(value) => onChange({ ...formData, name: value })}
+          hideErrorsBeforeTouched={!showFormErrors}
+          info={errorToInputInfo(
+            validate(formData.name, required),
+            tr.validationErrors
+          )}
+        />
+
+        <Label>{t.phone} *</Label>
+        <InputField
+          placeholder={t.phonePlaceholder}
+          data-qa="accountant-phone"
+          width="L"
+          value={formData.phone}
+          onChange={(value) => onChange({ ...formData, phone: value })}
+          hideErrorsBeforeTouched={!showFormErrors}
+          info={errorToInputInfo(
+            validate(formData.phone, required),
+            tr.validationErrors
+          )}
+        />
+
+        <Label>{t.email} *</Label>
+        <InputField
+          placeholder={t.emailPlaceholder}
+          data-qa="accountant-email"
+          width="L"
+          value={formData.email}
+          onChange={(value) => onChange({ ...formData, email: value })}
+          hideErrorsBeforeTouched={!showFormErrors}
+          info={errorToInputInfo(
+            validate(formData.email, required),
+            tr.validationErrors
+          )}
+        />
+
+        <Label>{t.address}</Label>
+        <InputField
+          placeholder={t.addressPlaceholder}
+          width="L"
+          value={formData.address}
+          onChange={(value) => onChange({ ...formData, address: value })}
+        />
+      </ListGrid>
     </>
   )
 }
