@@ -190,13 +190,29 @@ export default React.memo(function MessageEditor({
       const nestedAccount = nestedAccounts.find(
         (account) => account.account.id === message.sender.value
       )
-      if (nestedAccount && !isNestedGroupMessageAccount(nestedAccount)) {
-        setReceiverTree(availableReceivers)
-      } else if (nestedAccount && isNestedGroupMessageAccount(nestedAccount)) {
-        const groupId = nestedAccount.daycareGroup.id
-        const selection = getSubTree(availableReceivers, groupId)
-        if (selection) {
-          setReceiverTree(selection)
+      if (!nestedAccount) {
+        throw 'Invalid sender id'
+      } else {
+        if (!isNestedGroupMessageAccount(nestedAccount)) {
+          setReceiverTree((previousReceivers) =>
+            getSelectedBottomElements(previousReceivers).reduce(
+              (acc, id) =>
+                updateSelector(acc, { selectorId: id, selected: true }),
+              availableReceivers
+            )
+          )
+        } else {
+          const groupId = nestedAccount.daycareGroup.id
+          const selection = getSubTree(availableReceivers, groupId)
+          if (selection) {
+            setReceiverTree((previousReceivers) =>
+              getSelectedBottomElements(previousReceivers).reduce(
+                (acc, id) =>
+                  updateSelector(acc, { selectorId: id, selected: true }),
+                selection
+              )
+            )
+          }
         }
       }
     },
