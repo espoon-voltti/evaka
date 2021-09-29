@@ -209,7 +209,7 @@ private fun Database.Transaction.deleteDocument(
     .bind("document_id", documentId)
     .execute()
 
-private fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
+fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
     return PedagogicalDocument(

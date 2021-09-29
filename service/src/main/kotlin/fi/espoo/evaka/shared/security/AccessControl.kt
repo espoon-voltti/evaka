@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.application.isOwnApplication
 import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.attachment.hasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
@@ -303,8 +304,9 @@ WHERE employee_id = :userId
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
                 Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
+                    Database(jdbi).connect { db -> db.read { it.hasPermissionThroughPedagogicalDocument(user, id) } }
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->

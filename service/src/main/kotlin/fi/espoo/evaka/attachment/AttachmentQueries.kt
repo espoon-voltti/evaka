@@ -228,3 +228,23 @@ fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: Pedagogica
         .mapTo<Int>()
         .first()
 }
+
+fun Database.Read.hasPermissionThroughPedagogicalDocument(
+    user: AuthenticatedUser.Citizen,
+    attachmentId: AttachmentId
+): Boolean =
+    this.createQuery(
+        """
+        SELECT EXISTS (
+            SELECT 1 FROM attachment a
+            JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+            JOIN guardian g ON pd.child_id = g.child_id
+            WHERE a.id = :attachmentId
+            AND g.guardian_id = :userId
+        )
+        """.trimIndent()
+    )
+        .bind("attachmentId", attachmentId)
+        .bind("userId", user.id)
+        .mapTo<Boolean>()
+        .first()

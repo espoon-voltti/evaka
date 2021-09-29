@@ -90,7 +90,8 @@ const sv: Translations = {
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
-      applying: 'Ansöker'
+      applying: 'Ansöker',
+      pedagogicalDocuments: 'Kasvu ja oppiminen'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1629,6 +1630,16 @@ const sv: Translations = {
       message:
         'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
       returnMessage: 'Gå tillbaka till inloggningen'
+    }
+  },
+  pedagogicalDocuments: {
+    title: 'Kasvu ja oppiminen',
+    description:
+      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
+    table: {
+      date: 'Päivämäärä',
+      document: 'Dokumentti',
+      description: 'Kuvaus'
     }
   }
 }
