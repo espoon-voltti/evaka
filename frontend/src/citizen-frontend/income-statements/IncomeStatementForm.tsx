@@ -20,6 +20,7 @@ import { useLang, useTranslation } from '../localization'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -729,7 +730,7 @@ function SelfEmployedIncomeSelection({
           onChange={(value) => onChange({ ...formData, estimation: value })}
         />
         <Indent>
-          <FixedSpaceRow spacing="XL">
+          <FixedSpaceFlexWrap>
             <FixedSpaceColumn>
               <Label htmlFor="estimated-monthly-income">
                 {t.income.selfEmployed.estimatedMonthlyIncome}
@@ -800,7 +801,7 @@ function SelfEmployedIncomeSelection({
                 />
               </FixedSpaceRow>
             </FixedSpaceColumn>
-          </FixedSpaceRow>
+          </FixedSpaceFlexWrap>
         </Indent>
       </FixedSpaceColumn>
     </Indent>
@@ -1092,7 +1093,10 @@ const LightLabel = styled(Label)`
 
 const Indent = styled.div`
   width: 100%;
-  padding-left: ${defaultMargins.XL};
+  padding-left: ${defaultMargins.s};
+  @media (min-width: ${tabletMin}) {
+    padding-left: ${defaultMargins.XL};
+  }
 `
 
 const OtherIncomeWrapper = styled.div`
