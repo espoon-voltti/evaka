@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,7 +17,7 @@ parameters:
     default: /home/circleci/repo
   builder_aws_version:
     type: string
-    default: bullseye-slim-a5a07c25c46622d35ac60836c5d5b0117f00b026
+    default: bullseye-slim-7154b3803f7bf5064ec9ccc299554e07f12d7ee6
   nodejs_image:
     type: string
     default: cimg/node:14.15
@@ -1295,6 +1295,22 @@ jobs:
           dir: *workspace_message_service
       - notify_slack
 
+  cleanup_frontends:
+    executor: aws_docker_executor
+    parameters:
+      target_env:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Configure AWS CLI
+          command: . replace-credentials
+      - run:
+          name: Cleaup old frontends (<< parameters.target_env >>)
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: ./bin/circleci-cleanup.sh "<< parameters.target_env >>"
+      - notify_slack
+
 workflows:
   version: 2
 
@@ -1551,3 +1567,19 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
+
+  cleanup_frontends:
+    triggers:
+     - schedule:
+         cron: "0 5 * * *"
+         filters:
+           branches:
+             only:
+               - master
+    jobs:
+      - cleanup_frontends:
+          <<: *aws_contexts
+          name: cleanup_frontends_<< matrix.target_env >>
+          matrix:
+            parameters:
+              target_env: [dev, test, staging, prod]
