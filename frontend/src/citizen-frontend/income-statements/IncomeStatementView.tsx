@@ -5,6 +5,8 @@
 import React, { useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
+import { renderResult } from 'lib-components/async-rendering'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { Translations, useTranslation } from '../localization'
 import {
   FixedSpaceColumn,
@@ -26,8 +28,6 @@ import {
   IncomeStatement
 } from 'lib-common/api-types/incomeStatement'
 import { Loading, Result } from 'lib-common/api'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
@@ -38,6 +38,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { useHistory } from 'react-router-dom'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faPen } from 'lib-icons'
+import { tabletMin } from 'lib-components/breakpoints'
 
 export default React.memo(function IncomeStatementView({
   match
@@ -45,11 +46,11 @@ export default React.memo(function IncomeStatementView({
   const { incomeStatementId } = match.params
   const t = useTranslation()
   const history = useHistory()
-  const [incomeStatement, setIncomeStatement] = React.useState<
-    Result<IncomeStatement>
-  >(Loading.of())
+  const [result, setResult] = React.useState<Result<IncomeStatement>>(
+    Loading.of()
+  )
 
-  const loadIncomeStatement = useRestApi(getIncomeStatement, setIncomeStatement)
+  const loadIncomeStatement = useRestApi(getIncomeStatement, setResult)
 
   React.useEffect(() => {
     loadIncomeStatement(incomeStatementId)
@@ -59,50 +60,36 @@ export default React.memo(function IncomeStatementView({
     history.push('edit')
   }
 
-  return incomeStatement.mapAll({
-    loading() {
-      return <Loader />
-    },
-    failure() {
-      return <ErrorSegment />
-    },
-    success(incomeStatement) {
-      return (
-        <Container>
-          <ReturnButton label={t.common.return} />
-          <ContentArea opaque>
-            <FixedSpaceRow spacing="L">
-              <H1>{t.income.view.title}</H1>
-              {!incomeStatement.handled && (
-                <FixedSpaceRow
-                  fullWidth
-                  alignItems="flex-start"
-                  justifyContent="flex-end"
-                >
-                  <InlineButton
-                    text={t.common.edit}
-                    icon={faPen}
-                    onClick={handleEdit}
-                  />
-                </FixedSpaceRow>
-              )}
-            </FixedSpaceRow>
-            <Row
-              label={t.income.view.startDate}
-              value={incomeStatement.startDate.format()}
-            />
-            <Row
-              label={t.income.view.feeBasis}
-              value={t.income.view.statementTypes[incomeStatement.type]}
-            />
-            {incomeStatement.type === 'INCOME' && (
-              <IncomeInfo incomeStatement={incomeStatement} />
-            )}
-          </ContentArea>
-        </Container>
-      )
-    }
-  })
+  return renderResult(result, (incomeStatement) => (
+    <Container>
+      <ReturnButton label={t.common.return} />
+      <ContentArea opaque>
+        <FixedSpaceRow spacing="L">
+          <H1>{t.income.view.title}</H1>
+          {!incomeStatement.handled && (
+            <EditButtonContainer>
+              <InlineButton
+                text={t.common.edit}
+                icon={faPen}
+                onClick={handleEdit}
+              />
+            </EditButtonContainer>
+          )}
+        </FixedSpaceRow>
+        <Row
+          label={t.income.view.startDate}
+          value={incomeStatement.startDate.format()}
+        />
+        <Row
+          label={t.income.view.feeBasis}
+          value={t.income.view.statementTypes[incomeStatement.type]}
+        />
+        {incomeStatement.type === 'INCOME' && (
+          <IncomeInfo incomeStatement={incomeStatement} />
+        )}
+      </ContentArea>
+    </Container>
+  ))
 })
 
 function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
@@ -371,6 +358,20 @@ const FileIcon = styled(FontAwesomeIcon)`
   margin-right: ${defaultMargins.s};
 `
 
+const EditButtonContainer = styled.div`
+  flex: 1 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  // This targets IconButton's text
+  span {
+    @media (max-width: ${tabletMin}) {
+      display: none;
+    }
+  }
+`
+
 function Row({
   label,
   light,
@@ -382,10 +383,10 @@ function Row({
 }) {
   return (
     <>
-      <FixedSpaceRow>
+      <ListGrid>
         <LabelColumn light={light}>{label}</LabelColumn>
         <div>{value}</div>
-      </FixedSpaceRow>
+      </ListGrid>
       <Gap size="s" />
     </>
   )
