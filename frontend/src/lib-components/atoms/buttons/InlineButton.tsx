@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -59,9 +59,9 @@ const Margin = styled.span`
   margin-left: ${defaultMargins.s};
 `
 
-interface InlineButtonProps extends BaseProps {
+export interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
-  text: string
+  text: ReactNode
   altText?: string
   color?: string
   icon?: IconDefinition
@@ -93,7 +93,11 @@ function InlineButton({
       type="button"
     >
       {icon && !iconRight && <FontAwesomeIcon icon={icon} />}
-      <span>{text}</span>
+      {typeof text === 'string' || typeof text === 'number' ? (
+        <span>{text}</span>
+      ) : (
+        text
+      )}
       {icon && iconRight && (
         <Margin>
           <FontAwesomeIcon icon={icon} />
