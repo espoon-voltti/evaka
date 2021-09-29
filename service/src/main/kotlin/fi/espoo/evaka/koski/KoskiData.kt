@@ -148,36 +148,38 @@ data class KoskiActiveDataRaw(
         // It's possible clamping to preschool term has removed all placements -> no study right can be created
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
+        val isTerminated = today.isAfter(placementSpan.end)
         val isQualifiedByDate = placementSpan.end.let {
-            it.isAfter(LocalDate.of(endTerm.end.year, 4, 30)) && it.isBefore(today)
+            it.isAfter(LocalDate.of(endTerm.end.year, 4, 30))
         }
-        val qualifiedDate = placementSpan.end.takeIf {
-            when (type) {
-                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
-                OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
-                    // We intentionally only include here absence ranges longer than one week
-                    // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
-                    // if they don't form long enough continuous absence ranges
-                    val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
-                        .ranges().map { it.durationInDays() }.sum()
-                    isQualifiedByDate && totalAbsences <= 30
-                }
+        val isQualified = isTerminated && when (type) {
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
+                // We intentionally only include here absence ranges longer than one week
+                // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
+                // if they don't form long enough continuous absence ranges
+                val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
+                    .ranges().map { it.durationInDays() }.sum()
+                isQualifiedByDate && totalAbsences <= 30
             }
+        }
+        val termination = when {
+            isQualified -> StudyRightTermination.Qualified(placementSpan.end)
+            isTerminated -> StudyRightTermination.Resigned(placementSpan.end)
+            else -> null
         }
 
         return KoskiData(
             oppija = Oppija(
                 henkilö = child.toHenkilö(),
-                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, qualifiedDate))
+                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, termination))
             ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
             organizationOid = unit.ophOrganizationOid
         )
     }
 
-    private fun haeOpiskeluoikeusjaksot(today: LocalDate, qualifiedDate: LocalDate?): List<Opiskeluoikeusjakso> {
-        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return emptyList()
-
+    private fun haeOpiskeluoikeusjaksot(termination: StudyRightTermination?): List<Opiskeluoikeusjakso> {
         val present = studyRightTimelines.present.ranges()
             .map { Opiskeluoikeusjakso.läsnä(it.start) }
         val gaps = studyRightTimelines.placement
@@ -189,22 +191,27 @@ data class KoskiActiveDataRaw(
             .map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
 
         val result = mutableListOf<Opiskeluoikeusjakso>()
-        result.addAll((present + gaps + holidays + absent))
-
-        when {
-            placementSpan.end.isAfter(today) -> {
-                // still ongoing
+        result.addAll(
+            // Make sure we don't end up with duplicate states on the termination dates.
+            // For example, if we have 1-day placement, `present` will include the termination date
+            (present + gaps + holidays + absent).filterNot {
+                it.alku == termination?.date
             }
-            else -> result.add(
-                if (qualifiedDate != null) Opiskeluoikeusjakso.valmistunut(qualifiedDate)
-                else Opiskeluoikeusjakso.eronnut(placementSpan.end)
-            )
+        )
+        when (termination) {
+            is StudyRightTermination.Qualified -> result.add(Opiskeluoikeusjakso.valmistunut(termination.date))
+            is StudyRightTermination.Resigned -> result.add(Opiskeluoikeusjakso.eronnut(termination.date))
+            null -> {} // still ongoing
         }
         result.sortBy { it.alku }
         return result
     }
 
-    private fun haeSuoritus(qualifiedDate: LocalDate?) = unit.haeSuoritus(type).let {
+    private fun haeSuoritus(termination: StudyRightTermination?) = unit.haeSuoritus(type).let {
+        val vahvistus = when (termination) {
+            is StudyRightTermination.Qualified -> haeVahvistus(termination.date)
+            else -> null
+        }
         if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) it.copy(
             osasuoritukset = listOf(
                 Osasuoritus(
@@ -228,17 +235,15 @@ data class KoskiActiveDataRaw(
                     )
                 )
             ),
-            vahvistus = if (qualifiedDate != null) haeVahvistus(qualifiedDate) else null
-        ) else it.copy(
-            vahvistus = if (qualifiedDate != null) haeVahvistus(qualifiedDate) else null
-        )
+            vahvistus = vahvistus
+        ) else it.copy(vahvistus = vahvistus)
     }
 
-    fun haeOpiskeluoikeus(sourceSystem: String, today: LocalDate, qualifiedDate: LocalDate?): Opiskeluoikeus {
+    fun haeOpiskeluoikeus(sourceSystem: String, termination: StudyRightTermination?): Opiskeluoikeus {
         return Opiskeluoikeus(
             oid = studyRightOid,
-            tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(today, qualifiedDate)),
-            suoritukset = listOf(haeSuoritus(qualifiedDate)),
+            tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(termination)),
+            suoritukset = listOf(haeSuoritus(termination)),
             lähdejärjestelmänId = LähdejärjestelmäId(
                 id = studyRightId,
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
@@ -272,6 +277,12 @@ data class KoskiActiveDataRaw(
                 specialAssistanceDecisionWithoutGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) }
             ).takeIf { it.isNotEmpty() }
     ).takeIf { it.vammainen != null || it.vaikeastiVammainen != null || it.pidennettyOppivelvollisuus != null || it.kuljetusetu != null || it.erityisenTuenPäätökset != null }
+}
+
+sealed class StudyRightTermination {
+    abstract val date: LocalDate
+    data class Resigned(override val date: LocalDate) : StudyRightTermination()
+    data class Qualified(override val date: LocalDate) : StudyRightTermination()
 }
 
 /**
