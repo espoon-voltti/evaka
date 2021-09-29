@@ -200,18 +200,18 @@ const InlineButtons = styled.div`
   gap: ${defaultMargins.s};
 `
 
-export const DateTd = styled(Td)`
+const DateTd = styled(Td)`
   width: 15%;
 `
 
-export const NameTd = styled(Td)`
+const NameTd = styled(Td)`
   width: 20%;
 `
 
-export const DescriptionTd = styled(Td)`
+const DescriptionTd = styled(Td)`
   width: 45%;
 `
 
-export const ActionsTd = styled(Td)`
+const ActionsTd = styled(Td)`
   width: 20%;
 `
