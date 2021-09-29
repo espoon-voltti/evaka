@@ -50,6 +50,8 @@ sealed interface Action {
 
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
+
+        READ_UNIT_FEATURES()
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -342,7 +344,9 @@ sealed interface Action {
         DELETE_ACL_SPECIAL_EDUCATION_TEACHER(),
         INSERT_ACL_STAFF(UNIT_SUPERVISOR),
         DELETE_ACL_STAFF(UNIT_SUPERVISOR),
-        UPDATE_STAFF_GROUP_ACL(UNIT_SUPERVISOR);
+        UPDATE_STAFF_GROUP_ACL(UNIT_SUPERVISOR),
+
+        UPDATE_FEATURES();
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

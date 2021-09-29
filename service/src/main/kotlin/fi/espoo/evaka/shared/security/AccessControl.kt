@@ -174,6 +174,7 @@ WHERE employee_id = :userId
                 UserRole.UNIT_SUPERVISOR,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
+            unitFeatures = user.hasOneOfRoles(UserRole.ADMIN),
             units = user.hasOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.SERVICE_WORKER,

@@ -16,9 +16,11 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -324,3 +326,26 @@ WHERE daycare_id = :daycareId
 ).bind("daycareId", daycareId)
     .mapTo<DaycareGroupSummary>()
     .list()
+
+fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
+    """
+    SELECT id, name, enabled_pilot_features AS features
+    FROM daycare
+    ORDER BY name
+    """.trimIndent()
+)
+    .mapTo<UnitFeatures>()
+    .list()
+
+fun Database.Transaction.setUnitFeatures(daycareId: DaycareId, features: Set<PilotFeature>) {
+    createUpdate(
+        """
+        UPDATE daycare
+        SET enabled_pilot_features = (:features)::pilot_feature[]
+        WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", daycareId)
+        .bind("features", features.toTypedArray())
+        .updateExactlyOne()
+}

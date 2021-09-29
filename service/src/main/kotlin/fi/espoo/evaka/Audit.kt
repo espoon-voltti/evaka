@@ -225,6 +225,8 @@ enum class Audit(
     UnitAclDelete("evaka.unit-acl.delete"),
     UnitAclRead("evaka.unit-acl.read"),
     UnitAttendanceReservationsRead("evaka.unit-attendance-reservations.read"),
+    UnitFeaturesRead("evaka.unit.features.read"),
+    UnitFeaturesUpdate("evaka.unit.features.update"),
     UnitGroupAclUpdate("evaka.unit-group-acl.update"),
     UnitGroupsCreate("evaka.unit.groups.create"),
     UnitGroupsUpdate("evaka.unit.groups.update"),

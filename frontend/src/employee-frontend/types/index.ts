@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeFeatures } from 'lib-common/generated/api-types/shared'
+
 export type UUID = string
 
 export type CareTypeLabel =
@@ -18,18 +20,6 @@ export interface User {
   id: UUID
   name: string
   accessibleFeatures: EmployeeFeatures
-}
-
-export interface EmployeeFeatures {
-  applications: boolean
-  employees: boolean
-  financeBasics: boolean
-  finance: boolean
-  messages: boolean
-  personSearch: boolean
-  reports: boolean
-  units: boolean
-  vasuTemplates: boolean
 }
 
 export const globalRoles = [

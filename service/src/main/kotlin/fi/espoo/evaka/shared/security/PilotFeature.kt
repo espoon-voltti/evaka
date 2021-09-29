@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.ConstList
+
+@ConstList("pilotFeatures")
 enum class PilotFeature {
     MESSAGING,
     MOBILE,

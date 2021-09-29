@@ -2852,6 +2852,9 @@ export const fi = {
       TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
     }
   },
+  unitFeatures: {
+    title: 'Toimintojen avaukset'
+  },
   roles: {
     adRoles: {
       ADMIN: 'Pääkäyttäjä',

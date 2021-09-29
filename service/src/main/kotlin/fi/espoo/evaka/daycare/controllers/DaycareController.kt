@@ -8,20 +8,20 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
-import fi.espoo.evaka.daycare.controllers.utils.created
-import fi.espoo.evaka.daycare.controllers.utils.noContent
-import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.daycare.UnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
+import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.service.CaretakerAmount
 import fi.espoo.evaka.daycare.service.CaretakerService
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
@@ -31,11 +31,11 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -44,11 +44,11 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import java.net.URI
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
-@Controller
+@RestController
 @RequestMapping("/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
@@ -57,10 +57,32 @@ class DaycareController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
+    fun getDaycares(db: Database.Connection, user: AuthenticatedUser): List<Daycare> {
         Audit.UnitSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return ResponseEntity.ok(db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) })
+        return db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) }
+    }
+
+    @GetMapping("/features")
+    fun getFeatures(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): List<UnitFeatures> {
+        Audit.UnitFeaturesRead.log()
+        accessControl.requirePermissionFor(user, Action.Global.READ_UNIT_FEATURES)
+        return db.read { it.getUnitFeatures() }
+    }
+
+    @PutMapping("/{daycareId}/features")
+    fun putFeatures(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("daycareId") daycareId: DaycareId,
+        @RequestBody features: Set<PilotFeature>
+    ) {
+        Audit.UnitFeaturesUpdate.log(targetId = daycareId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_FEATURES, daycareId)
+        db.transaction { it.setUnitFeatures(daycareId, features) }
     }
 
     @GetMapping("/{daycareId}")
@@ -68,7 +90,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId
-    ): ResponseEntity<DaycareResponse> {
+    ): DaycareResponse {
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
         currentUserRoles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -76,17 +98,15 @@ class DaycareController(
             tx.getDaycare(daycareId)?.let { daycare ->
                 val groups = tx.getDaycareGroupSummaries(daycareId)
                 val permittedActions = accessControl.getPermittedGroupActions(user, groups.map { it.id })
-                ResponseEntity.ok(
-                    DaycareResponse(
-                        daycare,
-                        groups.map {
-                            DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
-                        },
-                        accessControl.getPermittedUnitActions(user, listOf(daycareId)).values.first()
-                    )
+                DaycareResponse(
+                    daycare,
+                    groups.map {
+                        DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
+                    },
+                    accessControl.getPermittedUnitActions(user, listOf(daycareId)).values.first()
                 )
             }
-        } ?: ResponseEntity.notFound().build()
+        } ?: throw NotFound("daycare $daycareId not found")
     }
 
     @GetMapping("/{daycareId}/groups")
@@ -102,12 +122,12 @@ class DaycareController(
             value = "to",
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate? = null
-    ): ResponseEntity<List<DaycareGroup>> {
+    ): List<DaycareGroup> {
         Audit.UnitGroupsSearch.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
-        return db.read { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }
     }
 
     @PostMapping("/{daycareId}/groups")
@@ -116,12 +136,11 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
-    ): ResponseEntity<DaycareGroup> {
+    ): DaycareGroup {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.CREATE_GROUP, daycareId)
 
         return db.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
-            .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
     }
 
     data class GroupUpdateRequest(
@@ -136,13 +155,11 @@ class DaycareController(
         @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.UPDATE, groupId)
 
         db.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) }
-
-        return noContent()
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
@@ -151,12 +168,11 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitGroupsDelete.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.DELETE, groupId)
 
         db.transaction { daycareService.deleteGroup(it, groupId) }
-        return noContent()
     }
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
@@ -165,18 +181,15 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId
-    ): ResponseEntity<CaretakersResponse> {
+    ): CaretakersResponse {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.READ_CARETAKERS, groupId)
 
         return db.read {
-            val daycareStub = it.getDaycareStub(daycareId)
-            ok(
-                CaretakersResponse(
-                    caretakers = caretakerService.getCaretakers(it, groupId),
-                    unitName = daycareStub?.name ?: "",
-                    groupName = it.getDaycareGroup(groupId)?.name ?: ""
-                )
+            CaretakersResponse(
+                caretakers = caretakerService.getCaretakers(it, groupId),
+                unitName = it.getDaycareStub(daycareId)?.name ?: "",
+                groupName = it.getDaycareGroup(groupId)?.name ?: ""
             )
         }
     }
@@ -188,7 +201,7 @@ class DaycareController(
         @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: CaretakerRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.CREATE_CARETAKERS, groupId)
 
@@ -201,7 +214,6 @@ class DaycareController(
                 amount = body.amount
             )
         }
-        return noContent()
     }
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -212,7 +224,7 @@ class DaycareController(
         @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID,
         @RequestBody body: CaretakerRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Group.UPDATE_CARETAKERS, groupId)
 
@@ -226,7 +238,6 @@ class DaycareController(
                 amount = body.amount
             )
         }
-        return noContent()
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -236,7 +247,7 @@ class DaycareController(
         @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_CARETAKERS, groupId)
 
@@ -247,7 +258,6 @@ class DaycareController(
                 id = id
             )
         }
-        return noContent()
     }
 
     @GetMapping("/{daycareId}/stats")
@@ -260,12 +270,12 @@ class DaycareController(
             required = true
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam(value = "to", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
-    ): ResponseEntity<DaycareCapacityStats> {
+    ): DaycareCapacityStats {
         Audit.UnitStatisticsCreate.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
-        return db.read { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }
     }
 
     @PutMapping("/{daycareId}")
@@ -274,17 +284,15 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestBody fields: DaycareFields
-    ): ResponseEntity<Daycare> {
+    ): Daycare {
         Audit.UnitUpdate.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.UPDATE, daycareId)
         fields.validate()
-        return ResponseEntity.ok(
-            db.transaction {
-                it.updateDaycareManager(daycareId, fields.unitManager)
-                it.updateDaycare(daycareId, fields)
-                it.getDaycare(daycareId)!!
-            }
-        )
+        return db.transaction {
+            it.updateDaycareManager(daycareId, fields.unitManager)
+            it.updateDaycare(daycareId, fields)
+            it.getDaycare(daycareId)!!
+        }
     }
 
     @PutMapping("")
@@ -292,19 +300,17 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody fields: DaycareFields
-    ): ResponseEntity<CreateDaycareResponse> {
+    ): CreateDaycareResponse {
         Audit.UnitCreate.log()
         user.requireOneOfRoles(UserRole.ADMIN)
         fields.validate()
-        return ResponseEntity.ok(
-            CreateDaycareResponse(
-                db.transaction {
-                    val id = it.createDaycare(fields.areaId, fields.name)
-                    it.updateDaycareManager(id, fields.unitManager)
-                    it.updateDaycare(id, fields)
-                    id
-                }
-            )
+        return CreateDaycareResponse(
+            db.transaction {
+                val id = it.createDaycare(fields.areaId, fields.name)
+                it.updateDaycareManager(id, fields.unitManager)
+                it.updateDaycare(id, fields)
+                id
+            }
         )
     }
 
