@@ -42,6 +42,23 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/applying" data-qa="nav-applying">
               {t.header.nav.applying} {maybeLockElem}
             </StyledNavLink>
+            <StyledNavLink to="/applications" data-qa="nav-applications">
+              {t.header.nav.applications} {maybeLockElem}
+            </StyledNavLink>
+            <StyledNavLink to="/decisions" data-qa="nav-decisions">
+              {t.header.nav.decisions} {maybeLockElem}
+            </StyledNavLink>
+            <StyledNavLink
+              to="/pedagogical-documents"
+              data-qa="nav-pedagogical-documents"
+            >
+              {t.header.nav.pedagogicalDocuments} {maybeLockElem}
+            </StyledNavLink>
+            {featureFlags.experimental?.incomeStatements && (
+              <StyledNavLink to="/income" data-qa="nav-income">
+                {t.header.nav.income} {maybeLockElem}
+              </StyledNavLink>
+            )}
             {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}

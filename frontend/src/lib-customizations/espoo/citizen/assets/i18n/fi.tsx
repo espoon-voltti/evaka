@@ -88,7 +88,8 @@ export default {
       income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri',
-      applying: 'Hakeminen'
+      applying: 'Hakeminen',
+      pedagogicalDocuments: 'Kasvu ja oppiminen'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1645,5 +1646,10 @@ export default {
         'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
       returnMessage: 'Palaa takaisin'
     }
+  },
+  pedagogicalDocuments: {
+    title: 'Kasvu ja oppiminen',
+    description:
+      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
   }
 }

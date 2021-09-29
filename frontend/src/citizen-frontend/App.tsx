@@ -29,6 +29,7 @@ import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import { featureFlags } from 'lib-customizations/citizen'
 import Applying from './applying/Applying'
+import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 
 export default function App() {
   return (
@@ -97,6 +98,11 @@ export default function App() {
                       exact
                       path="/decisions/by-application/:applicationId"
                       component={requireAuth(DecisionResponseList)}
+                    />
+                    <Route
+                      exact
+                      path="/pedagogical-documents"
+                      component={requireAuth(PedagogicalDocuments)}
                     />
                     <Route
                       exact

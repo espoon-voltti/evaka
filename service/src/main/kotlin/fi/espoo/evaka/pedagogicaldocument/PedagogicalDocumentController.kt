@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -80,6 +81,42 @@ class PedagogicalDocumentController(
         val docs = findPedagogicalDocumentsByChild(db, childId)
         return ResponseEntity.ok(docs)
     }
+
+    @GetMapping("/citizen")
+    fun getPedagogicalDocumentsByGuardian(
+        db: Database,
+        user: AuthenticatedUser
+    ): ResponseEntity<List<PedagogicalDocument>> {
+        Audit.PedagogicalDocumentReadByGuardian.log(user.id)
+        val docs = findPedagogicalDocumentsByGuardian(db, PersonId(user.id))
+        return ResponseEntity.ok(docs)
+    }
+
+    private fun findPedagogicalDocumentsByGuardian(db: Database, guardianId: PersonId): List<PedagogicalDocument>? {
+        return db.read {
+            it.createQuery(
+                """
+                SELECT 
+                    pd.id,
+                    pd.child_id,
+                    pd.description,
+                    pd.created,
+                    pd.updated,
+                    a.id attachment_id,
+                    a.name attachment_name,
+                    a.content_type attachment_content_type
+                FROM pedagogical_document pd
+                JOIN guardian g ON pd.child_id = g.child_id
+                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+                WHERE g.guardian_id = :guardian_id
+            """.trimIndent()
+            )
+                .bind("guardian_id", guardianId)
+                .map { row -> mapPedagogicalDocument(row) }
+                .toList()
+        }
+    }
+
 
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
