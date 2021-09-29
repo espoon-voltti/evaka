@@ -147,6 +147,10 @@ function getArrayErrorCount<T extends unknown[]>(
 }
 
 export function getErrorCount<T>(errors: ErrorsOf<T>): number {
+  if (typeof errors !== 'object') {
+    return 0
+  }
+
   return Object.keys(errors).reduce<number>((acc, key) => {
     const isArr = isArrayErrors(errors[key])
     return acc + (isArr ? getArrayErrorCount(errors[key]) : errors[key] ? 1 : 0)
