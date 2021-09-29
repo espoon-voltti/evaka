@@ -5,28 +5,22 @@
 import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 import { faTimes } from 'lib-icons'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 
 interface Props {
-  highlight: boolean
   close: () => void
   children: ReactNode | ReactNode[]
 }
 
-export default React.memo(function CalendarModal({
-  highlight,
-  close,
-  children
-}: Props) {
+export default React.memo(function CalendarModal({ close, children }: Props) {
   return (
     <Modal>
       <TopBar>
         <CloseButton icon={faTimes} onClick={close} />
       </TopBar>
-      <Content highlight={highlight}>{children}</Content>
-      <Gap size="XXL" />
+      {children}
     </Modal>
   )
 })
@@ -37,8 +31,8 @@ const Modal = styled.div`
   z-index: 20;
   position: fixed;
   overflow-y: auto;
-  bottom: 0;
 
+  bottom: ${defaultMargins.s};
   right: 100px;
   max-height: min(840px, 90vh);
   width: 500px;
@@ -49,8 +43,9 @@ const Modal = styled.div`
 
   @media (max-width: ${tabletMin}) {
     top: 0;
-
+    bottom: 0;
     right: 0;
+    left: 0;
     max-height: 100%;
     width: 100%;
   }
@@ -67,19 +62,4 @@ const TopBar = styled.div`
 const CloseButton = styled(IconButton)`
   padding: ${defaultMargins.s};
   margin: 0 ${defaultMargins.xs};
-`
-
-const Content = styled.div<{ highlight: boolean }>`
-  background: ${(p) => p.theme.colors.greyscale.white};
-  box-shadow: 0px 4px 4px -4px #0f0f0f1a, 0px -4px 4px -4px #0f0f0f1a;
-
-  padding: ${defaultMargins.L};
-  padding-left: calc(${defaultMargins.L} - 4px);
-  border-left: 4px solid
-    ${(p) => (p.highlight ? p.theme.colors.brand.secondary : 'transparent')};
-
-  @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.s};
-    padding-left: calc(${defaultMargins.s} - 4px);
-  }
 `

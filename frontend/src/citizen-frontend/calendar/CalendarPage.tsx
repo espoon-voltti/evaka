@@ -71,6 +71,7 @@ export default React.memo(function CalendarPage() {
           selectDate={selectDate}
           reloadData={loadDefaultRange}
           close={closeDayView}
+          openAbsenceModal={() => setOpenModal('absences')}
         />
       ) : null}
       {data.mapAll({
