@@ -28,6 +28,7 @@ import {
 } from '../../api/child/pedagogical-documents'
 import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
+import LocalDate from "../../../lib-common/local-date";
 
 interface Props {
   id: UUID
@@ -128,7 +129,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       data-qa="table-pedagogical-document-row"
     >
       <DateTd data-qa="pedagogical-document-start-date">
-        {pedagogicalDocument.created.toLocaleDateString()}
+        {LocalDate.fromSystemTzDate(pedagogicalDocument.created).format()}
       </DateTd>
       <NameTd data-qa="pedagogical-document-document">
         {

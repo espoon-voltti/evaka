@@ -60,7 +60,7 @@ describe('Child Information - Pedagogical documents', () => {
     await section.addNew()
     await waitUntilEqual(
       () => section.startDate,
-      format(new Date(), 'dd/MM/yyyy')
+      format(new Date(), 'dd.MM.yyyy')
     )
   })
 })
