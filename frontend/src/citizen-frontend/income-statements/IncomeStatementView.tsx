@@ -38,6 +38,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { useHistory } from 'react-router-dom'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faPen } from 'lib-icons'
+import { tabletMin } from 'lib-components/breakpoints'
 
 export default React.memo(function IncomeStatementView({
   match
@@ -66,17 +67,13 @@ export default React.memo(function IncomeStatementView({
         <FixedSpaceRow spacing="L">
           <H1>{t.income.view.title}</H1>
           {!incomeStatement.handled && (
-            <FixedSpaceRow
-              fullWidth
-              alignItems="flex-start"
-              justifyContent="flex-end"
-            >
+            <EditButtonContainer>
               <InlineButton
                 text={t.common.edit}
                 icon={faPen}
                 onClick={handleEdit}
               />
-            </FixedSpaceRow>
+            </EditButtonContainer>
           )}
         </FixedSpaceRow>
         <Row
@@ -359,6 +356,20 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
 const FileIcon = styled(FontAwesomeIcon)`
   color: ${(p) => p.theme.colors.main.primary};
   margin-right: ${defaultMargins.s};
+`
+
+const EditButtonContainer = styled.div`
+  flex: 1 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  // This targets IconButton's text
+  span {
+    @media (max-width: ${tabletMin}) {
+      display: none;
+    }
+  }
 `
 
 function Row({
