@@ -295,7 +295,7 @@ sealed interface Action {
     }
     enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : Action {
         READ(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        UPSERT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPDATE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
         UPLOAD_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
