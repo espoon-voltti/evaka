@@ -71,7 +71,8 @@ export default {
       decisions: 'Päätökset',
       income: 'Tulotiedot',
       messages: 'Viestit',
-      calendar: 'Kalenteri'
+      calendar: 'Kalenteri',
+      applying: 'Hakeminen'
     },
     lang: {
       fi: 'Suomeksi',

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
@@ -25,6 +25,8 @@ import {
 import { fetchUnits, queryDistances } from '../map/api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
+import { useUser } from 'citizen-frontend/auth'
+import { Gap } from 'lib-components/white-space'
 
 export type MapAddress = {
   coordinates: Coordinate
@@ -41,9 +43,26 @@ export type CareTypeOption = ApplicationType
 
 export type ProviderTypeOption = Exclude<ProviderType, 'MUNICIPAL_SCHOOL'>
 
+interface MapContainerProps {
+  loggedIn: boolean
+  children: ReactNode
+}
+
+const MapFullscreenContainer = React.memo(function MapFullscreenContainer({
+  loggedIn,
+  children
+}: MapContainerProps) {
+  return (
+    <FullScreen data-qa="map-view" loggedIn={loggedIn}>
+      {children}
+    </FullScreen>
+  )
+})
+
 export default React.memo(function MapView() {
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
+  const loggedIn = !!useUser()
 
   const [selectedUnit, setSelectedUnit] = useState<PublicUnit | null>(null)
 
@@ -96,12 +115,14 @@ export default React.memo(function MapView() {
   useTitle(t, t.map.title)
 
   return (
-    <FullScreen data-qa="map-view">
+    <MapFullscreenContainer loggedIn={loggedIn}>
+      <Gap size="s" />
       <FlexContainer
         className={`mobile-mode-${mobileMode}`}
         breakpoint={mapViewBreakpoint}
         horizontalSpacing="zero"
         verticalSpacing="zero"
+        loggedIn={loggedIn}
       >
         {selectedUnit ? (
           <UnitDetailsPanel
@@ -142,7 +163,7 @@ export default React.memo(function MapView() {
           />
         </MapContainer>
       </FlexContainer>
-    </FullScreen>
+    </MapFullscreenContainer>
   )
 })
 
@@ -205,27 +226,32 @@ const filterUnits = (
   return Success.of(sortedUnits)
 }
 
-const FullScreen = styled.div`
+const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
-  top: 0;
   bottom: 0;
+  top: ${({ loggedIn }) => (loggedIn ? '156px;' : '0')};
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: stretch;
+  @media (max-width: ${mapViewBreakpoint}) {
+    margin-top: -21px;
+  }
 `
 
-const FlexContainer = styled(AdaptiveFlex)`
-  margin-top: 64px;
+const FlexContainer = styled(AdaptiveFlex)<{ loggedIn: boolean }>`
+  margin-top: 64px};
   align-items: stretch;
 
   width: 100%;
+  ${({ loggedIn }) => (loggedIn ? 'margin: 0;' : '')};
 
   @media (max-width: ${mapViewBreakpoint}) {
     margin-top: ${headerHeight};
     width: 100%;
     margin-bottom: 0;
+    ${({ loggedIn }) => (loggedIn ? 'margin: 0;' : '')};
     &.mobile-mode-map {
       .unit-list {
         display: none;

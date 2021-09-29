@@ -72,7 +72,8 @@ const en: Translations = {
       decisions: 'Decisions',
       income: 'Income',
       messages: 'Messages',
-      calendar: 'Calendar'
+      calendar: 'Calendar',
+      applying: 'Applying'
     },
     lang: {
       fi: 'Suomeksi',

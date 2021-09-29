@@ -39,14 +39,8 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
       <Nav>
         {user && (
           <>
-            <StyledNavLink to="/" exact data-qa="nav-map">
-              {t.header.nav.map}
-            </StyledNavLink>
-            <StyledNavLink to="/applications" data-qa="nav-applications">
-              {t.header.nav.applications} {maybeLockElem}
-            </StyledNavLink>
-            <StyledNavLink to="/decisions" data-qa="nav-decisions">
-              {t.header.nav.decisions} {maybeLockElem}
+            <StyledNavLink to="/applying" data-qa="nav-applying">
+              {t.header.nav.applying} {maybeLockElem}
             </StyledNavLink>
             {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
@@ -195,13 +189,13 @@ const UserMenu = React.memo(function UserMenu() {
   )
 
   return (
-    <div ref={dropDownRef} style={{ position: 'relative' }}>
+    <div ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title'}>
         {user?.firstName} {user?.lastName}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open && user ? (
-        <DropDown data-qa={'user-menu'} style={{ width: '200px', right: '0' }}>
+        <DropDown data-qa={'user-menu'}>
           {featureFlags.experimental?.incomeStatements && (
             <DropDownItem
               selected={window.location.pathname.includes('/income')}
@@ -251,6 +245,7 @@ const DropDownIcon = styled(FontAwesomeIcon)`
 const DropDown = styled.ul`
   position: absolute;
   z-index: 9999;
+  top: 85px;
   list-style: none;
   margin: 0;
   padding: 0;
