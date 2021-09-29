@@ -5,25 +5,24 @@
 import { Loading, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H1, H2 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import { faFileAlt, faPen, faQuestion, faTrash } from 'lib-icons'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Dimmed, H1, H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import styled from 'styled-components'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
-import { getIncomeStatements, deleteIncomeStatement } from './api'
+import { deleteIncomeStatement, getIncomeStatements } from './api'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -31,7 +30,7 @@ const HeadingContainer = styled.div`
 `
 const Buttons = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
 `
 
 function IncomeStatementsTable({
@@ -44,19 +43,16 @@ function IncomeStatementsTable({
   const t = useTranslation().income.table
   const history = useHistory()
 
-  const onOpen = useCallback(
-    (item: IncomeStatement, mode: 'view' | 'edit') => () =>
-      history.push(`/income/${item.id}/${mode === 'edit' ? 'edit' : ''}`),
-    [history]
-  )
+  const getLink = (id: UUID, mode: 'view' | 'edit') =>
+    `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
+
+  const onEdit = (id: UUID) => () => history.push(getLink(id, 'edit'))
 
   return (
     <Table>
       <Thead>
         <Tr>
           <Th>{t.incomeStatementForm}</Th>
-          <Th>{t.startDate}</Th>
-          <Th>{t.endDate}</Th>
           <Th />
         </Tr>
       </Thead>
@@ -64,28 +60,28 @@ function IncomeStatementsTable({
         {items.map((item) => (
           <Tr key={item.id}>
             <Td>
-              <InlineButton
-                icon={faFileAlt}
-                text={t.openIncomeStatement}
-                onClick={onOpen(item, 'view')}
+              <Link
+                to={getLink(item.id, 'view')}
                 data-qa={`button-open-income-statement-${item.id}`}
-              />
+              >
+                {item.startDate.format()} - {item.endDate?.format()}
+              </Link>
             </Td>
-            <Td>{item.startDate.format()}</Td>
-            <Td>{item.endDate?.format()}</Td>
             <Td>
-              {!item.handled ? (
-                <Buttons>
-                  <IconButton icon={faPen} onClick={onOpen(item, 'edit')} />
-                  <Gap size="xs" horizontal />
-                  <IconButton
-                    icon={faTrash}
-                    onClick={() => onRemoveIncomeStatement(item.id)}
-                  />
-                </Buttons>
-              ) : (
-                t.handled
-              )}
+              <Buttons>
+                {item.handled ? (
+                  <Dimmed>{t.handled}</Dimmed>
+                ) : (
+                  <>
+                    <IconButton icon={faPen} onClick={onEdit(item.id)} />
+                    <Gap size="xs" horizontal />
+                    <IconButton
+                      icon={faTrash}
+                      onClick={() => onRemoveIncomeStatement(item.id)}
+                    />
+                  </>
+                )}
+              </Buttons>
             </Td>
           </Tr>
         ))}
