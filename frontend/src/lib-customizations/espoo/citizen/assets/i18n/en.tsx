@@ -16,6 +16,8 @@ const en: Translations = {
     return: 'Return',
     ok: 'Ok',
     save: 'Save',
+    discard: 'Discard',
+    saveConfirmation: 'Do you want to save changes?',
     confirm: 'Confirm',
     delete: 'Remove',
     edit: 'Edit',

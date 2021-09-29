@@ -181,15 +181,15 @@ export default React.memo(function DayView({
             ))}
         {confirmationModal ? (
           <InfoModal
-            title="Haluatko tallentaa muutokset?"
+            title={i18n.common.saveConfirmation}
             close={confirmationModal.close}
             resolve={{
               action: confirmationModal.resolve,
-              label: 'Tallenna'
+              label: i18n.common.save
             }}
             reject={{
               action: confirmationModal.reject,
-              label: 'Älä tallenna'
+              label: i18n.common.discard
             }}
           />
         ) : null}

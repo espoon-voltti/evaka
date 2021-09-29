@@ -16,6 +16,8 @@ const sv: Translations = {
     return: 'Tillbaka',
     ok: 'Ok',
     save: 'Spar',
+    discard: 'Spar inte',
+    saveConfirmation: 'Vill du spara ändringar?',
     confirm: 'Bekräfta',
     delete: 'Ta bort',
     edit: 'Redigera',

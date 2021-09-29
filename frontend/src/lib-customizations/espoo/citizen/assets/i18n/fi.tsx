@@ -15,6 +15,8 @@ export default {
     return: 'Palaa',
     ok: 'Ok',
     save: 'Tallenna',
+    discard: 'Älä tallenna',
+    saveConfirmation: 'Haluatko tallentaa muutokset?',
     confirm: 'Vahvista',
     delete: 'Poista',
     edit: 'Muokkaa',
