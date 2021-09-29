@@ -38,7 +38,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPSERT, body.childId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, body.childId)
         val doc = createDocument(db, user, body)
         return ResponseEntity.ok(doc)
     }
@@ -51,7 +51,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(documentId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPSERT, body.childId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, body.childId)
         val doc = updateDocument(db, user, body, documentId)
         return ResponseEntity.ok(doc)
     }
