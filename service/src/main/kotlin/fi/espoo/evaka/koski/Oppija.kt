@@ -6,6 +6,7 @@ package fi.espoo.evaka.koski
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
@@ -105,16 +106,22 @@ enum class SuorituksenTyyppiKoodi {
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/schema/Oppija.scala#L6
 data class Oppija(
-    val henkilö: UusiHenkilö, // actual API supports more than one type
+    val henkilö: Henkilö,
     val opiskeluoikeudet: List<Opiskeluoikeus>
 )
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+sealed class Henkilö
 
 // https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Henkilo.scala#L56
 data class UusiHenkilö(
     val hetu: String,
     val etunimet: String,
     val sukunimi: String
-)
+) : Henkilö()
+
+// https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Henkilo.scala#L65
+data class OidHenkilö(val oid: String) : Henkilö()
 
 data class Opiskeluoikeus(
     val tila: OpiskeluoikeudenTila,
@@ -314,9 +321,6 @@ enum class PerusteenDiaarinumero {
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/oppija/KoskiOppijaFacade.scala#L278
 data class HenkilönOpiskeluoikeusVersiot(val henkilö: OidHenkilö, val opiskeluoikeudet: List<OpiskeluoikeusVersio>)
-
-// https://github.com/Opetushallitus/koski/blob/025940091c6a13d0217422bfc75208c45120a810/src/main/scala/fi/oph/koski/schema/Henkilo.scala#L65
-data class OidHenkilö(val oid: String)
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/oppija/KoskiOppijaFacade.scala#L279
 data class OpiskeluoikeusVersio(val oid: String, val versionumero: Int, val lähdejärjestelmänId: LähdejärjestelmäId)
