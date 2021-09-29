@@ -20,7 +20,7 @@ const DatePickerWrapper = styled.div`
 `
 const minMargin = 16
 const overflow = 70
-const DayPickerPositioner = styled.div<{ show: boolean }>`
+const DayPickerPositioner = styled.div`
   position: absolute;
   top: calc(2.5rem + ${minMargin}px);
   left: -${overflow}px;
@@ -28,7 +28,7 @@ const DayPickerPositioner = styled.div<{ show: boolean }>`
   z-index: 99999;
   justify-content: center;
   align-items: center;
-  display: ${(p) => (p.show ? 'inline-block' : 'none')};
+  display: inline-block;
 `
 
 const DayPickerDiv = styled.div`
@@ -178,17 +178,19 @@ function DatePicker({
         required={required}
         locale={locale}
       />
-      <DayPickerPositioner ref={pickerRef} show={show}>
-        <DayPickerDiv>
-          <DatePickerDay
-            locale={locale}
-            inputValue={date}
-            handleDayClick={handleDayClick}
-            isValidDate={isValidDate}
-            initialMonth={initialMonth}
-          />
-        </DayPickerDiv>
-      </DayPickerPositioner>
+      {show ? (
+        <DayPickerPositioner ref={pickerRef}>
+          <DayPickerDiv>
+            <DatePickerDay
+              locale={locale}
+              inputValue={date}
+              handleDayClick={handleDayClick}
+              isValidDate={isValidDate}
+              initialMonth={initialMonth}
+            />
+          </DayPickerDiv>
+        </DayPickerPositioner>
+      ) : null}
     </DatePickerWrapper>
   )
 }
