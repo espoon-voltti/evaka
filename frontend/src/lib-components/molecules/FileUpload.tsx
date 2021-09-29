@@ -17,6 +17,7 @@ import {
   faFileWord,
   faInfo,
   faPaperclip,
+  faPlus,
   faTimes
 } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -108,6 +109,19 @@ const FileInputLabel = styled.label`
   }
 `
 
+const SingleFileInputLabel = styled.label`
+  padding: ${defaultMargins.xxs} 0;
+
+  & input {
+    display: none;
+  }
+
+  .file-input-button {
+    display: flex;
+    align-items: center;
+  }
+`
+
 const SlimInputLabel = styled.label`
   padding: ${defaultMargins.xs} 0;
 
@@ -141,7 +155,7 @@ const File = styled.div`
 `
 
 const FileIcon = styled(FontAwesomeIcon)`
-  margin-right: 16px;
+  margin-right: ${defaultMargins.xs};
   font-size: 20px;
   flex: 0;
   color: ${({ theme: { colors } }) => colors.main.primary};
@@ -407,7 +421,26 @@ export default React.memo(function FileUpload({
           icon={faInfo}
         />
       )}
-      {slim || (slimSingleFile && uploadedFiles.length == 0) ? (
+      {slimSingleFile ? (
+        uploadedFiles.length > 0 ? (
+          <></>
+        ) : (
+          <SingleFileInputLabel
+            className="file-input-label"
+            htmlFor={ariaId}
+            onKeyDown={onKeyDown}
+          >
+            <InlineButton
+              className={'file-input-button'}
+              disabled={disabled}
+              icon={faPlus}
+              text={i18n.upload.input.title}
+              onClick={() => inputRef?.current?.click()}
+            />
+            {fileInput}
+          </SingleFileInputLabel>
+        )
+      ) : slim ? (
         <SlimInputLabel
           className="file-input-label"
           htmlFor={ariaId}
@@ -421,8 +454,6 @@ export default React.memo(function FileUpload({
           />
           {fileInput}
         </SlimInputLabel>
-      ) : slimSingleFile && uploadedFiles.length > 0 ? (
-        <></>
       ) : (
         <FileInputLabel
           className="file-input-label"
@@ -440,7 +471,7 @@ export default React.memo(function FileUpload({
       )}
       {uploadedFiles.length > 0 && (
         <>
-          <Gap horizontal size={'s'} />
+          <Gap horizontal size={slimSingleFile ? 'zero' : 's'} />
           <UploadedFiles data-qa={'uploaded-files'}>
             {uploadedFiles.map((file) => (
               <File key={file.key}>
