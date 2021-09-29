@@ -28,7 +28,7 @@ import {
 } from '../../api/child/pedagogical-documents'
 import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
-import LocalDate from "../../../lib-common/local-date";
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   id: UUID
