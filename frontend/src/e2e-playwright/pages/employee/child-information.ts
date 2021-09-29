@@ -117,10 +117,48 @@ export class DailyServiceTimesSectionEdit {
   }
 }
 
+export class PedagogicalDocumentsSection {
+  constructor(private section: RawElement) {}
+
+  readonly #startDate = this.section.find(
+    '[data-qa="pedagogical-document-start-date"]'
+  )
+  readonly #document = this.section.find(
+    '[data-qa="pedagogical-document-document"]'
+  )
+  readonly #description = this.section.find(
+    '[data-qa="pedagogical-document-description"]'
+  )
+  readonly #create = this.section.find(
+    '[data-qa="button-create-pedagogical-document"]'
+  )
+
+  get startDate(): Promise<string> {
+    return this.#startDate.innerText
+  }
+
+  get document(): Promise<string> {
+    return this.#document.innerText
+  }
+
+  get description(): Promise<string> {
+    return this.#description.innerText
+  }
+
+  async addNew() {
+    await this.#create.click()
+    return new PedagogicalDocumentsSection(this.section)
+  }
+}
+
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
     section: DailyServiceTimeSection
+  },
+  pedagogicalDocuments: {
+    selector: '[data-qa="pedagogical-documents-collapsible"]',
+    section: PedagogicalDocumentsSection
   }
 }
 
