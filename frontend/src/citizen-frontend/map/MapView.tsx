@@ -52,10 +52,10 @@ const MapFullscreenContainer = React.memo(function MapFullscreenContainer({
   loggedIn,
   children
 }: MapContainerProps) {
-  return loggedIn ? (
-    <div>{children}</div>
-  ) : (
-    <FullScreen data-qa="map-view">{children}</FullScreen>
+  return (
+    <FullScreen data-qa="map-view" loggedIn={loggedIn}>
+      {children}
+    </FullScreen>
   )
 })
 
@@ -226,15 +226,18 @@ const filterUnits = (
   return Success.of(sortedUnits)
 }
 
-const FullScreen = styled.div`
+const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
-  top: 0;
   bottom: 0;
+  top: ${({ loggedIn }) => (loggedIn ? '156px;' : '0')};
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: stretch;
+  @media (max-width: ${mapViewBreakpoint}) {
+    margin-top: -21px;
+  }
 `
 
 const FlexContainer = styled(AdaptiveFlex)<{ loggedIn: boolean }>`

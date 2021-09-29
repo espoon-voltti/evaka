@@ -8,6 +8,7 @@ import Decisions from 'citizen-frontend/decisions/decisions-page/Decisions'
 import { useTranslation } from 'citizen-frontend/localization'
 import MapView from 'citizen-frontend/map/MapView'
 import Tabs from 'lib-components/molecules/Tabs'
+import { Gap } from 'lib-components/white-space'
 import React from 'react'
 import { Route, Switch } from 'react-router-dom'
 
@@ -35,7 +36,12 @@ export default React.memo(function Applying() {
 
   return (
     <>
-      {loggedIn && <Tabs tabs={tabs} dataQa="applying-subnavigation" />}
+      {loggedIn && (
+        <>
+          <Gap size="s" />
+          <Tabs tabs={tabs} dataQa="applying-subnavigation" />
+        </>
+      )}
       <Switch>
         <Route exact path="/applying/map" component={MapView} />
         <Route exact path="/applying/applications" component={Applications} />
