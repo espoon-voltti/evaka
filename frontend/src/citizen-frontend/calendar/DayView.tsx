@@ -49,10 +49,14 @@ export default React.memo(function DayView({
 }: Props) {
   const i18n = useTranslation()
 
+  const dateIndexInData = useMemo(
+    () =>
+      data.dailyData.findIndex((reservation) => date.isEqual(reservation.date)),
+    [date, data]
+  )
+
   const childrenWithReservations = useMemo(() => {
-    const reservations = data.dailyData.find((reservation) =>
-      date.isEqual(reservation.date)
-    )
+    const reservations = data.dailyData[dateIndexInData]
 
     return data.children.map((child) => {
       const reservation = reservations?.children.find(
@@ -64,7 +68,14 @@ export default React.memo(function DayView({
         reservation
       }
     })
-  }, [date, data])
+  }, [dateIndexInData, data])
+
+  const [previousDate, nextDate] = useMemo(() => {
+    return [
+      data.dailyData[dateIndexInData - 1]?.date,
+      data.dailyData[dateIndexInData + 1]?.date
+    ]
+  }, [dateIndexInData, data])
 
   const {
     editable,
@@ -84,14 +95,16 @@ export default React.memo(function DayView({
         <DayPicker>
           <IconButton
             icon={faChevronLeft}
-            onClick={navigate(() => selectDate(date.subDays(1)))}
+            onClick={navigate(() => selectDate(previousDate))}
+            disabled={!previousDate}
           />
           <DayOfWeek>{`${
             i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]
           } ${date.format('d.M.yyyy')}`}</DayOfWeek>
           <IconButton
             icon={faChevronRight}
-            onClick={navigate(() => selectDate(date.addDays(1)))}
+            onClick={navigate(() => selectDate(nextDate))}
+            disabled={!nextDate}
           />
         </DayPicker>
         <Gap size="m" />
