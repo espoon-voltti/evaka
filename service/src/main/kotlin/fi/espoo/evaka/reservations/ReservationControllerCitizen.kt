@@ -137,7 +137,7 @@ data class AbsenceRequest(
 )
 
 fun Database.Read.getReservationsCitizen(guardianId: UUID, range: FiniteDateRange): List<DailyReservationData> {
-    if (range.durationInDays() > 366) throw BadRequest("Range too long")
+    if (range.durationInDays() > 450) throw BadRequest("Range too long")
 
     return createQuery(
         """

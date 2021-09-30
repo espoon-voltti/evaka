@@ -5,27 +5,23 @@
 import { faExclamation } from 'lib-icons'
 import React, { useContext } from 'react'
 import { OverlayContext } from './state'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 function GlobalErrorDialog() {
   const { errorMessage, clearErrorMessage } = useContext(OverlayContext)
-  return (
-    <div>
-      {errorMessage && (
-        <FormModal
-          title={errorMessage.title}
-          icon={faExclamation}
-          iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
-          text={errorMessage.text}
-          resolve={{
-            label: errorMessage.resolveLabel ?? 'Ok',
-            action: () => clearErrorMessage()
-          }}
-          size={'md'}
-        />
-      )}
-    </div>
-  )
+  return errorMessage ? (
+    <InfoModal
+      title={errorMessage.title}
+      icon={faExclamation}
+      iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
+      text={errorMessage.text}
+      resolve={{
+        label: errorMessage.resolveLabel ?? 'Ok',
+        action: clearErrorMessage
+      }}
+      close={clearErrorMessage}
+    />
+  ) : null
 }
 
 export default GlobalErrorDialog

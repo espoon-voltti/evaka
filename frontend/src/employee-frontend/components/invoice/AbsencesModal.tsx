@@ -137,8 +137,6 @@ export default function AbsencesModal({ child, date }: Props) {
       title={i18n.absences.modal.absenceSummaryTitle}
       icon={faAbacus}
       close={() => clearUiMode()}
-      customSize={'650px'}
-      size={'custom'}
     >
       {loading && <Loader />}
       {failure && <div>{i18n.common.loadingFailed}</div>}

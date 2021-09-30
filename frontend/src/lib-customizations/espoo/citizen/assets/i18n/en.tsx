@@ -16,6 +16,8 @@ const en: Translations = {
     return: 'Return',
     ok: 'Ok',
     save: 'Save',
+    discard: 'Discard',
+    saveConfirmation: 'Do you want to save changes?',
     confirm: 'Confirm',
     delete: 'Remove',
     edit: 'Edit',
@@ -62,6 +64,20 @@ const en: Translations = {
         'Friday',
         'Saturday',
         'Sunday'
+      ],
+      months: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
       ]
     }
   },
@@ -164,7 +180,8 @@ const en: Translations = {
     noReservation: 'No reservations',
     reservationModal: {
       title: 'Make a reservation',
-      selectChildren: 'Selected children',
+      selectChildren: 'Children the reservation is made for',
+      selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
       times: 'Time',

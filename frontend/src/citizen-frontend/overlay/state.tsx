@@ -4,14 +4,14 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
-import { IconColour } from 'lib-components/molecules/modals/FormModal'
+import { IconColor } from 'lib-components/molecules/modals/BaseModal'
 
 export interface InfoMessage {
   title: string
   text?: string
   'data-qa'?: string
   icon: IconProp
-  iconColour: IconColour
+  iconColour: IconColor
   resolve: {
     action: () => void
     label: string

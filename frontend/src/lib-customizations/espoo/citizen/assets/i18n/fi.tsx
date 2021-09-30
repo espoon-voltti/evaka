@@ -15,6 +15,8 @@ export default {
     return: 'Palaa',
     ok: 'Ok',
     save: 'Tallenna',
+    discard: 'Älä tallenna',
+    saveConfirmation: 'Haluatko tallentaa muutokset?',
     confirm: 'Vahvista',
     delete: 'Poista',
     edit: 'Muokkaa',
@@ -61,6 +63,20 @@ export default {
         'Perjantai',
         'Lauantai',
         'Sunnuntai'
+      ],
+      months: [
+        'Tammikuu',
+        'Helmikuu',
+        'Maaliskuu',
+        'Huhtikuu',
+        'Toukokuu',
+        'Kesäkuu',
+        'Heinäkuu',
+        'Elokuu',
+        'Syyskuu',
+        'Lokakuu',
+        'Marraskuu',
+        'Joulukuu'
       ]
     }
   },
@@ -163,7 +179,8 @@ export default {
     noReservation: 'Ei varausta',
     reservationModal: {
       title: 'Tee varaus',
-      selectChildren: 'Valitse lapset',
+      selectChildren: 'Lapset, joille varaus tehdään',
+      selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
       times: 'Kellonaika',

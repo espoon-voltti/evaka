@@ -9,14 +9,12 @@ import LocalDate from 'lib-common/local-date'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import DatePicker, {
   DatePickerSpacer
 } from 'lib-components/molecules/date-picker/DatePicker'
 import {
-  FixedSpaceColumn,
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
@@ -78,12 +76,12 @@ export default React.memo(function AbsenceModal({
     >
       <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
       <Gap size="s" />
-      <FixedSpaceColumn>
+      <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
-          <Checkbox
+          <SelectionChip
             key={child.id}
-            label={child.preferredName || child.firstName.split(' ')[0]}
-            checked={form.selectedChildren.includes(child.id)}
+            text={child.preferredName || child.firstName.split(' ')[0]}
+            selected={form.selectedChildren.includes(child.id)}
             onChange={(checked) =>
               updateForm({
                 selectedChildren: checked
@@ -94,7 +92,7 @@ export default React.memo(function AbsenceModal({
             data-qa={`child-${child.id}`}
           />
         ))}
-      </FixedSpaceColumn>
+      </FixedSpaceFlexWrap>
       <Gap size="m" />
       <Label>{i18n.calendar.absenceModal.dateRange}</Label>
       <FixedSpaceRow alignItems="flex-start" spacing="xs">
@@ -119,6 +117,9 @@ export default React.memo(function AbsenceModal({
             errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
           }
           hideErrorsBeforeTouched={!showAllErrors}
+          initialMonth={
+            LocalDate.parseFiOrNull(form.startDate) ?? LocalDate.today()
+          }
           data-qa="end-date"
         />
       </FixedSpaceRow>

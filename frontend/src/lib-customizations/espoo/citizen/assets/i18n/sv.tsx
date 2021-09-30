@@ -16,6 +16,8 @@ const sv: Translations = {
     return: 'Tillbaka',
     ok: 'Ok',
     save: 'Spar',
+    discard: 'Spar inte',
+    saveConfirmation: 'Vill du spara ändringar?',
     confirm: 'Bekräfta',
     delete: 'Ta bort',
     edit: 'Redigera',
@@ -62,6 +64,20 @@ const sv: Translations = {
         'Fredag',
         'Lördag',
         'Söndag'
+      ],
+      months: [
+        'Januari',
+        'Februari',
+        'Mars',
+        'April',
+        'Maj',
+        'Juni',
+        'Juli',
+        'Augusti',
+        'September',
+        'Oktober',
+        'November',
+        'December'
       ]
     }
   },
@@ -164,7 +180,8 @@ const sv: Translations = {
     noReservation: 'Ingen reservation',
     reservationModal: {
       title: 'Reservera',
-      selectChildren: 'Utvalda barn',
+      selectChildren: 'Barn som reserveras för',
+      selectChildrenLabel: 'Utvalda barn',
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
       times: 'Tid',

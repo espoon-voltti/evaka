@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import colors from 'lib-customizations/common'
@@ -13,17 +13,12 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { DailyReservationData } from './api'
+import { Reservations } from './calendar-elements'
+import { WeeklyData } from './CalendarListView'
+import { headerHeightMobile } from 'citizen-frontend/header/const'
 
-export interface WeekProps {
-  weekNumber: number
-  dailyReservations: Array<{
-    date: LocalDate
-    isHoliday: boolean
-    reservations: string[]
-  }>
-}
-
-interface Props extends WeekProps {
+interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
 }
 
@@ -64,40 +59,59 @@ const WeekDiv = styled.div`
 `
 
 interface DayProps {
-  dailyReservations: {
-    date: LocalDate
-    isHoliday: boolean
-    reservations: string[]
-  }
+  dailyReservations: DailyReservationData
   selectDate: (date: LocalDate) => void
 }
 
 const DayElem = React.memo(function DayElem({
-  dailyReservations: { date, isHoliday, reservations },
+  dailyReservations,
   selectDate
 }: DayProps) {
   const i18n = useTranslation()
+  const ref = useRef<HTMLDivElement>()
+
+  useEffect(() => {
+    if (ref.current) {
+      const pos = ref.current?.getBoundingClientRect().top
+
+      if (pos) {
+        const offset = headerHeightMobile + 16
+
+        window.scrollTo({
+          left: 0,
+          top: pos - offset,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }, [])
 
   return (
     <DayDiv
+      ref={(e) => {
+        if (dailyReservations.date.isToday()) {
+          ref.current = e ?? undefined
+        }
+      }}
       alignItems="center"
-      today={date.isToday()}
-      onClick={() => selectDate(date)}
-      data-qa={`mobile-calendar-day-${date.formatIso()}`}
+      today={dailyReservations.date.isToday()}
+      onClick={() => selectDate(dailyReservations.date)}
+      data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
-      <DayColumn spacing="xxs" holiday={isHoliday}>
+      <DayColumn spacing="xxs" holiday={dailyReservations.isHoliday}>
         <div>
-          {i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]}
+          {
+            i18n.common.datetime.weekdaysShort[
+              dailyReservations.date.getIsoDayOfWeek() - 1
+            ]
+          }
         </div>
-        <div>{date.format('dd.MM.')}</div>
+        <div>{dailyReservations.date.format('d.M.')}</div>
       </DayColumn>
       <div data-qa="reservations">
-        {reservations.length === 0 && isHoliday && (
-          <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
-        )}
-        {reservations.join(', ')}
+        <Reservations data={dailyReservations} />
       </div>
-      {date.isBefore(LocalDate.today()) && <HistoryOverlay />}
+      {dailyReservations.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
     </DayDiv>
   )
 })
@@ -115,11 +129,6 @@ const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`
   width: 3rem;
   color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
   font-weight: ${fontWeights.semibold};
-`
-
-const HolidayNote = styled.div`
-  font-style: italic;
-  color: ${colors.greyscale.dark};
 `
 
 const HistoryOverlay = styled.div`

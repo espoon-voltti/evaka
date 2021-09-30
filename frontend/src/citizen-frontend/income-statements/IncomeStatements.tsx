@@ -188,9 +188,9 @@ export default function IncomeStatements() {
               }}
               resolve={{
                 action: () => onDelete(deletionState.rowToDelete),
-                label: t.common.delete
+                label: t.common.delete,
+                disabled: deletionState.status === 'deleting'
               }}
-              resolveDisabled={deletionState.status === 'deleting'}
             />
           )}
         </ContentArea>

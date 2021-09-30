@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { defaultMargins } from '../../white-space'
@@ -20,7 +20,7 @@ const DatePickerWrapper = styled.div`
 `
 const minMargin = 16
 const overflow = 70
-const DayPickerPositioner = styled.div<{ show: boolean }>`
+const DayPickerPositioner = styled.div`
   position: absolute;
   top: calc(2.5rem + ${minMargin}px);
   left: -${overflow}px;
@@ -28,7 +28,7 @@ const DayPickerPositioner = styled.div<{ show: boolean }>`
   z-index: 99999;
   justify-content: center;
   align-items: center;
-  display: ${(p) => (p.show ? 'inline-block' : 'none')};
+  display: inline-block;
 `
 
 const DayPickerDiv = styled.div`
@@ -76,33 +76,33 @@ function DatePicker({
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
+  const [showErrors, setShowErrors] = useState(!hideErrorsBeforeTouched)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (!hideErrorsBeforeTouched) {
+      setShowErrors(true)
+    }
+  }, [hideErrorsBeforeTouched])
+
+  function hideDatePicker() {
+    setShow(false)
+    setShowErrors(true)
+  }
+
   function handleUserKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Esc' || e.key === 'Escape') setShow(false)
+    if (e.key === 'Esc' || e.key === 'Escape') {
+      hideDatePicker()
+    }
   }
 
   function handleDayClick(day: Date, modifiers?: DayModifiers) {
     if (modifiers?.disabled) {
       return
     }
-    setShow(false)
+    hideDatePicker()
     onChange(LocalDate.fromSystemTzDate(day).format())
-  }
-
-  function onInputBlur(e: React.FocusEvent<HTMLInputElement>) {
-    if (e.relatedTarget === null) {
-      setShow(false)
-    }
-
-    if (e.relatedTarget instanceof Element) {
-      if (
-        wrapperRef.current === null ||
-        !wrapperRef.current?.contains(e.relatedTarget)
-      )
-        setShow(false)
-    }
   }
 
   useLayoutEffect(() => {
@@ -130,13 +130,37 @@ function DatePicker({
     return () => removeEventListener('resize', realignPicker)
   }, [])
 
+  useEffect(() => {
+    function handleEvent(event: { target: EventTarget | null }) {
+      if (event.target instanceof Element) {
+        if (wrapperRef.current?.contains(event.target)) {
+          return
+        }
+      }
+
+      hideDatePicker()
+    }
+
+    if (show) {
+      addEventListener('focusin', handleEvent)
+      addEventListener('pointerup', handleEvent)
+
+      return () => {
+        removeEventListener('focusin', handleEvent)
+        removeEventListener('pointerup', handleEvent)
+      }
+    }
+
+    return () => undefined
+  }, [show])
+
   return (
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
         date={date}
         setDate={(date) => {
           if (LocalDate.parseFiOrNull(date) !== null) {
-            setShow(false)
+            hideDatePicker()
           }
           onChange(date)
         }}
@@ -145,28 +169,28 @@ function DatePicker({
           setShow(true)
           onFocus()
         }}
-        onBlur={(e) => {
-          onInputBlur(e)
+        onBlur={() => {
           onBlur()
         }}
-        info={info}
-        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        info={showErrors ? info : undefined}
         data-qa={props['data-qa']}
         id={id}
         required={required}
         locale={locale}
       />
-      <DayPickerPositioner ref={pickerRef} show={show}>
-        <DayPickerDiv>
-          <DatePickerDay
-            locale={locale}
-            inputValue={date}
-            handleDayClick={handleDayClick}
-            isValidDate={isValidDate}
-            initialMonth={initialMonth}
-          />
-        </DayPickerDiv>
-      </DayPickerPositioner>
+      {show ? (
+        <DayPickerPositioner ref={pickerRef}>
+          <DayPickerDiv>
+            <DatePickerDay
+              locale={locale}
+              inputValue={date}
+              handleDayClick={handleDayClick}
+              isValidDate={isValidDate}
+              initialMonth={initialMonth}
+            />
+          </DayPickerDiv>
+        </DayPickerPositioner>
+      ) : null}
     </DatePickerWrapper>
   )
 }

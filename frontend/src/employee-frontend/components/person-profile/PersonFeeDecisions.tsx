@@ -172,7 +172,6 @@ const Modal = React.memo(function Modal({
 
   return (
     <FormModal
-      size="lg"
       icon={faPlus}
       iconColour={'blue'}
       title={i18n.personProfile.feeDecisions.modalTitle}

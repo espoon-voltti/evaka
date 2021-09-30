@@ -4,6 +4,7 @@
 
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
@@ -12,6 +13,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
 import { postReservations, ReservationChild } from './api'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
 import DatePicker, {
@@ -48,10 +50,13 @@ interface ReservationFormData {
   repetition: Repetition
   startTime: string
   endTime: string
-  weeklyTimes: {
-    startTime: string
-    endTime: string
-  }[]
+  weeklyTimes: Array<
+    | {
+        startTime: string
+        endTime: string
+      }
+    | undefined
+  >
 }
 
 type ReservationErrors = ErrorsOf<ReservationFormData>
@@ -138,20 +143,24 @@ export default React.memo(function ReservationModal({
                 startTime: undefined,
                 endTime: undefined
               }))
-            : formData.weeklyTimes.map((times) => ({
-                startTime:
-                  times.startTime === ''
-                    ? times.endTime !== ''
-                      ? 'required'
-                      : undefined
-                    : regexp(times.startTime, TIME_REGEXP, 'timeFormat'),
-                endTime:
-                  times.endTime === ''
-                    ? times.startTime !== ''
-                      ? 'required'
-                      : undefined
-                    : regexp(times.endTime, TIME_REGEXP, 'timeFormat')
-              }))
+            : formData.weeklyTimes.map((times) =>
+                times
+                  ? {
+                      startTime:
+                        times.startTime === ''
+                          ? times.endTime !== ''
+                            ? 'required'
+                            : undefined
+                          : regexp(times.startTime, TIME_REGEXP, 'timeFormat'),
+                      endTime:
+                        times.endTime === ''
+                          ? times.startTime !== ''
+                            ? 'required'
+                            : undefined
+                          : regexp(times.endTime, TIME_REGEXP, 'timeFormat')
+                    }
+                  : undefined
+              )
       }
     })
   }
@@ -187,21 +196,19 @@ export default React.memo(function ReservationModal({
           }))
         )
       case 'WEEKLY':
-        return [...range.dates()]
-          .filter((d) => !d.isWeekend())
-          .flatMap((date) => {
-            const startTime =
-              formData.weeklyTimes[date.getIsoDayOfWeek() - 1].startTime
-            const endTime =
-              formData.weeklyTimes[date.getIsoDayOfWeek() - 1].endTime
-            const noReservation = startTime === '' || endTime === ''
+        return [...range.dates()].flatMap((date) => {
+          const startTime =
+            formData.weeklyTimes[date.getIsoDayOfWeek() - 1]?.startTime ?? ''
+          const endTime =
+            formData.weeklyTimes[date.getIsoDayOfWeek() - 1]?.endTime ?? ''
+          const noReservation = startTime === '' || endTime === ''
 
-            return formData.selectedChildren.map((childId) => ({
-              childId,
-              date,
-              reservation: noReservation ? null : { startTime, endTime }
-            }))
-          })
+          return formData.selectedChildren.map((childId) => ({
+            childId,
+            date,
+            reservation: noReservation ? null : { startTime, endTime }
+          }))
+        })
     }
   }
 
@@ -229,12 +236,13 @@ export default React.memo(function ReservationModal({
       }}
     >
       <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-      <FixedSpaceColumn>
+      <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
+      <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
-          <Checkbox
+          <SelectionChip
             key={child.id}
-            label={child.preferredName || child.firstName.split(' ')[0]}
-            checked={formData.selectedChildren.includes(child.id)}
+            text={child.preferredName || child.firstName.split(' ')[0]}
+            selected={formData.selectedChildren.includes(child.id)}
             onChange={(selected) => {
               if (selected) {
                 updateForm({
@@ -251,7 +259,7 @@ export default React.memo(function ReservationModal({
             data-qa={`child-${child.id}`}
           />
         ))}
-      </FixedSpaceColumn>
+      </FixedSpaceFlexWrap>
 
       <H2>{i18n.calendar.reservationModal.dateRange}</H2>
       <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
@@ -273,7 +281,9 @@ export default React.memo(function ReservationModal({
           isValidDate={(date) => reservableDays.includes(date)}
           info={errorToInputInfo(errors.endDate, i18n.validationErrors)}
           hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={reservableDays.start}
+          initialMonth={
+            LocalDate.parseFiOrNull(formData.startDate) ?? reservableDays.start
+          }
           data-qa="end-date"
         />
       </FixedSpaceRow>
@@ -321,58 +331,84 @@ export default React.memo(function ReservationModal({
 
       {formData.repetition === 'WEEKLY' && (
         <FixedSpaceColumn>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <FixedSpaceRow key={`day-${i}`}>
-              <Label style={{ width: '40px' }}>
-                {i18n.common.datetime.weekdaysShort[i]}
-              </Label>
-              <InputField
-                value={formData.weeklyTimes[i].startTime}
-                type={'time'}
-                onChange={(value) =>
-                  updateForm({
-                    weeklyTimes: [
-                      ...formData.weeklyTimes.slice(0, i),
-                      {
-                        startTime: value,
-                        endTime: formData.weeklyTimes[i].endTime
-                      },
-                      ...formData.weeklyTimes.slice(i + 1)
-                    ]
-                  })
-                }
-                info={errorToInputInfo(
-                  errors.weeklyTimes?.itemErrors[i].startTime,
-                  i18n.validationErrors
-                )}
-                hideErrorsBeforeTouched={!showAllErrors}
-                data-qa={`weekly-start-time-${i}`}
-              />
-              <span>-</span>
-              <InputField
-                value={formData.weeklyTimes[i].endTime}
-                type={'time'}
-                onChange={(value) =>
-                  updateForm({
-                    weeklyTimes: [
-                      ...formData.weeklyTimes.slice(0, i),
-                      {
-                        startTime: formData.weeklyTimes[i].startTime,
-                        endTime: value
-                      },
-                      ...formData.weeklyTimes.slice(i + 1)
-                    ]
-                  })
-                }
-                info={errorToInputInfo(
-                  errors.weeklyTimes?.itemErrors[i].endTime,
-                  i18n.validationErrors
-                )}
-                hideErrorsBeforeTouched={!showAllErrors}
-                data-qa={`weekly-end-time-${i}`}
-              />
-            </FixedSpaceRow>
-          ))}
+          {[0, 1, 2, 3, 4].map((i) => {
+            const times = formData.weeklyTimes[i]
+
+            return (
+              <FixedSpaceRow key={`day-${i}`}>
+                <Checkbox
+                  label={i18n.common.datetime.weekdaysShort[i]}
+                  checked={!!times}
+                  onChange={(checked) =>
+                    updateForm({
+                      weeklyTimes: [
+                        ...formData.weeklyTimes.slice(0, i),
+                        checked
+                          ? {
+                              startTime: '',
+                              endTime: ''
+                            }
+                          : undefined,
+                        ...formData.weeklyTimes.slice(
+                          i + 1,
+                          formData.weeklyTimes.length
+                        )
+                      ]
+                    })
+                  }
+                />
+                {times ? (
+                  <>
+                    <InputField
+                      value={times.startTime}
+                      type={'time'}
+                      onChange={(value) =>
+                        updateForm({
+                          weeklyTimes: [
+                            ...formData.weeklyTimes.slice(0, i),
+                            {
+                              startTime: value,
+                              endTime: times.endTime
+                            },
+                            ...formData.weeklyTimes.slice(i + 1)
+                          ]
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors.weeklyTimes?.itemErrors[i]?.startTime,
+                        i18n.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!showAllErrors}
+                      data-qa={`weekly-start-time-${i}`}
+                    />
+                    <span>-</span>
+                    <InputField
+                      value={times.endTime}
+                      type={'time'}
+                      onChange={(value) =>
+                        updateForm({
+                          weeklyTimes: [
+                            ...formData.weeklyTimes.slice(0, i),
+                            {
+                              startTime: times.startTime,
+                              endTime: value
+                            },
+                            ...formData.weeklyTimes.slice(i + 1)
+                          ]
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors.weeklyTimes?.itemErrors[i]?.endTime,
+                        i18n.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!showAllErrors}
+                      data-qa={`weekly-end-time-${i}`}
+                    />
+                  </>
+                ) : null}
+              </FixedSpaceRow>
+            )
+          })}
         </FixedSpaceColumn>
       )}
 

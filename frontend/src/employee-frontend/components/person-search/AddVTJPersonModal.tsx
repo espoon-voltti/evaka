@@ -70,7 +70,6 @@ export default React.memo(function VTJModal({
         action: closeModal,
         label: i18n.common.cancel
       }}
-      size={'md'}
     >
       <ModalContent>
         <Label>

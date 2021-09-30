@@ -17,7 +17,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import { FullScreenDimmedSpinner } from 'lib-components/molecules/FullScreenDimmedSpinner'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { H2, H3 } from 'lib-components/typography'
+import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
@@ -59,6 +59,7 @@ function TemplateSelectionModal({
   const [templateId, setTemplateId] = useState('')
   return (
     <FormModal
+      title={i18n.childInformation.vasu.init.chooseTemplate}
       resolve={{
         action: () => onSelect(templateId),
         disabled: !templateId || loading,
@@ -66,18 +67,15 @@ function TemplateSelectionModal({
       }}
       reject={{ action: onClose, label: i18n.common.cancel }}
     >
-      <H3>{i18n.childInformation.vasu.init.chooseTemplate}</H3>
-      <div>
-        {templates.map((t) => (
-          <Radio
-            key={t.id}
-            disabled={loading}
-            checked={t.id === templateId}
-            label={`${t.name} (${t.valid.format()})`}
-            onChange={() => setTemplateId(t.id)}
-          />
-        ))}
-      </div>
+      {templates.map((t) => (
+        <Radio
+          key={t.id}
+          disabled={loading}
+          checked={t.id === templateId}
+          label={`${t.name} (${t.valid.format()})`}
+          onChange={() => setTemplateId(t.id)}
+        />
+      ))}
     </FormModal>
   )
 }

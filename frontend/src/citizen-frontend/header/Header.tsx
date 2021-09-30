@@ -10,7 +10,7 @@ import CityLogo from './CityLogo'
 import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
-import { headerHeight } from './const'
+import { headerHeightDesktop, headerHeightMobile } from './const'
 import { useUser } from '../auth'
 import { MessageContext, MessagePageState } from '../messages/state'
 
@@ -26,7 +26,7 @@ export default React.memo(function Header() {
   }, [refreshUnreadMessagesCount, user])
 
   return (
-    <HeaderContainer fixed={showMenu}>
+    <HeaderContainer>
       <CityLogo />
       <EvakaLogo />
       <DesktopNav unreadMessagesCount={unreadMessagesCount ?? 0} />
@@ -39,18 +39,19 @@ export default React.memo(function Header() {
   )
 })
 
-const HeaderContainer = styled.header<{ fixed: boolean }>`
-  z-index: 99;
+const HeaderContainer = styled.header`
+  z-index: 9;
   color: ${colors.greyscale.white};
   background-color: ${colors.blues.primary};
-  position: ${({ fixed }) => (fixed ? 'fixed' : 'relative')};
+  position: sticky;
+  top: 0;
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
-  height: 60px;
+  height: ${headerHeightMobile}px;
   width: 100%;
 
   @media (min-width: ${desktopMin}) {
-    grid: minmax(${headerHeight}, min-content) / max-content max-content auto;
-    height: ${headerHeight};
+    grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;
+    height: ${headerHeightDesktop}px;
   }
 `

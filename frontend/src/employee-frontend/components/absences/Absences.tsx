@@ -159,7 +159,6 @@ export default function Absences({
           action: resetModalState,
           label: i18n.absences.modal.cancelButton
         }}
-        size="lg"
       >
         <FixedSpaceColumn spacing={'L'}>
           <Label>

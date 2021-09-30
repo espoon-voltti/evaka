@@ -11,24 +11,20 @@ import { errorModalZIndex } from 'lib-components/layout/z-helpers'
 function ErrorMessage() {
   const { errorMessage, clearErrorMessage } = useContext(UIContext)
 
-  return (
-    <div>
-      {errorMessage && (
-        <InfoModal
-          title={errorMessage.title}
-          icon={faExclamation}
-          iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
-          text={errorMessage.text}
-          resolve={{
-            action: () => clearErrorMessage(),
-            label: errorMessage.resolveLabel
-          }}
-          size={'md'}
-          zIndex={errorModalZIndex}
-        />
-      )}
-    </div>
-  )
+  return errorMessage ? (
+    <InfoModal
+      title={errorMessage.title}
+      icon={faExclamation}
+      iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
+      text={errorMessage.text}
+      resolve={{
+        action: clearErrorMessage,
+        label: errorMessage.resolveLabel
+      }}
+      close={clearErrorMessage}
+      zIndex={errorModalZIndex}
+    />
+  ) : null
 }
 
 export default ErrorMessage

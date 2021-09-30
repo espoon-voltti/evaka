@@ -4,21 +4,16 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
 import CalendarListView from './CalendarListView'
 import CalendarGridView from './CalendarGridView'
-import {
-  ChildDailyData,
-  DailyReservationData,
-  getReservations,
-  ReservationsResponse
-} from './api'
+import { getReservations, ReservationsResponse } from './api'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
-import { useTranslation, Translations } from '../localization'
+import { useTranslation } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
 import AbsenceModal from './AbsenceModal'
@@ -28,7 +23,6 @@ import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
 import _ from 'lodash'
-import { WeekProps } from './WeekElem'
 import ActionPickerModal from './ActionPickerModal'
 
 export default React.memo(function CalendarPage() {
@@ -46,8 +40,8 @@ export default React.memo(function CalendarPage() {
   const loadDefaultRange = useCallback(
     () =>
       loadData(
-        LocalDate.today().startOfWeek(),
-        LocalDate.today().addMonths(2).startOfWeek().subDays(1)
+        LocalDate.today().subMonths(1).startOfMonth().startOfWeek(),
+        LocalDate.today().addYears(1).lastDayOfMonth()
       ),
     [loadData]
   )
@@ -77,74 +71,70 @@ export default React.memo(function CalendarPage() {
           selectDate={selectDate}
           reloadData={loadDefaultRange}
           close={closeDayView}
+          openAbsenceModal={() => setOpenModal('absences')}
         />
       ) : null}
-      <Container>
-        {data.mapAll({
-          loading() {
-            return <Loader />
-          },
-          failure() {
-            return <div>{i18n.common.errors.genericGetError}</div>
-          },
-          success(response) {
-            const weeklyData = asWeeklyData(i18n, response.dailyData)
-
-            return (
-              <>
-                <MobileOnly>
-                  <ContentArea
-                    opaque
-                    paddingVertical="zero"
-                    paddingHorizontal="zero"
-                  >
-                    <CalendarListView
-                      weeklyData={weeklyData}
-                      onHoverButtonClick={() => setOpenModal('pickAction')}
-                      selectDate={selectDate}
-                    />
-                  </ContentArea>
-                </MobileOnly>
-                <DesktopOnly>
-                  <Gap size="s" />
-                  <ContentArea opaque>
-                    <CalendarGridView
-                      weeklyData={weeklyData}
-                      onCreateReservationClicked={() =>
-                        setOpenModal('reservations')
-                      }
-                      onCreateAbsencesClicked={() => setOpenModal('absences')}
-                      selectDate={selectDate}
-                    />
-                  </ContentArea>
-                </DesktopOnly>
-                {openModal === 'pickAction' && (
-                  <ActionPickerModal
-                    close={() => setOpenModal(undefined)}
-                    openReservations={() => setOpenModal('reservations')}
-                    openAbsences={() => setOpenModal('absences')}
+      {data.mapAll({
+        loading() {
+          return <Loader />
+        },
+        failure() {
+          return <div>{i18n.common.errors.genericGetError}</div>
+        },
+        success(response) {
+          return (
+            <>
+              <MobileOnly>
+                <ContentArea
+                  opaque
+                  paddingVertical="zero"
+                  paddingHorizontal="zero"
+                >
+                  <CalendarListView
+                    dailyData={response.dailyData}
+                    onHoverButtonClick={() => setOpenModal('pickAction')}
+                    selectDate={selectDate}
                   />
-                )}
-                {openModal === 'reservations' && (
-                  <ReservationModal
-                    onClose={() => setOpenModal(undefined)}
-                    availableChildren={response.children}
-                    onReload={loadDefaultRange}
-                    reservableDays={response.reservableDays}
-                  />
-                )}
-                {openModal === 'absences' && (
-                  <AbsenceModal
-                    close={() => setOpenModal(undefined)}
-                    reload={loadDefaultRange}
-                    availableChildren={response.children}
-                  />
-                )}
-              </>
-            )
-          }
-        })}
-      </Container>
+                </ContentArea>
+              </MobileOnly>
+              <DesktopOnly>
+                <Gap size="s" />
+                <CalendarGridView
+                  dailyData={response.dailyData}
+                  onCreateReservationClicked={() =>
+                    setOpenModal('reservations')
+                  }
+                  onCreateAbsencesClicked={() => setOpenModal('absences')}
+                  selectedDate={selectedDate}
+                  selectDate={selectDate}
+                />
+              </DesktopOnly>
+              {openModal === 'pickAction' && (
+                <ActionPickerModal
+                  close={() => setOpenModal(undefined)}
+                  openReservations={() => setOpenModal('reservations')}
+                  openAbsences={() => setOpenModal('absences')}
+                />
+              )}
+              {openModal === 'reservations' && (
+                <ReservationModal
+                  onClose={() => setOpenModal(undefined)}
+                  availableChildren={response.children}
+                  onReload={loadDefaultRange}
+                  reservableDays={response.reservableDays}
+                />
+              )}
+              {openModal === 'absences' && (
+                <AbsenceModal
+                  close={() => setOpenModal(undefined)}
+                  reload={loadDefaultRange}
+                  availableChildren={response.children}
+                />
+              )}
+            </>
+          )
+        }
+      })}
       <Footer />
     </>
   )
@@ -158,62 +148,8 @@ const MobileOnly = styled.div`
 `
 
 const DesktopOnly = styled.div`
+  position: relative;
   @media (max-width: ${desktopMin}) {
     display: none;
   }
 `
-
-const asWeeklyData = (
-  i18n: Translations,
-  dailyData: DailyReservationData[]
-): WeekProps[] =>
-  dailyData.reduce<WeekProps[]>((weekly, daily) => {
-    const last = _.last(weekly)
-    if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
-      return [
-        ...weekly,
-        {
-          weekNumber: daily.date.getIsoWeek(),
-          dailyReservations: [
-            { ...daily, reservations: uniqueReservations(i18n, daily.children) }
-          ]
-        }
-      ]
-    } else {
-      return [
-        ..._.dropRight(weekly),
-        {
-          ...last,
-          dailyReservations: [
-            ...last.dailyReservations,
-            { ...daily, reservations: uniqueReservations(i18n, daily.children) }
-          ]
-        }
-      ]
-    }
-  }, [])
-
-const uniqueReservations = (
-  i18n: Translations,
-  reservations: ChildDailyData[]
-): string[] => {
-  const uniqueReservationTimes: string[] = reservations
-    .map(({ absence, reservation }) =>
-      absence === null && reservation !== null
-        ? `${reservation.startTime} – ${reservation.endTime}`
-        : undefined
-    )
-    .filter((reservation): reservation is string => reservation !== undefined)
-    .reduce<string[]>(
-      (uniq, reservation) =>
-        uniq.some((res) => res === reservation) ? uniq : [...uniq, reservation],
-      []
-    )
-
-  const someoneIsAbsent = reservations.some(({ absence }) => absence !== null)
-
-  return [
-    ...(someoneIsAbsent ? [i18n.calendar.absent] : []),
-    ...uniqueReservationTimes
-  ]
-}

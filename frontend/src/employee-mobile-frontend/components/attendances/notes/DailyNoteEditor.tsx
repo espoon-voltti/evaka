@@ -240,13 +240,12 @@ export default React.memo(function DailyNoteEditor() {
               history.goBack()
             })
           },
-          label: i18n.common.save
+          label: i18n.common.save,
+          disabled:
+            dailyNote.sleepingMinutes === undefined
+              ? false
+              : dailyNote.sleepingMinutes > 59
         }}
-        resolveDisabled={
-          dailyNote.sleepingMinutes === undefined
-            ? false
-            : dailyNote.sleepingMinutes > 59
-        }
       />
     )
   }

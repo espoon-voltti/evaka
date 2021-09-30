@@ -18,7 +18,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faChevronLeft, faExclamation } from 'lib-icons'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import DecisionResponse from './DecisionResponse'
 import { decisionOrderComparator } from '../../decisions/shared'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -119,7 +119,7 @@ export default React.memo(function DecisionResponseList() {
           <Gap size="m" />
         </ContentArea>
         {displayDecisionWithNoResponseWarning && (
-          <FormModal
+          <InfoModal
             title={
               t.decisions.applicationDecisions.warnings
                 .decisionWithNoResponseWarning.title
@@ -146,7 +146,6 @@ export default React.memo(function DecisionResponseList() {
                 setDisplayDecisionWithNoResponseWarning(false)
               }
             }}
-            size={'md'}
           />
         )}
       </Container>

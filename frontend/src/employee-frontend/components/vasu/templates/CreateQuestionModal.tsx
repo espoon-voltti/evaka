@@ -99,7 +99,6 @@ export default React.memo(function CreateQuestionModal({
         action: onCancel,
         label: i18n.common.cancel
       }}
-      size={'lg'}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">

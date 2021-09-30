@@ -295,7 +295,6 @@ export default React.memo(function DecisionResponse({
                 .rejectLabel,
             action: () => setDisplayCascadeWarning(false)
           }}
-          size={'md'}
           data-qa={'cascade-warning-modal'}
         />
       )}
