@@ -200,7 +200,11 @@ sealed interface Action {
         CREATE_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         READ_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
 
-        READ_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER);
+        CREATE_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        CREATE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        DELETE_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPDATE_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -288,15 +292,6 @@ sealed interface Action {
     }
     enum class Pairing(private val roles: EnumSet<UserRole>) : Action {
         ;
-
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
-        override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
-    }
-    enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : Action {
-        READ(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        UPDATE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        UPLOAD_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
