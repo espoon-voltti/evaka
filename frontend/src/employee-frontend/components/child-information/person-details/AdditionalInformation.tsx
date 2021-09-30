@@ -13,7 +13,6 @@ import { ChildContext } from '../../../state'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Loader from 'lib-components/atoms/Loader'
 import { UUID } from '../../../types'
 import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'
@@ -26,6 +25,7 @@ import { RequireRole } from '../../../utils/roles'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
 import { FlexRow } from '../../common/styled/containers'
+import { UnwrapResult } from '../../async-rendering'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -114,151 +114,143 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
           />
         </RequireRole>
       </FlexRow>
-      {additionalInformation.mapAll({
-        loading() {
-          return <Loader />
-        },
-        failure() {
-          return <div>{i18n.common.loadingFailed}</div>
-        },
-        success(data) {
-          return (
-            <>
-              <LabelValueList
-                spacing="small"
-                contents={[
-                  {
-                    label:
-                      i18n.childInformation.additionalInformation.preferredName,
-                    value: editing ? (
-                      <TextAreaInput
-                        value={form.preferredName || ''}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLTextAreaElement>
-                        ) =>
-                          setForm({
-                            ...form,
-                            preferredName: event.target.value
-                          })
-                        }
-                        rows={textAreaRows(form.preferredName || '')}
-                      />
-                    ) : (
-                      formatParagraphs(data.preferredName || '')
-                    ),
-                    valueWidth: '400px'
-                  },
-                  {
-                    label:
-                      i18n.childInformation.additionalInformation
-                        .additionalInfo,
-                    value: editing ? (
-                      <TextAreaInput
-                        value={form.additionalInfo}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLTextAreaElement>
-                        ) =>
-                          setForm({
-                            ...form,
-                            additionalInfo: event.target.value
-                          })
-                        }
-                        rows={textAreaRows(form.additionalInfo)}
-                      />
-                    ) : (
-                      formatParagraphs(data.additionalInfo)
-                    ),
-                    valueWidth: '400px'
-                  },
-                  {
-                    label:
-                      i18n.childInformation.additionalInformation.allergies,
-                    value: editing ? (
-                      <TextAreaInput
-                        value={form.allergies}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLTextAreaElement>
-                        ) =>
-                          setForm({
-                            ...form,
-                            allergies: event.target.value
-                          })
-                        }
-                        rows={textAreaRows(form.allergies)}
-                        maxLength={40}
-                      />
-                    ) : (
-                      formatParagraphs(data.allergies)
-                    ),
-                    valueWidth: '400px'
-                  },
-                  {
-                    label: i18n.childInformation.additionalInformation.diet,
-                    value: editing ? (
-                      <TextAreaInput
-                        value={form.diet}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLTextAreaElement>
-                        ) =>
-                          setForm({
-                            ...form,
-                            diet: event.target.value
-                          })
-                        }
-                        rows={textAreaRows(form.diet)}
-                      />
-                    ) : (
-                      formatParagraphs(data.diet)
-                    ),
-                    valueWidth: '400px'
-                  },
-                  {
-                    label:
-                      i18n.childInformation.additionalInformation.medication,
-                    value: editing ? (
-                      <TextAreaInput
-                        value={form.medication}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLTextAreaElement>
-                        ) =>
-                          setForm({
-                            ...form,
-                            medication: event.target.value
-                          })
-                        }
-                        rows={textAreaRows(form.medication)}
-                        data-qa="medication-input"
-                      />
-                    ) : (
-                      <span data-qa="medication">
-                        {formatParagraphs(data.medication)}
-                      </span>
-                    ),
-                    valueWidth: '400px'
-                  }
-                ]}
-              />
-              {editing && (
-                <RightAlignedRow>
-                  <FixedSpaceRow>
-                    <Button
-                      onClick={() => clearUiMode()}
-                      text={i18n.common.cancel}
+      <UnwrapResult
+        result={additionalInformation}
+        failure={() => <div>{i18n.common.loadingFailed}</div>}
+      >
+        {(data) => (
+          <>
+            <LabelValueList
+              spacing="small"
+              contents={[
+                {
+                  label:
+                    i18n.childInformation.additionalInformation.preferredName,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.preferredName || ''}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          preferredName: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.preferredName || '')}
                     />
-                    <Button
-                      primary
-                      disabled={false}
-                      onClick={() => onSubmit()}
-                      data-qa="confirm-edited-child-button"
-                      text={i18n.common.confirm}
+                  ) : (
+                    formatParagraphs(data.preferredName || '')
+                  ),
+                  valueWidth: '400px'
+                },
+                {
+                  label:
+                    i18n.childInformation.additionalInformation.additionalInfo,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.additionalInfo}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          additionalInfo: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.additionalInfo)}
                     />
-                  </FixedSpaceRow>
-                </RightAlignedRow>
-              )}
-            </>
-          )
-        }
-      })}
+                  ) : (
+                    formatParagraphs(data.additionalInfo)
+                  ),
+                  valueWidth: '400px'
+                },
+                {
+                  label: i18n.childInformation.additionalInformation.allergies,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.allergies}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          allergies: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.allergies)}
+                      maxLength={40}
+                    />
+                  ) : (
+                    formatParagraphs(data.allergies)
+                  ),
+                  valueWidth: '400px'
+                },
+                {
+                  label: i18n.childInformation.additionalInformation.diet,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.diet}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          diet: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.diet)}
+                    />
+                  ) : (
+                    formatParagraphs(data.diet)
+                  ),
+                  valueWidth: '400px'
+                },
+                {
+                  label: i18n.childInformation.additionalInformation.medication,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.medication}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          medication: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.medication)}
+                      data-qa="medication-input"
+                    />
+                  ) : (
+                    <span data-qa="medication">
+                      {formatParagraphs(data.medication)}
+                    </span>
+                  ),
+                  valueWidth: '400px'
+                }
+              ]}
+            />
+            {editing && (
+              <RightAlignedRow>
+                <FixedSpaceRow>
+                  <Button
+                    onClick={() => clearUiMode()}
+                    text={i18n.common.cancel}
+                  />
+                  <Button
+                    primary
+                    disabled={false}
+                    onClick={() => onSubmit()}
+                    data-qa="confirm-edited-child-button"
+                    text={i18n.common.confirm}
+                  />
+                </FixedSpaceRow>
+              </RightAlignedRow>
+            )}
+          </>
+        )}
+      </UnwrapResult>
     </div>
   )
 })

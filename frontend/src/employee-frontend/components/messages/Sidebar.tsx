@@ -10,8 +10,6 @@ import { getReceivers } from './api'
 import { SelectorNode, unitAsSelectorNode } from './SelectorNode'
 import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
 import React, { useContext, useEffect, useMemo } from 'react'
@@ -25,12 +23,14 @@ import { MessageContext } from './MessageContext'
 import { isNestedGroupMessageAccount } from './types'
 import { messageBoxes } from './types-view'
 import { fontWeights, H1 } from 'lib-components/typography'
+import { renderResult } from '../async-rendering'
 
 const Container = styled.div`
   flex: 0 1 260px;
   display: flex;
   flex-direction: column;
   margin-right: ${defaultMargins.m};
+
   & > div {
     background-color: ${colors.greyscale.white};
   }
@@ -227,22 +227,12 @@ export default React.memo(function Sidebar({
             data-qa="new-message-btn"
           />
         </HeaderContainer>
-        {nestedAccounts.mapAll({
-          loading() {
-            return <Loader />
-          },
-          failure() {
-            return <ErrorSegment />
-          },
-          success(nestedAccounts) {
-            return (
-              <Accounts
-                nestedAccounts={nestedAccounts}
-                setSelectedReceivers={setSelectedReceivers}
-              />
-            )
-          }
-        })}
+        {renderResult(nestedAccounts, (nestedAccounts) => (
+          <Accounts
+            nestedAccounts={nestedAccounts}
+            setSelectedReceivers={setSelectedReceivers}
+          />
+        ))}
         <Receivers
           active={selectedAccount?.view === 'RECEIVERS'}
           onClick={() =>

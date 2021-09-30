@@ -25,8 +25,6 @@ import {
   IncomeStatement
 } from 'lib-common/api-types/incomeStatement'
 import { combine, Loading, Result } from 'lib-common/api'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { PersonContext } from '../state/person'
@@ -39,6 +37,7 @@ import {
   saveIncomeStatementAttachment
 } from '../api/attachments'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { renderResult } from './async-rendering'
 
 export default React.memo(function IncomeStatementPage({
   match
@@ -89,53 +88,46 @@ export default React.memo(function IncomeStatementPage({
     loadIncomeStatement(personId, incomeStatementId)
   }, [loadPerson, loadIncomeStatement, personId, incomeStatementId])
 
-  return combine(person, incomeStatement).mapAll({
-    loading() {
-      return <Loader />
-    },
-    failure() {
-      return <ErrorSegment />
-    },
-    success([person, incomeStatement]) {
-      return (
-        <Container>
-          <Gap size="s" />
-          <ContentArea opaque>
-            <H1>{i18n.incomeStatement.title}</H1>
-            <H2>
-              {person.firstName} {person.lastName}
-            </H2>
-            <Row
-              label={i18n.incomeStatement.startDate}
-              value={incomeStatement.startDate.format()}
-            />
-            <Row
-              label={i18n.incomeStatement.feeBasis}
-              value={i18n.incomeStatement.statementTypes[incomeStatement.type]}
-            />
-            {incomeStatement.type === 'INCOME' && (
-              <IncomeInfo incomeStatement={incomeStatement} />
-            )}
-          </ContentArea>
+  return renderResult(
+    combine(person, incomeStatement),
+    ([person, incomeStatement]) => (
+      <Container>
+        <Gap size="s" />
+        <ContentArea opaque>
+          <H1>{i18n.incomeStatement.title}</H1>
+          <H2>
+            {person.firstName} {person.lastName}
+          </H2>
+          <Row
+            label={i18n.incomeStatement.startDate}
+            value={incomeStatement.startDate.format()}
+          />
+          <Row
+            label={i18n.incomeStatement.feeBasis}
+            value={i18n.incomeStatement.statementTypes[incomeStatement.type]}
+          />
           {incomeStatement.type === 'INCOME' && (
-            <>
-              <Gap size="L" />
-              <ContentArea opaque>
-                <EmployeeAttachments
-                  incomeStatementId={incomeStatement.id}
-                  attachments={incomeStatement.attachments.filter(
-                    (attachment) => attachment.uploadedByEmployee
-                  )}
-                  onUploaded={handleAttachmentUploaded}
-                  onDeleted={handleAttachmentDeleted}
-                />
-              </ContentArea>
-            </>
+            <IncomeInfo incomeStatement={incomeStatement} />
           )}
-        </Container>
-      )
-    }
-  })
+        </ContentArea>
+        {incomeStatement.type === 'INCOME' && (
+          <>
+            <Gap size="L" />
+            <ContentArea opaque>
+              <EmployeeAttachments
+                incomeStatementId={incomeStatement.id}
+                attachments={incomeStatement.attachments.filter(
+                  (attachment) => attachment.uploadedByEmployee
+                )}
+                onUploaded={handleAttachmentUploaded}
+                onDeleted={handleAttachmentDeleted}
+              />
+            </ContentArea>
+          </>
+        )}
+      </Container>
+    )
+  )
 })
 
 function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {

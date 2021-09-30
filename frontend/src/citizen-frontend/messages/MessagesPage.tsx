@@ -9,8 +9,6 @@ import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
@@ -21,6 +19,7 @@ import { headerHeightDesktop } from '../header/const'
 import { MessageContext } from './state'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
+import { renderResult } from 'citizen-frontend/async-rendering'
 
 const FullHeightContainer = styled(Container)`
   height: calc(100vh - ${headerHeightDesktop}px);
@@ -58,32 +57,20 @@ export default React.memo(function MessagesPage() {
   return (
     <FullHeightContainer>
       <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-        {accountId.mapAll({
-          failure() {
-            return <ErrorSegment />
-          },
-          loading() {
-            return <SpinnerSegment />
-          },
-          success(id) {
-            return (
-              <>
-                <ThreadList
-                  accountId={id}
-                  setEditorVisible={setEditorVisible}
-                  newMessageButtonEnabled={
-                    receivers.isSuccess && !editorVisible
-                  }
-                />
-                {selectedThread ? (
-                  <ThreadView accountId={id} thread={selectedThread} />
-                ) : (
-                  <EmptyThreadView inboxEmpty={threads.length == 0} />
-                )}
-              </>
-            )
-          }
-        })}
+        {renderResult(accountId, (id) => (
+          <>
+            <ThreadList
+              accountId={id}
+              setEditorVisible={setEditorVisible}
+              newMessageButtonEnabled={receivers.isSuccess && !editorVisible}
+            />
+            {selectedThread ? (
+              <ThreadView accountId={id} thread={selectedThread} />
+            ) : (
+              <EmptyThreadView inboxEmpty={threads.length == 0} />
+            )}
+          </>
+        ))}
       </StyledFlex>
       {editorVisible && receivers.isSuccess && (
         <MessageEditor

@@ -6,8 +6,6 @@ import { Loading, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -23,6 +21,7 @@ import { OverlayContext } from '../overlay/state'
 import { deleteIncomeStatement, getIncomeStatements } from './api'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
+import { renderResult } from 'citizen-frontend/async-rendering'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -157,29 +156,19 @@ export default function IncomeStatements() {
               data-qa="new-income-statement-btn"
             />
           </HeadingContainer>
-          {incomeStatements.mapAll({
-            loading() {
-              return <SpinnerSegment />
-            },
-            failure() {
-              return <ErrorSegment />
-            },
-            success(items) {
-              return (
-                items.length > 0 && (
-                  <IncomeStatementsTable
-                    items={items}
-                    onRemoveIncomeStatement={(id) =>
-                      setDeletionState({
-                        status: 'confirming',
-                        rowToDelete: id
-                      })
-                    }
-                  />
-                )
-              )
-            }
-          })}
+          {renderResult(incomeStatements, (items) =>
+            items.length > 0 ? (
+              <IncomeStatementsTable
+                items={items}
+                onRemoveIncomeStatement={(id) =>
+                  setDeletionState({
+                    status: 'confirming',
+                    rowToDelete: id
+                  })
+                }
+              />
+            ) : null
+          )}
 
           {deletionState.status !== 'row-not-selected' && (
             <InfoModal

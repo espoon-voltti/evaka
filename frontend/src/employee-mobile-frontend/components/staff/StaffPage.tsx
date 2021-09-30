@@ -7,8 +7,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Loader from 'lib-components/atoms/Loader'
 import { ContentArea } from 'lib-components/layout/Container'
 import { getDaycareAttendances, Group } from '../../api/attendances'
 import { AttendanceUIContext } from '../../state/attendance-ui'
@@ -27,6 +25,7 @@ import { combine, Loading, Result, Success } from 'lib-common/api'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 import LocalDate from 'lib-common/local-date'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
+import { renderResult } from '../async-rendering'
 
 export interface Props {
   onNavigate: (item: NavItem) => void
@@ -106,48 +105,41 @@ export default function StaffPage({ onNavigate }: Props) {
 
   const today = LocalDate.today()
 
-  return combine(
-    attendanceResponse,
-    staffAttendancesResponse.map((staffAttendances) =>
-      staffAttendanceForGroupOrUnit(staffAttendances, selectedGroup?.id)
+  return renderResult(
+    combine(
+      attendanceResponse,
+      staffAttendancesResponse.map((staffAttendances) =>
+        staffAttendanceForGroupOrUnit(staffAttendances, selectedGroup?.id)
+      ),
+      occupancyResponse
     ),
-    occupancyResponse
-  ).mapAll({
-    failure() {
-      return <ErrorSegment />
-    },
-    loading() {
-      return <Loader />
-    },
-    success([attendance, staffAttendance, occupancy]) {
-      return (
-        <>
-          <TopBar
-            unitName={attendance.unit.name}
-            selectedGroup={selectedGroup}
-            onChangeGroup={changeGroup}
+    ([attendance, staffAttendance, occupancy]) => (
+      <>
+        <TopBar
+          unitName={attendance.unit.name}
+          selectedGroup={selectedGroup}
+          onChangeGroup={changeGroup}
+        />
+        <ContentArea opaque fullHeight>
+          <StaffAttendanceEditor
+            groupId={selectedGroup?.id}
+            date={today}
+            count={staffAttendance.count}
+            countOther={staffAttendance.countOther}
+            updated={staffAttendance.updated}
+            realizedOccupancy={occupancy}
+            onConfirm={updateAttendance}
           />
-          <ContentArea opaque fullHeight>
-            <StaffAttendanceEditor
-              groupId={selectedGroup?.id}
-              date={today}
-              count={staffAttendance.count}
-              countOther={staffAttendance.countOther}
-              updated={staffAttendance.updated}
-              realizedOccupancy={occupancy}
-              onConfirm={updateAttendance}
-            />
-          </ContentArea>
-          <BottomNavBar
-            selected="staff"
-            staffCount={{
-              count: staffAttendance.count ?? 0,
-              countOther: staffAttendance.countOther ?? 0
-            }}
-            onChange={onNavigate}
-          />
-        </>
-      )
-    }
-  })
+        </ContentArea>
+        <BottomNavBar
+          selected="staff"
+          staffCount={{
+            count: staffAttendance.count ?? 0,
+            countOther: staffAttendance.countOther ?? 0
+          }}
+          onChange={onNavigate}
+        />
+      </>
+    )
+  )
 }
