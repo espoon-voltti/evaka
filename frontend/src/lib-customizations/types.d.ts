@@ -117,6 +117,7 @@ interface BaseFeatureFlags {
     ai?: boolean
     incomeStatements?: boolean
     messageAttachments?: boolean
+    realtimeStaffAttendance?: boolean
     vasu?: boolean
   }
 }

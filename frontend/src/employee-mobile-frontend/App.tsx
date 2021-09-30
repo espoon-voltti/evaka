@@ -27,11 +27,13 @@ import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
 import StaffPage from './components/staff/StaffPage'
+import StaffPage2 from './components/staff2/StaffPage2'
 import PinLogin from './components/attendances/child-info/PinLogin'
 import { NavItem } from './components/common/BottomNavbar'
 import { History } from 'history'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 export type RouteParams = { unitId: string; groupId: string }
 type RouteProps = RouteComponentProps<RouteParams>
@@ -105,6 +107,17 @@ export default function App() {
                     )
                   }}
                 />
+                <Route
+                  path="/units/:unitId/staff2"
+                  render={({ match, history }: RouteProps) => {
+                    const Component = ensureAuthenticated(StaffPage2)
+                    return (
+                      <Component
+                        onNavigate={navBarNavigate(match.params, history)}
+                      />
+                    )
+                  }}
+                />
                 <Route component={RedirectToMainPage} />
               </Switch>
             </Router>
@@ -147,9 +160,11 @@ function useAuthState(): [AuthStatus | undefined, () => Promise<void>] {
 export function getPagePath(page: NavItem, { unitId, groupId }: RouteParams) {
   switch (page) {
     case 'child':
-      return `/units/${unitId}/attendance/${groupId}`
+      return `/units/${unitId}/attendance/${groupId ?? 'all'}`
     case 'staff':
-      return `/units/${unitId}/staff/${groupId}`
+      return featureFlags.experimental?.realtimeStaffAttendance
+        ? `/units/${unitId}/staff2/`
+        : `/units/${unitId}/staff/${groupId}`
     default:
       throw new Error('Messages not implemented')
   }
