@@ -122,7 +122,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         val sql =
             """
             INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-            VALUES (:partnershipId, :index, :personId, :startDate, 'infinity')
+            VALUES (:partnershipId, :index, :personId, :startDate, NULL)
             """.trimIndent()
         val partnershipId = UUID.randomUUID()
         db.transaction { tx ->

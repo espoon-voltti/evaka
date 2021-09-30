@@ -24,7 +24,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         val feeAffectingDatesSQL =
             """
             WITH dates AS (
-                SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM fridge_partner SET WHERE person_id = :id_duplicate
+                SELECT min(start_date) AS min_date, max(coalesce(end_date, 'infinity'::date)) AS max_date FROM fridge_partner SET WHERE person_id = :id_duplicate
                 UNION
                 SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM fridge_child SET WHERE head_of_child = :id_duplicate OR child_id = :id_duplicate
                 UNION

@@ -238,7 +238,7 @@ fun Database.Transaction.insertTestPartnership(
     adult2: UUID,
     id: PartnershipId = PartnershipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    endDate: LocalDate? = null
 ): PartnershipId {
     createUpdate(
         """
@@ -555,8 +555,8 @@ fun Database.Transaction.insertTestVoucherValue(voucherValue: VoucherValue) = in
 fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(
     group,
     """
-INSERT INTO daycare_group (id, daycare_id, name, start_date)
-VALUES (:id, :daycareId, :name, :startDate)
+INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date)
+VALUES (:id, :daycareId, :name, :startDate, :endDate)
 """
 ).let(::GroupId)
 
@@ -694,7 +694,7 @@ fun Database.Transaction.insertTestCaretakers(
                 "groupId" to groupId,
                 "amount" to amount,
                 "startDate" to startDate,
-                "endDate" to (endDate ?: LocalDate.of(9999, 1, 1))
+                "endDate" to endDate
             )
         )
         .execute()
