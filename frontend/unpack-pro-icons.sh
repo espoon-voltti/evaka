@@ -1,10 +1,10 @@
 #!/bin/sh -eu
 
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-VERSION=5.14.0
+VERSION=6.0.0-beta2
 
 unpack() {
   NAME=${1}
