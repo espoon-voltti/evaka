@@ -71,7 +71,6 @@ class Map extends RawElement {
     this.page,
     `${this.selector} [data-qa="map-marker-address"]`
   )
-  readonly markerCluster = new RawElement(this.page, '.marker-cluster')
 
   get zoomInDisabled(): Promise<boolean> {
     return this.page.$eval(this.#zoomIn, (el) =>

@@ -5931,7 +5931,6 @@ __metadata:
     jest-environment-node: ^27.0.6
     jest-junit: ^12.2.0
     leaflet: ^1.7.1
-    leaflet.markercluster: ^1.5.0
     lib-common: "link:src/lib-common"
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
@@ -8639,15 +8638,6 @@ __metadata:
   version: 2.0.4
   resolution: "klona@npm:2.0.4"
   checksum: be4a0c784135b6a75ac2c5ac9564894807aa050de041ac775a20d3ee46969ac5c3d37503d12c215c7decb592196e59e22852fd0cf28ac0cc29fe3a6df9168624
-  languageName: node
-  linkType: hard
-
-"leaflet.markercluster@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "leaflet.markercluster@npm:1.5.0"
-  peerDependencies:
-    leaflet: ^1.3.1
-  checksum: 9d34d097eb4ccec830c8799831dcf41527541ed130f9f0b5effc5ca673bdf0fb58d9a40fe9731179fc1abf36e7f289b61e845ac822285ad58ab30ba01e65925d
   languageName: node
   linkType: hard
 

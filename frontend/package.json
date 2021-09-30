@@ -48,7 +48,6 @@
     "e2e-test-common": "link:src/e2e-test-common",
     "history": "^4.10.1",
     "leaflet": "^1.7.1",
-    "leaflet.markercluster": "^1.5.0",
     "lib-common": "link:src/lib-common",
     "lib-components": "link:src/lib-components",
     "lib-customizations": "link:src/lib-customizations",
