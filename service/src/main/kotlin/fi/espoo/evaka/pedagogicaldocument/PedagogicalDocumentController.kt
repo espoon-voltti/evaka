@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.pedadocument
+package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AttachmentId

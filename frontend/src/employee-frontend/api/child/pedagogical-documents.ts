@@ -3,7 +3,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import {
   PedagogicalDocument,
   PedagogicalDocumentPostBody
-} from 'lib-common/generated/api-types/pedadocument'
+} from 'lib-common/generated/api-types/pedagogicaldocument'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 
