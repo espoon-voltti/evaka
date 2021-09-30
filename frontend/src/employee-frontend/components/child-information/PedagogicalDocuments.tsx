@@ -60,7 +60,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       .then(loadData)
   }
 
-  function renderPedagigicalDocuments() {
+  function renderPedagogicalDocuments() {
     if (pedagogicalDocuments.isLoading) {
       return <Loader />
     } else if (pedagogicalDocuments.isFailure) {
@@ -117,7 +117,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
               <Th />
             </Tr>
           </Thead>
-          <Tbody>{renderPedagigicalDocuments()}</Tbody>
+          <Tbody>{renderPedagogicalDocuments()}</Tbody>
         </Table>
       )}
     </CollapsibleContentArea>
