@@ -18,7 +18,7 @@ import { AreaFilter } from '../common/Filters'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import Pagination from 'lib-components/Pagination'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from '../async-rendering'
 
 function IncomeStatementsList({
   data

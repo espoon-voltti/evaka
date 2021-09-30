@@ -1,15 +1,31 @@
 import { Result } from 'lib-common/api'
 import React from 'react'
-import { SpinnerSegment } from './atoms/state/Spinner'
-import ErrorSegment from './atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
-export function renderResult<T>(
-  result: Result<T>,
-  renderer: (data: T) => React.ReactElement | null
-) {
-  if (result.isLoading) return <SpinnerSegment />
+export interface UnwrapResultProps<T> {
+  result: Result<T>
+  loading?: () => React.ReactElement | null
+  failure?: () => React.ReactElement | null
+  children?: (value: T) => React.ReactElement | null
+}
 
-  if (result.isFailure) return <ErrorSegment />
+interface GenericUnwrapResultOpts<T> extends UnwrapResultProps<T> {
+  failureMessage: string
+}
 
-  return renderer(result.value)
+export function genericUnwrapResult<T>({
+  result,
+  loading,
+  failure,
+  children,
+  failureMessage
+}: GenericUnwrapResultOpts<T>) {
+  if (result.isLoading) {
+    return loading?.() ?? <SpinnerSegment />
+  }
+  if (result.isFailure) {
+    return failure?.() ?? <ErrorSegment title={failureMessage} />
+  }
+  return children ? children(result.value) : null
 }

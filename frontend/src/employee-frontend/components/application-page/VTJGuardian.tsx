@@ -12,7 +12,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from '../async-rendering'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null

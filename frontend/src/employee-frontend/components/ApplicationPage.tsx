@@ -37,7 +37,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from './async-rendering'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
