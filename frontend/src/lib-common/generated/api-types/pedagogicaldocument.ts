@@ -8,7 +8,7 @@
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.pedadocument.Attachment
+* Generated from fi.espoo.evaka.pedagogicaldocument.Attachment
 */
 export interface Attachment {
   contentType: string
@@ -17,7 +17,7 @@ export interface Attachment {
 }
 
 /**
-* Generated from fi.espoo.evaka.pedadocument.PedagogicalDocument
+* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument
 */
 export interface PedagogicalDocument {
   attachment: Attachment | null
@@ -29,7 +29,7 @@ export interface PedagogicalDocument {
 }
 
 /**
-* Generated from fi.espoo.evaka.pedadocument.PedagogicalDocumentPostBody
+* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentPostBody
 */
 export interface PedagogicalDocumentPostBody {
   childId: UUID

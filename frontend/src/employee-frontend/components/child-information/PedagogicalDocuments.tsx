@@ -18,7 +18,7 @@ import {
   createPedagogicalDocument,
   getChildPedagogicalDocuments
 } from '../../api/child/pedagogical-documents'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
+import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 import { UIContext } from '../../state/ui'
 

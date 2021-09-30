@@ -20,7 +20,7 @@ import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedadocument'
+import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 
 export interface ChildState {
   person: Result<PersonDetails>
