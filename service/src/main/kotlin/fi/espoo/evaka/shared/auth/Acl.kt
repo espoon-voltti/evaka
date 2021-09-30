@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupPickupId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -232,23 +231,6 @@ WHERE employee_id = :userId AND p.id = :pairingId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("pairingId", pairingId).mapTo<UserRole>().toSet()
             }
-        }
-    )
-
-    fun getRolesForPedagogicalDocument(user: AuthenticatedUser, childId: ChildId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
-            it.createQuery(
-                // language=SQL
-                """
-SELECT role
-FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE employee_id = :userId AND pd.child_id = :childId
-                """.trimIndent()
-            )
-                .bind("userId", user.id)
-                .bind("childId", childId)
-                .mapTo<UserRole>().toSet()
         }
     )
 

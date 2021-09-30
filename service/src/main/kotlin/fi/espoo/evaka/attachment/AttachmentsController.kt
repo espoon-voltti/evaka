@@ -105,7 +105,7 @@ class AttachmentsController(
                 .mapTo<ChildId>()
                 .first()
         }
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPLOAD_ATTACHMENT, childId)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT_ATTACHMENT, childId.raw)
 
         return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file)
     }

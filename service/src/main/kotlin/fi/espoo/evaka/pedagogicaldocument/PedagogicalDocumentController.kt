@@ -38,7 +38,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, body.childId)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
         val doc = createDocument(db, user, body)
         return ResponseEntity.ok(doc)
     }
@@ -51,7 +51,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(documentId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, body.childId)
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
         val doc = updateDocument(db, user, body, documentId)
         return ResponseEntity.ok(doc)
     }
@@ -64,7 +64,7 @@ class PedagogicalDocumentController(
     ): ResponseEntity<PedagogicalDocument> {
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
         val doc = getPedagogicalDocument(db, documentId)
         return ResponseEntity.ok(doc)
     }
@@ -76,7 +76,7 @@ class PedagogicalDocumentController(
         @PathVariable childId: ChildId
     ): ResponseEntity<List<PedagogicalDocument>> {
         Audit.PedagogicalDocumentUpdate.log(childId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
         val docs = findPedagogicalDocumentsByChild(db, childId)
         return ResponseEntity.ok(docs)
     }
@@ -89,7 +89,7 @@ class PedagogicalDocumentController(
     ): ResponseEntity<Unit> {
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentUpdate.log(childId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_PEDAGOGICAL_DOCUMENT, childId.raw)
         deleteDocument(db, documentId)
         return ResponseEntity.ok().build()
     }
