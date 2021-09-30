@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import { RawElement } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -149,7 +149,7 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   )
 
   if (count === 0) {
-    return await waitUntilFalse(() => element.visible)
+    return element.waitUntilHidden()
   }
 
   if (count === 1) {

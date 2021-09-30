@@ -50,6 +50,10 @@ export class RawElement {
     await this.page.waitForSelector(this.selector, { state: 'visible' })
   }
 
+  async waitUntilHidden(): Promise<void> {
+    await this.page.waitForSelector(this.selector, { state: 'hidden' })
+  }
+
   async getAttribute(name: string): Promise<string | null> {
     return this.page.getAttribute(this.selector, name)
   }

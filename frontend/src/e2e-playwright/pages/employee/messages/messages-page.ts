@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
-import { waitUntilTrue } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -161,6 +160,6 @@ export default class MessagesPage {
 
   async assertNoDrafts() {
     await this.#draftMessagesBoxRow.click()
-    await waitUntilFalse(() => this.#draftMessage.visible)
+    await this.#draftMessage.waitUntilHidden()
   }
 }

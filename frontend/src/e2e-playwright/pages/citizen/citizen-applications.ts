@@ -5,7 +5,6 @@
 import { Page } from 'playwright'
 import {
   waitUntilEqual,
-  waitUntilFalse,
   waitUntilDefined,
   waitUntilTrue
 } from 'e2e-playwright/utils'
@@ -135,7 +134,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertApplicationDoesNotExist(id: string) {
-    await waitUntilFalse(() => this.#applicationType(id).visible)
+    await this.#applicationType(id).waitUntilHidden()
   }
 }
 
@@ -323,7 +322,7 @@ class CitizenApplicationEditor {
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
     if (infoText === undefined) {
-      await waitUntilFalse(() => this.#preferredStartDateInfo.visible)
+      await this.#preferredStartDateInfo.waitUntilHidden()
       return
     }
     await waitUntilEqual(() => this.#preferredStartDateInfo.innerText, infoText)

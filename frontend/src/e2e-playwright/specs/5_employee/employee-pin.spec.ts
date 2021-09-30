@@ -39,7 +39,7 @@ describe('Employees PIN', () => {
     )
 
     await pinPage.pinInput.fill('9128')
-    await waitUntilEqual(() => pinPage.inputInfo.visible, false)
+    await pinPage.inputInfo.waitUntilHidden()
   })
 
   test('shows a warning if PIN is locked, and warning disappears when new PIN is set', async () => {
@@ -53,9 +53,9 @@ describe('Employees PIN', () => {
       .save()
 
     await page.reload()
-    await waitUntilEqual(() => pinPage.pinLockedAlertBox.visible, true)
+    await pinPage.pinLockedAlertBox.waitUntilVisible()
     await pinPage.pinInput.type('2580')
     await pinPage.pinSendButton.click()
-    await waitUntilEqual(() => pinPage.pinLockedAlertBox.visible, false)
+    await pinPage.pinLockedAlertBox.waitUntilHidden()
   })
 })
