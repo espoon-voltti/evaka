@@ -145,3 +145,4 @@ V144__database_tweaks_transactional.sql
 V145__database_tweaks_nontransactional.sql
 V146__add_other_income_type_values.sql
 V147__infinity_to_null.sql
+V148__pedagogical_documents.sql

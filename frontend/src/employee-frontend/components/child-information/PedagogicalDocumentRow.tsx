@@ -9,7 +9,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import {
   Attachment,
   PedagogicalDocument
-} from 'lib-common/generated/api-types/pedadocument'
+} from 'lib-common/generated/api-types/pedagogicaldocument'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import {
   deleteAttachment,
@@ -68,27 +68,25 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   const updateDocument = () => {
     const { childId, description } = pedagogicalDocument
     setSubmitting(true)
-    void updatePedagogicalDocument(id, { childId, description })
-      .then((res) => {
-        setSubmitting(false)
-        if (res.isSuccess) {
-          endEdit()
-          onReload()
-        } else {
-          setErrorMessage({
-            type: 'error',
-            title: i18n.common.error.unknown,
-            text: i18n.common.error.saveFailed,
-            resolveLabel: i18n.common.ok
-          })
-        }
-      })
+    void updatePedagogicalDocument(id, { childId, description }).then((res) => {
+      setSubmitting(false)
+      if (res.isSuccess) {
+        endEdit()
+        onReload()
+      } else {
+        setErrorMessage({
+          type: 'error',
+          title: i18n.common.error.unknown,
+          text: i18n.common.error.saveFailed,
+          resolveLabel: i18n.common.ok
+        })
+      }
+    })
   }
 
   const deleteDocument = () => {
     const attachmentId = pedagogicalDocument?.attachment?.id
-    if (!attachmentId)
-      void deletePedagogicalDocument(id).then(onReload)
+    if (!attachmentId) void deletePedagogicalDocument(id).then(onReload)
     else {
       void deleteAttachment(attachmentId)
         .then(() => deletePedagogicalDocument(id))
@@ -191,8 +189,16 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           </InlineButtons>
         ) : (
           <InlineButtons>
-            <IconButton onClick={() => setEditMode(true)} icon={faPen} disabled={submitting}/>
-            <IconButton onClick={() => deleteDocument()} icon={faTrash} disabled={submitting}/>
+            <IconButton
+              onClick={() => setEditMode(true)}
+              icon={faPen}
+              disabled={submitting}
+            />
+            <IconButton
+              onClick={() => deleteDocument()}
+              icon={faTrash}
+              disabled={submitting}
+            />
           </InlineButtons>
         )}
       </ActionsTd>

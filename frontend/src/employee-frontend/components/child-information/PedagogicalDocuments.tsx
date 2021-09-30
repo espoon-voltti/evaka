@@ -42,7 +42,9 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
   const loadData = () => {
     setSubmitting(true)
     setPedagogicalDocuments(Loading.of())
-    void getChildPedagogicalDocuments(id).then(setPedagogicalDocuments).then(() => setSubmitting(false))
+    void getChildPedagogicalDocuments(id)
+      .then(setPedagogicalDocuments)
+      .then(() => setSubmitting(false))
   }
 
   useEffect(loadData, [id, open, setPedagogicalDocuments])
