@@ -1238,7 +1238,7 @@ export default {
         <p>
           Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
           vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
-          tuloselvityksiä ja muokata tai poistaa niitä kunnes viranomainen on
+          tuloselvityksiä ja muokata tai poistaa niitä, kunnes viranomainen on
           käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
           tulotietojasi toimittamalla uuden lomakkeen.
           <br />
@@ -1319,7 +1319,7 @@ export default {
     incomeType: {
       description: (
         <>
-          Jos olet yrittäjä, mutta sinulla on myös muita tuloja valitse sekä{' '}
+          Jos olet yrittäjä, mutta sinulla on myös muita tuloja, valitse sekä{' '}
           <strong>Yrittäjän tulotiedot</strong>, että{' '}
           <strong>Asiakasmaksun määritteleminen bruttotulojen mukaan</strong>.
         </>
@@ -1355,7 +1355,7 @@ export default {
       estimate: 'Arvio bruttotuloistani',
       otherIncome: 'Muut tulot',
       otherIncomeDescription:
-        'Jos sinulla on muita tuloja on niistä toimitettavana tositteet liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+        'Jos sinulla on muita tuloja, on niistä toimitettavana tositteet liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
       choosePlaceholder: 'Valitse',
       otherIncomeTypes: {
         PENSION: 'Eläke',
@@ -1425,7 +1425,7 @@ export default {
         'Tuloslaskelma ja tase sekä kirjanpitäjän selvitys palkasta ja luontaiseduista tulee toimittaa liitteinä.'
     },
     selfEmployed: {
-      info: 'Jos yritystoiminta on jatkunut yli 3 kuukautta on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava. Jos yritystoiminta on kestänyt alle 3 kuukautta etkä toimita liitteitä nyt, ne on toimitettava viimeistään 3 kuukauden kuluttua täyttämällä tämä tuloselvityslomake uudestaan.',
+      info: 'Jos yritystoiminta on jatkunut yli 3 kuukautta, on yrityksen viimeisin tulos- ja taselaskelman tai veropäätös toimitettava. Jos yritystoiminta on kestänyt alle 3 kuukautta etkä toimita liitteitä nyt, ne on toimitettava viimeistään 3 kuukauden kuluttua täyttämällä tämä tuloselvityslomake uudestaan.',
       attachments:
         'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
       estimatedIncome: 'Täytän arvion keskimääräisistä kuukausitulostani.',
@@ -1465,7 +1465,7 @@ export default {
       studentLabel: 'Oletko opiskelija?',
       student: 'Olen opiskelija.',
       studentInfo:
-        'Opiskelijat toimittavat oppilaitoksesta opiskelutodituksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
+        'Opiskelijat toimittavat oppilaitoksesta opiskelutodistuksen tai päätöksen työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta.',
       deductions: 'Vähennykset',
       alimony:
         'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
@@ -1474,7 +1474,7 @@ export default {
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
       description:
-        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tulohin liittyviä liitteitä ei tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tuloihin liittyviä liitteitä ei tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
       required: {
         title: 'Tarvittavat liitteet'
       },
