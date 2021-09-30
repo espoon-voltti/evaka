@@ -64,7 +64,8 @@ export const fi = {
       minutes: 'Korkeintaan 59 minuuttia'
     },
     child: 'Lapsi',
-    group: 'Ryhmä'
+    group: 'Ryhmä',
+    yesterday: 'eilen'
   },
   absences: {
     title: 'Poissaolomerkinnät',
