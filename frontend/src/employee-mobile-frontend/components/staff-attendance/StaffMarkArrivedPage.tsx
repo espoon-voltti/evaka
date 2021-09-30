@@ -24,15 +24,21 @@ import { postStaffArrival } from '../../api/staffAttendances'
 import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
+import { UUID } from 'lib-common/types'
+import { UnitContext } from '../../state/unit'
+import { combine, Success } from 'lib-common/api'
+import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
   const { groupId, employeeId } = useParams<{
-    groupId: string
-    employeeId: string
+    groupId: UUID | 'all'
+    employeeId: UUID
   }>()
+
+  const { unitInfoResponse } = useContext(UnitContext)
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
@@ -45,6 +51,31 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const [pinCode, setPinCode] = useState('')
   const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
+    groupId !== 'all' ? groupId : undefined
+  )
+
+  const groupOptions =
+    groupId === 'all'
+      ? combine(staffMember, unitInfoResponse).map(
+          ([staffMember, unitInfoResponse]) => {
+            const groupIds = staffMember?.groupIds ?? []
+            return unitInfoResponse.groups
+              .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
+              .map((g) => ({ value: g.id, label: g.name }))
+          }
+        )
+      : Success.of([])
+
+  useEffect(() => {
+    if (
+      attendanceGroup === null &&
+      groupOptions.isSuccess &&
+      groupOptions.value.length === 1
+    ) {
+      setAttendanceGroup(groupOptions.value[0].value)
+    }
+  }, [attendanceGroup, groupOptions])
 
   return (
     <TallContentArea
@@ -94,6 +125,21 @@ export default React.memo(function StaffMarkArrivedPage() {
                   type="time"
                   data-qa="set-time"
                 />
+                {renderResult(groupOptions, (groupOptions) =>
+                  groupOptions.length > 1 ? (
+                    <>
+                      <Gap />
+                      <label>Ryhmä</label>
+                      <SimpleSelect
+                        value={attendanceGroup}
+                        placeholder={'Valitse ryhmä'}
+                        options={groupOptions}
+                        onChange={(e) => setAttendanceGroup(e.target.value)}
+                      />
+                    </>
+                  ) : null
+                )}
+                <Gap />
               </TimeWrapper>
               <Gap size={'xs'} />
               <Actions>
@@ -105,14 +151,20 @@ export default React.memo(function StaffMarkArrivedPage() {
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}
-                    disabled={!isValidTime(time) || pinCode.length < 4}
+                    disabled={
+                      !isValidTime(time) ||
+                      pinCode.length < 4 ||
+                      !attendanceGroup
+                    }
                     onClick={() =>
-                      postStaffArrival({
-                        employeeId,
-                        groupId,
-                        time,
-                        pinCode
-                      })
+                      attendanceGroup
+                        ? postStaffArrival({
+                            employeeId,
+                            groupId: attendanceGroup,
+                            time,
+                            pinCode
+                          })
+                        : Promise.reject()
                     }
                     onSuccess={() => history.go(-2)}
                     data-qa="mark-arrived-btn"
