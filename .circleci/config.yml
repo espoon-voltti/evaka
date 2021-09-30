@@ -44,7 +44,7 @@ aliases:
   - &remote_docker_version "20.10.7"
   - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
-  - &reuse_image fsfe/reuse:0.13.0
+  - &reuse_image fsfe/reuse:0.13.0 # NOTE: Update bin/add-license-headers.sh to match
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202107-02
@@ -823,7 +823,16 @@ jobs:
     executor: reuse_tool
     steps:
       - restore_repo
-      - run: reuse lint
+      - run:
+          name: reuse lint
+          command: |
+            reuse lint || {
+              echo '';
+              echo '=========================================';
+              echo 'Please run: ./bin/add-license-headers.sh';
+              echo '=========================================';
+              exit 1
+            }
       - run:
           when: on_fail
           name: Install dependencies
