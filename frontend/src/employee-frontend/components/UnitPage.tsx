@@ -25,7 +25,7 @@ import { UnitContext } from '../state/unit'
 import TabPlacementProposals from '../components/unit/TabPlacementProposals'
 import TabWaitingConfirmation from '../components/unit/TabWaitingConfirmation'
 import TabApplications from '../components/unit/TabApplications'
-import { useQuery } from '../utils/useQuery'
+import { useQuery } from 'lib-common/utils/useQuery'
 import LocalDate from 'lib-common/local-date'
 import TabCalendar from './unit/TabCalendar'
 

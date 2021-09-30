@@ -2,24 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import { AttendanceChild } from '../../api/attendances'
-
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import colors from 'lib-customizations/common'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Title from 'lib-components/atoms/Title'
+import { fontWeights, Label } from 'lib-components/typography'
 import {
   defaultMargins,
   isSpacingSize,
   SpacingSize
 } from 'lib-components/white-space'
-import { fontWeights, Label } from 'lib-components/typography'
-import Title from 'lib-components/atoms/Title'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { useTranslation } from '../../state/i18n'
-import { CareType, formatCareType } from '../../types'
+import colors from 'lib-customizations/common'
+import styled from 'styled-components'
 
 export const WideButton = styled(Button)`
   width: 100%;
@@ -169,49 +164,3 @@ export const BackButtonInline = styled(InlineButton)`
   width: calc(100vw - 16px);
   display: flex;
 `
-
-const AbsentFromWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
-const AbsenceTitle = styled(Title)`
-  color: ${colors};
-  font-size: 18px;
-  font-style: normal;
-  font-weight: ${fontWeights.medium};
-  line-height: 27px;
-  letter-spacing: 0em;
-  text-align: left;
-  margin-top: 0;
-  margin-bottom: 0;
-`
-
-const InfoText = styled.div``
-
-interface AbsentFromProps {
-  child: AttendanceChild
-  absentFrom: CareType[]
-}
-
-export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
-  const { i18n } = useTranslation()
-
-  return (
-    <AbsentFromWrapper>
-      <CustomHorizontalLine />
-      <AbsenceTitle size={2}>{i18n.attendances.absenceTitle}</AbsenceTitle>
-      <InfoText>
-        {absentFrom.length > 1
-          ? i18n.attendances.missingFromPlural
-          : i18n.attendances.missingFrom}
-        :{' '}
-        {absentFrom.map((careType) => (
-          <div key={careType}>
-            {formatCareType(careType, child.placementType, i18n)}
-          </div>
-        ))}
-      </InfoText>
-    </AbsentFromWrapper>
-  )
-}

@@ -2,50 +2,73 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
-
-import Loader from 'lib-components/atoms/Loader'
-import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { Result } from 'lib-common/api'
+import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import {
+  DaycareDailyNote,
+  DaycareDailyNoteLevelInfo,
+  DaycareDailyNoteReminder
+} from 'lib-common/generated/api-types/messaging'
+import LocalDate from 'lib-common/local-date'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import Loader from 'lib-components/atoms/Loader'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, Label } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import LocalDate from 'lib-common/local-date'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
-import { ContentArea } from 'lib-components/layout/Container'
-import { Result } from 'lib-common/api'
-
+import colors from 'lib-customizations/common'
+import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
 import {
-  AttendanceResponse,
   createOrUpdateDaycareDailyNoteForChild,
-  DailyNote,
-  DaycareDailyNoteLevelInfo,
-  DaycareDailyNoteReminder,
   deleteDaycareDailyNote,
-  getDaycareAttendances,
   upsertGroupDaycareDailyNote
 } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
-import { TallContentArea, ChipWrapper } from '../../mobile/components'
 import { UserContext } from '../../../state/user'
-import { User } from '../../../types/index'
+import { User } from '../../../types'
+import { ChipWrapper, TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import colors from 'lib-customizations/common'
-import Button from 'lib-components/atoms/buttons/Button'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
+
+const genNewGroupNote = (
+  attendanceResponse: Result<AttendanceResponse>,
+  groupId: string,
+  groupNote: string | null,
+  user: User | undefined
+): DaycareDailyNote => ({
+  childId: null,
+  date: LocalDate.today(),
+  groupId,
+  note: groupNote,
+  id: attendanceResponse
+    .map(
+      ({ groupNotes }) =>
+        groupNotes.find((g) => g.groupId == groupId)?.dailyNote.id ?? null
+    )
+    .getOrElse(null),
+  feedingNote: null,
+  sleepingNote: null,
+  sleepingMinutes: null,
+  reminders: [],
+  reminderNote: null,
+  modifiedAt: null,
+  modifiedBy: user?.id ?? 'unknown user'
+})
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -70,14 +93,12 @@ export default React.memo(function DailyNoteEditor() {
     'default' | 'confirmExit' | 'confirmDelete'
   >('default')
 
-  const { childId, unitId, groupId } = useParams<{
-    unitId: string
+  const { childId, groupId } = useParams<{
     childId: string
     groupId: string
   }>()
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [dirty, setDirty] = useState(false)
 
@@ -95,7 +116,7 @@ export default React.memo(function DailyNoteEditor() {
     reminderNote: ''
   })
 
-  const [groupNote, setGroupNote] = useState<DailyNote>({
+  const [groupNote, setGroupNote] = useState<DaycareDailyNote>({
     childId: null,
     date: LocalDate.today(),
     groupId,
@@ -116,15 +137,6 @@ export default React.memo(function DailyNoteEditor() {
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [loadDaycareAttendances, unitId])
-
   useEffect(() => {
     if (attendanceResponse.isSuccess) {
       const child =
@@ -133,8 +145,8 @@ export default React.memo(function DailyNoteEditor() {
       if (child && child.dailyNote) {
         setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
       }
-      const gNote = attendanceResponse.value.unit.groups.find(
-        (g) => g.id == groupId
+      const gNote = attendanceResponse.value.groupNotes.find(
+        (g) => g.groupId == groupId
       )?.dailyNote
       if (gNote) {
         setGroupNote(gNote)
@@ -607,7 +619,7 @@ export default React.memo(function DailyNoteEditor() {
 function dailyNoteEditedToDailyNote(
   dailyNoteEdited: DailyNoteEdited,
   user: User | undefined
-): DailyNote {
+): DaycareDailyNote {
   return {
     ...dailyNoteEdited,
     id: dailyNoteEdited.id ? dailyNoteEdited.id : null,
@@ -629,59 +641,27 @@ function dailyNoteEditedToDailyNote(
   }
 }
 
-function dailyNoteToDailyNoteEdited(dailyNote: DailyNote): DailyNoteEdited {
+function dailyNoteToDailyNoteEdited(note: DaycareDailyNote): DailyNoteEdited {
   return {
-    ...dailyNote,
-    id: dailyNote.id ? dailyNote.id : undefined,
-    childId: dailyNote.childId ? dailyNote.childId : undefined,
-    groupId: dailyNote.groupId ? dailyNote.groupId : undefined,
-    note: dailyNote.note ? dailyNote.note : '',
-    reminderNote: dailyNote.reminderNote ? dailyNote.reminderNote : '',
-    feedingNote: dailyNote.feedingNote ? dailyNote.feedingNote : undefined,
-    sleepingNote: dailyNote.sleepingNote ? dailyNote.sleepingNote : undefined,
-    sleepingHours: dailyNote.sleepingMinutes
-      ? Math.floor(dailyNote.sleepingMinutes / 60)
+    ...note,
+    id: note.id ? note.id : undefined,
+    childId: note.childId ? note.childId : undefined,
+    groupId: note.groupId ? note.groupId : undefined,
+    note: note.note ? note.note : '',
+    reminderNote: note.reminderNote ? note.reminderNote : '',
+    feedingNote: note.feedingNote ? note.feedingNote : undefined,
+    sleepingNote: note.sleepingNote ? note.sleepingNote : undefined,
+    sleepingHours: note.sleepingMinutes
+      ? Math.floor(note.sleepingMinutes / 60)
       : undefined,
-    sleepingMinutes: dailyNote.sleepingMinutes
-      ? dailyNote.sleepingMinutes % 60
+    sleepingMinutes: note.sleepingMinutes
+      ? note.sleepingMinutes % 60
       : undefined
   }
 }
 
-function genNewGroupNote(
-  attendanceResponse: Result<AttendanceResponse>,
-  groupId: string,
-  groupNote: string | null,
-  user: User | undefined
-) {
-  const oldGroupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.unit.groups.find((g) => g.id == groupId)?.dailyNote
-  let newGroupNote: DailyNote = {
-    childId: null,
-    date: LocalDate.today(),
-    groupId,
-    note: groupNote,
-    id: null,
-    feedingNote: null,
-    sleepingNote: null,
-    sleepingMinutes: null,
-    reminders: [],
-    reminderNote: null,
-    modifiedAt: null,
-    modifiedBy: user?.id ?? 'unknown user'
-  }
-  if (oldGroupNote) {
-    newGroupNote = {
-      ...newGroupNote,
-      id: oldGroupNote.id
-    }
-  }
-  return newGroupNote
-}
-
 function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
-  if (
+  return (
     dailyNote.feedingNote === undefined &&
     dailyNote.groupId === undefined &&
     dailyNote.id === undefined &&
@@ -692,8 +672,6 @@ function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
     dailyNote.sleepingMinutes === undefined &&
     dailyNote.sleepingNote === undefined
   )
-    return true
-  return false
 }
 
 const Time = styled.div`
@@ -737,7 +715,7 @@ const Tab = styled.div<TabProps>`
   justify-content: center;
   align-items: center;
 
-  font-family: Montserrat;
+  font-family: Montserrat, sans-serif;
   font-style: normal;
   font-weight: ${(props) => (props.selected ? 700 : 600)};
   font-size: 14px;

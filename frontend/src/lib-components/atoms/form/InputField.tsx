@@ -179,6 +179,7 @@ interface TextInputProps extends BaseProps {
   'aria-describedby'?: string
   hideErrorsBeforeTouched?: boolean
   required?: boolean
+  autoFocus?: boolean
   inputRef?: RefObject<HTMLInputElement>
 }
 
@@ -206,7 +207,8 @@ function InputField({
   id,
   inputRef,
   'aria-describedby': ariaId,
-  required
+  required,
+  autoFocus
 }: TextInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -246,6 +248,7 @@ function InputField({
           aria-describedby={ariaId}
           required={required ?? false}
           ref={inputRef}
+          autoFocus={autoFocus}
         />
         {clearable && (
           <InputIcon onClick={() => onChange && onChange('')}>

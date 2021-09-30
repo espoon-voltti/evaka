@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
@@ -13,15 +14,16 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.time.LocalTime
@@ -111,73 +113,24 @@ fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): C
         .firstOrNull()
 }
 
-fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
-    data class UnitBasics(
-        val id: DaycareId,
-        val name: String
-    )
-    // language=sql
-    val unitSql =
-        """
-        SELECT u.id, u.name
-        FROM daycare u
-        WHERE u.id = :unitId
-        """.trimIndent()
-
-    val unit = createQuery(unitSql)
-        .bind("unitId", unitId)
-        .mapTo<UnitBasics>()
-        .list().firstOrNull() ?: throw NotFound("Unit $unitId not found")
-
-    // language=sql
-    val groupsSql =
-        """
-        SELECT g.id, g.name
-        FROM daycare u
-        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
-        WHERE u.id = :unitId
-        """.trimIndent()
-
-    val groups = createQuery(groupsSql)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<GroupInfo>()
-        .list()
-
-    val daycareDailyNotesForGroups = getDaycareDailyNotesForDaycareGroups(unitId)
-
-    val staff = createQuery(
-        """
-        SELECT e.first_name, e.last_name, e.id, char_length(COALESCE(pin.pin, '')) > 0 as pin_set, coalesce(groups, array[]::uuid[]) AS groups
-        FROM daycare_acl acl 
-            LEFT JOIN employee e ON acl.employee_id = e.id
-            LEFT JOIN employee_pin pin ON acl.employee_id = pin.user_id
-        LEFT JOIN (
-            SELECT employee_id, array_agg(daycare_group_id) AS groups
-            FROM daycare_group_acl dga
-            JOIN daycare_group dg ON dga.daycare_group_id = dg.id
-            WHERE dg.daycare_id = :id
-            GROUP BY employee_id
-        ) group_acl ON acl.employee_id = group_acl.employee_id
-        WHERE acl.daycare_id = :id
-        AND acl.role = ANY('{STAFF, UNIT_SUPERVISOR}')
-        """.trimIndent()
-    )
-        .bind("id", unitId)
-        .mapTo<Staff>()
-        .list()
-
-    return groups.map { group -> group.copy(dailyNote = daycareDailyNotesForGroups.find { note -> note.groupId == group.id }) }
-        .let { grps ->
-            UnitInfo(
-                id = unit.id,
-                name = unit.name,
-                groups = grps,
-                staff = staff
-            )
-        }
+fun Database.Read.fetchGroupNotes(unitId: DaycareId): List<GroupNote> {
+    return getDaycareDailyNotesForDaycareGroups(unitId)
+        .groupBy { it.groupId }
+        .flatMap { (groupId, notes) -> notes.map { note -> GroupNote(groupId!!, note) } }
 }
 
+data class ChildBasics(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String?,
+    val dateOfBirth: LocalDate,
+    val dailyServiceTimes: DailyServiceTimes?,
+    val placementType: PlacementType,
+    val groupId: GroupId,
+    val backup: Boolean,
+    val imageUrl: String?
+)
 fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<ChildBasics> {
     // language=sql
     val sql =

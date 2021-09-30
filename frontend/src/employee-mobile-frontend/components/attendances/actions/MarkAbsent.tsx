@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import Loader from 'lib-components/atoms/Loader'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -21,12 +20,9 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { TallContentArea } from '../../../components/mobile/components'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
-import {
-  getDaycareAttendances,
-  postFullDayAbsence
-} from '../../../api/attendances'
+import { TallContentArea } from '../../mobile/components'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
+import { postFullDayAbsence } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import DailyNote from '../notes/DailyNote'
 import { AbsenceType } from '../../../types'
@@ -42,8 +38,7 @@ export default React.memo(function MarkAbsent() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -55,15 +50,6 @@ export default React.memo(function MarkAbsent() {
     childId: string
   }>()
 
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [loadDaycareAttendances, unitId])
-
   async function postAbsence(absenceType: AbsenceType) {
     return postFullDayAbsence(unitId, childId, absenceType)
   }
@@ -74,7 +60,7 @@ export default React.memo(function MarkAbsent() {
 
   const groupNote =
     attendanceResponse.isSuccess &&
-    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+    attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
       ?.dailyNote
 
   return (

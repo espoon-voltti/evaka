@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
 import { useTranslation } from '../../../../state/i18n'
 import {
-  DaycareDailyNote,
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Stats,
@@ -69,6 +68,7 @@ import { UUID } from 'lib-common/types'
 import { requireRole } from '../../../../utils/roles'
 import { UserContext } from '../../../../state/user'
 import { Action } from 'lib-common/generated/action'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 
 interface Props {
   unit: Unit

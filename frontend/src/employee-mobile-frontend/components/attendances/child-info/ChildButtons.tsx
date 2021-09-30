@@ -1,28 +1,23 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
-
 import { faComments, faChild, faPen } from 'lib-icons'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-
-import { AttendanceChild, DailyNote } from '../../../api/attendances'
+import { Child } from 'lib-common/generated/api-types/attendance'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   unitId: UUID
   groupId: UUID
-  child: AttendanceChild
-  groupNote: DailyNote | null | undefined
+  child: Child
+  groupNote: DaycareDailyNote | null | undefined
 }
 
 export default React.memo(function ChildButtons({
@@ -49,7 +44,7 @@ export default React.memo(function ChildButtons({
           label={i18n.common.messages}
         />
         <Link
-          to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/note`}
+          to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
           data-qa={'link-child-daycare-daily-note'}
         >
           <RoundIcon
@@ -62,7 +57,7 @@ export default React.memo(function ChildButtons({
           />
         </Link>
         <Link
-          to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/pin`}
+          to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/pin`}
           data-qa={'link-child-sensitive-info'}
         >
           <RoundIcon

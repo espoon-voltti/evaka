@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.LocalDate
 import java.util.UUID
 
 data class ChildResult(
@@ -51,34 +50,8 @@ data class ContactInfo(
 )
 
 data class AttendanceResponse(
-    val unit: UnitInfo,
-    val children: List<Child>
-)
-
-data class UnitInfo(
-    val id: DaycareId,
-    val name: String,
-    val groups: List<GroupInfo>,
-    val staff: List<Staff>
-)
-
-data class GroupInfo(
-    val id: GroupId,
-    val name: String,
-    val dailyNote: DaycareDailyNote?
-)
-
-data class ChildBasics(
-    val id: UUID,
-    val firstName: String,
-    val lastName: String,
-    val preferredName: String?,
-    val dateOfBirth: LocalDate,
-    val dailyServiceTimes: DailyServiceTimes?,
-    val placementType: PlacementType,
-    val groupId: GroupId,
-    val backup: Boolean,
-    val imageUrl: String?
+    val children: List<Child>,
+    val groupNotes: List<GroupNote>
 )
 
 data class Child(
@@ -116,12 +89,9 @@ data class ChildAbsence(
     val careType: AbsenceCareType
 )
 
-data class Staff(
-    val id: UUID,
-    val firstName: String,
-    val lastName: String,
-    val pinSet: Boolean = false,
-    val groups: List<UUID>
-)
-
 data class AttendanceReservation(val startTime: String, val endTime: String)
+
+data class GroupNote(
+    val groupId: GroupId,
+    val dailyNote: DaycareDailyNote
+)

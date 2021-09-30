@@ -53,8 +53,7 @@ SELECT note.*
 FROM daycare_daily_note note
     LEFT JOIN daycare_group ON daycare_group.id = note.group_id
     LEFT JOIN daycare d ON d.id = daycare_group.daycare_id
-WHERE 
-    d.id = :id
+WHERE d.id = :id AND note.group_id IS NOT NULL 
         """.trimIndent()
     )
         .bind("id", unitId)
@@ -158,7 +157,7 @@ fun Database.Transaction.deleteDaycareDailyNote(noteId: DaycareDailyNoteId) {
 }
 
 fun Database.Transaction.deleteChildDaycareDailyNotes(childId: UUID) {
-    createUpdate("DELETE from daycare_daily_note WHERE childId = :id")
+    createUpdate("DELETE from daycare_daily_note WHERE child_id = :id")
         .bind("id", childId)
         .execute()
 }

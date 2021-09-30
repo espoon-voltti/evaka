@@ -26,7 +26,11 @@ export default React.memo(function MobileLander() {
   const { user } = useContext(UserContext)
 
   if (user?.unitId) {
-    return <Redirect to={`/units/${user.unitId}/attendance/all/coming`} />
+    return (
+      <Redirect
+        to={`/units/${user.unitId}/groups/all/child-attendance/list/coming`}
+      />
+    )
   }
 
   return (

@@ -5,12 +5,10 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
+import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
+import { GroupStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
-import {
-  GroupStaffAttendance,
-  GroupStaffAttendanceForDates
-} from 'lib-common/api-types/staffAttendances'
 import { Loading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'

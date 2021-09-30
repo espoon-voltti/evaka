@@ -5,22 +5,22 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-
 import {
-  AttendanceChild,
   AttendanceStatus,
-  DailyNote,
-  Group
-} from '../../api/attendances'
+  Child
+} from 'lib-common/generated/api-types/attendance'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-customizations/common'
 import { defaultMargins, SpacingSize } from 'lib-components/white-space'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
-import { AttendanceUIContext } from '../../state/attendance-ui'
-import { Link } from 'react-router-dom'
+import { ChildAttendanceContext } from '../../state/child-attendance'
+import { Link, useParams } from 'react-router-dom'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
+import { UnitContext } from '../../state/unit'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -115,11 +115,11 @@ const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)<{
 `
 
 interface ChildListItemProps {
-  attendanceChild: AttendanceChild
+  attendanceChild: Child
   onClick?: () => void
   type: AttendanceStatus
   childAttendanceUrl: string
-  groupNote?: DailyNote | null
+  groupNote?: DaycareDailyNote | null
 }
 
 export default React.memo(function ChildListItem({
@@ -130,7 +130,14 @@ export default React.memo(function ChildListItem({
   groupNote
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
-  const { attendanceResponse } = useContext(AttendanceUIContext)
+  const { unitInfoResponse } = useContext(UnitContext)
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
+
+  const { unitId, groupId, childId } = useParams<{
+    unitId: UUID
+    groupId: UUID | 'all'
+    childId: UUID
+  }>()
 
   return (
     <ChildBox type={type} data-qa={`child-${attendanceChild.id}`}>
@@ -170,14 +177,13 @@ export default React.memo(function ChildListItem({
                 : i18n.attendances.status[attendanceChild.status]}
               <StatusDetails>
                 {attendanceResponse.isSuccess &&
+                  unitInfoResponse.isSuccess &&
                   attendanceChild.status === 'COMING' && (
                     <span>
                       {' '}
                       (
-                      {attendanceResponse.value.unit.groups
-                        .find(
-                          (elem: Group) => elem.id === attendanceChild.groupId
-                        )
+                      {unitInfoResponse.value.groups
+                        .find((group) => group.id === attendanceChild.groupId)
                         ?.name.toUpperCase()}
                       )
                     </span>
@@ -200,7 +206,7 @@ export default React.memo(function ChildListItem({
             <FixedSpaceRowWithLeftMargin spacing="m">
               {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
                 <Link
-                  to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/note`}
                   data-qa={'link-child-daycare-daily-note'}
                 >
                   <RoundIcon
@@ -212,7 +218,7 @@ export default React.memo(function ChildListItem({
               )}
               {groupNote && attendanceResponse.isSuccess && (
                 <Link
-                  to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/note`}
                   data-qa={'link-child-daycare-daily-note'}
                 >
                   <RoundIcon

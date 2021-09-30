@@ -1,19 +1,14 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-
-import { useTranslation } from '../../../../state/i18n'
-import { faExclamation, faTrash } from 'lib-icons'
 import {
   DaycareDailyNote,
   DaycareDailyNoteReminder
-} from '../../../../types/unit'
+} from 'lib-common/generated/api-types/messaging'
+import { useTranslation } from '../../../../state/i18n'
+import { faExclamation, faTrash } from 'lib-icons'
 import { formatName } from '../../../../utils'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -62,12 +57,39 @@ const initialFormData = (
           : ''
       }
     : {
+        id: null,
         childId,
         groupId,
         date: LocalDate.today(),
-        reminders: []
+        reminders: [],
+        feedingNote: null,
+        modifiedAt: null,
+        modifiedBy: null,
+        note: null,
+        reminderNote: null,
+        sleepingHours: '',
+        sleepingMinutes: '',
+        sleepingNote: null
       }
 }
+
+const formDataToRequestBody = (
+  form: DaycareDailyNoteFormData
+): DaycareDailyNote => ({
+  id: form.id ?? null,
+  childId: form.childId,
+  date: form.date,
+  feedingNote: form.feedingNote,
+  groupId: form.groupId,
+  modifiedAt: form.modifiedAt,
+  modifiedBy: form.modifiedBy,
+  note: form.note,
+  reminderNote: form.reminderNote,
+  reminders: form.reminders,
+  sleepingMinutes:
+    60 * parseInt(form.sleepingHours) + parseInt(form.sleepingMinutes),
+  sleepingNote: form.sleepingNote
+})
 
 export default React.memo(function DaycareDailyNoteModal({
   note,
@@ -92,13 +114,14 @@ export default React.memo(function DaycareDailyNoteModal({
   }
 
   const submit = () => {
+    const body = formDataToRequestBody(form)
     if (childId != null) {
-      void upsertChildDaycareDailyNote(childId, form).then(() => {
+      void upsertChildDaycareDailyNote(childId, body).then(() => {
         onClose()
         reload()
       })
     } else if (groupId != null) {
-      void upsertGroupDaycareDailyNote(groupId, form).then(() => {
+      void upsertGroupDaycareDailyNote(groupId, body).then(() => {
         onClose()
         reload()
       })

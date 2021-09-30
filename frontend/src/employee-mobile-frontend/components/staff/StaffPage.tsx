@@ -1,62 +1,56 @@
-/*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
-import { getDaycareAttendances, Group } from '../../api/attendances'
-import { AttendanceUIContext } from '../../state/attendance-ui'
+import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import { Group } from '../../api/attendances'
 import TopBar from '../common/TopBar'
-import BottomNavBar, { NavItem } from '../common/BottomNavbar'
-import {
-  getUnitStaffAttendances,
-  postStaffAttendance
-} from '../../api/staffAttendances'
+import BottomNavBar from '../common/BottomNavbar'
+import { postStaffAttendance } from '../../api/staffAttendances'
 import { getRealizedOccupancyToday } from '../../api/occupancy'
-import {
-  StaffAttendanceUpdate,
-  UnitStaffAttendance
-} from 'lib-common/api-types/staffAttendances'
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 import LocalDate from 'lib-common/local-date'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 import { renderResult } from '../async-rendering'
+import { UUID } from 'lib-common/types'
+import { UnitContext } from '../../state/unit'
+import { StaffContext } from '../../state/staff'
 
-export interface Props {
-  onNavigate: (item: NavItem) => void
-}
-
-export default function StaffPage({ onNavigate }: Props) {
+export default function StaffPage() {
   const history = useHistory()
   const { unitId, groupId: groupIdOrAll } = useParams<{
-    unitId: string
-    groupId: string
+    unitId: UUID
+    groupId: UUID | 'all'
   }>()
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
-  const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
-    Result<UnitStaffAttendance>
-  >(Loading.of())
-  const [occupancyResponse, setOccupancyResponse] = useState<Result<number>>(
-    Loading.of()
-  )
+  const { unitInfoResponse } = useContext(UnitContext)
+  const { staffResponse, reloadStaff } = useContext(StaffContext)
 
-  const loadStaffAttendances = useRestApi(
-    getUnitStaffAttendances,
-    setStaffAttendancesResponse
-  )
+  useEffect(reloadStaff, [reloadStaff])
+
   const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
     undefined
   )
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
+
+  useEffect(() => {
+    if (
+      unitInfoResponse.isSuccess &&
+      (selectedGroup === undefined ||
+        (groupIdOrAll !== 'all' && selectedGroup.id !== groupIdOrAll))
+    ) {
+      setSelectedGroup(
+        unitInfoResponse.value.groups.find((group) => group.id === groupIdOrAll)
+      )
+    }
+  }, [unitInfoResponse, selectedGroup, groupIdOrAll])
+
+  const [occupancyResponse, setOccupancyResponse] = useState<Result<number>>(
+    Loading.of()
   )
 
   const loadRealizedOccupancyToday = useRestApi(
@@ -65,41 +59,22 @@ export default function StaffPage({ onNavigate }: Props) {
   )
 
   useEffect(() => {
-    loadDaycareAttendances(unitId)
-    loadStaffAttendances(unitId)
-  }, [unitId, loadDaycareAttendances, loadStaffAttendances])
-
-  useEffect(() => {
-    if (
-      attendanceResponse.isSuccess &&
-      (selectedGroup === undefined ||
-        (groupIdOrAll !== 'all' && selectedGroup.id !== groupIdOrAll))
-    ) {
-      setSelectedGroup(
-        attendanceResponse.value.unit.groups.find(
-          (group) => group.id === groupIdOrAll
-        )
-      )
-    }
-  }, [attendanceResponse, selectedGroup, groupIdOrAll])
-
-  useEffect(() => {
     loadRealizedOccupancyToday(unitId, selectedGroup?.id)
   }, [unitId, selectedGroup, loadRealizedOccupancyToday])
 
   function changeGroup(group: Group | undefined) {
     const groupId = group === undefined ? 'all' : group.id
-    history.push(`/units/${unitId}/staff/${groupId}`)
+    history.push(`/units/${unitId}/groups/${groupId}/staff`)
   }
 
   const updateAttendance = async (attendance: StaffAttendanceUpdate) => {
     await postStaffAttendance(attendance)
-    const [attendances, occupancy] = await Promise.all([
-      getUnitStaffAttendances(unitId),
-      getRealizedOccupancyToday(unitId, selectedGroup?.id)
+    await Promise.all([
+      reloadStaff,
+      getRealizedOccupancyToday(unitId, selectedGroup?.id).then(
+        setOccupancyResponse
+      )
     ])
-    setStaffAttendancesResponse(attendances)
-    setOccupancyResponse(occupancy)
     return Success.of()
   }
 
@@ -107,16 +82,16 @@ export default function StaffPage({ onNavigate }: Props) {
 
   return renderResult(
     combine(
-      attendanceResponse,
-      staffAttendancesResponse.map((staffAttendances) =>
+      unitInfoResponse,
+      staffResponse.map((staffAttendances) =>
         staffAttendanceForGroupOrUnit(staffAttendances, selectedGroup?.id)
       ),
       occupancyResponse
     ),
-    ([attendance, staffAttendance, occupancy]) => (
+    ([unitInfo, staffAttendance, occupancy]) => (
       <>
         <TopBar
-          unitName={attendance.unit.name}
+          unitName={unitInfo.name}
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
         />
@@ -131,14 +106,7 @@ export default function StaffPage({ onNavigate }: Props) {
             onConfirm={updateAttendance}
           />
         </ContentArea>
-        <BottomNavBar
-          selected="staff"
-          staffCount={{
-            count: staffAttendance.count ?? 0,
-            countOther: staffAttendance.countOther ?? 0
-          }}
-          onChange={onNavigate}
-        />
+        <BottomNavBar selected="staff" />
       </>
     )
   )

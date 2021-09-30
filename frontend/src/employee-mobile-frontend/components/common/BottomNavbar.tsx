@@ -7,22 +7,24 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { faChild, faComments, faUser } from 'lib-icons'
+import { faChild, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-import { formatDecimal } from 'lib-common/utils/number'
+import { useHistory, useParams } from 'react-router-dom'
+import { UUID } from 'lib-common/types'
+import { featureFlags } from 'lib-customizations/employee'
 
-export type NavItem = 'child' | 'staff' | 'messages'
+export type NavItem = 'child' | 'staff'
 
 const bottomNavBarHeight = 60
 
 const Root = styled.div`
   position: fixed;
-  left: 0%;
-  right: 0%;
-  bottom: 0%;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: ${bottomNavBarHeight}px;
 
   display: flex;
@@ -55,19 +57,6 @@ const IconText = styled.span<{ selected: boolean }>`
   font-size: 14px;
 `
 
-const Circle = styled.span<{ color: keyof typeof colors.accents }>`
-  min-width: 16px;
-  background-color: ${(p) => colors.accents[p.color]};
-  color: ${colors.greyscale.white};
-  border-radius: 8px;
-  display: inline-block;
-  position: absolute;
-  right: 0;
-  top: -4px;
-  padding: 0 4.5px;
-  font-size: 11px;
-`
-
 type BottomTextProps = {
   text: string
   children: React.ReactNode
@@ -90,18 +79,15 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
 
 type BottomNavbarProps = {
   selected?: NavItem
-  messageCount?: number
-  staffCount?: { count: number; countOther: number }
-  onChange?: (value: NavItem) => void
 }
 
-export default function BottomNavbar({
-  selected,
-  messageCount,
-  staffCount,
-  onChange
-}: BottomNavbarProps) {
+export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const { i18n } = useTranslation()
+  const history = useHistory()
+  const { unitId, groupId } = useParams<{
+    unitId: UUID
+    groupId: UUID | 'all'
+  }>()
 
   return (
     <>
@@ -113,7 +99,10 @@ export default function BottomNavbar({
             text={i18n.common.children}
             selected={selected === 'child'}
             onClick={() =>
-              selected !== 'child' && onChange && onChange('child')
+              selected !== 'child' &&
+              history.push(
+                `/units/${unitId}/groups/${groupId}/child-attendance`
+              )
             }
           >
             <CustomIcon icon={faChild} selected={selected === 'child'} />
@@ -124,39 +113,17 @@ export default function BottomNavbar({
             text={i18n.common.staff}
             selected={selected === 'staff'}
             onClick={() =>
-              selected !== 'staff' && onChange && onChange('staff')
+              selected !== 'staff' &&
+              (featureFlags.experimental?.realtimeStaffAttendance
+                ? history.push(
+                    `/units/${unitId}/groups/${groupId}/staff-attendance`
+                  )
+                : history.push(`/units/${unitId}/groups/${groupId}/staff`))
             }
           >
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
-            {staffCount &&
-            (staffCount.count != 0 || staffCount.countOther != 0) ? (
-              <Circle color="violet" data-qa="staff-count-bubble">
-                {formatDecimal(staffCount.count)}+
-                {formatDecimal(staffCount.countOther)}
-              </Circle>
-            ) : null}
           </BottomText>
         </Button>
-        <div style={{ display: 'none' }}>
-          {/* This will be needed in the future */}
-          <Button data-qa="messages">
-            <BottomText
-              text={i18n.common.messages}
-              selected={selected === 'messages'}
-              onClick={() =>
-                selected !== 'messages' && onChange && onChange('messages')
-              }
-            >
-              <CustomIcon
-                icon={faComments}
-                selected={selected === 'messages'}
-              />
-              {messageCount || 0 > 0 ? (
-                <Circle color="orange">{messageCount}</Circle>
-              ) : null}
-            </BottomText>
-          </Button>
-        </div>
       </Root>
     </>
   )

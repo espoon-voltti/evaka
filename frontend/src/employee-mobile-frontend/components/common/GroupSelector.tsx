@@ -4,16 +4,16 @@
 
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
-
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
-
-import { AttendanceUIContext } from '../../state/attendance-ui'
+import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
-import { AttendanceResponse, Group } from '../../api/attendances'
+import { Group } from '../../api/attendances'
 import colors from 'lib-customizations/common'
 import { ChipWrapper } from '../mobile/components'
+import { UnitContext } from '../../state/unit'
 
 interface GroupSelectorProps {
   selectedGroup: Group | undefined
@@ -26,7 +26,8 @@ export default function GroupSelector({
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(AttendanceUIContext)
+  const { unitInfoResponse } = useContext(UnitContext)
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   function numberOfChildrenPresent(gId: string, res: AttendanceResponse) {
     return res.children
@@ -48,7 +49,7 @@ export default function GroupSelector({
   return (
     <Wrapper>
       <ChipWrapper>
-        {attendanceResponse.isSuccess && (
+        {unitInfoResponse.isSuccess && attendanceResponse.isSuccess && (
           <>
             <ChoiceChip
               text={`${i18n.common.all} (${
@@ -56,12 +57,12 @@ export default function GroupSelector({
                   return child.status === 'PRESENT'
                 }).length
               }/${attendanceResponse.value.children.length})`}
-              selected={selectedGroup ? false : true}
+              selected={!selectedGroup}
               onChange={() => onChangeGroup(undefined)}
               data-qa="group--all"
             />
             <Gap horizontal size={'xxs'} />
-            {attendanceResponse.value.unit.groups.map((group) => (
+            {unitInfoResponse.value.groups.map((group) => (
               <Fragment key={group.id}>
                 <ChoiceChip
                   text={`${group.name} (${numberOfChildrenPresent(
