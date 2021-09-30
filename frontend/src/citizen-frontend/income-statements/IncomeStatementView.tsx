@@ -36,9 +36,8 @@ import { getAttachmentBlob } from '../attachments'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { useHistory } from 'react-router-dom'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faPen } from 'lib-icons'
-import { tabletMin } from 'lib-components/breakpoints'
+import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 
 export default React.memo(function IncomeStatementView({
   match
@@ -68,7 +67,7 @@ export default React.memo(function IncomeStatementView({
           <H1>{t.income.view.title}</H1>
           {!incomeStatement.handled && (
             <EditButtonContainer>
-              <InlineButton
+              <ResponsiveInlineButton
                 text={t.common.edit}
                 icon={faPen}
                 onClick={handleEdit}
@@ -363,13 +362,6 @@ const EditButtonContainer = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-
-  // This targets IconButton's text
-  span {
-    @media (max-width: ${tabletMin}) {
-      display: none;
-    }
-  }
 `
 
 function Row({

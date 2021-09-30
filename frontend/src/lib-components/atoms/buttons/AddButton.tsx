@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -84,8 +84,8 @@ const StyledButton = styled.button`
   ${({ theme }) => defaultButtonTextStyle(theme)}
 `
 
-interface AddButtonProps extends BaseProps {
-  text?: string
+export interface AddButtonProps extends BaseProps {
+  text?: ReactNode
   onClick: () => unknown
   disabled?: boolean
   flipped?: boolean
@@ -116,7 +116,11 @@ function AddButton({
           <FontAwesomeIcon icon={icon ?? faPlus} />
         </div>
       </div>
-      {text && <span>{text}</span>}
+      {typeof text === 'string' || typeof text === 'number' ? (
+        <span>{text}</span>
+      ) : (
+        text
+      )}
     </StyledButton>
   )
 }

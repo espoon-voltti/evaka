@@ -6,8 +6,6 @@ import { Loading, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -23,6 +21,8 @@ import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import { deleteIncomeStatement, getIncomeStatements } from './api'
+import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
+import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -40,7 +40,7 @@ function IncomeStatementsTable({
   items: IncomeStatement[]
   onRemoveIncomeStatement: (id: UUID) => void
 }) {
-  const t = useTranslation().income.table
+  const t = useTranslation()
   const history = useHistory()
 
   const getLink = (id: UUID, mode: 'view' | 'edit') =>
@@ -52,7 +52,7 @@ function IncomeStatementsTable({
     <Table>
       <Thead>
         <Tr>
-          <Th>{t.incomeStatementForm}</Th>
+          <Th>{t.income.table.incomeStatementForm}</Th>
           <Th />
         </Tr>
       </Thead>
@@ -70,13 +70,18 @@ function IncomeStatementsTable({
             <Td>
               <Buttons>
                 {item.handled ? (
-                  <Dimmed>{t.handled}</Dimmed>
+                  <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>
-                    <IconButton icon={faPen} onClick={onEdit(item.id)} />
+                    <ResponsiveInlineButton
+                      icon={faPen}
+                      text={t.common.edit}
+                      onClick={onEdit(item.id)}
+                    />
                     <Gap size="xs" horizontal />
-                    <IconButton
+                    <ResponsiveInlineButton
                       icon={faTrash}
+                      text={t.common.delete}
                       onClick={() => onRemoveIncomeStatement(item.id)}
                     />
                   </>
@@ -146,7 +151,7 @@ export default function IncomeStatements() {
         <ContentArea opaque paddingVertical="L">
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
-            <AddButton
+            <ResponsiveAddButton
               onClick={() => history.push('/income/new/edit')}
               text={t.income.addNew}
               data-qa="new-income-statement-btn"
