@@ -37,10 +37,12 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
 
   const [open, setOpen] = useState(startOpen)
   const { uiMode, toggleUiMode } = useContext(UIContext)
+  const [submitting, setSubmitting] = useState(false)
 
   const loadData = () => {
+    setSubmitting(true)
     setPedagogicalDocuments(Loading.of())
-    void getChildPedagogicalDocuments(id).then(setPedagogicalDocuments)
+    void getChildPedagogicalDocuments(id).then(setPedagogicalDocuments).then(() => setSubmitting(false))
   }
 
   useEffect(loadData, [id, open, setPedagogicalDocuments])
@@ -75,7 +77,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
             initInEditMode={
               uiMode == `edit-pedagogical-document-${pedagogicalDocument.id}`
             }
-            handleRemovedDocument={loadData}
+            onReload={loadData}
           />
         )
       )
@@ -97,6 +99,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
           text={i18n.childInformation.pedagogicalDocument.create}
           onClick={() => createNewDocument()} // todo
           data-qa="button-create-pedagogical-document"
+          disabled={submitting}
         />
       </RequireRole>
 
