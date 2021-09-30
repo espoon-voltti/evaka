@@ -63,7 +63,7 @@ class PedagogicalDocumentController(
         @PathVariable documentId: PedagogicalDocumentId
     ): ResponseEntity<PedagogicalDocument> {
         val childId = findRelatedChild(db, documentId)
-        Audit.PedagogicalDocumentUpdate.log(childId)
+        Audit.PedagogicalDocumentRead.log(childId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, childId)
         val doc = getPedagogicalDocument(db, documentId)
         return ResponseEntity.ok(doc)
