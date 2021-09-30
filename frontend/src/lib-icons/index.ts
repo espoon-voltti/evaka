@@ -52,7 +52,7 @@ export interface IconSet {
   faGavel: IconDefinition
   faHandHolding: IconDefinition
   faHiking: IconDefinition
-  faHomeAlt: IconDefinition
+  faHome: IconDefinition
   faHourglassEnd: IconDefinition
   faHourglassStart: IconDefinition
   faInfo: IconDefinition
@@ -160,7 +160,7 @@ export const faFileWord = iconSet.faFileWord
 export const faGavel = iconSet.faGavel
 export const faHandHolding = iconSet.faHandHolding
 export const faHiking = iconSet.faHiking
-export const faHomeAlt = iconSet.faHomeAlt
+export const faHome = iconSet.faHome
 export const faHourglassEnd = iconSet.faHourglassEnd
 export const faHourglassStart = iconSet.faHourglassStart
 export const faInfo = iconSet.faInfo

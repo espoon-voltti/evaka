@@ -17,7 +17,7 @@ import {
   faFileAlt,
   faGavel,
   faHandHolding,
-  faHomeAlt,
+  faHome,
   faHourglassEnd,
   faHourglassStart,
   faMoneyBillWave,
@@ -164,7 +164,7 @@ function Reports() {
                 <RoundIcon
                   size="L"
                   color={colors.accents.orange}
-                  content={faHomeAlt}
+                  content={faHome}
                 />
                 <LinkTitle to="/reports/partners-in-different-address">
                   {i18n.reports.partnersInDifferentAddress.title}
@@ -181,7 +181,7 @@ function Reports() {
                 <RoundIcon
                   size="L"
                   color={colors.accents.yellow}
-                  content={faHomeAlt}
+                  content={faHome}
                 />
                 <LinkTitle to="/reports/children-in-different-address">
                   {i18n.reports.childrenInDifferentAddress.title}
