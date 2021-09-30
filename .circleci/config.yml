@@ -87,14 +87,17 @@ executors:
     <<: *default_config
     docker:
       - image: *builder_aws_core_image
+    resource_class: small
   aws_docker_executor:
     <<: *default_config
     docker:
       - image: *builder_aws_docker_image
+    resource_class: medium
   aws_terraform_executor:
     <<: *default_config
     docker:
       - image: *builder_aws_terraform_image
+    resource_class: small
   apigw_executor:
     <<: *node_config
     docker:
@@ -102,6 +105,7 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+    resource_class: medium
   frontend_executor:
     <<: *node_config
     docker:
@@ -109,11 +113,12 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+    resource_class: medium
   e2e_executor:
     <<: *node_config
     machine:
       image: *ubuntu_machine_image
-      resource_class: large
+    resource_class: large
   service_executor:
     <<: *jvm_config
     docker:
@@ -125,7 +130,7 @@ executors:
     <<: *jvm_config
     machine:
       image: *ubuntu_machine_image
-      resource_class: large
+    resource_class: large
     environment:
       # YAML anchors don't merge nested keys, so re-referencing is required
       <<: *jvm_env
@@ -761,6 +766,7 @@ jobs:
 
   checkout_repo:
     executor: apigw_executor
+    resource_class: small
     steps:
       - checkout
       - store_repo
