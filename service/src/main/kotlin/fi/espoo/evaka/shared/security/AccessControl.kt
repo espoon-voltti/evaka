@@ -301,7 +301,9 @@ WHERE employee_id = :userId
                     Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
@@ -312,7 +314,9 @@ WHERE employee_id = :userId
                 Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
             }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.Attachment.READ_APPLICATION_ATTACHMENT ->
