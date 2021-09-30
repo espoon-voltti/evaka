@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
+import fi.espoo.evaka.pis.markEmployeeLastLogin
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
@@ -104,6 +105,7 @@ class ChildAttendanceController(
 
         val result = db.transaction { tx ->
             if (tx.employeePinIsCorrect(body.staffId, body.pin)) {
+                tx.markEmployeeLastLogin(body.staffId)
                 tx.resetEmployeePinFailureCount(body.staffId)
                 tx.getChildSensitiveInfo(childId)?.let {
                     ChildResult(
