@@ -127,18 +127,23 @@ export const fi = {
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
     missingFromPlural: 'Poissa seuraavista toimintamuodoista',
     timeError: 'Virheellinen aika',
-    listChildReservation: (start: string, end: string) =>
-      `Varaus ${start}-${end}`,
     arrived: 'Saapui',
     departed: 'Lähti',
     serviceTime: {
       reservation: (start: string, end: string) =>
         `Varaus tänään ${start}-${end}`,
+      reservationShort: (start: string, end: string) =>
+        `Varaus ${start}-${end}`,
       serviceToday: (start: string, end: string) =>
         `Varhaiskasvatusaika tänään ${start}-${end}`,
+      serviceTodayShort: (start: string, end: string) =>
+        `Sop.aika ${start}-${end}`,
       noServiceToday: 'Ei varattua varhaiskasvatusaikaa tänään',
+      noServiceTodayShort: 'Ei sop.aikaa tänään',
       notSet: 'Varhaiskasvatusaikaa ei asetettuna',
-      variableTimes: 'Vaihteleva varhaiskasvatusaika'
+      notSetShort: 'Sop.aika puuttuu',
+      variableTimes: 'Vaihteleva varhaiskasvatusaika',
+      variableTimesShort: 'Sop.aika vaihtelee'
     },
     notes: {
       dailyNotes: 'Muistiinpanot',

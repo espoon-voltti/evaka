@@ -144,13 +144,6 @@ test('Daycare daily note is shown for backupcare child', async (t) => {
 
   await t
     .expect(
-      mobileGroupsPage.childStatus(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
-    .contains('Tulossa')
-
-  await t
-    .expect(
       mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
         .visible
     )
