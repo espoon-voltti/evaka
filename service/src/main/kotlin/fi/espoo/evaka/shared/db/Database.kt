@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 //         To call this function, you need to have a database reference *without* an active connection or transaction.
 //         The function can connect/disconnect from the database 0 to N times, and do whatever it wants using the connection(s).
 //     fun doStuff(db: Database.Connection)
-//         To call this function, you need to have an active database connection *without* an active transaction.
+//         To call this function, you need to have a lazy database connection *without* an active transaction.
 //         The function can read/write the database and freely execute 0 to N individual transactions.
 //     fun doStuff(tx: Database.Read)
 //         To call this function, you need to have an active read-only transaction.
@@ -51,21 +51,30 @@ class Database(private val jdbi: Jdbi) {
     fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
         check(!connected.get()) { "Already connected to database" }
-        connected.set(true)
-        return Connection(threadId, connected, jdbi.open())
+        return Connection(threadId, connected, lazy(LazyThreadSafetyMode.NONE) { jdbi.open() })
     }
 
     /**
-     * A single database connection tied to a single thread
+     * A single lazily initialized database connection tied to a single thread
      */
-    class Connection internal constructor(private val threadId: ThreadId, private val connected: AtomicBoolean, private val handle: Handle) : AutoCloseable {
+    class Connection internal constructor(private val threadId: ThreadId, private val connected: AtomicBoolean, private val lazyHandle: Lazy<Handle>) : AutoCloseable {
+        private fun getHandle(): Handle {
+            threadId.assertCurrentThread()
+            return if (lazyHandle.isInitialized()) {
+                lazyHandle.value
+            } else {
+                val wasConnected = connected.getAndSet(true)
+                check(!wasConnected) { "Already connected to database" }
+                lazyHandle.value
+            }
+        }
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any exceptions the function may have thrown.
          *
          * Throws `IllegalStateException` if this database connection is already in read mode or a transaction
          */
         fun <T> read(f: (db: Read) -> T): T {
-            threadId.assertCurrentThread()
+            val handle = this.getHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             handle.isReadOnly = true
             try {
@@ -82,7 +91,7 @@ class Database(private val jdbi: Jdbi) {
          * Throws `IllegalStateException` if this database connection is already in read mode or a transaction.
          */
         fun <T> transaction(f: (db: Transaction) -> T): T {
-            threadId.assertCurrentThread()
+            val handle = this.getHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             val hooks = TransactionHooks()
             return handle.inTransaction<T, Exception> { f(Transaction(it, hooks)) }.also {
@@ -94,9 +103,12 @@ class Database(private val jdbi: Jdbi) {
 
         override fun close() {
             threadId.assertCurrentThread()
-            if (!handle.isClosed) {
-                connected.set(false)
-                handle.close()
+            if (lazyHandle.isInitialized()) {
+                val handle = lazyHandle.value
+                if (!handle.isClosed) {
+                    connected.set(false)
+                    handle.close()
+                }
             }
         }
     }
