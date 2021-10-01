@@ -862,7 +862,10 @@ export const fi = {
       date: 'Päivämäärä',
       document: 'Dokumentti',
       description: 'Pedagoginen kuvaus',
-      create: 'Lisää uusi dokumentti'
+      create: 'Lisää uusi dokumentti',
+      removeConfirmation: 'Haluatko poistaa dokumentin?',
+      removeConfirmationText:
+        'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.'
     }
   },
   vasu: {

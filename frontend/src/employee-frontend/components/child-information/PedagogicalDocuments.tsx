@@ -16,11 +16,15 @@ import { RequireRole } from '../../utils/roles'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import {
   createPedagogicalDocument,
+  deletePedagogicalDocument,
   getChildPedagogicalDocuments
 } from '../../api/child/pedagogical-documents'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 import { UIContext } from '../../state/ui'
+import { deleteAttachment } from '../../api/attachments'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faQuestion } from 'lib-icons'
 
 interface Props {
   id: UUID
@@ -36,8 +40,11 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
     useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
-  const { uiMode, toggleUiMode } = useContext(UIContext)
+  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const [submitting, setSubmitting] = useState(false)
+  const [tobeDeleted, setTobeDeleted] = useState<
+    PedagogicalDocument | undefined
+  >(undefined)
 
   const loadData = () => {
     setSubmitting(true)
@@ -49,6 +56,29 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
 
   useEffect(loadData, [id, open, setPedagogicalDocuments])
 
+  const handleDelete = (document: PedagogicalDocument) => {
+    setTobeDeleted(document)
+    toggleUiMode('delete-pedagogical-document')
+  }
+
+  const confirmDelete = async () => {
+    await deleteDocument()
+    clearUiMode()
+    setTobeDeleted(undefined)
+  }
+
+  const deleteDocument = async () => {
+    if (!tobeDeleted) return
+    const attachmentId = tobeDeleted.attachment?.id
+    if (!attachmentId)
+      return deletePedagogicalDocument(tobeDeleted.id).then(loadData)
+    else {
+      return deleteAttachment(attachmentId)
+        .then(() => deletePedagogicalDocument(tobeDeleted.id))
+        .then(loadData)
+    }
+  }
+
   const createNewDocument = () => {
     const emptyDocument = { childId: id, description: '', attachmentId: null }
     void createPedagogicalDocument(emptyDocument)
@@ -59,6 +89,17 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       )
       .then(loadData)
   }
+
+  const DeletePedagogicalDocumentModal = () => (
+    <InfoModal
+      iconColour={'orange'}
+      title={i18n.childInformation.pedagogicalDocument.removeConfirmation}
+      text={i18n.childInformation.pedagogicalDocument.removeConfirmationText}
+      icon={faQuestion}
+      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+      resolve={{ action: confirmDelete, label: i18n.common.remove }}
+    />
+  )
 
   function renderPedagogicalDocuments() {
     if (pedagogicalDocuments.isLoading) {
@@ -80,6 +121,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
               uiMode == `edit-pedagogical-document-${pedagogicalDocument.id}`
             }
             onReload={loadData}
+            onDelete={handleDelete}
           />
         )
       )
@@ -119,6 +161,9 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
           </Thead>
           <Tbody>{renderPedagogicalDocuments()}</Tbody>
         </Table>
+      )}
+      {uiMode === 'delete-pedagogical-document' && (
+        <DeletePedagogicalDocumentModal />
       )}
     </CollapsibleContentArea>
   )
