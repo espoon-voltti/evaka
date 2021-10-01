@@ -2868,7 +2868,7 @@ export const fi = {
     }
   },
   welcomePage: {
-    text: 'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+    text: 'Olet kirjautunut sisään Espoon kaupungin eVaka-palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
   },
   validationErrors: {
     required: 'Pakollinen tieto',
