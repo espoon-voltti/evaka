@@ -22,7 +22,7 @@ import java.util.UUID
 class VardaErrorReport(private val acl: AccessControlList) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("errorsSince") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) errorsSince: LocalDate
     ): List<VardaErrorReportRow> {

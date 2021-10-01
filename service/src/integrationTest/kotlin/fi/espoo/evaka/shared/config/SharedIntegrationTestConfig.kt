@@ -76,9 +76,11 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
                 .run {
                     migrate()
                 }
-            Database(Jdbi.create(it)).transaction { tx ->
-                tx.runDevScript("reset-database.sql")
-                tx.resetDatabase()
+            Database(Jdbi.create(it)).connect { db ->
+                db.transaction { tx ->
+                    tx.runDevScript("reset-database.sql")
+                    tx.resetDatabase()
+                }
             }
         }
     ).also {

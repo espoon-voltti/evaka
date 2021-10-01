@@ -24,7 +24,7 @@ import java.time.LocalDate
 class DecisionsReportController {
     @GetMapping("/reports/decisions")
     fun getDecisionsReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

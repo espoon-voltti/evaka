@@ -49,7 +49,7 @@ class ChildImageTest : FullApplicationTest() {
     fun `inserting image`() {
         val file = FileMock()
         controller.putImage(
-            dbInstance(),
+            db,
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             testChild_1.id,
             file
@@ -82,7 +82,7 @@ class ChildImageTest : FullApplicationTest() {
 
         val file = FileMock()
         controller.putImage(
-            dbInstance(),
+            db,
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             testChild_1.id,
             file
@@ -120,7 +120,7 @@ class ChildImageTest : FullApplicationTest() {
         }
 
         controller.deleteImage(
-            dbInstance(),
+            db,
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             testChild_1.id
         )
@@ -145,7 +145,7 @@ class ChildImageTest : FullApplicationTest() {
             .thenReturn(file.inputStream)
 
         val response = controller.getImage(
-            dbInstance(),
+            db,
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             oldImageId
         )

@@ -20,7 +20,7 @@ data class ChildImage(
 const val childImagesBucketPrefix = "child-images/"
 
 fun replaceImage(
-    db: Database,
+    db: Database.Connection,
     documentClient: DocumentService,
     bucket: String,
     childId: UUID,
@@ -52,7 +52,7 @@ fun replaceImage(
 }
 
 fun removeImage(
-    db: Database,
+    db: Database.Connection,
     documentClient: DocumentService,
     bucket: String,
     childId: UUID

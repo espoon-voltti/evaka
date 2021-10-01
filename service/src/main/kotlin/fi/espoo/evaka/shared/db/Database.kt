@@ -56,20 +56,6 @@ class Database(private val jdbi: Jdbi) {
     }
 
     /**
-     * Opens a database connection in read mode, runs the given function, and closes the connection.
-     *
-     * Throws `IllegalStateException` if a connection is already open
-     */
-    fun <T> read(f: (db: Read) -> T): T = connect { it.read(f) }
-
-    /**
-     * Opens a database connection, runs the given function within a transaction, and closes the connection.
-     *
-     * Throws `IllegalStateException` if a connection is already open
-     */
-    fun <T> transaction(f: (db: Transaction) -> T): T = connect { it.transaction(f) }
-
-    /**
      * A single database connection tied to a single thread
      */
     class Connection internal constructor(private val threadId: ThreadId, private val connected: AtomicBoolean, private val handle: Handle) : AutoCloseable {

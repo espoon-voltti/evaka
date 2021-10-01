@@ -192,10 +192,12 @@ WHERE employee_id = :userId
     }
 
     fun requireGuardian(user: AuthenticatedUser, childIds: Set<UUID>) {
-        val dependants = Database(jdbi).read {
-            it.createQuery(
-                "SELECT child_id FROM guardian g WHERE g.guardian_id = :userId"
-            ).bind("userId", user.id).mapTo<UUID>().list()
+        val dependants = Database(jdbi).connect { db ->
+            db.read {
+                it.createQuery(
+                    "SELECT child_id FROM guardian g WHERE g.guardian_id = :userId"
+                ).bind("userId", user.id).mapTo<UUID>().list()
+            }
         }
 
         if (childIds.any { !dependants.contains(it) }) {
@@ -241,7 +243,7 @@ WHERE employee_id = :userId
     private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) =
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
-                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).read { it.isOwnApplication(user, id) }
+                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db -> db.read { it.isOwnApplication(user, id) } }
                 else -> false
             }
             is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, id)
@@ -254,7 +256,7 @@ WHERE employee_id = :userId
             Action.ApplicationNote.DELETE -> user.hasOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.SERVICE_WORKER
-            ) || Database(jdbi).read { it.getApplicationNoteCreatedBy(id) == user.id }
+            ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.id } }
         }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
@@ -282,16 +284,16 @@ WHERE employee_id = :userId
                 Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
-                    Database(jdbi).read { it.isOwnAttachment(id, user) }
+                    Database(jdbi).connect { db -> db.read { it.isOwnAttachment(id, user) } }
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.READ_APPLICATION_ATTACHMENT,
                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
@@ -308,18 +310,18 @@ WHERE employee_id = :userId
                         user,
                         action,
                         id
-                    ) && Database(jdbi).read { it.wasUploadedByAnyEmployee(id) }
+                    ) && Database(jdbi).connect { db -> db.read { it.wasUploadedByAnyEmployee(id) } }
                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT ->
                     hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions)
                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
                     hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions) && Database(
                         jdbi
-                    ).read { it.wasUploadedByAnyEmployee(id) }
+                    ).connect { db -> db.read { it.wasUploadedByAnyEmployee(id) } }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT ->
-                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageDraft(user, id) }
+                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageDraft(user, id) } }
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).read { it.hasPermissionForAttachmentThroughMessageContent(user, id) }
+                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
             }
             is AuthenticatedUser.MobileDevice -> false
@@ -396,7 +398,7 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
                 Action.IncomeStatement.UPLOAD_ATTACHMENT ->
-                    Database(jdbi).read { it.isOwnIncomeStatement(user, id) }
+                    Database(jdbi).connect { db -> db.read { it.isOwnIncomeStatement(user, id) } }
                 else -> false
             }
             is AuthenticatedUser.Employee ->
@@ -412,7 +414,7 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Citizen -> false // drafts are employee-only
             is AuthenticatedUser.Employee -> when (action) {
-                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).read { it.hasPermissionForMessageDraft(user, id) }
+                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db -> db.read { it.hasPermissionForMessageDraft(user, id) } }
             }
             else -> false
         }
@@ -483,12 +485,14 @@ WHERE employee_id = :userId
         if (user is AuthenticatedUser.Employee) {
             val scopedActions = EnumSet.allOf(A::class.java).also { it -= globalActions }
             if (scopedActions.isNotEmpty()) {
-                Database(jdbi).read { tx ->
-                    for ((id, roles) in this.getRolesForAll(tx, user, *ids.toTypedArray())) {
-                        val permittedActions = result[id]!!
-                        for (action in scopedActions) {
-                            if (roles.any { mapping(it).contains(action) }) {
-                                permittedActions += action
+                Database(jdbi).connect { db ->
+                    db.read { tx ->
+                        for ((id, roles) in this.getRolesForAll(tx, user, *ids.toTypedArray())) {
+                            val permittedActions = result[id]!!
+                            for (action in scopedActions) {
+                                if (roles.any { mapping(it).contains(action) }) {
+                                    permittedActions += action
+                                }
                             }
                         }
                     }
@@ -515,7 +519,7 @@ WHERE employee_id = :userId
         id: I
     ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
         if (hasPermissionThroughGlobalRole(user, action)) return true
-        return Database(jdbi).read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) }
+        return Database(jdbi).connect { db -> db.read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) } }
     }
 
     private inline fun <reified A : Action.ScopedAction<I>, reified I> ActionConfig<A>.getRolesFor(

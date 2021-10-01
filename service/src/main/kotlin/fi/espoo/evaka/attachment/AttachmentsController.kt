@@ -51,7 +51,7 @@ class AttachmentsController(
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentEmployee(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
@@ -66,7 +66,7 @@ class AttachmentsController(
 
     @PostMapping("/income-statements/{incomeStatementId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadIncomeStatementAttachmentEmployee(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
@@ -78,7 +78,7 @@ class AttachmentsController(
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadMessageAttachment(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
@@ -90,7 +90,7 @@ class AttachmentsController(
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
@@ -111,7 +111,7 @@ class AttachmentsController(
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadAttachmentCitizen(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser.Citizen,
         @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
@@ -128,7 +128,7 @@ class AttachmentsController(
         return handleFileUpload(db, user, attachTo, file, null)
     }
 
-    private fun checkAttachmentCount(db: Database, attachTo: AttachmentParent, user: AuthenticatedUser) {
+    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
         val count = db.read {
             when (attachTo) {
                 AttachmentParent.None -> it.userUnparentedAttachmentCount(user.id)
@@ -147,7 +147,7 @@ class AttachmentsController(
     }
 
     private fun handleFileUpload(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         attachTo: AttachmentParent,
         file: MultipartFile,
@@ -186,7 +186,7 @@ class AttachmentsController(
 
     @GetMapping("/{attachmentId}/download")
     fun getAttachment(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<ByteArray> {
@@ -219,7 +219,7 @@ class AttachmentsController(
 
     @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])
     fun deleteAttachmentHandler(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<Unit> {

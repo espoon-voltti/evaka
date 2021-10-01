@@ -38,7 +38,7 @@ class AsyncJobRunnerTest {
 
     private lateinit var asyncJobRunner: AsyncJobRunner<TestJob>
     private lateinit var jdbi: Jdbi
-    private lateinit var db: Database
+    private lateinit var db: Database.Connection
 
     private val currentCallback: AtomicReference<(msg: TestJob) -> Unit> = AtomicReference()
 
@@ -51,6 +51,7 @@ class AsyncJobRunnerTest {
     fun afterEach() {
         asyncJobRunner.close()
         currentCallback.set(null)
+        db.close()
     }
 
     @BeforeEach
@@ -60,7 +61,7 @@ class AsyncJobRunnerTest {
             currentCallback.get()(msg)
         }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
-        db = Database(jdbi)
+        db = Database(jdbi).connectWithManualLifecycle()
     }
 
     @Test

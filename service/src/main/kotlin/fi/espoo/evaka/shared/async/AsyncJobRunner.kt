@@ -102,7 +102,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseabl
     }
 
     fun getPendingJobCount(): Int =
-        Database(jdbi).read { it.getPendingJobCount(handlers.keys) }
+        Database(jdbi).connect { db -> db.read { it.getPendingJobCount(handlers.keys) } }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
