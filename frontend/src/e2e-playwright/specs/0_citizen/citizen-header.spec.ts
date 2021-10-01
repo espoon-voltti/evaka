@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { enduserLogin } from 'e2e-playwright/utils/user'
@@ -19,7 +18,6 @@ beforeEach(async () => {
   await initializeAreaAndPersonData()
 
   page = await (await newBrowserContext()).newPage()
-  await page.goto(config.enduserUrl)
   await enduserLogin(page)
   header = new CitizenHeader(page)
 })

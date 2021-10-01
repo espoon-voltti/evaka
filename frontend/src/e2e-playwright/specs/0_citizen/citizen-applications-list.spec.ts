@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import config from 'e2e-test-common/config'
 import {
   execSimpleApplicationActions,
   insertApplications,
@@ -31,7 +30,6 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   page = await (await newBrowserContext()).newPage()
-  await page.goto(config.enduserUrl)
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)

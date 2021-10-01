@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
-import config from '../../../e2e-test-common/config'
 import { resetDatabase } from '../../../e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -20,7 +19,6 @@ beforeEach(async () => {
   await resetDatabase()
 
   page = await (await newBrowserContext()).newPage()
-  await page.goto(config.enduserUrl)
   await enduserLogin(page)
   header = new CitizenHeader(page)
   incomeStatementsPage = new IncomeStatementsPage(page)
