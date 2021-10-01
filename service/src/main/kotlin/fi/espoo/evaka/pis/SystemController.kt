@@ -36,7 +36,6 @@ class SystemController(private val personService: PersonService, private val acc
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: CitizenLoginRequest
     ): CitizenUser {
-        Audit.CitizenLogin.log()
         return db.transaction { tx ->
             val citizen = tx.getCitizenUserBySsn(request.socialSecurityNumber)
                 ?: personService.getOrCreatePerson(
@@ -47,6 +46,8 @@ class SystemController(private val personService: PersonService, private val acc
                 ?: error("No person found with ssn")
             tx.markPersonLastLogin(citizen.id)
             citizen
+        }.also {
+            Audit.CitizenLogin.log(targetId = listOf(request.socialSecurityNumber, request.lastName, request.firstName), objectId = it.id)
         }
     }
 
@@ -56,7 +57,6 @@ class SystemController(private val personService: PersonService, private val acc
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: EmployeeLoginRequest
     ): EmployeeUser {
-        Audit.EmployeeLogin.log(targetId = request.externalId)
         return db.transaction {
             val employee = it.getEmployeeUserByExternalId(request.externalId)
                 ?: EmployeeUser(
@@ -68,6 +68,8 @@ class SystemController(private val personService: PersonService, private val acc
                 )
             it.markEmployeeLastLogin(employee.id)
             employee
+        }.also {
+            Audit.EmployeeLogin.log(targetId = listOf(request.externalId, request.lastName, request.firstName, request.email), objectId = it.id)
         }
     }
 
