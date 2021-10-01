@@ -114,9 +114,13 @@ anything but binary-like files (e.g. certificates) with
 ### Check licensing compliance
 
 This repository targets [REUSE](https://reuse.software/) compliance by utilizing
-the [reuse CLI tool](https://git.fsfe.org/reuse/tool).
+the [reuse CLI tool](https://git.fsfe.org/reuse/tool) and the
+[REUSE API](https://api.reuse.software/).
 
-To check that the repository is compliant (e.g. before submitting a pull
+The REUSE API constantly checks this repository's compliance and the status
+can be seen from the badge at the top of this README.
+
+To manually check that the repository is compliant (e.g. before submitting a pull
 request), run:
 
 ```sh
