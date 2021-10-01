@@ -87,7 +87,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
-        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -112,7 +112,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             )
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
-        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 
@@ -148,7 +148,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -192,7 +192,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(dbInstance(), AsyncJob.VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 }

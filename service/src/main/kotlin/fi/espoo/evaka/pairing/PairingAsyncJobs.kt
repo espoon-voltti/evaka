@@ -17,7 +17,7 @@ class PairingAsyncJobs(
         asyncJobRunner.registerHandler(::runGarbageCollectPairing)
     }
 
-    private fun runGarbageCollectPairing(db: Database, msg: AsyncJob.GarbageCollectPairing) {
+    private fun runGarbageCollectPairing(db: Database.Connection, msg: AsyncJob.GarbageCollectPairing) {
         db.transaction {
             it.createUpdate("DELETE FROM pairing WHERE id = :id")
                 .bind("id", msg.pairingId)

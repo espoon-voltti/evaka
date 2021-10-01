@@ -83,7 +83,7 @@ class MessageNotificationEmailService(
         }
     }
 
-    fun sendMessageNotification(db: Database, msg: AsyncJob.SendMessageNotificationEmail) {
+    fun sendMessageNotification(db: Database.Connection, msg: AsyncJob.SendMessageNotificationEmail) {
         val (messageRecipientId, personEmail, language) = msg
 
         db.transaction { tx ->

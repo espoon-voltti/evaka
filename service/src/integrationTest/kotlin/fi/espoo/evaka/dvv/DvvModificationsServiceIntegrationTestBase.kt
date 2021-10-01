@@ -49,7 +49,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
     protected fun initDvvModificationService() {
         assert(httpPort > 0)
 
-        fridgeFamilyService = FridgeFamilyService(personService, parentshipService, asyncJobRunner)
+        fridgeFamilyService = FridgeFamilyService(personService, parentshipService)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api/v1"
         requestCustomizerMock = mock()
         dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl))

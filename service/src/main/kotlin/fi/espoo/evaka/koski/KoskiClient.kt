@@ -47,7 +47,7 @@ class KoskiClient(
         asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski -> uploadToKoski(db, msg, today = LocalDate.now()) }
     }
 
-    fun uploadToKoski(db: Database, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
+    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
         val data = tx.beginKoskiUpload(env.sourceSystem, msg.key, today)
         if (data == null) {

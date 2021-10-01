@@ -23,7 +23,7 @@ class DecisionMessageProcessor(
         asyncJobRunner.registerHandler(::runSendJob)
     }
 
-    fun runCreateJob(db: Database, msg: AsyncJob.NotifyDecisionCreated) = db.transaction { tx ->
+    fun runCreateJob(db: Database.Connection, msg: AsyncJob.NotifyDecisionCreated) = db.transaction { tx ->
         val user = msg.user
         val decisionId = msg.decisionId
 
@@ -36,7 +36,7 @@ class DecisionMessageProcessor(
         }
     }
 
-    fun runSendJob(db: Database, msg: AsyncJob.SendDecision) = db.transaction { tx ->
+    fun runSendJob(db: Database.Connection, msg: AsyncJob.SendDecision) = db.transaction { tx ->
         val decisionId = msg.decisionId
 
         decisionService.deliverDecisionToGuardians(tx, decisionId)

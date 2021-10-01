@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
@@ -19,11 +18,10 @@ private val logger = KotlinLogging.logger {}
 @Service
 class FridgeFamilyService(
     private val personService: PersonService,
-    private val parentshipService: ParentshipService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val parentshipService: ParentshipService
 ) {
 
-    fun doVTJRefresh(db: Database, msg: AsyncJob.VTJRefresh) {
+    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
         logger.info("Refreshing ${msg.personId} from VTJ")
         val head = db.transaction {
             personService.getPersonWithChildren(
