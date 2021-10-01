@@ -19,7 +19,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { client } from '../api/client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from './async-rendering'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
   return client

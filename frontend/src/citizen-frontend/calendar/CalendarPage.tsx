@@ -12,7 +12,6 @@ import { getReservations, ReservationsResponse } from './api'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
@@ -24,6 +23,7 @@ import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
 import _ from 'lodash'
 import ActionPickerModal from './ActionPickerModal'
+import { UnwrapResult } from 'citizen-frontend/async-rendering'
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
@@ -74,67 +74,60 @@ export default React.memo(function CalendarPage() {
           openAbsenceModal={() => setOpenModal('absences')}
         />
       ) : null}
-      {data.mapAll({
-        loading() {
-          return <Loader />
-        },
-        failure() {
-          return <div>{i18n.common.errors.genericGetError}</div>
-        },
-        success(response) {
-          return (
-            <>
-              <MobileOnly>
-                <ContentArea
-                  opaque
-                  paddingVertical="zero"
-                  paddingHorizontal="zero"
-                >
-                  <CalendarListView
-                    dailyData={response.dailyData}
-                    onHoverButtonClick={() => setOpenModal('pickAction')}
-                    selectDate={selectDate}
-                  />
-                </ContentArea>
-              </MobileOnly>
-              <DesktopOnly>
-                <Gap size="s" />
-                <CalendarGridView
+      <UnwrapResult
+        result={data}
+        failure={() => <div>{i18n.common.errors.genericGetError}</div>}
+      >
+        {(response) => (
+          <>
+            <MobileOnly>
+              <ContentArea
+                opaque
+                paddingVertical="zero"
+                paddingHorizontal="zero"
+              >
+                <CalendarListView
                   dailyData={response.dailyData}
-                  onCreateReservationClicked={() =>
-                    setOpenModal('reservations')
-                  }
-                  onCreateAbsencesClicked={() => setOpenModal('absences')}
-                  selectedDate={selectedDate}
+                  onHoverButtonClick={() => setOpenModal('pickAction')}
                   selectDate={selectDate}
                 />
-              </DesktopOnly>
-              {openModal === 'pickAction' && (
-                <ActionPickerModal
-                  close={() => setOpenModal(undefined)}
-                  openReservations={() => setOpenModal('reservations')}
-                  openAbsences={() => setOpenModal('absences')}
-                />
-              )}
-              {openModal === 'reservations' && (
-                <ReservationModal
-                  onClose={() => setOpenModal(undefined)}
-                  availableChildren={response.children}
-                  onReload={loadDefaultRange}
-                  reservableDays={response.reservableDays}
-                />
-              )}
-              {openModal === 'absences' && (
-                <AbsenceModal
-                  close={() => setOpenModal(undefined)}
-                  reload={loadDefaultRange}
-                  availableChildren={response.children}
-                />
-              )}
-            </>
-          )
-        }
-      })}
+              </ContentArea>
+            </MobileOnly>
+            <DesktopOnly>
+              <Gap size="s" />
+              <CalendarGridView
+                dailyData={response.dailyData}
+                onCreateReservationClicked={() => setOpenModal('reservations')}
+                onCreateAbsencesClicked={() => setOpenModal('absences')}
+                selectedDate={selectedDate}
+                selectDate={selectDate}
+              />
+            </DesktopOnly>
+            {openModal === 'pickAction' && (
+              <ActionPickerModal
+                close={() => setOpenModal(undefined)}
+                openReservations={() => setOpenModal('reservations')}
+                openAbsences={() => setOpenModal('absences')}
+              />
+            )}
+            {openModal === 'reservations' && (
+              <ReservationModal
+                onClose={() => setOpenModal(undefined)}
+                availableChildren={response.children}
+                onReload={loadDefaultRange}
+                reservableDays={response.reservableDays}
+              />
+            )}
+            {openModal === 'absences' && (
+              <AbsenceModal
+                close={() => setOpenModal(undefined)}
+                reload={loadDefaultRange}
+                availableChildren={response.children}
+              />
+            )}
+          </>
+        )}
+      </UnwrapResult>
       <Footer />
     </>
   )

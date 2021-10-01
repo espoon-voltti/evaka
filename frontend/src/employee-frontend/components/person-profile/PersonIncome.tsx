@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { faEuroSign, faFileAlt } from 'lib-icons'
 import { Gap } from 'lib-components/white-space'
-import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'
 import { useTranslation } from '../../state/i18n'
@@ -34,6 +33,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { formatDate } from 'lib-common/date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { featureFlags } from 'lib-customizations/employee'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   id: UUID
@@ -100,34 +100,29 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       data-qa="person-income-collapsible"
       startCollapsed={!open}
     >
-      {incomes.mapAll({
-        loading() {
-          return <Loader />
-        },
-        failure() {
-          return <div>{i18n.personProfile.income.error}</div>
-        },
-        success([incomes, incomeStatements]) {
-          return (
-            <>
-              {featureFlags.experimental?.incomeStatements ? (
-                <IncomeStatements
-                  personId={id}
-                  incomeStatements={incomeStatements}
-                  onSuccessfulUpdate={loadData}
-                />
-              ) : null}
-              <Incomes
+      <UnwrapResult
+        result={incomes}
+        failure={() => <div>{i18n.personProfile.income.error}</div>}
+      >
+        {([incomes, incomeStatements]) => (
+          <>
+            {featureFlags.experimental?.incomeStatements ? (
+              <IncomeStatements
                 personId={id}
-                incomes={incomes}
-                isIncomeRowOpen={isIncomeRowOpen}
-                toggleIncomeRow={toggleIncomeRow}
-                onSuccessfulUpdate={reload}
+                incomeStatements={incomeStatements}
+                onSuccessfulUpdate={loadData}
               />
-            </>
-          )
-        }
-      })}
+            ) : null}
+            <Incomes
+              personId={id}
+              incomes={incomes}
+              isIncomeRowOpen={isIncomeRowOpen}
+              toggleIncomeRow={toggleIncomeRow}
+              onSuccessfulUpdate={reload}
+            />
+          </>
+        )}
+      </UnwrapResult>
     </CollapsibleSection>
   )
 })

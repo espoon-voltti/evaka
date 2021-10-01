@@ -23,8 +23,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { fontWeights } from 'lib-components/typography'
 
 import AttendanceComingPage from './AttendanceComingPage'
@@ -43,9 +41,10 @@ import FreeTextSearch from '../common/FreeTextSearch'
 import TopBar from '../common/TopBar'
 import BottomNavbar, { NavItem } from '../common/BottomNavbar'
 import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
-import { Loading, Result, combine } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import { getUnitStaffAttendances } from '../../api/staffAttendances'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
+import { renderResult } from '../async-rendering'
 
 export interface Props {
   onNavigate: (page: NavItem) => void
@@ -233,119 +232,108 @@ export default React.memo(function AttendancePageWrapper({
 
   const containerSpring = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
 
-  return combine(
-    attendanceResponse,
-    staffAttendancesResponse.map((staffAttendances) =>
-      staffAttendanceForGroupOrUnit(
-        staffAttendances,
-        groupIdOrAll === 'all' ? undefined : groupIdOrAll
+  return renderResult(
+    combine(
+      attendanceResponse,
+      staffAttendancesResponse.map((staffAttendances) =>
+        staffAttendanceForGroupOrUnit(
+          staffAttendances,
+          groupIdOrAll === 'all' ? undefined : groupIdOrAll
+        )
       )
-    )
-  ).mapAll({
-    failure() {
-      return <ErrorSegment />
-    },
-    loading() {
-      return <Loader />
-    },
-    success([attendance, staffAttendances]) {
-      return (
-        <>
-          <SearchBar
-            style={{
-              height: containerSpring.x.interpolate((x) => `${100 * x}%`)
-            }}
-          >
-            <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
-              {attendance.unit.name}{' '}
-              <IconButton
-                onClick={() => setShowSearch(!showSearch)}
-                icon={faTimes}
-              />
-            </NoMarginTitle>
-            <ContentArea
-              opaque={false}
-              paddingVertical={'zero'}
-              paddingHorizontal={'zero'}
-            >
-              <FreeTextSearch
-                value={freeText}
-                setValue={setFreeText}
-                placeholder={i18n.attendances.searchPlaceholder}
-                background={colors.greyscale.white}
-                setShowSearch={setShowSearch}
-                searchResults={searchResults}
-              />
-              <AttendanceList
-                attendanceChildren={searchResults}
-                groups={[]}
-                showAll
-              />
-            </ContentArea>
-          </SearchBar>
-          <TopBar
-            unitName={attendance.unit.name}
-            selectedGroup={selectedGroup}
-            onChangeGroup={changeGroup}
-            onSearch={() => setShowSearch(!showSearch)}
-          />
-          <Tabs tabs={tabs} mobile />
-
+    ),
+    ([attendance, staffAttendances]) => (
+      <>
+        <SearchBar
+          style={{
+            height: containerSpring.x.interpolate((x) => `${100 * x}%`)
+          }}
+        >
+          <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
+            {attendance.unit.name}{' '}
+            <IconButton
+              onClick={() => setShowSearch(!showSearch)}
+              icon={faTimes}
+            />
+          </NoMarginTitle>
           <ContentArea
-            fullHeight
             opaque={false}
-            paddingVertical={'s'}
+            paddingVertical={'zero'}
             paddingHorizontal={'zero'}
           >
-            <Switch>
-              <Route
-                exact
-                path={`${path}/coming`}
-                render={() => (
-                  <AttendanceComingPage
-                    attendanceResponse={attendanceResponse}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={`${path}/present`}
-                render={() => (
-                  <AttendancePresentPage
-                    attendanceResponse={attendanceResponse}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={`${path}/departed`}
-                render={() => (
-                  <AttendanceDepartedPage
-                    attendanceResponse={attendanceResponse}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={`${path}/absent`}
-                render={() => (
-                  <AttendanceAbsentPage
-                    attendanceResponse={attendanceResponse}
-                  />
-                )}
-              />
-              <Redirect to={`${path}/coming`} />
-            </Switch>
+            <FreeTextSearch
+              value={freeText}
+              setValue={setFreeText}
+              placeholder={i18n.attendances.searchPlaceholder}
+              background={colors.greyscale.white}
+              setShowSearch={setShowSearch}
+              searchResults={searchResults}
+            />
+            <AttendanceList
+              attendanceChildren={searchResults}
+              groups={[]}
+              showAll
+            />
           </ContentArea>
-          <BottomNavbar
-            selected="child"
-            staffCount={staffAttendances}
-            onChange={onNavigate}
-          />
-        </>
-      )
-    }
-  })
+        </SearchBar>
+        <TopBar
+          unitName={attendance.unit.name}
+          selectedGroup={selectedGroup}
+          onChangeGroup={changeGroup}
+          onSearch={() => setShowSearch(!showSearch)}
+        />
+        <Tabs tabs={tabs} mobile />
+
+        <ContentArea
+          fullHeight
+          opaque={false}
+          paddingVertical={'s'}
+          paddingHorizontal={'zero'}
+        >
+          <Switch>
+            <Route
+              exact
+              path={`${path}/coming`}
+              render={() => (
+                <AttendanceComingPage attendanceResponse={attendanceResponse} />
+              )}
+            />
+            <Route
+              exact
+              path={`${path}/present`}
+              render={() => (
+                <AttendancePresentPage
+                  attendanceResponse={attendanceResponse}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={`${path}/departed`}
+              render={() => (
+                <AttendanceDepartedPage
+                  attendanceResponse={attendanceResponse}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={`${path}/absent`}
+              render={() => (
+                <AttendanceAbsentPage attendanceResponse={attendanceResponse} />
+              )}
+            />
+            <Redirect to={`${path}/coming`} />
+          </Switch>
+        </ContentArea>
+        <BottomNavbar
+          selected="child"
+          staffCount={staffAttendances}
+          onChange={onNavigate}
+        />
+      </>
+    )
+  )
 })
 
 const NoMarginTitle = styled(Title)`

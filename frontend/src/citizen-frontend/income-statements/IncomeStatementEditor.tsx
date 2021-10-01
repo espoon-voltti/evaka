@@ -18,7 +18,7 @@ import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { initialFormData } from './types/form'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from '../async-rendering'
 import { RouteComponentProps } from 'react-router'
 
 interface EditorState {

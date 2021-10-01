@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
-import { renderResult } from 'lib-components/async-rendering'
+import { renderResult } from '../async-rendering'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Translations, useTranslation } from '../localization'
 import {

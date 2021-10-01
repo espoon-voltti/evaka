@@ -40,6 +40,7 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from 'lib-common/money'
 import StatusLabel from '../common/StatusLabel'
 import FeeThresholdsEditor from './FeeThresholdsEditor'
+import { UnwrapResult } from '../async-rendering'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -144,46 +145,42 @@ export default React.memo(function FeesSection() {
           existingThresholds={data}
         />
       ) : null}
-      {data.mapAll({
-        loading() {
-          return <Spinner data-qa="fees-section-spinner" />
-        },
-        failure() {
-          return <ErrorSegment title={i18n.common.error.unknown} />
-        },
-        success(feeThresholdsList) {
-          return (
-            <>
-              {feeThresholdsList.map((feeThresholds, index) =>
-                editorState.editing === feeThresholds.id ? (
-                  <FeeThresholdsEditor
-                    key={feeThresholds.id}
-                    i18n={i18n}
-                    id={feeThresholds.id}
-                    initialState={editorState.form}
-                    close={closeEditor}
-                    reloadData={loadData}
-                    toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
-                    existingThresholds={data}
-                  />
-                ) : (
-                  <FeeThresholdsItem
-                    key={feeThresholds.id}
-                    i18n={i18n}
-                    id={feeThresholds.id}
-                    feeThresholds={feeThresholds.thresholds}
-                    copyThresholds={copyThresholds}
-                    editThresholds={editThresholds}
-                    editing={!!editorState.editing}
-                    toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
-                    data-qa={`fee-thresholds-item-${index}`}
-                  />
-                )
-              )}
-            </>
-          )
-        }
-      })}
+      <UnwrapResult
+        result={data}
+        loading={() => <Spinner data-qa="fees-section-spinner" />}
+        failure={() => <ErrorSegment title={i18n.common.error.unknown} />}
+      >
+        {(feeThresholdsList) => (
+          <>
+            {feeThresholdsList.map((feeThresholds, index) =>
+              editorState.editing === feeThresholds.id ? (
+                <FeeThresholdsEditor
+                  key={feeThresholds.id}
+                  i18n={i18n}
+                  id={feeThresholds.id}
+                  initialState={editorState.form}
+                  close={closeEditor}
+                  reloadData={loadData}
+                  toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+                  existingThresholds={data}
+                />
+              ) : (
+                <FeeThresholdsItem
+                  key={feeThresholds.id}
+                  i18n={i18n}
+                  id={feeThresholds.id}
+                  feeThresholds={feeThresholds.thresholds}
+                  copyThresholds={copyThresholds}
+                  editThresholds={editThresholds}
+                  editing={!!editorState.editing}
+                  toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
+                  data-qa={`fee-thresholds-item-${index}`}
+                />
+              )
+            )}
+          </>
+        )}
+      </UnwrapResult>
       {modal ? (
         <InfoModal
           icon={faQuestion}

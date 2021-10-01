@@ -6,8 +6,6 @@ import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -20,6 +18,7 @@ import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
+import { renderResult } from 'citizen-frontend/async-rendering'
 
 const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
   thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
@@ -107,17 +106,9 @@ export default React.memo(function ThreadList({
             onAttachmentUnavailable={onAttachmentUnavailable}
           />
         ))}
-        {threadLoadingResult.mapAll({
-          failure() {
-            return <ErrorSegment title={t.common.errors.genericGetError} />
-          },
-          loading() {
-            return <SpinnerSegment />
-          },
-          success() {
-            return <OnEnterView onEnter={loadMoreThreads} />
-          }
-        })}
+        {renderResult(threadLoadingResult, () => (
+          <OnEnterView onEnter={loadMoreThreads} />
+        ))}
       </Container>
     </>
   )

@@ -9,13 +9,13 @@ import { faChild } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { getPersonVoucherValueDecisions } from '../../api/invoicing'
 import { formatCents } from 'lib-common/money'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   id: string
@@ -45,57 +45,50 @@ export default React.memo(function PersonVoucherValueDecisions({
       data-qa="person-voucher-value-decisions-collapsible"
       startCollapsed={!open}
     >
-      {voucherValueDecisions.mapAll({
-        loading() {
-          return <Loader />
-        },
-        failure() {
-          return <div>{i18n.common.loadingFailed}</div>
-        },
-        success(data) {
-          return (
-            <Table data-qa="table-of-voucher-value-decisions">
-              <Thead>
-                <Tr>
-                  <Th>{i18n.valueDecisions.table.validity}</Th>
-                  <Th>{i18n.valueDecisions.table.number}</Th>
-                  <Th>{i18n.valueDecisions.table.totalValue}</Th>
-                  <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
-                  <Th>{i18n.valueDecisions.table.createdAt}</Th>
-                  <Th>{i18n.valueDecisions.table.sentAt}</Th>
-                  <Th>{i18n.valueDecisions.table.status}</Th>
+      <UnwrapResult
+        result={voucherValueDecisions}
+        failure={() => <div>{i18n.common.loadingFailed}</div>}
+      >
+        {(data) => (
+          <Table data-qa="table-of-voucher-value-decisions">
+            <Thead>
+              <Tr>
+                <Th>{i18n.valueDecisions.table.validity}</Th>
+                <Th>{i18n.valueDecisions.table.number}</Th>
+                <Th>{i18n.valueDecisions.table.totalValue}</Th>
+                <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
+                <Th>{i18n.valueDecisions.table.createdAt}</Th>
+                <Th>{i18n.valueDecisions.table.sentAt}</Th>
+                <Th>{i18n.valueDecisions.table.status}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {orderBy(data, ['createdAt'], ['desc']).map((decision) => (
+                <Tr
+                  key={`${decision.id}`}
+                  data-qa="table-voucher-value-decision-row"
+                >
+                  <Td>
+                    {decision.child.firstName} {decision.child.lastName}
+                    <br />
+                    <Link to={`/finance/value-decisions/${decision.id}`}>
+                      {`${decision.validFrom.format()} - ${
+                        decision.validTo?.format() ?? ''
+                      }`}
+                    </Link>
+                  </Td>
+                  <Td>{decision.decisionNumber}</Td>
+                  <Td>{formatCents(decision.voucherValue)}</Td>
+                  <Td>{formatCents(decision.finalCoPayment)}</Td>
+                  <Td>{formatDate(decision.created)}</Td>
+                  <Td>{formatDate(decision.sentAt)}</Td>
+                  <Td>{i18n.valueDecision.status[decision.status]}</Td>
                 </Tr>
-              </Thead>
-              <Tbody>
-                {orderBy(data, ['createdAt'], ['desc']).map((decision) => {
-                  return (
-                    <Tr
-                      key={`${decision.id}`}
-                      data-qa="table-voucher-value-decision-row"
-                    >
-                      <Td>
-                        {decision.child.firstName} {decision.child.lastName}
-                        <br />
-                        <Link to={`/finance/value-decisions/${decision.id}`}>
-                          {`${decision.validFrom.format()} - ${
-                            decision.validTo?.format() ?? ''
-                          }`}
-                        </Link>
-                      </Td>
-                      <Td>{decision.decisionNumber}</Td>
-                      <Td>{formatCents(decision.voucherValue)}</Td>
-                      <Td>{formatCents(decision.finalCoPayment)}</Td>
-                      <Td>{formatDate(decision.created)}</Td>
-                      <Td>{formatDate(decision.sentAt)}</Td>
-                      <Td>{i18n.valueDecision.status[decision.status]}</Td>
-                    </Tr>
-                  )
-                })}
-              </Tbody>
-            </Table>
-          )
-        }
-      })}
+              ))}
+            </Tbody>
+          </Table>
+        )}
+      </UnwrapResult>
     </CollapsibleSection>
   )
 })

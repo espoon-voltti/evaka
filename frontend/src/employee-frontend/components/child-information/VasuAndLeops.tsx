@@ -36,6 +36,7 @@ import {
   VasuTemplateSummary
 } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
+import { UnwrapResult } from '../async-rendering'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -143,30 +144,32 @@ function VasuInitialization({
         }
         text={i18n.childInformation.vasu.createNew}
       />
-      {templates?.mapAll({
-        failure() {
-          return <ErrorSegment title={i18n.childInformation.vasu.init.error} />
-        },
-        loading() {
-          return <FullScreenDimmedSpinner />
-        },
-        success(value) {
-          if (value.length === 0) {
-            return <div>{i18n.childInformation.vasu.init.noTemplates}</div>
-          }
-          if (value.length === 1) {
-            return null // the template is selected automatically
-          }
-          return (
-            <TemplateSelectionModal
-              loading={initializing}
-              onClose={() => setTemplates(undefined)}
-              onSelect={(id) => createVasu(childId, id)}
-              templates={value}
-            />
-          )
-        }
-      })}
+      {templates && (
+        <UnwrapResult
+          result={templates}
+          loading={() => <FullScreenDimmedSpinner />}
+          failure={() => (
+            <ErrorSegment title={i18n.childInformation.vasu.init.error} />
+          )}
+        >
+          {(value) => {
+            if (value.length === 0) {
+              return <div>{i18n.childInformation.vasu.init.noTemplates}</div>
+            }
+            if (value.length === 1) {
+              return null // the template is selected automatically
+            }
+            return (
+              <TemplateSelectionModal
+                loading={initializing}
+                onClose={() => setTemplates(undefined)}
+                onSelect={(id) => createVasu(childId, id)}
+                templates={value}
+              />
+            )
+          }}
+        </UnwrapResult>
+      )}
     </InitializationContainer>
   )
 }
