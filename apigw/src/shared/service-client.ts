@@ -89,7 +89,7 @@ export async function employeeLogin(
   employee: EmployeeLoginRequest
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
-    `/system/employee-identity`,
+    `/system/employee-login`,
     employee,
     {
       headers: createServiceRequestHeaders(undefined, machineUser)
@@ -115,7 +115,7 @@ export async function citizenLogin(
   person: CitizenLoginRequest
 ): Promise<CitizenUser> {
   const { data } = await client.post<CitizenUser>(
-    `/system/person-identity`,
+    `/system/citizen-login`,
     person,
     {
       headers: createServiceRequestHeaders(undefined, machineUser)
