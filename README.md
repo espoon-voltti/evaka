@@ -6,6 +6,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # eVaka – ERP for early childhood education
 
+[![REUSE status](https://api.reuse.software/badge/github.com/espoon-voltti/evaka)](https://api.reuse.software/info/github.com/espoon-voltti/evaka)
+
+<!-- This project is registered with the REUSE API: https://api.reuse.software/ -->
+
 This is eVaka – an ERP system developed for early childhood education in
 Finland. It is a web application developed using modern technologies and
 designed to be deployed in cloud environment.
