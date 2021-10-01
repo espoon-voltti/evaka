@@ -8,8 +8,10 @@ set -euo pipefail
 
 # Configuration
 DEBUG=${DEBUG:-false}
-REUSE_VERSION=0.13.0
+REUSE_VERSION=0.13.0 # NOTE: Update .circleci/config.yml to match
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
+
+REUSE_IMAGE="fsfe/reuse:${REUSE_VERSION}"
 
 if [ "$DEBUG" = "true" ]; then
     set -x
@@ -27,10 +29,10 @@ REPO_PREFIX=${PWD#"${REPO_ROOT}"}
 
 if [ "${1:-X}" = '--help' ]; then
   echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
-  echo -e
+  echo ''
   echo 'Helper script to attempt automatically adding missing license headers to all source code files.'
   echo 'Any missing license files are downloaded automatically to LICENSES/.'
-  echo -e
+  echo ''
   echo 'Options:'
   echo "    --lint-only     Only lint for missing headers, don't attempt to add anything"
   echo '    --help          Print this help'
@@ -39,7 +41,7 @@ fi
 
 function run_reuse() {
     run_args=("$@")
-    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "fsfe/reuse:${REUSE_VERSION}" "${run_args[@]}"
+    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "$REUSE_IMAGE" "${run_args[@]}"
 }
 
 function addheader() {
@@ -48,6 +50,8 @@ function addheader() {
     local cmd_args=("$@")
     run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "${cmd_args[@]}" "$file"
 }
+
+# MAIN SCRIPT
 
 set +e
 REUSE_OUTPUT=$(run_reuse lint)

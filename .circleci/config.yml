@@ -8,8 +8,8 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@4.4.2
-  owasp: entur/owasp@0.0.15
+  slack: circleci/slack@4.4.4
+  owasp: entur/owasp@0.0.16
 
 parameters:
   workspace_root:
@@ -17,7 +17,7 @@ parameters:
     default: /home/circleci/repo
   builder_aws_version:
     type: string
-    default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+    default: bullseye-slim-a5a07c25c46622d35ac60836c5d5b0117f00b026
   nodejs_image:
     type: string
     default: cimg/node:14.15
@@ -41,15 +41,16 @@ aliases:
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
 
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
-  - &remote_docker_version "20.10.6"
+  - &remote_docker_version "20.10.7"
   - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
+  - &reuse_image fsfe/reuse:0.13.0 # NOTE: Update bin/add-license-headers.sh to match
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
-  - &ubuntu_machine_image ubuntu-2004:202104-01
-  - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_docker_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_terraform_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
+  - &ubuntu_machine_image ubuntu-2004:202107-02
+  - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
 
   - &default_contexts
     context:
@@ -86,14 +87,17 @@ executors:
     <<: *default_config
     docker:
       - image: *builder_aws_core_image
+    resource_class: small
   aws_docker_executor:
     <<: *default_config
     docker:
       - image: *builder_aws_docker_image
+    resource_class: medium
   aws_terraform_executor:
     <<: *default_config
     docker:
       - image: *builder_aws_terraform_image
+    resource_class: small
   apigw_executor:
     <<: *node_config
     docker:
@@ -101,6 +105,7 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+    resource_class: medium
   frontend_executor:
     <<: *node_config
     docker:
@@ -108,11 +113,12 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+    resource_class: medium
   e2e_executor:
     <<: *node_config
     machine:
       image: *ubuntu_machine_image
-      resource_class: large
+    resource_class: large
   service_executor:
     <<: *jvm_config
     docker:
@@ -124,7 +130,7 @@ executors:
     <<: *jvm_config
     machine:
       image: *ubuntu_machine_image
-      resource_class: large
+    resource_class: large
     environment:
       # YAML anchors don't merge nested keys, so re-referencing is required
       <<: *jvm_env
@@ -142,6 +148,15 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+    resource_class: small
+    working_directory: << pipeline.parameters.workspace_root >>
+  reuse_tool:
+    docker:
+      - image: *reuse_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    resource_class: small
     working_directory: << pipeline.parameters.workspace_root >>
 
 commands:
@@ -751,6 +766,7 @@ jobs:
 
   checkout_repo:
     executor: apigw_executor
+    resource_class: small
     steps:
       - checkout
       - store_repo
@@ -801,6 +817,26 @@ jobs:
           name: Lint shell scripts
           command: |
             ./bin/run-shellcheck.sh
+      - notify_slack
+
+  check_licenses:
+    executor: reuse_tool
+    steps:
+      - restore_repo
+      - run:
+          name: reuse lint
+          command: |
+            reuse lint || {
+              echo '';
+              echo '=========================================';
+              echo 'Please run: ./bin/add-license-headers.sh';
+              echo '=========================================';
+              exit 1
+            }
+      - run:
+          when: on_fail
+          name: Install dependencies
+          command: apk add curl jq
       - notify_slack
 
   # BUILD JOBS
@@ -1214,6 +1250,10 @@ workflows:
           <<: *aws_contexts
           requires:
             - checkout_repo
+      - check_licenses:
+          <<: *default_contexts
+          requires:
+            - checkout_repo
       - lint_scripts:
           <<: *default_contexts
           requires:
@@ -1334,6 +1374,7 @@ workflows:
           <<: *aws_contexts
           name: frontend_install_<< matrix.target_env >>
           requires:
+            - check_licenses
             - lint_scripts
             - frontend_build_misc_and_test
             - e2e-test-testcafe

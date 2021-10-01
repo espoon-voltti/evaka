@@ -6,6 +6,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # eVaka – ERP for early childhood education
 
+[![REUSE status](https://api.reuse.software/badge/github.com/espoon-voltti/evaka)](https://api.reuse.software/info/github.com/espoon-voltti/evaka)
+
+<!-- This project is registered with the REUSE API: https://api.reuse.software/ -->
+
 This is eVaka – an ERP system developed for early childhood education in
 Finland. It is a web application developed using modern technologies and
 designed to be deployed in cloud environment.
@@ -110,9 +114,13 @@ anything but binary-like files (e.g. certificates) with
 ### Check licensing compliance
 
 This repository targets [REUSE](https://reuse.software/) compliance by utilizing
-the [reuse CLI tool](https://git.fsfe.org/reuse/tool).
+the [reuse CLI tool](https://git.fsfe.org/reuse/tool) and the
+[REUSE API](https://api.reuse.software/).
 
-To check that the repository is compliant (e.g. before submitting a pull
+The REUSE API constantly checks this repository's compliance and the status
+can be seen from the badge at the top of this README.
+
+To manually check that the repository is compliant (e.g. before submitting a pull
 request), run:
 
 ```sh
