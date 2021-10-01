@@ -25,13 +25,13 @@ import java.util.UUID
 
 @RestController
 class SystemIdentityController(private val personService: PersonService, private val accessControl: AccessControl) {
-    @PostMapping("/system/person-identity")
-    fun personIdentity(
+    @PostMapping("/system/person-identity", "/system/citizen-login")
+    fun citizenLogin(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody person: PersonIdentityRequest
-    ): ResponseEntity<AuthenticatedUser> {
-        Audit.PersonCreate.log()
+        @RequestBody person: CitizenLoginRequest
+    ): AuthenticatedUser {
+        Audit.CitizenLogin.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
             val p = tx.getPersonBySSN(person.socialSecurityNumber)
@@ -42,18 +42,17 @@ class SystemIdentityController(private val personService: PersonService, private
                 )
                 ?: error("No person found with ssn")
             tx.markPersonLastLogin(p.id)
-            p
+            AuthenticatedUser.Citizen(p.id)
         }
-            .let { ResponseEntity.ok().body(AuthenticatedUser.Citizen(it.id)) }
     }
 
-    @PostMapping("/system/employee-identity")
-    fun employeeIdentity(
+    @PostMapping("/system/employee-identity", "/system/employee-login")
+    fun employeeLogin(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody employee: EmployeeIdentityRequest
+        @RequestBody employee: EmployeeLoginRequest
     ): EmployeeUser {
-        Audit.EmployeeGetOrCreate.log(targetId = employee.externalId)
+        Audit.EmployeeLogin.log(targetId = employee.externalId)
         user.assertSystemInternalUser()
         return db.transaction {
             val e = it.getEmployeeUserByExternalId(employee.externalId)
@@ -104,7 +103,7 @@ class SystemIdentityController(private val personService: PersonService, private
         return ResponseEntity.ok(db.read { it.getDeviceByToken(token) })
     }
 
-    data class EmployeeIdentityRequest(
+    data class EmployeeLoginRequest(
         val externalId: ExternalId,
         val firstName: String,
         val lastName: String,
@@ -114,7 +113,7 @@ class SystemIdentityController(private val personService: PersonService, private
             NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
     }
 
-    data class PersonIdentityRequest(
+    data class CitizenLoginRequest(
         val socialSecurityNumber: String,
         val firstName: String,
         val lastName: String

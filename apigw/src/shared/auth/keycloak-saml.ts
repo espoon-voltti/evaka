@@ -9,7 +9,7 @@ import {
   VerifiedCallback
 } from 'passport-saml'
 import { SamlUser } from '../routes/auth/saml/types'
-import { getOrCreateEmployee } from '../service-client'
+import { employeeLogin } from '../service-client'
 import { evakaSamlConfig } from '../config'
 import fs from 'fs'
 import { RedisClient } from 'redis'
@@ -74,7 +74,7 @@ async function verifyKeycloakProfile(
   profile: KeycloakProfile
 ): Promise<SamlUser> {
   if (!profile.id) throw Error('No user ID in evaka IDP SAML data')
-  const person = await getOrCreateEmployee({
+  const person = await employeeLogin({
     externalId: `evaka:${profile.id}`,
     firstName: profile.firstName ?? '',
     lastName: profile.lastName ?? '',

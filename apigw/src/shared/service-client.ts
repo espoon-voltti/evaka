@@ -61,8 +61,8 @@ export interface AuthenticatedUser {
   roles: UserRole[]
 }
 
-export interface EmployeeIdentityRequest {
-  externalId: string
+export interface EmployeeLoginRequest {
+  externalId: UUID
   firstName: string
   lastName: string
   email?: string
@@ -80,14 +80,14 @@ export interface EmployeeUserResponse extends EmployeeUser {
   accessibleFeatures: object
 }
 
-export interface PersonIdentityRequest {
+export interface CitizenLoginRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
 }
 
-export async function getOrCreateEmployee(
-  employee: EmployeeIdentityRequest
+export async function employeeLogin(
+  employee: EmployeeLoginRequest
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-identity`,
@@ -112,8 +112,8 @@ export async function getEmployeeDetails(
   return data
 }
 
-export async function getOrCreatePerson(
-  person: PersonIdentityRequest
+export async function citizenLogin(
+  person: CitizenLoginRequest
 ): Promise<AuthenticatedUser> {
   const { data } = await client.post<AuthenticatedUser>(
     `/system/person-identity`,

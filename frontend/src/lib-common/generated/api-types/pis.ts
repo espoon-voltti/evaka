@@ -22,6 +22,15 @@ export interface AddSsnRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.SystemIdentityController.CitizenLoginRequest
+*/
+export interface CitizenLoginRequest {
+  firstName: string
+  lastName: string
+  socialSecurityNumber: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.ContactInfo
 */
 export interface ContactInfo {
@@ -72,9 +81,9 @@ export interface Employee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemIdentityController.EmployeeIdentityRequest
+* Generated from fi.espoo.evaka.pis.SystemIdentityController.EmployeeLoginRequest
 */
-export interface EmployeeIdentityRequest {
+export interface EmployeeLoginRequest {
   email: string | null
   externalId: ExternalId
   firstName: string
@@ -298,15 +307,6 @@ export interface PersonAddressDTO {
   postalCode: string
   residenceCode: string | null
   streetAddress: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.SystemIdentityController.PersonIdentityRequest
-*/
-export interface PersonIdentityRequest {
-  firstName: string
-  lastName: string
-  socialSecurityNumber: string
 }
 
 /**

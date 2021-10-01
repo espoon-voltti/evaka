@@ -9,7 +9,7 @@ import { RedisClient } from 'redis'
 import certificates from '../certificates'
 import { nodeEnv, sfiConfig, sfiMock } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
-import { getOrCreatePerson } from '../service-client'
+import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
@@ -38,7 +38,7 @@ const dummySuomiFiProfile: SuomiFiProfile = {
 }
 
 async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
-  const person = await getOrCreatePerson({
+  const person = await citizenLogin({
     socialSecurityNumber: profile[SUOMI_FI_SSN_KEY],
     firstName: profile[SUOMI_FI_GIVEN_NAME_KEY],
     lastName: profile[SUOMI_FI_SURNAME_KEY]
