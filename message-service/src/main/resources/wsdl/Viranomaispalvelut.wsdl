@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2018 Vaestorekisterikeskus
+
+SPDX-License-Identifier: EUPL-1.1
+
+NOTE: These licensing details are based on the assumption that we can use the
+same licensing as in this source:
+https://github.com/Opetushallitus/rajapinnat/blob/bc918e52057f0a7c2fba7549168a5d9fc258602b/vtj/vtj-remote-api/src/main/resources/wsdl/VTJHenkilotiedotKatalogi.xsd
+but these might change at a later date.
+
+Equivalent source: https://palveluhallinta.suomi.fi/en/tuki/artikkelit/5c71aeaf46e7410049a6d8ad
+-->
+
 <wsdl:definitions name="Viranomaispalvelut" targetNamespace="http://www.suomi.fi/asiointitili" xmlns:tns="http://www.suomi.fi/asiointitili" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     <wsdl:types>
         <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema">

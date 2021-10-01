@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+SPDX-FileCopyrightText: 2018 Vaestorekisterikeskus
+
+SPDX-License-Identifier: EUPL-1.1
+
+NOTE: These licensing details are based on the assumption that we can use the
+same licensing as in this source:
+https://github.com/Opetushallitus/rajapinnat/blob/bc918e52057f0a7c2fba7549168a5d9fc258602b/vtj/vtj-remote-api/src/main/resources/wsdl/VTJHenkilotiedotKatalogi.xsd
+but these might change at a later date.
+
+Equivalent source: https://palveluhallinta.suomi.fi/en/tuki/artikkelit/5c71aeaf46e7410049a6d8ad
+-->
+
+<!--
 Versio 1.0
 Versio 1.1 / 7.6.2018 / Jyri Piirainen
   - Lisätty TulostusToimittaja -elementti

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2018 Estonian Information System Authority (RIA), Nordic Institute for Interoperability Solutions (NIIS), Population Register Centre (VRK)
+SPDX-FileCopyrightText: 2015-2017 Estonian Information System Authority (RIA), Population Register Centre (VRK)
+
+SPDX-License-Identifier: MIT
+-->
+
 <xs:schema elementFormDefault="qualified"
            targetNamespace="http://x-road.eu/xsd/identifiers"
            xmlns="http://x-road.eu/xsd/identifiers"

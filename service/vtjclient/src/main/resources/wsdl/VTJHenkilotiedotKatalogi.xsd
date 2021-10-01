@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+SPDX-FileCopyrightText: 2012 Vaestorekisterikeskus
+
+SPDX-License-Identifier: EUPL-1.1
+
+NOTE: These licensing details are based on the assumption that we can use the
+same licensing as in this source:
+https://github.com/Opetushallitus/rajapinnat/blob/bc918e52057f0a7c2fba7549168a5d9fc258602b/vtj/vtj-remote-api/src/main/resources/wsdl/VTJHenkilotiedotKatalogi.xsd
+but these might change at a later date.
+-->
+
 <!-- Evaka: Retrieved from: https://vrk.fi/tekninen-toteutus -->
 <!-- Tekija: Vaestorekisterikeskus. Paivitetty viimeksi 6.10.2017-->
 <xs:schema xmlns="http://xml.vrk.fi/schema/vtj/henkilotiedot/1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.vrk.fi/schema/vtj/henkilotiedot/1">
@@ -48,7 +59,7 @@
             <xs:documentation>Aanestysalueen tunniste. Perinteisesti on kaytetty muotoa, jossa aanestysalueet numeroidaan 1:sta ylospain, kaytetaan etunollia (esim. 001, 002). Joissain kunnissa aanestysalue on jaettu, jolloin numeron jalkeen kaytetaan jakokirjainta A, B, jne. Muoto numero tai iso kirjain 0-4 kertaa.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9A-ZÅÄÖ]{0,4})?"/>
+            <xs:pattern value="([0-9A-Zï¿½ï¿½ï¿½]{0,4})?"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="AlkutapakoodiTyyppi">
@@ -102,7 +113,7 @@
     </xs:simpleType>
     <xs:simpleType name="AsuinpaikkatunnusTyyppi">
         <xs:annotation>
-            <xs:documentation>Asuinpaikantunnus palautetaan muodossa nnnnnnnnnnOPHHHJ, jossa nnnnnnnnnn=VTJ-PRT, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-16 merkkia.Ulkomailla asuminen on 14 merkkiä 200+valtiokoodi+00000000.nk. laitososoitteen asuinpaikantunnusta ei nayteta.</xs:documentation>
+            <xs:documentation>Asuinpaikantunnus palautetaan muodossa nnnnnnnnnnOPHHHJ, jossa nnnnnnnnnn=VTJ-PRT, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-16 merkkia.Ulkomailla asuminen on 14 merkkiï¿½ 200+valtiokoodi+00000000.nk. laitososoitteen asuinpaikantunnusta ei nayteta.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:minLength value="0"/>
@@ -129,7 +140,7 @@
     </xs:simpleType>
     <xs:simpleType name="AsuminenPysyvyysTekstiTyyppi">
         <xs:annotation>
-            <xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, Vakinainen, Varaktig, Tilapäinen, Tillfällig</xs:documentation>
+            <xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, Vakinainen, Varaktig, Tilapï¿½inen, Tillfï¿½llig</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:minLength value="0"/>
@@ -156,7 +167,7 @@
     </xs:simpleType>
     <xs:simpleType name="EnemKieliKoodiTyyppi">
         <xs:annotation>
-            <xs:documentation>Enemmistön kieli. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
+            <xs:documentation>Enemmistï¿½n kieli. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value=""/>
@@ -254,7 +265,7 @@
     </xs:simpleType>
     <xs:simpleType name="HuollonjakokoodiTyyppi">
         <xs:annotation>
-            <xs:documentation>Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai määrätty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu määräys tai siitä on sovittu (asuminen tai muu sopimus)</xs:documentation>
+            <xs:documentation>Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai mï¿½ï¿½rï¿½tty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (asuminen tai muu sopimus)</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value=""/>
@@ -264,7 +275,7 @@
     </xs:simpleType>
     <xs:simpleType name="HuollonjakokoodiTyyppi2">
         <xs:annotation>
-            <xs:documentation> Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai maaratty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu määräys tai siitä on sovittu (sopimus, muu kuin asuminen), 3 = huollon sisallosta on annettu määräys tai siitä on sovittu (vain asuminen),</xs:documentation>
+            <xs:documentation> Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai maaratty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (sopimus, muu kuin asuminen), 3 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (vain asuminen),</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value=""/>
@@ -326,7 +337,7 @@
     </xs:simpleType>
     <xs:simpleType name="IlmoitusSallittuTyyppi">
         <xs:annotation>
-            <xs:documentation>Tieto siitä, onko henkilön sallittua ilmoittaa tietojen päivitys Ilmoita Itse -palvelussa. Mahdolliset arvot: 0=ei ole sallittu, 1=on sallittu.</xs:documentation>
+            <xs:documentation>Tieto siitï¿½, onko henkilï¿½n sallittua ilmoittaa tietojen pï¿½ivitys Ilmoita Itse -palvelussa. Mahdolliset arvot: 0=ei ole sallittu, 1=on sallittu.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="0"/>
@@ -336,10 +347,10 @@
     <xs:simpleType name="JakokirjainTyyppi">
         <xs:annotation>
             <xs:documentation>Huoneiston tunnisteen jakokirjain. Jakokirjainta kaytetaan kun huoneisto on jaettu kahdeksi tai useammaksi huoneistoksi.
-                Mahdolliset arvot: yksi pieni kirjain joukosta a - ö, tai tyhja.</xs:documentation>
+                Mahdolliset arvot: yksi pieni kirjain joukosta a - ï¿½, tai tyhja.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="([a-zåäö]{1})?"/>
+            <xs:pattern value="([a-zï¿½ï¿½ï¿½]{1})?"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="JarjestysnumeroTyyppi">
@@ -814,10 +825,10 @@
     </xs:simpleType>
     <xs:simpleType name="PorraskirjainTyyppi">
         <xs:annotation>
-            <xs:documentation>Porraskirjain on huoneiston tunnisteen kirjainosa. Se kertoo missa portaassa huoneisto sijaitsee. Mahdolliset arvot: yksi iso kirjain joukosta A - Ö tai tyhja.</xs:documentation>
+            <xs:documentation>Porraskirjain on huoneiston tunnisteen kirjainosa. Se kertoo missa portaassa huoneisto sijaitsee. Mahdolliset arvot: yksi iso kirjain joukosta A - ï¿½ tai tyhja.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="([A-ZÅÄÖ]{1})?"/>
+            <xs:pattern value="([A-Zï¿½ï¿½ï¿½]{1})?"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="PostinumeroTyyppi">

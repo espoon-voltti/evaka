@@ -122,11 +122,9 @@ request), run:
 ./bin/add-license-headers.sh --help
 ```
 
-**NOTE:** The tool has no concept for "no license", so currently it will
-always fail for the following files:
-
-- [Digital and population data services agency (DVV)](https://dvv.fi/henkiloasiakkaat)
-  owned WSDL and related files (`message-service/**/wsdl/*`, `service/**/wsdl/*`)
+**NOTE:** The tool has no concept for "no license" -> all files must indicate
+their license explicitly (or using bulk licensing). And if files cannot be
+licensed, they shouldn't be included in this repository at all.
 
 ### Automatically add licensing headers
 
