@@ -68,7 +68,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             it.insertTestPartnership(
                 adult1 = testAdult_1.id,
                 adult2 = testAdult_2.id,
-                endDate = LocalDate.of(9999, 12, 31)
             )
         }
     }

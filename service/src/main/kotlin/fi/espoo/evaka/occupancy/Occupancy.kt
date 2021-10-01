@@ -205,7 +205,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
         if (type == OccupancyType.REALIZED)
             "sum(s.count)" to "staff_attendance s ON g.id = s.group_id AND t = s.date"
         else
-            "sum(c.amount)" to "daycare_caretaker c ON g.id = c.group_id AND t BETWEEN c.start_date AND c.end_date"
+            "sum(c.amount)" to "daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date"
 
     // language=sql
     val (keyColumns, groupBy) = when (K::class) {
@@ -219,7 +219,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 SELECT $keyColumns, t::date AS date, coalesce($caretakersSum, 0.0) AS caretaker_count
 FROM generate_series(:start, :end, '1 day') t
 CROSS JOIN daycare_group g
-JOIN daycare u ON g.daycare_id = u.id AND t BETWEEN g.start_date AND g.end_date
+JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
 LEFT JOIN $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL

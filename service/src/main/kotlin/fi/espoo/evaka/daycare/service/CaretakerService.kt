@@ -6,11 +6,10 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.PGConstants
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -29,15 +28,7 @@ class CaretakerService {
 
         return tx.createQuery(sql)
             .bind("groupId", groupId)
-            .map { rs, _ ->
-                CaretakerAmount(
-                    id = rs.getUUID("id"),
-                    groupId = GroupId(rs.getUUID("group_id")),
-                    startDate = rs.getDate("start_date").toLocalDate(),
-                    endDate = rs.getDate("end_date").toLocalDate().takeIf { it.isBefore(PGConstants.infinity) },
-                    amount = rs.getDouble("amount")
-                )
-            }
+            .mapTo<CaretakerAmount>()
             .toList()
     }
 
@@ -46,12 +37,11 @@ class CaretakerService {
 
         tx.endPreviousRow(groupId, startDate)
 
-        val end = if (endDate == null) "DEFAULT" else ":end"
         // language=sql
         val sql =
             """
             INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
-            VALUES (:groupId, :start, $end, :amount)
+            VALUES (:groupId, :start, :end, :amount)
             """.trimIndent()
 
         try {
@@ -72,7 +62,7 @@ class CaretakerService {
             """
             UPDATE daycare_caretaker
             SET end_date = :start - interval '1 day'
-            WHERE group_id = :groupId AND start_date < :start AND end_date >= :start
+            WHERE group_id = :groupId AND daterange(start_date, end_date, '[]') @> :start
             """.trimIndent()
 
         createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
@@ -81,12 +71,11 @@ class CaretakerService {
     fun update(tx: Database.Transaction, groupId: GroupId, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
-        val end = if (endDate == null) "DEFAULT" else ":end"
         // language=sql
         val sql =
             """
             UPDATE daycare_caretaker
-            SET start_date = :start, end_date = $end, amount = :amount
+            SET start_date = :start, end_date = :end, amount = :amount
             WHERE id = :id AND group_id = :groupId
             """.trimIndent()
 

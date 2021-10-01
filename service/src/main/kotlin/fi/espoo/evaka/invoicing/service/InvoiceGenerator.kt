@@ -28,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
@@ -678,7 +677,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
             Triple(
                 DateRange(
                     rs.getDate("start_date").toLocalDate(),
-                    rs.getDate("end_date").toLocalDate().let { if (it < PGConstants.infinity) it else null }
+                    rs.getDate("end_date").toLocalDate()
                 ),
                 PersonData.JustId(id = UUID.fromString(rs.getString("head_of_child"))),
                 PersonData.WithDateOfBirth(

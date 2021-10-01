@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -258,14 +257,14 @@ fun Database.Read.getDaycarePlacements(
         LEFT OUTER JOIN daycare d on pl.unit_id = d.id
         LEFT OUTER JOIN person ch on pl.child_id = ch.id
         LEFT JOIN care_area a ON d.care_area_id = a.id
-        WHERE pl.start_date <= :to AND pl.end_date >= :from
+        WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:daycareId::uuid IS NULL OR pl.unit_id = :daycareId)
         AND (:childId::uuid IS NULL OR pl.child_id = :childId)
         """.trimIndent()
 
     return createQuery(sql)
-        .bind("from", (startDate ?: PGConstants.minDate))
-        .bind("to", (endDate ?: PGConstants.maxDate))
+        .bind("from", startDate)
+        .bind("to", endDate)
         .bindNullable("daycareId", daycareId)
         .bindNullable("childId", childId)
         .map(toDaycarePlacementDetails)
@@ -411,7 +410,7 @@ fun Database.Read.getGroupPlacementsAtDaycare(daycareId: DaycareId, placementRan
 
     return createQuery(sql)
         .bind("daycareId", daycareId)
-        .bind("placementRange", placementRange.asFiniteDateRange(defaultEnd = PGConstants.maxDate))
+        .bind("placementRange", placementRange)
         .mapTo<DaycareGroupPlacement>()
         .toList()
 }

@@ -857,7 +857,8 @@ data class DevDaycareGroup(
     val id: GroupId = GroupId(UUID.randomUUID()),
     val daycareId: DaycareId,
     val name: String = "Testiläiset",
-    val startDate: LocalDate = LocalDate.of(2019, 1, 1)
+    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    val endDate: LocalDate? = null
 )
 
 data class DevDaycareGroupPlacement(

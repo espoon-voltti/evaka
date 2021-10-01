@@ -8,7 +8,6 @@ import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -30,12 +29,11 @@ class StaffAttendanceService {
 
         return db.read { tx ->
             val groupInfo = tx.getGroupInfo(groupId) ?: throw BadRequest("Couldn't find group info with id $groupId")
-            val endDate = groupInfo.endDate.let { if (it.isBefore(maxDate)) it else null }
 
             val attendanceList = tx.getStaffAttendanceByRange(range, groupId)
             val attendanceMap = attendanceList.associateBy { it.date }
 
-            StaffAttendanceForDates(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
+            StaffAttendanceForDates(groupId, groupInfo.groupName, groupInfo.startDate, groupInfo.endDate, attendanceMap)
         }
     }
 
@@ -78,7 +76,7 @@ data class GroupInfo(
     val groupId: GroupId,
     val groupName: String,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate?
 )
 
 data class StaffAttendanceUpdate(
@@ -107,16 +105,17 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
     //language=SQL
     val sql =
         """
-        SELECT *
+        SELECT 1
         FROM daycare_group
         WHERE id = :id
-            AND :date BETWEEN start_date AND end_date
+        AND daterange(start_date, end_date, '[]') @> :date
         """.trimIndent()
 
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
-        .mapToMap().list().size > 0
+        .mapTo<Int>()
+        .any()
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {

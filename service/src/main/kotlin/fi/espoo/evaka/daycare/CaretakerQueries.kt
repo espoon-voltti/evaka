@@ -15,7 +15,7 @@ import java.time.LocalDate
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     // language=SQL
-    val sql = "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (:groupId, :startDate, :amount)"
+    val sql = "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (:groupId, :startDate, NULL, :amount)"
 
     createUpdate(sql)
         .bind("groupId", groupId)

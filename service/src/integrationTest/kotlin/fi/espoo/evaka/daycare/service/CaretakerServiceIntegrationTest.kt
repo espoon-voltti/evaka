@@ -37,7 +37,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
                 )
             )
             tx.execute(
-                "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (?, ?, 3)",
+                "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (?, ?, NULL, 3)",
                 groupId,
                 groupStart
             )

@@ -8,7 +8,6 @@ import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
@@ -127,7 +126,7 @@ fun Database.Transaction.createPartnership(
         .bind("person1", personId1)
         .bind("person2", personId2)
         .bind("startDate", startDate)
-        .bind("endDate", endDate ?: PGConstants.infinity)
+        .bind("endDate", endDate)
         .bind("conflict", conflict)
         .map(toPartnership("p1", "p2"))
         .first()
@@ -145,7 +144,7 @@ fun Database.Transaction.updatePartnershipDuration(id: PartnershipId, startDate:
     return createQuery(sql)
         .bind("id", id)
         .bind("startDate", startDate)
-        .bind("endDate", endDate ?: PGConstants.infinity)
+        .bind("endDate", endDate)
         .mapTo<PartnershipId>()
         .firstOrNull() != null
 }
@@ -179,8 +178,7 @@ private val toPartnership: (String, String) -> (ResultSet, StatementContext) -> 
                     toPersonJSON(partner2Alias, rs)
                 ),
                 startDate = rs.getDate("start_date").toLocalDate(),
-                endDate = rs.getDate("end_date").toLocalDate()
-                    .let { if (it.isBefore(PGConstants.infinity)) it else null },
+                endDate = rs.getDate("end_date")?.toLocalDate(),
                 conflict = rs.getBoolean("conflict")
             )
         }
@@ -192,8 +190,7 @@ private val toPartner: (String) -> (ResultSet, StatementContext) -> Partner = { 
             partnershipId = PartnershipId(rs.getUUID("partnership_id")),
             person = toPersonJSON(tableAlias, rs),
             startDate = rs.getDate("start_date").toLocalDate(),
-            endDate = rs.getDate("end_date").toLocalDate()
-                .let { if (it.isBefore(PGConstants.infinity)) it else null },
+            endDate = rs.getDate("end_date")?.toLocalDate(),
             conflict = rs.getBoolean("conflict")
         )
     }
