@@ -14,13 +14,12 @@ import zlib from 'zlib'
 import * as config from '../config'
 import { sfiConfig } from '../config'
 import { fromCallback } from '../promise-utils'
-import type { AuthenticatedUser } from '../service-client'
+import type { CitizenUser } from '../service-client'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
 
-const mockUser: AuthenticatedUser = {
-  id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
-  roles: ['ENDUSER']
+const mockUser: CitizenUser = {
+  id: '942b9cab-210d-4d49-b4c9-65f26390eed3'
 }
 
 // Explicitly use separate domains for the simulated SP and IdP to replicate

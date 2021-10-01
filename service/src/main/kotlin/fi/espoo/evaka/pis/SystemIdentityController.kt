@@ -10,6 +10,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -30,19 +31,19 @@ class SystemIdentityController(private val personService: PersonService, private
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody person: CitizenLoginRequest
-    ): AuthenticatedUser {
+    ): CitizenUser {
         Audit.CitizenLogin.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
-            val p = tx.getPersonBySSN(person.socialSecurityNumber)
+            val citizen = tx.getCitizenUserBySsn(person.socialSecurityNumber)
                 ?: personService.getOrCreatePerson(
                     tx,
                     user,
                     ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber)
-                )
+                )?.let { CitizenUser(PersonId(it.id)) }
                 ?: error("No person found with ssn")
-            tx.markPersonLastLogin(p.id)
-            AuthenticatedUser.Citizen(p.id)
+            tx.markPersonLastLogin(citizen.id)
+            citizen
         }
     }
 

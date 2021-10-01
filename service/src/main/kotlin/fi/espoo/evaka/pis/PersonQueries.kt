@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -23,6 +24,12 @@ import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
+
+data class CitizenUser(val id: PersonId)
+
+fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? = createQuery(
+    "SELECT id FROM person WHERE social_security_number = :ssn"
+).bind("ssn", ssn).mapTo<CitizenUser>().firstOrNull()
 
 fun Database.Read.getPersonById(id: UUID): PersonDTO? {
     // language=SQL
@@ -368,7 +375,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
     )
 }
 
-fun Database.Transaction.markPersonLastLogin(id: UUID) = createUpdate(
+fun Database.Transaction.markPersonLastLogin(id: PersonId) = createUpdate(
     """
 UPDATE person 
 SET last_login = now()

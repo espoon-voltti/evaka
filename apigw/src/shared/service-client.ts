@@ -56,11 +56,6 @@ export function createServiceRequestHeaders(
   return headers
 }
 
-export interface AuthenticatedUser {
-  id: UUID
-  roles: UserRole[]
-}
-
 export interface EmployeeLoginRequest {
   externalId: UUID
   firstName: string
@@ -84,6 +79,10 @@ export interface CitizenLoginRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
+}
+
+export interface CitizenUser {
+  id: UUID
 }
 
 export async function employeeLogin(
@@ -114,8 +113,8 @@ export async function getEmployeeDetails(
 
 export async function citizenLogin(
   person: CitizenLoginRequest
-): Promise<AuthenticatedUser> {
-  const { data } = await client.post<AuthenticatedUser>(
+): Promise<CitizenUser> {
+  const { data } = await client.post<CitizenUser>(
     `/system/person-identity`,
     person,
     {

@@ -31,6 +31,13 @@ export interface CitizenLoginRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.CitizenUser
+*/
+export interface CitizenUser {
+  id: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.ContactInfo
 */
 export interface ContactInfo {
