@@ -26,7 +26,7 @@ import {
 } from 'lib-components/layout/Table'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faHomeAlt, faLockAlt } from 'lib-icons'
+import { faHome, faLockAlt } from 'lib-icons'
 import { range, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
@@ -181,7 +181,7 @@ function VoucherServiceProviderUnit() {
         <TitleContainer>
           <H2 fitted>{unitName}</H2>
           <LinkInCaps to={`/units/${unitId}`}>
-            <FontAwesomeIcon icon={faHomeAlt} />{' '}
+            <FontAwesomeIcon icon={faHome} />{' '}
             {i18n.reports.voucherServiceProviderUnit.unitPageLink}
           </LinkInCaps>
         </TitleContainer>

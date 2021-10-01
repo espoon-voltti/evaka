@@ -6,7 +6,7 @@ import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { faHomeAlt } from 'lib-icons'
+import { faHome } from 'lib-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -113,7 +113,7 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
     <div>
       {family.isSuccess && (
         <CollapsibleSection
-          icon={faHomeAlt}
+          icon={faHome}
           title={i18n.personProfile.familyOverview.title}
           data-qa="family-overview-collapsible"
           startCollapsed={!open}

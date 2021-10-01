@@ -141,7 +141,7 @@ const icons: IconSet = {
   faGavel,
   faHandHolding,
   faHiking,
-  faHomeAlt: faHome,
+  faHome,
   faHourglassEnd,
   faHourglassStart,
   faInfo,
