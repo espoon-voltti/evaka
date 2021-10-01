@@ -12,11 +12,7 @@ import {
   RawElement,
   RawTextInput
 } from 'e2e-playwright/utils/element'
-import {
-  waitUntilEqual,
-  waitUntilFalse,
-  waitUntilTrue
-} from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
@@ -83,12 +79,12 @@ export class FeeDecisionsPage {
 
   async openFirstFeeDecision() {
     await this.#feeDecisionRow.click()
-    await waitUntilTrue(() => this.#feeDecisionDetailsPage.visible)
+    await this.#feeDecisionDetailsPage.waitUntilVisible()
   }
 
   async navigateBackFromDetails() {
     await this.#navigateBackButton.click()
-    await waitUntilTrue(() => this.#feeDecisionListPage.visible)
+    await this.#feeDecisionListPage.waitUntilVisible()
   }
 
   async toggleAllFeeDecisions(toggledOn: boolean) {
@@ -164,17 +160,17 @@ export class ValueDecisionsPage {
 
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
-    await waitUntilFalse(() => this.#sendDecisionButton.visible)
+    await this.#sendDecisionButton.waitUntilHidden()
   }
 
   async openFirstValueDecision() {
     await this.#valueDecisionRow.click()
-    await waitUntilTrue(() => this.#valueDecisionDetailsPage.visible)
+    await this.#valueDecisionDetailsPage.waitUntilVisible()
   }
 
   async navigateBackFromDetails() {
     await this.#navigateBackButton.click()
-    await waitUntilTrue(() => this.#valueDecisionListPage.visible)
+    await this.#valueDecisionListPage.waitUntilVisible()
   }
 
   async getValueDecisionCount() {
@@ -284,12 +280,12 @@ export class InvoicesPage {
 
   async invoicesPageIsLoaded() {
     await this.#invoicesPage.waitUntilVisible()
-    await waitUntilFalse(() => this.#spinner.visible)
+    await this.#spinner.waitUntilHidden()
   }
 
   async createInvoiceDrafts() {
     await this.#createInvoicesButton.click()
-    await waitUntilFalse(() => this.#spinner.visible)
+    await this.#spinner.waitUntilHidden()
   }
 
   async assertInvoiceCount(count: number) {
