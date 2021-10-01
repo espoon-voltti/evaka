@@ -59,7 +59,7 @@ class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
     }
 
     private fun WebRequest.getOrOpenConnection(): Database.Connection = getConnection()
-        ?: getDatabaseInstance().connect().also(::setConnection)
+        ?: getDatabaseInstance().connectWithManualLifecycle().also(::setConnection)
 
     private fun WebRequest.getDatabaseInstance(): Database = getDatabase()
         ?: Database(jdbi).also(::setDatabase)

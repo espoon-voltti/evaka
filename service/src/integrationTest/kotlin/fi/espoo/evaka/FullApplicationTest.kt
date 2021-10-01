@@ -73,7 +73,7 @@ abstract class FullApplicationTest {
         assert(httpPort > 0)
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        db = Database(jdbi).connect()
+        db = Database(jdbi).connectWithManualLifecycle()
         db.transaction { it.resetDatabase() }
         feeDecisionMinDate = evakaEnv.feeDecisionMinDate
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"

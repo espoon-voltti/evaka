@@ -48,7 +48,7 @@ abstract class AbstractIntegrationTest {
 
     @BeforeAll
     protected fun beforeAll() {
-        db = Database(jdbi).connect()
+        db = Database(jdbi).connectWithManualLifecycle()
     }
 
     @AfterAll

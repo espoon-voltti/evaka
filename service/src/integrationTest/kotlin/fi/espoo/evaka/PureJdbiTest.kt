@@ -20,7 +20,7 @@ abstract class PureJdbiTest {
     @BeforeAll
     protected fun initializeJdbi() {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        db = Database(jdbi).connect()
+        db = Database(jdbi).connectWithManualLifecycle()
         db.transaction { it.resetDatabase() }
     }
 

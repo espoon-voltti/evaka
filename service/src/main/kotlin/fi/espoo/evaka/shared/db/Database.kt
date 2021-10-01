@@ -41,14 +41,14 @@ class Database(private val jdbi: Jdbi) {
      *
      * Throws `IllegalStateException` if a connection is already open
      */
-    fun <T> connect(f: (db: Connection) -> T): T = connect().use(f)
+    fun <T> connect(f: (db: Connection) -> T): T = connectWithManualLifecycle().use(f)
 
     /**
      * Opens a new database connection and returns it. The connection *must be closed after use*.
      *
      * Throws `IllegalStateException` if a connection is already open
      */
-    fun connect(): Connection {
+    fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
         check(!connected.get()) { "Already connected to database" }
         connected.set(true)
