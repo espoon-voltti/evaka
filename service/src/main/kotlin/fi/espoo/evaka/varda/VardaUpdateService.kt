@@ -108,14 +108,14 @@ class VardaUpdateService(
         }
     }
 
-    fun updateVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.UpdateVardaChild) {
+    fun updateVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.UpdateVardaChild) {
         logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
-        db.connect { updateVardaChild(it, client, msg.serviceNeedDiffByChild, feeDecisionMinDate) }
+        updateVardaChild(db, client, msg.serviceNeedDiffByChild, feeDecisionMinDate)
     }
 
-    fun resetVardaChildByAsyncJob(db: Database, msg: VardaAsyncJob.ResetVardaChild) {
+    fun resetVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.ResetVardaChild) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
-        db.connect { resetVardaChild(it, client, msg.childId, feeDecisionMinDate) }
+        resetVardaChild(db, client, msg.childId, feeDecisionMinDate)
     }
 }
 

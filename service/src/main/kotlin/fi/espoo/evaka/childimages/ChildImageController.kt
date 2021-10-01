@@ -33,7 +33,7 @@ class ChildImageController(
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun putImage(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestPart("file") file: MultipartFile
@@ -49,7 +49,7 @@ class ChildImageController(
 
     @DeleteMapping("/children/{childId}/image")
     fun deleteImage(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
@@ -64,7 +64,7 @@ class ChildImageController(
 
     @GetMapping("/child-images/{imageId}")
     fun getImage(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable imageId: UUID
     ): ResponseEntity<InputStreamResource> {

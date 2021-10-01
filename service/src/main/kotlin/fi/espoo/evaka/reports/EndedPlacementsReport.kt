@@ -21,7 +21,7 @@ import java.util.UUID
 class EndedPlacementsReportController {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int

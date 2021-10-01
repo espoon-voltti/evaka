@@ -14,7 +14,7 @@ import java.util.UUID
 @Service
 class AccessControlCitizen(private val jdbi: Jdbi) {
     fun getPermittedFeatures(user: AuthenticatedUser): CitizenFeatures {
-        return Database(jdbi).read { getPermittedFeatures(it, user) }
+        return Database(jdbi).connect { db -> db.read { getPermittedFeatures(it, user) } }
     }
 
     fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {

@@ -65,7 +65,7 @@ class ScheduledJobs(
         asyncJobRunner.registerHandler { db, msg: AsyncJob.RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
-            db.connect { msg.job.fn(this, it) }
+            msg.job.fn(this, db)
         }
     }
 

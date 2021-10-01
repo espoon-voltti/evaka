@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
@@ -41,9 +40,8 @@ internal fun Database.Transaction.setUnitOids() {
         .execute()
 }
 
-internal class KoskiTester(private val jdbi: Jdbi, private val client: KoskiClient) {
+internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
     fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) {
-        val db = Database(jdbi)
         db.read { it.getPendingStudyRights(today, params) }.forEach { request ->
             client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today)
         }

@@ -51,8 +51,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseabl
     val isBusy: Boolean
         get() = runningCount.get() > 0
 
-    inline fun <reified P : T> registerHandler(noinline handler: (db: Database, msg: P) -> Unit) =
-        registerHandler(AsyncJobType(P::class), handler)
+    inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, msg: P) -> Unit) =
+        registerHandler(AsyncJobType(P::class)) { db, msg -> db.connect { handler(it, msg) } }
 
     fun <P : T> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, msg: P) -> Unit): Unit = handlersLock.withLock {
         require(!handlers.containsKey(jobType)) { "handler for $jobType has already been registered" }
@@ -102,7 +102,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi) : AutoCloseabl
     }
 
     fun getPendingJobCount(): Int =
-        Database(jdbi).read { it.getPendingJobCount(handlers.keys) }
+        Database(jdbi).connect { db -> db.read { it.getPendingJobCount(handlers.keys) } }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()

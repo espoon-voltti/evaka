@@ -21,7 +21,7 @@ import java.util.UUID
 @RestController
 class PartnersInDifferentAddressReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/partners-in-different-address")
-    fun getPartnersInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
+    fun getPartnersInDifferentAddressReport(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
         Audit.PartnersInDifferentAddressReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         return db.read { it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user)) }

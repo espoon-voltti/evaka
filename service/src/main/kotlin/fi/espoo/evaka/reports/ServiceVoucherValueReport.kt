@@ -38,7 +38,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
 
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -80,7 +80,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
     )
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("unitId") unitId: DaycareId,
         @RequestParam year: Int,

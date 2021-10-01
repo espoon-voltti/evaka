@@ -34,7 +34,7 @@ class DvvModificationsService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
-    fun updatePersonsFromDvv(db: Database, ssns: List<String>): Int {
+    fun updatePersonsFromDvv(db: Database.Connection, ssns: List<String>): Int {
         return db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
             val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
@@ -106,7 +106,7 @@ class DvvModificationsService(
         }
     }
 
-    private fun handleDeath(db: Database, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
+    private fun handleDeath(db: Database.Connection, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
         if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
         db.transaction { tx ->
@@ -147,7 +147,7 @@ class DvvModificationsService(
     }
 
     private fun handleRestrictedInfo(
-        db: Database,
+        db: Database.Connection,
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup
     ) = db.transaction { tx ->
@@ -165,7 +165,7 @@ class DvvModificationsService(
         }
     }
 
-    private fun handleSsnDvvInfoGroup(db: Database, ssn: String, ssnDvvInfoGroup: SsnDvvInfoGroup) =
+    private fun handleSsnDvvInfoGroup(db: Database.Connection, ssn: String, ssnDvvInfoGroup: SsnDvvInfoGroup) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
                 logger.info("Dvv modification for ${it.id}: ssn change")
@@ -175,7 +175,7 @@ class DvvModificationsService(
 
     // We get records LISATTY + MUUTETTU if address has changed (LISATTY is the new address),
     // TURVAKIELTO=false and MUUTETTU if restrictions are lifted (MUUTETTU is the "new" address)
-    private fun handleAddressDvvInfoGroup(db: Database, ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) =
+    private fun handleAddressDvvInfoGroup(db: Database.Connection, ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
                 if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
@@ -195,7 +195,7 @@ class DvvModificationsService(
         }
 
     private fun handleResidenceCodeDvvInfoGroup(
-        db: Database,
+        db: Database.Connection,
         ssn: String,
         residenceCodeDvvInfoGroup: ResidenceCodeDvvInfoGroup
     ) = db.transaction { tx ->

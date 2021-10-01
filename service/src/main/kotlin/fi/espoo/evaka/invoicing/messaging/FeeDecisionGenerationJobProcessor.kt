@@ -26,12 +26,12 @@ class FeeDecisionGenerationJobProcessor(
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
     }
 
-    fun runJob(db: Database, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
+    fun runJob(db: Database.Connection, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
         logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, msg.dateRange, listOf()) }
     }
 
-    fun runJob(db: Database, msg: AsyncJob.GenerateFinanceDecisions) {
+    fun runJob(db: Database.Connection, msg: AsyncJob.GenerateFinanceDecisions) {
         logger.info { "Generating finance decisions with parameters $msg" }
         db.transaction { tx ->
             when (msg.person) {

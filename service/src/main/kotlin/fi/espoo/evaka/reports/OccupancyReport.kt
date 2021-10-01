@@ -28,7 +28,7 @@ import java.time.LocalDate
 class OccupancyReportController {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
@@ -54,7 +54,7 @@ class OccupancyReportController {
 
     @GetMapping("/reports/occupancy-by-group")
     fun getOccupancyGroupReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,

@@ -32,7 +32,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     fun initDependencies() {
         koskiServer = MockKoskiServer.start()
         koskiTester = KoskiTester(
-            jdbi,
+            db,
             KoskiClient(
                 KoskiEnv.fromEnvironment(env).copy(
                     url = "http://localhost:${koskiServer.port}",

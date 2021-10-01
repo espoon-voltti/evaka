@@ -41,7 +41,7 @@ class PendingDecisionEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun doSendPendingDecisionsEmail(db: Database, msg: AsyncJob.SendPendingDecisionEmail) {
+    fun doSendPendingDecisionsEmail(db: Database.Connection, msg: AsyncJob.SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
         sendPendingDecisionEmail(db, msg)
     }
@@ -106,7 +106,7 @@ GROUP BY application.guardian_id
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(db: Database, pendingDecision: AsyncJob.SendPendingDecisionEmail) {
+    fun sendPendingDecisionEmail(db: Database.Connection, pendingDecision: AsyncJob.SendPendingDecisionEmail) {
         db.transaction { tx ->
             logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
             val lang = getLanguage(pendingDecision.language)

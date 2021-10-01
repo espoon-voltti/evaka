@@ -21,7 +21,7 @@ import java.util.UUID
 @RestController
 class DuplicatePeopleReportController {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
+    fun getDuplicatePeopleReport(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
         Audit.DuplicatePeopleReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN)
         return db.read { it.getDuplicatePeople() }.let(::ok)

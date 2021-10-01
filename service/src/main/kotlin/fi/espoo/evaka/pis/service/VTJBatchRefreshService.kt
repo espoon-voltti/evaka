@@ -19,7 +19,7 @@ class VTJBatchRefreshService(
         asyncJobRunner.registerHandler(::doVTJRefresh)
     }
 
-    fun doVTJRefresh(db: Database, msg: AsyncJob.VTJRefresh) {
+    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
         fridgeFamilyService.doVTJRefresh(db, msg)
     }
 }

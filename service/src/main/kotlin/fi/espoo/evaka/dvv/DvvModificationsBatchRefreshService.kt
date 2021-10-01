@@ -24,7 +24,7 @@ class DvvModificationsBatchRefreshService(
         asyncJobRunner.registerHandler(::doDvvModificationsRefresh)
     }
 
-    fun doDvvModificationsRefresh(db: Database, msg: AsyncJob.DvvModificationsRefresh) {
+    fun doDvvModificationsRefresh(db: Database.Connection, msg: AsyncJob.DvvModificationsRefresh) {
         logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
         val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, msg.ssns)
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")

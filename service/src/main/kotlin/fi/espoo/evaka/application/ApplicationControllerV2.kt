@@ -121,7 +121,7 @@ class ApplicationControllerV2(
 ) {
     @PostMapping
     fun createPaperApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PaperApplicationCreateRequest
     ): ResponseEntity<ApplicationId> {
@@ -164,7 +164,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/search")
     fun getApplicationSummaries(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: SearchApplicationRequest
     ): ResponseEntity<Paged<ApplicationSummary>> {
@@ -216,7 +216,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/by-guardian/{guardianId}")
     fun getGuardianApplicationSummaries(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
@@ -229,7 +229,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/by-child/{childId}")
     fun getChildApplicationSummaries(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "childId") childId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
@@ -242,7 +242,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/{applicationId}")
     fun getApplicationDetails(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<ApplicationResponse> {
@@ -286,7 +286,7 @@ class ApplicationControllerV2(
 
     @PutMapping("/{applicationId}")
     fun updateApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
@@ -309,7 +309,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/send-application")
     fun sendApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
@@ -319,7 +319,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<PlacementPlanDraft> {
@@ -331,7 +331,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<DecisionDraftJSON> {
@@ -392,7 +392,7 @@ class ApplicationControllerV2(
 
     @PutMapping("/{applicationId}/decision-drafts")
     fun updateDecisionDrafts(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
@@ -406,7 +406,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/placement-proposals/{unitId}/accept")
     fun acceptPlacementProposal(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: DaycareId
     ): ResponseEntity<Unit> {
@@ -416,7 +416,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/batch/actions/{action}")
     fun simpleBatchAction(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
@@ -441,7 +441,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
@@ -455,7 +455,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
     fun respondToPlacementProposal(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
@@ -475,7 +475,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/accept-decision")
     fun acceptDecision(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
@@ -488,7 +488,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/reject-decision")
     fun rejectDecision(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
@@ -499,7 +499,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleAction(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String

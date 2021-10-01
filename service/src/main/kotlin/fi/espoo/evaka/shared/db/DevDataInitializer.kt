@@ -10,9 +10,11 @@ import org.jdbi.v3.core.Jdbi
 
 class DevDataInitializer(jdbi: Jdbi) {
     init {
-        Database(jdbi).transaction { tx ->
-            tx.runDevScript("reset-database.sql")
-            tx.ensureDevData()
+        Database(jdbi).connect { db ->
+            db.transaction { tx ->
+                tx.runDevScript("reset-database.sql")
+                tx.ensureDevData()
+            }
         }
     }
 }

@@ -176,7 +176,7 @@ class ApplicationControllerCitizen(
 
     @PutMapping("/applications/{applicationId}")
     fun updateApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
@@ -198,7 +198,7 @@ class ApplicationControllerCitizen(
 
     @PutMapping("/applications/{applicationId}/draft")
     fun saveApplicationAsDraft(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
@@ -221,7 +221,7 @@ class ApplicationControllerCitizen(
 
     @DeleteMapping("/applications/{applicationId}")
     fun deleteUnprocessedApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
@@ -243,7 +243,7 @@ class ApplicationControllerCitizen(
 
     @PostMapping("/applications/{applicationId}/actions/send-application")
     fun sendApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
@@ -278,7 +278,7 @@ class ApplicationControllerCitizen(
 
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
     fun acceptDecision(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
@@ -299,7 +299,7 @@ class ApplicationControllerCitizen(
 
     @PostMapping("/applications/{applicationId}/actions/reject-decision")
     fun rejectDecision(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest

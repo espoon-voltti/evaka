@@ -24,7 +24,7 @@ import java.util.UUID
 class StartingPlacementsReportController {
     @GetMapping("/reports/starting-placements")
     fun getStartingPlacementsReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int

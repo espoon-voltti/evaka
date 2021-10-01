@@ -21,7 +21,7 @@ import java.util.UUID
 @RestController
 class ChildrenInDifferentAddressReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/children-in-different-address")
-    fun getChildrenInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
+    fun getChildrenInDifferentAddressReport(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
         Audit.ChildrenInDifferentAddressReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         val rows = db.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) }

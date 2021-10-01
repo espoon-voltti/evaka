@@ -23,7 +23,7 @@ import java.util.UUID
 class PlacementSketchingReportController {
     @GetMapping("/reports/placement-sketching")
     fun getPlacementSketchingReport(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("placementStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) placementStartDate: LocalDate,
         @RequestParam("earliestPreferredStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) earliestPreferredStartDate: LocalDate?
