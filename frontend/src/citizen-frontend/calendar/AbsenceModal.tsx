@@ -75,7 +75,7 @@ export default React.memo(function AbsenceModal({
       }}
     >
       <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
-      <Gap size="s" />
+      <Gap size="xs" />
       <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
           <SelectionChip

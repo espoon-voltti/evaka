@@ -237,6 +237,7 @@ export default React.memo(function ReservationModal({
     >
       <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
       <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
+      <Gap size="xs" />
       <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
           <SelectionChip
