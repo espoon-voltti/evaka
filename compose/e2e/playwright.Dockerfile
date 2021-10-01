@@ -6,6 +6,8 @@ ARG PLAYWRIGHT_VERSION=v1.14.1
 
 FROM mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal
 
+RUN rm /etc/apt/sources.list.d/nodesource.list
+
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash \
  && . "$HOME/.nvm/nvm.sh" \
  && nvm install 14.15
