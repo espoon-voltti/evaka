@@ -65,7 +65,7 @@ const features: Features = {
     experimental: {
       ai: false,
       incomeStatements: false,
-      messageAttachments: false,
+      messageAttachments: true,
       vasu: false
     }
   }
