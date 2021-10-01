@@ -21,10 +21,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faPen, faTrash } from 'lib-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import styled from 'styled-components'
-import {
-  deletePedagogicalDocument,
-  updatePedagogicalDocument
-} from '../../api/child/pedagogical-documents'
+import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents'
 import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
 import LocalDate from 'lib-common/local-date'
@@ -38,6 +35,7 @@ interface Props {
   updated: Date
   initInEditMode: boolean
   onReload: () => void
+  onDelete: (d: PedagogicalDocument) => void
 }
 
 const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
@@ -48,7 +46,8 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   created,
   updated,
   initInEditMode,
-  onReload
+  onReload,
+  onDelete
 }: Props) {
   const { i18n } = useTranslation()
   const [pedagogicalDocument, setPedagogicalDocument] =
@@ -82,16 +81,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         })
       }
     })
-  }
-
-  const deleteDocument = () => {
-    const attachmentId = pedagogicalDocument?.attachment?.id
-    if (!attachmentId) void deletePedagogicalDocument(id).then(onReload)
-    else {
-      void deleteAttachment(attachmentId)
-        .then(() => deletePedagogicalDocument(id))
-        .then(onReload)
-    }
   }
 
   const handleAttachmentUpload = useCallback(
@@ -195,7 +184,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               disabled={submitting}
             />
             <IconButton
-              onClick={() => deleteDocument()}
+              onClick={() => onDelete(pedagogicalDocument)}
               icon={faTrash}
               disabled={submitting}
             />
