@@ -110,7 +110,7 @@ const components = {
   ),
   pedagogicalDocuments: requireOneOfPermittedActions(
     PedagogicalDocuments,
-    'READ_PEDAGOGICAL_DOCUMENT'
+    'READ_PEDAGOGICAL_DOCUMENTS'
   ),
   assistance: requireOneOfPermittedActions(
     Assistance,

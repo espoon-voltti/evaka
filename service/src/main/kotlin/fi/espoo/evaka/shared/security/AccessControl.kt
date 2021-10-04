@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -389,6 +390,15 @@ WHERE employee_id = :userId
             getAclRoles = { acl.getRolesForDecision(user, id).roles },
             action = action,
             mapping = permittedRoleActions::decisionActions
+        )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::pedagogicalDocumentActions
         )
     }
 

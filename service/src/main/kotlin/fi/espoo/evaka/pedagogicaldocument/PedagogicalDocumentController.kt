@@ -49,7 +49,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(documentId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, documentId)
         return db.transaction { it.updateDocument(user, body, documentId) }
     }
 
@@ -59,9 +59,8 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ): PedagogicalDocument? {
-        val childId = findRelatedChild(db, documentId)
-        Audit.PedagogicalDocumentRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
+        Audit.PedagogicalDocumentRead.log(documentId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, documentId)
         return db.read { it.getPedagogicalDocument(documentId) }
     }
 
@@ -71,8 +70,8 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
-        Audit.PedagogicalDocumentUpdate.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
+        Audit.PedagogicalDocumentRead.log(childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId.raw)
         return db.read { it.findPedagogicalDocumentsByChild(childId) }
     }
 
@@ -82,9 +81,8 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        val childId = findRelatedChild(db, documentId)
-        Audit.PedagogicalDocumentUpdate.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_PEDAGOGICAL_DOCUMENT, childId.raw)
+        Audit.PedagogicalDocumentUpdate.log(documentId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.DELETE, documentId)
         db.transaction { it.deleteDocument(documentId) }
     }
 }
@@ -108,15 +106,6 @@ data class PedagogicalDocumentPostBody(
     val childId: ChildId,
     val description: String,
 )
-
-fun findRelatedChild(db: Database.Connection, documentId: PedagogicalDocumentId): ChildId {
-    return db.read {
-        it.createQuery("SELECT child_id FROM pedagogical_document WHERE id = :id")
-            .bind("id", documentId)
-            .mapTo<ChildId>()
-            .first()
-    }
-}
 
 private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
