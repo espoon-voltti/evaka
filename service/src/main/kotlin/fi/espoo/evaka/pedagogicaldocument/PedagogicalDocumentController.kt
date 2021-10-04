@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,11 +35,10 @@ class PedagogicalDocumentController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PedagogicalDocumentPostBody
-    ): ResponseEntity<PedagogicalDocument> {
+    ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        val doc = db.transaction { it.createDocument(user, body) }
-        return ResponseEntity.ok(doc)
+        return db.transaction { it.createDocument(user, body) }
     }
 
     @PutMapping("/{documentId}")
@@ -49,11 +47,10 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
-    ): ResponseEntity<PedagogicalDocument> {
+    ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        val doc = db.transaction { it.updateDocument(user, body, documentId) }
-        return ResponseEntity.ok(doc)
+        return db.transaction { it.updateDocument(user, body, documentId) }
     }
 
     @GetMapping("/{documentId}")
@@ -61,12 +58,11 @@ class PedagogicalDocumentController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
-    ): ResponseEntity<PedagogicalDocument> {
+    ): PedagogicalDocument? {
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
-        val doc = db.read { it.getPedagogicalDocument(documentId) }
-        return ResponseEntity.ok(doc)
+        return db.read { it.getPedagogicalDocument(documentId) }
     }
 
     @GetMapping("/child/{childId}")
@@ -74,11 +70,10 @@ class PedagogicalDocumentController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): ResponseEntity<List<PedagogicalDocument>> {
+    ): List<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
-        val docs = db.read { it.findPedagogicalDocumentsByChild(childId) }
-        return ResponseEntity.ok(docs)
+        return db.read { it.findPedagogicalDocumentsByChild(childId) }
     }
 
     @DeleteMapping("/{documentId}")
@@ -86,12 +81,11 @@ class PedagogicalDocumentController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
-    ): ResponseEntity<Unit> {
+    ) {
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentUpdate.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_PEDAGOGICAL_DOCUMENT, childId.raw)
         db.transaction { it.deleteDocument(documentId) }
-        return ResponseEntity.ok().build()
     }
 }
 
