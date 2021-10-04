@@ -39,7 +39,7 @@ class PedagogicalDocumentController(
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        val doc = createDocument(db, user, body)
+        val doc = db.transaction { it.createDocument(user, body) }
         return ResponseEntity.ok(doc)
     }
 
@@ -52,7 +52,7 @@ class PedagogicalDocumentController(
     ): ResponseEntity<PedagogicalDocument> {
         Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        val doc = updateDocument(db, user, body, documentId)
+        val doc = db.transaction { it.updateDocument(user, body, documentId) }
         return ResponseEntity.ok(doc)
     }
 
@@ -65,7 +65,7 @@ class PedagogicalDocumentController(
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
-        val doc = getPedagogicalDocument(db, documentId)
+        val doc = db.read { it.getPedagogicalDocument(documentId) }
         return ResponseEntity.ok(doc)
     }
 
@@ -77,7 +77,7 @@ class PedagogicalDocumentController(
     ): ResponseEntity<List<PedagogicalDocument>> {
         Audit.PedagogicalDocumentUpdate.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENT, childId.raw)
-        val docs = findPedagogicalDocumentsByChild(db, childId)
+        val docs = db.read { it.findPedagogicalDocumentsByChild(childId) }
         return ResponseEntity.ok(docs)
     }
 
@@ -90,7 +90,7 @@ class PedagogicalDocumentController(
         val childId = findRelatedChild(db, documentId)
         Audit.PedagogicalDocumentUpdate.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_PEDAGOGICAL_DOCUMENT, childId.raw)
-        deleteDocument(db, documentId)
+        db.transaction { it.deleteDocument(documentId) }
         return ResponseEntity.ok().build()
     }
 }
@@ -124,122 +124,107 @@ fun findRelatedChild(db: Database.Connection, documentId: PedagogicalDocumentId)
     }
 }
 
-private fun createDocument(
-    db: Database.Connection,
+private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
 ): PedagogicalDocument {
-    return db.transaction { tx ->
-        tx.createUpdate(
-            """
-                INSERT INTO pedagogical_document(child_id, created_by, description)
-                VALUES (:child_id, :created_by, :description)
-                RETURNING *
-            """.trimIndent()
-        )
-            .bind("child_id", body.childId)
-            .bind("created_by", user.id)
-            .bind("description", body.description)
-            .executeAndReturnGeneratedKeys()
-            .mapTo<PedagogicalDocument>()
-            .first()
-    }
+    return this.createUpdate(
+        """
+            INSERT INTO pedagogical_document(child_id, created_by, description)
+            VALUES (:child_id, :created_by, :description)
+            RETURNING *
+        """.trimIndent()
+    )
+        .bind("child_id", body.childId)
+        .bind("created_by", user.id)
+        .bind("description", body.description)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<PedagogicalDocument>()
+        .first()
 }
 
-private fun updateDocument(
-    db: Database.Connection,
+private fun Database.Transaction.updateDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument {
-    return db.transaction { tx ->
-        tx.createUpdate(
-            """
-                UPDATE pedagogical_document
-                SET description = :description, 
-                    updated_by = :updated_by
-                WHERE id = :id AND child_id = :child_id
-            """.trimIndent()
-        )
-            .bind("id", documentId)
-            .bind("child_id", body.childId)
-            .bind("description", body.description)
-            .bind("updated_by", user.id)
-            .executeAndReturnGeneratedKeys()
-            .mapTo<PedagogicalDocument>()
-            .first()
-    }
+    return this.createUpdate(
+        """
+            UPDATE pedagogical_document
+            SET description = :description, 
+                updated_by = :updated_by
+            WHERE id = :id AND child_id = :child_id
+        """.trimIndent()
+    )
+        .bind("id", documentId)
+        .bind("child_id", body.childId)
+        .bind("description", body.description)
+        .bind("updated_by", user.id)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<PedagogicalDocument>()
+        .first()
 }
 
-private fun findPedagogicalDocumentsByChild(
-    db: Database.Connection,
+private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {
-    return db.read {
-        it.createQuery(
-            """
-                SELECT 
-                    pd.id,
-                    pd.child_id,
-                    pd.description,
-                    pd.created,
-                    pd.updated,
-                    a.id attachment_id,
-                    a.name attachment_name,
-                    a.content_type attachment_content_type
-                FROM pedagogical_document pd
-                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-                WHERE child_id = :child_id
-            """.trimIndent()
-        )
-            .bind("child_id", childId)
-            .map { row -> mapPedagogicalDocument(row) }
-            .toList()
-    }
+    return this.createQuery(
+        """
+            SELECT 
+                pd.id,
+                pd.child_id,
+                pd.description,
+                pd.created,
+                pd.updated,
+                a.id attachment_id,
+                a.name attachment_name,
+                a.content_type attachment_content_type
+            FROM pedagogical_document pd
+            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+            WHERE child_id = :child_id
+        """.trimIndent()
+    )
+        .bind("child_id", childId)
+        .map { row -> mapPedagogicalDocument(row) }
+        .toList()
 }
 
-private fun getPedagogicalDocument(
-    db: Database.Connection,
+private fun Database.Read.getPedagogicalDocument(
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument? {
-    return db.read {
-        it.createQuery(
-            """
-                SELECT 
-                    pd.id,
-                    pd.child_id,
-                    pd.description,
-                    pd.created,
-                    pd.updated,
-                    a.id attachment_id,
-                    a.name attachment_name,
-                    a.content_type attachment_content_type
-                FROM pedagogical_document pd
-                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-                WHERE pd.id = :document_id
-            """.trimIndent()
-        )
-            .bind("document_id", documentId)
-            .map { row -> mapPedagogicalDocument(row) }
-            .toList()
-            .firstOrNull()
-    }
-}
-
-private fun deleteDocument(
-    db: Database.Connection,
-    documentId: PedagogicalDocumentId
-) = db.transaction {
-    it.createUpdate(
+    return this.createQuery(
         """
-                DELETE
-                FROM pedagogical_document pd
-                WHERE pd.id = :document_id
+            SELECT 
+                pd.id,
+                pd.child_id,
+                pd.description,
+                pd.created,
+                pd.updated,
+                a.id attachment_id,
+                a.name attachment_name,
+                a.content_type attachment_content_type
+            FROM pedagogical_document pd
+            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+            WHERE pd.id = :document_id
         """.trimIndent()
     )
         .bind("document_id", documentId)
-        .execute()
+        .map { row -> mapPedagogicalDocument(row) }
+        .toList()
+        .firstOrNull()
 }
+
+private fun Database.Transaction.deleteDocument(
+    documentId: PedagogicalDocumentId
+) = this.createUpdate(
+    """
+        DELETE
+        FROM pedagogical_document pd
+        WHERE pd.id = :document_id
+    """.trimIndent()
+)
+    .bind("document_id", documentId)
+    .execute()
 
 private fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
