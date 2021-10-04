@@ -52,11 +52,10 @@ export const absenceColours = {
   PRESENCE: colors.greyscale.white
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const translationsMergeCustomizer = (
-  origValue: any,
-  customizedValue: any
-): any => {
+  origValue: Record<string, unknown>,
+  customizedValue: Record<string, unknown>
+): Record<string, unknown> | undefined => {
   if (
     customizedValue != undefined &&
     (isArray(origValue) || React.isValidElement(origValue))
@@ -65,6 +64,5 @@ export const translationsMergeCustomizer = (
   }
   return undefined
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default colors
