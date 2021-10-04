@@ -42,6 +42,7 @@ dependencies {
         api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.10.0")
         api("org.apache.commons:commons-text:1.9")
+        api("org.apache.santuario:xmlsec:2.2.3")
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
         api("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
