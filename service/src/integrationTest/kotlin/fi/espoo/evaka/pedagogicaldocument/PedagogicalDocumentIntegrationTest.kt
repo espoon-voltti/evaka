@@ -25,7 +25,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
-import fi.espoo.evaka.shared.dev.updateDaycareGroupAclWithEmployee
+import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -71,8 +71,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
             tx.updateDaycareAclWithEmployee(testDaycare.id, staffId, UserRole.STAFF)
 
             tx.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
-            tx.updateDaycareGroupAclWithEmployee(groupId, staffId)
-            tx.updateDaycareGroupAclWithEmployee(groupId, groupStaffId)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, groupStaffId)
 
             val placementId = tx.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, endDate = LocalDate.MAX)
             tx.insertTestDaycareGroupPlacement(
@@ -251,7 +251,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
             val group2Id = GroupId(UUID.randomUUID())
             it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare2.id))
-            it.updateDaycareGroupAclWithEmployee(group2Id, staff2Id)
+            it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
@@ -270,7 +270,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
             val group2Id = GroupId(UUID.randomUUID())
             it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare.id))
-            it.updateDaycareGroupAclWithEmployee(group2Id, staff2Id)
+            it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id

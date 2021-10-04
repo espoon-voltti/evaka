@@ -144,7 +144,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, empl
         .execute()
 }
 
-fun Database.Transaction.updateDaycareGroupAclWithEmployee(groupId: GroupId, employeeId: UUID) {
+fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: UUID) {
     createUpdate("INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (:employeeId, :daycare_group_id)")
         .bind("daycare_group_id", groupId)
         .bind("employeeId", employeeId)
