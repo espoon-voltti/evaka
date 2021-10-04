@@ -141,7 +141,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
         <AddButtonRow
           text={i18n.childInformation.pedagogicalDocument.create}
-          onClick={() => createNewDocument()} // todo
+          onClick={() => createNewDocument()}
           data-qa="button-create-pedagogical-document"
           disabled={submitting}
         />
