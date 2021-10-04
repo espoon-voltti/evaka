@@ -65,5 +65,6 @@ describe('Child Information - Pedagogical documents', () => {
     await section.setDescription('Test description')
     await section.save()
     await waitUntilEqual(() => section.description, 'Test description')
+    await section.addAttachment(page)
   })
 })

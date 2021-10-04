@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -120,6 +120,9 @@ export class DailyServiceTimesSectionEdit {
 export class PedagogicalDocumentsSection {
   constructor(private section: RawElement) {}
 
+  readonly testFileName = 'test_file.png'
+  testFilePath = `src/e2e-playwright/assets/${this.testFileName}`
+
   readonly #startDate = this.section.find(
     '[data-qa="pedagogical-document-start-date"]'
   )
@@ -188,6 +191,15 @@ export class PedagogicalDocumentsSection {
   async addNew() {
     await this.#create.click()
     return new PedagogicalDocumentsSection(this.section)
+  }
+
+  async addAttachment(page: Page) {
+    await page.setInputFiles('[data-qa="btn-upload-file"]', this.testFilePath)
+    await waitUntilTrue(async () =>
+      (
+        await new RawElement(page, '[data-qa="file-download-button"]').innerText
+      ).includes(this.testFileName)
+    )
   }
 }
 
