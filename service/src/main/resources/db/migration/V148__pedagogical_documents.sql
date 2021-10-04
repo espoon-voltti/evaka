@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS pedagogical_document (
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON pedagogical_document FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+CREATE INDEX idx$pedagogical_document_child ON pedagogical_document (child_id);
 
 ALTER TABLE attachment
     ADD COLUMN pedagogical_document_id UUID,
@@ -16,4 +17,4 @@ ALTER TABLE attachment
     DROP CONSTRAINT created_for_fk,
     ADD CONSTRAINT created_for_fk CHECK (num_nonnulls(application_id, income_statement_id, message_content_id, message_draft_id, pedagogical_document_id) <= 1);
 
-CREATE INDEX idx$attachment_pedagogic_document ON attachment (pedagogical_document_id);
+CREATE INDEX idx$attachment_pedagogic_document ON attachment (pedagogical_document_id) WHERE pedagogical_document_id IS NOT NULL;
