@@ -33,7 +33,7 @@ class PedagogicalDocumentController(
 ) {
     @PostMapping
     fun createPedagogicalDocument(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PedagogicalDocumentPostBody
     ): ResponseEntity<PedagogicalDocument> {
@@ -45,7 +45,7 @@ class PedagogicalDocumentController(
 
     @PutMapping("/{documentId}")
     fun updatePedagogicalDocument(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
@@ -58,7 +58,7 @@ class PedagogicalDocumentController(
 
     @GetMapping("/{documentId}")
     fun getPedagogicalDocument(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ): ResponseEntity<PedagogicalDocument> {
@@ -71,7 +71,7 @@ class PedagogicalDocumentController(
 
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
     ): ResponseEntity<List<PedagogicalDocument>> {
@@ -83,7 +83,7 @@ class PedagogicalDocumentController(
 
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ): ResponseEntity<Unit> {
@@ -115,7 +115,7 @@ data class PedagogicalDocumentPostBody(
     val description: String,
 )
 
-fun findRelatedChild(db: Database, documentId: PedagogicalDocumentId): ChildId {
+fun findRelatedChild(db: Database.Connection, documentId: PedagogicalDocumentId): ChildId {
     return db.read {
         it.createQuery("SELECT child_id FROM pedagogical_document WHERE id = :id")
             .bind("id", documentId)
@@ -125,7 +125,7 @@ fun findRelatedChild(db: Database, documentId: PedagogicalDocumentId): ChildId {
 }
 
 private fun createDocument(
-    db: Database,
+    db: Database.Connection,
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
 ): PedagogicalDocument {
@@ -147,7 +147,7 @@ private fun createDocument(
 }
 
 private fun updateDocument(
-    db: Database,
+    db: Database.Connection,
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId
@@ -172,7 +172,7 @@ private fun updateDocument(
 }
 
 private fun findPedagogicalDocumentsByChild(
-    db: Database,
+    db: Database.Connection,
     childId: ChildId
 ): List<PedagogicalDocument> {
     return db.read {
@@ -199,7 +199,7 @@ private fun findPedagogicalDocumentsByChild(
 }
 
 private fun getPedagogicalDocument(
-    db: Database,
+    db: Database.Connection,
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument? {
     return db.read {
@@ -227,7 +227,7 @@ private fun getPedagogicalDocument(
 }
 
 private fun deleteDocument(
-    db: Database,
+    db: Database.Connection,
     documentId: PedagogicalDocumentId
 ) = db.transaction {
     it.createUpdate(

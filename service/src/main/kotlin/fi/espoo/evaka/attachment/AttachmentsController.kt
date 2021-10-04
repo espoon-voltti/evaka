@@ -93,7 +93,7 @@ class AttachmentsController(
 
     @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadPedagogicalDocumentAttachment(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestPart("file") file: MultipartFile
