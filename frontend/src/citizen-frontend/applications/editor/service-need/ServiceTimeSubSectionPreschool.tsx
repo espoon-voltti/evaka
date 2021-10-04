@@ -89,7 +89,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
         {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
       </H3>
 
-      {t.applications.editor.serviceNeed.dailyTime.connectedDaycareInfo()}
+      {t.applications.editor.serviceNeed.dailyTime.connectedDaycareInfo}
 
       <Checkbox
         checked={formData.connectedDaycare}

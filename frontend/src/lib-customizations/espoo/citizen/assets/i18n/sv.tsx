@@ -111,18 +111,16 @@ const sv: Translations = {
     title: 'Enheter på kartan',
     mainInfo:
       'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
-    privateUnitInfo: function PrivateUnitInfo() {
-      return (
-        <span>
-          För information om privata daghem,{' '}
-          <ExternalLink
-            text="klicka här."
-            href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik"
-            newTab
-          />
-        </span>
-      )
-    },
+    privateUnitInfo: (
+      <span>
+        För information om privata daghem,{' '}
+        <ExternalLink
+          text="klicka här."
+          href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik"
+          newTab
+        />
+      </span>
+    ),
     searchLabel: 'Sök med adress eller enhetens namn',
     searchPlaceholder: 'T.ex. Purola daghem',
     address: 'Adress',
@@ -272,18 +270,16 @@ const sv: Translations = {
       },
       create: 'Ny ansökan',
       daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.',
-      applicationInfo: function ApplicationInfoText() {
-        return (
-          <P>
-            Du kan ändra i ansökan så länge den inte har tagits till behandling.
-            Därefter kan du göra ändringar i ansökan genom att kontakta
-            servicehandledningen inom småbarnspedagogik tfn 09 81627600. Du kan
-            återta ansökan som du redan lämnat in genom att meddela detta per
-            e-post till servicehandledningen inom småbarnspedagogik{' '}
-            <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.
-          </P>
-        )
-      }
+      applicationInfo: (
+        <P>
+          Du kan ändra i ansökan så länge den inte har tagits till behandling.
+          Därefter kan du göra ändringar i ansökan genom att kontakta
+          servicehandledningen inom småbarnspedagogik tfn 09 81627600. Du kan
+          återta ansökan som du redan lämnat in genom att meddela detta per
+          e-post till servicehandledningen inom småbarnspedagogik{' '}
+          <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.
+        </P>
+      )
     },
     editor: {
       heading: {
@@ -293,113 +289,102 @@ const sv: Translations = {
           CLUB: 'Ansökan till klubbverksamhet'
         },
         info: {
-          DAYCARE: function EditorHeadingInfoDaycareText() {
-            return (
-              <>
-                <P>
-                  Du kan ansöka om plats i småbarnspedagogisk verksamhet året
-                  om. Ansökningen bör lämnas in senast fyra månader före behovet
-                  av verksamheten börjar. Om behovet börjar med kortare varsel
-                  pga. sysselsättning eller studier bör du ansöka om plats
-                  senast två veckor före.
-                </P>
-                <P>
-                  Du får ett skriftligt beslut om platsen. Beslutet delges i
-                  tjänsten{' '}
-                  <a
-                    href="https://www.suomi.fi/meddelanden"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi
-                  </a>
-                  -meddelanden, eller per post om du inte tagit i bruk
-                  meddelandetjänsten i Suomi.fi. * Informationen markerad med en
-                  stjärna krävs.
-                </P>
-                <P fitted={true}>
-                  * Informationen markerad med en stjärna krävs
-                </P>
-              </>
-            )
-          },
-          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
-            return (
-              <>
-                <P>
-                  Barn deltar i förskoleundervisning året innan läroplikten
-                  börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                  till förskoleundervisningen 2021–2022 är 8.–20.1.2021.
-                  Förskolan börjar i <strong>11.8.2021</strong>. Beslutet delges
-                  inom mars i{' '}
-                  <a
-                    href="https://www.suomi.fi/meddelanden"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi-meddelandetjänsten
-                  </a>{' '}
-                  eller per post om du inte tagit i bruk{' '}
-                  <a
-                    href="https://www.suomi.fi/meddelanden"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    meddelandetjänsten i Suomi.fi
-                  </a>
-                  .
-                </P>
-                <P>
-                  Du får ett skriftligt beslut om platsen. Beslutet delges i
-                  tjänsten{' '}
-                  <a
-                    href="https://www.suomi.fi/meddelanden"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi
-                  </a>
-                  -meddelanden, eller per post om du inte tagit i bruk
-                  meddelandetjänsten i Suomi.fi.
-                </P>
-                <P fitted={true}>
-                  * Informationen markerad med en stjärna krävs
-                </P>
-              </>
-            )
-          },
-          CLUB: function EditorHeadingInfoClubText() {
-            return (
-              <>
-                <P>
-                  Ansökningsperioden för klubbar som börjar på hösten är i mars.
-                  Om ditt barn får en klubbplats, du får beslutet om det under
-                  april-maj. Beslutet fattas för en verksamhetsperiod för
-                  perioden (augusti till slutet av maj). Beslut om klubbplats
-                  kommer till Suomi.fi-tjänsten eller per post om du inte har
-                  tagit det service.
-                </P>
-                <P>
-                  En klubbansökan kan också lämnas in utanför ansökningsperioden
-                  och vidare efter att klubbens säsong redan har börjat. Under
-                  ansökningsperioden De mottagna ansökningarna behandlas dock
-                  först och ansökningsperioden ansökningar som tas emot utifrån
-                  kommer att behandlas i ankomstordning. Klubbansökan är för en
-                  för klubbsäsongen. I slutet av perioden kommer ansökan att
-                  raderas systemet.
-                </P>
-                <P>
-                  Klubbaktiviteter är gratis, inte deltagande påverkar
-                  hemvårdsbidraget som betalas av FPA. Om ett barn det istället
-                  för att beviljas förskoleundervisning eller privat vårdbidrag
-                  kan han inte beviljas klubbplats.
-                </P>
-                <P fitted={true}>
-                  * Informationen markerad med en stjärna krävs.
-                </P>
-              </>
-            )
-          }
+          DAYCARE: (
+            <>
+              <P>
+                Du kan ansöka om plats i småbarnspedagogisk verksamhet året om.
+                Ansökningen bör lämnas in senast fyra månader före behovet av
+                verksamheten börjar. Om behovet börjar med kortare varsel pga.
+                sysselsättning eller studier bör du ansöka om plats senast två
+                veckor före.
+              </P>
+              <P>
+                Du får ett skriftligt beslut om platsen. Beslutet delges i
+                tjänsten{' '}
+                <a
+                  href="https://www.suomi.fi/meddelanden"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi
+                </a>
+                -meddelanden, eller per post om du inte tagit i bruk
+                meddelandetjänsten i Suomi.fi. * Informationen markerad med en
+                stjärna krävs.
+              </P>
+              <P fitted={true}>* Informationen markerad med en stjärna krävs</P>
+            </>
+          ),
+          PRESCHOOL: (
+            <>
+              <P>
+                Barn deltar i förskoleundervisning året innan läroplikten
+                börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden
+                till förskoleundervisningen 2021–2022 är 8.–20.1.2021. Förskolan
+                börjar i <strong>11.8.2021</strong>. Beslutet delges inom mars i{' '}
+                <a
+                  href="https://www.suomi.fi/meddelanden"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi-meddelandetjänsten
+                </a>{' '}
+                eller per post om du inte tagit i bruk{' '}
+                <a
+                  href="https://www.suomi.fi/meddelanden"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  meddelandetjänsten i Suomi.fi
+                </a>
+                .
+              </P>
+              <P>
+                Du får ett skriftligt beslut om platsen. Beslutet delges i
+                tjänsten{' '}
+                <a
+                  href="https://www.suomi.fi/meddelanden"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi
+                </a>
+                -meddelanden, eller per post om du inte tagit i bruk
+                meddelandetjänsten i Suomi.fi.
+              </P>
+              <P fitted={true}>* Informationen markerad med en stjärna krävs</P>
+            </>
+          ),
+          CLUB: (
+            <>
+              <P>
+                Ansökningsperioden för klubbar som börjar på hösten är i mars.
+                Om ditt barn får en klubbplats, du får beslutet om det under
+                april-maj. Beslutet fattas för en verksamhetsperiod för perioden
+                (augusti till slutet av maj). Beslut om klubbplats kommer till
+                Suomi.fi-tjänsten eller per post om du inte har tagit det
+                service.
+              </P>
+              <P>
+                En klubbansökan kan också lämnas in utanför ansökningsperioden
+                och vidare efter att klubbens säsong redan har börjat. Under
+                ansökningsperioden De mottagna ansökningarna behandlas dock
+                först och ansökningsperioden ansökningar som tas emot utifrån
+                kommer att behandlas i ankomstordning. Klubbansökan är för en
+                för klubbsäsongen. I slutet av perioden kommer ansökan att
+                raderas systemet.
+              </P>
+              <P>
+                Klubbaktiviteter är gratis, inte deltagande påverkar
+                hemvårdsbidraget som betalas av FPA. Om ett barn det istället
+                för att beviljas förskoleundervisning eller privat vårdbidrag
+                kan han inte beviljas klubbplats.
+              </P>
+              <P fitted={true}>
+                * Informationen markerad med en stjärna krävs.
+              </P>
+            </>
+          )
         },
         errors: (count: number) => (count === 1 ? '1 fel' : `${count} fel`),
         hasErrors:
@@ -423,25 +408,20 @@ const sv: Translations = {
           PRESCHOOL: 'Granska ansökan till förskola',
           CLUB: 'Var god och granska följande obligatoriska fält i blanketten'
         },
-        notYetSent: function NotYetSentText() {
-          return (
-            <P>
-              <strong>Du har inte ännu skickat ansökan.</strong>
-              Granska uppgifterna och skicka ansökan med <i>Skicka ansökan</i>
-              -knappen i slutet av sidan.
-            </P>
-          )
-        },
-        notYetSaved: function NotYetSavedText() {
-          return (
-            <P>
-              <strong>Ändringarna har inte sparats än.</strong> Granska
-              uppgifterna du gett, och skicka ansökan med{' '}
-              <i>Spara ändringarna</i>
-              -knappen i slutet av sidan.
-            </P>
-          )
-        },
+        notYetSent: (
+          <P>
+            <strong>Du har inte ännu skickat ansökan.</strong>
+            Granska uppgifterna och skicka ansökan med <i>Skicka ansökan</i>
+            -knappen i slutet av sidan.
+          </P>
+        ),
+        notYetSaved: (
+          <P>
+            <strong>Ändringarna har inte sparats än.</strong> Granska
+            uppgifterna du gett, och skicka ansökan med <i>Spara ändringarna</i>
+            -knappen i slutet av sidan.
+          </P>
+        ),
         no: 'Nej',
         basics: {
           created: 'Skapad',
@@ -609,16 +589,14 @@ const sv: Translations = {
             CLUB: 'Önskat inledningsdatum'
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
-          instructions: function ServiceNeedInstructionsText() {
-            return (
-              <>
-                Det är möjligt att senarelägga det önskade startdatumet så länge
-                ansökan inte har tagits upp till behandling. Därefter kan du
-                ändra det önskade startdatumet genom att kontakta
-                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
-              </>
-            )
-          },
+          instructions: (
+            <>
+              Det är möjligt att senarelägga det önskade startdatumet så länge
+              ansökan inte har tagits upp till behandling. Därefter kan du ändra
+              det önskade startdatumet genom att kontakta servicehandledningen
+              inom småbarnspedagogik (tfn 09 816 27600).
+            </>
+          ),
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },
@@ -635,21 +613,19 @@ const sv: Translations = {
         urgent: {
           label: 'Ansökningen är brådskande',
           attachmentsMessage: {
-            text: function UrgentApplicationAttachmentMessageText() {
-              return (
-                <P fitted={true}>
-                  Om behovet av en plats inom småbarnspedagogiken beror på att
-                  du plötsligt fått sysselsättning eller börjat studera, ska
-                  platsen sökas senast <strong>två veckor innan</strong> behovet
-                  börjar. Bifoga till ansökan ett arbets- eller studieintyg av
-                  båda vårdnadshavarna som bor i samma hushåll. Om du inte kan
-                  lägga till bilagor till ansökan elektroniskt, skicka dem per
-                  post till adressen Servicehandledningen inom småbarnspedagogik
-                  PB 32, 02070 Esbo stad. Behandlingstiden på två veckor börjar
-                  när vi har tagit emot ansökan och bilagorna som behövs.
-                </P>
-              )
-            },
+            text: (
+              <P fitted={true}>
+                Om behovet av en plats inom småbarnspedagogiken beror på att du
+                plötsligt fått sysselsättning eller börjat studera, ska platsen
+                sökas senast <strong>två veckor innan</strong> behovet börjar.
+                Bifoga till ansökan ett arbets- eller studieintyg av båda
+                vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga
+                till bilagor till ansökan elektroniskt, skicka dem per post till
+                adressen Servicehandledningen inom småbarnspedagogik PB 32,
+                02070 Esbo stad. Behandlingstiden på två veckor börjar när vi
+                har tagit emot ansökan och bilagorna som behövs.
+              </P>
+            ),
             subtitle:
               'Lägg här till ett arbets- eller studieintyg av båda föräldrarna.'
           }
@@ -664,37 +640,35 @@ const sv: Translations = {
             PRESCHOOL:
               'Tiden för småbarnspedagogik i samband med förskoleundervisning'
           },
-          connectedDaycareInfo: function ConnectedDaycareInfoText() {
-            return (
-              <>
-                <P>
-                  Du kan vid behov ansöka om avgiftsbelagd småbarnspedagogik i
-                  samband med förskoleundervisningen. Småbarnspedagogik erbjuds
-                  utöver förskoleundervisningen (fyra timmar per dag) på morgnar
-                  och eftermiddagar på samma ställe som förskoleundervisningen.
-                  Om barnet börjar senare, meddela detta under{' '}
-                  <i>Tilläggsuppgifter</i>.
-                </P>
-                <P>
-                  Plats i anslutning till förskoleundervisningen i en privat
-                  enhet för småbarnspedagogik ska sökas direkt hos enheten (med
-                  undantag för servicesedelenheter), enheten informerar om hur
-                  man ansöker. I dessa fall omvandlar servicehänvisningen
-                  ansökan till en ansökan om endast förskoleundervisning.
-                </P>
-                <P>
-                  Du ansöker om en servicesedel genom att som ansökningsönskemål
-                  välja den servicesedelenhet du vill söka till.
-                </P>
-                <P>
-                  Du får ett separat skriftligt beslut om platsen inom
-                  småbarnspedagogik. Beslutet delges i tjänsten
-                  Suomi.fi-meddelanden eller per post, om du inte har tagit
-                  tjänsten i bruk.
-                </P>
-              </>
-            )
-          },
+          connectedDaycareInfo: (
+            <>
+              <P>
+                Du kan vid behov ansöka om avgiftsbelagd småbarnspedagogik i
+                samband med förskoleundervisningen. Småbarnspedagogik erbjuds
+                utöver förskoleundervisningen (fyra timmar per dag) på morgnar
+                och eftermiddagar på samma ställe som förskoleundervisningen. Om
+                barnet börjar senare, meddela detta under{' '}
+                <i>Tilläggsuppgifter</i>.
+              </P>
+              <P>
+                Plats i anslutning till förskoleundervisningen i en privat enhet
+                för småbarnspedagogik ska sökas direkt hos enheten (med undantag
+                för servicesedelenheter), enheten informerar om hur man ansöker.
+                I dessa fall omvandlar servicehänvisningen ansökan till en
+                ansökan om endast förskoleundervisning.
+              </P>
+              <P>
+                Du ansöker om en servicesedel genom att som ansökningsönskemål
+                välja den servicesedelenhet du vill söka till.
+              </P>
+              <P>
+                Du får ett separat skriftligt beslut om platsen inom
+                småbarnspedagogik. Beslutet delges i tjänsten
+                Suomi.fi-meddelanden eller per post, om du inte har tagit
+                tjänsten i bruk.
+              </P>
+            </>
+          ),
           connectedDaycare:
             'Jag ansöker också om småbarnspedagogik i samband med förskoleundervisning.',
           instructions: {
@@ -747,79 +721,73 @@ const sv: Translations = {
         siblingBasis: {
           title: 'Ansökan på basis av syskonrelationer',
           info: {
-            DAYCARE: function SiblingBasisSummaryTextDaycare() {
-              return (
-                <>
-                  <P>
-                    Barnet har syskonprincip till samma småbarnspedagogisk enhet
-                    som hens syskon är när beslutet för småbarnspedagogik
-                    fattas. Som syskon betraktas barn som är folkbokförda på
-                    samma adress. Målet är att placera syskon i samma enhet om
-                    inte familjen önskar annat. Om du ansöker om en plats för
-                    syskon, som inte ännu har plats inom småbarnspedagogik,
-                    skriv uppgiften i tilläggsuppgifter. Fyll i dessa uppgifter
-                    endast om du vill hänvisa till barnets syskonrelationer.
-                  </P>
-                </>
-              )
-            },
-            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
-              return (
-                <>
-                  <P>
-                    Fyll i dessa uppgifter endast om du yrkar på
-                    prioriteringsordningen till sekundär förskola
-                  </P>
-                  <P>
-                    Vårdnadshavarna kan ansöka om plats för sitt barn i en annan
-                    förskola än närförskolan. Sökande från andra
-                    elevupptagningsområden kan antas endast om det finns lediga
-                    platser efter att barnen i förskolans eget
-                    elevupptagningsområde har fått en plats. Om det finns flera
-                    sökande än det finns platser tillämpas följande
-                    prioriteringsordning. Om du hänvisar till
-                    kontinuitetsprincipen skriv barnets nuvarande enhet i fältet
-                    för tilläggsuppgifter.
-                  </P>
-                  <ol type="a">
-                    <li>
-                      Kontinuitet vid övergång från småbarnspedagogik till
-                      förskola. Vid antagning till förskola prioriteras ett barn
-                      som haft sin dagvårdsplats i det daghem där förskolan är.
-                    </li>
-                    <li>
-                      Barn med syskon i skolan som finns i samma
-                      elevupptagningsområde. Syskonprincipen innebär att elever
-                      placeras i samma enhet som äldre syskon. För barn i
-                      förskolan tillämpas principen om eleven har syskon i
-                      årskurs 1–6 i skolan som finns i samma
-                      elevupptagningsområde som förskolan. Som syskon betraktas
-                      barn som är folkbokförda på samma adress.
-                    </li>
-                  </ol>
-                  <P>
-                    Fyll i dessa uppgifter endast om du vill hänvisa till
-                    barnets syskonrelationer.
-                  </P>
-                </>
-              )
-            },
-            CLUB: function SiblingBasisSummaryTextClub() {
-              return (
-                <>
-                  <P>
-                    Barn som bor på samma adress betraktas som syskon. Ett
-                    försök görs för att placera syskonen i samma klubbgrupp när
-                    familjen önskar det.
-                  </P>
-                  <P>
-                    Fyll i dessa uppgifter endast om du vill hänvisa till
-                    barnets syskonrelationer och välj samma klubb som syskonet
-                    deltar i nedan.
-                  </P>
-                </>
-              )
-            }
+            DAYCARE: (
+              <>
+                <P>
+                  Barnet har syskonprincip till samma småbarnspedagogisk enhet
+                  som hens syskon är när beslutet för småbarnspedagogik fattas.
+                  Som syskon betraktas barn som är folkbokförda på samma adress.
+                  Målet är att placera syskon i samma enhet om inte familjen
+                  önskar annat. Om du ansöker om en plats för syskon, som inte
+                  ännu har plats inom småbarnspedagogik, skriv uppgiften i
+                  tilläggsuppgifter. Fyll i dessa uppgifter endast om du vill
+                  hänvisa till barnets syskonrelationer.
+                </P>
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  Fyll i dessa uppgifter endast om du yrkar på
+                  prioriteringsordningen till sekundär förskola
+                </P>
+                <P>
+                  Vårdnadshavarna kan ansöka om plats för sitt barn i en annan
+                  förskola än närförskolan. Sökande från andra
+                  elevupptagningsområden kan antas endast om det finns lediga
+                  platser efter att barnen i förskolans eget
+                  elevupptagningsområde har fått en plats. Om det finns flera
+                  sökande än det finns platser tillämpas följande
+                  prioriteringsordning. Om du hänvisar till
+                  kontinuitetsprincipen skriv barnets nuvarande enhet i fältet
+                  för tilläggsuppgifter.
+                </P>
+                <ol type="a">
+                  <li>
+                    Kontinuitet vid övergång från småbarnspedagogik till
+                    förskola. Vid antagning till förskola prioriteras ett barn
+                    som haft sin dagvårdsplats i det daghem där förskolan är.
+                  </li>
+                  <li>
+                    Barn med syskon i skolan som finns i samma
+                    elevupptagningsområde. Syskonprincipen innebär att elever
+                    placeras i samma enhet som äldre syskon. För barn i
+                    förskolan tillämpas principen om eleven har syskon i årskurs
+                    1–6 i skolan som finns i samma elevupptagningsområde som
+                    förskolan. Som syskon betraktas barn som är folkbokförda på
+                    samma adress.
+                  </li>
+                </ol>
+                <P>
+                  Fyll i dessa uppgifter endast om du vill hänvisa till barnets
+                  syskonrelationer.
+                </P>
+              </>
+            ),
+            CLUB: (
+              <>
+                <P>
+                  Barn som bor på samma adress betraktas som syskon. Ett försök
+                  görs för att placera syskonen i samma klubbgrupp när familjen
+                  önskar det.
+                </P>
+                <P>
+                  Fyll i dessa uppgifter endast om du vill hänvisa till barnets
+                  syskonrelationer och välj samma klubb som syskonet deltar i
+                  nedan.
+                </P>
+              </>
+            )
           },
           checkbox: {
             DAYCARE:
@@ -844,57 +812,51 @@ const sv: Translations = {
           startDateMissing:
             'För att kunna välja önskade enheter, välj först det önskade startdatumet i avsnittet om "Behov av småbarnspedagogisk verksamhet"',
           info: {
-            DAYCARE: function UnitPreferenceInfoTextDaycare() {
-              return (
-                <>
-                  <P>
-                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
-                    garanterar inte en plats i den önskade enheten, men
-                    möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ. Du kan se var enheterna är belägna, genom att
-                    välja <i>Enheter på kartan</i>.
-                  </P>
-                  <P>
-                    Du ansöker om en servicesedel genom att som
-                    ansökningsönskemål välja den servicesedelenhet du vill söka
-                    till. När familjen ansöker till en servicesedel enhet får
-                    även ledaren inom småbarnspedagogik informationen.
-                  </P>
-                </>
-              )
-            },
-            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
-              return (
-                <>
-                  <P>
-                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
-                    garanterar inte en plats i den önskade enheten, men
-                    möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ. Du kan se var enheterna är belägna, genom att
-                    välja <i>Enheter på kartan</i>.
-                  </P>
-                  <P>
-                    Du ansöker om en servicesedel genom att som
-                    ansökningsönskemål välja den servicesedelenhet du vill söka
-                    till. När familjen ansöker till en servicesedel enhet får
-                    även ledaren inom småbarnspedagogik informationen.
-                  </P>
-                </>
-              )
-            },
-            CLUB: function UnitPreferenceInfoTextClub() {
-              return (
-                <>
-                  <P>
-                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
-                    garanterar inte en plats i den önskade enheten, men
-                    möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ. Du kan se var enheterna är belägna, genom att
-                    välja <i>Enheter på kartan</i>.
-                  </P>
-                </>
-              )
-            }
+            DAYCARE: (
+              <>
+                <P>
+                  Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                  garanterar inte en plats i den önskade enheten, men
+                  möjligheterna att få en önskad plats ökar om du anger flera
+                  alternativ. Du kan se var enheterna är belägna, genom att
+                  välja <i>Enheter på kartan</i>.
+                </P>
+                <P>
+                  Du ansöker om en servicesedel genom att som ansökningsönskemål
+                  välja den servicesedelenhet du vill söka till. När familjen
+                  ansöker till en servicesedel enhet får även ledaren inom
+                  småbarnspedagogik informationen.
+                </P>
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                  garanterar inte en plats i den önskade enheten, men
+                  möjligheterna att få en önskad plats ökar om du anger flera
+                  alternativ. Du kan se var enheterna är belägna, genom att
+                  välja <i>Enheter på kartan</i>.
+                </P>
+                <P>
+                  Du ansöker om en servicesedel genom att som ansökningsönskemål
+                  välja den servicesedelenhet du vill söka till. När familjen
+                  ansöker till en servicesedel enhet får även ledaren inom
+                  småbarnspedagogik informationen.
+                </P>
+              </>
+            ),
+            CLUB: (
+              <>
+                <P>
+                  Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                  garanterar inte en plats i den önskade enheten, men
+                  möjligheterna att få en önskad plats ökar om du anger flera
+                  alternativ. Du kan se var enheterna är belägna, genom att
+                  välja <i>Enheter på kartan</i>.
+                </P>
+              </>
+            )
           },
           mapLink: 'Enheter på kartan',
           serviceVoucherLink:
@@ -925,63 +887,53 @@ const sv: Translations = {
       fee: {
         title: 'Avgiften för småbarnspedagogik',
         info: {
-          DAYCARE: function FeeInfoTextDaycare() {
-            return (
-              <P>
-                Klientavgiften inom den kommunala småbarnspedagogiken och för
-                servicesedelns självriskandel är en procentandel av familjens
-                bruttoinkomster. Avgiften varierar från avgiftsfri
-                småbarnspedagogik till högst 288 euro i månaden, beroende på
-                familjens storlek, familjens inkomster och barnets vårdtid för
-                familjens första barn. Servicesedel enheterna kan dock ta ut
-                tilläggspris mellan 0-50€/mån/barn. Familjen ska lämna in en
-                utredning över sina bruttoinkomster på en särskild blankett,
-                senast inom två veckor från det att barnet har inlett
-              </P>
-            )
-          },
-          PRESCHOOL: function FeeInfoTextPreschool() {
-            return (
-              <P>
-                Förskoleundervisning är avgiftsfri, men för småbarnspedagogik i
-                samband med förskoleundervisning uppbärs en avgift. Om barnet
-                deltar i småbarnspedagogisk verksamhet i samband med
-                förskoleundervisning ska familjen lämna in en utredning över
-                sina bruttoinkomster på en särskild blankett, senast inom två
-                veckor från det att barnet har inlett.
-              </P>
-            )
-          },
-          CLUB: function FeeInfoTextClub() {
-            return <P></P>
-          }
+          DAYCARE: (
+            <P>
+              Klientavgiften inom den kommunala småbarnspedagogiken och för
+              servicesedelns självriskandel är en procentandel av familjens
+              bruttoinkomster. Avgiften varierar från avgiftsfri
+              småbarnspedagogik till högst 288 euro i månaden, beroende på
+              familjens storlek, familjens inkomster och barnets vårdtid för
+              familjens första barn. Servicesedel enheterna kan dock ta ut
+              tilläggspris mellan 0-50€/mån/barn. Familjen ska lämna in en
+              utredning över sina bruttoinkomster på en särskild blankett,
+              senast inom två veckor från det att barnet har inlett
+            </P>
+          ),
+          PRESCHOOL: (
+            <P>
+              Förskoleundervisning är avgiftsfri, men för småbarnspedagogik i
+              samband med förskoleundervisning uppbärs en avgift. Om barnet
+              deltar i småbarnspedagogisk verksamhet i samband med
+              förskoleundervisning ska familjen lämna in en utredning över sina
+              bruttoinkomster på en särskild blankett, senast inom två veckor
+              från det att barnet har inlett.
+            </P>
+          ),
+          CLUB: <P></P>
         },
-        emphasis: function FeeEmphasisText() {
-          return (
-            <strong>
-              Om familjen samtycker till den högsta avgiften behövs ingen
-              inkomstutredning.
-            </strong>
-          )
-        },
+        emphasis: (
+          <strong>
+            Om familjen samtycker till den högsta avgiften behövs ingen
+            inkomstutredning.
+          </strong>
+        ),
         checkbox:
           'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
-        links: function FeeLinksText() {
-          return (
-            <P>
-              Mer information om småbarnspedagogikens avgifter, servicesedelns
-              tilläggspris och blanketten för inkomstutredning finns här:
-              <br />
-              <a
-                href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/klientavgifter-i-smabarnspedagogik"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Avgifter för småbarnspedagogik
-              </a>
-            </P>
-          )
-        }
+        links: (
+          <P>
+            Mer information om småbarnspedagogikens avgifter, servicesedelns
+            tilläggspris och blanketten för inkomstutredning finns här:
+            <br />
+            <a
+              href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/klientavgifter-i-smabarnspedagogik"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Avgifter för småbarnspedagogik
+            </a>
+          </P>
+        )
       },
       additionalDetails: {
         title: 'Övriga tilläggsuppgifter',
@@ -990,9 +942,14 @@ const sv: Translations = {
           'Du kan ge noggrannare uppgifter till din ansökan i det här fältet',
         dietLabel: 'Specialdiet',
         dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
-        dietInfo: function DietInfoText() {
-          return 'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker eller vegetarisk kost (lakto-ovo).'
-        },
+        dietInfo: (
+          <>
+            För en del specialdieter behövs även ett skilt läkarintyg som lämnas
+            in till enheten. Undantag är laktosfri eller laktosfattig diet, diet
+            som grundar sig på religiösa orsaker eller vegetarisk kost
+            (lakto-ovo).
+          </>
+        ),
         allergiesLabel: 'Allergier',
         allergiesPlaceholder:
           'Du kan meddela barnets allergier i det här fältet',
@@ -1007,31 +964,29 @@ const sv: Translations = {
             hushåll.
           </P>
         ),
-        info: function ContactInfoInfoText() {
-          return (
-            <P>
-              Personuppgifterna hämtas från befolkningsdatabasen och du kan inte
-              ändra dem med den här ansökan. Om det finns fel i
-              personuppgifterna, vänligen uppdatera uppgifterna på webbplatsen{' '}
-              <a
-                href="https://dvv.fi/sv/kontroll-av-egna-uppgifter-service"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                dvv.fi
-              </a>{' '}
-              (Myndigheten för digitalisering och befolkningsdata). Ifall
-              adressen kommer att ändras, kan du lägga till den nya adressen på
-              ett separat ställe i ansökan. Fyll i den nya adressen både för
-              vårdnadshavare och barnet. Adressuppgifterna är officiella först
-              när de har uppdaterats av myndigheten för digitalisering och
-              befolkningsdata. Beslutet om barnets plats inom
-              småbarnspedagogiken eller förskoleundervisningen skickas
-              automatiskt också till en vårdnadshavare som bor på en annan
-              adress enligt befolkningsregistret.
-            </P>
-          )
-        },
+        info: (
+          <P>
+            Personuppgifterna hämtas från befolkningsdatabasen och du kan inte
+            ändra dem med den här ansökan. Om det finns fel i personuppgifterna,
+            vänligen uppdatera uppgifterna på webbplatsen{' '}
+            <a
+              href="https://dvv.fi/sv/kontroll-av-egna-uppgifter-service"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              dvv.fi
+            </a>{' '}
+            (Myndigheten för digitalisering och befolkningsdata). Ifall adressen
+            kommer att ändras, kan du lägga till den nya adressen på ett separat
+            ställe i ansökan. Fyll i den nya adressen både för vårdnadshavare
+            och barnet. Adressuppgifterna är officiella först när de har
+            uppdaterats av myndigheten för digitalisering och befolkningsdata.
+            Beslutet om barnets plats inom småbarnspedagogiken eller
+            förskoleundervisningen skickas automatiskt också till en
+            vårdnadshavare som bor på en annan adress enligt
+            befolkningsregistret.
+          </P>
+        ),
         emailInfoText:
           'E-postadressen används för att meddela om nya eVaka-meddelanden. Den aktuella e-postadressen har hämtats från eVakas kundregister. Om du ändrar det kommer det gamla e-postmeddelandet att uppdateras när ansökan har skickats.',
         childInfoTitle: 'Barnets information',
@@ -1116,16 +1071,14 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
-    summary: function DecisionsSummaryText() {
-      return (
-        <P width="800px">
-          Till denna sida kommer beslut gällande barnets ansökan till
-          småbarnspedagogik och förskola. Du ska omedelbart eller senast två
-          veckor från mottagandet av ett beslut ta emot eller annullera platsen
-          / platserna.
-        </P>
-      )
-    },
+    summary: (
+      <P width="800px">
+        Till denna sida kommer beslut gällande barnets ansökan till
+        småbarnspedagogik och förskola. Du ska omedelbart eller senast två
+        veckor från mottagandet av ett beslut ta emot eller annullera platsen /
+        platserna.
+      </P>
+    ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
     pageLoadError: 'Hämtning av information misslyckades',
     applicationDecisions: {
@@ -1194,17 +1147,15 @@ const sv: Translations = {
   },
   applicationsList: {
     title: 'Ansökan till småbarnspedagogik eller anmälan till förskolan',
-    summary: function ApplicationListSummaryText() {
-      return (
-        <P width="800px">
-          Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka
-          om plats i småbarnspedagogisk verksamhet. Med samma ansökan kan du
-          ansöka om servicesedel inom småbarnspedagogik när du ansöker om en
-          plats i en servicesedelenhet. Uppgifter om vårdnadshavarens barn
-          kommer automatiskt från befolkningsdatabasen till denna sida.
-        </P>
-      )
-    },
+    summary: (
+      <P width="800px">
+        Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka om
+        plats i småbarnspedagogisk verksamhet. Med samma ansökan kan du ansöka
+        om servicesedel inom småbarnspedagogik när du ansöker om en plats i en
+        servicesedelenhet. Uppgifter om vårdnadshavarens barn kommer automatiskt
+        från befolkningsdatabasen till denna sida.
+      </P>
+    ),
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Inga ansökningar',
     type: {

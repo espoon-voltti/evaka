@@ -32,7 +32,7 @@ export default React.memo(function ChildSubSection({
     <>
       <Gap size={'m'} />
       {fullFamily ? t.applications.editor.contactInfo.familyInfo : null}
-      {t.applications.editor.contactInfo.info()}
+      {t.applications.editor.contactInfo.info}
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
       <Gap size={'xs'} />
       <FixedSpaceRow spacing={'XL'}>

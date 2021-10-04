@@ -7,8 +7,9 @@
 import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 import { fi } from './espoo/employee/assets/i18n/fi'
-import { isArray, mergeWith } from 'lodash'
+import { mergeWith } from 'lodash'
 import { ApplicationType } from 'lib-common/generated/enums'
+import { translationsMergeCustomizer } from './common'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
@@ -34,21 +35,11 @@ export type Lang = 'fi'
 
 export type Translations = typeof fi
 
-const customizer = <T extends any>( // eslint-disable-line @typescript-eslint/no-explicit-any
-  origValue: T,
-  customizedValue: T | undefined
-): T | undefined => {
-  if (isArray(origValue) && customizedValue != undefined) {
-    return customizedValue
-  }
-  return undefined
-}
-
 export const translations: { [K in Lang]: Translations } = {
   fi: mergeWith(
     fi,
     (customizations as EmployeeCustomizations).translations.fi,
-    customizer
+    translationsMergeCustomizer
   )
 }
 

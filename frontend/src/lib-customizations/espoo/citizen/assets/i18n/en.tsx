@@ -111,18 +111,16 @@ const en: Translations = {
     title: 'Units on the map',
     mainInfo:
       "In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.",
-    privateUnitInfo: function PrivateUnitInfo() {
-      return (
-        <span>
-          For information on private units,{' '}
-          <ExternalLink
-            text="click here."
-            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers"
-            newTab
-          />
-        </span>
-      )
-    },
+    privateUnitInfo: (
+      <span>
+        For information on private units,{' '}
+        <ExternalLink
+          text="click here."
+          href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers"
+          newTab
+        />
+      </span>
+    ),
     searchLabel: 'Search by address or by a unit name',
     searchPlaceholder: 'For example Purolan päiväkoti',
     address: 'Address',
@@ -270,22 +268,19 @@ const en: Translations = {
       },
       create: 'Apply',
       daycare4monthWarning: 'The application processing time is 4 months.',
-      applicationInfo: function ApplicationInfoText() {
-        return (
-          <P>
-            You can make changes to your application until its processing
-            starts. After this, you can make changes to your application by
-            contacting early childhood education service counselling (tel. 09
-            816 31000). If you wish to cancel an application you have submitted,
-            please send an email to early childhood education service
-            counselling (
-            <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
-              varhaiskasvatuksen.palveluohjaus@espoo.fi
-            </a>
-            ).
-          </P>
-        )
-      }
+      applicationInfo: (
+        <P>
+          You can make changes to your application until its processing starts.
+          After this, you can make changes to your application by contacting
+          early childhood education service counselling (tel. 09 816 31000). If
+          you wish to cancel an application you have submitted, please send an
+          email to early childhood education service counselling (
+          <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
+            varhaiskasvatuksen.palveluohjaus@espoo.fi
+          </a>
+          ).
+        </P>
+      )
     },
     editor: {
       heading: {
@@ -296,123 +291,112 @@ const en: Translations = {
           CLUB: 'Application for club'
         },
         info: {
-          DAYCARE: function EditorHeadingInfoDaycareText() {
-            return (
-              <>
-                <P>
-                  You can apply for early childhood education all year round.
-                  The application must be submitted at the latest four months
-                  before the need for early childhood education begins. If you
-                  urgently need early childhood education, you must apply for a
-                  place at the latest two weeks before the need begins.
-                </P>
-                <P>
-                  The applicant will receive a written decision on the early
-                  childhood education place via the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Messages service of Suomi.fi
-                  </a>{' '}
-                  or by post if the applicant has not taken in use the Messages
-                  service of Suomi.fi.
-                </P>
-                <P fitted={true}>
-                  * Information marked with a star is required
-                </P>
-              </>
-            )
-          },
-          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
-            return (
-              <>
-                <P>
-                  Pre-primary education is attended one year before the start of
-                  compulsory education. Pre-primary education is free of charge.
-                  Enrolment for pre-primary education in the 2021–2022 school
-                  year takes place on 8–20 January 2021. Finnish and swedish
-                  pre-primary education begins on{' '}
-                  <strong>11 August 2021</strong>. The decisions will be sent to
-                  the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi Messages
-                  </a>{' '}
-                  service or by post, if the applicant does not use the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi Messages
-                  </a>{' '}
-                  service.
-                </P>
-                <P>
-                  The decisions will be sent to the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi Messages
-                  </a>{' '}
-                  service or by post, if the applicant does not use the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi Messages
-                  </a>{' '}
-                  service.
-                </P>
-                <P fitted={true}>
-                  * Information marked with a star is required
-                </P>
-              </>
-            )
-          },
-          CLUB: function EditorHeadingInfoClubText() {
-            return (
-              <>
-                <P>
-                  The application period for clubs that start in the autumn is
-                  in March. If your child is given a place in a club, you will
-                  receive a decision in April or May. The decision will cover
-                  one operating period (from August until the end of May). The
-                  decision will be sent to the Suomi.fi service or by post if
-                  you have not activated the service.
-                </P>
-                <P>
-                  You can also submit a club application outside of the
-                  application period and after the clubs’ operating period has
-                  started. We will, however, first process all applications that
-                  are submitted during the application period. The applications
-                  that are submitted outside of the application period will be
-                  processed in the order in which they are received. The club
-                  application is for one operating period. At the end of the
-                  period, the application will be removed from the system.
-                </P>
-                <P>
-                  Club activities are free of charge and participation in club
-                  activities will not affect the child home care allowance paid
-                  by Kela. However, if the child has been granted a place in
-                  early childhood education or your family has been granted
-                  private daycare allowance, a place in a club cannot be granted
-                  to the child
-                </P>
-                <P fitted={true}>
-                  * Information marked with an asterisk is required
-                </P>
-              </>
-            )
-          }
+          DAYCARE: (
+            <>
+              <P>
+                You can apply for early childhood education all year round. The
+                application must be submitted at the latest four months before
+                the need for early childhood education begins. If you urgently
+                need early childhood education, you must apply for a place at
+                the latest two weeks before the need begins.
+              </P>
+              <P>
+                The applicant will receive a written decision on the early
+                childhood education place via the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Messages service of Suomi.fi
+                </a>{' '}
+                or by post if the applicant has not taken in use the Messages
+                service of Suomi.fi.
+              </P>
+              <P fitted={true}>* Information marked with a star is required</P>
+            </>
+          ),
+          PRESCHOOL: (
+            <>
+              <P>
+                Pre-primary education is attended one year before the start of
+                compulsory education. Pre-primary education is free of charge.
+                Enrolment for pre-primary education in the 2021–2022 school year
+                takes place on 8–20 January 2021. Finnish and swedish
+                pre-primary education begins on <strong>11 August 2021</strong>.
+                The decisions will be sent to the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi Messages
+                </a>{' '}
+                service or by post, if the applicant does not use the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi Messages
+                </a>{' '}
+                service.
+              </P>
+              <P>
+                The decisions will be sent to the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi Messages
+                </a>{' '}
+                service or by post, if the applicant does not use the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi Messages
+                </a>{' '}
+                service.
+              </P>
+              <P fitted={true}>* Information marked with a star is required</P>
+            </>
+          ),
+          CLUB: (
+            <>
+              <P>
+                The application period for clubs that start in the autumn is in
+                March. If your child is given a place in a club, you will
+                receive a decision in April or May. The decision will cover one
+                operating period (from August until the end of May). The
+                decision will be sent to the Suomi.fi service or by post if you
+                have not activated the service.
+              </P>
+              <P>
+                You can also submit a club application outside of the
+                application period and after the clubs’ operating period has
+                started. We will, however, first process all applications that
+                are submitted during the application period. The applications
+                that are submitted outside of the application period will be
+                processed in the order in which they are received. The club
+                application is for one operating period. At the end of the
+                period, the application will be removed from the system.
+              </P>
+              <P>
+                Club activities are free of charge and participation in club
+                activities will not affect the child home care allowance paid by
+                Kela. However, if the child has been granted a place in early
+                childhood education or your family has been granted private
+                daycare allowance, a place in a club cannot be granted to the
+                child
+              </P>
+              <P fitted={true}>
+                * Information marked with an asterisk is required
+              </P>
+            </>
+          )
         },
         errors: (count: number) =>
           count === 1 ? '1 error' : `${count} errors`,
@@ -437,25 +421,20 @@ const en: Translations = {
           PRESCHOOL: 'Verifying the application',
           CLUB: 'Verifying the application'
         },
-        notYetSent: function NotYetSentText() {
-          return (
-            <P>
-              <strong>The application has not yet been sent.</strong> Please
-              check the information you provided and send the application by
-              clicking {'"'}Send the application{'"'} button in the end of the
-              form.
-            </P>
-          )
-        },
-        notYetSaved: function NotYetSavedText() {
-          return (
-            <P>
-              <strong>The changes have not been saved yet.</strong> Please check
-              the information you provided and send the application by clicking
-              {'"'}Save changes{'"'} button at the end of the form.
-            </P>
-          )
-        },
+        notYetSent: (
+          <P>
+            <strong>The application has not yet been sent.</strong> Please check
+            the information you provided and send the application by clicking{' '}
+            {'"'}Send the application{'"'} button in the end of the form.
+          </P>
+        ),
+        notYetSaved: (
+          <P>
+            <strong>The changes have not been saved yet.</strong> Please check
+            the information you provided and send the application by clicking
+            {'"'}Save changes{'"'} button at the end of the form.
+          </P>
+        ),
         no: 'No',
         basics: {
           created: 'Created',
@@ -626,16 +605,14 @@ const en: Translations = {
             CLUB: 'Desired start date'
           },
           noteOnDelay: 'The application processing time is 4 months.',
-          instructions: function ServiceNeedInstructionsText() {
-            return (
-              <>
-                You can postpone your desired start date until the processing of
-                your application starts. After this, you can make changes to
-                your desired start date by contacting early childhood education
-                service counselling (tel. 09 816 31000).
-              </>
-            )
-          },
+          instructions: (
+            <>
+              You can postpone your desired start date until the processing of
+              your application starts. After this, you can make changes to your
+              desired start date by contacting early childhood education service
+              counselling (tel. 09 816 31000).
+            </>
+          ),
           placeholder: 'Select the start date',
           validationText: 'Desired start date: '
         },
@@ -651,27 +628,24 @@ const en: Translations = {
         urgent: {
           label: 'Application is urgent',
           attachmentsMessage: {
-            text: function UrgentApplicationAttachmentMessageText() {
-              return (
-                <P fitted={true}>
-                  If the need for a place in early childhood education arises
-                  from sudden employment or a sudden start of studies, you will
-                  need to apply for a place no later than{' '}
-                  <strong>two weeks before</strong> your child needs it. In
-                  addition to the application, you will need to{' '}
-                  <strong>
-                    provide documents as proof of the employment or student
-                    status
-                  </strong>{' '}
-                  of both guardians living in the same household. If you are
-                  unable to add attachments to your online application, please
-                  send the documents by post to Early childhood education
-                  service counselling, P.O. Box 3125, 02070 City of Espoo. The
-                  processing period of two weeks will not begin until we have
-                  received the application and the required attachments.
-                </P>
-              )
-            },
+            text: (
+              <P fitted={true}>
+                If the need for a place in early childhood education arises from
+                sudden employment or a sudden start of studies, you will need to
+                apply for a place no later than{' '}
+                <strong>two weeks before</strong> your child needs it. In
+                addition to the application, you will need to{' '}
+                <strong>
+                  provide documents as proof of the employment or student status
+                </strong>{' '}
+                of both guardians living in the same household. If you are
+                unable to add attachments to your online application, please
+                send the documents by post to Early childhood education service
+                counselling, P.O. Box 3125, 02070 City of Espoo. The processing
+                period of two weeks will not begin until we have received the
+                application and the required attachments.
+              </P>
+            ),
             subtitle:
               'Add here documents as proof of the employment or student status of both guardians.'
           }
@@ -686,55 +660,52 @@ const en: Translations = {
             PRESCHOOL:
               'Early childhood education need related to pre-primary education'
           },
-          connectedDaycareInfo: function ConnectedDaycareInfoText() {
-            return (
-              <>
-                <P>
-                  If necessary, you can apply for early childhood education
-                  related to pre-primary education for the child, which is
-                  subject to a charge and provided in addition to pre-primary
-                  education (4 h/day) in the mornings and/or afternoons in the
-                  same place as pre-primary education. If you wish early
-                  childhood education to start later than pre-primary education,
-                  enter the desired start date in the additional information
-                  field.
-                </P>
-                <P>
-                  When you apply for a place at a private pre-primary education
-                  unit, you must apply for connected early childhood education
-                  directly from the unit (with the exception of service voucher
-                  units). The units will provide you with application
-                  instructions. In these cases, the service guidance team will
-                  convert the application into an application for pre-primary
-                  education only.
-                </P>
-                <P>
-                  Apply for a service voucher by selecting the service voucher
-                  unit to which you want to apply as your preferred unit.
-                </P>
-                <P>
-                  A separate written decision will be issued on the early
-                  childhood education place. The decision will be sent to the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi Messages
-                  </a>{' '}
-                  service or by post if you do not use the{' '}
-                  <a
-                    href="https://www.suomi.fi/messages"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Suomi.fi messages
-                  </a>{' '}
-                  service.
-                </P>
-              </>
-            )
-          },
+          connectedDaycareInfo: (
+            <>
+              <P>
+                If necessary, you can apply for early childhood education
+                related to pre-primary education for the child, which is subject
+                to a charge and provided in addition to pre-primary education (4
+                h/day) in the mornings and/or afternoons in the same place as
+                pre-primary education. If you wish early childhood education to
+                start later than pre-primary education, enter the desired start
+                date in the additional information field.
+              </P>
+              <P>
+                When you apply for a place at a private pre-primary education
+                unit, you must apply for connected early childhood education
+                directly from the unit (with the exception of service voucher
+                units). The units will provide you with application
+                instructions. In these cases, the service guidance team will
+                convert the application into an application for pre-primary
+                education only.
+              </P>
+              <P>
+                Apply for a service voucher by selecting the service voucher
+                unit to which you want to apply as your preferred unit.
+              </P>
+              <P>
+                A separate written decision will be issued on the early
+                childhood education place. The decision will be sent to the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi Messages
+                </a>{' '}
+                service or by post if you do not use the{' '}
+                <a
+                  href="https://www.suomi.fi/messages"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Suomi.fi messages
+                </a>{' '}
+                service.
+              </P>
+            </>
+          ),
           connectedDaycare:
             'I also apply for early childhood education related to pre-primary education.',
           instructions: {
@@ -786,74 +757,68 @@ const en: Translations = {
         siblingBasis: {
           title: 'Application on a sibling basis',
           info: {
-            DAYCARE: function SiblingBasisSummaryTextDaycare() {
-              return (
-                <>
-                  <P>
-                    The child has a sibling basis to the same early childhood
-                    education place attended by their sibling at the time of
-                    making the decision. All children living at the same address
-                    are considered to be siblings. The aim is to place siblings
-                    at the same early childhood education place, if the family
-                    so wishes. If you are applying for places for siblings who
-                    do not yet attend early childhood education, enter this
-                    piece of information in the additional information field.
-                  </P>
-                  <P>
-                    Fill in this information only if you want to exercise the
-                    sibling-basis right.
-                  </P>
-                </>
-              )
-            },
-            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
-              return (
-                <>
-                  <P>
-                    A child enrolling for pre-primary education has a
-                    sibling-basis right to a
-                  </P>
-                  <ol type="a">
-                    <li>
-                      early childhood education in their own service area, where
-                      they have a sibling who has, at the moment of making the
-                      decision and in the coming pre-primary education year, a
-                      place at the pre-primary education unit
-                    </li>
-                    <li>
-                      local school determined by the city, which will be
-                      attended by their sibling in the coming school year.
-                    </li>
-                  </ol>
-                  <P>
-                    If the child enrolling for pre-primary education has a
-                    sibling-basis right to both options, the guardian may decide
-                    which of them will be exercised. The selection is indicated
-                    by entering the name of the sibling in the field below.
-                  </P>
-                  <P>
-                    Fill in this information only if you want to exercise the
-                    sibling-basis right.
-                  </P>
-                </>
-              )
-            },
-            CLUB: function SiblingBasisSummaryTextClub() {
-              return (
-                <>
-                  <P>
-                    Children living in the same address are considered siblings.
-                    An effort is made to put the siblings into a same club group
-                    when the family wishes that.
-                  </P>
-                  <P>
-                    Fill in this information only if you want to exercise the
-                    sibling-basis right and choose the same club the sibling
-                    attends below.
-                  </P>
-                </>
-              )
-            }
+            DAYCARE: (
+              <>
+                <P>
+                  The child has a sibling basis to the same early childhood
+                  education place attended by their sibling at the time of
+                  making the decision. All children living at the same address
+                  are considered to be siblings. The aim is to place siblings at
+                  the same early childhood education place, if the family so
+                  wishes. If you are applying for places for siblings who do not
+                  yet attend early childhood education, enter this piece of
+                  information in the additional information field.
+                </P>
+                <P>
+                  Fill in this information only if you want to exercise the
+                  sibling-basis right.
+                </P>
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  A child enrolling for pre-primary education has a
+                  sibling-basis right to a
+                </P>
+                <ol type="a">
+                  <li>
+                    early childhood education in their own service area, where
+                    they have a sibling who has, at the moment of making the
+                    decision and in the coming pre-primary education year, a
+                    place at the pre-primary education unit
+                  </li>
+                  <li>
+                    local school determined by the city, which will be attended
+                    by their sibling in the coming school year.
+                  </li>
+                </ol>
+                <P>
+                  If the child enrolling for pre-primary education has a
+                  sibling-basis right to both options, the guardian may decide
+                  which of them will be exercised. The selection is indicated by
+                  entering the name of the sibling in the field below.
+                </P>
+                <P>
+                  Fill in this information only if you want to exercise the
+                  sibling-basis right.
+                </P>
+              </>
+            ),
+            CLUB: (
+              <>
+                <P>
+                  Children living in the same address are considered siblings.
+                  An effort is made to put the siblings into a same club group
+                  when the family wishes that.
+                </P>
+                <P>
+                  Fill in this information only if you want to exercise the
+                  sibling-basis right and choose the same club the sibling
+                  attends below.
+                </P>
+              </>
+            )
           },
           checkbox: {
             DAYCARE:
@@ -878,66 +843,60 @@ const en: Translations = {
           startDateMissing:
             'To select preferred units first set the preferred start date on "Service need" section',
           info: {
-            DAYCARE: function UnitPreferenceInfoTextDaycare() {
-              return (
-                <>
-                  <P>
-                    You can apply for 1 to 3 locations in your order of
-                    preference. Application preferences do not guarantee a place
-                    at the desired location, but the possibility of obtaining a
-                    desired location increases by giving more than one option.
-                  </P>
-                  <P>
-                    You can display the unit locations by choosing {"'"}Unit map
-                    view{"'"}.
-                  </P>
-                  <P>
-                    Apply for a service voucher by selecting the service voucher
-                    unit to which you want to apply as your preferred unit. When
-                    applying to a service voucher unit, the unit’s supervisor
-                    will also be informed of the application.
-                  </P>
-                </>
-              )
-            },
-            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
-              return (
-                <>
-                  <P>
-                    You can apply for 1 to 3 locations in your order of
-                    preference. Application preferences do not guarantee a place
-                    at the desired location, but the possibility of obtaining a
-                    desired location increases by giving more than one option.
-                  </P>
-                  <P>
-                    You can display the unit locations by choosing {"'"}Unit map
-                    view{"'"}.
-                  </P>
-                  <P>
-                    Apply for a service voucher by selecting the service voucher
-                    unit to which you want to apply as your preferred unit. When
-                    applying to a service voucher unit, the unit’s supervisor
-                    will also be informed of the application.
-                  </P>
-                </>
-              )
-            },
-            CLUB: function UnitPreferenceInfoTextClub() {
-              return (
-                <>
-                  <P>
-                    You can apply for 1 to 3 locations in your order of
-                    preference. Application preferences do not guarantee a place
-                    at the desired location, but the possibility of obtaining a
-                    desired location increases by giving more than one option.
-                  </P>
-                  <P>
-                    You can display the unit locations by choosing {"'"}Unit map
-                    view{"'"}.
-                  </P>
-                </>
-              )
-            }
+            DAYCARE: (
+              <>
+                <P>
+                  You can apply for 1 to 3 locations in your order of
+                  preference. Application preferences do not guarantee a place
+                  at the desired location, but the possibility of obtaining a
+                  desired location increases by giving more than one option.
+                </P>
+                <P>
+                  You can display the unit locations by choosing {"'"}Unit map
+                  view{"'"}.
+                </P>
+                <P>
+                  Apply for a service voucher by selecting the service voucher
+                  unit to which you want to apply as your preferred unit. When
+                  applying to a service voucher unit, the unit’s supervisor will
+                  also be informed of the application.
+                </P>
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  You can apply for 1 to 3 locations in your order of
+                  preference. Application preferences do not guarantee a place
+                  at the desired location, but the possibility of obtaining a
+                  desired location increases by giving more than one option.
+                </P>
+                <P>
+                  You can display the unit locations by choosing {"'"}Unit map
+                  view{"'"}.
+                </P>
+                <P>
+                  Apply for a service voucher by selecting the service voucher
+                  unit to which you want to apply as your preferred unit. When
+                  applying to a service voucher unit, the unit’s supervisor will
+                  also be informed of the application.
+                </P>
+              </>
+            ),
+            CLUB: (
+              <>
+                <P>
+                  You can apply for 1 to 3 locations in your order of
+                  preference. Application preferences do not guarantee a place
+                  at the desired location, but the possibility of obtaining a
+                  desired location increases by giving more than one option.
+                </P>
+                <P>
+                  You can display the unit locations by choosing {"'"}Unit map
+                  view{"'"}.
+                </P>
+              </>
+            )
           },
           mapLink: 'Unit map view',
           serviceVoucherLink:
@@ -969,64 +928,54 @@ const en: Translations = {
       fee: {
         title: 'Early childhood education fee',
         info: {
-          DAYCARE: function FeeInfoTextDaycare() {
-            return (
-              <P>
-                The client fees for municipal early childhood education and the
-                client charges for service voucher users are calculated as a
-                percentage of the family’s gross income. Depending on the
-                family’s size and income and the hours of early childhood
-                education, the fees vary from free early childhood education to
-                a maximum monthly fee of EUR 288 per child. Service voucher
-                units may, however, charge an additional monthly fee of EUR 0–50
-                per child. Each family must provide information about their
-                gross income using the income statement form, no later than two
-                weeks after their child’s early childhood education has started.
-              </P>
-            )
-          },
-          PRESCHOOL: function FeeInfoTextPreschool() {
-            return (
-              <P>
-                The client fees for municipal early childhood education are
-                calculated as a percentage of the family’s gross income. Each
-                family must provide information about their gross income using
-                the income statement form, no later than two weeks after their
-                child’s early childhood education has started.
-              </P>
-            )
-          },
-          CLUB: function FeeInfoTextClub() {
-            return <P></P>
-          }
+          DAYCARE: (
+            <P>
+              The client fees for municipal early childhood education and the
+              client charges for service voucher users are calculated as a
+              percentage of the family’s gross income. Depending on the family’s
+              size and income and the hours of early childhood education, the
+              fees vary from free early childhood education to a maximum monthly
+              fee of EUR 288 per child. Service voucher units may, however,
+              charge an additional monthly fee of EUR 0–50 per child. Each
+              family must provide information about their gross income using the
+              income statement form, no later than two weeks after their child’s
+              early childhood education has started.
+            </P>
+          ),
+          PRESCHOOL: (
+            <P>
+              The client fees for municipal early childhood education are
+              calculated as a percentage of the family’s gross income. Each
+              family must provide information about their gross income using the
+              income statement form, no later than two weeks after their child’s
+              early childhood education has started.
+            </P>
+          ),
+          CLUB: <P></P>
         },
-        emphasis: function FeeEmphasisText() {
-          return (
-            <strong>
-              The income statement is not needed if the family agrees to pay the
-              highest fee.
-            </strong>
-          )
-        },
+        emphasis: (
+          <strong>
+            The income statement is not needed if the family agrees to pay the
+            highest fee.
+          </strong>
+        ),
         checkbox:
           'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
-        links: function FeeLinksText() {
-          return (
-            <P>
-              You can find further information about early childhood education
-              fees, additional fees for service voucher users and the income
-              statement form here:
-              <br />
-              <a
-                href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Early childhood education fees
-              </a>
-            </P>
-          )
-        }
+        links: (
+          <P>
+            You can find further information about early childhood education
+            fees, additional fees for service voucher users and the income
+            statement form here:
+            <br />
+            <a
+              href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Early childhood education fees
+            </a>
+          </P>
+        )
       },
       additionalDetails: {
         title: 'Other additional information',
@@ -1036,9 +985,14 @@ const en: Translations = {
         dietLabel: 'Special diet',
         dietPlaceholder:
           'If you wish, you can indicate your child’s special diet in this field',
-        dietInfo: function DietInfoText() {
-          return 'Some special diets require a separate medical certificate to be delivered to the early childhood education location. Exceptions are a low-lactose or lactose-free diet, a diet based on religious beliefs and vegetarian diet (lacto-ovo).'
-        },
+        dietInfo: (
+          <>
+            Some special diets require a separate medical certificate to be
+            delivered to the early childhood education location. Exceptions are
+            a low-lactose or lactose-free diet, a diet based on religious
+            beliefs and vegetarian diet (lacto-ovo).
+          </>
+        ),
         allergiesLabel: 'Allergies',
         allergiesPlaceholder:
           'If you wish, you can indicate your child’s allergies in this field',
@@ -1052,31 +1006,28 @@ const en: Translations = {
             Please report all adults and children living in the same household.
           </P>
         ),
-        info: function ContactInfoInfoText() {
-          return (
-            <P>
-              The personal information has been retrieved from the population
-              data services and cannot be changed with this application. If the
-              personal information is incorrect, please update the information
-              on
-              <a
-                href="https://dvv.fi/en/certificates-from-the-population-information-system."
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                dvv.fi
-              </a>{' '}
-              If your address is about to change, you can add the new address in
-              a separate field in the application. Add a future address for both
-              the child and guardian. The address information will be official
-              only when it has been updated to the database of the Digital and
-              Population Data Services Agency. Decisions on the child{"'"}s
-              early childhood or pre-primary education place will be
-              automatically sent to another guardian who lives at a different
-              address based on the Population Information System.
-            </P>
-          )
-        },
+        info: (
+          <P>
+            The personal information has been retrieved from the population data
+            services and cannot be changed with this application. If the
+            personal information is incorrect, please update the information on
+            <a
+              href="https://dvv.fi/en/certificates-from-the-population-information-system."
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              dvv.fi
+            </a>{' '}
+            If your address is about to change, you can add the new address in a
+            separate field in the application. Add a future address for both the
+            child and guardian. The address information will be official only
+            when it has been updated to the database of the Digital and
+            Population Data Services Agency. Decisions on the child{"'"}s early
+            childhood or pre-primary education place will be automatically sent
+            to another guardian who lives at a different address based on the
+            Population Information System.
+          </P>
+        ),
         emailInfoText:
           'The email address is used for notifying about new eVaka messages. The current email address has been fetched from the eVaka customer records. In case you modify it, the old email will be updated once the application is sent.',
         childInfoTitle: "Child's information",
@@ -1162,16 +1113,14 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
-    summary: function DecisionsSummaryText() {
-      return (
-        <P width="800px">
-          This page displays the received decisions regarding child{"'"}s early
-          childhood education, pre-primary education and club applications. Upon
-          receiving a new decision, you are required to respond in two weeks,
-          whether you accept or reject it.
-        </P>
-      )
-    },
+    summary: (
+      <P width="800px">
+        This page displays the received decisions regarding child{"'"}s early
+        childhood education, pre-primary education and club applications. Upon
+        receiving a new decision, you are required to respond in two weeks,
+        whether you accept or reject it.
+      </P>
+    ),
     unconfirmedDecisions: (n: number) =>
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'
@@ -1245,19 +1194,17 @@ const en: Translations = {
   applicationsList: {
     title:
       'Applying for early childhood education or a club and enrolling for pre-primary education',
-    summary: function ApplicationListSummaryText() {
-      return (
-        <P width="800px">
-          A child’s guardian can submit an application for early childhood
-          education or a club and enroll the child to pre-primary education. You
-          can also use the same application to apply for a service voucher for
-          early childhood education. To do this, you have to apply for a place
-          in early childhood education at a service voucher unit. Information on
-          the guardian’s children is automatically retrieved from the Digital
-          and Population Data Services Agency and displayed in this view.
-        </P>
-      )
-    },
+    summary: (
+      <P width="800px">
+        A child’s guardian can submit an application for early childhood
+        education or a club and enroll the child to pre-primary education. You
+        can also use the same application to apply for a service voucher for
+        early childhood education. To do this, you have to apply for a place in
+        early childhood education at a service voucher unit. Information on the
+        guardian’s children is automatically retrieved from the Digital and
+        Population Data Services Agency and displayed in this view.
+      </P>
+    ),
     pageLoadError: 'Failed to load guardian applications',
     noApplications: 'No applications',
     type: {

@@ -9,7 +9,8 @@ import type { CitizenCustomizations } from './types'
 import fi from './espoo/citizen/assets/i18n/fi'
 import sv from './espoo/citizen/assets/i18n/sv'
 import en from './espoo/citizen/assets/i18n/en'
-import { merge } from 'lodash'
+import { mergeWith } from 'lodash'
+import { translationsMergeCustomizer } from './common'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
@@ -36,7 +37,19 @@ export type Lang = 'fi' | 'sv' | 'en'
 export type Translations = typeof fi
 
 export const translations: Record<Lang, Translations> = {
-  fi: merge(fi, (customizations as CitizenCustomizations).translations.fi),
-  sv: merge(sv, (customizations as CitizenCustomizations).translations.sv),
-  en: merge(en, (customizations as CitizenCustomizations).translations.en)
+  fi: mergeWith(
+    fi,
+    (customizations as CitizenCustomizations).translations.fi,
+    translationsMergeCustomizer
+  ),
+  sv: mergeWith(
+    sv,
+    (customizations as CitizenCustomizations).translations.sv,
+    translationsMergeCustomizer
+  ),
+  en: mergeWith(
+    en,
+    (customizations as CitizenCustomizations).translations.en,
+    translationsMergeCustomizer
+  )
 }

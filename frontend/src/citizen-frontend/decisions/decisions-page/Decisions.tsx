@@ -47,7 +47,7 @@ export default React.memo(function Decisions() {
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.decisions.title}</H1>
           <Gap size="xs" />
-          {t.decisions.summary()}
+          {t.decisions.summary}
           {unconfirmedDecisionsCount > 0 && (
             <>
               <Gap size="s" />

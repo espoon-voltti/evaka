@@ -13,6 +13,10 @@ import {
   Lang as LangEmployee,
   Translations as TranslationsEmployee
 } from './employee'
+import {
+  Lang as LangEmployeeMobile,
+  Translations as TranslationsEmployeeMobile
+} from './employeeMobile'
 import { PlacementType } from 'lib-common/generated/enums'
 
 type DeepPartial<T> = {
@@ -135,4 +139,8 @@ export interface EmployeeCustomizations {
 
 export interface EmployeeMobileCustomizations {
   appConfig: BaseAppConfig
+  translations: Record<
+    LangEmployeeMobile,
+    DeepPartial<TranslationsEmployeeMobile>
+  >
 }

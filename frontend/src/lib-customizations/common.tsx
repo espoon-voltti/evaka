@@ -9,6 +9,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import customizations from '@evaka/customizations/common'
+import { isArray } from 'lodash'
+import React from 'react'
 import type { CommonCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -49,5 +51,20 @@ export const absenceColours = {
   TEMPORARY_VISITOR: colors.accents.yellow,
   PRESENCE: colors.greyscale.white
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const translationsMergeCustomizer = (
+  origValue: any,
+  customizedValue: any
+): any => {
+  if (
+    customizedValue != undefined &&
+    (isArray(origValue) || React.isValidElement(origValue))
+  ) {
+    return customizedValue
+  }
+  return undefined
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default colors

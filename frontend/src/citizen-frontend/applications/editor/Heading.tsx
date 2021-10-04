@@ -43,7 +43,7 @@ export default React.memo(function Heading({
         {firstName} {lastName}
       </H2>
 
-      {t.applications.editor.heading.info[type]()}
+      {t.applications.editor.heading.info[type]}
       {errors && applicationHasErrors(errors) && (
         <>
           <Gap size="s" />

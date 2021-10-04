@@ -70,7 +70,7 @@ export default React.memo(function SearchSection({
       <H1>{t.map.title}</H1>
       <P data-qa="map-main-info">
         {t.map.mainInfo}
-        <PrivateUnitInfo>{t.map.privateUnitInfo()}</PrivateUnitInfo>
+        <PrivateUnitInfo>{t.map.privateUnitInfo}</PrivateUnitInfo>
       </P>
 
       <FixedSpaceColumn spacing="xs">

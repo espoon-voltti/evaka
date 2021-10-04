@@ -26,9 +26,7 @@ export default React.memo(function SiblingBasisSubSection({
   return (
     <>
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
-      {t.applications.editor.unitPreference.siblingBasis.info[
-        applicationType
-      ]()}
+      {t.applications.editor.unitPreference.siblingBasis.info[applicationType]}
       <Checkbox
         checked={formData.siblingBasis}
         data-qa="siblingBasis-input"

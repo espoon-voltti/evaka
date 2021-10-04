@@ -35,15 +35,15 @@ export default React.memo(function FeeSection({
       validationErrors={verificationRequested ? getErrorCount(errors) : 0}
       data-qa="fee-section"
     >
-      {t.applications.editor.fee.info[applicationType]()}
-      {t.applications.editor.fee.emphasis()}
+      {t.applications.editor.fee.info[applicationType]}
+      {t.applications.editor.fee.emphasis}
       <Checkbox
         checked={formData.maxFeeAccepted}
         data-qa={'maxFeeAccepted-input'}
         label={t.applications.editor.fee.checkbox}
         onChange={(maxFeeAccepted) => updateFormData({ maxFeeAccepted })}
       />
-      {t.applications.editor.fee.links()}
+      {t.applications.editor.fee.links}
     </EditorSection>
   )
 })
