@@ -6,7 +6,7 @@ import { AuthContext } from './auth/state'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { theme } from 'lib-customizations/common'
 import React, { ReactNode, useContext } from 'react'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
@@ -108,7 +108,9 @@ export default function App() {
                       path="/calendar"
                       component={requireAuth(CalendarPage, false)}
                     />
-                    <Route path="/" component={RedirectToMap} />
+                    <Route path="/">
+                      <Redirect to="/applying/map" />
+                    </Route>
                   </Switch>
                 </Main>
                 <GlobalInfoDialog />
@@ -126,12 +128,4 @@ export default function App() {
 function Main({ children }: { children: ReactNode }) {
   const { loading: authStatusLoading } = useContext(AuthContext)
   return <main>{authStatusLoading ? <SpinnerSegment /> : children}</main>
-}
-
-function RedirectToMap() {
-  window.location.href =
-    window.location.host === 'localhost:9094'
-      ? 'http://localhost:9094/applying/map'
-      : '/applying/map'
-  return null
 }
