@@ -123,15 +123,50 @@ export class PedagogicalDocumentsSection {
   readonly #startDate = this.section.find(
     '[data-qa="pedagogical-document-start-date"]'
   )
+
   readonly #document = this.section.find(
     '[data-qa="pedagogical-document-document"]'
   )
+
+  readonly #descriptionInput = this.section.findInput(
+    '[data-qa="pedagogical-document-description"]'
+  )
+
   readonly #description = this.section.find(
     '[data-qa="pedagogical-document-description"]'
   )
+
   readonly #create = this.section.find(
     '[data-qa="button-create-pedagogical-document"]'
   )
+  readonly #save = this.section.find(
+    '[data-qa="pedagogical-document-button-save"]'
+  )
+  readonly #edit = this.section.find(
+    '[data-qa="pedagogical-document-button-edit"]'
+  )
+  readonly #cancel = this.section.find(
+    '[data-qa="pedagogical-document-button-cancel"]'
+  )
+  readonly #delete = this.section.find(
+    '[data-qa="pedagogical-document-button-delete"]'
+  )
+
+  async save() {
+    await this.#save.click()
+  }
+
+  async edit() {
+    await this.#edit.click()
+  }
+
+  async cancel() {
+    await this.#cancel.click()
+  }
+
+  async delete() {
+    await this.#delete.click()
+  }
 
   get startDate(): Promise<string> {
     return this.#startDate.innerText
@@ -143,6 +178,11 @@ export class PedagogicalDocumentsSection {
 
   get description(): Promise<string> {
     return this.#description.innerText
+  }
+
+  async setDescription(text: string) {
+    await this.#description.click()
+    await this.#descriptionInput.type(text)
   }
 
   async addNew() {

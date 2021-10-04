@@ -62,5 +62,8 @@ describe('Child Information - Pedagogical documents', () => {
       () => section.startDate,
       format(new Date(), 'dd.MM.yyyy')
     )
+    await section.setDescription('Test description')
+    await section.save()
+    await waitUntilEqual(() => section.description, 'Test description')
   })
 })

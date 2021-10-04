@@ -164,11 +164,13 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         {editMode ? (
           <InlineButtons>
             <InlineButton
+              data-qa={'pedagogical-document-button-save'}
               onClick={updateDocument}
               text={'Tallenna'}
               disabled={submitting}
             />
             <InlineButton
+              data-qa={'pedagogical-document-button-cancel'}
               onClick={() => {
                 endEdit()
               }}
@@ -179,11 +181,13 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         ) : (
           <InlineButtons>
             <IconButton
+              data-qa={'pedagogical-document-button-edit'}
               onClick={() => setEditMode(true)}
               icon={faPen}
               disabled={submitting}
             />
             <IconButton
+              data-qa={'pedagogical-document-button-delete'}
               onClick={() => onDelete(pedagogicalDocument)}
               icon={faTrash}
               disabled={submitting}
