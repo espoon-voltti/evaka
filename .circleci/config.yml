@@ -82,6 +82,15 @@ aliases:
       GRADLE_USER_HOME: << pipeline.parameters.workspace_root >>/.gradle-user-home
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=80"
 
+  - &nodejs_executor
+    <<: *node_config
+    docker:
+      - image: *nodejs_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    resource_class: medium
+
 executors:
   aws_core_executor:
     <<: *default_config
@@ -98,22 +107,14 @@ executors:
     docker:
       - image: *builder_aws_terraform_image
     resource_class: small
+
+  nodejs_executor:
+    <<: *nodejs_executor
   apigw_executor:
-    <<: *node_config
-    docker:
-      - image: *nodejs_image
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    resource_class: medium
+    <<: *nodejs_executor
   frontend_executor:
-    <<: *node_config
-    docker:
-      - image: *nodejs_image
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    resource_class: medium
+    <<: *nodejs_executor
+
   e2e_executor:
     <<: *node_config
     machine:
@@ -369,7 +370,12 @@ commands:
   login_docker_hub:
     description: Log in to Docker Hub for authenticated pulls
     steps:
-      - run: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run: |
+          if test -z "$CIRCLE_PR_NUMBER"; then
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          else
+            echo "Forked - no docker login"
+          fi
 
   setup_authenticated_remote_docker:
     description: Setup remote Docker execution environment with Docker Hub authentication
@@ -392,7 +398,11 @@ commands:
           name: Unpack commercial frontend dependencies
           working_directory: *workspace_frontend
           command: |
-            ./unpack-pro-icons.sh
+            if test -z "$CIRCLE_PR_NUMBER"; then
+              ./unpack-pro-icons.sh
+            else
+              echo "Forked - no pro icons"
+            fi
       - store_frontend_deps
 
   build_frontend:
@@ -406,8 +416,11 @@ commands:
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               export SENTRY_PUBLISH_ENABLED=true
             fi
+            if test -z "$CIRCLE_PR_NUMBER"; then
+              export ICONS=pro
+            fi
 
-            ICONS=pro yarn build
+            yarn build
             ls -lRa ./dist/bundle
 
   e2e_build:
@@ -660,9 +673,6 @@ commands:
         type: string
       dir:
         type: string
-      save_image:
-        type: boolean
-        default: false
     steps:
       - run:
           name: Build docker image
@@ -676,29 +686,16 @@ commands:
       - run:
           name: Push docker image
           command: |
-            ecr-login
-            ecr-push << parameters.image >>
+            if test -z "$CIRCLE_PR_NUMBER"; then
+              ecr-login
+              ecr-push << parameters.image >>
+            else
+              echo "Forked - not pushing image"
+            fi
       - run:
           name: Save docker image
           working_directory: << parameters.dir >>
           command: docker save << parameters.image >> > image.tar
-
-  push_docker_image:
-    parameters:
-      image:
-        type: string
-      dir:
-        type: string
-    steps:
-      - run:
-          name: Load docker image
-          working_directory: << parameters.dir >>
-          command: docker load -i image.tar
-      - run:
-          name: Push docker image
-          command: |
-            ecr-login
-            ecr-push << parameters.image >>
 
   deploy_services:
     parameters:
@@ -759,9 +756,21 @@ commands:
             }
 
   # Must be the last step in a job
+  skip_when_forked:
+    description: "Halt job when forked repository"
+    steps:
+      - run:
+          name: Check can we Slack
+          command: |
+            if test -n "$CIRCLE_PR_NUMBER"; then # CIRCLE_PR_* only available in forked pull requests
+              circleci-agent step halt
+            fi
+
+  # Must be the last step in a job
   notify_slack:
     description: "Notify via Slack"
     steps:
+      - skip_when_forked
       - slack/notify:
           branch_pattern: master
           channel: ci
@@ -784,11 +793,12 @@ commands:
               ]
             }
 
+
 jobs:
   # MISC JOBS
 
   checkout_repo:
-    executor: apigw_executor
+    executor: nodejs_executor
     resource_class: small
     steps:
       - checkout
@@ -911,7 +921,11 @@ jobs:
       - notify_slack
 
   apigw_build_and_push_image:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - restore_repo
       - attach_root_workspace
@@ -922,7 +936,6 @@ jobs:
       - build_docker_image:
           image: evaka/api-gateway
           dir: *workspace_apigw
-          save_image: true
       - store_docker_image:
           dir: apigw
       - notify_slack
@@ -962,14 +975,22 @@ jobs:
   # E2E JOBS
 
   e2e-build-testcafe:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - e2e_build:
           test_runner: testcafe
       - notify_slack
 
   e2e-build-playwright:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - e2e_build:
           test_runner: playwright
@@ -1024,7 +1045,11 @@ jobs:
       - notify_slack
 
   proxy_build_and_push_image:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - restore_repo
       - setup_authenticated_remote_docker
@@ -1089,7 +1114,11 @@ jobs:
       - notify_slack
 
   service_build_and_push_image:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - restore_repo
       - attach_root_workspace
@@ -1105,7 +1134,6 @@ jobs:
       - build_docker_image:
           image: evaka/service
           dir: << pipeline.parameters.workspace_root >>/service
-          save_image: true
       - store_docker_image:
           dir: service
       - notify_slack
@@ -1240,7 +1268,11 @@ jobs:
       - notify_slack
 
   message_service_build_and_push_image:
-    executor: aws_docker_executor
+    parameters:
+      executor:
+        type: executor
+        default: aws_docker_executor
+    executor: << parameters.executor >>
     steps:
       - restore_repo
       - attach_root_workspace
@@ -1260,6 +1292,99 @@ jobs:
 
 workflows:
   version: 2
+
+  build_test_and_deploy_fork:
+    jobs:
+      - checkout_repo:
+          filters:
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              # Currently ALL jobs require secrets -> stop already at checkout for forks
+              only: /pull\/[0-9]+/
+      - check_licenses:
+          requires:
+            - checkout_repo
+      - lint_scripts:
+          requires:
+            - checkout_repo
+      - build_base_image:
+          requires:
+            - checkout_repo
+
+      - apigw_build_and_test:
+          requires:
+            - checkout_repo
+      - apigw_build_and_push_image:
+          executor: apigw_executor
+          requires:
+            - build_base_image
+            - apigw_build_and_test
+
+      - frontend_build_core:
+          requires:
+            - checkout_repo
+      - frontend_build_misc_and_test:
+          requires:
+            - checkout_repo
+
+      - proxy_build_and_push_image:
+          executor: nodejs_executor
+          requires:
+            - checkout_repo
+
+      - service_build:
+          requires:
+            - checkout_repo
+      - service_build_and_push_image:
+          executor: nodejs_executor
+          requires:
+            - build_base_image
+            - service_build
+      - service_test:
+          requires:
+            - service_build
+      - service_integration_test:
+          requires:
+            - service_build
+
+      - message_service_build:
+          requires:
+            - checkout_repo
+      - message_service_test:
+          requires:
+            - message_service_build
+      - message_service_integration_test:
+          requires:
+            - message_service_build
+      - message_service_build_and_push_image:
+          executor: nodejs_executor
+          requires:
+            - build_base_image
+            - message_service_test
+            - message_service_integration_test
+
+      - e2e-build-testcafe:
+          executor: frontend_executor
+          requires:
+            - checkout_repo
+      - e2e-build-playwright:
+          executor: frontend_executor
+          requires:
+            - checkout_repo
+
+      - e2e-test-testcafe:
+          requires:
+            - e2e-build-testcafe
+            - frontend_build_core
+            - apigw_build_and_push_image
+            - service_build_and_push_image
+      - e2e-test-playwright:
+          requires:
+            - e2e-build-playwright
+            - frontend_build_core
+            - apigw_build_and_push_image
+            - service_build_and_push_image
+
   build_test_and_deploy:
     jobs:
       - checkout_repo:
