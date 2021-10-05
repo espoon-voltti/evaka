@@ -19,7 +19,7 @@ export class PairingFlow {
     '[data-qa="submit-challenge-key-btn"]'
   )
   #responseKey = this.page.locator('[data-qa="response-key"]')
-  #unitPageLink = this.page.locator('[data-qa="unit-page-link"]')
+  #startCtaLink = this.page.locator('[data-qa="start-cta-link"]')
   #unitName = this.page.locator('[data-qa="unit-name"]')
 
   async startPairing() {
@@ -41,8 +41,8 @@ export class PairingFlow {
     return this.#mobilePairingTitle3.isVisible()
   }
 
-  async navigateToUnitPage() {
-    await this.#unitPageLink.click()
+  async clickStartCta() {
+    await this.#startCtaLink.click()
     await waitUntilVisible(this.#unitName)
   }
 }

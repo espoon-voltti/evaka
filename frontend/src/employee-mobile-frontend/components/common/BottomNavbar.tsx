@@ -114,11 +114,11 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             selected={selected === 'staff'}
             onClick={() =>
               selected !== 'staff' &&
-              (featureFlags.experimental?.realtimeStaffAttendance
-                ? history.push(
-                    `/units/${unitId}/groups/${groupId}/staff-attendance`
-                  )
-                : history.push(`/units/${unitId}/groups/${groupId}/staff`))
+              history.push(
+                featureFlags.experimental?.realtimeStaffAttendance
+                  ? `/units/${unitId}/groups/${groupId}/staff-attendance`
+                  : `/units/${unitId}/groups/${groupId}/staff`
+              )
             }
           >
             <CustomIcon icon={faUser} selected={selected === 'staff'} />

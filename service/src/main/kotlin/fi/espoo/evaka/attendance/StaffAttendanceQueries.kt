@@ -9,9 +9,9 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.LocalTime
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> = createQuery(
     """
@@ -43,8 +43,8 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .bind("rangeStart", now.withTime(LocalTime.MIN))
-    .bind("rangeEnd", now.withTime(LocalTime.MAX))
+    .bind("rangeStart", now.atStartOfDay())
+    .bind("rangeEnd", now.atEndOfDay())
     .mapTo<StaffMember>()
     .list()
 
@@ -89,4 +89,4 @@ fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, dep
 )
     .bind("id", attendanceId)
     .bind("departed", departureTime)
-    .execute()
+    .updateExactlyOne()

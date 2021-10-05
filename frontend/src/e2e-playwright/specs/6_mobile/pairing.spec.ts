@@ -78,6 +78,6 @@ describe('Mobile pairing', () => {
     await postPairingResponse(res.id, res.challengeKey, responseKey)
 
     await waitUntilTrue(() => pairingFlow.isPairingWizardFinished())
-    await pairingFlow.navigateToUnitPage()
+    await pairingFlow.clickStartCta()
   })
 })

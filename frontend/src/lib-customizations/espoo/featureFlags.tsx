@@ -28,7 +28,7 @@ const features: Features = {
       ai: true,
       incomeStatements: true,
       messageAttachments: true,
-      realtimeStaffAttendance: true,
+      realtimeStaffAttendance: false,
       vasu: true
     }
   },

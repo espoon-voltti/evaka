@@ -103,7 +103,6 @@ describe('Staff page', () => {
     await waitUntilTrue(async () =>
       (await staffPage.updated).startsWith('Tiedot päivitetty tänään ')
     )
-    await waitUntilEqual(() => nav.staffCount, '1,5+0,5')
   })
 
   test('Cancel resets the form', async () => {
@@ -134,22 +133,5 @@ describe('Staff page', () => {
 
     await staffPage.decStaffOtherCount()
     await waitUntilTrue(() => staffPage.buttonsDisabled)
-  })
-
-  test('Change between groups', async () => {
-    await nav.selectGroup(daycareGroupFixture.id)
-    await staffPage.incStaffCount()
-    await staffPage.confirm()
-
-    await nav.selectGroup(daycareGroup2Fixture.id)
-    await staffPage.incStaffOtherCount()
-    await staffPage.confirm()
-    await waitUntilEqual(() => nav.staffCount, '0+0,5')
-
-    await nav.selectGroup(daycareGroupFixture.id)
-    await waitUntilEqual(() => nav.staffCount, '0,5+0')
-
-    await nav.selectGroup('all')
-    await waitUntilEqual(() => nav.staffCount, '0,5+0,5')
   })
 })

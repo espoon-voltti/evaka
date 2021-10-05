@@ -65,6 +65,9 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
         it.withHour(time.hour).withMinute(time.minute).withSecond(time.second).withNano(time.nano)
     }
 
+    fun atStartOfDay() = withTime(LocalTime.MIN)
+    fun atEndOfDay() = withTime(LocalTime.MAX)
+
     /**
      * Returns the Europe/Helsinki local date+time at the point in time represented by this timestamp
      */

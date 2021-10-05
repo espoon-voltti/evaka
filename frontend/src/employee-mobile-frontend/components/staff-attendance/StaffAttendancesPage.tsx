@@ -26,13 +26,6 @@ export default function StaffAttendancesPage() {
   )
   useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
-  const selectedGroup =
-    groupId === 'all'
-      ? undefined
-      : unitInfoResponse
-          .map((res) => res.groups.find((g) => g.id === groupId))
-          .getOrElse(undefined)
-
   const changeGroup = (group: GroupInfo | undefined) =>
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
@@ -42,7 +35,11 @@ export default function StaffAttendancesPage() {
     <>
       <TopBar
         unitName={unit.name}
-        selectedGroup={selectedGroup}
+        selectedGroup={
+          groupId === 'all'
+            ? undefined
+            : unit.groups.find((g) => g.id === groupId)
+        }
         onChangeGroup={changeGroup}
       />
       {renderResult(

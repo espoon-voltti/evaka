@@ -16,9 +16,9 @@ export async function getUnitStaffAttendances(
   unitId: UUID
 ): Promise<Result<StaffAttendanceResponse>> {
   return client
-    .get<JsonOf<StaffAttendanceResponse>>(
-      `/v2/staff-attendances?unitId=${unitId}`
-    )
+    .get<JsonOf<StaffAttendanceResponse>>(`/v2/staff-attendances`, {
+      params: { unitId }
+    })
     .then((res) =>
       Success.of({
         staff: res.data.staff.map((staff) => ({

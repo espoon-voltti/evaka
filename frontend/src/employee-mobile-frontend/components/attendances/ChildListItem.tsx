@@ -115,7 +115,7 @@ const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)<{
 `
 
 interface ChildListItemProps {
-  attendanceChild: Child
+  child: Child
   onClick?: () => void
   type: AttendanceStatus
   childAttendanceUrl: string
@@ -123,7 +123,7 @@ interface ChildListItemProps {
 }
 
 export default React.memo(function ChildListItem({
-  attendanceChild,
+  child,
   onClick,
   type,
   childAttendanceUrl,
@@ -133,18 +133,17 @@ export default React.memo(function ChildListItem({
   const { unitInfoResponse } = useContext(UnitContext)
   const { attendanceResponse } = useContext(ChildAttendanceContext)
 
-  const { unitId, groupId, childId } = useParams<{
+  const { unitId, groupId } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
-    childId: UUID
   }>()
 
   return (
-    <ChildBox type={type} data-qa={`child-${attendanceChild.id}`}>
+    <ChildBox type={type} data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
         <IconBox type={type}>
-          {attendanceChild.imageUrl ? (
-            <RoundImage src={attendanceChild.imageUrl} />
+          {child.imageUrl ? (
+            <RoundImage src={child.imageUrl} />
           ) : (
             <RoundIcon
               content={farUser}
@@ -165,48 +164,48 @@ export default React.memo(function ChildListItem({
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
           <Bold data-qa={'child-name'}>
-            {attendanceChild.firstName} {attendanceChild.lastName}
+            {child.firstName} {child.lastName}
           </Bold>
           <DetailsRow>
             <div data-qa={'child-status'}>
-              {attendanceChild.reservation !== null
+              {child.reservation !== null
                 ? i18n.attendances.listChildReservation(
-                    attendanceChild.reservation.startTime,
-                    attendanceChild.reservation.endTime
+                    child.reservation.startTime,
+                    child.reservation.endTime
                   )
-                : i18n.attendances.status[attendanceChild.status]}
+                : i18n.attendances.status[child.status]}
               <StatusDetails>
                 {attendanceResponse.isSuccess &&
                   unitInfoResponse.isSuccess &&
-                  attendanceChild.status === 'COMING' && (
+                  child.status === 'COMING' && (
                     <span>
                       {' '}
                       (
                       {unitInfoResponse.value.groups
-                        .find((group) => group.id === attendanceChild.groupId)
+                        .find((group) => group.id === child.groupId)
                         ?.name.toUpperCase()}
                       )
                     </span>
                   )}
-                {attendanceChild.status === 'PRESENT' &&
+                {child.status === 'PRESENT' &&
                   `${i18n.attendances.arrived} ${formatDate(
-                    attendanceChild.attendance?.arrived,
+                    child.attendance?.arrived,
                     DATE_FORMAT_TIME_ONLY
                   )}`}
-                {attendanceChild.status === 'DEPARTED' &&
+                {child.status === 'DEPARTED' &&
                   `${i18n.attendances.departed} ${formatDate(
-                    attendanceChild.attendance?.departed,
+                    child.attendance?.departed,
                     DATE_FORMAT_TIME_ONLY
                   )}`}
               </StatusDetails>
-              {attendanceChild.backup && (
+              {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.accents.green} />
               )}
             </div>
             <FixedSpaceRowWithLeftMargin spacing="m">
-              {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
+              {child.dailyNote && attendanceResponse.isSuccess && (
                 <Link
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/note`}
+                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
                   data-qa={'link-child-daycare-daily-note'}
                 >
                   <RoundIcon
@@ -218,7 +217,7 @@ export default React.memo(function ChildListItem({
               )}
               {groupNote && attendanceResponse.isSuccess && (
                 <Link
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/note`}
+                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
                   data-qa={'link-child-daycare-daily-note'}
                 >
                   <RoundIcon

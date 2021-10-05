@@ -65,11 +65,9 @@ export default React.memo(function AttendanceList({
               <ChildListItem
                 type={ac.status}
                 key={ac.id}
-                attendanceChild={ac}
+                child={ac}
                 groupNote={getGroupNote(ac)}
-                childAttendanceUrl={`/units/${unitId}/groups/${
-                  ac.groupId ?? 'all'
-                }/child-attendance/${ac.id}`}
+                childAttendanceUrl={`/units/${unitId}/groups/${ac.groupId}/child-attendance/${ac.id}`}
               />
             </Li>
           ))
