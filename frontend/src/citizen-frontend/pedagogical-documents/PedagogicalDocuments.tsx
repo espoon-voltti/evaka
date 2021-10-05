@@ -58,7 +58,7 @@ export default function PedagogicalDocuments() {
         <Tbody>
           {items.map((item) => (
             <Tr key={item.id}>
-              <DateTd>
+              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
               <NameTd>
@@ -69,11 +69,15 @@ export default function PedagogicalDocuments() {
                     fileFetchFn={getAttachmentBlob}
                     onFileUnavailable={onAttachmentUnavailable}
                     icon
-                    data-qa="pedagogical-document-attachment"
+                    data-qa={`pedagogical-document-attachment-${item.id}`}
                   />
                 )}
               </NameTd>
-              <DescriptionTd>{item.description}</DescriptionTd>
+              <DescriptionTd
+                data-qa={`pedagogical-document-description-${item.id}`}
+              >
+                {item.description}
+              </DescriptionTd>
               <ActionsTd />
             </Tr>
           ))}

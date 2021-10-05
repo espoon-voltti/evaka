@@ -29,7 +29,14 @@ export default class CitizenHeader {
     await this.#loginButton.click()
   }
 
-  async selectTab(tab: 'applications' | 'decisions' | 'income' | 'calendar') {
+  async selectTab(
+    tab:
+      | 'applications'
+      | 'decisions'
+      | 'income'
+      | 'calendar'
+      | 'pedagogical-documents'
+  ) {
     const isContainedInApplyingSubheader = [
       'applications',
       'decisions'

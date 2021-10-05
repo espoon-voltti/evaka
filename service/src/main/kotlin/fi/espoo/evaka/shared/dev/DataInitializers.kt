@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
@@ -988,5 +989,20 @@ fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNe
 INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_updated, evaka_child_id, varda_decision_id, varda_placement_id, update_failed, errors)
 VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :updateFailed, :errors)
 RETURNING evaka_service_need_id
+    """
+)
+
+data class DevPedagogicalDocument(
+    val id: UUID,
+    val childId: UUID,
+    val description: String
+)
+
+fun Database.Transaction.insertPedagogicalDocument(pedagogicalDocument: DevPedagogicalDocument) = insertTestDataRow(
+        pedagogicalDocument,
+        """
+INSERT INTO pedagogical_document (id, child_id, description)
+VALUES (:id, :childId, :description)
+RETURNING id
     """
 )

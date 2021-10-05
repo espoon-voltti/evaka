@@ -36,7 +36,8 @@ import {
   EmployeePin,
   UserRole,
   PersonDetailWithDependantsAndGuardians,
-  HighestFeeFixture
+  HighestFeeFixture,
+  PedagogicalDocument
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -738,6 +739,16 @@ export async function insertEmployeePins(
 ): Promise<void> {
   try {
     await devClient.post(`/employee-pin`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertPedagogicalDocuments(
+  fixture: PedagogicalDocument[]
+): Promise<void> {
+  try {
+    await devClient.post('/pedagogical-document', fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

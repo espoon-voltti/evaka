@@ -711,6 +711,16 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         return ResponseEntity.noContent().build()
     }
 
+    @PostMapping("/pedagogical-document")
+    fun createPedagogicalDocuments(db: Database.Connection, @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>): ResponseEntity<Unit> {
+        db.transaction {
+            pedagogicalDocuments.forEach { pedagogicalDocument ->
+                it.insertPedagogicalDocument(pedagogicalDocument)
+            }
+        }
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/service-need-options")
     fun createServiceNeedOptions(db: Database.Connection): ResponseEntity<Unit> {
         db.transaction { it.insertServiceNeedOptions() }
