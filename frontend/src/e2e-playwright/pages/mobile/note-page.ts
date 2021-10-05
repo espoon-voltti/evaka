@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  DaycareDailyNote,
-  DaycareDailyNoteLevel,
+  DaycareDailyNoteBody,
+  DaycareDailyNoteLevelInfo,
   DaycareDailyNoteReminder
-} from 'e2e-test-common/dev-api/types'
+} from 'lib-common/generated/api-types/messaging'
 import { Page } from 'playwright'
 import { waitUntilEqual } from '../../utils'
 
@@ -26,10 +26,10 @@ export default class MobileNotePage {
       '[data-qa="sleeping-time-minutes-input"]'
     ),
     reminderNote: this.page.locator('[data-qa="reminder-note-input"]'),
-    feedingNote: (dailyNoteLevel: DaycareDailyNoteLevel) =>
-      this.page.locator(`[data-qa="feeding-note-${dailyNoteLevel}"]`),
-    sleepingNote: (dailyNoteLevel: DaycareDailyNoteLevel) =>
-      this.page.locator(`[data-qa="sleeping-note-${dailyNoteLevel}"]`),
+    feedingNote: (level: DaycareDailyNoteLevelInfo) =>
+      this.page.locator(`[data-qa="feeding-note-${level}"]`),
+    sleepingNote: (level: DaycareDailyNoteLevelInfo) =>
+      this.page.locator(`[data-qa="sleeping-note-${level}"]`),
     reminders: (reminder: DaycareDailyNoteReminder) =>
       this.page.locator(`[data-qa="reminders-${reminder}"]`)
   }
@@ -38,11 +38,11 @@ export default class MobileNotePage {
     await this.#groupTab.click()
   }
 
-  async fillGroupNote(groupNote: DaycareDailyNote) {
+  async fillGroupNote(groupNote: DaycareDailyNoteBody) {
     if (groupNote.note) await this.#note.groupNote.type(groupNote.note)
   }
 
-  async fillNote(dailyNote: DaycareDailyNote) {
+  async fillNote(dailyNote: DaycareDailyNoteBody) {
     if (dailyNote.note) await this.#note.dailyNote.type(dailyNote.note)
     if (dailyNote.feedingNote)
       await this.#note.feedingNote(dailyNote.feedingNote).click()
@@ -66,14 +66,14 @@ export default class MobileNotePage {
   async saveNote() {
     await this.#createNoteButton.click()
   }
-  async assertGroupNote(expected: DaycareDailyNote) {
+  async assertGroupNote(expected: DaycareDailyNoteBody) {
     await waitUntilEqual(
       () => this.#note.groupNote.inputValue(),
       expected.note || ''
     )
   }
 
-  async assertNote(expected: DaycareDailyNote) {
+  async assertNote(expected: DaycareDailyNoteBody) {
     await waitUntilEqual(
       () => this.#note.dailyNote.inputValue(),
       expected.note || ''
@@ -91,6 +91,6 @@ export default class MobileNotePage {
         (await this.#note.sleepingTimeMinutes.inputValue()) || 0
       )
       return (hours * 60 + minutes).toString()
-    }, expected.sleepingMinutes || '0')
+    }, expected.sleepingMinutes?.toString() || '0')
   }
 }

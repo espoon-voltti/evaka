@@ -765,53 +765,10 @@ export async function getGroupDaycareDailyNotes(
       res.data.map((data) => ({
         ...data,
         date: LocalDate.parseIso(data.date),
-        modifiedAt: data.modifiedAt ? new Date(data.modifiedAt) : null
+        modifiedAt: new Date(data.modifiedAt)
       }))
     )
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export interface DaycareDailyNoteFormData
-  extends Omit<DaycareDailyNote, 'sleepingMinutes'> {
-  sleepingHours: string
-  sleepingMinutes: string
-}
-
-export async function upsertChildDaycareDailyNote(
-  childId: string,
-  daycareDailyNote: DaycareDailyNote
-): Promise<Result<Unit>> {
-  const url = `/daycare-daily-note/child/${childId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertGroupDaycareDailyNote(
-  groupId: string,
-  daycareDailyNote: DaycareDailyNote
-): Promise<Result<Unit>> {
-  const url = `/daycare-daily-note/group/${groupId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function deleteDaycareDailyNote(
-  noteId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/daycare-daily-note/${noteId}`)
-    .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
 

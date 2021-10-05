@@ -6,10 +6,12 @@ import { Result } from 'lib-common/api'
 import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import {
   DaycareDailyNote,
+  DaycareDailyNoteBody,
   DaycareDailyNoteLevelInfo,
   DaycareDailyNoteReminder
 } from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
@@ -34,23 +36,79 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import {
-  createOrUpdateDaycareDailyNoteForChild,
   deleteDaycareDailyNote,
-  upsertGroupDaycareDailyNote
+  upsertDaycareDailyNoteForGroup,
+  updateDaycareDailyNoteForChild,
+  insertDaycareDailyNoteForChild
 } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
-import { UserContext } from '../../../state/user'
-import { User } from '../../../types'
 import { ChipWrapper, TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
+
+type DailyNoteEdited = DaycareDailyNoteBody & {
+  id: UUID | null
+  sleepingHours: number | null
+}
+
+const dailyNoteEditedToDailyNoteBody = ({
+  sleepingHours,
+  sleepingMinutes,
+  ...rest
+}: DailyNoteEdited): DaycareDailyNoteBody => ({
+  ...rest,
+  sleepingMinutes:
+    sleepingHours != null || sleepingMinutes != null
+      ? (sleepingMinutes || 0) + (sleepingHours || 0) * 60
+      : null
+})
+
+const dailyNoteToDailyNoteEdited = (
+  note: DaycareDailyNote
+): DailyNoteEdited => ({
+  ...note,
+  sleepingHours: note.sleepingMinutes
+    ? Math.floor(note.sleepingMinutes / 60)
+    : null,
+  sleepingMinutes: note.sleepingMinutes ? note.sleepingMinutes % 60 : null
+})
+
+const dailyNoteIsEmpty = (dailyNote: DailyNoteEdited) =>
+  !dailyNote.sleepingNote &&
+  dailyNote.sleepingMinutes === null &&
+  dailyNote.sleepingHours === null &&
+  dailyNote.reminders.length === 0 &&
+  !dailyNote.reminderNote &&
+  !dailyNote.note &&
+  !dailyNote.id &&
+  !dailyNote.groupId &&
+  !dailyNote.feedingNote
+
+const initDailyNote = ({
+  childId,
+  groupId
+}: {
+  childId?: string
+  groupId?: string
+}): DailyNoteEdited => ({
+  id: null,
+  childId: childId ?? null,
+  groupId: groupId ?? null,
+  date: LocalDate.today(),
+  note: '',
+  feedingNote: null,
+  sleepingNote: null,
+  sleepingHours: null,
+  sleepingMinutes: null,
+  reminders: [],
+  reminderNote: ''
+})
 
 const genNewGroupNote = (
   attendanceResponse: Result<AttendanceResponse>,
   groupId: string,
-  groupNote: string | null,
-  user: User | undefined
-): DaycareDailyNote => ({
+  groupNote: string | null
+): DailyNoteEdited => ({
   childId: null,
   date: LocalDate.today(),
   groupId,
@@ -63,31 +121,23 @@ const genNewGroupNote = (
     .getOrElse(null),
   feedingNote: null,
   sleepingNote: null,
+  sleepingHours: null,
   sleepingMinutes: null,
   reminders: [],
-  reminderNote: null,
-  modifiedAt: null,
-  modifiedBy: user?.id ?? 'unknown user'
+  reminderNote: null
 })
 
-interface DailyNoteEdited {
-  id: string | undefined
-  childId: string | undefined
-  groupId: string | undefined
-  date: LocalDate
-  note: string
-  feedingNote: DaycareDailyNoteLevelInfo | undefined
-  sleepingNote: DaycareDailyNoteLevelInfo | undefined
-  sleepingHours: number | undefined
-  sleepingMinutes: number | undefined
-  reminders: DaycareDailyNoteReminder[]
-  reminderNote: string
-}
+const levelInfoValues: DaycareDailyNoteLevelInfo[] = ['GOOD', 'MEDIUM', 'NONE']
+
+const reminderValues: DaycareDailyNoteReminder[] = [
+  'DIAPERS',
+  'CLOTHES',
+  'LAUNDRY'
+]
 
 export default React.memo(function DailyNoteEditor() {
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { user } = useContext(UserContext)
 
   const [uiMode, setUiMode] = useState<
     'default' | 'confirmExit' | 'confirmDelete'
@@ -108,34 +158,13 @@ export default React.memo(function DailyNoteEditor() {
 
   const [dirty, setDirty] = useState(false)
 
-  const [dailyNote, setDailyNote] = useState<DailyNoteEdited>({
-    id: undefined,
-    childId: childId,
-    groupId: undefined,
-    date: LocalDate.today(),
-    note: '',
-    feedingNote: undefined,
-    sleepingNote: undefined,
-    sleepingHours: undefined,
-    sleepingMinutes: undefined,
-    reminders: [],
-    reminderNote: ''
-  })
+  const [dailyNote, setDailyNote] = useState<DailyNoteEdited>(
+    initDailyNote({ childId })
+  )
 
-  const [groupNote, setGroupNote] = useState<DaycareDailyNote>({
-    childId: null,
-    date: LocalDate.today(),
-    groupId,
-    note: '',
-    id: null,
-    feedingNote: null,
-    sleepingNote: null,
-    sleepingMinutes: null,
-    reminders: [],
-    reminderNote: null,
-    modifiedAt: null,
-    modifiedBy: user?.id ?? 'unknown user'
-  })
+  const [groupNote, setGroupNote] = useState<DailyNoteEdited>(
+    initDailyNote({ groupId })
+  )
 
   type NoteType = 'NOTE' | 'GROUP_NOTE'
 
@@ -144,37 +173,22 @@ export default React.memo(function DailyNoteEditor() {
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
   useEffect(() => {
-    if (attendanceResponse.isSuccess) {
-      const child =
-        attendanceResponse.isSuccess &&
-        attendanceResponse.value.children.find((ac) => ac.id === childId)
-      if (child && child.dailyNote) {
+    attendanceResponse.map(({ children, groupNotes }) => {
+      const child = children.find((ac) => ac.id === childId)
+      if (child?.dailyNote) {
         setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
       }
-      const gNote = attendanceResponse.value.groupNotes.find(
-        (g) => g.groupId == groupId
-      )?.dailyNote
+      const gNote = groupNotes.find((g) => g.groupId == groupId)?.dailyNote
       if (gNote) {
-        setGroupNote(gNote)
+        setGroupNote(dailyNoteToDailyNoteEdited(gNote))
       }
-    }
+    })
   }, [attendanceResponse, childId, groupId])
 
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
 
-  const levelInfoValues: DaycareDailyNoteLevelInfo[] = [
-    'GOOD',
-    'MEDIUM',
-    'NONE'
-  ]
-
-  const reminderValues: DaycareDailyNoteReminder[] = [
-    'DIAPERS',
-    'CLOTHES',
-    'LAUNDRY'
-  ]
   const deleteNote = async () => {
     if (deleteType === 'NOTE') {
       if (dailyNote.id) await deleteDaycareDailyNote(dailyNote.id)
@@ -184,33 +198,25 @@ export default React.memo(function DailyNoteEditor() {
     history.goBack()
   }
   const saveNotes = async () => {
-    if (groupNote && groupNote.note !== '') {
+    const promises = []
+    if (groupNote.note) {
       const newGroupNote = genNewGroupNote(
         attendanceResponse,
         groupId,
-        groupNote.note,
-        user
+        groupNote.note
       )
-      if (dailyNoteIsEmpty(dailyNote)) {
-        setDirty(false)
-        return upsertGroupDaycareDailyNote(groupId, newGroupNote)
-      } else {
-        setDirty(false)
-        return Promise.all([
-          upsertGroupDaycareDailyNote(groupId, newGroupNote),
-          createOrUpdateDaycareDailyNoteForChild(
-            childId,
-            dailyNoteEditedToDailyNote(dailyNote, user)
-          )
-        ])
-      }
-    } else {
-      setDirty(false)
-      return createOrUpdateDaycareDailyNoteForChild(
-        childId,
-        dailyNoteEditedToDailyNote(dailyNote, user)
+      promises.push(upsertDaycareDailyNoteForGroup(groupId, newGroupNote))
+    }
+    if (!dailyNoteIsEmpty(dailyNote)) {
+      const body = dailyNoteEditedToDailyNoteBody(dailyNote)
+      promises.push(
+        dailyNote.id
+          ? updateDaycareDailyNoteForChild(childId, dailyNote.id, body)
+          : insertDaycareDailyNoteForChild(childId, body)
       )
     }
+    setDirty(false)
+    return Promise.all(promises)
   }
 
   const editNote = (dailyNote: DailyNoteEdited) => {
@@ -259,10 +265,7 @@ export default React.memo(function DailyNoteEditor() {
             })
           },
           label: i18n.common.save,
-          disabled:
-            dailyNote.sleepingMinutes === undefined
-              ? false
-              : dailyNote.sleepingMinutes > 59
+          disabled: !!(dailyNote?.sleepingMinutes || 0 > 59)
         }}
       />
     )
@@ -305,11 +308,7 @@ export default React.memo(function DailyNoteEditor() {
                   }
                 }}
                 icon={faArrowLeft}
-                text={
-                  child
-                    ? `${child.firstName} ${child.lastName}`
-                    : i18n.common.back
-                }
+                text={`${child.firstName} ${child.lastName}`}
               />
             </TopRow>
             <FixedSpaceColumn>
@@ -381,7 +380,7 @@ export default React.memo(function DailyNoteEditor() {
                         {i18n.attendances.notes.labels.groupNotesHeader}
                       </Label>
                       <TextArea
-                        value={groupNote.note ?? ''}
+                        value={groupNote?.note ?? ''}
                         onChange={(
                           e: React.ChangeEvent<HTMLTextAreaElement>
                         ) => {
@@ -425,7 +424,7 @@ export default React.memo(function DailyNoteEditor() {
                     <FixedSpaceColumn spacing={'xxs'}>
                       <Label>{i18n.attendances.notes.labels.note}</Label>
                       <TextArea
-                        value={dailyNote.note}
+                        value={dailyNote.note || ''}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                           editNote({ ...dailyNote, note: e.target.value })
                         }
@@ -448,7 +447,7 @@ export default React.memo(function DailyNoteEditor() {
                                   ...dailyNote,
                                   feedingNote:
                                     dailyNote.feedingNote === levelInfo
-                                      ? undefined
+                                      ? null
                                       : levelInfo
                                 })
                               }}
@@ -476,7 +475,7 @@ export default React.memo(function DailyNoteEditor() {
                                   ...dailyNote,
                                   sleepingNote:
                                     dailyNote.sleepingNote === levelInfo
-                                      ? undefined
+                                      ? null
                                       : levelInfo
                                 })
                               }}
@@ -489,11 +488,7 @@ export default React.memo(function DailyNoteEditor() {
                     </FixedSpaceColumn>
                     <Time>
                       <InputField
-                        value={
-                          dailyNote.sleepingHours
-                            ? dailyNote.sleepingHours.toString()
-                            : ''
-                        }
+                        value={dailyNote.sleepingHours?.toString() ?? ''}
                         onChange={(value) =>
                           editNote({
                             ...dailyNote,
@@ -502,16 +497,12 @@ export default React.memo(function DailyNoteEditor() {
                         }
                         placeholder={i18n.attendances.notes.placeholders.hours}
                         data-qa="sleeping-time-hours-input"
-                        width={'s'}
-                        type={'number'}
+                        width="s"
+                        type="number"
                       />
                       <span>{i18n.common.hourShort}</span>
                       <InputField
-                        value={
-                          dailyNote.sleepingMinutes
-                            ? dailyNote.sleepingMinutes.toString()
-                            : ''
-                        }
+                        value={dailyNote.sleepingMinutes?.toString() ?? ''}
                         onChange={(value) =>
                           editNote({
                             ...dailyNote,
@@ -522,8 +513,8 @@ export default React.memo(function DailyNoteEditor() {
                           i18n.attendances.notes.placeholders.minutes
                         }
                         data-qa="sleeping-time-minutes-input"
-                        width={'s'}
-                        type={'number'}
+                        width="s"
+                        type="number"
                         info={
                           dailyNote.sleepingMinutes &&
                           dailyNote.sleepingMinutes > 59
@@ -566,7 +557,7 @@ export default React.memo(function DailyNoteEditor() {
                           />
                         ))}
                         <TextArea
-                          value={dailyNote.reminderNote}
+                          value={dailyNote.reminderNote ?? ''}
                           onChange={(
                             e: React.ChangeEvent<HTMLTextAreaElement>
                           ) =>
@@ -621,64 +612,6 @@ export default React.memo(function DailyNoteEditor() {
     </>
   )
 })
-
-function dailyNoteEditedToDailyNote(
-  dailyNoteEdited: DailyNoteEdited,
-  user: User | undefined
-): DaycareDailyNote {
-  return {
-    ...dailyNoteEdited,
-    id: dailyNoteEdited.id ? dailyNoteEdited.id : null,
-    childId: dailyNoteEdited.childId ? dailyNoteEdited.childId : null,
-    groupId: dailyNoteEdited.groupId ? dailyNoteEdited.groupId : null,
-    feedingNote: dailyNoteEdited.feedingNote
-      ? dailyNoteEdited.feedingNote
-      : null,
-    sleepingNote: dailyNoteEdited.sleepingNote
-      ? dailyNoteEdited.sleepingNote
-      : null,
-    sleepingMinutes:
-      dailyNoteEdited.sleepingHours || dailyNoteEdited.sleepingMinutes
-        ? (dailyNoteEdited.sleepingHours ?? 0) * 60 +
-          ((dailyNoteEdited.sleepingMinutes ?? 0) % 60)
-        : null,
-    modifiedBy: user?.id ?? 'unknown user',
-    modifiedAt: null
-  }
-}
-
-function dailyNoteToDailyNoteEdited(note: DaycareDailyNote): DailyNoteEdited {
-  return {
-    ...note,
-    id: note.id ? note.id : undefined,
-    childId: note.childId ? note.childId : undefined,
-    groupId: note.groupId ? note.groupId : undefined,
-    note: note.note ? note.note : '',
-    reminderNote: note.reminderNote ? note.reminderNote : '',
-    feedingNote: note.feedingNote ? note.feedingNote : undefined,
-    sleepingNote: note.sleepingNote ? note.sleepingNote : undefined,
-    sleepingHours: note.sleepingMinutes
-      ? Math.floor(note.sleepingMinutes / 60)
-      : undefined,
-    sleepingMinutes: note.sleepingMinutes
-      ? note.sleepingMinutes % 60
-      : undefined
-  }
-}
-
-function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
-  return (
-    dailyNote.feedingNote === undefined &&
-    dailyNote.groupId === undefined &&
-    dailyNote.id === undefined &&
-    dailyNote.note === '' &&
-    dailyNote.reminderNote === '' &&
-    dailyNote.reminders.length === 0 &&
-    dailyNote.sleepingHours === undefined &&
-    dailyNote.sleepingMinutes === undefined &&
-    dailyNote.sleepingNote === undefined
-  )
-}
 
 const Time = styled.div`
   display: flex;

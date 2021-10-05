@@ -4,6 +4,7 @@
 
 import { BaseError } from 'make-error-cause'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import config from '../config'
 import {
   Application,
@@ -15,7 +16,6 @@ import {
   DaycareCaretakers,
   DaycareGroup,
   DaycareGroupPlacement,
-  DaycareDailyNote,
   DaycarePlacement,
   Decision,
   DecisionFixture,
@@ -684,10 +684,10 @@ export async function putDigitransitAutocomplete(
 }
 
 export async function postDaycareDailyNote(
-  note: DaycareDailyNote
+  note: DaycareDailyNoteBody
 ): Promise<void> {
   try {
-    await devClient.post<PairingResponse>(`/messaging/daycare-daily-note`, note)
+    await devClient.post(`/messaging/daycare-daily-note`, note)
   } catch (e) {
     throw new DevApiError(e)
   }

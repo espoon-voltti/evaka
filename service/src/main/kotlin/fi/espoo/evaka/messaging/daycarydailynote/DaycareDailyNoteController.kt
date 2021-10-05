@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,11 +35,11 @@ class DaycareDailyNoteController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable groupId: GroupId
-    ): ResponseEntity<List<DaycareDailyNote>> {
-        Audit.DaycareDailyNoteRead.log(user.id)
+    ): List<DaycareDailyNote> {
+        Audit.DaycareDailyNoteRead.log(groupId)
         accessControl.requirePermissionFor(user, Action.Group.READ_DAYCARE_DAILY_NOTES, groupId)
 
-        return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
+        return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }
     }
 
     @GetMapping("/child/{childId}")
@@ -48,13 +47,13 @@ class DaycareDailyNoteController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
-    ): ResponseEntity<List<DaycareDailyNote>> {
-        Audit.DaycareDailyNoteRead.log(user.id)
+    ): List<DaycareDailyNote> {
+        Audit.DaycareDailyNoteRead.log(childId)
 
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
+        return db.read { it.getChildDaycareDailyNotes(childId) }
     }
 
     @PostMapping("/child/{childId}")
@@ -62,29 +61,30 @@ class DaycareDailyNoteController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
-        @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<DaycareDailyNoteId> {
-        Audit.DaycareDailyNoteCreate.log(user.id)
+        @RequestBody body: DaycareDailyNoteBody
+    ): DaycareDailyNoteId {
+        Audit.DaycareDailyNoteCreate.log(childId)
 
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(childId = childId))) }
+        return db.transaction { it.createDaycareDailyNote(body.copy(childId = childId), user.id) }
     }
 
-    @PutMapping("/child/{childId}")
+    @PutMapping("/child/{childId}/{noteId}")
     fun updateDailyNoteForChild(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable noteId: DaycareDailyNoteId,
         @PathVariable childId: UUID,
-        @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<DaycareDailyNote> {
-        Audit.DaycareDailyNoteUpdate.log(user.id)
+        @RequestBody body: DaycareDailyNoteBody
+    ): DaycareDailyNote {
+        Audit.DaycareDailyNoteUpdate.log(noteId, childId)
 
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
+        return db.transaction { it.updateDaycareDailyNote(noteId, body.copy(childId = childId), user.id) }
     }
 
     @PostMapping("/group/{groupId}")
@@ -92,29 +92,30 @@ class DaycareDailyNoteController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable groupId: GroupId,
-        @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<DaycareDailyNoteId> {
-        Audit.DaycareDailyNoteCreate.log(user.id)
+        @RequestBody body: DaycareDailyNoteBody
+    ): DaycareDailyNoteId {
+        Audit.DaycareDailyNoteCreate.log(groupId)
 
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(groupId = groupId))) }
+        return db.transaction { it.createDaycareDailyNote(body.copy(groupId = groupId), user.id) }
     }
 
-    @PutMapping("/group/{groupId}")
+    @PutMapping("/group/{groupId}/{noteId}")
     fun updateDailyNoteForGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable noteId: DaycareDailyNoteId,
         @PathVariable groupId: GroupId,
-        @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<DaycareDailyNote> {
-        Audit.DaycareDailyNoteUpdate.log(user.id)
+        @RequestBody body: DaycareDailyNoteBody
+    ): DaycareDailyNote {
+        Audit.DaycareDailyNoteUpdate.log(noteId, groupId)
 
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(groupId = groupId))) }
+        return db.transaction { it.updateDaycareDailyNote(noteId, body.copy(groupId = groupId), user.id) }
     }
 
     @DeleteMapping("/{noteId}")
@@ -123,12 +124,12 @@ class DaycareDailyNoteController(
         user: AuthenticatedUser,
         @PathVariable noteId: DaycareDailyNoteId
     ) {
-        Audit.DaycareDailyNoteDelete.log(user.id)
+        Audit.DaycareDailyNoteDelete.log(noteId)
 
         acl.getRolesForDailyNote(user, noteId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { it.deleteDaycareDailyNote(noteId) }.let { ResponseEntity.ok() }
+        return db.transaction { it.deleteDaycareDailyNote(noteId) }
     }
 
     @DeleteMapping("/child/{childId}")
@@ -137,11 +138,11 @@ class DaycareDailyNoteController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ) {
-        Audit.DaycareDailyNoteDelete.log(user.id)
+        Audit.DaycareDailyNoteDelete.log(childId)
 
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
-        return db.transaction { it.deleteChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok() }
+        return db.transaction { it.deleteChildDaycareDailyNotes(childId) }
     }
 }

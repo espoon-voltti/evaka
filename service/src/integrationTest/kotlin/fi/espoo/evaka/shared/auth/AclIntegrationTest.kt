@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
@@ -94,19 +94,18 @@ class AclIntegrationTest : PureJdbiTest() {
             placementId = it.insertTestPlacement(childId = childId, unitId = daycareId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2100, 1, 1))
             mobileId = MobileDeviceId(it.insertTestEmployee(DevEmployee()))
             noteId = it.createDaycareDailyNote(
-                DaycareDailyNote(
-                    id = null,
+                DaycareDailyNoteBody(
                     groupId = groupId,
                     childId = null,
                     date = LocalDate.of(2019, 1, 7),
                     note = "Test",
                     feedingNote = null,
-                    modifiedAt = null,
                     reminderNote = null,
                     reminders = emptyList(),
                     sleepingMinutes = null,
                     sleepingNote = null
-                )
+                ),
+                employeeId
             )
             it.insertTestMobileDevice(DevMobileDevice(id = mobileId, unitId = daycareId))
         }

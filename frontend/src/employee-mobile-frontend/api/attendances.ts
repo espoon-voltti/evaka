@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
-import LocalDate from 'lib-common/local-date'
+import {
+  Absence,
+  deserializeAbsence
+} from 'lib-common/api-types/child/Absences'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
   AttendanceResponse,
   Child,
   ChildResult
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { AbsenceType, CareType } from '../types'
 import { client } from './client'
-import { UUID } from 'lib-common/types'
-import {
-  Absence,
-  deserializeAbsence
-} from 'lib-common/api-types/child/Absences'
-import FiniteDateRange from 'lib-common/finite-date-range'
 
 export interface AttendanceReservation {
   startTime: string
@@ -199,40 +199,43 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createOrUpdateDaycareDailyNoteForChild(
-  childId: string,
-  daycareDailyNote: DaycareDailyNote
+export async function insertDaycareDailyNoteForChild(
+  childId: UUID,
+  body: DaycareDailyNoteBody
 ): Promise<Result<void>> {
-  const url = `/daycare-daily-note/child/${childId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
+  return client
+    .post(`/daycare-daily-note/child/${childId}`, body)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateDaycareDailyNoteForChild(
+  childId: UUID,
+  noteId: UUID,
+  body: DaycareDailyNoteBody
+): Promise<Result<void>> {
+  return client
+    .put(`/daycare-daily-note/child/${childId}/${noteId}`, body)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function upsertDaycareDailyNoteForGroup(
+  groupId: UUID,
+  { id, ...body }: DaycareDailyNoteBody & { id: UUID | null }
+): Promise<Result<void>> {
+  const url = `/daycare-daily-note/group/${groupId}${id ? `/${id}` : ''}`
+  return (id ? client.put(url, body) : client.post(url, body))
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteDaycareDailyNote(
-  noteId: string
+  noteId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycare-daily-note/${noteId}`)
     .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertGroupDaycareDailyNote(
-  groupId: string,
-  daycareDailyNote: DaycareDailyNote
-): Promise<Result<void>> {
-  const url = `/daycare-daily-note/group/${groupId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -290,9 +293,7 @@ function deserializeAttendanceResponse(
               ? {
                   ...attendanceChild.dailyNote,
                   date: LocalDate.parseIso(attendanceChild.dailyNote.date),
-                  modifiedAt: attendanceChild.dailyNote.modifiedAt
-                    ? new Date(attendanceChild.dailyNote.modifiedAt)
-                    : null
+                  modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
                 }
               : null
           }
@@ -302,9 +303,7 @@ function deserializeAttendanceResponse(
         dailyNote: {
           ...groupNote.dailyNote,
           date: LocalDate.parseIso(groupNote.dailyNote.date),
-          modifiedAt: groupNote.dailyNote.modifiedAt
-            ? new Date(groupNote.dailyNote.modifiedAt)
-            : null
+          modifiedAt: new Date(groupNote.dailyNote.modifiedAt)
         }
       }))
     }
