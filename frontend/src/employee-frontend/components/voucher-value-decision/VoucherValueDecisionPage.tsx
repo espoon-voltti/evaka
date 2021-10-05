@@ -32,11 +32,11 @@ export default React.memo(function VoucherValueDecisionPage() {
   >(Loading.of())
 
   const loadDecision = useCallback(
-    () => void getVoucherValueDecision(id).then((dec) => setDecision(dec)),
-    [id, setDecision]
+    () => void getVoucherValueDecision(id).then(setDecision),
+    [id]
   )
 
-  useEffect(loadDecision, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(loadDecision, [loadDecision])
 
   useEffect(() => {
     if (decision.isSuccess) {
@@ -48,7 +48,7 @@ export default React.memo(function VoucherValueDecisionPage() {
         ? setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
         : setTitle(`${name} | ${i18n.titles.valueDecision}`)
     }
-  }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [decision, formatTitleName, setTitle, i18n])
 
   if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />
