@@ -6,8 +6,8 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import React, { Fragment } from 'react'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { WideLinkButton } from '../mobile/components'
-import { useTranslation } from '../../state/i18n'
+import { WideLinkButton } from '../../../mobile/components'
+import { useTranslation } from '../../../../state/i18n'
 
 interface Props {
   unitId: string

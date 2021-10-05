@@ -1,7 +1,12 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -31,6 +36,7 @@ data class StaffMember(
 
 data class StaffMemberAttendance(
     @PropagateNull
+    val id: StaffAttendanceId,
     val employeeId: EmployeeId,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,

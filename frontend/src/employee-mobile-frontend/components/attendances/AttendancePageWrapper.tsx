@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { combine } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -16,7 +16,6 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
-import { Group } from '../../api/attendances'
 import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
@@ -40,22 +39,26 @@ export default React.memo(function AttendancePageWrapper() {
   }>()
   const history = useHistory()
 
+  const { unitInfoResponse } = useContext(UnitContext)
+
+  const selectedGroup =
+    groupIdOrAll === 'all'
+      ? undefined
+      : unitInfoResponse
+          .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
+          .getOrElse(undefined)
+
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Child[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
-    undefined
-  )
-
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances, groupIdOrAll, unitId, attendanceStatus])
 
   useEffect(() => {
     if (freeText === '') {
@@ -69,23 +72,6 @@ export default React.memo(function AttendancePageWrapper() {
       setSearchResults(filteredData)
     }
   }, [freeText, attendanceResponse])
-
-  useEffect(() => {
-    const selectedGroup =
-      unitInfoResponse.isSuccess &&
-      groupIdOrAll !== 'all' &&
-      unitInfoResponse.value.groups.find(
-        (elem: Group) => elem.id === groupIdOrAll
-      )
-
-    if (selectedGroup) {
-      setSelectedGroup(selectedGroup)
-    }
-
-    return () => {
-      setSelectedGroup(undefined)
-    }
-  }, [unitInfoResponse, groupIdOrAll])
 
   const totalAttendances = attendanceResponse.isSuccess
     ? groupIdOrAll === 'all'
@@ -179,7 +165,7 @@ export default React.memo(function AttendancePageWrapper() {
     }
   ]
 
-  function changeGroup(group: Group | undefined) {
+  function changeGroup(group: GroupInfo | undefined) {
     history.push(
       `/units/${unitId}/groups/${
         group?.id ?? 'all'
@@ -230,6 +216,30 @@ export default React.memo(function AttendancePageWrapper() {
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
           onSearch={() => setShowSearch(!showSearch)}
+          countInfo={{
+            getTotalCount: (groupId) =>
+              attendanceResponse
+                .map((res) =>
+                  groupId === undefined
+                    ? res.children.length
+                    : res.children.filter((child) => child.groupId === groupId)
+                        .length
+                )
+                .getOrElse(0),
+            getPresentCount: (groupId) =>
+              attendanceResponse
+                .map((res) =>
+                  res.children.filter((child) => child.status === 'PRESENT')
+                )
+                .map((children) =>
+                  groupId === undefined
+                    ? children.length
+                    : children.filter((child) => child.groupId === groupId)
+                        .length
+                )
+                .getOrElse(0),
+            infoText: i18n.attendances.chooseGroupInfo
+          }}
         />
         <Tabs tabs={tabs} mobile />
 

@@ -47,7 +47,13 @@ export default React.memo(function MarkDeparted() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [childDepartureInfo, setChildDepartureInfo] = useState<

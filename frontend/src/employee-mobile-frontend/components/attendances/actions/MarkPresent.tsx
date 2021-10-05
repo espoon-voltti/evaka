@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -32,7 +32,13 @@ export default React.memo(function MarkPresent() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
 

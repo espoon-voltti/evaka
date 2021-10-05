@@ -5,12 +5,12 @@
 import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { returnToComing } from '../../api/attendances'
+import { returnToComing } from '../../../../api/attendances'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { ChildAttendanceContext } from '../../state/child-attendance'
-import { useTranslation } from '../../state/i18n'
-import { InlineWideAsyncButton } from './components'
-import { WideLinkButton } from '../mobile/components'
+import { ChildAttendanceContext } from '../../../../state/child-attendance'
+import { useTranslation } from '../../../../state/i18n'
+import { InlineWideAsyncButton } from '../../components'
+import { WideLinkButton } from '../../../mobile/components'
 
 interface Props {
   child: Child

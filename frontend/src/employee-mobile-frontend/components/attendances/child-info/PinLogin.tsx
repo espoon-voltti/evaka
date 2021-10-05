@@ -4,6 +4,7 @@
 
 import React, {
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -41,9 +42,16 @@ import { UnitContext } from '../../../state/unit'
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const { unitInfoResponse } = useContext(UnitContext)
+
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [selectedStaff, setSelectedStaff] = useState<{
     name: string

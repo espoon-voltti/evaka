@@ -47,7 +47,13 @@ export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined

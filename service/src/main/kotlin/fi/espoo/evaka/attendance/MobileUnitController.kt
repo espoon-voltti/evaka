@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 // todo: move elsewhere?
 @RestController
@@ -55,11 +55,11 @@ data class GroupInfo(
 )
 
 data class Staff(
-    val id: UUID,
+    val id: EmployeeId,
     val firstName: String,
     val lastName: String,
     val pinSet: Boolean = false,
-    val groups: List<UUID>
+    val groups: List<GroupId>
 )
 
 fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {

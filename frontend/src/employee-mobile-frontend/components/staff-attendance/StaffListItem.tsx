@@ -88,11 +88,16 @@ interface StaffListItemProps {
 export default React.memo(function StaffListItem({
   staffMember: { employeeId, firstName, lastName, present }
 }: StaffListItemProps) {
-  const { unitId } = useParams<{ unitId: string }>()
+  const { unitId, groupId } = useParams<{
+    unitId: string
+    groupId: string
+  }>()
 
   return (
     <StaffBox data-qa={`staff-${employeeId}`}>
-      <AttendanceLinkBox to={`/units/${unitId}/staff2/${employeeId}`}>
+      <AttendanceLinkBox
+        to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
+      >
         <IconBox present={!!present}>
           <RoundIcon
             content={farUser}

@@ -87,7 +87,8 @@ const formDataToRequestBody = (
   reminderNote: form.reminderNote,
   reminders: form.reminders,
   sleepingMinutes:
-    60 * parseInt(form.sleepingHours) + parseInt(form.sleepingMinutes),
+    60 * parseInt(form.sleepingHours || '0') +
+    parseInt(form.sleepingMinutes || '0'),
   sleepingNote: form.sleepingNote
 })
 

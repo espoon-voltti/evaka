@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useRef, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -15,13 +15,13 @@ import Loader from 'lib-components/atoms/Loader'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import AttendanceChildComing from '../AttendanceChildComing'
-import AttendanceChildPresent from '../AttendanceChildPresent'
-import AttendanceChildDeparted from '../AttendanceChildDeparted'
+import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
+import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
+import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceDailyServiceTimes from '../AttendanceDailyServiceTimes'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { FlexColumn } from '../components'
-import AttendanceChildAbsent from '../AttendanceChildAbsent'
+import AttendanceChildAbsent from './child-state-pages/AttendanceChildAbsent'
 import { BackButton, TallContentArea } from '../../mobile/components'
 import ChildButtons from './ChildButtons'
 import ImageEditor from './ImageEditor'
@@ -146,6 +146,10 @@ export default React.memo(function AttendanceChildPage() {
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [uiMode, setUiMode] = useState<
     'default' | 'img-modal' | 'img-crop' | 'img-delete'

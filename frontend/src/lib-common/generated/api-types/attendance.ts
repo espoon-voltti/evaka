@@ -214,6 +214,7 @@ export interface Staff {
 */
 export interface StaffArrivalRequest {
   employeeId: UUID
+  groupId: UUID
   pinCode: string
   time: string
 }
@@ -230,7 +231,6 @@ export interface StaffAttendanceResponse {
 * Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
-  employeeId: UUID
   pinCode: string
   time: string
 }
@@ -255,6 +255,7 @@ export interface StaffMemberAttendance {
   departed: Date | null
   employeeId: UUID
   groupId: UUID
+  id: UUID
 }
 
 /**

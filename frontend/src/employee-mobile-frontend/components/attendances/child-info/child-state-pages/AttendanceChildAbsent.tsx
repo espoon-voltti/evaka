@@ -4,10 +4,10 @@
 
 import React, { useContext } from 'react'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { returnToComing } from '../../api/attendances'
-import { ChildAttendanceContext } from '../../state/child-attendance'
-import { useTranslation } from '../../state/i18n'
-import { InlineWideAsyncButton } from './components'
+import { returnToComing } from '../../../../api/attendances'
+import { ChildAttendanceContext } from '../../../../state/child-attendance'
+import { useTranslation } from '../../../../state/i18n'
+import { InlineWideAsyncButton } from '../../components'
 
 interface Props {
   child: Child

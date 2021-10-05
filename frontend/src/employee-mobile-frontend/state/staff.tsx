@@ -7,7 +7,7 @@ import React, { useMemo, useState, createContext, useCallback } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getUnitStaffAttendances } from '../api/staffAttendances'
+import { getUnitStaffAttendances } from '../api/staff'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 

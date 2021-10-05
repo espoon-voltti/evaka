@@ -98,7 +98,13 @@ export default React.memo(function DailyNoteEditor() {
     groupId: string
   }>()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [dirty, setDirty] = useState(false)
 

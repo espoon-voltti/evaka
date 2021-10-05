@@ -2,28 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faArrowLeft, farUser } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { renderResult } from '../async-rendering'
 import {
   BackButton,
   TallContentArea,
   WideLinkButton
 } from '../mobile/components'
-import { Loading, Result } from 'lib-common/api'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { getUnitStaffAttendances } from '../../api/staffAttendances2'
-import { renderResult } from 'lib-components/async-rendering'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { IconBox } from './StaffListItem'
+import { StaffAttendanceContext } from '../../state/staff-attendance'
 
 const EmployeeStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -87,21 +83,18 @@ const Shadow = styled.div`
 export default React.memo(function AttendanceChildPage() {
   const history = useHistory()
 
-  const { unitId, employeeId } = useParams<{
+  const { unitId, groupId, employeeId } = useParams<{
     unitId: string
+    groupId: string
     employeeId: string
   }>()
 
-  const [attendanceResponse, setAttendanceResponse] = useState<
-    Result<StaffAttendanceResponse>
-  >(Loading.of())
-  const loadAttendances = useRestApi(
-    getUnitStaffAttendances,
-    setAttendanceResponse
+  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
+    StaffAttendanceContext
   )
-  useEffect(() => loadAttendances(unitId), [unitId, loadAttendances])
+  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
-  const staffMember = attendanceResponse.map((res) =>
+  const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)
   )
 
@@ -153,16 +146,16 @@ export default React.memo(function AttendanceChildPage() {
             {staffMember.present ? (
               <WideLinkButton
                 $primary
-                data-qa="mark-present-link"
-                to={`/units/${unitId}/staff2/${staffMember.employeeId}/mark-departed`}
+                data-qa="mark-departed-link"
+                to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`}
               >
                 Kirjaudu poissaolevaksi
               </WideLinkButton>
             ) : (
               <WideLinkButton
                 $primary
-                data-qa="mark-present-link"
-                to={`/units/${unitId}/staff2/${staffMember.employeeId}/mark-arrived`}
+                data-qa="mark-arrived-link"
+                to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`}
               >
                 Kirjaudu läsnäolevaksi
               </WideLinkButton>

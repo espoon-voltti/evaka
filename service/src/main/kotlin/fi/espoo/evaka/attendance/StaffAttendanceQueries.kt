@@ -1,7 +1,13 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
@@ -13,6 +19,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         dacl.employee_id,
         e.first_name,
         e.last_name,
+        att.id AS attendance_id,
         att.employee_id AS attendance_employee_id,
         att.group_id AS attendance_group_id,
         att.arrived AS attendance_arrived,
@@ -26,7 +33,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
-        SELECT sa.employee_id, sa.arrived, sa.departed, sa.group_id
+        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
         FROM staff_attendance_2 sa
         WHERE sa.employee_id = dacl.employee_id AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
         ORDER BY sa.arrived DESC 
@@ -41,6 +48,14 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     .mapTo<StaffMember>()
     .list()
 
+fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendance? = createQuery(
+    """
+    SELECT id, employee_id, group_id, arrived, departed
+    FROM staff_attendance_2
+    WHERE id = :id
+"""
+).bind("id", id).mapTo<StaffMemberAttendance>().firstOrNull()
+
 fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalStaffMember> = createQuery(
     """
     SELECT sae.name, sae.group_id, sae.arrived
@@ -53,24 +68,25 @@ fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalS
     .mapTo<ExternalStaffMember>()
     .list()
 
-fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, arrivalTime: HelsinkiDateTime) = createUpdate(
+fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime) = createUpdate(
     """
-    INSERT INTO staff_attendance_2 (employee_id, arrived, departed) VALUES (
-        :employeeId, :arrived, NULL
+    INSERT INTO staff_attendance_2 (employee_id, group_id, arrived, departed) VALUES (
+        :employeeId, :groupId, :arrived, NULL
     ) ON CONFLICT DO NOTHING 
     """.trimIndent()
 )
     .bind("employeeId", employeeId)
+    .bind("groupId", groupId)
     .bind("arrived", arrivalTime)
     .execute()
 
-fun Database.Transaction.markStaffDeparture(employeeId: EmployeeId, departureTime: HelsinkiDateTime) = createUpdate(
+fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
     UPDATE staff_attendance_2 
     SET departed = :departed
-    WHERE employee_id = :employeeId AND departed IS NULL AND arrived < :departed
+    WHERE id = :id AND departed IS NULL AND arrived < :departed
     """.trimIndent()
 )
-    .bind("employeeId", employeeId)
+    .bind("id", attendanceId)
     .bind("departed", departureTime)
     .execute()

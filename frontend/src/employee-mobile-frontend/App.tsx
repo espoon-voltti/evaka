@@ -27,7 +27,7 @@ import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
 import StaffPage from './components/staff/StaffPage'
-import StaffPage2 from './components/staff-attendance/StaffPage2'
+import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
@@ -36,6 +36,7 @@ import StaffMarkArrivedPage from './components/staff-attendance/StaffMarkArrived
 import StaffMarkDepartedPage from './components/staff-attendance/StaffMarkDepartedPage'
 import { StaffContextProvider } from './state/staff'
 import { UnitContextProvider } from './state/unit'
+import { StaffAttendanceContextProvider } from './state/staff-attendance'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
@@ -153,6 +154,7 @@ function StaffRouter() {
     <StaffContextProvider>
       <Switch>
         <Route exact path={path} component={StaffPage} />
+        <Redirect to={path} />
       </Switch>
     </StaffContextProvider>
   )
@@ -162,20 +164,23 @@ function StaffAttendanceRouter() {
   const { path } = useRouteMatch()
 
   return (
-    <Switch>
-      <Route exact path={path} component={StaffPage2} />
-      <Route exact path={`${path}/:employeeId`} component={StaffMemberPage} />
-      <Route
-        exact
-        path={`${path}/:employeeId/mark-arrived`}
-        component={StaffMarkArrivedPage}
-      />
-      <Route
-        exact
-        path={`${path}/:employeeId/mark-departed`}
-        component={StaffMarkDepartedPage}
-      />
-    </Switch>
+    <StaffAttendanceContextProvider>
+      <Switch>
+        <Route exact path={path} component={StaffAttendancesPage} />
+        <Route exact path={`${path}/:employeeId`} component={StaffMemberPage} />
+        <Route
+          exact
+          path={`${path}/:employeeId/mark-arrived`}
+          component={StaffMarkArrivedPage}
+        />
+        <Route
+          exact
+          path={`${path}/:employeeId/mark-departed`}
+          component={StaffMarkDepartedPage}
+        />
+        <Redirect to={path} />
+      </Switch>
+    </StaffAttendanceContextProvider>
   )
 }
 

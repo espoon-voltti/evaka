@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -19,36 +18,28 @@ import Title from 'lib-components/atoms/Title'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
+import { renderResult } from '../async-rendering'
 import { TallContentArea } from '../mobile/components'
-import { Loading, Result } from 'lib-common/api'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import {
-  getUnitStaffAttendances,
-  postStaffArrival
-} from '../../api/staffAttendances2'
+import { postStaffArrival } from '../../api/staffAttendances'
 import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from 'lib-components/async-rendering'
+import { StaffAttendanceContext } from '../../state/staff-attendance'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitId, employeeId } = useParams<{
-    unitId: string
+  const { groupId, employeeId } = useParams<{
+    groupId: string
     employeeId: string
   }>()
 
-  const [attendanceResponse, setAttendanceResponse] = useState<
-    Result<StaffAttendanceResponse>
-  >(Loading.of())
-  const loadAttendances = useRestApi(
-    getUnitStaffAttendances,
-    setAttendanceResponse
+  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
+    StaffAttendanceContext
   )
-  useEffect(() => loadAttendances(unitId), [unitId, loadAttendances])
+  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
-  const staffMember = attendanceResponse.map((res) =>
+  const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)
   )
 
@@ -63,9 +54,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     >
       <div>
         <BackButtonInline
-          onClick={() =>
-            history.replace(`/units/${unitId}/staff2/${employeeId}`)
-          }
+          onClick={() => history.goBack()}
           icon={faArrowLeft}
           text={
             staffMember.isSuccess && staffMember.value
@@ -118,14 +107,15 @@ export default React.memo(function StaffMarkArrivedPage() {
                     text={i18n.common.confirm}
                     disabled={!isValidTime(time) || pinCode.length < 4}
                     onClick={() =>
-                      postStaffArrival(unitId, {
+                      postStaffArrival({
                         employeeId,
+                        groupId,
                         time,
                         pinCode
                       })
                     }
                     onSuccess={() => history.go(-2)}
-                    data-qa="mark-present-btn"
+                    data-qa="mark-arrived-btn"
                   />
                 </FixedSpaceRow>
               </Actions>
