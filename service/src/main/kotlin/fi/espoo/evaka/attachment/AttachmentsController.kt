@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -88,6 +89,19 @@ class AttachmentsController(
         return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file)
     }
 
+    @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadPedagogicalDocumentAttachment(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable documentId: PedagogicalDocumentId,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
+        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
+
+        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file)
+    }
+
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
         db: Database.Connection,
@@ -135,6 +149,10 @@ class AttachmentsController(
                 is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
                 is AttachmentParent.IncomeStatement -> it.userIncomeStatementAttachmentCount(
                     attachTo.incomeStatementId,
+                    user.id
+                )
+                is AttachmentParent.PedagogicalDocument -> it.userPedagogicalDocumentCount(
+                    attachTo.pedagogicalDocumentId,
                     user.id
                 )
                 is AttachmentParent.MessageDraft,
@@ -201,6 +219,7 @@ class AttachmentsController(
             is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageContent -> Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
+            is AttachmentParent.PedagogicalDocument -> Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
@@ -234,6 +253,7 @@ class AttachmentsController(
             is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
             is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
+            is AttachmentParent.PedagogicalDocument -> Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 

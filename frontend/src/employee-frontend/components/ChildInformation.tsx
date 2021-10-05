@@ -40,6 +40,7 @@ import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
 import CircularLabel from './common/CircularLabel'
 import { Action } from 'lib-common/generated/action'
+import PedagogicalDocuments from './child-information/PedagogicalDocuments'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -107,6 +108,10 @@ const components = {
     VasuAndLeops,
     'READ_VASU_DOCUMENT'
   ),
+  pedagogicalDocuments: requireOneOfPermittedActions(
+    PedagogicalDocuments,
+    'READ_PEDAGOGICAL_DOCUMENTS'
+  ),
   assistance: requireOneOfPermittedActions(
     Assistance,
     'READ_ASSISTANCE_NEED',
@@ -138,6 +143,14 @@ const layouts: Layouts<typeof components> = {
     ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
       : []),
+    ...(featureFlags?.pedagogicalDocumentsEnabled
+      ? [
+          {
+            component: 'pedagogicalDocuments' as keyof typeof components,
+            open: false
+          }
+        ]
+      : []),
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
@@ -167,6 +180,14 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : []),
+    ...(featureFlags?.pedagogicalDocumentsEnabled
+      ? [
+          {
+            component: 'pedagogicalDocuments' as keyof typeof components,
+            open: false
+          }
+        ]
       : [])
   ],
   ['STAFF']: [
@@ -176,6 +197,14 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : []),
+    ...(featureFlags?.pedagogicalDocumentsEnabled
+      ? [
+          {
+            component: 'pedagogicalDocuments' as keyof typeof components,
+            open: false
+          }
+        ]
       : [])
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
@@ -183,6 +212,14 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     ...(featureFlags.experimental?.vasu
       ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : []),
+    ...(featureFlags?.pedagogicalDocumentsEnabled
+      ? [
+          {
+            component: 'pedagogicalDocuments' as keyof typeof components,
+            open: false
+          }
+        ]
       : []),
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },

@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -117,10 +117,100 @@ export class DailyServiceTimesSectionEdit {
   }
 }
 
+export class PedagogicalDocumentsSection {
+  constructor(private section: RawElement) {}
+
+  readonly testFileName = 'test_file.png'
+  testFilePath = `src/e2e-playwright/assets/${this.testFileName}`
+
+  readonly #startDate = this.section.find(
+    '[data-qa="pedagogical-document-start-date"]'
+  )
+
+  readonly #document = this.section.find(
+    '[data-qa="pedagogical-document-document"]'
+  )
+
+  readonly #descriptionInput = this.section.findInput(
+    '[data-qa="pedagogical-document-description"]'
+  )
+
+  readonly #description = this.section.find(
+    '[data-qa="pedagogical-document-description"]'
+  )
+
+  readonly #create = this.section.find(
+    '[data-qa="button-create-pedagogical-document"]'
+  )
+  readonly #save = this.section.find(
+    '[data-qa="pedagogical-document-button-save"]'
+  )
+  readonly #edit = this.section.find(
+    '[data-qa="pedagogical-document-button-edit"]'
+  )
+  readonly #cancel = this.section.find(
+    '[data-qa="pedagogical-document-button-cancel"]'
+  )
+  readonly #delete = this.section.find(
+    '[data-qa="pedagogical-document-button-delete"]'
+  )
+
+  async save() {
+    await this.#save.click()
+  }
+
+  async edit() {
+    await this.#edit.click()
+  }
+
+  async cancel() {
+    await this.#cancel.click()
+  }
+
+  async delete() {
+    await this.#delete.click()
+  }
+
+  get startDate(): Promise<string> {
+    return this.#startDate.innerText
+  }
+
+  get document(): Promise<string> {
+    return this.#document.innerText
+  }
+
+  get description(): Promise<string> {
+    return this.#description.innerText
+  }
+
+  async setDescription(text: string) {
+    await this.#description.click()
+    await this.#descriptionInput.type(text)
+  }
+
+  async addNew() {
+    await this.#create.click()
+    return new PedagogicalDocumentsSection(this.section)
+  }
+
+  async addAttachment(page: Page) {
+    await page.setInputFiles('[data-qa="btn-upload-file"]', this.testFilePath)
+    await waitUntilTrue(async () =>
+      (
+        await new RawElement(page, '[data-qa="file-download-button"]').innerText
+      ).includes(this.testFileName)
+    )
+  }
+}
+
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
     section: DailyServiceTimeSection
+  },
+  pedagogicalDocuments: {
+    selector: '[data-qa="pedagogical-documents-collapsible"]',
+    section: PedagogicalDocumentsSection
   }
 }
 

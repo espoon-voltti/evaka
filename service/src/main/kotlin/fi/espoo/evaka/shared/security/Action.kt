@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -126,10 +127,12 @@ sealed interface Action {
         READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_MESSAGE_CONTENT_ATTACHMENT,
         READ_MESSAGE_DRAFT_ATTACHMENT,
+        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
         DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
         DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
-        DELETE_MESSAGE_DRAFT_ATTACHMENT
+        DELETE_MESSAGE_DRAFT_ATTACHMENT,
+        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -196,7 +199,11 @@ sealed interface Action {
         UPDATE_CHILD_RECIPIENT(SERVICE_WORKER, UNIT_SUPERVISOR),
 
         CREATE_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        READ_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF);
+        READ_VASU_DOCUMENT(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+
+        CREATE_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        CREATE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_PEDAGOGICAL_DOCUMENTS(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -284,6 +291,16 @@ sealed interface Action {
     }
     enum class Pairing(private val roles: EnumSet<UserRole>) : Action {
         ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : ScopedAction<PedagogicalDocumentId> {
+        CREATE_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        DELETE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
+        UPDATE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

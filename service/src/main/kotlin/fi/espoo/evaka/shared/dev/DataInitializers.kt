@@ -144,6 +144,13 @@ fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, empl
         .execute()
 }
 
+fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: UUID) {
+    createUpdate("INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (:employeeId, :daycare_group_id)")
+        .bind("daycare_group_id", groupId)
+        .bind("employeeId", employeeId)
+        .execute()
+}
+
 fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, name: String = "Nimeämätön laite") {
     // language=sql
     val sql =

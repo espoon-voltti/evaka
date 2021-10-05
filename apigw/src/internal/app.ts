@@ -125,6 +125,10 @@ function internalApiRouter() {
     '/attachments/messages/:draftId',
     createProxy({ multipart: true })
   )
+  router.post(
+    '/attachments/pedagogical-documents/:documentId',
+    createProxy({ multipart: true })
+  )
   router.put('/children/:childId/image', createProxy({ multipart: true }))
   router.use(createProxy())
   return router

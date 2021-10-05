@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -119,6 +120,17 @@ WHERE employee_id = :userId
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
     )
+    private val pedagogicalAttachment = ActionConfig(
+        """
+SELECT attachment.id, role
+FROM attachment
+JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "attachment.id",
+        permittedRoleActions::attachmentActions,
+    )
     private val person = ActionConfig(
         """
 SELECT person_id AS id, role
@@ -184,6 +196,7 @@ WHERE employee_id = :userId
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
+            pedagogicalDocuments = user.hasOneOfRoles(UserRole.ADMIN)
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
@@ -289,7 +302,9 @@ WHERE employee_id = :userId
                     Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
@@ -300,7 +315,9 @@ WHERE employee_id = :userId
                 Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT -> false
+                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
             }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.Attachment.READ_APPLICATION_ATTACHMENT ->
@@ -323,6 +340,10 @@ WHERE employee_id = :userId
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
                     Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
+                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
+                    this.pedagogicalAttachment.hasPermission(user, action, id)
+                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
+                    this.pedagogicalAttachment.hasPermission(user, action, id)
             }
             is AuthenticatedUser.MobileDevice -> false
             AuthenticatedUser.SystemInternalUser -> false
@@ -369,6 +390,15 @@ WHERE employee_id = :userId
             getAclRoles = { acl.getRolesForDecision(user, id).roles },
             action = action,
             mapping = permittedRoleActions::decisionActions
+        )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {
+        assertPermission(
+            user = user,
+            getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
+            action = action,
+            mapping = permittedRoleActions::pedagogicalDocumentActions
         )
     }
 

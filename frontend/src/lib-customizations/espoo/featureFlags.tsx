@@ -22,6 +22,7 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
+    pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
@@ -41,6 +42,7 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
+    pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {
@@ -60,6 +62,7 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
+    pedagogicalDocumentsEnabled: false,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     experimental: {

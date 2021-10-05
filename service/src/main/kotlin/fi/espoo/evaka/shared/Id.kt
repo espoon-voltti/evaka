@@ -41,6 +41,7 @@ sealed interface DatabaseTable {
     sealed class Pairing : DatabaseTable
     sealed class Parentship : DatabaseTable
     sealed class Partnership : DatabaseTable
+    sealed class PedagogicalDocument : DatabaseTable
     sealed class Person : DatabaseTable
     sealed class Placement : DatabaseTable
     sealed class PlacementPlan : DatabaseTable
@@ -83,6 +84,7 @@ typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 typealias PairingId = Id<DatabaseTable.Pairing>
 typealias ParentshipId = Id<DatabaseTable.Parentship>
 typealias PartnershipId = Id<DatabaseTable.Partnership>
+typealias PedagogicalDocumentId = Id<DatabaseTable.PedagogicalDocument>
 typealias PersonId = Id<DatabaseTable.Person>
 typealias PlacementId = Id<DatabaseTable.Placement>
 typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
