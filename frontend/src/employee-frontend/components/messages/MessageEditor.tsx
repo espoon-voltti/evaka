@@ -191,7 +191,7 @@ export default React.memo(function MessageEditor({
         (account) => account.account.id === message.sender.value
       )
       if (!nestedAccount) {
-        throw 'Invalid sender id'
+        throw new Error('Selected sender was not found in accounts')
       } else {
         if (!isNestedGroupMessageAccount(nestedAccount)) {
           setReceiverTree((previousReceivers) =>
