@@ -192,27 +192,26 @@ export default React.memo(function MessageEditor({
       )
       if (!nestedAccount) {
         throw new Error('Selected sender was not found in accounts')
+      }
+      if (!isNestedGroupMessageAccount(nestedAccount)) {
+        setReceiverTree((previousReceivers) =>
+          getSelectedBottomElements(previousReceivers).reduce(
+            (acc, id) =>
+              updateSelector(acc, { selectorId: id, selected: true }),
+            availableReceivers
+          )
+        )
       } else {
-        if (!isNestedGroupMessageAccount(nestedAccount)) {
+        const groupId = nestedAccount.daycareGroup.id
+        const selection = getSubTree(availableReceivers, groupId)
+        if (selection) {
           setReceiverTree((previousReceivers) =>
             getSelectedBottomElements(previousReceivers).reduce(
               (acc, id) =>
                 updateSelector(acc, { selectorId: id, selected: true }),
-              availableReceivers
+              selection
             )
           )
-        } else {
-          const groupId = nestedAccount.daycareGroup.id
-          const selection = getSubTree(availableReceivers, groupId)
-          if (selection) {
-            setReceiverTree((previousReceivers) =>
-              getSelectedBottomElements(previousReceivers).reduce(
-                (acc, id) =>
-                  updateSelector(acc, { selectorId: id, selected: true }),
-                selection
-              )
-            )
-          }
         }
       }
     },
