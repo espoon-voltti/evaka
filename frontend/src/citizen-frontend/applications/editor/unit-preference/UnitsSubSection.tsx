@@ -78,7 +78,7 @@ export default React.memo(function UnitsSubSection({
   return (
     <>
       <H3>{t.applications.editor.unitPreference.units.title}</H3>
-      {t.applications.editor.unitPreference.units.info[applicationType]()}
+      {t.applications.editor.unitPreference.units.info[applicationType]}
 
       <ExternalLink
         href="/"

@@ -106,7 +106,7 @@ export default React.memo(function PreferredStartSubSection({
         {type !== 'CLUB' ? (
           <ExpandingInfo
             data-qa="startdate-instructions"
-            info={t.applications.editor.serviceNeed.startDate.instructions()}
+            info={t.applications.editor.serviceNeed.startDate.instructions}
             ariaLabel={t.common.openExpandingInfo}
           >
             <Label htmlFor={labelId}>
@@ -169,7 +169,7 @@ export default React.memo(function PreferredStartSubSection({
               }
             />
             <Gap size={'s'} />
-            {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text()}
+            {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
 
             {formData.urgent && featureFlags.urgencyAttachmentsEnabled && (
               <>

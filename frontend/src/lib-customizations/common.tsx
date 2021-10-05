@@ -9,6 +9,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import customizations from '@evaka/customizations/common'
+import { isArray } from 'lodash'
+import React from 'react'
 import type { CommonCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -48,6 +50,19 @@ export const absenceColours = {
   TEMPORARY_RELOCATION: colors.accents.orange,
   TEMPORARY_VISITOR: colors.accents.yellow,
   PRESENCE: colors.greyscale.white
+}
+
+export const translationsMergeCustomizer = (
+  origValue: Record<string, unknown>,
+  customizedValue: Record<string, unknown>
+): Record<string, unknown> | undefined => {
+  if (
+    customizedValue != undefined &&
+    (isArray(origValue) || React.isValidElement(origValue))
+  ) {
+    return customizedValue
+  }
+  return undefined
 }
 
 export default colors

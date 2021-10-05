@@ -41,7 +41,7 @@ export default React.memo(function Applications() {
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.applicationsList.title}</H1>
-          {t.applicationsList.summary()}
+          {t.applicationsList.summary}
         </ContentArea>
         <Gap size="s" />
 

@@ -6,7 +6,10 @@ import type { EmployeeMobileCustomizations } from 'lib-customizations/types'
 import { employeeMobileConfig } from './appConfigs'
 
 const customizations: EmployeeMobileCustomizations = {
-  appConfig: employeeMobileConfig
+  appConfig: employeeMobileConfig,
+  translations: {
+    fi: {}
+  }
 }
 
 export default customizations

@@ -157,7 +157,7 @@ export default React.memo(function ApplicationCreation() {
             </>
           )}
           <Gap size="s" />
-          {t.applications.creation.applicationInfo()}
+          {t.applications.creation.applicationInfo}
         </ContentArea>
         <ContentArea opaque={false} paddingVertical="L">
           <ButtonContainer justify="center">
