@@ -211,10 +211,6 @@ const filterUnits = (
             !providerTypes.includes('PURCHASED')
           ) &&
           !(
-            u.providerType === 'EXTERNAL_PURCHASED' &&
-            !providerTypes.includes('EXTERNAL_PURCHASED')
-          ) &&
-          !(
             u.providerType === 'PRIVATE' && !providerTypes.includes('PRIVATE')
           ) &&
           !(

@@ -139,8 +139,7 @@ export default {
       MUNICIPAL: 'kunnalliset',
       PURCHASED: 'ostopalvelu',
       PRIVATE: 'yksityiset',
-      PRIVATE_SERVICE_VOUCHER: 'palveluseteli',
-      EXTERNAL_PURCHASED: 'ostopalvelu (muu)'
+      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
     },
     homepage: 'Kotisivu',
     unitHomepage: 'Yksikön kotisivu',

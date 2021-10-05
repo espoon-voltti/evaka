@@ -150,9 +150,8 @@ export default React.memo(function SearchSection({
               {(
                 [
                   'MUNICIPAL',
-                  'PURCHASED',
-                  'EXTERNAL_PURCHASED'
-                ] as ProviderTypeOption[]
+                  'PURCHASED'
+                ] as const
               ).map((type) => (
                 <SelectionChip
                   key={type}
