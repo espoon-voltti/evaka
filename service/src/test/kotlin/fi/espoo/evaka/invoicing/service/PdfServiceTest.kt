@@ -173,6 +173,7 @@ class PdfServiceTest {
         ),
         voucherValue = 120000,
         ageCoefficient = BigDecimal("1.00"),
+        capacityFactor = BigDecimal("1"),
         baseCoPayment = 900,
         baseValue = 90000,
         coPayment = 12000,

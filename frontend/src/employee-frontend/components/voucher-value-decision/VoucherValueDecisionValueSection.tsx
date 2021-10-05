@@ -9,13 +9,21 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from 'lib-common/money'
+import { formatDecimal } from 'lib-common/utils/number'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
 }
 
 export default React.memo(function VoucherValueDecisionValueSection({
-  decision: { childAge, ageCoefficient, placement, serviceNeed, voucherValue }
+  decision: {
+    childAge,
+    ageCoefficient,
+    capacityFactor,
+    placement,
+    serviceNeed,
+    voucherValue
+  }
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -25,7 +33,13 @@ export default React.memo(function VoucherValueDecisionValueSection({
     placement.type
   ].toLowerCase()} ${serviceNeed.voucherValueDescriptionFi} (${
     serviceNeed.voucherValueCoefficient * 100
-  } %)`
+  } %)${
+    capacityFactor !== 1
+      ? `, ${i18n.valueDecision.summary.capacityFactor} ${formatDecimal(
+          capacityFactor
+        )}`
+      : ''
+  }`
 
   return (
     <section>

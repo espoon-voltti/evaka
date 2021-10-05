@@ -114,6 +114,7 @@ export interface VoucherValueDecision {
   finalCoPayment: number
   baseValue: number
   ageCoefficient: number
+  capacityFactor: number
   voucherValue: number
 }
 

@@ -302,6 +302,7 @@ export interface VoucherValueDecisionDetailed {
   baseValue: number
   childAge: number
   ageCoefficient: number
+  capacityFactor: number
   voucherValue: number
   documentKey: string | null
   approvedAt: Date | null

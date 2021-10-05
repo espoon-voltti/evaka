@@ -30,6 +30,7 @@ import java.util.UUID
 @Component
 class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, private val incomeTypesProvider: IncomeTypesProvider, env: EvakaEnv) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
+    private val valueDecisionCapacityFactorEnabled = env.valueDecisionCapacityFactorEnabled
 
     fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val period = DateRange(from, null)
@@ -71,6 +72,7 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, private v
                 )
                 family.children.forEach { child ->
                     tx.handleValueDecisionChanges(
+                        valueDecisionCapacityFactorEnabled,
                         objectMapper,
                         incomeTypesProvider,
                         maxOf(period.start, family.period.start),

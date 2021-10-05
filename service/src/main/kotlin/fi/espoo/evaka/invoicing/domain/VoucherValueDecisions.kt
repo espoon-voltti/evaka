@@ -49,6 +49,7 @@ data class VoucherValueDecision(
     val finalCoPayment: Int,
     val baseValue: Int,
     val ageCoefficient: BigDecimal,
+    val capacityFactor: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
     @Nested("approved_by")
@@ -138,6 +139,7 @@ data class VoucherValueDecisionDetailed(
     val baseValue: Int,
     val childAge: Int,
     val ageCoefficient: BigDecimal,
+    val capacityFactor: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
     @Nested("approved_by")
@@ -233,6 +235,6 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: 
     }
 }
 
-fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
-    return (BigDecimal(voucherValues.baseValue) * ageCoefficient * serviceCoefficient).toInt()
+fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, capacityFactor: BigDecimal, serviceCoefficient: BigDecimal): Int {
+    return (BigDecimal(voucherValues.baseValue) * ageCoefficient * capacityFactor * serviceCoefficient).toInt()
 }

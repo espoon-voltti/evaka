@@ -2040,6 +2040,7 @@ export const fi = {
         LESS_THAN_3: 'Alle 3-vuotias',
         OVER_3: 'Vähintään 3-vuotias'
       },
+      capacityFactor: 'tuen tarpeen kerroin',
       hoursPerWeek: 'tuntia viikossa'
     }
   },
