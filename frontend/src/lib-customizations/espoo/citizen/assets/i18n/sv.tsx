@@ -1213,7 +1213,8 @@ const sv: Translations = {
   },
   fileDownload: {
     modalHeader: 'Behandling av filen pågår',
-    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
+    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    download: 'Laddar'
   },
   income: {
     title: 'Inkomstuppgifter',

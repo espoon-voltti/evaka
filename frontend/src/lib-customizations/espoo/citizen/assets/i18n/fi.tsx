@@ -1201,7 +1201,8 @@ export default {
   fileDownload: {
     modalHeader: 'Tiedoston käsittely on kesken',
     modalMessage:
-      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
+      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
+    download: 'Lataa'
   },
   income: {
     title: 'Tulotiedot',

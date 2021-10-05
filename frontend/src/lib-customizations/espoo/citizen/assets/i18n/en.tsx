@@ -1262,7 +1262,8 @@ const en: Translations = {
   },
   fileDownload: {
     modalHeader: 'Processing file',
-    modalMessage: 'File is being processed. Try again later'
+    modalMessage: 'File is being processed. Try again later',
+    download: 'Download'
   },
   income: {
     title: 'Income information',

@@ -18,6 +18,7 @@ import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicald
 import { getAttachmentBlob } from '../attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { OverlayContext } from '../overlay/state'
+import { faArrowDown } from 'lib-icons'
 import styled from 'styled-components'
 
 export default function PedagogicalDocuments() {
@@ -70,6 +71,7 @@ export default function PedagogicalDocuments() {
                     onFileUnavailable={onAttachmentUnavailable}
                     icon
                     data-qa={`pedagogical-document-attachment-${item.id}`}
+                    openInBrowser={true}
                   />
                 )}
               </NameTd>
@@ -78,7 +80,19 @@ export default function PedagogicalDocuments() {
               >
                 {item.description}
               </DescriptionTd>
-              <ActionsTd />
+              <ActionsTd>
+                {item.attachment && (
+                  <FileDownloadButton
+                    key={item.attachment.id}
+                    file={item.attachment}
+                    fileFetchFn={getAttachmentBlob}
+                    onFileUnavailable={onAttachmentUnavailable}
+                    icon={faArrowDown}
+                    data-qa="pedagogical-document-attachment-download"
+                    text={t.fileDownload.download}
+                  />
+                )}
+              </ActionsTd>
             </Tr>
           ))}
         </Tbody>
