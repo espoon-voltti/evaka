@@ -200,7 +200,10 @@ function IncomeStatementRow({
         <Link
           to={`/profile/${personId}/income-statement/${incomeStatement.id}`}
         >
-          <FontAwesomeIcon icon={faFileAlt} /> {i18n.open}
+          <FontAwesomeIcon icon={faFileAlt} />{' '}
+          {incomeStatement.startDate.format()}
+          {' - '}
+          {incomeStatement.endDate?.format()}
         </Link>
       </Td>
       <Td verticalAlign="middle">{formatDate(incomeStatement.created)}</Td>

@@ -1271,19 +1271,26 @@ const en: Translations = {
           income statements that you have submitted until the authority has
           processed the information. After the form has been processed, you can
           update your income information by submitting a new form.
-          <br />
-          More information on the fees:{' '}
-          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
-            Early childhood education fees
-          </a>
         </p>
         <p>
           The client fees for municipal early childhood education are determined
           as a percentage of the family’s gross income. The fees vary according
-          to family size, income and time in early childhood education. Check
-          the table below to see if you need to submit an income statement, or
-          if your family is automatically covered by the highest early childhood
-          education fee.
+          to family size, income and time in early childhood education. Check{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+          >
+            here
+          </a>{' '}
+          to see if you need to submit an income statement, or if your family is
+          automatically covered by the highest early childhood education fee.
+        </p>
+        <p>
+          More information on the fees:{' '}
+          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+            Early childhood education fees
+          </a>
         </p>
       </>
     ),

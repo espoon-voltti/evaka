@@ -431,7 +431,7 @@ FROM income_statement i
     LEFT JOIN areas a ON a.head_of_child = p.id
 WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR a.short_name = ANY(:areas))
-ORDER BY start_date, created
+ORDER BY created, start_date
 LIMIT :pageSize OFFSET :offset
         """.trimIndent()
     )

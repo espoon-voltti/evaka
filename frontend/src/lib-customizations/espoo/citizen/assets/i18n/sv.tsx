@@ -1222,19 +1222,28 @@ const sv: Translations = {
           radera inkomstutredningar som du har lämnat in tills myndigheten har
           behandlat uppgifterna. Efter att blanketten har behandlats kan du
           uppdatera dina inkomstuppgifter genom att lämna in en ny blankett.
-          <br />
-          Mer information om avgifterna:{' '}
-          <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/avgifter-inom-smabarnspedagogik">
-            Avgifter inom småbarnspedagogik
-          </a>
         </p>
         <p>
           Avgifterna för kommunal småbarnspedagogik beräknas i procentandel av
           familjens bruttoinkomster. Avgifterna varierar beroende på familjens
           storlek och inkomster samt barnets vårdtid inom småbarnspedagogik.
-          Kontrollera tabellen nedan om du behöver lämna in en inkomstutredning,
-          eller om er familj automatiskt omfattas av den högsta avgiftsklassen
-          för småbarnspedagogik.
+          Kontrollera{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+          >
+            här
+          </a>{' '}
+          om du behöver lämna in en inkomstutredning, eller om er familj
+          automatiskt omfattas av den högsta avgiftsklassen för
+          småbarnspedagogik.
+        </p>
+        <p>
+          Mer information om avgifterna:{' '}
+          <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/avgifter-inom-smabarnspedagogik">
+            Avgifter inom småbarnspedagogik
+          </a>
         </p>
       </>
     ),
