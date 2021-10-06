@@ -138,10 +138,12 @@ export default React.memo(function ReservationModalSingleChild({
         return [...range.dates()].map((date) => ({
           childId: child.id,
           date,
-          reservation: {
-            startTime: formData.startTime,
-            endTime: formData.endTime
-          }
+          reservations: [
+            {
+              startTime: formData.startTime,
+              endTime: formData.endTime
+            }
+          ]
         }))
       case 'WEEKLY':
         return [...range.dates()]
@@ -156,7 +158,7 @@ export default React.memo(function ReservationModalSingleChild({
             return {
               childId: child.id,
               date,
-              reservation: noReservation ? null : { startTime, endTime }
+              reservations: noReservation ? null : [{ startTime, endTime }]
             }
           })
     }

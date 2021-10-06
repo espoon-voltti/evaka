@@ -284,12 +284,14 @@ function useEditState(
       editorState.map(({ child, startTime, endTime }) => ({
         childId: child.id,
         date: date,
-        reservation:
+        reservations:
           startTime !== '' && endTime !== ''
-            ? {
-                startTime,
-                endTime
-              }
+            ? [
+                {
+                  startTime,
+                  endTime
+                }
+              ]
             : null
       }))
     )

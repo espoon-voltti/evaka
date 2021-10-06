@@ -56,7 +56,8 @@ const sv: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
-      weekShort: 'Veckan',
+      week: 'Veckan',
+      weekShort: 'V',
       weekdays: [
         'Måndag',
         'Tisdag',
@@ -191,7 +192,8 @@ const sv: Translations = {
       repeats: 'Upprepas',
       repetitions: {
         DAILY: 'Dagligen',
-        WEEKLY: 'Veckovis'
+        WEEKLY: 'Veckovis',
+        SHIFT_CARE: 'Skiftvård'
       }
     },
     absenceModal: {

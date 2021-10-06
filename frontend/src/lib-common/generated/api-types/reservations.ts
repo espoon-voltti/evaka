@@ -43,7 +43,7 @@ export interface DailyReservationData {
 export interface DailyReservationRequest {
   childId: UUID
   date: LocalDate
-  reservation: TimeRange | null
+  reservations: TimeRange[] | null
 }
 
 /**

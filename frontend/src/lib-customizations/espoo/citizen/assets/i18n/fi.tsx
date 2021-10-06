@@ -55,6 +55,7 @@ export default {
     },
     datetime: {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      week: 'Viikko',
       weekShort: 'Vk',
       weekdays: [
         'Maanantai',
@@ -190,7 +191,8 @@ export default {
       repeats: 'Toistuu',
       repetitions: {
         DAILY: 'Päivittäin',
-        WEEKLY: 'Viikoittain'
+        WEEKLY: 'Viikoittain',
+        SHIFT_CARE: 'Vuorohoito'
       }
     },
     absenceModal: {

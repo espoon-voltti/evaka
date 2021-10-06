@@ -7,10 +7,10 @@ import LocalDate from '../local-date'
 export interface DailyReservationRequest {
   childId: string
   date: LocalDate
-  reservation: TimeRange | null
+  reservations: [TimeRange] | [TimeRange, TimeRange] | null
 }
 
-interface TimeRange {
+export interface TimeRange {
   startTime: string
   endTime: string
 }

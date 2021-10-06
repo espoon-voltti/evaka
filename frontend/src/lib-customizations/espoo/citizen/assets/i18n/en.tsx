@@ -56,6 +56,7 @@ const en: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      week: 'Week',
       weekShort: 'Wk',
       weekdays: [
         'Monday',
@@ -191,7 +192,8 @@ const en: Translations = {
       repeats: 'Repeating',
       repetitions: {
         DAILY: 'Daily',
-        WEEKLY: 'Weekly'
+        WEEKLY: 'Weekly',
+        SHIFT_CARE: 'Shift care'
       }
     },
     absenceModal: {

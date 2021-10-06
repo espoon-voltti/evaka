@@ -48,8 +48,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(child, testDate, TimeRange(startTime, endTime)),
-                    DailyReservationRequest(child, testDate.plusDays(1), TimeRange(startTime, endTime))
+                    DailyReservationRequest(child, testDate, listOf(TimeRange(startTime, endTime))),
+                    DailyReservationRequest(child, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)))
                 )
             },
         )

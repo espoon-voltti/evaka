@@ -253,12 +253,12 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
 }
 
 fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
-    tx.clearOldAbsences(reservations.filter { it.reservation != null }.map { it.childId to it.date })
+    tx.clearOldAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations)
 }
 
-private fun Database.Transaction.insertValidReservations(userId: UUID, reservations: List<DailyReservationRequest>) {
+private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
@@ -275,22 +275,22 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, reservati
         """.trimIndent()
     )
 
-    reservations.forEach { res ->
-        if (res.reservation != null) {
+    requests.forEach { request ->
+        request.reservations?.forEach { res ->
             val start = HelsinkiDateTime.of(
-                date = res.date,
-                time = res.reservation.startTime
+                date = request.date,
+                time = res.startTime
             )
             val end = HelsinkiDateTime.of(
-                date = if (res.reservation.endTime.isAfter(res.reservation.startTime)) res.date else res.date.plusDays(1),
-                time = res.reservation.endTime
+                date = if (res.endTime.isAfter(res.startTime)) request.date else request.date.plusDays(1),
+                time = res.endTime
             )
             batch
                 .bind("userId", userId)
-                .bind("childId", res.childId)
+                .bind("childId", request.childId)
                 .bind("start", start)
                 .bind("end", end)
-                .bind("date", res.date)
+                .bind("date", request.date)
                 .add()
         }
     }
