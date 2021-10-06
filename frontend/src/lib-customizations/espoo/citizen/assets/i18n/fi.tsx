@@ -1210,19 +1210,26 @@ export default {
           tuloselvityksiä ja muokata tai poistaa niitä, kunnes viranomainen on
           käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
           tulotietojasi toimittamalla uuden lomakkeen.
-          <br />
-          Lisätietoja maksuista:{' '}
-          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
-            Maksut varhaiskasvatuksessa
-          </a>
         </p>
         <p>
           Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
           prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen
-          koon ja tulojen sekä varhaiskasvatusajan mukaan. Tarkista alla
-          olevasta taulukosta tarvitseeko sinun toimittaa tuloselvitystä, vai
-          kuuluuko perheenne automaattisesti korkeimman varhaiskasvatusmaksun
-          piiriin.
+          koon ja tulojen sekä varhaiskasvatusajan mukaan. Tarkista{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+          >
+            tästä
+          </a>{' '}
+          tarvitseeko sinun toimittaa tuloselvitystä, vai kuuluuko perheenne
+          automaattisesti korkeimman varhaiskasvatusmaksun piiriin.
+        </p>
+        <p>
+          Lisätietoja maksuista:{' '}
+          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+            Maksut varhaiskasvatuksessa
+          </a>
         </p>
       </>
     ),
