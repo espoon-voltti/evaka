@@ -37,32 +37,6 @@ class PedagogicalDocumentControllerCitizen(
         return db.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id)) }
     }
 
-    private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonId): List<PedagogicalDocumentCitizen> {
-        return this.createQuery(
-            """
-                SELECT 
-                    pd.id,
-                    pd.child_id,
-                    pd.description,
-                    pd.created,
-                    pd.updated,
-                    a.id attachment_id,
-                    a.name attachment_name,
-                    a.content_type attachment_content_type,
-                    pdr.read_at is not null is_read
-                FROM pedagogical_document pd
-                JOIN guardian g ON pd.child_id = g.child_id
-                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-                LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
-                WHERE g.guardian_id = :guardian_id
-                ORDER BY pd.created DESC
-            """.trimIndent()
-        )
-            .bind("guardian_id", guardianId)
-            .map { row -> mapPedagogicalDocumentCitizen(row) }
-            .toList()
-    }
-
     @PostMapping("/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
         db: Database.Connection,
@@ -73,6 +47,41 @@ class PedagogicalDocumentControllerCitizen(
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, documentId)
         db.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
     }
+
+    @GetMapping("/unread-count")
+    fun getUnreadPedagogicalDocumentCount(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): Number {
+        Audit.PedagogicalDocumentCountUnread.log(user.id)
+        return db.transaction { it.countUnreadDocumentsByGuardian(PersonId(user.id)) }
+    }
+}
+
+private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonId): List<PedagogicalDocumentCitizen> {
+    return this.createQuery(
+        """
+            SELECT 
+                pd.id,
+                pd.child_id,
+                pd.description,
+                pd.created,
+                pd.updated,
+                a.id attachment_id,
+                a.name attachment_name,
+                a.content_type attachment_content_type,
+                pdr.read_at is not null is_read
+            FROM pedagogical_document pd
+            JOIN guardian g ON pd.child_id = g.child_id
+            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+            LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
+            WHERE g.guardian_id = :guardian_id
+            ORDER BY pd.created DESC
+        """.trimIndent()
+    )
+        .bind("guardian_id", guardianId)
+        .map { row -> mapPedagogicalDocumentCitizen(row) }
+        .toList()
 }
 
 private fun Database.Transaction.markDocumentReadByGuardian(documentId: PedagogicalDocumentId, guardianId: PersonId) =
@@ -86,6 +95,22 @@ private fun Database.Transaction.markDocumentReadByGuardian(documentId: Pedagogi
         .bind("documentId", documentId)
         .bind("personId", guardianId)
         .execute()
+
+private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Int =
+    this.createQuery(
+        """
+            SELECT count(*)
+            FROM pedagogical_document pd
+            JOIN guardian g ON pd.child_id = g.child_id AND g.guardian_id = :personId
+            WHERE NOT EXISTS (
+                SELECT 1 FROM pedagogical_document_read pdr
+                WHERE pdr.pedagogical_document_id = pd.id AND pdr.person_id = :personId
+            )
+        """.trimIndent()
+    )
+        .bind("personId", personId)
+        .mapTo<Int>()
+        .first()
 
 fun Database.Read.citizenHasPermissionForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): Boolean =
     this.createQuery(

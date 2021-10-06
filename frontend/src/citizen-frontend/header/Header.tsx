@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -13,6 +13,9 @@ import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 import { useUser } from '../auth'
 import { MessageContext, MessagePageState } from '../messages/state'
+import { Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { getUnreadPedagogicalDocumentsCount } from '../pedagogical-documents/api'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -25,11 +28,32 @@ export default React.memo(function Header() {
     if (user) refreshUnreadMessagesCount()
   }, [refreshUnreadMessagesCount, user])
 
+  const [unreadPedagogicalDocuments, setUnreadPedagogicalDocuments] =
+    useState<number>()
+
+  const setUnreadResult = useCallback((res: Result<number>) => {
+    if (res.isSuccess) {
+      setUnreadPedagogicalDocuments(res.value)
+    }
+  }, [])
+
+  const refreshUnreadPedagogicalDocuments = useRestApi(
+    getUnreadPedagogicalDocumentsCount,
+    setUnreadResult
+  )
+
+  useEffect(() => {
+    if (user) refreshUnreadPedagogicalDocuments()
+  }, [refreshUnreadPedagogicalDocuments, user])
+
   return (
     <HeaderContainer>
       <CityLogo />
       <EvakaLogo />
-      <DesktopNav unreadMessagesCount={unreadMessagesCount ?? 0} />
+      <DesktopNav
+        unreadMessagesCount={unreadMessagesCount ?? 0}
+        unreadPedagogicalDocuments={unreadPedagogicalDocuments ?? 0}
+      />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}

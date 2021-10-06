@@ -25,9 +25,13 @@ import { getLoginUri, getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
+  unreadPedagogicalDocuments: number
 }
 
-export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
+export default React.memo(function DesktopNav({
+  unreadMessagesCount,
+  unreadPedagogicalDocuments
+}: Props) {
   const user = useUser()
   const t = useTranslation()
 
@@ -52,7 +56,13 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
               to="/pedagogical-documents"
               data-qa="nav-pedagogical-documents"
             >
-              {t.header.nav.pedagogicalDocuments} {maybeLockElem}
+              {t.header.nav.pedagogicalDocuments}
+              {unreadPedagogicalDocuments > 0 ? (
+                <CircledChar>{unreadPedagogicalDocuments}</CircledChar>
+              ) : (
+                ''
+              )}
+              {maybeLockElem}
             </StyledNavLink>
             {featureFlags.experimental?.incomeStatements && (
               <StyledNavLink to="/income" data-qa="nav-income">

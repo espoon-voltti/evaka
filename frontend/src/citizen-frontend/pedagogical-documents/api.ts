@@ -40,3 +40,16 @@ export async function markPedagogicalDocumentRead(
     return Failure.fromError(e)
   }
 }
+
+export async function getUnreadPedagogicalDocumentsCount(): Promise<
+  Result<number>
+> {
+  try {
+    const count = await client
+      .get<number>(`/citizen/pedagogical-documents/unread-count`)
+      .then((res) => res.data)
+    return Success.of(count)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
