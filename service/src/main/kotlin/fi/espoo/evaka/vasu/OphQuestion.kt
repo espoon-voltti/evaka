@@ -130,8 +130,8 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
             questions = listOf(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Varhaiskasvatussuunitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
-                        VasuLanguage.SV -> "Varhaiskasvatussuunitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
+                        VasuLanguage.FI -> "Varhaiskasvatussuunnitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
+                        VasuLanguage.SV -> "Varhaiskasvatussuunnitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
                     },
                     multiline = true,
                     value = ""
