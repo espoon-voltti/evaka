@@ -61,7 +61,7 @@ class VardaTempTokenProvider(
         .header(Headers.AUTHORIZATION, basicAuth)
         .header(Headers.ACCEPT, "application/json")
         .header(Headers.CONTENT_TYPE, "application/json")
-        .responseStringWithRetries(3)
+        .responseStringWithRetries(3, 10L)
         .third
         .fold(
             { d -> VardaApiToken.from(objectMapper.readTree(d).get("token").asText()) },

@@ -429,7 +429,7 @@ class VardaClient(
             this
                 .authentication().token(token)
                 .header(Headers.ACCEPT, "application/json")
-                .responseStringWithRetries(maxTries) { r, remainingTries ->
+                .responseStringWithRetries(maxTries, 10L) { r, remainingTries ->
                     when (r.second.statusCode) {
                         403 -> when {
                             objectMapper.readTree(r.third.error.errorData).get("errors")
@@ -441,7 +441,7 @@ class VardaClient(
                                 // any subsequent errors fall through.
                                 this
                                     .authentication().token(newToken)
-                                    .responseStringWithRetries(remainingTries)
+                                    .responseStringWithRetries(remainingTries, 10L)
                             }
                             else -> r
                         }
