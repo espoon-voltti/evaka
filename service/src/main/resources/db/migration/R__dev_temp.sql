@@ -74,6 +74,7 @@ CREATE TABLE vasu_document_event(
 
 CREATE INDEX idx$vasu_document_event_document_id ON vasu_document_event(vasu_document_id);
 
+<<<<<<< HEAD
 
 
 -- staff attendance

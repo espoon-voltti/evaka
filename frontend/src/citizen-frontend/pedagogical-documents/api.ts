@@ -5,22 +5,38 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { UUID } from 'lib-common/types'
 
 export async function getPedagogicalDocuments(): Promise<
-  Result<PedagogicalDocument[]>
+  Result<PedagogicalDocumentCitizen[]>
 > {
-  return client
-    .get<JsonOf<PedagogicalDocument[]>>('/citizen/pedagogical-documents/')
-    .then((res) => res.data.map(deserializePedagogicalDocument))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+  try {
+    const data = await client
+      .get<JsonOf<PedagogicalDocumentCitizen[]>>(
+        '/citizen/pedagogical-documents/'
+      )
+      .then((res) => res.data.map(deserializePedagogicalDocument))
+    return Success.of(data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }
 
 export function deserializePedagogicalDocument(
-  data: JsonOf<PedagogicalDocument>
-): PedagogicalDocument {
+  data: JsonOf<PedagogicalDocumentCitizen>
+): PedagogicalDocumentCitizen {
   const created = new Date(data.created)
-  const updated = new Date(data.updated)
-  return { ...data, created, updated }
+  return { ...data, created }
+}
+
+export async function markPedagogicalDocumentRead(
+  documentId: UUID
+): Promise<Result<void>> {
+  try {
+    await client.post(`/citizen/pedagogical-documents/${documentId}/mark-read`)
+    return Success.of()
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }

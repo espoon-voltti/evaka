@@ -29,6 +29,18 @@ export interface PedagogicalDocument {
 }
 
 /**
+* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentCitizen
+*/
+export interface PedagogicalDocumentCitizen {
+  attachment: Attachment | null
+  childId: UUID
+  created: Date
+  description: string
+  id: UUID
+  isRead: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentPostBody
 */
 export interface PedagogicalDocumentPostBody {

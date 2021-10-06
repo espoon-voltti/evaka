@@ -36,10 +36,12 @@ afterEach(async () => {
 describe('Citizen pedagogical documents', () => {
   describe('Pedagogical documents list', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
-      const pd = await Fixture.pedagogicalDocument().with({
-        childId: fixtures.enduserChildFixtureJari.id,
-        description: 'e2e test description'
-      }).save()
+      const pd = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          description: 'e2e test description'
+        })
+        .save()
 
       await header.selectTab('pedagogical-documents')
 

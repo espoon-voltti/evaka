@@ -9,12 +9,12 @@ import { Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Loading, Result } from 'lib-common/api'
-import { getPedagogicalDocuments } from './api'
+import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import LocalDate from 'lib-common/local-date'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { getAttachmentBlob } from '../attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { OverlayContext } from '../overlay/state'
@@ -24,13 +24,14 @@ import styled from 'styled-components'
 export default function PedagogicalDocuments() {
   const t = useTranslation()
   const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
-    Result<PedagogicalDocument[]>
+    Result<PedagogicalDocumentCitizen[]>
   >(Loading.of())
 
   const loadData = useRestApi(getPedagogicalDocuments, setPedagogicalDocuments)
   useEffect(() => loadData(), [loadData])
 
   const { setErrorMessage } = useContext(OverlayContext)
+
   const onAttachmentUnavailable = useCallback(
     () =>
       setErrorMessage({
@@ -44,7 +45,7 @@ export default function PedagogicalDocuments() {
   const PedagogicalDocumentsTable = ({
     items
   }: {
-    items: PedagogicalDocument[]
+    items: PedagogicalDocumentCitizen[]
   }) => {
     return (
       <Table>
@@ -59,7 +60,10 @@ export default function PedagogicalDocuments() {
         <Tbody>
           {items.map((item) => (
             <Tr key={item.id}>
-              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
+              <DateTd
+                data-qa={`pedagogical-document-date-${item.id}`}
+                documentIsRead={item.isRead}
+              >
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
               <NameTd>
@@ -68,6 +72,7 @@ export default function PedagogicalDocuments() {
                     key={item.attachment.id}
                     file={item.attachment}
                     fileFetchFn={getAttachmentBlob}
+                    afterFetch={() => markPedagogicalDocumentRead(item.id)}
                     onFileUnavailable={onAttachmentUnavailable}
                     icon
                     data-qa={`pedagogical-document-attachment-${item.id}`}
@@ -76,6 +81,7 @@ export default function PedagogicalDocuments() {
                 )}
               </NameTd>
               <DescriptionTd
+                documentIsRead={item.isRead}
                 data-qa={`pedagogical-document-description-${item.id}`}
               >
                 {item.description}
@@ -86,6 +92,7 @@ export default function PedagogicalDocuments() {
                     key={item.attachment.id}
                     file={item.attachment}
                     fileFetchFn={getAttachmentBlob}
+                    afterFetch={() => markPedagogicalDocumentRead(item.id)}
                     onFileUnavailable={onAttachmentUnavailable}
                     icon={faArrowDown}
                     data-qa="pedagogical-document-attachment-download"
@@ -128,6 +135,8 @@ export default function PedagogicalDocuments() {
 
 const DateTd = styled(Td)`
   width: 15%;
+  font-weight: ${(props: { documentIsRead: boolean }) =>
+    props.documentIsRead ? 400 : 600};
 `
 
 const NameTd = styled(Td)`
@@ -136,6 +145,8 @@ const NameTd = styled(Td)`
 
 const DescriptionTd = styled(Td)`
   width: 45%;
+  font-weight: ${(props: { documentIsRead: boolean }) =>
+    props.documentIsRead ? 400 : 600};
 `
 
 const ActionsTd = styled(Td)`

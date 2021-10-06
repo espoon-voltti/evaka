@@ -21,7 +21,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
-import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
@@ -999,8 +998,8 @@ data class DevPedagogicalDocument(
 )
 
 fun Database.Transaction.insertPedagogicalDocument(pedagogicalDocument: DevPedagogicalDocument) = insertTestDataRow(
-        pedagogicalDocument,
-        """
+    pedagogicalDocument,
+    """
 INSERT INTO pedagogical_document (id, child_id, description)
 VALUES (:id, :childId, :description)
 RETURNING id

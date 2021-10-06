@@ -7,13 +7,14 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.application.isOwnApplication
 import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.attachment.hasPermissionThroughPedagogicalDocument
+import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.messaging.message.hasPermissionForMessageDraft
+import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -306,7 +307,7 @@ WHERE employee_id = :userId
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.hasPermissionThroughPedagogicalDocument(user, id) } }
+                    Database(jdbi).connect { db -> db.read { it.citizenHasPermissionThroughPedagogicalDocument(user, id) } }
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
@@ -396,12 +397,28 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::pedagogicalDocumentActions
-        )
+        when (user) {
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.PedagogicalDocument.READ -> {
+                    val hasPermission = Database(jdbi).connect { db -> db.read { it.citizenHasPermissionForPedagogicalDocument(user, id) } }
+                    if (!hasPermission) throw Forbidden("Permission denied")
+                }
+                else -> throw Forbidden("Permission denied")
+            }
+            is AuthenticatedUser.Employee -> when (action) {
+                Action.PedagogicalDocument.CREATE_ATTACHMENT,
+                Action.PedagogicalDocument.DELETE,
+                Action.PedagogicalDocument.READ,
+                Action.PedagogicalDocument.UPDATE ->
+                    assertPermission(
+                        user = user,
+                        getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
+                        action = action,
+                        mapping = permittedRoleActions::pedagogicalDocumentActions
+                    )
+            }
+            else -> throw Forbidden("Permission denied")
+        }
     }
 
     fun requirePermissionFor(

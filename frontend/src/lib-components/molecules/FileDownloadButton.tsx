@@ -28,6 +28,7 @@ const DownloadButton = styled.button`
 interface FileDownloadButtonProps {
   file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
+  afterFetch?: () => void
   onFileUnavailable: () => void
   icon?: IconDefinition | boolean
   'data-qa'?: string
@@ -42,6 +43,7 @@ interface FileDownloadButtonProps {
 export default React.memo(function FileDownloadButton({
   file,
   fileFetchFn,
+  afterFetch = () => undefined,
   onFileUnavailable,
   icon,
   'data-qa': dataQa,
@@ -67,7 +69,10 @@ export default React.memo(function FileDownloadButton({
   }
 
   return (
-    <DownloadButton onClick={() => getFileIfAvailable(file)} data-qa={dataQa}>
+    <DownloadButton
+      onClick={() => getFileIfAvailable(file).then(afterFetch)}
+      data-qa={dataQa}
+    >
       <FixedSpaceRow spacing="xs" alignItems="center" key={file.id}>
         {icon && (
           <FontAwesomeIcon icon={icon === true ? fileIcon(file) : icon} />

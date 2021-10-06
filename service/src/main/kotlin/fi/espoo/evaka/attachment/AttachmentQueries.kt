@@ -229,7 +229,7 @@ fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: Pedagogica
         .first()
 }
 
-fun Database.Read.hasPermissionThroughPedagogicalDocument(
+fun Database.Read.citizenHasPermissionThroughPedagogicalDocument(
     user: AuthenticatedUser.Citizen,
     attachmentId: AttachmentId
 ): Boolean =
