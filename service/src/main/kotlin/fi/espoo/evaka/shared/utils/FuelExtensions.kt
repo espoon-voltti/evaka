@@ -61,10 +61,9 @@ fun AuthenticatedRequest.token(token: String): Request {
  */
 fun Request.responseStringWithRetries(
     remainingTries: Int = 5,
-    failOn429: Boolean = true,
+    maxRetryAfterWaitSeconds: Long = 600L,
     errorCallback: (r: ErrorResponseResultOf, remainingTries: Int) -> ResponseResultOf<String> = { r, _ -> r }
 ): ResponseResultOf<String> {
-    val maxWaitSeconds = 600L
     val retryWaitLoggingThresholdSeconds = 10L
     val responseResult = responseString()
     val (request, response, result) = responseResult
@@ -80,18 +79,16 @@ fun Request.responseStringWithRetries(
                         Result.error(FuelError.wrap(IllegalStateException("Failed to receive a non-throttled response after all retries")))
                     )
                 } else {
-                    if (failOn429) throw IllegalStateException("Aborting fuel request after receiving 429 RETRY_AFTER")
-
                     val retryAfter = response[Headers.RETRY_AFTER].firstOrNull()?.toLong()
                         ?: throw IllegalStateException("Failed to find a valid Retry-After header with throttle response")
 
-                    if (retryAfter > maxWaitSeconds) throw IllegalStateException("Aborting fuel request after too big Retry-After value: $retryAfter seconds")
+                    if (retryAfter > maxRetryAfterWaitSeconds) throw IllegalStateException("Aborting fuel request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds")
 
                     if (retryAfter > retryWaitLoggingThresholdSeconds)
                         logger.warn("Waiting for a large RETRY_AFTER as requested: $retryAfter seconds")
 
                     TimeUnit.SECONDS.sleep(retryAfter)
-                    this.responseStringWithRetries(remainingTries - 1, failOn429)
+                    this.responseStringWithRetries(remainingTries - 1, maxRetryAfterWaitSeconds)
                 }
             false -> errorCallback(ErrorResponseResultOf(request, response, result), remainingTries - 1)
         }
