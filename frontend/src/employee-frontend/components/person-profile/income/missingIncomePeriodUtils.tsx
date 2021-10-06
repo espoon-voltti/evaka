@@ -7,6 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import LocalDate from 'lib-common/local-date'
+import { sortBy } from 'lodash'
 import { Income } from '../../../types/income'
 
 interface TimePeriod {
@@ -57,15 +58,10 @@ const getTimePeriodBetweenIncomesOrUndefined = (
 }
 
 export const getMissingIncomePeriodsString = (
-  incomeList: Income[],
+  incomes: Income[],
   andString: string
 ): string => {
-  const sortedIncomePeriods = incomeList.sort((incomeA, incomeB) =>
-    Math.sign(
-      incomeA.validFrom.toSystemTzDate().getTime() -
-        incomeB.validFrom.toSystemTzDate().getTime()
-    )
-  )
+  const sortedIncomePeriods = sortBy(incomes, (i) => i.validFrom.toString())
 
   const missingIncomePeriodStrings = sortedIncomePeriods
     .slice(0, -1)
