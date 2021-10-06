@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { client } from './client'
 import {
   Coordinate,
-  DaycareDailyNote,
-  DaycareDailyNoteLevelInfo,
-  DaycareDailyNoteReminder,
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,
@@ -766,81 +764,12 @@ export async function getGroupDaycareDailyNotes(
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        date: LocalDate.parseNullableIso(data.date),
-        modifiedAt: data.modifiedAt ? new Date(data.modifiedAt) : null
+        date: LocalDate.parseIso(data.date),
+        modifiedAt: new Date(data.modifiedAt)
       }))
     )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertChildDaycareDailyNote(
-  childId: string,
-  daycareDailyNote: DaycareDailyNoteFormData
-): Promise<Result<Unit>> {
-  const url = `/daycare-daily-note/child/${childId}`
-  if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (
-      daycareDailyNote.sleepingMinutes
-        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-          Number(daycareDailyNote.sleepingHours) * 60
-        : 0
-    ).toString()
-  }
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertGroupDaycareDailyNote(
-  groupId: string,
-  daycareDailyNote: DaycareDailyNoteFormData
-): Promise<Result<Unit>> {
-  const url = `/daycare-daily-note/group/${groupId}`
-  if (daycareDailyNote.sleepingHours) {
-    daycareDailyNote.sleepingMinutes = (
-      daycareDailyNote.sleepingMinutes
-        ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
-          Number(daycareDailyNote.sleepingHours) * 60
-        : 0
-    ).toString()
-  }
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function deleteDaycareDailyNote(
-  noteId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/daycare-daily-note/${noteId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export interface DaycareDailyNoteFormData {
-  id?: UUID
-  childId: UUID | null
-  groupId: UUID | null
-  date: LocalDate | null
-  note?: string
-  feedingNote?: DaycareDailyNoteLevelInfo
-  sleepingNote?: DaycareDailyNoteLevelInfo
-  sleepingHours?: string
-  sleepingMinutes?: string
-  reminders: DaycareDailyNoteReminder[]
-  reminderNote?: string
-  modifiedAt?: Date | null
-  modifiedBy?: string
 }
 
 export async function postReservations(

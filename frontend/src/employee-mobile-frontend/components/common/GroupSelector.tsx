@@ -4,70 +4,65 @@
 
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
-
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
-
-import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
-import { AttendanceResponse, Group } from '../../api/attendances'
 import colors from 'lib-customizations/common'
 import { ChipWrapper } from '../mobile/components'
+import { UnitContext } from '../../state/unit'
+import { UUID } from 'lib-common/types'
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 
 interface GroupSelectorProps {
-  selectedGroup: Group | undefined
-  onChangeGroup: (group: Group | undefined) => void
+  selectedGroup: GroupInfo | undefined
+  onChangeGroup: (group: GroupInfo | undefined) => void
+  countInfo?: CountInfo
+}
+
+export interface CountInfo {
+  getPresentCount: (groupId: UUID | undefined) => number
+  getTotalCount: (groupId: UUID | undefined) => number
+  infoText: string
 }
 
 export default function GroupSelector({
   selectedGroup,
-  onChangeGroup
+  onChangeGroup,
+  countInfo
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(AttendanceUIContext)
-
-  function numberOfChildrenPresent(gId: string, res: AttendanceResponse) {
-    return res.children
-      .filter((child) => child.groupId === gId)
-      .filter((child) => {
-        return child.status === 'PRESENT'
-      }).length
-  }
-
-  function getTotalChildren(groupId: string) {
-    if (attendanceResponse.isSuccess) {
-      return attendanceResponse.value.children.filter((ac) => {
-        return ac.groupId === groupId
-      }).length
-    }
-    return 0
-  }
+  const { unitInfoResponse } = useContext(UnitContext)
 
   return (
     <Wrapper>
       <ChipWrapper>
-        {attendanceResponse.isSuccess && (
+        {unitInfoResponse.isSuccess && (
           <>
             <ChoiceChip
-              text={`${i18n.common.all} (${
-                attendanceResponse.value.children.filter((child) => {
-                  return child.status === 'PRESENT'
-                }).length
-              }/${attendanceResponse.value.children.length})`}
-              selected={selectedGroup ? false : true}
+              text={`${i18n.common.all}${
+                countInfo
+                  ? `(${countInfo.getPresentCount(
+                      undefined
+                    )}/${countInfo.getTotalCount(undefined)})`
+                  : ''
+              }`}
+              selected={!selectedGroup}
               onChange={() => onChangeGroup(undefined)}
               data-qa="group--all"
             />
             <Gap horizontal size={'xxs'} />
-            {attendanceResponse.value.unit.groups.map((group) => (
+            {unitInfoResponse.value.groups.map((group) => (
               <Fragment key={group.id}>
                 <ChoiceChip
-                  text={`${group.name} (${numberOfChildrenPresent(
-                    group.id,
-                    attendanceResponse.value
-                  )}/${getTotalChildren(group.id)})`}
+                  text={`${group.name}${
+                    countInfo
+                      ? `(${countInfo.getPresentCount(
+                          group.id
+                        )}/${countInfo.getTotalCount(group.id)})`
+                      : ''
+                  }`}
                   selected={
                     selectedGroup ? selectedGroup.id === group.id : false
                   }
@@ -81,7 +76,7 @@ export default function GroupSelector({
             ))}
           </>
         )}
-        <Info>{i18n.attendances.chooseGroupInfo}</Info>
+        {countInfo && <Info>{countInfo.infoText}</Info>}
       </ChipWrapper>
     </Wrapper>
   )

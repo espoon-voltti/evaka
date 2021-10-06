@@ -21,12 +21,12 @@ import {
   Fixture,
   uuidv4
 } from '../../../e2e-test-common/dev-api/fixtures'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { newBrowserContext } from '../../browser'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import {
-  DaycareDailyNote,
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
@@ -105,18 +105,16 @@ afterEach(async () => {
 
 describe('Child and group notes', () => {
   test('Child daily note can be created', async () => {
-    const daycareDailyNote: DaycareDailyNote = {
-      id: uuidv4(),
-      groupId: undefined,
+    const daycareDailyNote: DaycareDailyNoteBody = {
       childId: enduserChildFixtureJari.id,
+      groupId: null,
       date: LocalDate.today(),
       note: 'Testiviesti',
       feedingNote: 'MEDIUM',
-      sleepingMinutes: '65',
+      sleepingMinutes: 65,
       sleepingNote: 'NONE',
       reminders: ['DIAPERS'],
-      reminderNote: 'Näki painajaisia',
-      modifiedBy: 'e2e-test'
+      reminderNote: 'Näki painajaisia'
     }
 
     await notePage.fillNote(daycareDailyNote)
@@ -127,17 +125,16 @@ describe('Child and group notes', () => {
   })
 
   test('Child group note can be created', async () => {
-    const groupNote: DaycareDailyNote = {
-      id: uuidv4(),
+    const groupNote: DaycareDailyNoteBody = {
+      childId: null,
       groupId: daycareGroup.data.id,
       date: LocalDate.today(),
       note: 'Testiryhmäviesti',
       feedingNote: 'MEDIUM',
-      sleepingMinutes: '30',
+      sleepingMinutes: 30,
       sleepingNote: 'NONE',
       reminders: [],
-      reminderNote: '',
-      modifiedBy: 'e2e-test'
+      reminderNote: ''
     }
 
     await notePage.selectGroupTab()

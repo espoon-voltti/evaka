@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  DaycareDailyNote,
-  DaycareDailyNoteLevel,
-  DaycareDailyNoteReminder,
-  PersonDetail
-} from 'e2e-test-common/dev-api/types'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import { t, Selector } from 'testcafe'
+import {
+  DaycareDailyNoteBody,
+  DaycareDailyNoteLevelInfo,
+  DaycareDailyNoteReminder
+} from 'lib-common/generated/api-types/messaging'
 import { AbsenceType } from '../absences/absences-page'
 import MobileGroupsPage from './mobile-groups'
 
@@ -53,10 +53,10 @@ export default class ChildPage {
 
   readonly markAbsentRadio = (absenceType: AbsenceType) =>
     Selector(`[data-qa="mark-absent-${absenceType}"]`)
-  readonly dailyNoteFeedingNote = (dailyNoteLevel: DaycareDailyNoteLevel) =>
-    Selector(`[data-qa="feeding-note-${dailyNoteLevel}"]`)
-  readonly dailyNoteSleepingNote = (dailyNoteLevel: DaycareDailyNoteLevel) =>
-    Selector(`[data-qa="sleeping-note-${dailyNoteLevel}"]`)
+  readonly dailyNoteFeedingNote = (level: DaycareDailyNoteLevelInfo) =>
+    Selector(`[data-qa="feeding-note-${level}"]`)
+  readonly dailyNoteSleepingNote = (level: DaycareDailyNoteLevelInfo) =>
+    Selector(`[data-qa="sleeping-note-${level}"]`)
   readonly dailyNoteReminders = (reminder: DaycareDailyNoteReminder) =>
     Selector(`[data-qa="reminders-${reminder}"]`)
 
@@ -164,7 +164,7 @@ export default class ChildPage {
   async createDailyNote(
     childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
-    dailyNote: DaycareDailyNote
+    dailyNote: DaycareDailyNoteBody
   ) {
     const hours = Math.floor(Number(dailyNote.sleepingMinutes) / 60).toString()
     const minutes = (Number(dailyNote.sleepingMinutes) % 60).toString()

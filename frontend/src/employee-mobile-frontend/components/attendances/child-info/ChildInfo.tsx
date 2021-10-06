@@ -9,25 +9,19 @@ import styled from 'styled-components'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
+import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import AttendanceChildComing from '../AttendanceChildComing'
-import AttendanceChildPresent from '../AttendanceChildPresent'
-import AttendanceChildDeparted from '../AttendanceChildDeparted'
+import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
+import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
+import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceDailyServiceTimes from '../AttendanceDailyServiceTimes'
-import {
-  AttendanceChild,
-  AttendanceStatus,
-  getDaycareAttendances,
-  Group
-} from '../../../api/attendances'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { FlexColumn } from '../components'
-import AttendanceChildAbsent from '../AttendanceChildAbsent'
+import AttendanceChildAbsent from './child-state-pages/AttendanceChildAbsent'
 import { BackButton, TallContentArea } from '../../mobile/components'
 import ChildButtons from './ChildButtons'
 import ImageEditor from './ImageEditor'
@@ -40,6 +34,8 @@ import { deleteChildImage } from '../../../api/childImages'
 import { IconBox } from '../ChildListItem'
 import Absences from '../Absences'
 import ArrivalAndDeparture from './ArrivalAndDeparture'
+import { UnitContext } from '../../../state/unit'
+import { UUID } from 'lib-common/types'
 
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -140,46 +136,47 @@ export default React.memo(function AttendanceChildPage() {
   const history = useHistory()
 
   const { unitId, childId, groupId } = useParams<{
-    unitId: string
-    groupId: string
-    childId: string
+    unitId: UUID
+    groupId: UUID | 'all'
+    childId: UUID
   }>()
 
-  const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
-  const [group, setGroup] = useState<Group | undefined>(undefined)
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
-  const [uiMode, setUiMode] = useState<
-    'default' | 'img-modal' | 'img-crop' | 'img-delete'
-  >('default')
-  const [rawImage, setRawImage] = useState<string | null>(null)
-  const uploadInputRef = useRef<HTMLInputElement>(null)
+  const { unitInfoResponse } = useContext(UnitContext)
 
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
   )
 
   useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [loadDaycareAttendances, unitId])
+    reloadAttendances()
+  }, [reloadAttendances])
 
-  useEffect(() => {
-    if (attendanceResponse.isSuccess) {
-      const child = attendanceResponse.value.children.find(
-        (child) => child.id === childId
-      )
-      setChild(child)
-      setGroup(
-        attendanceResponse.value.unit.groups.find(
-          (group: Group) => group.id === child?.groupId
-        )
-      )
-    }
-  }, [attendanceResponse, childId])
+  const [uiMode, setUiMode] = useState<
+    'default' | 'img-modal' | 'img-crop' | 'img-delete'
+  >('default')
+
+  const [rawImage, setRawImage] = useState<string | null>(null)
+
+  const uploadInputRef = useRef<HTMLInputElement>(null)
 
   const loading = attendanceResponse.isLoading
-  const groupNote = group?.dailyNote
+
+  const child = attendanceResponse.isSuccess
+    ? attendanceResponse.value.children.find((child) => child.id === childId)
+    : undefined
+
+  const group =
+    attendanceResponse.isSuccess && unitInfoResponse.isSuccess
+      ? unitInfoResponse.value.groups.find(
+          (group) => group.id === child?.groupId
+        )
+      : undefined
+
+  const groupNote = attendanceResponse.isSuccess
+    ? attendanceResponse.value.groupNotes.find(
+        (g) => g.groupId === child?.groupId
+      )?.dailyNote
+    : undefined
 
   if (uiMode === 'img-crop' && rawImage) {
     return (
@@ -187,7 +184,7 @@ export default React.memo(function AttendanceChildPage() {
         image={rawImage}
         childId={childId}
         onReturn={() => {
-          loadDaycareAttendances(unitId)
+          reloadAttendances()
           setRawImage(null)
           setUiMode('default')
         }}
@@ -268,7 +265,7 @@ export default React.memo(function AttendanceChildPage() {
                   reservation={child.reservation}
                 />
                 <ArrivalAndDeparture child={child} />
-                <Absences attendanceChild={child} />
+                <Absences child={child} />
                 <Gap size="xs" />
                 {child.status === 'COMING' && (
                   <AttendanceChildComing
@@ -295,7 +292,7 @@ export default React.memo(function AttendanceChildPage() {
             <BottomButtonWrapper>
               <LinkButtonWithIcon
                 data-qa="mark-absent-beforehand"
-                to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
+                to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
               >
                 <RoundIcon
                   size={'L'}
@@ -375,7 +372,7 @@ export default React.memo(function AttendanceChildPage() {
                 if (res.isFailure) {
                   console.error('Deleting image failed', res.message)
                 } else {
-                  loadDaycareAttendances(unitId)
+                  reloadAttendances()
                   setUiMode('default')
                 }
               })
@@ -393,25 +390,27 @@ export default React.memo(function AttendanceChildPage() {
 })
 
 function getColorByStatus(status: AttendanceStatus) {
-  return status === 'ABSENT'
-    ? colors.greyscale.dark
-    : status === 'DEPARTED'
-    ? colors.blues.medium
-    : status === 'PRESENT'
-    ? colors.accents.green
-    : status === 'COMING'
-    ? colors.accents.water
-    : colors.blues.medium
+  switch (status) {
+    case 'COMING':
+      return colors.accents.water
+    case 'PRESENT':
+      return colors.accents.green
+    case 'DEPARTED':
+      return colors.blues.medium
+    case 'ABSENT':
+      return colors.greyscale.dark
+  }
 }
 
 function getBackgroundColorByStatus(status: AttendanceStatus) {
-  return status === 'ABSENT'
-    ? '#E8E8E8'
-    : status === 'DEPARTED'
-    ? '#B3C5DD'
-    : status === 'PRESENT'
-    ? '#EEF4B3'
-    : status === 'COMING'
-    ? '#E2ECF2'
-    : colors.blues.medium
+  switch (status) {
+    case 'COMING':
+      return '#E2ECF2'
+    case 'PRESENT':
+      return '#EEF4B3'
+    case 'DEPARTED':
+      return '#B3C5DD'
+    case 'ABSENT':
+      return '#E8E8E8'
+  }
 }

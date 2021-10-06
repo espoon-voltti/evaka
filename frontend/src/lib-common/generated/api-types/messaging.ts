@@ -34,9 +34,24 @@ export interface DaycareDailyNote {
   date: LocalDate
   feedingNote: DaycareDailyNoteLevelInfo | null
   groupId: UUID | null
-  id: UUID | null
-  modifiedAt: Date | null
-  modifiedBy: string | null
+  id: UUID
+  modifiedAt: Date
+  modifiedBy: string
+  note: string | null
+  reminderNote: string | null
+  reminders: DaycareDailyNoteReminder[]
+  sleepingMinutes: number | null
+  sleepingNote: DaycareDailyNoteLevelInfo | null
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
+*/
+export interface DaycareDailyNoteBody {
+  childId: UUID | null
+  date: LocalDate
+  feedingNote: DaycareDailyNoteLevelInfo | null
+  groupId: UUID | null
   note: string | null
   reminderNote: string | null
   reminders: DaycareDailyNoteReminder[]

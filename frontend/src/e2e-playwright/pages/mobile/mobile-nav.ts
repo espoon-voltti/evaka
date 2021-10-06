@@ -24,11 +24,6 @@ export default class MobileNav {
   )
   readonly #staff = new RawElement(this.page, '[data-qa="bottomnav-staff"]')
 
-  readonly #staffCountBubble = new RawElement(
-    this.page,
-    '[data-qa="staff-count-bubble"]'
-  )
-
   get selectedGroupName() {
     return this.#groupSelectorButton.innerText
   }
@@ -45,9 +40,5 @@ export default class MobileNav {
       case 'staff':
         return await this.#staff.click()
     }
-  }
-
-  get staffCount() {
-    return this.#staffCountBubble.innerText
   }
 }

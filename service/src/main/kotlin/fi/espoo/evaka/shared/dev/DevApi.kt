@@ -40,7 +40,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
@@ -61,6 +61,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -659,9 +660,9 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     @PostMapping("/messaging/daycare-daily-note")
     fun postDaycareDailyNote(
         db: Database.Connection,
-        @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<Unit> {
-        return db.transaction { it.createDaycareDailyNote(body) }.let { ResponseEntity.noContent().build() }
+        @RequestBody body: DaycareDailyNoteBody
+    ): DaycareDailyNoteId {
+        return db.transaction { it.createDaycareDailyNote(body, UUID.randomUUID()) }
     }
 
     @GetMapping("/digitransit/autocomplete")

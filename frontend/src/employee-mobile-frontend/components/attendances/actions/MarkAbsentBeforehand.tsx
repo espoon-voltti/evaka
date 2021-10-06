@@ -28,11 +28,10 @@ import { Loading, Result } from 'lib-common/api'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
-import { TallContentArea } from '../../../components/mobile/components'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
+import { TallContentArea } from '../../mobile/components'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import {
   deleteAbsenceRange,
-  getDaycareAttendances,
   getFutureAbsencesByChild,
   postAbsenceRange
 } from '../../../api/attendances'
@@ -48,8 +47,13 @@ export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -70,16 +74,7 @@ export default React.memo(function MarkAbsentBeforehand() {
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
 
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-
   const loadFutureAbsences = useRestApi(getFutureAbsencesByChild, setAbsences)
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [loadDaycareAttendances, unitId])
 
   useEffect(() => {
     loadFutureAbsences(childId)

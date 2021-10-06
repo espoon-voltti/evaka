@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faTimes } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { AttendanceChild } from '../../api/attendances'
+import { Child as AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { defaultMargins } from 'lib-components/white-space'
 
 const SearchInputContainer = styled.div`
@@ -94,7 +94,7 @@ export default function FreeTextSearch({
         data-qa="free-text-search-input"
         background={background}
         showClose={searchResults.length > 1}
-      ></SearchInput>
+      />
       {searchResults.length > 1 && (
         <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
       )}

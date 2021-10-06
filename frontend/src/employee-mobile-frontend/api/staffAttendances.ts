@@ -3,43 +3,60 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import {
-  StaffAttendanceUpdate,
-  UnitStaffAttendance
-} from 'lib-common/api-types/staffAttendances'
 import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { client } from './client'
+import {
+  StaffArrivalRequest,
+  StaffAttendanceResponse,
+  StaffDepartureRequest
+} from 'lib-common/generated/api-types/attendance'
 
 export async function getUnitStaffAttendances(
   unitId: UUID
-): Promise<Result<UnitStaffAttendance>> {
+): Promise<Result<StaffAttendanceResponse>> {
   return client
-    .get<JsonOf<UnitStaffAttendance>>(`/staff-attendances/unit/${unitId}`)
-    .then((res) => res.data)
-    .then((res) => ({
-      ...res,
-      date: LocalDate.parseIso(res.date),
-      updated: res.updated ? new Date(res.updated) : null,
-      groups: res.groups.map((group) => ({
-        ...group,
-        date: LocalDate.parseIso(group.date),
-        updated: new Date(group.updated)
-      }))
-    }))
-    .then((v) => Success.of(v))
+    .get<JsonOf<StaffAttendanceResponse>>(`/v2/staff-attendances`, {
+      params: { unitId }
+    })
+    .then((res) =>
+      Success.of({
+        staff: res.data.staff.map((staff) => ({
+          ...staff,
+          latestCurrentDayAttendance: staff.latestCurrentDayAttendance
+            ? {
+                ...staff.latestCurrentDayAttendance,
+                arrived: new Date(staff.latestCurrentDayAttendance.arrived),
+                departed: staff.latestCurrentDayAttendance.departed
+                  ? new Date(staff.latestCurrentDayAttendance.departed)
+                  : null
+              }
+            : null
+        })),
+        extraAttendances: res.data.extraAttendances.map((att) => ({
+          ...att,
+          arrived: new Date(att.arrived)
+        }))
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postStaffAttendance(
-  staffAttendance: StaffAttendanceUpdate
+export async function postStaffArrival(
+  request: StaffArrivalRequest
 ): Promise<Result<void>> {
   return client
-    .post(
-      `/staff-attendances/group/${staffAttendance.groupId}`,
-      staffAttendance
-    )
-    .then((res) => Success.of(res.data))
+    .post(`/v2/staff-attendances/arrival`, request)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postStaffDeparture(
+  attendanceId: UUID,
+  request: StaffDepartureRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/staff-attendances/${attendanceId}/departure`, request)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

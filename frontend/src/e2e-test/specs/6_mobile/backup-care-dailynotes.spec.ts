@@ -6,6 +6,7 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertBackupCareFixtures,
@@ -29,10 +30,7 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
-import {
-  DaycareDailyNote,
-  DaycarePlacement
-} from 'e2e-test-common/dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
@@ -121,18 +119,16 @@ const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
 
 test('Daycare daily note is shown for backupcare child', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: backupCareDaycareGroup.data.id,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '',
+    sleepingMinutes: null,
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
-    reminderNote: 'Ei enää pähkinöitä antaa saa',
-    modifiedBy: 'e2e-test'
+    reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
   await postDaycareDailyNote(daycareDailyNote)
@@ -162,18 +158,16 @@ test('Daycare daily note is shown for backupcare child', async (t) => {
 })
 
 test('User can create a daily note for a backup care child', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '140',
+    sleepingMinutes: 140,
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
-    reminderNote: 'Ei saa pähkinöitä antaa',
-    modifiedBy: 'e2e-test'
+    reminderNote: 'Ei saa pähkinöitä antaa'
   }
   const hours =
     Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60) > 0
@@ -220,18 +214,16 @@ test('User can create a daily note for a backup care child', async (t) => {
 })
 
 test('User can delete a daily note for a backup care child', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '',
+    sleepingMinutes: null,
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
-    reminderNote: 'Ei enää pähkinöitä antaa saa',
-    modifiedBy: 'e2e-test'
+    reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
   await postDaycareDailyNote(daycareDailyNote)
@@ -251,18 +243,16 @@ test('User can delete a daily note for a backup care child', async (t) => {
 })
 
 test('User can see group daily note for a backup care child in the group', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: backupCareDaycareGroup.data.id,
     childId: null,
     date: LocalDate.today(),
     note: 'Testi ryhmäviesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '3',
+    sleepingMinutes: 3,
     sleepingNote: 'NONE',
     reminders: [],
-    reminderNote: '',
-    modifiedBy: 'e2e-test'
+    reminderNote: ''
   }
 
   await postDaycareDailyNote(daycareDailyNote)

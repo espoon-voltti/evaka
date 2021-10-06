@@ -5,12 +5,10 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { formatTime, isValidTime } from 'lib-common/date'
 import Loader from 'lib-components/atoms/Loader'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -24,22 +22,20 @@ import { Result, Loading } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
-
+import { AbsenceThreshold } from 'lib-common/generated/api-types/attendance'
 import { TallContentArea } from '../../mobile/components'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import {
   childDeparts,
-  DepartureInfoResponse,
   getChildDeparture,
-  getDaycareAttendances,
   postDeparture
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
+import { AbsentFrom } from '../AbsentFrom'
 import DailyNote from '../notes/DailyNote'
 import { isBefore, parse } from 'date-fns'
 import AbsenceSelector from '../AbsenceSelector'
 import {
-  AbsentFrom,
   Actions,
   BackButtonInline,
   CustomTitle,
@@ -51,12 +47,17 @@ export default React.memo(function MarkDeparted() {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [childDepartureInfo, setChildDepartureInfo] = useState<
-    Result<DepartureInfoResponse>
+    Result<AbsenceThreshold[]>
   >(Loading.of())
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -74,17 +75,8 @@ export default React.memo(function MarkDeparted() {
 
   const groupNote =
     attendanceResponse.isSuccess &&
-    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+    attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
       ?.dailyNote
-
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [unitId, loadDaycareAttendances])
 
   function markDeparted() {
     return childDeparts(unitId, childId, time)

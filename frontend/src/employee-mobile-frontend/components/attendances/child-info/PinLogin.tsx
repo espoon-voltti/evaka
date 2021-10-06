@@ -13,7 +13,6 @@ import React, {
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { sortBy } from 'lodash'
-
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -29,26 +28,30 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
-
+import { ChildResult } from 'lib-common/generated/api-types/attendance'
 import { TallContentArea } from '../../mobile/components'
-
-import {
-  ChildResult,
-  getChildSensitiveInformation,
-  getDaycareAttendances
-} from '../../../api/attendances'
+import { getChildSensitiveInformation } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { AttendanceUIContext } from '../../../state/attendance-ui'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 import PinLogout from './PinLogout'
 import useInactivityTimeout from './InactivityTimeout'
 import { BackButtonInline } from '../components'
+import { UnitContext } from '../../../state/unit'
 
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
+
+  const { unitInfoResponse } = useContext(UnitContext)
+
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [selectedStaff, setSelectedStaff] = useState<{
     name: string
@@ -60,8 +63,7 @@ export default React.memo(function PinLogin() {
 
   const pinInputRef = useRef<HTMLInputElement>(null)
 
-  const { childId, groupId, unitId } = useParams<{
-    unitId: string
+  const { childId, groupId } = useParams<{
     groupId: string
     childId: string
   }>()
@@ -76,10 +78,6 @@ export default React.memo(function PinLogin() {
     }
   }
 
-  useEffect(() => {
-    void getDaycareAttendances(unitId).then(setAttendanceResponse)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
   useLayoutEffect(() => {
     if (selectedStaff && pinInputRef && pinInputRef.current) {
       pinInputRef.current.focus()
@@ -91,9 +89,9 @@ export default React.memo(function PinLogin() {
   }
 
   const staffOptions = useMemo(() => {
-    if (attendanceResponse.isSuccess) {
+    if (unitInfoResponse.isSuccess) {
       return sortBy(
-        attendanceResponse.value.unit.staff.filter(({ pinSet }) => pinSet),
+        unitInfoResponse.value.staff.filter(({ pinSet }) => pinSet),
         ({ groups }) => (groups.includes(groupId) ? 0 : 1),
         ({ lastName }) => lastName,
         ({ firstName }) => firstName
@@ -104,15 +102,15 @@ export default React.memo(function PinLogin() {
     } else {
       return []
     }
-  }, [groupId, attendanceResponse])
+  }, [groupId, unitInfoResponse])
 
   const childBasicInfo =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
 
   const loggedInStaffName = (): string => {
-    const loggedInStaff = attendanceResponse.isSuccess
-      ? attendanceResponse.value.unit.staff.find(
+    const loggedInStaff = unitInfoResponse.isSuccess
+      ? unitInfoResponse.value.staff.find(
           (staff) => staff.id === selectedStaff?.id
         )
       : null

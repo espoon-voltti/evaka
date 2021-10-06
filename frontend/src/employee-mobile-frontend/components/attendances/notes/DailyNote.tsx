@@ -4,19 +4,18 @@
 
 import React from 'react'
 import styled from 'styled-components'
-
 import colors from 'lib-customizations/common'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import { fontWeights, Label } from 'lib-components/typography'
-
-import { AttendanceChild, DailyNote } from '../../../api/attendances'
+import { Child } from 'lib-common/generated/api-types/attendance'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
-  child: AttendanceChild | undefined
-  groupNote: DailyNote | undefined
+  child: Child | undefined
+  groupNote: DaycareDailyNote | undefined
 }
 
 export default React.memo(function DailyNote({ child, groupNote }: Props) {

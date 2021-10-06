@@ -2,98 +2,63 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
-import {
-  matchPath,
-  Redirect,
-  Route,
-  Switch,
-  useHistory,
-  useParams,
-  useRouteMatch
-} from 'react-router-dom'
-import styled from 'styled-components'
-import { animated, useSpring } from 'react-spring'
-
-import Tabs from 'lib-components/molecules/Tabs'
+import { combine } from 'lib-common/api'
+import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import Tabs from 'lib-components/molecules/Tabs'
+import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { fontWeights } from 'lib-components/typography'
-
-import AttendanceComingPage from './AttendanceComingPage'
-import AttendancePresentPage from './AttendancePresentPage'
-import AttendanceDepartedPage from './AttendanceDepartedPage'
-import AttendanceAbsentPage from './AttendanceAbsentPage'
-import AttendanceList from './AttendanceList'
-import {
-  AttendanceChild,
-  getDaycareAttendances,
-  Group
-} from '../../api/attendances'
-import { AttendanceUIContext } from '../../state/attendance-ui'
+import React, { useContext, useEffect, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import { animated, useSpring } from 'react-spring'
+import styled from 'styled-components'
+import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../../types'
+import { renderResult } from '../async-rendering'
+import BottomNavbar from '../common/BottomNavbar'
 import FreeTextSearch from '../common/FreeTextSearch'
 import TopBar from '../common/TopBar'
-import BottomNavbar, { NavItem } from '../common/BottomNavbar'
-import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
-import { combine, Loading, Result } from 'lib-common/api'
-import { getUnitStaffAttendances } from '../../api/staffAttendances'
-import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
-import { renderResult } from '../async-rendering'
+import AttendanceList from './AttendanceList'
 
-export interface Props {
-  onNavigate: (page: NavItem) => void
-}
-
-export default React.memo(function AttendancePageWrapper({
-  onNavigate
-}: Props) {
+export default React.memo(function AttendancePageWrapper() {
   const { i18n } = useTranslation()
-  const { unitId, groupId: groupIdOrAll } = useParams<{
+  const {
+    unitId,
+    groupId: groupIdOrAll,
+    attendanceStatus
+  } = useParams<{
     unitId: string
     groupId: string
+    attendanceStatus: ChildAttendanceUIState
   }>()
-  const { path, url } = useRouteMatch()
   const history = useHistory()
 
-  const currentPage = matchPath<{ page: string }>(history.location.pathname, {
-    path: `${path}/:page`
-  })?.params.page
+  const { unitInfoResponse } = useContext(UnitContext)
 
-  const { attendanceResponse, setAttendanceResponse } =
-    useContext(AttendanceUIContext)
-  const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
-    Result<UnitStaffAttendance>
-  >(Loading.of())
+  const selectedGroup =
+    groupIdOrAll === 'all'
+      ? undefined
+      : unitInfoResponse
+          .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
+          .getOrElse(undefined)
+
+  const { attendanceResponse, reloadAttendances } = useContext(
+    ChildAttendanceContext
+  )
+
+  useEffect(() => {
+    reloadAttendances()
+  }, [reloadAttendances])
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<AttendanceChild[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
-    undefined
-  )
-
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-  const loadStaffAttendances = useRestApi(
-    getUnitStaffAttendances,
-    setStaffAttendancesResponse
-  )
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [loadDaycareAttendances, groupIdOrAll, unitId, currentPage])
-
-  useEffect(() => {
-    loadStaffAttendances(unitId)
-  }, [unitId, loadStaffAttendances])
+  const [searchResults, setSearchResults] = useState<Child[]>([])
 
   useEffect(() => {
     if (freeText === '') {
@@ -107,21 +72,6 @@ export default React.memo(function AttendancePageWrapper({
       setSearchResults(filteredData)
     }
   }, [freeText, attendanceResponse])
-
-  useEffect(() => {
-    const selectedGroup =
-      attendanceResponse.isSuccess &&
-      groupIdOrAll !== 'all' &&
-      attendanceResponse.value.unit.groups.find(
-        (elem: Group) => elem.id === groupIdOrAll
-      )
-    if (selectedGroup) {
-      setSelectedGroup(selectedGroup)
-    }
-    return () => {
-      setSelectedGroup(undefined)
-    }
-  }, [attendanceResponse, groupIdOrAll])
 
   const totalAttendances = attendanceResponse.isSuccess
     ? groupIdOrAll === 'all'
@@ -167,6 +117,7 @@ export default React.memo(function AttendancePageWrapper({
     )
     .getOrElse(0)
 
+  const url = `/units/${unitId}/groups/${groupIdOrAll}/child-attendance/list`
   const tabs = [
     {
       id: 'coming',
@@ -214,35 +165,19 @@ export default React.memo(function AttendancePageWrapper({
     }
   ]
 
-  function changeGroup(group: Group | undefined) {
-    if (attendanceResponse.isSuccess) {
-      if (currentPage && group !== undefined) {
-        history.push(
-          `/units/${attendanceResponse.value.unit.id}/attendance/${group.id}/${currentPage}`
-        )
-        setSelectedGroup(group)
-      } else if (currentPage && group === undefined) {
-        history.push(
-          `/units/${attendanceResponse.value.unit.id}/attendance/all/${currentPage}`
-        )
-        setSelectedGroup(undefined)
-      }
-    }
+  function changeGroup(group: GroupInfo | undefined) {
+    history.push(
+      `/units/${unitId}/groups/${
+        group?.id ?? 'all'
+      }/child-attendance/${attendanceStatus}/list`
+    )
   }
 
   const containerSpring = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
 
   return renderResult(
-    combine(
-      attendanceResponse,
-      staffAttendancesResponse.map((staffAttendances) =>
-        staffAttendanceForGroupOrUnit(
-          staffAttendances,
-          groupIdOrAll === 'all' ? undefined : groupIdOrAll
-        )
-      )
-    ),
-    ([attendance, staffAttendances]) => (
+    combine(unitInfoResponse, attendanceResponse),
+    ([unitInfo, attendance]) => (
       <>
         <SearchBar
           style={{
@@ -250,7 +185,7 @@ export default React.memo(function AttendancePageWrapper({
           }}
         >
           <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
-            {attendance.unit.name}{' '}
+            {unitInfo.name}{' '}
             <IconButton
               onClick={() => setShowSearch(!showSearch)}
               icon={faTimes}
@@ -271,66 +206,55 @@ export default React.memo(function AttendancePageWrapper({
             />
             <AttendanceList
               attendanceChildren={searchResults}
-              groups={[]}
+              groupsNotes={attendance.groupNotes}
               showAll
             />
           </ContentArea>
         </SearchBar>
         <TopBar
-          unitName={attendance.unit.name}
+          unitName={unitInfo.name}
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
           onSearch={() => setShowSearch(!showSearch)}
+          countInfo={{
+            getTotalCount: (groupId) =>
+              attendanceResponse
+                .map((res) =>
+                  groupId === undefined
+                    ? res.children.length
+                    : res.children.filter((child) => child.groupId === groupId)
+                        .length
+                )
+                .getOrElse(0),
+            getPresentCount: (groupId) =>
+              attendanceResponse
+                .map((res) =>
+                  res.children.filter((child) => child.status === 'PRESENT')
+                )
+                .map((children) =>
+                  groupId === undefined
+                    ? children.length
+                    : children.filter((child) => child.groupId === groupId)
+                        .length
+                )
+                .getOrElse(0),
+            infoText: i18n.attendances.chooseGroupInfo
+          }}
         />
         <Tabs tabs={tabs} mobile />
 
         <ContentArea
-          fullHeight
           opaque={false}
-          paddingVertical={'s'}
+          paddingVertical={'zero'}
           paddingHorizontal={'zero'}
         >
-          <Switch>
-            <Route
-              exact
-              path={`${path}/coming`}
-              render={() => (
-                <AttendanceComingPage attendanceResponse={attendanceResponse} />
-              )}
-            />
-            <Route
-              exact
-              path={`${path}/present`}
-              render={() => (
-                <AttendancePresentPage
-                  attendanceResponse={attendanceResponse}
-                />
-              )}
-            />
-            <Route
-              exact
-              path={`${path}/departed`}
-              render={() => (
-                <AttendanceDepartedPage
-                  attendanceResponse={attendanceResponse}
-                />
-              )}
-            />
-            <Route
-              exact
-              path={`${path}/absent`}
-              render={() => (
-                <AttendanceAbsentPage attendanceResponse={attendanceResponse} />
-              )}
-            />
-            <Redirect to={`${path}/coming`} />
-          </Switch>
+          <AttendanceList
+            attendanceChildren={attendance.children}
+            groupsNotes={attendance.groupNotes}
+            type={mapChildAttendanceUIState(attendanceStatus)}
+          />
         </ContentArea>
-        <BottomNavbar
-          selected="child"
-          staffCount={staffAttendances}
-          onChange={onNavigate}
-        />
+        <BottomNavbar selected="child" />
       </>
     )
   )
@@ -346,7 +270,7 @@ const NoMarginTitle = styled(Title)`
   align-items: center;
   background: ${colors.blues.primary};
   color: ${colors.greyscale.white};
-  box-shadow: 0px 2px 6px 0px ${colors.greyscale.lighter};
+  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
   position: relative;
   z-index: 1;
 

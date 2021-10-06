@@ -1,27 +1,23 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-
-import { useTranslation } from '../../../../state/i18n'
-import { faExclamation, faTrash } from 'lib-icons'
 import {
   DaycareDailyNote,
+  DaycareDailyNoteBody,
   DaycareDailyNoteReminder
-} from '../../../../types/unit'
+} from 'lib-common/generated/api-types/messaging'
+import {
+  deleteDaycareDailyNote,
+  insertDaycareDailyNoteForChild,
+  updateDaycareDailyNoteForChild,
+  upsertDaycareDailyNoteForGroup
+} from '../../../../api/daycare-daily-notes'
+import { useTranslation } from '../../../../state/i18n'
+import { faExclamation, faTrash } from 'lib-icons'
 import { formatName } from '../../../../utils'
 import LocalDate from 'lib-common/local-date'
-import {
-  DaycareDailyNoteFormData,
-  deleteDaycareDailyNote,
-  upsertChildDaycareDailyNote,
-  upsertGroupDaycareDailyNote
-} from '../../../../api/unit'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import {
   FixedSpaceColumn,
@@ -33,15 +29,10 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 
-interface Props {
-  note: DaycareDailyNote | null
-  childId: string | null
-  groupId: string | null
-  childFirstName: string
-  childLastName: string
-  groupNote: string | null
-  onClose: () => void
-  reload: () => void
+interface DaycareDailyNoteFormData
+  extends Omit<DaycareDailyNoteBody, 'sleepingMinutes'> {
+  sleepingHours: string
+  sleepingMinutes: string
 }
 
 const initialFormData = (
@@ -65,8 +56,43 @@ const initialFormData = (
         childId,
         groupId,
         date: LocalDate.today(),
-        reminders: []
+        reminders: [],
+        feedingNote: null,
+        note: null,
+        reminderNote: null,
+        sleepingHours: '',
+        sleepingMinutes: '',
+        sleepingNote: null
       }
+}
+
+const formDataToRequestBody = (
+  form: DaycareDailyNoteFormData
+): DaycareDailyNoteBody => ({
+  childId: form.childId,
+  date: form.date,
+  feedingNote: form.feedingNote,
+  groupId: form.groupId,
+  note: form.note,
+  reminderNote: form.reminderNote,
+  reminders: form.reminders,
+  sleepingMinutes:
+    form.sleepingHours || form.sleepingMinutes
+      ? 60 * (parseInt(form.sleepingHours) || 0) +
+        (parseInt(form.sleepingMinutes) || 0)
+      : null,
+  sleepingNote: form.sleepingNote
+})
+
+interface Props {
+  note: DaycareDailyNote | null
+  childId: string | null
+  groupId: string | null
+  childFirstName: string
+  childLastName: string
+  groupNote: string | null
+  onClose: () => void
+  reload: () => void
 }
 
 export default React.memo(function DaycareDailyNoteModal({
@@ -91,17 +117,28 @@ export default React.memo(function DaycareDailyNoteModal({
     setForm({ ...form, ...updates })
   }
 
+  const [submitting, setSubmitting] = useState(false)
+
   const submit = () => {
+    // TODO error handling
+    setSubmitting(true)
+    const body = formDataToRequestBody(form)
+    const closeAndReload = () => {
+      onClose()
+      reload()
+    }
     if (childId != null) {
-      void upsertChildDaycareDailyNote(childId, form).then(() => {
-        onClose()
-        reload()
-      })
+      const promise = note?.id
+        ? updateDaycareDailyNoteForChild(childId, note.id, body)
+        : insertDaycareDailyNoteForChild(childId, body)
+      void promise.then(closeAndReload).finally(() => setSubmitting(false))
     } else if (groupId != null) {
-      void upsertGroupDaycareDailyNote(groupId, form).then(() => {
-        onClose()
-        reload()
+      void upsertDaycareDailyNoteForGroup(groupId, {
+        id: note?.id || null,
+        ...body
       })
+        .then(closeAndReload)
+        .finally(() => setSubmitting(false))
     }
   }
 
@@ -128,8 +165,8 @@ export default React.memo(function DaycareDailyNoteModal({
       resolve={{
         action: () => {
           submit()
-          onClose()
         },
+        disabled: submitting,
         label: i18n.common.confirm
       }}
       reject={{
@@ -180,10 +217,9 @@ export default React.memo(function DaycareDailyNoteModal({
       resolve={{
         action: () => {
           submit()
-          onClose()
         },
         label: i18n.common.confirm,
-        disabled: Number(form.sleepingMinutes) > 59
+        disabled: Number(form.sleepingMinutes) > 59 || submitting
       }}
       reject={{
         action: () => {

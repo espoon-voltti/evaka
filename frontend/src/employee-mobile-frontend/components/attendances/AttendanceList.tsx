@@ -5,7 +5,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
-
 import {
   defaultMargins,
   isSpacingSize,
@@ -13,13 +12,18 @@ import {
 } from 'lib-components/white-space'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
-import { AttendanceChild, AttendanceStatus, Group } from '../../api/attendances'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
+import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
+import {
+  AttendanceStatus,
+  Child,
+  GroupNote
+} from 'lib-common/generated/api-types/attendance'
 
 interface Props {
-  attendanceChildren: AttendanceChild[]
-  groups: Group[]
+  attendanceChildren: Child[]
+  groupsNotes: GroupNote[]
   type?: AttendanceStatus
   showAll?: boolean
 }
@@ -33,7 +37,7 @@ export default React.memo(function AttendanceList({
   attendanceChildren,
   type,
   showAll,
-  groups
+  groupsNotes
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -49,9 +53,8 @@ export default React.memo(function AttendanceList({
     return allowedType && allowedGroup
   })
 
-  function getGroupNote(child: AttendanceChild) {
-    return groups.find((group) => group.id == child.groupId)?.dailyNote
-  }
+  const getGroupNote = (child: Child): DaycareDailyNote | undefined =>
+    groupsNotes.find(({ groupId }) => groupId == child.groupId)?.dailyNote
 
   return (
     <FixedSpaceColumn>
@@ -62,11 +65,9 @@ export default React.memo(function AttendanceList({
               <ChildListItem
                 type={ac.status}
                 key={ac.id}
-                attendanceChild={ac}
+                child={ac}
                 groupNote={getGroupNote(ac)}
-                childAttendanceUrl={`/units/${unitId}/groups/${
-                  ac.groupId ?? 'all'
-                }/childattendance/${ac.id}`}
+                childAttendanceUrl={`/units/${unitId}/groups/${ac.groupId}/child-attendance/${ac.id}`}
               />
             </Li>
           ))

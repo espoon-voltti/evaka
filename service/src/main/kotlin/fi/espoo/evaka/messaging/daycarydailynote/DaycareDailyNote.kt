@@ -6,12 +6,12 @@ package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.GroupId
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
 data class DaycareDailyNote(
-    val id: DaycareDailyNoteId?,
+    val id: DaycareDailyNoteId,
     val childId: UUID?,
     val groupId: GroupId?,
     val date: LocalDate,
@@ -21,8 +21,20 @@ data class DaycareDailyNote(
     val sleepingMinutes: Int?,
     val reminders: List<DaycareDailyNoteReminder> = emptyList(),
     val reminderNote: String?,
-    val modifiedAt: Instant? = null,
-    val modifiedBy: String? = "evaka"
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: String
+)
+
+data class DaycareDailyNoteBody(
+    val childId: UUID?,
+    val groupId: GroupId?,
+    val date: LocalDate,
+    val note: String?,
+    val feedingNote: DaycareDailyNoteLevelInfo?,
+    val sleepingNote: DaycareDailyNoteLevelInfo?,
+    val sleepingMinutes: Int?,
+    val reminders: List<DaycareDailyNoteReminder>,
+    val reminderNote: String?,
 )
 
 enum class DaycareDailyNoteLevelInfo {

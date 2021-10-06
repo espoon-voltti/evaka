@@ -76,13 +76,15 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         }
     }
 
+    // TODO move elsewhere too
     @Test
     fun `unit info is correct`() {
-        val response = fetchAttendances()
-        assertEquals(testDaycare.name, response.unit.name)
-        assertEquals(1, response.unit.groups.size)
-        assertEquals(groupId, response.unit.groups.first().id)
-        assertEquals(groupName, response.unit.groups.first().name)
+        val response = fetchUnitInfo()
+        assertEquals(testDaycare.name, response.name)
+        assertEquals(1, response.groups.size)
+        assertEquals(groupId, response.groups.first().id)
+        assertEquals(groupName, response.groups.first().name)
+        assertEquals("Supervisor", response.staff.first().lastName)
     }
 
     @Test
@@ -238,6 +240,14 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(testTimes, child.dailyServiceTimes)
     }
 
+    private fun fetchUnitInfo(): UnitInfo {
+        val (_, res, result) = http.get("/mobile/units/${testDaycare.id}")
+            .asUser(mobileUser)
+            .responseObject<UnitInfo>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        return result.get()
+    }
     private fun fetchAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
             .asUser(mobileUser)

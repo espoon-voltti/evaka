@@ -14,17 +14,17 @@ import fi.espoo.evaka.application.getApplicationAttachments
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getChildDaycareDailyNotes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -335,49 +335,29 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Test
     fun removeDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now - Duration.ofHours(12)
-        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
-        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
-        db.transaction {
-            it.createDaycareDailyNote(
-                DaycareDailyNote(
-                    id = expiredNoteId,
-                    childId = testChild_1.id,
-                    date = LocalDate.ofInstant(twelveHoursAgo, ZoneOffset.UTC),
-                    modifiedAt = twelveHoursAgo,
-                    feedingNote = null,
-                    note = null,
-                    reminderNote = null,
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    modifiedBy = "integrationTest",
-                    groupId = null,
-                    sleepingNote = null
-                )
-            )
+        createExpiredDailyNote(now)
 
-            it.createDaycareDailyNote(
-                DaycareDailyNote(
-                    id = validNoteId,
-                    childId = testChild_1.id,
-                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
-                    modifiedAt = now,
-                    feedingNote = null,
-                    note = null,
-                    reminderNote = null,
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    modifiedBy = "integrationTest",
-                    groupId = null,
-                    sleepingNote = null
-                )
-            )
+        val validNoteId = db.transaction {
             it.insertPlacement(
                 type = PlacementType.DAYCARE,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusDays(100),
                 endDate = LocalDate.now().plusDays(100),
+            )
+            it.createDaycareDailyNote(
+                DaycareDailyNoteBody(
+                    childId = testChild_1.id,
+                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
+                    feedingNote = null,
+                    note = null,
+                    reminderNote = null,
+                    sleepingMinutes = null,
+                    reminders = emptyList(),
+                    groupId = null,
+                    sleepingNote = null
+                ),
+                UUID.randomUUID()
             )
         }
 
@@ -386,50 +366,41 @@ class ScheduledJobsTest : FullApplicationTest() {
         db.read {
             val notesAfterCleanup = it.getChildDaycareDailyNotes(testChild_1.id)
             assertEquals(1, notesAfterCleanup.size)
-            assertEquals(validNoteId, notesAfterCleanup.get(0).id)
+            assertEquals(validNoteId, notesAfterCleanup.first().id)
+        }
+    }
+
+    private fun createExpiredDailyNote(now: Instant) {
+        db.transaction {
+            val twelveHoursAgo = now - Duration.ofHours(12)
+            it.createDaycareDailyNote(
+                DaycareDailyNoteBody(
+                    childId = testChild_1.id,
+                    date = LocalDate.ofInstant(twelveHoursAgo, ZoneOffset.UTC),
+                    feedingNote = null,
+                    note = null,
+                    reminderNote = null,
+                    sleepingMinutes = null,
+                    reminders = emptyList(),
+                    groupId = null,
+                    sleepingNote = null
+                ),
+                UUID.randomUUID()
+            ).let { id ->
+                it.createUpdate("UPDATE daycare_daily_note SET modified_at = :date WHERE id = :id")
+                    .bind("id", id)
+                    .bind("date", twelveHoursAgo)
+                    .updateExactlyOne()
+            }
         }
     }
 
     @Test
     fun removeOldBackupCareDaycareDailyNotes() {
         val now = Instant.now()
-        val twelveHoursAgo = now - Duration.ofHours(12)
-        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
-        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
-        db.transaction {
-            it.createDaycareDailyNote(
-                DaycareDailyNote(
-                    id = expiredNoteId,
-                    childId = testChild_1.id,
-                    date = LocalDate.ofInstant(twelveHoursAgo, ZoneOffset.UTC),
-                    modifiedAt = twelveHoursAgo,
-                    feedingNote = null,
-                    note = null,
-                    reminderNote = null,
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    modifiedBy = "integrationTest",
-                    groupId = null,
-                    sleepingNote = null
-                )
-            )
+        createExpiredDailyNote(now)
 
-            it.createDaycareDailyNote(
-                DaycareDailyNote(
-                    id = validNoteId,
-                    childId = testChild_1.id,
-                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
-                    modifiedAt = now,
-                    feedingNote = null,
-                    note = null,
-                    reminderNote = null,
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    modifiedBy = "integrationTest",
-                    groupId = null,
-                    sleepingNote = null
-                )
-            )
+        val validNoteId = db.transaction {
             it.insertTestBackupCare(
                 DevBackupCare(
                     childId = testChild_1.id,
@@ -441,6 +412,20 @@ class ScheduledJobsTest : FullApplicationTest() {
                     )
                 )
             )
+            it.createDaycareDailyNote(
+                DaycareDailyNoteBody(
+                    childId = testChild_1.id,
+                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
+                    feedingNote = null,
+                    note = null,
+                    reminderNote = null,
+                    sleepingMinutes = null,
+                    reminders = emptyList(),
+                    groupId = null,
+                    sleepingNote = null
+                ),
+                UUID.randomUUID()
+            )
         }
 
         scheduledJobs.removeOldDaycareDailyNotes(db)
@@ -448,7 +433,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         db.read {
             val notesAfterCleanup = it.getChildDaycareDailyNotes(testChild_1.id)
             assertEquals(1, notesAfterCleanup.size)
-            assertEquals(validNoteId, notesAfterCleanup.get(0).id)
+            assertEquals(validNoteId, notesAfterCleanup.first().id)
         }
     }
 

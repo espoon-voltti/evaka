@@ -524,24 +524,6 @@ export interface ApplicationEmail {
   language: string
 }
 
-export type DaycareDailyNoteLevel = 'GOOD' | 'MEDIUM' | 'NONE'
-export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
-
-export interface DaycareDailyNote {
-  id: UUID
-  date: LocalDate | null
-  childId?: UUID
-  groupId?: UUID
-  note?: string | null
-  feedingNote: DaycareDailyNoteLevel | null
-  sleepingNote: DaycareDailyNoteLevel | null
-  sleepingMinutes: string
-  reminders: DaycareDailyNoteReminder[]
-  reminderNote: string | null
-  modifiedAt?: Date | null
-  modifiedBy: string | null
-}
-
 export interface FamilyContact {
   id: string
   childId: string

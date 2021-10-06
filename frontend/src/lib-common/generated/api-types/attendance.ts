@@ -50,7 +50,7 @@ export interface AttendanceReservation {
 */
 export interface AttendanceResponse {
   children: Child[]
-  unit: UnitInfo
+  groupNotes: GroupNote[]
 }
 
 /**
@@ -159,6 +159,15 @@ export interface DepartureRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ExternalStaffMember
+*/
+export interface ExternalStaffMember {
+  arrived: Date
+  groupId: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.FullDayAbsenceRequest
 */
 export interface FullDayAbsenceRequest {
@@ -177,9 +186,16 @@ export interface GetChildSensitiveInfoRequest {
 * Generated from fi.espoo.evaka.attendance.GroupInfo
 */
 export interface GroupInfo {
-  dailyNote: DaycareDailyNote | null
   id: UUID
   name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.GroupNote
+*/
+export interface GroupNote {
+  dailyNote: DaycareDailyNote
+  groupId: UUID
 }
 
 /**
@@ -191,6 +207,55 @@ export interface Staff {
   id: UUID
   lastName: string
   pinSet: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.StaffArrivalRequest
+*/
+export interface StaffArrivalRequest {
+  employeeId: UUID
+  groupId: UUID
+  pinCode: string
+  time: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceResponse
+*/
+export interface StaffAttendanceResponse {
+  extraAttendances: ExternalStaffMember[]
+  staff: StaffMember[]
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.StaffDepartureRequest
+*/
+export interface StaffDepartureRequest {
+  pinCode: string
+  time: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffMember
+*/
+export interface StaffMember {
+  employeeId: UUID
+  firstName: string
+  groupIds: UUID[]
+  lastName: string
+  latestCurrentDayAttendance: StaffMemberAttendance | null
+  present: UUID | null
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffMemberAttendance
+*/
+export interface StaffMemberAttendance {
+  arrived: Date
+  departed: Date | null
+  employeeId: UUID
+  groupId: UUID
+  id: UUID
 }
 
 /**

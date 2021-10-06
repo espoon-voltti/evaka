@@ -8,11 +8,11 @@ import {
   Route,
   Switch,
   Redirect,
-  RouteComponentProps
+  useRouteMatch
 } from 'react-router-dom'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import ensureAuthenticated from './components/ensureAuthenticated'
-import { AttendanceUIContextProvider } from './state/attendance-ui'
+import { ChildAttendanceContextProvider } from './state/child-attendance'
 import { I18nContextProvider } from './state/i18n'
 import { UserContextProvider } from './state/user'
 import MobileLander from './components/mobile/MobileLander'
@@ -27,14 +27,16 @@ import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
 import StaffPage from './components/staff/StaffPage'
+import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
-import { NavItem } from './components/common/BottomNavbar'
-import { History } from 'history'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
-
-export type RouteParams = { unitId: string; groupId: string }
-type RouteProps = RouteComponentProps<RouteParams>
+import StaffMemberPage from './components/staff-attendance/StaffMemberPage'
+import StaffMarkArrivedPage from './components/staff-attendance/StaffMarkArrivedPage'
+import StaffMarkDepartedPage from './components/staff-attendance/StaffMarkDepartedPage'
+import { StaffContextProvider } from './state/staff'
+import { UnitContextProvider } from './state/unit'
+import { StaffAttendanceContextProvider } from './state/staff-attendance'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
@@ -49,69 +51,136 @@ export default function App() {
       refreshAuthStatus={refreshAuthStatus}
     >
       <I18nContextProvider>
-        <AttendanceUIContextProvider>
-          <ThemeProvider theme={theme}>
-            <Router basename="/employee/mobile">
-              <Switch>
-                <Route exact path="/landing" component={MobileLander} />
-                <Route exact path="/pairing" component={PairingWizard} />
-                <Route
-                  path="/units/:unitId/attendance/:groupId"
-                  render={({ match, history }: RouteProps) => {
-                    const Component = ensureAuthenticated(AttendancePageWrapper)
-                    return (
-                      <Component
-                        onNavigate={navBarNavigate(match.params, history)}
-                      />
-                    )
-                  }}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markpresent"
-                  component={ensureAuthenticated(MarkPresent)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsent"
-                  component={ensureAuthenticated(MarkAbsent)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/mark-absent-beforehand"
-                  component={ensureAuthenticated(MarkAbsentBeforehand)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markdeparted"
-                  component={ensureAuthenticated(MarkDeparted)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/note"
-                  component={ensureAuthenticated(DailyNoteEditor)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/pin"
-                  component={ensureAuthenticated(PinLogin)}
-                />
-                <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId"
-                  component={ensureAuthenticated(AttendanceChildPage)}
-                />
-                <Route
-                  path="/units/:unitId/staff/:groupId"
-                  render={({ match, history }: RouteProps) => {
-                    const Component = ensureAuthenticated(StaffPage)
-                    return (
-                      <Component
-                        onNavigate={navBarNavigate(match.params, history)}
-                      />
-                    )
-                  }}
-                />
-                <Route component={RedirectToMainPage} />
-              </Switch>
-            </Router>
-          </ThemeProvider>
-        </AttendanceUIContextProvider>
+        <ThemeProvider theme={theme}>
+          <Router basename="/employee/mobile">
+            <Switch>
+              <Route exact path="/landing" component={MobileLander} />
+              <Route exact path="/pairing" component={PairingWizard} />
+              <Route
+                path="/units/:unitId"
+                component={ensureAuthenticated(UnitRouter)}
+              />
+              <Route component={RedirectToMainPage} />
+            </Switch>
+          </Router>
+        </ThemeProvider>
       </I18nContextProvider>
     </UserContextProvider>
+  )
+}
+
+function UnitRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <UnitContextProvider>
+      <Switch>
+        <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
+      </Switch>
+    </UnitContextProvider>
+  )
+}
+
+function GroupRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <Switch>
+      <Route
+        path={`${path}/child-attendance`}
+        component={ChildAttendanceRouter}
+      />
+      <Route path={`${path}/staff`} component={StaffRouter} />
+      <Route
+        path={`${path}/staff-attendance`}
+        component={StaffAttendanceRouter}
+      />
+    </Switch>
+  )
+}
+
+function ChildAttendanceRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <ChildAttendanceContextProvider>
+      <Switch>
+        <Route
+          exact
+          path={`${path}/list/:attendanceStatus`}
+          component={AttendancePageWrapper}
+        />
+        <Route
+          exact
+          path={`${path}/:childId`}
+          component={AttendanceChildPage}
+        />
+        <Route
+          exact
+          path={`${path}/:childId/mark-present`}
+          component={MarkPresent}
+        />
+        <Route
+          exact
+          path={`${path}/:childId/mark-absent`}
+          component={MarkAbsent}
+        />
+        <Route
+          exact
+          path={`${path}/:childId/mark-absent-beforehand`}
+          component={MarkAbsentBeforehand}
+        />
+        <Route
+          exact
+          path={`${path}/:childId/mark-departed`}
+          component={MarkDeparted}
+        />
+        <Route
+          exact
+          path={`${path}/:childId/note`}
+          component={DailyNoteEditor}
+        />
+        <Route exact path={`${path}/:childId/pin`} component={PinLogin} />
+        <Redirect to={`${path}/list/coming`} />
+      </Switch>
+    </ChildAttendanceContextProvider>
+  )
+}
+
+function StaffRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <StaffContextProvider>
+      <Switch>
+        <Route exact path={path} component={StaffPage} />
+        <Redirect to={path} />
+      </Switch>
+    </StaffContextProvider>
+  )
+}
+
+function StaffAttendanceRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <StaffAttendanceContextProvider>
+      <Switch>
+        <Route exact path={path} component={StaffAttendancesPage} />
+        <Route exact path={`${path}/:employeeId`} component={StaffMemberPage} />
+        <Route
+          exact
+          path={`${path}/:employeeId/mark-arrived`}
+          component={StaffMarkArrivedPage}
+        />
+        <Route
+          exact
+          path={`${path}/:employeeId/mark-departed`}
+          component={StaffMarkDepartedPage}
+        />
+        <Redirect to={path} />
+      </Switch>
+    </StaffAttendanceContextProvider>
   )
 }
 
@@ -142,22 +211,4 @@ function useAuthState(): [AuthStatus | undefined, () => Promise<void>] {
   )
 
   return [authStatus, refreshAuthStatus]
-}
-
-export function getPagePath(page: NavItem, { unitId, groupId }: RouteParams) {
-  switch (page) {
-    case 'child':
-      return `/units/${unitId}/attendance/${groupId}`
-    case 'staff':
-      return `/units/${unitId}/staff/${groupId}`
-    default:
-      throw new Error('Messages not implemented')
-  }
-}
-
-function navBarNavigate(match: RouteParams, history: History) {
-  return function (page: NavItem) {
-    const path = getPagePath(page, match)
-    if (path !== undefined) history.push(path)
-  }
 }

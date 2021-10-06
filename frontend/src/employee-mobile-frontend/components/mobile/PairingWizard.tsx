@@ -162,10 +162,7 @@ export default React.memo(function ParingWizard() {
               </section>
             </CenteredColumn>
             <Bottom>
-              <WideLinkButton
-                to={`/units/${pairingResponse.value.unitId}/groupselector`}
-                data-qa="unit-page-link"
-              >
+              <WideLinkButton to="/" data-qa="start-cta-link">
                 {i18n.mobile.actions.START.toUpperCase()}
               </WideLinkButton>
             </Bottom>

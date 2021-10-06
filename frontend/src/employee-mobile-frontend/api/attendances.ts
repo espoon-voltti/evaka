@@ -2,139 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
-import LocalDate from 'lib-common/local-date'
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
-import { AbsenceType, CareType } from '../types'
-import { client } from './client'
-import { UUID } from 'lib-common/types'
 import {
   Absence,
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceCareType, PlacementType } from 'lib-common/generated/enums'
-
-export type DepartureInfoResponse = {
-  type: AbsenceCareType
-  time: string
-}[]
-
-export interface AttendanceResponse {
-  unit: Unit
-  children: AttendanceChild[]
-}
-
-export interface Unit {
-  id: string
-  name: string
-  groups: Group[]
-  staff: Staff[]
-}
-
-export interface Staff {
-  firstName: string
-  lastName: string
-  id: string
-  pinSet?: boolean
-  groups: UUID[]
-}
-
-export interface Group {
-  id: string
-  name: string
-  dailyNote: DailyNote | null
-}
-
-export interface AttendanceChild {
-  id: string
-  firstName: string
-  lastName: string
-  preferredName: string | null
-  groupId: string
-  backup: boolean
-  status: AttendanceStatus
-  placementType: PlacementType
-  attendance: Attendance | null
-  absences: AbsenceSummary[]
-  dailyServiceTimes: DailyServiceTimes | null
-  dailyNote: DailyNote | null
-  imageUrl: string | null
-  reservation: AttendanceReservation | null
-}
-
-interface Attendance {
-  id: string
-  arrived: Date
-  departed: Date | null
-}
-
-interface AbsenceSummary {
-  careType: CareType
-  childId: string
-  id: string
-}
-
-export interface DailyNote {
-  id: string | null
-  childId: string | null
-  groupId: string | null
-  date: LocalDate
-  note: string | null
-  feedingNote: DaycareDailyNoteLevelInfo | null
-  sleepingNote: DaycareDailyNoteLevelInfo | null
-  sleepingMinutes: number | null
-  reminders: DaycareDailyNoteReminder[]
-  reminderNote: string | null
-  modifiedAt: Date | null
-  modifiedBy: string
-}
-
-export type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
-
-export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
-
-interface ArrivalInfoResponse {
-  absentFromPreschool: boolean
-}
-
-export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
+import {
+  AbsenceThreshold,
+  AttendanceResponse,
+  Child,
+  ChildResult
+} from 'lib-common/generated/api-types/attendance'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { AbsenceType, CareType } from '../types'
+import { client } from './client'
 
 export interface AttendanceReservation {
   startTime: string
   endTime: string
-}
-
-export interface Child {
-  id: string
-  firstName: string
-  lastName: string
-  preferredName: string | null
-  ssn: string | null
-  childAddress: string | null
-  placementTypes: PlacementType[] | null
-  allergies: string | null
-  diet: string | null
-  medication: string | null
-  contacts: ContactInfo[] | null
-  backupPickups: ContactInfo[] | null
-}
-
-export interface ContactInfo {
-  id: string
-  firstName: string | null
-  lastName: string | null
-  phone: string | null
-  backupPhone: string | null
-  email: string | null
-}
-
-type ChildResultStatus = 'SUCCESS' | 'WRONG_PIN' | 'PIN_LOCKED' | 'NOT_FOUND'
-
-export interface ChildResult {
-  status: ChildResultStatus
-  child: Child | null
 }
 
 export async function getChildSensitiveInformation(
@@ -175,23 +64,6 @@ export async function childArrivesPOST(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function childArrivesGET(
-  unitId: string,
-  childId: string,
-  time: string
-): Promise<Result<ArrivalInfoResponse>> {
-  return client
-    .get<JsonOf<ArrivalInfoResponse>>(
-      `/attendances/units/${unitId}/children/${childId}/arrival`,
-      {
-        params: { time }
-      }
-    )
-    .then((res) => res.data)
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -298,9 +170,9 @@ export async function getFutureAbsencesByChild(
 export async function getChildDeparture(
   unitId: string,
   childId: string
-): Promise<Result<DepartureInfoResponse>> {
+): Promise<Result<AbsenceThreshold[]>> {
   return client
-    .get<JsonOf<DepartureInfoResponse>>(
+    .get<JsonOf<AbsenceThreshold[]>>(
       `/attendances/units/${unitId}/children/${childId}/departure`
     )
     .then((res) => res.data)
@@ -327,40 +199,43 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createOrUpdateDaycareDailyNoteForChild(
-  childId: string,
-  daycareDailyNote: DailyNote
+export async function insertDaycareDailyNoteForChild(
+  childId: UUID,
+  body: DaycareDailyNoteBody
 ): Promise<Result<void>> {
-  const url = `/daycare-daily-note/child/${childId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
+  return client
+    .post(`/daycare-daily-note/child/${childId}`, body)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateDaycareDailyNoteForChild(
+  childId: UUID,
+  noteId: UUID,
+  body: DaycareDailyNoteBody
+): Promise<Result<void>> {
+  return client
+    .put(`/daycare-daily-note/child/${childId}/${noteId}`, body)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function upsertDaycareDailyNoteForGroup(
+  groupId: UUID,
+  { id, ...body }: DaycareDailyNoteBody & { id: UUID | null }
+): Promise<Result<void>> {
+  const url = `/daycare-daily-note/group/${groupId}${id ? `/${id}` : ''}`
+  return (id ? client.put(url, body) : client.post(url, body))
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteDaycareDailyNote(
-  noteId: string
+  noteId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycare-daily-note/${noteId}`)
     .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertGroupDaycareDailyNote(
-  groupId: string,
-  daycareDailyNote: DailyNote
-): Promise<Result<void>> {
-  const url = `/daycare-daily-note/group/${groupId}`
-  return (
-    daycareDailyNote.id
-      ? client.put(url, daycareDailyNote)
-      : client.post(url, daycareDailyNote)
-  )
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -381,8 +256,8 @@ export async function deleteAbsenceRange(
 }
 
 function compareByProperty(
-  a: JsonOf<AttendanceChild>,
-  b: JsonOf<AttendanceChild>,
+  a: JsonOf<Child>,
+  b: JsonOf<Child>,
   property: 'firstName' | 'lastName'
 ) {
   if (a[property] < b[property]) {
@@ -399,23 +274,6 @@ function deserializeAttendanceResponse(
 ): AttendanceResponse {
   {
     return {
-      unit: {
-        ...data.unit,
-        groups: data.unit.groups.map((group) => {
-          return {
-            ...group,
-            dailyNote: group.dailyNote
-              ? {
-                  ...group.dailyNote,
-                  date: LocalDate.parseIso(group.dailyNote.date),
-                  modifiedAt: group.dailyNote.modifiedAt
-                    ? new Date(group.dailyNote.modifiedAt)
-                    : null
-                }
-              : null
-          }
-        })
-      },
       children: [...data.children]
         .sort((a, b) => compareByProperty(a, b, 'lastName'))
         .sort((a, b) => compareByProperty(a, b, 'firstName'))
@@ -435,13 +293,19 @@ function deserializeAttendanceResponse(
               ? {
                   ...attendanceChild.dailyNote,
                   date: LocalDate.parseIso(attendanceChild.dailyNote.date),
-                  modifiedAt: attendanceChild.dailyNote.modifiedAt
-                    ? new Date(attendanceChild.dailyNote.modifiedAt)
-                    : null
+                  modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
                 }
               : null
           }
-        })
+        }),
+      groupNotes: data.groupNotes.map((groupNote) => ({
+        ...groupNote,
+        dailyNote: {
+          ...groupNote.dailyNote,
+          date: LocalDate.parseIso(groupNote.dailyNote.date),
+          modifiedAt: new Date(groupNote.dailyNote.modifiedAt)
+        }
+      }))
     }
   }
 }

@@ -73,3 +73,44 @@ CREATE TABLE vasu_document_event(
 );
 
 CREATE INDEX idx$vasu_document_event_document_id ON vasu_document_event(vasu_document_id);
+
+
+
+-- staff attendance
+
+DROP TABLE IF EXISTS staff_attendance_2;
+DROP TABLE IF EXISTS staff_attendance_externals;
+
+-- will replace the original staff attendance later
+CREATE TABLE staff_attendance_2(
+    id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
+    employee_id uuid NOT NULL REFERENCES employee(id),
+    group_id uuid NOT NULL REFERENCES daycare_group(id),
+    arrived timestamp with time zone NOT NULL,
+    departed timestamp with time zone,
+
+    CONSTRAINT staff_attendance_start_before_end CHECK (arrived < departed),
+    CONSTRAINT staff_attendance_no_overlaps EXCLUDE USING gist (employee_id WITH =, tstzrange(arrived, departed) WITH &&)
+);
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_2 FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+
+CREATE INDEX idx$staff_attendance_employee_id_times ON staff_attendance_2(employee_id, arrived, departed);
+-- TODO indices
+
+CREATE TABLE staff_attendance_externals(
+    id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
+    name text NOT NULL,
+    group_id uuid NOT NULL REFERENCES daycare_group(id),
+    arrived timestamp with time zone NOT NULL,
+    departed timestamp with time zone,
+
+    CONSTRAINT staff_attendance_externals_start_before_end CHECK (arrived < departed)
+);
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_externals FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+-- TODO indices

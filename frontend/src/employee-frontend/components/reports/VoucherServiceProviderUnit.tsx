@@ -45,7 +45,7 @@ import {
 } from '../../types/reports'
 import { formatName } from '../../utils'
 import { formatCents } from 'lib-common/money'
-import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
+import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'

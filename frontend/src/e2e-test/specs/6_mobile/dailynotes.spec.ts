@@ -6,6 +6,7 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
+import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -28,10 +29,7 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
-import {
-  DaycareDailyNote,
-  DaycarePlacement
-} from 'e2e-test-common/dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
@@ -98,18 +96,16 @@ const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
 
 test('Daycare groups are shown', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: daycareGroup.data.id,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '',
+    sleepingMinutes: null,
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
-    reminderNote: 'Ei enää pähkinöitä antaa saa',
-    modifiedBy: 'e2e-test'
+    reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
   await postDaycareDailyNote(daycareDailyNote)
@@ -150,18 +146,16 @@ test('Daycare group empty list indicator is shown', async (t) => {
 })
 
 test('User can delete a daily note for a child', async (t) => {
-  const daycareDailyNote: DaycareDailyNote = {
-    id: uuidv4(),
+  const daycareDailyNote: DaycareDailyNoteBody = {
     groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingMinutes: '',
+    sleepingMinutes: null,
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
-    reminderNote: 'Ei enää pähkinöitä antaa saa',
-    modifiedBy: 'e2e-test'
+    reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
   await postDaycareDailyNote(daycareDailyNote)

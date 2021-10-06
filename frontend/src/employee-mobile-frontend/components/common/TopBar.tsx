@@ -1,3 +1,5 @@
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+
 {
   /*
 SPDX-FileCopyrightText: 2017-2021 City of Espoo
@@ -15,22 +17,23 @@ import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-customizations/common'
-import GroupSelector from './GroupSelector'
-import { Group } from '../../api/attendances'
+import GroupSelector, { CountInfo } from './GroupSelector'
 import { useTranslation } from '../../state/i18n'
 
 export interface Props {
   unitName: string
-  selectedGroup: Group | undefined
-  onChangeGroup: (group: Group | undefined) => void
+  selectedGroup: GroupInfo | undefined
+  onChangeGroup: (group: GroupInfo | undefined) => void
   onSearch?: () => void
+  countInfo?: CountInfo
 }
 
 export default function TopBar({
   unitName,
   selectedGroup,
   onChangeGroup,
-  onSearch
+  onSearch,
+  countInfo
 }: Props) {
   const { i18n } = useTranslation()
   const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
@@ -43,7 +46,6 @@ export default function TopBar({
       <Name>
         <NoMarginTitle size={1} centered smaller bold>
           {unitName}
-          {onSearch && <IconButton onClick={onSearch} icon={faSearch} />}
         </NoMarginTitle>
       </Name>
       <GroupSelectorWrapper
@@ -51,21 +53,25 @@ export default function TopBar({
           maxHeight: groupSelectorSpring.x.interpolate((x) => `${100 * x}%`)
         }}
       >
-        <GroupSelectorButton
-          text={selectedGroup ? selectedGroup.name : i18n.common.all}
-          onClick={() => {
-            setShowGroupSelector(!showGroupSelector)
-          }}
-          icon={showGroupSelector ? faAngleUp : faAngleDown}
-          iconRight
-          data-qa="group-selector-button"
-        />
+        <GroupSelectorButtonRow>
+          <GroupSelectorButton
+            text={selectedGroup ? selectedGroup.name : i18n.common.all}
+            onClick={() => {
+              setShowGroupSelector(!showGroupSelector)
+            }}
+            icon={showGroupSelector ? faAngleUp : faAngleDown}
+            iconRight
+            data-qa="group-selector-button"
+          />
+          {onSearch && <IconButton onClick={onSearch} icon={faSearch} />}
+        </GroupSelectorButtonRow>
         <GroupSelector
           selectedGroup={selectedGroup}
           onChangeGroup={(group) => {
             onChangeGroup(group)
             setShowGroupSelector(false)
           }}
+          countInfo={countInfo}
           data-qa="group-selector"
         />
       </GroupSelectorWrapper>
@@ -98,17 +104,26 @@ const Name = styled.div`
   background: ${colors.greyscale.white};
 `
 
-const GroupSelectorButton = styled(InlineButton)`
+const GroupSelectorButtonRow = styled.div`
   width: 100%;
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  padding: 0 ${defaultMargins.s};
+`
+
+const GroupSelectorButton = styled(InlineButton)`
   border: none;
   font-family: Montserrat, sans-serif;
   font-size: 20px;
   height: 48px;
+  flex-grow: 1;
   flex-shrink: 0;
+  outline: none !important;
 `
 
 const GroupSelectorWrapper = animated(styled.div`
-  box-shadow: 0px 2px 6px 0px ${colors.greyscale.lighter};
+  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
   position: absolute;
   z-index: 1;
   display: flex;

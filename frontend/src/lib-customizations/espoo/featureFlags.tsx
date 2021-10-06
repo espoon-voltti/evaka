@@ -29,6 +29,7 @@ const features: Features = {
       ai: true,
       incomeStatements: true,
       messageAttachments: true,
+      realtimeStaffAttendance: false,
       vasu: true
     }
   },
@@ -49,6 +50,7 @@ const features: Features = {
       ai: true,
       incomeStatements: true,
       messageAttachments: true,
+      realtimeStaffAttendance: false,
       vasu: true
     }
   },
@@ -69,6 +71,7 @@ const features: Features = {
       ai: false,
       incomeStatements: false,
       messageAttachments: true,
+      realtimeStaffAttendance: false,
       vasu: false
     }
   }

@@ -4,13 +4,13 @@
 
 import React from 'react'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
-import { AttendanceChild } from '../../../api/attendances'
 import { formatTime } from 'lib-common/date'
 import { ArrivalTime } from '../components'
 
 interface Props {
-  child: AttendanceChild
+  child: Child
 }
 
 export default React.memo(function ArrivalAndDeparture({ child }: Props) {

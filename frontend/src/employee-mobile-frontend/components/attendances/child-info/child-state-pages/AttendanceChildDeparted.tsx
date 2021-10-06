@@ -1,20 +1,17 @@
 // SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-
-import {
-  AttendanceChild,
-  getDaycareAttendances,
-  returnToPresent
-} from '../../api/attendances'
-import { AttendanceUIContext } from '../../state/attendance-ui'
-import { useTranslation } from '../../state/i18n'
-import { InlineWideAsyncButton } from './components'
+import { returnToPresent } from '../../../../api/attendances'
+import { Child } from 'lib-common/generated/api-types/attendance'
+import { ChildAttendanceContext } from '../../../../state/child-attendance'
+import { useTranslation } from '../../../../state/i18n'
+import { InlineWideAsyncButton } from '../../components'
 
 interface Props {
-  child: AttendanceChild
+  child: Child
   unitId: string
 }
 
@@ -25,7 +22,7 @@ export default React.memo(function AttendanceChildDeparted({
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const { setAttendanceResponse } = useContext(AttendanceUIContext)
+  const { reloadAttendances } = useContext(ChildAttendanceContext)
 
   function returnToPresentCall() {
     return returnToPresent(unitId, child.id)
@@ -35,8 +32,8 @@ export default React.memo(function AttendanceChildDeparted({
     <InlineWideAsyncButton
       text={i18n.attendances.actions.returnToPresent}
       onClick={() => returnToPresentCall()}
-      onSuccess={async () => {
-        await getDaycareAttendances(unitId).then(setAttendanceResponse)
+      onSuccess={() => {
+        reloadAttendances()
         history.goBack()
       }}
       data-qa="return-to-present-btn"

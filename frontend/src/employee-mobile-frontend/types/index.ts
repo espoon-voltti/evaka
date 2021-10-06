@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { Translations } from '../state/i18n'
 import { PlacementType } from 'lib-common/generated/enums'
 
@@ -10,6 +11,27 @@ export interface User {
   id: string
   name: string
   unitId?: string // only mobile devices have this
+}
+
+export type ChildAttendanceUIState =
+  | 'coming'
+  | 'present'
+  | 'departed'
+  | 'absent'
+
+export function mapChildAttendanceUIState(
+  uiState: ChildAttendanceUIState
+): AttendanceStatus {
+  switch (uiState) {
+    case 'coming':
+      return 'COMING'
+    case 'present':
+      return 'PRESENT'
+    case 'departed':
+      return 'DEPARTED'
+    case 'absent':
+      return 'ABSENT'
+  }
 }
 
 export type AdRole =

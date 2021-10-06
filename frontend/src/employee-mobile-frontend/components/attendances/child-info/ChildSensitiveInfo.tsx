@@ -12,11 +12,11 @@ import { fontWeights } from 'lib-components/typography'
 import { faPhone } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
-import { Child } from '../../../api/attendances'
+import { ChildSensitiveInformation } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
-  child: Child | null
+  child: ChildSensitiveInformation | null
 }
 
 const Key = styled.span`

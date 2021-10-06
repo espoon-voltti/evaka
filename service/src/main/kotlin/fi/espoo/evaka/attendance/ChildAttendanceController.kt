@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -474,7 +474,6 @@ private fun Database.Read.fetchChildPlacementTypeDates(
 }
 
 private fun Database.Read.getAttendancesResponse(unitId: DaycareId, date: LocalDate): AttendanceResponse {
-    val unitInfo = fetchUnitInfo(unitId, date)
     val childrenBasics = fetchChildrenBasics(unitId, date)
     val childrenAttendances = fetchChildrenAttendances(unitId, date)
     val childrenAbsences = fetchChildrenAbsences(unitId, date)
@@ -506,7 +505,8 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, date: LocalD
         )
     }
 
-    return AttendanceResponse(unitInfo, children)
+    val groupNotes = fetchGroupNotes(unitId)
+    return AttendanceResponse(children, groupNotes)
 }
 
 private fun getChildAttendanceStatus(

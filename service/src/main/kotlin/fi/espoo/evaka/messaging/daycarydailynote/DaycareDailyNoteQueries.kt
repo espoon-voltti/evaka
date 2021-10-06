@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.util.UUID
@@ -53,8 +54,7 @@ SELECT note.*
 FROM daycare_daily_note note
     LEFT JOIN daycare_group ON daycare_group.id = note.group_id
     LEFT JOIN daycare d ON d.id = daycare_group.daycare_id
-WHERE 
-    d.id = :id
+WHERE d.id = :id AND note.group_id IS NOT NULL 
         """.trimIndent()
     )
         .bind("id", unitId)
@@ -91,32 +91,22 @@ WHERE child_id IN (
         .list()
 }
 
-fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): DaycareDailyNoteId {
+fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNoteBody, userId: UUID): DaycareDailyNoteId {
     return createUpdate(
         """
-INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note, modified_by, modified_at)
-VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingMinutes, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, COALESCE(:modifiedAt, now()))
+INSERT INTO daycare_daily_note (child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note, modified_by)
+VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingMinutes, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy)
 RETURNING id
         """.trimIndent()
     )
-        .bind("id", note.id ?: DaycareDailyNoteId(UUID.randomUUID()))
-        .bind("childId", note.childId)
-        .bind("groupId", note.groupId)
-        .bind("date", note.date)
-        .bind("note", note.note)
-        .bind("feedingNote", note.feedingNote)
-        .bind("sleepingNote", note.sleepingNote)
-        .bind("sleepingMinutes", note.sleepingMinutes)
-        .bind("reminders", note.reminders.map { it.name }.toTypedArray())
-        .bind("reminderNote", note.reminderNote)
-        .bind("modifiedBy", note.modifiedBy)
-        .bind("modifiedAt", note.modifiedAt)
+        .bindKotlin(note)
+        .bind("modifiedBy", userId)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareDailyNoteId>()
-        .first()
+        .one()
 }
 
-fun Database.Transaction.updateDaycareDailyNote(note: DaycareDailyNote): DaycareDailyNote {
+fun Database.Transaction.updateDaycareDailyNote(id: DaycareDailyNoteId, note: DaycareDailyNoteBody, userId: UUID): DaycareDailyNote {
     return createUpdate(
         """
 UPDATE daycare_daily_note SET 
@@ -135,20 +125,12 @@ WHERE id = :id
 RETURNING *
         """.trimIndent()
     )
-        .bind("childId", note.childId)
-        .bind("groupId", note.groupId)
-        .bind("date", note.date)
-        .bind("note", note.note)
-        .bind("feedingNote", note.feedingNote)
-        .bind("sleepingNote", note.sleepingNote)
-        .bind("sleepingMinutes", note.sleepingMinutes)
-        .bind("reminders", note.reminders.map { it.name }.toTypedArray())
-        .bind("reminderNote", note.reminderNote)
-        .bind("modifiedBy", note.modifiedBy)
-        .bind("id", note.id)
+        .bind("id", id)
+        .bindKotlin(note)
+        .bind("modifiedBy", userId)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareDailyNote>()
-        .first()
+        .one()
 }
 
 fun Database.Transaction.deleteDaycareDailyNote(noteId: DaycareDailyNoteId) {
@@ -158,7 +140,7 @@ fun Database.Transaction.deleteDaycareDailyNote(noteId: DaycareDailyNoteId) {
 }
 
 fun Database.Transaction.deleteChildDaycareDailyNotes(childId: UUID) {
-    createUpdate("DELETE from daycare_daily_note WHERE childId = :id")
+    createUpdate("DELETE from daycare_daily_note WHERE child_id = :id")
         .bind("id", childId)
         .execute()
 }
