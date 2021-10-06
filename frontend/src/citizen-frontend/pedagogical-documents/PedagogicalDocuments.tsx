@@ -20,6 +20,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { OverlayContext } from '../overlay/state'
 import { faArrowDown } from 'lib-icons'
 import styled from 'styled-components'
+import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
 
 export default function PedagogicalDocuments() {
   const t = useTranslation()
@@ -27,8 +28,16 @@ export default function PedagogicalDocuments() {
     Result<PedagogicalDocumentCitizen[]>
   >(Loading.of())
 
+  const { refreshUnreadPedagogicalDocumentsCount } =
+    useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
+
+  useEffect(refreshUnreadPedagogicalDocumentsCount, [
+    refreshUnreadPedagogicalDocumentsCount,
+    pedagogicalDocuments
+  ])
+
   const loadData = useRestApi(getPedagogicalDocuments, setPedagogicalDocuments)
-  useEffect(() => loadData(), [loadData])
+  useEffect(loadData, [loadData])
 
   const { setErrorMessage } = useContext(OverlayContext)
 
@@ -41,6 +50,10 @@ export default function PedagogicalDocuments() {
       }),
     [t, setErrorMessage]
   )
+
+  const onRead = (doc: PedagogicalDocumentCitizen) => {
+    void markPedagogicalDocumentRead(doc.id).then(loadData)
+  }
 
   const PedagogicalDocumentsTable = ({
     items
@@ -72,7 +85,7 @@ export default function PedagogicalDocuments() {
                     key={item.attachment.id}
                     file={item.attachment}
                     fileFetchFn={getAttachmentBlob}
-                    afterFetch={() => markPedagogicalDocumentRead(item.id)}
+                    afterFetch={() => onRead(item)}
                     onFileUnavailable={onAttachmentUnavailable}
                     icon
                     data-qa={`pedagogical-document-attachment-${item.id}`}

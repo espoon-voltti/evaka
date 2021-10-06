@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -13,9 +13,10 @@ import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 import { useUser } from '../auth'
 import { MessageContext, MessagePageState } from '../messages/state'
-import { Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getUnreadPedagogicalDocumentsCount } from '../pedagogical-documents/api'
+import {
+  PedagogicalDocumentsContext,
+  PedagogicalDocumentsState
+} from '../pedagogical-documents/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -28,23 +29,14 @@ export default React.memo(function Header() {
     if (user) refreshUnreadMessagesCount()
   }, [refreshUnreadMessagesCount, user])
 
-  const [unreadPedagogicalDocuments, setUnreadPedagogicalDocuments] =
-    useState<number>()
-
-  const setUnreadResult = useCallback((res: Result<number>) => {
-    if (res.isSuccess) {
-      setUnreadPedagogicalDocuments(res.value)
-    }
-  }, [])
-
-  const refreshUnreadPedagogicalDocuments = useRestApi(
-    getUnreadPedagogicalDocumentsCount,
-    setUnreadResult
-  )
+  const {
+    unreadPedagogicalDocumentsCount,
+    refreshUnreadPedagogicalDocumentsCount
+  } = useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
 
   useEffect(() => {
-    if (user) refreshUnreadPedagogicalDocuments()
-  }, [refreshUnreadPedagogicalDocuments, user])
+    if (user) refreshUnreadPedagogicalDocumentsCount()
+  }, [refreshUnreadPedagogicalDocumentsCount, user])
 
   return (
     <HeaderContainer>
@@ -52,7 +44,7 @@ export default React.memo(function Header() {
       <EvakaLogo />
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadPedagogicalDocuments={unreadPedagogicalDocuments ?? 0}
+        unreadPedagogicalDocuments={unreadPedagogicalDocumentsCount ?? 0}
       />
       <MobileNav
         showMenu={showMenu}
