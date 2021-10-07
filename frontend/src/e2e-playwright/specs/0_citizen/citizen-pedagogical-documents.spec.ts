@@ -34,7 +34,26 @@ afterEach(async () => {
 })
 
 describe('Citizen pedagogical documents', () => {
-  describe('Pedagogical documents list', () => {
+  describe('Citizen main page pedagogical documents header', () => {
+    test('Number of unread pedagogical documents is show correctly', async () => {
+      await page.reload()
+      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
+
+      await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          description: 'e2e test description'
+        })
+        .save()
+
+      await page.reload()
+      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorCount(
+        1
+      )
+    })
+  })
+
+  describe('Pedagogical documents view', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument()
         .with({

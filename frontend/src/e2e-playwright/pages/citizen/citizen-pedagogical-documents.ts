@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilFalse } from '../../utils'
 
 export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}
@@ -12,6 +12,21 @@ export default class CitizenPedagogicalDocumentsPage {
     this.page.locator(`[data-qa="pedagogical-document-date-${id}"]`)
   readonly #description = (id: string) =>
     this.page.locator(`[data-qa="pedagogical-document-description-${id}"]`)
+
+  readonly #unreadDocumentCount = this.page.locator(
+    '[data-qa="unread-pedagogical-documents-count"]'
+  )
+
+  async assertUnreadPedagogicalDocumentIndicatorCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#unreadDocumentCount.innerText(),
+      expectedCount.toString()
+    )
+  }
+
+  async assertUnreadPedagogicalDocumentIndicatorIsNotShown() {
+    await waitUntilFalse(() => this.#unreadDocumentCount.isVisible())
+  }
 
   async assertPedagogicalDocumentExists(
     id: string,

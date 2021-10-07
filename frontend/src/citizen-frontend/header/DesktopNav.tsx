@@ -58,7 +58,9 @@ export default React.memo(function DesktopNav({
             >
               {t.header.nav.pedagogicalDocuments}
               {unreadPedagogicalDocuments > 0 ? (
-                <CircledChar>{unreadPedagogicalDocuments}</CircledChar>
+                <CircledChar data-qa={'unread-pedagogical-documents-count'}>
+                  {unreadPedagogicalDocuments}
+                </CircledChar>
               ) : (
                 ''
               )}
