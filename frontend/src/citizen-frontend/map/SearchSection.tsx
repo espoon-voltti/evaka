@@ -147,12 +147,7 @@ export default React.memo(function SearchSection({
             <Label>{t.map.providerType}</Label>
 
             <FixedSpaceRow spacing="s">
-              {(
-                [
-                  'MUNICIPAL',
-                  'PURCHASED'
-                ] as const
-              ).map((type) => (
+              {(['MUNICIPAL', 'PURCHASED'] as const).map((type) => (
                 <SelectionChip
                   key={type}
                   text={t.map.providerTypes[type]}

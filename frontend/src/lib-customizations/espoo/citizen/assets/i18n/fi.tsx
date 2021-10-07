@@ -138,6 +138,7 @@ export default {
     providerTypes: {
       MUNICIPAL: 'kunnalliset',
       PURCHASED: 'ostopalvelu',
+      EXTERNAL_PURCHASED: 'ostopalvelu',
       PRIVATE: 'yksityiset',
       PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
     },
