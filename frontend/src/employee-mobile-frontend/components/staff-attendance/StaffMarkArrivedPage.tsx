@@ -69,7 +69,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   useEffect(() => {
     if (
-      attendanceGroup === null &&
+      attendanceGroup === undefined &&
       groupOptions.isSuccess &&
       groupOptions.value.length === 1
     ) {
@@ -100,79 +100,95 @@ export default React.memo(function StaffMarkArrivedPage() {
         paddingHorizontal={'s'}
         paddingVertical={'m'}
       >
-        {renderResult(staffMember, (staffMember) =>
-          staffMember === undefined ? (
-            <ErrorSegment title={'Työntekijää ei löytynyt'} />
-          ) : (
-            <>
-              <TimeWrapper>
-                <Title noMargin>Kirjaudu pin-koodilla</Title>
-                <InputField
-                  autoFocus
-                  placeholder={i18n.attendances.pin.pinCode}
-                  onChange={setPinCode}
-                  value={pinCode}
-                  width="s"
-                  type="password"
-                  data-qa="set-pin"
-                />
-                <Gap />
-                <label>Saapumisaika</label>
-                <InputField
-                  onChange={setTime}
-                  value={time}
-                  width="s"
-                  type="time"
-                  data-qa="set-time"
-                />
-                {renderResult(groupOptions, (groupOptions) =>
-                  groupOptions.length > 1 ? (
-                    <>
-                      <Gap />
-                      <label>Ryhmä</label>
-                      <SimpleSelect
-                        value={attendanceGroup}
-                        placeholder={'Valitse ryhmä'}
-                        options={groupOptions}
-                        onChange={(e) => setAttendanceGroup(e.target.value)}
-                      />
-                    </>
-                  ) : null
-                )}
-                <Gap />
-              </TimeWrapper>
-              <Gap size={'xs'} />
-              <Actions>
-                <FixedSpaceRow fullWidth>
-                  <Button
-                    text={i18n.common.cancel}
-                    onClick={() => history.goBack()}
+        {renderResult(
+          combine(unitInfoResponse, staffMember),
+          ([unitInfo, staffMember]) => {
+            if (staffMember === undefined)
+              return <ErrorSegment title={'Työntekijää ei löytynyt'} />
+
+            const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
+            const pinSet = staffInfo?.pinSet ?? true
+            const pinLocked = staffInfo?.pinLocked ?? false
+
+            return (
+              <>
+                <TimeWrapper>
+                  <Title noMargin>Kirjaudu pin-koodilla</Title>
+                  {!pinSet ? (
+                    <ErrorSegment title={'Aseta itsellesi PIN-koodi'} />
+                  ) : pinLocked ? (
+                    <ErrorSegment title={'Vaihda lukkiutunut PIN-koodi'} />
+                  ) : (
+                    <InputField
+                      autoFocus
+                      placeholder={i18n.attendances.pin.pinCode}
+                      onChange={setPinCode}
+                      value={pinCode}
+                      width="s"
+                      type="password"
+                      data-qa="set-pin"
+                    />
+                  )}
+                  <Gap />
+                  <label>Saapumisaika</label>
+                  <InputField
+                    onChange={setTime}
+                    value={time}
+                    width="s"
+                    type="time"
+                    data-qa="set-time"
                   />
-                  <AsyncButton
-                    primary
-                    text={i18n.common.confirm}
-                    disabled={
-                      !isValidTime(time) ||
-                      pinCode.length < 4 ||
-                      !attendanceGroup
-                    }
-                    onClick={() =>
-                      attendanceGroup
-                        ? postStaffArrival({
-                            employeeId,
-                            groupId: attendanceGroup,
-                            time,
-                            pinCode
-                          })
-                        : Promise.reject()
-                    }
-                    onSuccess={() => history.go(-2)}
-                    data-qa="mark-arrived-btn"
-                  />
-                </FixedSpaceRow>
-              </Actions>
-            </>
-          )
+                  {renderResult(groupOptions, (groupOptions) =>
+                    groupOptions.length > 1 ? (
+                      <>
+                        <Gap />
+                        <label>Ryhmä</label>
+                        <SimpleSelect
+                          value={attendanceGroup}
+                          placeholder={'Valitse ryhmä'}
+                          options={groupOptions}
+                          onChange={(e) => setAttendanceGroup(e.target.value)}
+                        />
+                      </>
+                    ) : null
+                  )}
+                  <Gap />
+                </TimeWrapper>
+                <Gap size={'xs'} />
+                <Actions>
+                  <FixedSpaceRow fullWidth>
+                    <Button
+                      text={i18n.common.cancel}
+                      onClick={() => history.goBack()}
+                    />
+                    <AsyncButton
+                      primary
+                      text={i18n.common.confirm}
+                      disabled={
+                        pinLocked ||
+                        !pinSet ||
+                        !isValidTime(time) ||
+                        pinCode.length < 4 ||
+                        !attendanceGroup
+                      }
+                      onClick={() =>
+                        attendanceGroup
+                          ? postStaffArrival({
+                              employeeId,
+                              groupId: attendanceGroup,
+                              time,
+                              pinCode
+                            })
+                          : Promise.reject()
+                      }
+                      onSuccess={() => history.go(-2)}
+                      data-qa="mark-arrived-btn"
+                    />
+                  </FixedSpaceRow>
+                </Actions>
+              </>
+            )
+          }
         )}
       </ContentArea>
     </TallContentArea>

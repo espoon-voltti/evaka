@@ -71,16 +71,6 @@ export const IconBox = styled.div<{ present: boolean }>`
   border: 2px solid ${colors.greyscale.white};
 `
 
-const DetailsRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  color: ${colors.greyscale.dark};
-  font-size: 0.875em;
-  width: 100%;
-`
-
 interface StaffListItemProps {
   staffMember: StaffMember
 }
@@ -109,7 +99,6 @@ export default React.memo(function StaffListItem({
           <Bold data-qa={'employee-name'}>
             {firstName} {lastName}
           </Bold>
-          <DetailsRow>Jotain tietoa?</DetailsRow>
         </StaffBoxInfo>
       </AttendanceLinkBox>
     </StaffBox>

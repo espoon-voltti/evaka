@@ -20,6 +20,8 @@ import {
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { IconBox } from './StaffListItem'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { formatTime } from 'lib-common/date'
 
 const EmployeeStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -78,6 +80,15 @@ const Shadow = styled.div`
   flex-direction: column;
   justify-content: space-between;
   min-height: calc(100vh - 74px);
+`
+
+const Timeinfo = styled.div`
+  text-align: center;
+  width: 100%;
+
+  label {
+    font-weight: 600;
+  }
 `
 
 export default React.memo(function AttendanceChildPage() {
@@ -143,23 +154,41 @@ export default React.memo(function AttendanceChildPage() {
                 </Center>
               </EmployeeBackground>
             </Zindex>
-            {staffMember.present ? (
-              <WideLinkButton
-                $primary
-                data-qa="mark-departed-link"
-                to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`}
-              >
-                Kirjaudu poissaolevaksi
-              </WideLinkButton>
-            ) : (
-              <WideLinkButton
-                $primary
-                data-qa="mark-arrived-link"
-                to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`}
-              >
-                Kirjaudu läsnäolevaksi
-              </WideLinkButton>
-            )}
+            <FixedSpaceColumn>
+              {staffMember.latestCurrentDayAttendance && (
+                <>
+                  <Timeinfo>
+                    <label>Saapumisaika</label>{' '}
+                    {formatTime(staffMember.latestCurrentDayAttendance.arrived)}
+                  </Timeinfo>
+                  {staffMember.latestCurrentDayAttendance.departed && (
+                    <Timeinfo>
+                      <label>Lähtöaika</label>{' '}
+                      {formatTime(
+                        staffMember.latestCurrentDayAttendance.departed
+                      )}
+                    </Timeinfo>
+                  )}
+                </>
+              )}
+              {staffMember.present ? (
+                <WideLinkButton
+                  $primary
+                  data-qa="mark-departed-link"
+                  to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`}
+                >
+                  Kirjaudu poissaolevaksi
+                </WideLinkButton>
+              ) : (
+                <WideLinkButton
+                  $primary
+                  data-qa="mark-arrived-link"
+                  to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`}
+                >
+                  Kirjaudu läsnäolevaksi
+                </WideLinkButton>
+              )}
+            </FixedSpaceColumn>
           </Shadow>
         )
       )}

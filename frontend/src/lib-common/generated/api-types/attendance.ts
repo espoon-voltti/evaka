@@ -206,6 +206,7 @@ export interface Staff {
   groups: UUID[]
   id: UUID
   lastName: string
+  pinLocked: boolean
   pinSet: boolean
 }
 
