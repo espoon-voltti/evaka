@@ -115,6 +115,7 @@ export type PlacementType =
   | 'TEMPORARY_DAYCARE_PART_DAY'
 
 export type ProviderType =
+  | 'EXTERNAL_PURCHASED'
   | 'MUNICIPAL'
   | 'MUNICIPAL_SCHOOL'
   | 'PRIVATE'

@@ -29,7 +29,8 @@ export default {
         PURCHASED: 'Ostopalvelu',
         PRIVATE: 'Yksityinen',
         MUNICIPAL_SCHOOL: 'Kunnallinen',
-        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli',
+        EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
       },
       careTypes: {
         CLUB: 'Kerho',
@@ -137,6 +138,7 @@ export default {
     providerTypes: {
       MUNICIPAL: 'kunnalliset',
       PURCHASED: 'ostopalvelu',
+      EXTERNAL_PURCHASED: 'ostopalvelu',
       PRIVATE: 'yksityiset',
       PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
     },

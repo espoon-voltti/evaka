@@ -340,6 +340,7 @@ export type ProviderType =
   | 'PRIVATE'
   | 'MUNICIPAL_SCHOOL'
   | 'PRIVATE_SERVICE_VOUCHER'
+  | 'EXTERNAL_PURCHASED'
 
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.PublicUnit

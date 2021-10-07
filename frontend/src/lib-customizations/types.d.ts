@@ -47,6 +47,7 @@ export type UnitProviderType =
   | 'PRIVATE'
   | 'MUNICIPAL_SCHOOL'
   | 'PRIVATE_SERVICE_VOUCHER'
+  | 'EXTERNAL_PURCHASED'
 
 export interface BaseAppConfig {
   sentry?: {

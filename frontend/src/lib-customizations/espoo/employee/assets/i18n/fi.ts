@@ -72,7 +72,8 @@ export const fi = {
       PURCHASED: 'Ostopalvelu',
       PRIVATE: 'Yksityinen',
       MUNICIPAL_SCHOOL: 'Suomenkielinen opetustoimi (SUKO)',
-      PRIVATE_SERVICE_VOUCHER: 'Yksityinen (palveluseteli)'
+      PRIVATE_SERVICE_VOUCHER: 'Yksityinen (palveluseteli)',
+      EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
     },
     types: {
       CLUB: 'Kerho',
@@ -2214,7 +2215,8 @@ export const fi = {
         PURCHASED: 'Ostopalvelu',
         PRIVATE: 'Yksityinen',
         MUNICIPAL_SCHOOL: 'Suko',
-        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli',
+        EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
       },
       period: 'Ajanjakso',
       date: 'Päivämäärä',
