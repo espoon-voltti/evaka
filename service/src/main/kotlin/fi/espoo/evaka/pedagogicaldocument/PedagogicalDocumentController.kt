@@ -199,15 +199,17 @@ private fun Database.Read.getPedagogicalDocument(
 
 private fun Database.Transaction.deleteDocument(
     documentId: PedagogicalDocumentId
-) = this.createUpdate(
-    """
-        DELETE
-        FROM pedagogical_document pd
-        WHERE pd.id = :document_id
-    """.trimIndent()
-)
-    .bind("document_id", documentId)
-    .execute()
+) {
+    this.createUpdate("DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = :document_id")
+        .bind("document_id", documentId)
+        .execute()
+    this.createUpdate("DELETE FROM attachment WHERE pedagogical_document_id = :document_id")
+        .bind("document_id", documentId)
+        .execute()
+    this.createUpdate("DELETE FROM pedagogical_document WHERE id = :document_id")
+        .bind("document_id", documentId)
+        .execute()
+}
 
 fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
