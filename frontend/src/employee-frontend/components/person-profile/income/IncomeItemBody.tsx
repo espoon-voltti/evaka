@@ -41,6 +41,8 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
         <span>{income.worksAtECHA ? i18n.common.yes : i18n.common.no}</span>
         <Label>{i18n.personProfile.income.details.entrepreneur}</Label>
         <span>{income.isEntrepreneur ? i18n.common.yes : i18n.common.no}</span>
+        <Label>{i18n.personProfile.income.details.notes}</Label>
+        <span>{income.notes}</span>
         <Label>{i18n.personProfile.income.details.updated}</Label>
         <span>{formatDate(income.updatedAt)}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
@@ -49,19 +51,7 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
             ? i18n.personProfile.income.details.originApplication
             : income.updatedBy}
         </span>
-        {income.notes === 'created automatically from application' &&
-          !income.applicationId && (
-            <>
-              <Label>{i18n.personProfile.income.details.source}</Label>
-              <span>
-                {
-                  i18n.personProfile.income.details
-                    .createdFromUnknownApplication
-                }
-              </span>
-            </>
-          )}
-        {income.applicationId && (
+        {income.applicationId !== null && (
           <>
             <Label>{i18n.personProfile.income.details.source}</Label>
             <span>

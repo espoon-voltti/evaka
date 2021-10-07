@@ -764,7 +764,7 @@ class ApplicationStateService(
                 id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                notes = "created automatically from application",
+                notes = "",
                 personId = application.guardianId,
                 validFrom = validFrom,
                 validTo = null,
