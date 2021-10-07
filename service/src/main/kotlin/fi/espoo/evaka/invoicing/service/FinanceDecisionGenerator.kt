@@ -17,6 +17,7 @@ import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.Partner
+import fi.espoo.evaka.shared.FeatureFlags
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -28,9 +29,14 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Component
-class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, private val incomeTypesProvider: IncomeTypesProvider, env: EvakaEnv) {
+class FinanceDecisionGenerator(
+    private val objectMapper: ObjectMapper,
+    private val incomeTypesProvider: IncomeTypesProvider,
+    env: EvakaEnv,
+    featureFlags: FeatureFlags
+) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
-    private val valueDecisionCapacityFactorEnabled = env.valueDecisionCapacityFactorEnabled
+    private val valueDecisionCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled
 
     fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val period = DateRange(from, null)

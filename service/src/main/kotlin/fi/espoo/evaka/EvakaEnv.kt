@@ -28,7 +28,6 @@ data class EvakaEnv(
     val maxAttachmentsPerUser: Int,
     val httpClientCertificateCheck: Boolean,
     val fiveYearsOldDaycareEnabled: Boolean,
-    val valueDecisionCapacityFactorEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -53,7 +52,6 @@ data class EvakaEnv(
                     "evaka.five_years_old_daycare.enabled",
                     "fi.espoo.evaka.five_years_old_daycare.enabled"
                 ) ?: true,
-                valueDecisionCapacityFactorEnabled = env.lookup("evaka.value_decision_capacity_factor.enabled") ?: true,
             )
         }
     }
