@@ -190,9 +190,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                         DATE_FORMAT_DATE_TIME
                       )}`}
                     </DetailText>
-                    {props.note.updatedByName && (
-                      <DetailText>{props.note.updatedByName}</DetailText>
-                    )}
+                    <DetailText>{props.note.updatedByName}</DetailText>
                   </>
                 ) : null}
               </>

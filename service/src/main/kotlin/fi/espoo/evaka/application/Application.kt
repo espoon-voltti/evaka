@@ -151,8 +151,8 @@ data class ApplicationNote(
     val content: String,
     val createdBy: UUID,
     val createdByName: String,
-    val updatedBy: UUID?,
-    val updatedByName: String?,
+    val updatedBy: UUID,
+    val updatedByName: String,
     val created: Instant,
     val updated: Instant
 )
