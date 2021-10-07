@@ -83,6 +83,10 @@ const CheckboxInput = styled.input`
 `
 
 const IconWrapper = styled.div`
+  // without this, the icon intercepts pointer events
+  // the event bubbles up eventually, but we want the input to be the main target
+  pointer-events: none;
+
   position: absolute;
   left: 0;
   top: 0;
