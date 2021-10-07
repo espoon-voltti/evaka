@@ -76,12 +76,13 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonI
             LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             WHERE g.guardian_id = :guardian_id
+            AND (pd.description IS NOT NULL OR a.id IS NOT NULL)
             ORDER BY pd.created DESC
         """.trimIndent()
     )
         .bind("guardian_id", guardianId)
         .map { row -> mapPedagogicalDocumentCitizen(row) }
-        .toList()
+        .filterNotNull()
 }
 
 private fun Database.Transaction.markDocumentReadByGuardian(documentId: PedagogicalDocumentId, guardianId: PersonId) =
@@ -99,12 +100,18 @@ private fun Database.Transaction.markDocumentReadByGuardian(documentId: Pedagogi
 private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Int =
     this.createQuery(
         """
+            WITH ready_documents AS (
+                SELECT pd.id, pd.child_id
+                FROM pedagogical_document pd
+                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+                WHERE pd.description IS NOT NULL OR a.id IS NOT NULL
+            )
             SELECT count(*)
-            FROM pedagogical_document pd
-            JOIN guardian g ON pd.child_id = g.child_id AND g.guardian_id = :personId
+            FROM ready_documents d
+            JOIN guardian g ON d.child_id = g.child_id AND g.guardian_id = :personId
             WHERE NOT EXISTS (
                 SELECT 1 FROM pedagogical_document_read pdr
-                WHERE pdr.pedagogical_document_id = pd.id AND pdr.person_id = :personId
+                WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :personId
             )
         """.trimIndent()
     )
@@ -137,11 +144,12 @@ data class PedagogicalDocumentCitizen(
     val isRead: Boolean
 )
 
-fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen {
+fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
+    val id: PedagogicalDocumentId =  row.mapColumn("id") ?: return null
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
     return PedagogicalDocumentCitizen(
-        id = row.mapColumn("id"),
+        id = id,
         childId = row.mapColumn("child_id"),
         description = row.mapColumn("description"),
         attachment = if (hasAttachment) Attachment(

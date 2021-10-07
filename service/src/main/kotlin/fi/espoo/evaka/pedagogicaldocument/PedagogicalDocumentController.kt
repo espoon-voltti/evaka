@@ -113,14 +113,13 @@ private fun Database.Transaction.createDocument(
 ): PedagogicalDocument {
     return this.createUpdate(
         """
-            INSERT INTO pedagogical_document(child_id, created_by, description)
-            VALUES (:child_id, :created_by, :description)
+            INSERT INTO pedagogical_document(child_id, created_by)
+            VALUES (:child_id, :created_by)
             RETURNING *
         """.trimIndent()
     )
         .bind("child_id", body.childId)
         .bind("created_by", user.id)
-        .bind("description", body.description)
         .executeAndReturnGeneratedKeys()
         .mapTo<PedagogicalDocument>()
         .first()
