@@ -27,3 +27,11 @@ export interface IncomeStatementAwaitingHandler {
 export type IncomeStatementType = 
   | 'HIGHEST_FEE'
   | 'INCOME'
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.SetIncomeStatementHandledBody
+*/
+export interface SetIncomeStatementHandledBody {
+  handled: boolean
+  handlerNote: string
+}

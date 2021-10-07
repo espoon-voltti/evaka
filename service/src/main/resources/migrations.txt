@@ -147,3 +147,4 @@ V146__add_other_income_type_values.sql
 V147__infinity_to_null.sql
 V148__pedagogical_documents.sql
 V149__external_purchased_provider_type.sql
+V150__income_statement_handler_note.sql

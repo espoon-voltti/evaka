@@ -5,7 +5,6 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
@@ -36,7 +35,7 @@ class IncomeStatementController(
     ): List<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { it.readIncomeStatementsForPerson(personId.raw, excludeEmployeeAttachments = false) }
+        return db.read { it.readIncomeStatementsForPerson(personId.raw, includeEmployeeContent = true) }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
@@ -52,24 +51,27 @@ class IncomeStatementController(
             it.readIncomeStatementForPerson(
                 personId.raw,
                 incomeStatementId,
-                excludeEmployeeAttachments = false
+                includeEmployeeContent = true
             )
         } ?: throw NotFound("No such income statement")
     }
+
+    data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setHandled(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: Wrapper<Boolean>
+        @RequestBody body: SetIncomeStatementHandledBody
     ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
         db.transaction { tx ->
-            tx.setIncomeStatementHandler(
-                if (body.data) EmployeeId(user.id) else null,
-                incomeStatementId
+            tx.updateIncomeStatementHandled(
+                incomeStatementId,
+                body.handlerNote,
+                if (body.handled) EmployeeId(user.id) else null,
             )
         }
     }

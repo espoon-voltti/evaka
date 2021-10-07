@@ -34,7 +34,7 @@ class IncomeStatementControllerCitizen {
         Audit.IncomeStatementsOfPerson.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            tx.readIncomeStatementsForPerson(user.id, excludeEmployeeAttachments = true)
+            tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false)
         }
     }
 
@@ -47,7 +47,7 @@ class IncomeStatementControllerCitizen {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            tx.readIncomeStatementForPerson(user.id, incomeStatementId, excludeEmployeeAttachments = true)
+            tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
                 ?: throw NotFound("No such income statement")
         }
     }
@@ -121,7 +121,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         id: IncomeStatementId
     ) {
-        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, excludeEmployeeAttachments = true)
+        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, includeEmployeeContent = false)
             ?: throw NotFound("Income statement not found")
         if (incomeStatement.handled) {
             throw Forbidden("Handled income statement cannot be modified or removed")
