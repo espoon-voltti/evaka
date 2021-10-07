@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -50,10 +50,12 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
 
   const [pinCode, setPinCode] = useState('')
+  const pinInputRef = useRef<HTMLInputElement>(null)
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined
   )
+  const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
   const groupOptions =
     groupId === 'all'
@@ -108,7 +110,8 @@ export default React.memo(function StaffMarkArrivedPage() {
 
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
-            const pinLocked = staffInfo?.pinLocked ?? false
+            const pinLocked =
+              (staffInfo?.pinLocked ?? false) || errorCode === 'PIN_LOCKED'
 
             return (
               <>
@@ -120,6 +123,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                     <ErrorSegment title={'Vaihda lukkiutunut PIN-koodi'} />
                   ) : (
                     <InputField
+                      inputRef={pinInputRef}
                       autoFocus
                       placeholder={i18n.attendances.pin.pinCode}
                       onChange={setPinCode}
@@ -127,6 +131,14 @@ export default React.memo(function StaffMarkArrivedPage() {
                       width="s"
                       type="password"
                       data-qa="set-pin"
+                      info={
+                        errorCode === 'WRONG_PIN'
+                          ? {
+                              status: 'warning',
+                              text: 'PIN-koodi ei kelvannut'
+                            }
+                          : undefined
+                      }
                     />
                   )}
                   <Gap />
@@ -178,6 +190,13 @@ export default React.memo(function StaffMarkArrivedPage() {
                               groupId: attendanceGroup,
                               time,
                               pinCode
+                            }).then((res) => {
+                              if (res.isFailure && res.statusCode === 403) {
+                                setErrorCode(res.errorCode)
+                                setPinCode('')
+                                pinInputRef.current?.focus()
+                              }
+                              return res
                             })
                           : Promise.reject()
                       }
