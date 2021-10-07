@@ -23,6 +23,7 @@ import { useTranslation } from '../../../state/i18n'
 import { incomeEffects, Income, PartialIncome } from '../../../types/income'
 import { formatDate } from 'lib-common/date'
 import { Gap } from 'lib-components/white-space'
+import InputField from 'lib-components/atoms/form/InputField'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -56,7 +57,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   const { i18n } = useTranslation()
 
   const [editedIncome, setEditedIncome] = useState<PartialIncome>(
-    baseIncome || emptyIncome
+    baseIncome ?? emptyIncome
   )
 
   const [validationErrors, setValidationErrors] = useState<
@@ -129,13 +130,29 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }
         />
       </FixedSpaceColumn>
+      <Gap size={'L'} />
+      <div data-qa="income-notes">
+        <Label>
+          <LabelText>{i18n.personProfile.income.details.notes}</LabelText>
+        </Label>
+        <Gap size={'m'} />
+        <InputField
+          value={editedIncome.notes}
+          onChange={(value) =>
+            setEditedIncome((prev) => ({ ...prev, notes: value }))
+          }
+        />
+      </div>
       {baseIncome ? (
-        <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
-          <Label>{i18n.personProfile.income.details.updated}</Label>
-          <span>{formatDate(baseIncome.updatedAt)}</span>
-          <Label>{i18n.personProfile.income.details.handler}</Label>
-          <span>{baseIncome.updatedBy}</span>
-        </ListGrid>
+        <>
+          <Gap size={'L'} />
+          <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+            <Label>{i18n.personProfile.income.details.updated}</Label>
+            <span>{formatDate(baseIncome.updatedAt)}</span>
+            <Label>{i18n.personProfile.income.details.handler}</Label>
+            <span>{baseIncome.updatedBy}</span>
+          </ListGrid>
+        </>
       ) : null}
       {editedIncome.effect === 'INCOME' ? (
         <>

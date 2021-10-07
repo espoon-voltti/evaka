@@ -41,6 +41,8 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
         <span>{income.worksAtECHA ? i18n.common.yes : i18n.common.no}</span>
         <Label>{i18n.personProfile.income.details.entrepreneur}</Label>
         <span>{income.isEntrepreneur ? i18n.common.yes : i18n.common.no}</span>
+        <Label>{i18n.personProfile.income.details.notes}</Label>
+        <span>{income.notes}</span>
         <Label>{i18n.personProfile.income.details.updated}</Label>
         <span>{formatDate(income.updatedAt)}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>

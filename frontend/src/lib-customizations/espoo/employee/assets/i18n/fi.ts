@@ -1189,6 +1189,7 @@ export const fi = {
         originApplication:
           'Huoltaja on hakemuksella suostunut korkeimpaan maksuluokkaan',
         dateRange: 'Ajalle',
+        notes: 'Lisätiedot',
         effect: 'Maksun peruste',
         effectOptions: {
           MAX_FEE_ACCEPTED: 'Huoltaja on suostunut korkeimpaan maksuluokkaan',
