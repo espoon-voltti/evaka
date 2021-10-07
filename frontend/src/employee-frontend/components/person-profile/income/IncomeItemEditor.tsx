@@ -137,6 +137,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         </Label>
         <Gap size={'m'} />
         <InputField
+          width="L"
           value={editedIncome.notes}
           onChange={(value) =>
             setEditedIncome((prev) => ({ ...prev, notes: value }))

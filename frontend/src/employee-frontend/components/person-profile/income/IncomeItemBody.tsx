@@ -51,32 +51,18 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
             ? i18n.personProfile.income.details.originApplication
             : income.updatedBy}
         </span>
-        {income.notes === 'created automatically from application' &&
-          !income.applicationId && (
-            <>
-              <Label>{i18n.personProfile.income.details.source}</Label>
-              <span>
-                {
-                  i18n.personProfile.income.details
-                    .createdFromUnknownApplication
-                }
-              </span>
-            </>
+        <Label>{i18n.personProfile.income.details.source}</Label>
+        <span>
+          {income.applicationId && applicationLinkVisible ? (
+            <Link to={`/applications/${income.applicationId}`}>
+              {i18n.personProfile.income.details.application}
+            </Link>
+          ) : income.applicationId ? (
+            i18n.personProfile.income.details.createdFromApplication
+          ) : (
+            i18n.personProfile.income.details.createdFromUnknownApplication
           )}
-        {income.applicationId && (
-          <>
-            <Label>{i18n.personProfile.income.details.source}</Label>
-            <span>
-              {applicationLinkVisible ? (
-                <Link to={`/applications/${income.applicationId}`}>
-                  {i18n.personProfile.income.details.application}
-                </Link>
-              ) : (
-                i18n.personProfile.income.details.createdFromApplication
-              )}
-            </span>
-          </>
-        )}
+        </span>
       </ListGrid>
       {income.effect === 'INCOME' ? (
         <>
