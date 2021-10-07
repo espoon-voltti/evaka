@@ -150,3 +150,4 @@ V149__external_purchased_provider_type.sql
 V150__income_statement_handler_note.sql
 V151__voucher_capacity_factor.sql
 V152__application_note_non_nullable_updated_by.sql
+V153__make_invoice_fields_non_nullable.sql
