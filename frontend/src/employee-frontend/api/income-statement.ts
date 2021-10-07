@@ -10,6 +10,7 @@ import {
   IncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
 import { JsonOf } from 'lib-common/json'
+import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from '../types'
 import { client } from './client'
 
@@ -55,12 +56,12 @@ export async function getIncomeStatement(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function setIncomeStatementHandled(
+export async function updateIncomeStatementHandled(
   incomeStatementId: UUID,
-  handled: boolean
+  body: SetIncomeStatementHandledBody
 ): Promise<Result<void>> {
   return client
-    .post(`/income-statements/${incomeStatementId}/handled`, { data: handled })
+    .post(`/income-statements/${incomeStatementId}/handled`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

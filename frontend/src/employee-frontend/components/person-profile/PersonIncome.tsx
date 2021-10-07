@@ -21,11 +21,8 @@ import { Income, IncomeId, PartialIncome } from '../../types/income'
 import { UUID } from '../../types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
-import {
-  getIncomeStatements,
-  setIncomeStatementHandled
-} from '../../api/income-statement'
-import { H3 } from 'lib-components/typography'
+import { getIncomeStatements } from '../../api/income-statement'
+import { Dimmed, H3 } from 'lib-components/typography'
 import { Link } from 'react-router-dom'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -106,13 +103,12 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       >
         {([incomes, incomeStatements]) => (
           <>
-            {featureFlags.experimental?.incomeStatements ? (
+            {featureFlags.experimental?.incomeStatements && (
               <IncomeStatements
                 personId={id}
                 incomeStatements={incomeStatements}
-                onSuccessfulUpdate={loadData}
               />
-            ) : null}
+            )}
             <Incomes
               personId={id}
               incomes={incomes}
@@ -129,12 +125,10 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
 
 function IncomeStatements({
   personId,
-  incomeStatements,
-  onSuccessfulUpdate
+  incomeStatements
 }: {
   personId: UUID
   incomeStatements: IncomeStatement[]
-  onSuccessfulUpdate: () => void
 }) {
   const i18n = useTranslation().i18n.personProfile.incomeStatement
   return (
@@ -148,7 +142,7 @@ function IncomeStatements({
             <Tr>
               <Th>{i18n.incomeStatementHeading}</Th>
               <Th>{i18n.createdHeading}</Th>
-              <Th>{i18n.handleHeading}</Th>
+              <Th>{i18n.handledHeading}</Th>
             </Tr>
           </Thead>
           <Tbody data-qa="income-statements">
@@ -157,7 +151,6 @@ function IncomeStatements({
                 key={incomeStatement.id}
                 personId={personId}
                 incomeStatement={incomeStatement}
-                onSuccessfulUpdate={onSuccessfulUpdate}
               />
             ))}
           </Tbody>
@@ -169,30 +162,12 @@ function IncomeStatements({
 
 function IncomeStatementRow({
   personId,
-  incomeStatement,
-  onSuccessfulUpdate
+  incomeStatement
 }: {
   personId: UUID
   incomeStatement: IncomeStatement
-  onSuccessfulUpdate: () => void
 }) {
-  const i18n = useTranslation().i18n.personProfile.incomeStatement
-
-  const incomeStatementId = incomeStatement.id
-  const [loading, setLoading] = React.useState(false)
-
-  const setHandled = React.useCallback(
-    async (handled: boolean) => {
-      setLoading(true)
-      try {
-        await setIncomeStatementHandled(incomeStatementId, handled)
-      } finally {
-        setLoading(false)
-      }
-      onSuccessfulUpdate()
-    },
-    [incomeStatementId, onSuccessfulUpdate]
-  )
+  const { i18n } = useTranslation()
 
   return (
     <Tr key={incomeStatement.id} data-qa="income-statement-row">
@@ -209,12 +184,18 @@ function IncomeStatementRow({
       <Td verticalAlign="middle">{formatDate(incomeStatement.created)}</Td>
       <Td>
         <Checkbox
-          data-qa="set-handled-checkbox"
-          label={i18n.handled}
+          data-qa="is-handled-checkbox"
+          label={i18n.personProfile.incomeStatement.handled}
+          hiddenLabel
           checked={incomeStatement.handled}
-          disabled={loading}
-          onChange={setHandled}
+          disabled
         />
+        {incomeStatement.handlerNote && (
+          <>
+            <Gap size={'xxs'} />
+            <Dimmed>{incomeStatement.handlerNote}</Dimmed>
+          </>
+        )}
       </Td>
     </Tr>
   )

@@ -1245,7 +1245,7 @@ export const fi = {
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
       createdHeading: 'Saapumispäivä',
-      handleHeading: 'Kuittaa käsitellyksi',
+      handledHeading: 'Käsitelty',
       open: 'Avaa lomake',
       handled: 'Tuloselvitys käsitelty'
     },
@@ -1358,6 +1358,11 @@ export const fi = {
       created: 'Luotu',
       startDate: 'Voimassa',
       type: 'Tyyppi'
+    },
+    handlerNotesForm: {
+      title: 'Käsittelijän muistiinpanot',
+      handled: 'Käsitelty',
+      handlerNote: 'Muistiinpano (sisäinen)'
     }
   },
   units: {

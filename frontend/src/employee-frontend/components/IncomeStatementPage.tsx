@@ -2,8 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { RouteComponentProps } from 'react-router'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { RouteComponentProps, useHistory } from 'react-router'
+import InputField from 'lib-components/atoms/form/InputField'
+import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { UUID } from '../types'
 import { Translations, useTranslation } from '../state/i18n'
 import {
@@ -15,7 +19,10 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getIncomeStatement } from '../api/income-statement'
+import {
+  getIncomeStatement,
+  updateIncomeStatementHandled
+} from '../api/income-statement'
 import {
   Accountant,
   Entrepreneur,
@@ -44,15 +51,27 @@ export default React.memo(function IncomeStatementPage({
 }: RouteComponentProps<{ personId: UUID; incomeStatementId: UUID }>) {
   const { personId, incomeStatementId } = match.params
   const { i18n } = useTranslation()
-  const [incomeStatement, setIncomeStatement] = React.useState<
+  const history = useHistory()
+  const [incomeStatement, setIncomeStatement] = useState<
     Result<IncomeStatement>
   >(Loading.of())
 
-  const { person, setPerson } = React.useContext(PersonContext)
+  const { person, setPerson } = useContext(PersonContext)
   const loadPerson = useRestApi(getPersonDetails, setPerson)
   const loadIncomeStatement = useRestApi(getIncomeStatement, setIncomeStatement)
 
-  const handleAttachmentUploaded = (attachment: Attachment) => {
+  useEffect(() => {
+    loadPerson(personId)
+    loadIncomeStatement(personId, incomeStatementId)
+  }, [loadPerson, loadIncomeStatement, personId, incomeStatementId])
+
+  const onUpdateHandled = useCallback(
+    (params: SetIncomeStatementHandledBody) =>
+      updateIncomeStatementHandled(incomeStatementId, params),
+    [incomeStatementId]
+  )
+
+  const handleAttachmentUploaded = (attachment: Attachment) =>
     setIncomeStatement((result) =>
       result.map((prev) =>
         prev.type === 'INCOME'
@@ -66,9 +85,8 @@ export default React.memo(function IncomeStatementPage({
           : prev
       )
     )
-  }
 
-  const handleAttachmentDeleted = (id: UUID) => {
+  const handleAttachmentDeleted = (id: UUID) =>
     setIncomeStatement((result) =>
       result.map((prev) =>
         prev.type === 'INCOME'
@@ -81,12 +99,8 @@ export default React.memo(function IncomeStatementPage({
           : prev
       )
     )
-  }
 
-  React.useEffect(() => {
-    loadPerson(personId)
-    loadIncomeStatement(personId, incomeStatementId)
-  }, [loadPerson, loadIncomeStatement, personId, incomeStatementId])
+  const navigateToPersonProfile = () => history.push(`/profile/${personId}`)
 
   return renderResult(
     combine(person, incomeStatement),
@@ -125,6 +139,17 @@ export default React.memo(function IncomeStatementPage({
             </ContentArea>
           </>
         )}
+        <Gap size="L" />
+        <ContentArea opaque>
+          <HandlerNotesForm
+            onSave={onUpdateHandled}
+            onSuccess={navigateToPersonProfile}
+            initialValues={{
+              handled: incomeStatement.handled,
+              handlerNote: incomeStatement.handlerNote
+            }}
+          />
+        </ContentArea>
       </Container>
     )
   )
@@ -403,7 +428,7 @@ function EmployeeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleUpload = React.useCallback(
+  const handleUpload = useCallback(
     async (
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
@@ -421,7 +446,7 @@ function EmployeeAttachments({
     [incomeStatementId, onUploaded]
   )
 
-  const handleDelete = React.useCallback(
+  const handleDelete = useCallback(
     async (id: UUID) => {
       return (await deleteAttachment(id)).map(() => {
         onDeleted(id)
@@ -442,6 +467,50 @@ function EmployeeAttachments({
         i18n={i18n.fileUpload}
       />
     </>
+  )
+}
+
+function HandlerNotesForm({
+  onSave,
+  onSuccess,
+  initialValues
+}: {
+  onSave: (params: SetIncomeStatementHandledBody) => Promise<Result<void>>
+  onSuccess: () => void
+  initialValues: SetIncomeStatementHandledBody
+}) {
+  const { i18n } = useTranslation()
+  const [state, setState] = useState(initialValues)
+
+  return (
+    <FixedSpaceColumn data-qa="handler-notes-form">
+      <H2>{i18n.incomeStatement.handlerNotesForm.title}</H2>
+
+      <Checkbox
+        label={i18n.incomeStatement.handlerNotesForm.handled}
+        checked={state.handled}
+        onChange={(handled) => setState((old) => ({ ...old, handled }))}
+      />
+
+      <Label htmlFor="handler-note">
+        {i18n.incomeStatement.handlerNotesForm.handlerNote}
+      </Label>
+      <InputField
+        id="handler-note"
+        type="text"
+        width="L"
+        value={state.handlerNote}
+        onChange={(handlerNote) => setState((old) => ({ ...old, handlerNote }))}
+      />
+
+      <AsyncButton
+        primary
+        onClick={() => onSave(state)}
+        onSuccess={onSuccess}
+        text={i18n.common.save}
+        textInProgress={i18n.common.saving}
+      />
+    </FixedSpaceColumn>
   )
 }
 

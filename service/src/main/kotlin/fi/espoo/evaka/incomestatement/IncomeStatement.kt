@@ -160,6 +160,7 @@ sealed class IncomeStatement {
     abstract val created: HelsinkiDateTime
     abstract val updated: HelsinkiDateTime
     abstract val handled: Boolean
+    abstract val handlerNote: String
 
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
@@ -168,7 +169,8 @@ sealed class IncomeStatement {
         override val endDate: LocalDate?,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handled: Boolean
+        override val handled: Boolean,
+        override val handlerNote: String
     ) : IncomeStatement()
 
     @JsonTypeName("INCOME")
@@ -184,6 +186,7 @@ sealed class IncomeStatement {
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
+        override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement()
 }

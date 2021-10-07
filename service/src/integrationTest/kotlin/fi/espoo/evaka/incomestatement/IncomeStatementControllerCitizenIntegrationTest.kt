@@ -56,7 +56,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    handled = false, handlerNote = ""
                 )
             ),
             incomeStatements,
@@ -149,6 +149,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
                     handled = false,
+                    handlerNote = "",
                     attachments = listOf(),
                 )
             ),
@@ -320,6 +321,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
                     handled = false,
+                    handlerNote = "",
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -489,6 +491,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 created = incomeStatement.created,
                 updated = updated,
                 handled = false,
+                handlerNote = "",
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
             getIncomeStatement(incomeStatement.id),
@@ -505,7 +508,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
         val id = getIncomeStatements().first().id
 
-        markIncomeStatementHandled(id)
+        markIncomeStatementHandled(id, "foooooo")
 
         updateIncomeStatement(
             id,
@@ -518,18 +521,23 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `cannot remove a handled income statement`() {
+    fun `cannot see handler note or remove a handled income statement`() {
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
             )
         )
-        val id = getIncomeStatements().first().id
+        val incomeStatement = getIncomeStatements().first()
+        assertEquals("", incomeStatement.handlerNote)
 
-        markIncomeStatementHandled(id)
+        markIncomeStatementHandled(incomeStatement.id, "foo bar")
 
-        deleteIncomeStatement(id, 403)
+        val handled = getIncomeStatements().first()
+        assertEquals(true, handled.handled)
+        assertEquals("", handled.handlerNote)
+
+        deleteIncomeStatement(incomeStatement.id, 403)
     }
 
     @Test
@@ -549,15 +557,15 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun markIncomeStatementHandled(id: IncomeStatementId) = db.transaction { tx ->
+    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) = db.transaction { tx ->
         tx.createUpdate(
             """
             UPDATE income_statement
-            SET handler_id = (SELECT id FROM employee LIMIT 1)
+            SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
             WHERE id = :id
             """.trimIndent()
         )
-            .bind("id", id).execute()
+            .bind("id", id).bind("note", note).execute()
     }
 
     @Test

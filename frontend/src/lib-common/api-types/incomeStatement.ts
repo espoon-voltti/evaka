@@ -42,6 +42,7 @@ interface Base {
   created: Date
   updated: Date
   handled: boolean
+  handlerNote: string
 }
 
 export interface HighestFee extends Base {

@@ -60,6 +60,7 @@ SELECT
     ist.created,
     ist.updated,
     handler_id IS NOT NULL AS handled,
+    handler_note,
     (SELECT coalesce(jsonb_agg(json_build_object(
         'id', id, 
         'name', name,
@@ -79,13 +80,14 @@ ORDER BY start_date DESC
         """
 }
 
-private fun mapIncomeStatement(row: RowView): IncomeStatement {
+private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): IncomeStatement {
     val id = row.mapColumn<IncomeStatementId>("id")
     val startDate = row.mapColumn<LocalDate>("start_date")
     val endDate = row.mapColumn<LocalDate?>("end_date")
     val created = row.mapColumn<HelsinkiDateTime>("created")
     val updated = row.mapColumn<HelsinkiDateTime>("updated")
     val handled = row.mapColumn<Boolean>("handled")
+    val handlerNote = if (includeEmployeeContent) row.mapColumn("handler_note") else ""
     return when (row.mapColumn<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
@@ -95,6 +97,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 created = created,
                 updated = updated,
                 handled = handled,
+                handlerNote = handlerNote,
             )
 
         IncomeStatementType.INCOME -> {
@@ -157,6 +160,7 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
                 created = created,
                 updated = updated,
                 handled = handled,
+                handlerNote = handlerNote,
                 attachments = row.mapJsonColumn("attachments")
             )
         }
@@ -165,22 +169,22 @@ private fun mapIncomeStatement(row: RowView): IncomeStatement {
 
 fun Database.Read.readIncomeStatementsForPerson(
     personId: UUID,
-    excludeEmployeeAttachments: Boolean
+    includeEmployeeContent: Boolean
 ): List<IncomeStatement> =
-    createQuery(selectQuery(false, excludeEmployeeAttachments))
+    createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
-        .map { row -> mapIncomeStatement(row) }
+        .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
         .list()
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: UUID,
     incomeStatementId: IncomeStatementId,
-    excludeEmployeeAttachments: Boolean
+    includeEmployeeContent: Boolean
 ): IncomeStatement? =
-    createQuery(selectQuery(true, excludeEmployeeAttachments))
+    createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
-        .map { row -> mapIncomeStatement(row) }
+        .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
         .firstOrNull()
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBody(body: IncomeStatementBody): This =
@@ -378,10 +382,11 @@ WHERE id = :id
     return rowCount == 1
 }
 
-fun Database.Transaction.setIncomeStatementHandler(handlerId: EmployeeId?, incomeStatementId: IncomeStatementId) {
-    createUpdate("UPDATE income_statement SET handler_id = :handlerId WHERE id = :id")
-        .bindNullable("handlerId", handlerId)
+fun Database.Transaction.updateIncomeStatementHandled(incomeStatementId: IncomeStatementId, note: String, handlerId: EmployeeId?) {
+    createUpdate("UPDATE income_statement SET handler_id = :handlerId, handler_note = :note WHERE id = :id")
         .bind("id", incomeStatementId)
+        .bind("note", note)
+        .bindNullable("handlerId", handlerId)
         .execute()
 }
 
