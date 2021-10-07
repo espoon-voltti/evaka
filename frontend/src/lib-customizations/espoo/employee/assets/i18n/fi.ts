@@ -1210,8 +1210,6 @@ export const fi = {
         entrepreneur: 'Yrittäjä',
         echa: 'Euroopan kemikaalivirasto',
         source: 'Lähde',
-        createdFromUnknownApplication:
-          'Luotu automaattisesti tuntemattomalta hakemukselta',
         createdFromApplication: 'Luotu automaattisesti hakemukselta',
         application: 'Hakemus',
         incomeCoefficients: {
