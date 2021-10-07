@@ -61,6 +61,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
     private fun deserializeGetResultCitizen(json: String) = objectMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
     private fun deserializePutResult(json: String) = objectMapper.readValue<PedagogicalDocument>(json)
     private fun deserializePostResult(json: String) = objectMapper.readValue<PedagogicalDocument>(json)
+    private fun deserializeUnreadCount(json: String) = objectMapper.readValue<Number>(json)
 
     @BeforeEach
     private fun beforeEach() {
@@ -107,6 +108,10 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         .responseString()
 
     private fun getDocumentsAsCitizen(user: AuthenticatedUser.Citizen) = http.get("/citizen/pedagogical-documents")
+        .asUser(user)
+        .responseString()
+
+    private fun getUnreadCount(user: AuthenticatedUser.Citizen) = http.get("/citizen/pedagogical-documents/unread-count")
         .asUser(user)
         .responseString()
 
@@ -309,6 +314,70 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         )
 
         assertEquals(200, getAttachmentAsUser(attachment.id, guardian).statusCode)
+    }
+
+    @Test
+    fun `guardian finds new document only when it has attachment or description`() {
+        val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+
+        assertEquals(emptyList(), deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get()))
+        assertEquals(0, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+
+        uploadAttachment(id1)
+
+        assertEquals(1, deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get()).size)
+        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+
+        val id2 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+
+        assertEquals(1, deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get()).size)
+
+        http.put("/pedagogical-document/$id2")
+            .jsonBody("""{"id": "$id2", "childId": "${testChild_1.id}", "description": "123123"}""")
+            .asUser(employee)
+            .responseString()
+
+        assertEquals(2, deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get()).size)
+        assertEquals(2, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+    }
+
+    @Test
+    fun `marking document read works`() {
+        val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+
+        http.put("/pedagogical-document/$id1")
+            .jsonBody("""{"id": "$id1", "childId": "${testChild_1.id}", "description": "123123"}""")
+            .asUser(employee)
+            .responseString()
+
+        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+
+        http.post("/citizen/pedagogical-documents/$id1/mark-read")
+            .asUser(guardian)
+            .responseString()
+
+        assertEquals(0, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+    }
+
+    @Test
+    fun `admin can delete read document with attachment`() {
+        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        uploadAttachment(id)
+
+        http.post("/pedagogical-document/$id/mark-read")
+            .asUser(employee)
+            .responseString()
+
+        assertEquals(1, deserializeGetResult(getDocumentAsUser(testChild_1.id, employee).third.get()).size)
+        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+
+        val (_, res, _) = http.delete("/pedagogical-document/$id")
+            .asUser(employee)
+            .responseString()
+
+        assertEquals(200, res.statusCode)
+        assertEquals(0, deserializeGetResult(getDocumentAsUser(testChild_1.id, employee).third.get()).size)
+        assertEquals(0, deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get()).size)
     }
 
     private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {
