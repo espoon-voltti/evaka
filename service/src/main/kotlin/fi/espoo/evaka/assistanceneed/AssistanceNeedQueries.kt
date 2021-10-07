@@ -98,6 +98,21 @@ fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed>
         .list()
 }
 
+fun Database.Read.getCapacityFactorsByChild(childId: UUID): List<AssistanceNeedCapacityFactor> {
+    return createQuery(
+        """
+         SELECT 
+           daterange(start_date, end_date, '[]') as date_range,
+           capacity_factor
+         FROM assistance_need
+         WHERE child_id = :childId
+     """
+    )
+        .bind("childId", childId)
+        .mapTo<AssistanceNeedCapacityFactor>()
+        .list()
+}
+
 fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
     //language=sql
     val sql =
@@ -148,11 +163,11 @@ fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUse
         .execute()
 }
 
-fun Database.Transaction.deleteAssistanceNeed(id: AssistanceNeedId) {
-    //language=sql
-    val sql = "DELETE FROM assistance_need WHERE id = :id"
-    val deleted = createUpdate(sql).bind("id", id).execute()
-    if (deleted == 0) throw NotFound("Assistance need $id not found")
+fun Database.Transaction.deleteAssistanceNeed(id: AssistanceNeedId): AssistanceNeedChildRange {
+    return createQuery("DELETE FROM assistance_need WHERE id = :id RETURNING child_id, daterange(start_date, end_date, '[]') as date_range")
+        .bind("id", id)
+        .mapTo<AssistanceNeedChildRange>()
+        .firstOrNull() ?: throw NotFound("Assistance need $id not found")
 }
 
 fun Database.Transaction.deleteAssistanceBasisOptionRefsByNeedId(needId: AssistanceNeedId, excluded: Set<String>): Int {

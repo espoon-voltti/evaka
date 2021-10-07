@@ -5,6 +5,8 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.espoo.evaka.assistanceneed.AssistanceNeedCapacityFactor
+import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
@@ -37,10 +39,12 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import org.jdbi.v3.core.kotlin.mapTo
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
 internal fun Database.Transaction.handleValueDecisionChanges(
+    capacityFactorEnabled: Boolean,
     objectMapper: ObjectMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
@@ -53,6 +57,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
     val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
@@ -70,6 +75,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             prices,
             voucherValues,
             incomes,
+            capacityFactors,
             feeAlterations,
             serviceVoucherUnits
         )
@@ -103,10 +109,12 @@ private fun generateNewValueDecisions(
     prices: List<FeeThresholds>,
     voucherValues: List<VoucherValue>,
     incomes: List<Income>,
+    capacityFactors: List<AssistanceNeedCapacityFactor>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
+        capacityFactors.map { it.dateRange } +
         prices.map { it.validDuring } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
@@ -140,6 +148,10 @@ private fun generateNewValueDecisions(
                         ?.toDecisionIncome()
                 }
 
+            val capacityFactor =
+                capacityFactors.find { it.dateRange.contains(period) }?.capacityFactor
+                    ?: BigDecimal("1.00")
+
             val periodPlacements = allPlacements
                 .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
                 .filter { (_, placement) -> placement != null }
@@ -169,7 +181,7 @@ private fun generateNewValueDecisions(
                     val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
                     val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
-                    val value = calculateVoucherValue(voucherValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
+                    val value = calculateVoucherValue(voucherValue, ageCoefficient, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
 
                     period to VoucherValueDecision(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
@@ -195,10 +207,14 @@ private fun generateNewValueDecisions(
                         baseCoPayment = baseCoPayment,
                         siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
                         coPayment = coPaymentBeforeAlterations,
-                        feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
+                        feeAlterations = toFeeAlterationsWithEffects(
+                            coPaymentBeforeAlterations,
+                            relevantFeeAlterations
+                        ),
                         finalCoPayment = finalCoPayment,
                         baseValue = voucherValue.baseValue,
                         ageCoefficient = ageCoefficient,
+                        capacityFactor = capacityFactor,
                         voucherValue = value
                     )
                 }

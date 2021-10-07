@@ -5,6 +5,8 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.domain.DateRange
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
@@ -32,4 +34,14 @@ data class AssistanceBasisOption(
     val value: String,
     val nameFi: String,
     val descriptionFi: String?
+)
+
+data class AssistanceNeedChildRange(
+    val childId: UUID,
+    val dateRange: DateRange
+)
+
+data class AssistanceNeedCapacityFactor(
+    val dateRange: DateRange,
+    val capacityFactor: BigDecimal,
 )
