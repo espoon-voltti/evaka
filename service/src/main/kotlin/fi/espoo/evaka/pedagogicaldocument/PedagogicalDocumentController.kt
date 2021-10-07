@@ -53,17 +53,6 @@ class PedagogicalDocumentController(
         return db.transaction { it.updateDocument(user, body, documentId) }
     }
 
-    @GetMapping("/{documentId}")
-    fun getPedagogicalDocument(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable documentId: PedagogicalDocumentId
-    ): PedagogicalDocument? {
-        Audit.PedagogicalDocumentRead.log(documentId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, documentId)
-        return db.read { it.getPedagogicalDocument(documentId) }
-    }
-
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
         db: Database.Connection,
@@ -169,31 +158,6 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
         .bind("child_id", childId)
         .map { row -> mapPedagogicalDocument(row) }
         .filterNotNull()
-}
-
-private fun Database.Read.getPedagogicalDocument(
-    documentId: PedagogicalDocumentId
-): PedagogicalDocument? {
-    return this.createQuery(
-        """
-            SELECT 
-                pd.id,
-                pd.child_id,
-                pd.description,
-                pd.created,
-                pd.updated,
-                a.id attachment_id,
-                a.name attachment_name,
-                a.content_type attachment_content_type
-            FROM pedagogical_document pd
-            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-            WHERE pd.id = :document_id
-        """.trimIndent()
-    )
-        .bind("document_id", documentId)
-        .map { row -> mapPedagogicalDocument(row) }
-        .toList()
-        .firstOrNull()
 }
 
 private fun Database.Transaction.deleteDocument(

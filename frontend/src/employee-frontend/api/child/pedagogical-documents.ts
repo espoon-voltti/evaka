@@ -49,22 +49,6 @@ export async function updatePedagogicalDocument(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getPedagogicalDocument(
-  documentId: UUID
-): Promise<Result<PedagogicalDocument>> {
-  return client
-    .get<JsonOf<PedagogicalDocument>>(`/pedagogical-document/${documentId}`)
-    .then((res) => {
-      const { created, updated, ...rest } = res.data
-      return Success.of({
-        ...rest,
-        created: new Date(created),
-        updated: new Date(updated)
-      })
-    })
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function deletePedagogicalDocument(
   documentId: UUID
 ): Promise<Result<void>> {
