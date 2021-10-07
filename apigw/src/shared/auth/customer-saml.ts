@@ -12,7 +12,7 @@ import {
 import { RedisClient } from 'redis'
 import { evakaCustomerSamlConfig } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
-import { getOrCreatePerson } from '../service-client'
+import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
@@ -79,7 +79,7 @@ async function verifyKeycloakProfile(
   if (!profile.socialSecurityNumber)
     throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
-  const person = await getOrCreatePerson({
+  const person = await citizenLogin({
     socialSecurityNumber: profile.socialSecurityNumber,
     firstName: profile.firstName,
     lastName: profile.lastName

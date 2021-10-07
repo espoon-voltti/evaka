@@ -5,11 +5,10 @@
 import { GatewayTester } from '../../shared/test/gateway-tester'
 import app from '../app'
 import { csrfCookieName } from '../../shared/middleware/csrf'
-import { AuthenticatedUser } from '../../shared/service-client'
+import { CitizenUser } from '../../shared/service-client'
 
-const mockUser: AuthenticatedUser = {
-  id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2',
-  roles: ['ENDUSER']
+const mockUser: CitizenUser = {
+  id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
 }
 
 describe('CSRF middleware and cookie handling in enduser-gw', () => {

@@ -14,7 +14,7 @@ import { adMock, adConfig, adExternalIdPrefix } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
-import { getOrCreateEmployee, UserRole } from '../service-client'
+import { employeeLogin, UserRole } from '../service-client'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 
@@ -45,7 +45,7 @@ interface AdProfile {
 async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
   const aad = profile[AD_USER_ID_KEY]
   if (!aad) throw Error('No user ID in SAML data')
-  const person = await getOrCreateEmployee({
+  const person = await employeeLogin({
     externalId: `${adExternalIdPrefix}:${aad}`,
     firstName: profile[AD_GIVEN_NAME_KEY],
     lastName: profile[AD_FAMILY_NAME_KEY],

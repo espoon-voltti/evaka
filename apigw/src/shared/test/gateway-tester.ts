@@ -10,7 +10,7 @@ import nock from 'nock'
 import { evakaServiceUrl } from '../config'
 import { sessionCookie, SessionType } from '../session'
 import { csrfCookieName } from '../middleware/csrf'
-import { AuthenticatedUser, EmployeeUser } from '../service-client'
+import { CitizenUser, EmployeeUser } from '../service-client'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -82,7 +82,7 @@ export class GatewayTester {
   }
 
   public async login(
-    user: AuthenticatedUser | EmployeeUser,
+    user: CitizenUser | EmployeeUser,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData?: any
   ): Promise<void> {

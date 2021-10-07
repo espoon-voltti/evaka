@@ -29,7 +29,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SystemIdentityControllerTest : FullApplicationTest() {
+class SystemControllerTest : FullApplicationTest() {
     private lateinit var areaId: AreaId
     private lateinit var unitId: DaycareId
 
