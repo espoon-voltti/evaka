@@ -138,14 +138,14 @@ fun Database.Read.citizenHasPermissionForPedagogicalDocument(user: Authenticated
 data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
-    val description: String,
+    val description: String?,
     val attachment: Attachment?,
     val created: HelsinkiDateTime,
     val isRead: Boolean
 )
 
 fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
-    val id: PedagogicalDocumentId =  row.mapColumn("id") ?: return null
+    val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
     return PedagogicalDocumentCitizen(

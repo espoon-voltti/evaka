@@ -96,7 +96,7 @@ data class Attachment(
 data class PedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
-    val description: String,
+    val description: String?,
     val attachment: Attachment?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime
@@ -168,7 +168,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
     )
         .bind("child_id", childId)
         .map { row -> mapPedagogicalDocument(row) }
-        .toList()
+        .filterNotNull()
 }
 
 private fun Database.Read.getPedagogicalDocument(
@@ -210,11 +210,12 @@ private fun Database.Transaction.deleteDocument(
         .execute()
 }
 
-fun mapPedagogicalDocument(row: RowView): PedagogicalDocument {
+fun mapPedagogicalDocument(row: RowView): PedagogicalDocument? {
+    val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
     return PedagogicalDocument(
-        id = row.mapColumn("id"),
+        id = id,
         childId = row.mapColumn("child_id"),
         description = row.mapColumn("description"),
         attachment = if (hasAttachment) Attachment(
