@@ -47,10 +47,19 @@ fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, con
     val sql =
         """
 WITH new_note AS (
-    INSERT INTO application_note (application_id, content, created_by) VALUES (:applicationId, :content, :createdBy)
+    INSERT INTO application_note (application_id, content, created_by, updated_by) VALUES (:applicationId, :content, :createdBy, :createdBy)
     RETURNING *
 ) 
-SELECT n.id, n.application_id, n.content, n.created_by, e.first_name || ' ' || e.last_name AS created_by_name, n.created, n.updated
+SELECT
+    n.id,
+    n.application_id,
+    n.content,
+    n.created_by,
+    n.updated_by,
+    e.first_name || ' ' || e.last_name AS created_by_name,
+    e.first_name || ' ' || e.last_name AS updated_by_name,
+    n.created,
+    n.updated
 FROM new_note n
 LEFT JOIN employee e ON n.created_by = e.id
         """.trimIndent()

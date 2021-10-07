@@ -127,6 +127,6 @@ export interface ApplicationNote {
   createdBy: UUID
   createdByName: string
   updated: Date
-  updatedBy: UUID | null
-  updatedByName: string | null
+  updatedBy: UUID
+  updatedByName: string
 }
