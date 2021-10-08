@@ -4,7 +4,6 @@
 
 import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { UnitProviderType } from 'lib-customizations/types'
 import { AbsenceType } from 'lib-common/generated/enums'
 
@@ -331,53 +330,6 @@ export interface StartingPlacementsRow {
   ssn?: string
   placementStart: LocalDate
   careAreaName: string
-}
-
-export interface VoucherServiceProviderReport {
-  locked: LocalDate | null
-  rows: VoucherServiceProviderRow[]
-}
-
-export interface VoucherServiceProviderRow {
-  unit: {
-    id: UUID
-    name: string
-    areaId: UUID
-    areaName: string
-  }
-  childCount: number
-  monthlyPaymentSum: number
-}
-
-export type VoucherReportRowType = 'ORIGINAL' | 'REFUND' | 'CORRECTION'
-
-export interface VoucherServiceProviderUnitReport {
-  locked: LocalDate | null
-  voucherTotal: number
-  rows: VoucherServiceProviderUnitRow[]
-  assistanceNeedCapacityFactorEnabled: boolean
-}
-
-export interface VoucherServiceProviderUnitRow {
-  childId: UUID
-  childFirstName: string
-  childLastName: string
-  childDateOfBirth: LocalDate
-  childGroupName: string
-  unitId: UUID
-  unitName: string
-  areaId: UUID
-  areaName: string
-  serviceVoucherDecisionId: UUID
-  serviceVoucherValue: number
-  serviceVoucherCoPayment: number
-  serviceNeedDescription: string
-  assistanceNeedCapacityFactor: number
-  realizedAmount: number
-  realizedPeriod: FiniteDateRange
-  numberOfDays: number
-  type: VoucherReportRowType
-  isNew: boolean
 }
 
 export interface PlacementSketchingRow {

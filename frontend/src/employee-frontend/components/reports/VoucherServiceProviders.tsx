@@ -14,7 +14,7 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { SelectOption } from '../common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
-import { VoucherServiceProviderReport } from '../../types/reports'
+import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import {
   getVoucherServiceProvidersReport,
   VoucherServiceProvidersFilters
@@ -76,7 +76,7 @@ function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const [report, setReport] = useState<Result<VoucherServiceProviderReport>>(
+  const [report, setReport] = useState<Result<ServiceVoucherReport>>(
     Success.of({ locked: null, rows: [] })
   )
   const allAreasOption = useMemo(

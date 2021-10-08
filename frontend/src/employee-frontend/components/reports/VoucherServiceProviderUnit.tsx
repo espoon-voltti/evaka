@@ -40,9 +40,9 @@ import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import {
   VoucherReportRowType,
-  VoucherServiceProviderUnitReport,
-  VoucherServiceProviderUnitRow
-} from '../../types/reports'
+  ServiceVoucherUnitReport,
+  ServiceVoucherValueRow
+} from 'lib-common/generated/api-types/reports'
 import { formatName } from '../../utils'
 import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -125,9 +125,9 @@ function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
-  const [report, setReport] = useState<
-    Result<VoucherServiceProviderUnitReport>
-  >(Loading.of())
+  const [report, setReport] = useState<Result<ServiceVoucherUnitReport>>(
+    Loading.of()
+  )
   const [sort, setSort] = useState<'child' | 'group'>('child')
 
   const sortOnClick = (prop: 'child' | 'group') => () => {
@@ -415,88 +415,84 @@ function VoucherServiceProviderUnit() {
                 </Tr>
               </Thead>
               <Tbody>
-                {sortedReport.value.rows.map(
-                  (row: VoucherServiceProviderUnitRow) => {
-                    const under3YearsOld =
-                      row.realizedPeriod.start.differenceInYears(
-                        row.childDateOfBirth
-                      ) < 3
+                {sortedReport.value.rows.map((row: ServiceVoucherValueRow) => {
+                  const under3YearsOld =
+                    row.realizedPeriod.start.differenceInYears(
+                      row.childDateOfBirth
+                    ) < 3
 
-                    const rowType =
-                      row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
+                  const rowType =
+                    row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
 
-                    return (
-                      <Tr
-                        key={`${
-                          row.serviceVoucherDecisionId
-                        }:${row.realizedPeriod.start.formatIso()}`}
-                      >
-                        <BlankTd>
-                          <TypeIndicator type={rowType} />
-                          {rowType !== 'ORIGINAL' ? (
-                            <TooltipWithoutAnchor
+                  return (
+                    <Tr
+                      key={`${
+                        row.serviceVoucherDecisionId
+                      }:${row.realizedPeriod.start.formatIso()}`}
+                    >
+                      <BlankTd>
+                        <TypeIndicator type={rowType} />
+                        {rowType !== 'ORIGINAL' ? (
+                          <TooltipWithoutAnchor
+                            tooltip={
+                              i18n.reports.voucherServiceProviderUnit.type[
+                                rowType
+                              ]
+                            }
+                            position="right"
+                          />
+                        ) : null}
+                      </BlankTd>
+                      <Td>
+                        <FixedSpaceColumn spacing="xs">
+                          <Link to={`/child-information/${row.childId}`}>
+                            {formatName(
+                              row.childFirstName,
+                              row.childLastName,
+                              i18n
+                            )}
+                          </Link>
+                          <FixedSpaceRow spacing="xs">
+                            <Tooltip
                               tooltip={
-                                i18n.reports.voucherServiceProviderUnit.type[
-                                  rowType
-                                ]
+                                <div>
+                                  {
+                                    i18n.reports.voucherServiceProviderUnit[
+                                      under3YearsOld ? 'under3' : 'atLeast3'
+                                    ]
+                                  }
+                                </div>
                               }
                               position="right"
-                            />
-                          ) : null}
-                        </BlankTd>
+                            >
+                              <AgeIndicatorIcon isUnder3={under3YearsOld} />
+                            </Tooltip>
+                            <span>{row.childDateOfBirth.format()}</span>
+                          </FixedSpaceRow>
+                        </FixedSpaceColumn>
+                      </Td>
+                      <Td>{row.childGroupName}</Td>
+                      <Td>
+                        <Tooltip
+                          tooltip={<div>{row.numberOfDays}</div>}
+                          position="right"
+                        >
+                          {row.realizedPeriod.formatCompact()}
+                        </Tooltip>
+                      </Td>
+                      <Td>{row.serviceNeedDescription}</Td>
+                      {sortedReport.value
+                        .assistanceNeedCapacityFactorEnabled && (
                         <Td>
-                          <FixedSpaceColumn spacing="xs">
-                            <Link to={`/child-information/${row.childId}`}>
-                              {formatName(
-                                row.childFirstName,
-                                row.childLastName,
-                                i18n
-                              )}
-                            </Link>
-                            <FixedSpaceRow spacing="xs">
-                              <Tooltip
-                                tooltip={
-                                  <div>
-                                    {
-                                      i18n.reports.voucherServiceProviderUnit[
-                                        under3YearsOld ? 'under3' : 'atLeast3'
-                                      ]
-                                    }
-                                  </div>
-                                }
-                                position="right"
-                              >
-                                <AgeIndicatorIcon isUnder3={under3YearsOld} />
-                              </Tooltip>
-                              <span>{row.childDateOfBirth.format()}</span>
-                            </FixedSpaceRow>
-                          </FixedSpaceColumn>
+                          {formatDecimal(row.assistanceNeedCapacityFactor)}
                         </Td>
-                        <Td>{row.childGroupName}</Td>
-                        <Td>
-                          <Tooltip
-                            tooltip={<div>{row.numberOfDays}</div>}
-                            position="right"
-                          >
-                            {row.realizedPeriod.formatCompact()}
-                          </Tooltip>
-                        </Td>
-                        <Td>{row.serviceNeedDescription}</Td>
-                        {sortedReport.value
-                          .assistanceNeedCapacityFactorEnabled && (
-                          <Td>
-                            {formatDecimal(row.assistanceNeedCapacityFactor)}
-                          </Td>
-                        )}
-                        <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
-                        <Td>
-                          {formatCents(row.serviceVoucherCoPayment, true)}
-                        </Td>
-                        <Td>{formatCents(row.realizedAmount, true)}</Td>
-                      </Tr>
-                    )
-                  }
-                )}
+                      )}
+                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
+                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
+                      <Td>{formatCents(row.realizedAmount, true)}</Td>
+                    </Tr>
+                  )
+                })}
               </Tbody>
             </TableScrollable>
           </>
