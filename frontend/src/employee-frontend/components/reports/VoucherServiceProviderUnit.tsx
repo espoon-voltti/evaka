@@ -49,6 +49,7 @@ import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { formatDecimal } from 'lib-common/utils/number'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -269,6 +270,9 @@ function VoucherServiceProviderUnit() {
                         ? 'Korjaus'
                         : '',
                     serviceNeedDescription: r.serviceNeedDescription,
+                    assistanceNeedCapacityFactor: formatDecimal(
+                      r.assistanceNeedCapacityFactor
+                    ),
                     serviceVoucherValue: formatCents(
                       r.serviceVoucherValue,
                       true
@@ -288,6 +292,7 @@ function VoucherServiceProviderUnit() {
                     end: null,
                     numberOfDays: null,
                     serviceNeedDescription: null,
+                    assistanceNeedCapacityFactor: null,
                     serviceVoucherValue: null,
                     serviceVoucherCoPayment: null,
                     realizedAmount: formatCents(
@@ -331,6 +336,16 @@ function VoucherServiceProviderUnit() {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
                     key: 'serviceNeedDescription'
                   },
+                  ...(sortedReport.value.assistanceNeedCapacityFactorEnabled
+                    ? [
+                        {
+                          label:
+                            i18n.reports.voucherServiceProviderUnit
+                              .capacityFactor,
+                          key: 'assistanceNeedCapacityFactor' as const
+                        }
+                      ]
+                    : []),
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
@@ -374,6 +389,11 @@ function VoucherServiceProviderUnit() {
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
+                  {sortedReport.value.assistanceNeedCapacityFactorEnabled ? (
+                    <StyledTh>
+                      {i18n.reports.voucherServiceProviderUnit.capacityFactor}
+                    </StyledTh>
+                  ) : null}
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -462,6 +482,12 @@ function VoucherServiceProviderUnit() {
                           </Tooltip>
                         </Td>
                         <Td>{row.serviceNeedDescription}</Td>
+                        {sortedReport.value
+                          .assistanceNeedCapacityFactorEnabled && (
+                          <Td>
+                            {formatDecimal(row.assistanceNeedCapacityFactor)}
+                          </Td>
+                        )}
                         <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
                         <Td>
                           {formatCents(row.serviceVoucherCoPayment, true)}

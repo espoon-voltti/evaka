@@ -355,6 +355,7 @@ export interface VoucherServiceProviderUnitReport {
   locked: LocalDate | null
   voucherTotal: number
   rows: VoucherServiceProviderUnitRow[]
+  assistanceNeedCapacityFactorEnabled: boolean
 }
 
 export interface VoucherServiceProviderUnitRow {
@@ -371,6 +372,7 @@ export interface VoucherServiceProviderUnitRow {
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
   serviceNeedDescription: string
+  assistanceNeedCapacityFactor: number
   realizedAmount: number
   realizedPeriod: FiniteDateRange
   numberOfDays: number
