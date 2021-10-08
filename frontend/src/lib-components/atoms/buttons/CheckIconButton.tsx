@@ -44,6 +44,7 @@ function CheckIconButton({
 }: CheckIconButtonProps) {
   return (
     <StyledButton
+      type="button"
       className={classNames(className, { active })}
       data-qa={dataQa}
       onClick={onClick}

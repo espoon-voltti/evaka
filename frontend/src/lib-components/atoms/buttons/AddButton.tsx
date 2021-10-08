@@ -106,6 +106,7 @@ function AddButton({
 }: AddButtonProps) {
   return (
     <StyledButton
+      type="button"
       className={classNames(className, { disabled, flipped, darker })}
       data-qa={dataQa}
       onClick={onClick}
