@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 fun Database.Transaction.insertAttendance(
@@ -77,13 +76,14 @@ fun Database.Transaction.insertAbsence(
         .first()
 }
 
-fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, date: LocalDate): ChildAttendance? {
+fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {
     // language=sql
     val sql =
         """
         SELECT id, child_id, unit_id, arrived, departed
         FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId AND tstzrange(:todayStart, :todayEnd, '[)') @> arrived
+        WHERE child_id = :childId AND unit_id = :unitId
+        AND (arrived::date = :date OR tstzrange(arrived, departed) @> :departedThreshold)
         ORDER BY arrived DESC
         LIMIT 1
         """.trimIndent()
@@ -91,8 +91,8 @@ fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, date: Loc
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("todayStart", HelsinkiDateTime.of(date, LocalTime.of(0, 0)))
-        .bind("todayEnd", HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0)))
+        .bind("date", now.toLocalDate())
+        .bind("departedThreshold", now.minusMinutes(30))
         .mapTo<ChildAttendance>()
         .firstOrNull()
 }
@@ -238,7 +238,7 @@ private val placedChildrenSql =
     WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :date
     """.trimIndent()
 
-fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, date: LocalDate): List<ChildAttendance> {
+fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<ChildAttendance> {
     // language=sql
     val sql =
         """
@@ -249,12 +249,14 @@ fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, date: LocalDate): 
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        WHERE (ca.departed IS NULL OR ca.departed::date = :date) AND ca.child_id IN ($placedChildrenSql)
+        WHERE ca.child_id IN ($placedChildrenSql)
+        AND (ca.arrived::date = :date OR tstzrange(ca.arrived, ca.departed) @> :departedThreshold)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("date", date)
+        .bind("date", now.toLocalDate())
+        .bind("departedThreshold", now.minusMinutes(30))
         .mapTo<ChildAttendance>()
         .list()
 }

@@ -135,7 +135,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -157,9 +157,6 @@ class ChildAttendanceController(
         return db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
 
-            if (tx.getChildAttendance(childId, unitId, dateNow()) != null)
-                throw Conflict("Cannot arrive, already arrived today")
-
             tx.deleteAbsencesByDate(childId, dateNow())
             try {
                 tx.insertAttendance(
@@ -172,7 +169,7 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -190,7 +187,7 @@ class ChildAttendanceController(
             tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteAbsencesByDate(childId, dateNow())
 
-            val attendance = tx.getChildAttendance(childId, unitId, dateNow())
+            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
             if (attendance != null) {
                 if (attendance.departed == null) {
                     try {
@@ -203,7 +200,7 @@ class ChildAttendanceController(
                 }
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -256,7 +253,7 @@ class ChildAttendanceController(
         return db.transaction { tx ->
             val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildAttendance(childId, unitId, dateNow())
+            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
             if (attendance == null) {
                 // temporary hotfix for case where scheduled job was missing and child arrived yesterday
                 val forgottenAttendance: ChildAttendance = tx.getChildOngoingAttendance(childId, unitId)
@@ -265,7 +262,7 @@ class ChildAttendanceController(
                     attendanceId = forgottenAttendance.id,
                     departed = forgottenAttendance.arrived.withTime(LocalTime.of(23, 59))
                 )
-                return@transaction tx.getAttendancesResponse(unitId, dateNow())
+                return@transaction tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
             } else if (attendance.departed != null) {
                 throw Conflict("Cannot depart, already departed")
             }
@@ -294,7 +291,7 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -312,7 +309,7 @@ class ChildAttendanceController(
             tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteAbsencesByDate(childId, dateNow())
 
-            val attendance = tx.getChildAttendance(childId, unitId, dateNow())
+            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
 
             if (attendance?.departed == null) {
                 throw Conflict("Can not return to present since not yet departed")
@@ -324,7 +321,7 @@ class ChildAttendanceController(
                 }
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -346,7 +343,7 @@ class ChildAttendanceController(
         return db.transaction { tx ->
             val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildAttendance(childId, unitId, dateNow())
+            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
             if (attendance != null) {
                 throw Conflict("Cannot add full day absence, child already has attendance")
             }
@@ -360,7 +357,7 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -395,7 +392,7 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            tx.getAttendancesResponse(unitId, dateNow())
+            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -473,12 +470,12 @@ private fun Database.Read.fetchChildPlacementTypeDates(
         .list()
 }
 
-private fun Database.Read.getAttendancesResponse(unitId: DaycareId, date: LocalDate): AttendanceResponse {
-    val childrenBasics = fetchChildrenBasics(unitId, date)
-    val childrenAttendances = fetchChildrenAttendances(unitId, date)
-    val childrenAbsences = fetchChildrenAbsences(unitId, date)
+private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: HelsinkiDateTime): AttendanceResponse {
+    val childrenBasics = fetchChildrenBasics(unitId, instant.toLocalDate())
+    val childrenAttendances = fetchChildrenAttendances(unitId, instant)
+    val childrenAbsences = fetchChildrenAbsences(unitId, instant.toLocalDate())
     val daycareDailyNotesForChildrenPlacedInUnit = getDaycareDailyNotesForChildrenPlacedInUnit(unitId)
-    val attendanceReservations = fetchAttendanceReservations(unitId, date)
+    val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
 
     val children = childrenBasics.map { child ->
         val attendance = childrenAttendances.firstOrNull { it.childId == child.id }

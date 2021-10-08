@@ -63,7 +63,7 @@ export default React.memo(function AttendanceList({
           filteredChildren.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
-                type={ac.status}
+                type={type}
                 key={ac.id}
                 child={ac}
                 groupNote={getGroupNote(ac)}

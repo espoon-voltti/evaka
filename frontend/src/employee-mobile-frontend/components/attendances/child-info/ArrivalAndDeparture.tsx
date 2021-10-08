@@ -8,6 +8,7 @@ import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
 import { formatTime } from 'lib-common/date'
 import { ArrivalTime } from '../components'
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   child: Child
@@ -16,33 +17,32 @@ interface Props {
 export default React.memo(function ArrivalAndDeparture({ child }: Props) {
   const { i18n } = useTranslation()
 
-  const showArrival = child.status === 'PRESENT' || child.status === 'DEPARTED'
-  const showDeparture = child.status === 'DEPARTED'
+  const arrival = child.attendance?.arrived
+  const departure = child.attendance?.departed
 
-  if (!showArrival && !showDeparture) {
+  if (!arrival) {
     return null
   }
 
+  const arrivalDate = LocalDate.fromSystemTzDate(arrival)
+  const dateInfo = arrivalDate.isEqual(LocalDate.today())
+    ? ''
+    : arrivalDate.isEqual(LocalDate.today().subDays(1))
+    ? i18n.common.yesterday
+    : arrivalDate.format('d.M.')
+
   return (
     <FixedSpaceRow justifyContent={'center'}>
-      {showArrival ? (
+      {arrival ? (
         <ArrivalTime>
           <span>{i18n.attendances.arrivalTime}</span>
-          <span>
-            {child.attendance?.arrived
-              ? formatTime(child.attendance.arrived)
-              : 'xx:xx'}
-          </span>
+          <span>{`${dateInfo} ${formatTime(arrival)}`}</span>
         </ArrivalTime>
       ) : null}
-      {showDeparture ? (
+      {departure ? (
         <ArrivalTime>
           <span>{i18n.attendances.departureTime}</span>
-          <span>
-            {child.attendance?.departed
-              ? formatTime(child.attendance.departed)
-              : 'xx:xx'}
-          </span>
+          <span>{formatTime(departure)}</span>
         </ArrivalTime>
       ) : null}
     </FixedSpaceRow>

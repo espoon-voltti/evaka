@@ -74,9 +74,10 @@ class ScheduledJobs(
             it.createUpdate(
                 // language=SQL
                 """
-                    UPDATE child_attendance ca
-                    SET departed = ((arrived AT TIME ZONE 'Europe/Helsinki')::date + time '23:59') AT TIME ZONE 'Europe/Helsinki'
-                    WHERE departed IS NULL
+UPDATE child_attendance ca
+SET departed = ((arrived AT TIME ZONE 'Europe/Helsinki')::date + time '23:59') AT TIME ZONE 'Europe/Helsinki'
+FROM daycare u
+WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
                 """.trimIndent()
             ).execute()
         }

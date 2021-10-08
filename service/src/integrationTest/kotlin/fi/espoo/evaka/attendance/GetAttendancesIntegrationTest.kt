@@ -240,6 +240,65 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(testTimes, child.dailyServiceTimes)
     }
 
+    @Test
+    fun `yesterday's arrival is present if no departure has been set`() {
+        val arrived = HelsinkiDateTime.now().minusDays(1)
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = arrived,
+                departed = null
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.PRESENT, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(arrived, child.attendance!!.arrived)
+        assertNull(child.attendance!!.departed)
+        assertEquals(testDaycare.id, child.attendance!!.unitId)
+        assertEquals(0, child.absences.size)
+    }
+
+    @Test
+    fun `yesterday's arrival is departed if departure time is within last 30 minutes`() {
+        val arrived = HelsinkiDateTime.now().minusDays(1)
+        val departed = HelsinkiDateTime.now().minusMinutes(25)
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = arrived,
+                departed = departed
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(arrived, child.attendance!!.arrived)
+        assertEquals(departed, child.attendance!!.departed)
+        assertEquals(testDaycare.id, child.attendance!!.unitId)
+        assertEquals(0, child.absences.size)
+    }
+
+    @Test
+    fun `yesterday's arrival is coming if departure time is over 30 minutes ago`() {
+        val arrived = HelsinkiDateTime.now().minusDays(1)
+        val departed = HelsinkiDateTime.now().minusMinutes(35)
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = arrived,
+                departed = departed
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+        assertEquals(0, child.absences.size)
+    }
+
     private fun fetchUnitInfo(): UnitInfo {
         val (_, res, result) = http.get("/mobile/units/${testDaycare.id}")
             .asUser(mobileUser)
@@ -248,6 +307,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
         return result.get()
     }
+
     private fun fetchAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
             .asUser(mobileUser)

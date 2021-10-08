@@ -114,6 +114,8 @@ const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
 
 test('Child is shown in the coming list in the beginning', async (t) => {
+  await t.click(mobileGroupsPage.comingTab)
+
   await t
     .expect(
       mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
@@ -122,13 +124,6 @@ test('Child is shown in the coming list in the beginning', async (t) => {
     .eql(
       `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
     )
-
-  await t
-    .expect(
-      mobileGroupsPage.childStatus(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
-    .contains('Tulossa')
 })
 
 test('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {

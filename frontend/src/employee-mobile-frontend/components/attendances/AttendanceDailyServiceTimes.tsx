@@ -4,50 +4,10 @@
 
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
-import {
-  DailyServiceTimes,
-  isIrregular,
-  isRegular,
-  isVariableTime,
-  TimeRange
-} from 'lib-common/api-types/child/common'
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AttendanceReservation } from '../../api/attendances'
+import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 import { ServiceTime } from './components'
-
-const dayNames = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday'
-] as const
-
-type DayName = typeof dayNames[number]
-
-function getToday(): DayName | undefined {
-  // Sunday is 0
-  const dayIndex = (new Date().getDay() + 6) % 7
-  return dayNames[dayIndex]
-}
-
-function getTodaysServiceTimes(
-  times: DailyServiceTimes | null
-): TimeRange | 'not_today' | 'not_set' | 'variable_times' {
-  if (times === null) return 'not_set'
-
-  if (isRegular(times)) return times.regularTimes
-
-  if (isVariableTime(times)) return 'variable_times'
-
-  if (isIrregular(times)) {
-    const today = getToday()
-    if (!today) return 'not_today'
-
-    return times[today] ?? 'not_today'
-  }
-
-  return 'not_set'
-}
 
 interface Props {
   times: DailyServiceTimes | null

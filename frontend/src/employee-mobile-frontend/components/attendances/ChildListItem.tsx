@@ -11,18 +11,17 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-customizations/common'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
-import { useTranslation } from '../../state/i18n'
-import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
-import { ChildAttendanceContext } from '../../state/child-attendance'
+import { Translations, useTranslation } from '../../state/i18n'
 import { Link, useParams } from 'react-router-dom'
+import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from '../../state/unit'
 
-const ChildBox = styled.div<{ type: AttendanceStatus }>`
+const ChildBox = styled.div`
   align-items: center;
   color: ${colors.greyscale.darkest};
   display: flex;
@@ -97,10 +96,6 @@ const DetailsRow = styled.div`
   width: 100%;
 `
 
-const StatusDetails = styled.span`
-  margin: 0 ${defaultMargins.xs};
-`
-
 const RoundImage = styled.img`
   border-radius: 9000px;
   width: ${imageHeight};
@@ -108,16 +103,14 @@ const RoundImage = styled.img`
   display: block;
 `
 
-const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)<{
-  spacing: SpacingSize
-}>`
-  margin-left: ${({ spacing }) => defaultMargins[spacing]};
+const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)`
+  margin-left: ${defaultMargins.m};
 `
 
 interface ChildListItemProps {
   child: Child
   onClick?: () => void
-  type: AttendanceStatus
+  type?: AttendanceStatus
   childAttendanceUrl: string
   groupNote?: DaycareDailyNote | null
 }
@@ -131,17 +124,28 @@ export default React.memo(function ChildListItem({
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const { unitId, groupId } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
 
+  const groupName = unitInfoResponse
+    .map(
+      ({ groups }) =>
+        groups.find((elem) => elem.id === child.groupId)?.name.toUpperCase() ??
+        ''
+    )
+    .getOrElse('')
+
+  const infoText: React.ReactNode = !type
+    ? groupName
+    : childReservationInfo(i18n, child)
+
   return (
-    <ChildBox type={type} data-qa={`child-${child.id}`}>
+    <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
-        <IconBox type={type}>
+        <IconBox type={child.status}>
           {child.imageUrl ? (
             <RoundImage src={child.imageUrl} />
           ) : (
@@ -167,43 +171,14 @@ export default React.memo(function ChildListItem({
             {child.firstName} {child.lastName}
           </Bold>
           <DetailsRow>
-            <div data-qa={'child-status'}>
-              {child.reservation !== null
-                ? i18n.attendances.listChildReservation(
-                    child.reservation.startTime,
-                    child.reservation.endTime
-                  )
-                : i18n.attendances.status[child.status]}
-              <StatusDetails>
-                {attendanceResponse.isSuccess &&
-                  unitInfoResponse.isSuccess &&
-                  child.status === 'COMING' && (
-                    <span>
-                      {' '}
-                      (
-                      {unitInfoResponse.value.groups
-                        .find((group) => group.id === child.groupId)
-                        ?.name.toUpperCase()}
-                      )
-                    </span>
-                  )}
-                {child.status === 'PRESENT' &&
-                  `${i18n.attendances.arrived} ${formatDate(
-                    child.attendance?.arrived,
-                    DATE_FORMAT_TIME_ONLY
-                  )}`}
-                {child.status === 'DEPARTED' &&
-                  `${i18n.attendances.departed} ${formatDate(
-                    child.attendance?.departed,
-                    DATE_FORMAT_TIME_ONLY
-                  )}`}
-              </StatusDetails>
+            <div>
+              {infoText}
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.accents.green} />
               )}
             </div>
-            <FixedSpaceRowWithLeftMargin spacing="m">
-              {child.dailyNote && attendanceResponse.isSuccess && (
+            <FixedSpaceRowWithLeftMargin>
+              {child.dailyNote && (
                 <Link
                   to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
                   data-qa={'link-child-daycare-daily-note'}
@@ -215,7 +190,7 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               )}
-              {groupNote && attendanceResponse.isSuccess && (
+              {groupNote && (
                 <Link
                   to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
                   data-qa={'link-child-daycare-daily-note'}
@@ -234,3 +209,32 @@ export default React.memo(function ChildListItem({
     </ChildBox>
   )
 })
+
+const childReservationInfo = (
+  i18n: Translations,
+  { reservation, dailyServiceTimes }: Child
+): React.ReactNode => {
+  if (reservation !== null) {
+    return i18n.attendances.serviceTime.reservationShort(
+      reservation.startTime,
+      reservation.endTime
+    )
+  }
+
+  const todaysServiceTime = getTodaysServiceTimes(dailyServiceTimes)
+
+  return (
+    <em>
+      {todaysServiceTime === 'not_set'
+        ? i18n.attendances.serviceTime.notSetShort
+        : todaysServiceTime === 'not_today'
+        ? i18n.attendances.serviceTime.noServiceTodayShort
+        : todaysServiceTime === 'variable_times'
+        ? i18n.attendances.serviceTime.variableTimesShort
+        : i18n.attendances.serviceTime.serviceTodayShort(
+            todaysServiceTime.start,
+            todaysServiceTime.end
+          )}
+    </em>
+  )
+}
