@@ -31,6 +31,7 @@ import GroupCaretakers from './components/GroupCaretakers'
 import Header from './components/Header'
 import IncomeStatementPage from './components/IncomeStatementPage'
 import InvoicePage from './components/invoice/InvoicePage'
+import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import LoginPage from './components/LoginPage'
 import MessagesPage from './components/messages/MessagesPage'
 import PersonProfile from './components/PersonProfile'
@@ -450,6 +451,7 @@ export default function App() {
             <Route exact path="/" component={RedirectToMainPage} />
           </Switch>
           <ErrorMessage />
+          <LoginErrorModal translations={i18n.login.failedModal} />
         </Router>
       </StateProvider>
     </UserContextProvider>
