@@ -611,6 +611,10 @@ commands:
             aws s3 cp metadata.yaml "s3://evaka-static-<< parameters.target_env >>/frontend/metadata/${CIRCLE_SHA1}.yaml" \
               --profile voltti-<< parameters.target_env >>
 
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              aws s3 cp metadata.yaml s3://evaka-static-<< parameters.target_env >>/frontend/master.metadata.yaml \
+                --profile voltti-<< parameters.target_env >>
+            fi
   copy_to_s3:
     parameters:
       target_env:
