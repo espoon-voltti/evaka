@@ -31,7 +31,7 @@ const formatData = (data: Partial<Income['data']>): TableIncomeState => {
   Object.entries(data).forEach(([type, value]) => {
     if (value && value.amount) {
       formatted[type] = {
-        amount: formatCents(value?.amount) as string,
+        amount: formatCents(value.amount),
         coefficient: value?.coefficient
       }
     }

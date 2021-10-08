@@ -2,8 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+export function formatCents(amount: number, fixedCents?: boolean): string
 export function formatCents(
-  amount?: number,
+  amount: number | undefined,
+  fixedCents?: boolean
+): string | undefined
+export function formatCents(
+  amount: number | undefined,
   fixedCents?: boolean
 ): string | undefined {
   if (amount === undefined || amount === null) {

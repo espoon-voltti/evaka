@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureFlags
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -23,13 +24,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController(private val acl: AccessControlList) {
+class ServiceVoucherValueReportController(private val acl: AccessControlList, private val featureFlags: FeatureFlags) {
 
     data class ServiceVoucherReport(
         val locked: LocalDate?,
@@ -76,7 +78,8 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
     data class ServiceVoucherUnitReport(
         val locked: LocalDate?,
         val rows: List<ServiceVoucherValueRow>,
-        val voucherTotal: Int
+        val voucherTotal: Int,
+        val assistanceNeedCapacityFactorEnabled: Boolean
     )
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
@@ -101,7 +104,8 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
                     rows = rows,
-                    voucherTotal = rows.sumOf { it.realizedAmount }
+                    voucherTotal = rows.sumOf { it.realizedAmount },
+                    assistanceNeedCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled,
                 )
             )
         }
@@ -173,6 +177,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
     val serviceNeedDescription: String,
+    val assistanceNeedCapacityFactor: BigDecimal,
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
@@ -317,6 +322,7 @@ SELECT
     decision.voucher_value AS service_voucher_value,
     decision.co_payment AS service_voucher_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
+    decision.capacity_factor AS assistance_need_capacity_factor,
     coalesce(
         row.realized_amount,
         round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / row.operational_days_count::numeric(10, 8)))
@@ -388,6 +394,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             decision.voucher_value AS service_voucher_value,
             decision.co_payment AS service_voucher_co_payment,
             decision.service_need_voucher_value_description_fi AS service_need_description,
+            decision.capacity_factor AS assistance_need_capacity_factor,
             sn_decision.realized_amount,
             sn_decision.realized_period,
             upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,

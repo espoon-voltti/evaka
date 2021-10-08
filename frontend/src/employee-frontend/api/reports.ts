@@ -23,8 +23,6 @@ import {
   FamilyContactsReportRow,
   PlacementSketchingRow,
   AssistanceNeedsAndActionsReportRow,
-  VoucherServiceProviderUnitReport,
-  VoucherServiceProviderReport,
   InvalidServiceNeedReportRow,
   DecisionsReportRow,
   VardaErrorReportRow
@@ -33,6 +31,10 @@ import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  ServiceVoucherUnitReport,
+  ServiceVoucherReport
+} from 'lib-common/generated/api-types/reports'
 
 export interface PeriodFilters {
   from: LocalDate
@@ -379,16 +381,13 @@ export interface VoucherServiceProvidersFilters {
 
 export async function getVoucherServiceProvidersReport(
   filters: VoucherServiceProvidersFilters
-): Promise<Result<VoucherServiceProviderReport>> {
+): Promise<Result<ServiceVoucherReport>> {
   return client
-    .get<JsonOf<VoucherServiceProviderReport>>(
-      `/reports/service-voucher-value/units`,
-      {
-        params: {
-          ...filters
-        }
+    .get<JsonOf<ServiceVoucherReport>>(`/reports/service-voucher-value/units`, {
+      params: {
+        ...filters
       }
-    )
+    })
     .then((res) =>
       Success.of({
         locked: LocalDate.parseNullableIso(res.data.locked),
@@ -401,9 +400,9 @@ export async function getVoucherServiceProvidersReport(
 export function getVoucherServiceProviderUnitReport(
   unitId: UUID,
   params: VoucherProviderChildrenReportFilters
-): Promise<Result<VoucherServiceProviderUnitReport>> {
+): Promise<Result<ServiceVoucherUnitReport>> {
   return client
-    .get<JsonOf<VoucherServiceProviderUnitReport>>(
+    .get<JsonOf<ServiceVoucherUnitReport>>(
       `/reports/service-voucher-value/units/${unitId}`,
       {
         params

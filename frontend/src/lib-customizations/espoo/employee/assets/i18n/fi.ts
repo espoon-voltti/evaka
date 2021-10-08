@@ -2497,6 +2497,7 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
+      capacityFactor: 'Tuen tarve',
       partTime: 'Osa/Koko',
       under3: 'Alle 3-vuotias',
       atLeast3: 'Vähintään 3-vuotias',
