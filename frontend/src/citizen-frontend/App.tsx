@@ -12,12 +12,12 @@ import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { Authentication } from './auth'
-import { LoginErrorModal } from './auth/LoginErrorModal'
+import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import requireAuth from './auth/requireAuth'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
-import { Localization } from './localization'
+import { Localization, useTranslation } from './localization'
 import MessagesPage from './messages/MessagesPage'
 import CalendarPage from './calendar/CalendarPage'
 import { MessageContextProvider } from './messages/state'
@@ -33,6 +33,8 @@ import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
 
 export default function App() {
+  const translations = useTranslation()
+
   return (
     <BrowserRouter basename="/">
       <ThemeProvider theme={theme}>
@@ -125,7 +127,9 @@ export default function App() {
                   </Main>
                   <GlobalInfoDialog />
                   <GlobalErrorDialog />
-                  <LoginErrorModal />
+                  <LoginErrorModal
+                    translations={translations.login.failedModal}
+                  />
                 </PedagogicalDocumentsContextProvider>
               </MessageContextProvider>
             </OverlayContextProvider>

@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import InfoModal from './InfoModal'
 import { faTimes } from 'lib-icons'
-import { useHistory } from 'react-router-dom'
-import { useTranslation } from '../localization'
+import { useHistory, useLocation } from 'react-router-dom'
 import { P } from 'lib-components/typography'
 import styled from 'styled-components'
 
@@ -14,18 +13,29 @@ const ReturnContainer = styled.div`
   margin-top: 30px;
 `
 
-export const LoginErrorModal = React.memo(function LoginErrorModal() {
-  const t = useTranslation()
+interface LoginErrorModalProps {
+  translations: {
+    header: string
+    message: string
+    returnMessage: string
+  }
+}
 
-  const queryParams = new URLSearchParams(location.search)
-  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(
-    queryParams.get('loginError') === 'true'
-  )
+export const LoginErrorModal = React.memo(function LoginErrorModal(
+  props: LoginErrorModalProps
+) {
   const history = useHistory()
+  const location = useLocation()
+  const queryParamName = 'loginError'
+  const queryParams = new URLSearchParams(location.search)
 
-  function closeErrorModal(event?: React.UIEvent<unknown>) {
+  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(
+    queryParams.get(queryParamName) === 'true'
+  )
+
+  function onClose(event?: React.UIEvent<unknown>) {
     setErrorModalVisible(false)
-    queryParams.delete('loginError')
+    queryParams.delete(queryParamName)
     history.replace({
       search: queryParams.toString()
     })
@@ -36,16 +46,16 @@ export const LoginErrorModal = React.memo(function LoginErrorModal() {
 
   return errorModalVisible ? (
     <InfoModal
-      title={t.login.failedModal.header}
-      close={closeErrorModal}
+      title={props.translations.header}
+      close={onClose}
       iconColour="red"
       icon={faTimes}
     >
-      <P centered>{t.login.failedModal.message}</P>
+      <P centered>{props.translations.message}</P>
       <ReturnContainer>
         <P centered>
-          <a href="#" onClick={closeErrorModal}>
-            {t.login.failedModal.returnMessage}
+          <a href="#" onClick={onClose}>
+            {props.translations.returnMessage}
           </a>
         </P>
       </ReturnContainer>
