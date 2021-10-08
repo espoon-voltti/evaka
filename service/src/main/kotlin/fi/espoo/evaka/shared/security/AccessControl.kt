@@ -728,10 +728,10 @@ WHERE employee_id = :userId
     ) {
         val errorCode = Database(jdbi).connect {
             it.transaction { tx ->
-                if (tx.employeePinIsCorrect(employeeId.raw, pinCode)) {
+                if (tx.employeePinIsCorrect(employeeId, pinCode)) {
                     null
                 } else {
-                    val locked = tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId.raw)
+                    val locked = tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId)
                     if (locked) PinError.PIN_LOCKED else PinError.WRONG_PIN
                 }
             }

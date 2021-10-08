@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -32,7 +33,7 @@ data class NewEmployee(
 )
 
 data class EmployeeUser(
-    val id: UUID,
+    val id: EmployeeId,
     val firstName: String,
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
@@ -69,7 +70,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     .mapTo<Employee>()
     .asSequence().first()
 
-private fun Database.Read.searchEmployees(id: UUID? = null) = createQuery(
+private fun Database.Read.searchEmployees(id: EmployeeId? = null) = createQuery(
     // language=SQL
     """
 SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
@@ -95,7 +96,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
 
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
 fun Database.Read.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
-fun Database.Read.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
+fun Database.Read.getEmployee(id: EmployeeId): Employee? = searchEmployees(id = id).firstOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
@@ -109,7 +110,7 @@ $where
 """
 )
 
-fun Database.Transaction.markEmployeeLastLogin(id: UUID) = createUpdate(
+fun Database.Transaction.markEmployeeLastLogin(id: EmployeeId) = createUpdate(
     """
 UPDATE employee 
 SET last_login = now()
@@ -118,7 +119,7 @@ WHERE id = :id
 ).bind("id", id)
     .execute()
 
-fun Database.Read.getEmployeeUser(id: UUID): EmployeeUser? = createEmployeeUserQuery("WHERE id = :id")
+fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? = createEmployeeUserQuery("WHERE id = :id")
     .bind("id", id)
     .mapTo<EmployeeUser>()
     .singleOrNull()
@@ -222,7 +223,7 @@ LIMIT :pageSize OFFSET :offset
         .let(mapToPaged(pageSize))
 }
 
-fun Database.Transaction.deleteEmployee(employeeId: UUID) = createUpdate(
+fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) = createUpdate(
     // language=SQL
     """
 DELETE FROM employee
@@ -254,7 +255,7 @@ ON CONFLICT (user_id) DO UPDATE SET
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
-fun Database.Read.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
+fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean = createQuery(
 """
 SELECT EXISTS (
     SELECT 1
@@ -269,7 +270,7 @@ SELECT EXISTS (
     .mapTo<Boolean>()
     .first()
 
-fun Database.Transaction.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
+fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) = createUpdate(
     """
 UPDATE employee_pin
 SET failure_count = 0
@@ -278,7 +279,7 @@ WHERE user_id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
+fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: EmployeeId): Boolean = createQuery(
 """
 UPDATE employee_pin
 SET 

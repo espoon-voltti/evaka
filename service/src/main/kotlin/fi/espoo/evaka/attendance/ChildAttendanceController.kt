@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -79,7 +80,7 @@ class ChildAttendanceController(
 
     data class GetChildSensitiveInfoRequest(
         val pin: String,
-        val staffId: UUID
+        val staffId: EmployeeId
     )
 
     @PostMapping("/child/{childId}")
