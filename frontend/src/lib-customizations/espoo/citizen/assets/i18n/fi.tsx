@@ -186,6 +186,7 @@ export default {
       selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
+      missingDateRange: 'Valitse varattavat päivät',
       repetition: 'Tyyppi tai toistuvuus',
       businessDays: 'Ma-Pe',
       postError: 'Varauksen luominen ei onnistunut',

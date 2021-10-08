@@ -187,6 +187,7 @@ const en: Translations = {
       selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
+      missingDateRange: 'Select days to reserve',
       repetition: 'Type or repetition',
       businessDays: 'Mon-Fri',
       postError: 'The reservation failed',

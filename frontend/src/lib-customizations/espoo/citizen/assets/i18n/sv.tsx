@@ -187,6 +187,7 @@ const sv: Translations = {
       selectChildrenLabel: 'Utvalda barn',
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
+      missingDateRange: 'Välj barn att reservera',
       repetition: 'Typ eller upprepning',
       businessDays: 'Mån-Fre',
       postError: 'Misslyckades med att reservera',
