@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -15,6 +16,8 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
@@ -57,10 +60,13 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -69,6 +75,7 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -98,7 +105,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -120,8 +130,11 @@ class DevApi(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
+    private val documentClient: DocumentService,
+    bucketEnv: BucketEnv
 ) {
+    private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
     @GetMapping
@@ -719,6 +732,35 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
             }
         }
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/pedagogical-document-attachment/{pedagogicalDocumentId}")
+    fun createPedagogicalDocumentAttachment(
+        db: Database.Connection,
+        @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
+        @RequestParam employeeId: UUID,
+        @RequestPart("file") file: MultipartFile
+    ): String {
+        return db.transaction { tx ->
+            val id = UUID.randomUUID()
+            tx.insertAttachment(
+                AttachmentId(id),
+                file.name,
+                file.contentType ?: "image/jpeg",
+                AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
+                uploadedByPerson = null,
+                uploadedByEmployee = employeeId,
+                type = null
+            )
+            documentClient.upload(
+                filesBucket,
+                DocumentWrapper(
+                    name = id.toString(),
+                    bytes = file.bytes
+                ),
+                file.contentType ?: "image/jpeg"
+            )
+        }.key
     }
 
     @PostMapping("/service-need-options")

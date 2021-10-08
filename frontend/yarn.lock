@@ -2571,6 +2571,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/form-data@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@types/form-data@npm:2.5.0"
+  dependencies:
+    form-data: "*"
+  checksum: c44b41e642061049f28807f579f4742c18d73fed98859de07651a6fc4e6c555e925c6b2041f0beef74f4613e430a09cc67d552fe95da8cd8cc757f92d4d70e2d
+  languageName: node
+  linkType: hard
+
 "@types/geojson@npm:*":
   version: 7946.0.7
   resolution: "@types/geojson@npm:7946.0.7"
@@ -5887,6 +5896,7 @@ __metadata:
     "@fortawesome/react-fontawesome": 0.1.15
     "@sentry/browser": ^6.10.0
     "@sentry/webpack-plugin": ^1.16.0
+    "@types/form-data": ^2.5.0
     "@types/jest": ^26.0.24
     "@types/leaflet": ^1.7.4
     "@types/lodash": ^4.14.171
@@ -6474,6 +6484,17 @@ __metadata:
     semver: ^7.3.2
     tapable: ^1.0.0
   checksum: ae17519010d811d0448d8db9a701168e92059b48fe34ae2775265a54dbea9785fd9863850efee15e2e8a08d527480484a0bd5539b9a7c8a3014ebd142d69aa49
+  languageName: node
+  linkType: hard
+
+"form-data@npm:*":
+  version: 4.0.0
+  resolution: "form-data@npm:4.0.0"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.8
+    mime-types: ^2.1.12
+  checksum: ecbe8f41bcf5c415f38e39058b34598a9261bb74a3d54b633d0b5dd8b7cf9a30b0626cd06ae8e79874a2ca88c222041142a7893e5afdd35fdfc3272264d03d44
   languageName: node
   linkType: hard
 

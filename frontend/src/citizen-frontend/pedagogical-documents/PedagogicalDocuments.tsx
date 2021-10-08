@@ -105,10 +105,10 @@ export default function PedagogicalDocuments() {
                     key={item.attachment.id}
                     file={item.attachment}
                     fileFetchFn={getAttachmentBlob}
-                    afterFetch={() => markPedagogicalDocumentRead(item.id)}
+                    afterFetch={() => onRead(item)}
                     onFileUnavailable={onAttachmentUnavailable}
                     icon={faArrowDown}
-                    data-qa="pedagogical-document-attachment-download"
+                    data-qa={`pedagogical-document-attachment-download-${item.id}`}
                     text={t.fileDownload.download}
                   />
                 )}

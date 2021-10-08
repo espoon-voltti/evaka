@@ -12,7 +12,10 @@ export default class CitizenPedagogicalDocumentsPage {
     this.page.locator(`[data-qa="pedagogical-document-date-${id}"]`)
   readonly #description = (id: string) =>
     this.page.locator(`[data-qa="pedagogical-document-description-${id}"]`)
-
+  readonly #downloadAttachment = (id: string) =>
+    this.page.locator(
+      `[data-qa="pedagogical-document-attachment-download-${id}"]`
+    )
   readonly #unreadDocumentCount = this.page.locator(
     '[data-qa="unread-pedagogical-documents-count"]'
   )
@@ -38,5 +41,9 @@ export default class CitizenPedagogicalDocumentsPage {
       () => this.#description(id).innerText(),
       expectedDescription
     )
+  }
+
+  async downloadAttachment(id: string) {
+    await this.#downloadAttachment(id).click()
   }
 }

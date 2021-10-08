@@ -4,7 +4,10 @@
 
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
-import { resetDatabase } from '../../../e2e-test-common/dev-api'
+import {
+  insertPedagogicalDocumentAttachment,
+  resetDatabase
+} from '../../../e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { enduserLogin } from '../../utils/user'
@@ -19,6 +22,9 @@ let fixtures: AreaAndPersonFixtures
 let page: Page
 let header: CitizenHeader
 let pedagogicalDocumentsPage: CitizenPedagogicalDocumentsPage
+
+const testFileName = 'test_file.png'
+const testFilePath = `src/e2e-playwright/assets`
 
 beforeEach(async () => {
   await resetDatabase()
@@ -39,17 +45,32 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
 
-      await Fixture.pedagogicalDocument()
+      const pd = await Fixture.pedagogicalDocument()
         .with({
           childId: fixtures.enduserChildFixtureJari.id,
           description: 'e2e test description'
         })
         .save()
 
+      const employee = await Fixture.employee()
+        .with({ roles: ['ADMIN'] })
+        .save()
+      await insertPedagogicalDocumentAttachment(
+        pd.data.id,
+        employee.data.id!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        testFileName,
+        testFilePath
+      )
+
       await page.reload()
       await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorCount(
         1
       )
+
+      await header.selectTab('pedagogical-documents')
+      await pedagogicalDocumentsPage.downloadAttachment(pd.data.id)
+
+      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
     })
   })
 

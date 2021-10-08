@@ -45,6 +45,8 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { FeeThresholds } from 'lib-common/api-types/finance'
+import * as fs from 'fs/promises'
+import FormData from 'form-data'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -749,6 +751,27 @@ export async function insertPedagogicalDocuments(
 ): Promise<void> {
   try {
     await devClient.post('/pedagogical-document', fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertPedagogicalDocumentAttachment(
+  pedagogicalDocumentId: string,
+  employeeId: string,
+  fileName: string,
+  filePath: string
+): Promise<void> {
+  const file = await fs.readFile(`${filePath}/${fileName}`)
+  const form = new FormData()
+  form.append('file', file, fileName)
+  form.append('employeeId', employeeId)
+  try {
+    await devClient.post(
+      `/pedagogical-document-attachment/${pedagogicalDocumentId}`,
+      form,
+      { headers: form.getHeaders() }
+    )
   } catch (e) {
     throw new DevApiError(e)
   }
