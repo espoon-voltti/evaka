@@ -3,6 +3,31 @@ DROP VIEW IF EXISTS koski_active_view;
 
 DROP FUNCTION IF EXISTS koski_active_study_right(today date);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
+DROP FUNCTION IF EXISTS koski_placement(today date);
+
+CREATE FUNCTION koski_placement(today date) RETURNS
+TABLE (
+    child_id uuid, unit_id uuid, type koski_study_right_type,
+    full_range daterange, placement_ranges daterange[], all_placements_in_past bool
+) AS $$
+    SELECT
+        child_id, unit_id, type,
+        daterange(min(start_date), max(end_date), '[]') AS full_range,
+        array_agg(daterange(start_date, end_date, '[]') ORDER BY start_date ASC) AS placement_ranges,
+        (max(end_date) < today) AS all_placements_in_past
+    FROM (
+        SELECT child_id, unit_id, start_date, end_date, (CASE placement.type
+            WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
+            WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
+            WHEN 'PREPARATORY' THEN 'PREPARATORY'
+            WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
+        END)::koski_study_right_type AS type
+        FROM placement
+        WHERE start_date <= today
+    ) p
+    WHERE type IS NOT NULL
+    GROUP BY child_id, unit_id, type
+$$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
@@ -30,29 +55,7 @@ TABLE (
         transport_benefit,
         special_assistance_decision_with_group,
         special_assistance_decision_without_group
-    FROM (
-        SELECT
-            child_id, unit_id,
-            array_agg(daterange(start_date, end_date, '[]') ORDER BY start_date ASC) AS placement_ranges,
-            daterange(min(start_date), max(end_date), '[]') AS full_range,
-            (max(end_date) < today) AS all_placements_in_past,
-            'PRESCHOOL'::koski_study_right_type AS type
-        FROM placement
-        WHERE type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE')
-        AND start_date <= today
-        GROUP BY (child_id, unit_id)
-        UNION ALL
-        SELECT
-            child_id, unit_id,
-            array_agg(daterange(start_date, end_date, '[]') ORDER BY start_date ASC) AS placement_ranges,
-            daterange(min(start_date), max(end_date), '[]') AS full_range,
-            (max(end_date) < today) AS all_placements_in_past,
-            'PREPARATORY'::koski_study_right_type AS type
-        FROM placement
-        WHERE type IN ('PREPARATORY', 'PREPARATORY_DAYCARE')
-        AND start_date <= today
-        GROUP BY (child_id, unit_id)
-    ) p
+    FROM koski_placement(today) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
     LEFT JOIN LATERAL (
@@ -136,14 +139,14 @@ TABLE (
         d.oph_unit_oid,
         d.oph_organization_oid,
         d.oph_organizer_oid,
-        coalesce(ksr.void_date, today) AS void_date
+        ksr.void_date
     FROM koski_study_right ksr
     JOIN daycare d ON ksr.unit_id = d.id
     JOIN person pr ON ksr.child_id = pr.id
     WHERE NOT EXISTS (
         SELECT 1
-        FROM koski_active_study_right(today) kav
-        WHERE (kav.child_id, kav.unit_id, kav.type) = (ksr.child_id, ksr.unit_id, ksr.type)
+        FROM koski_placement(today) kp
+        WHERE (kp.child_id, kp.unit_id, kp.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND d.upload_to_koski IS TRUE
