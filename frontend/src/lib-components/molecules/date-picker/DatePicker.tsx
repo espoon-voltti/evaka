@@ -106,29 +106,33 @@ function DatePicker({
   }
 
   useLayoutEffect(() => {
-    const realignPicker = () => {
-      if (wrapperRef.current) {
-        const distanceFromLeftEdge = wrapperRef.current.offsetLeft
-        const distanceFromRightEdge =
-          window.innerWidth - wrapperRef.current.offsetLeft - inputWidth
+    if (show) {
+      const realignPicker = () => {
+        if (wrapperRef.current) {
+          const distanceFromLeftEdge = wrapperRef.current.offsetLeft
+          const distanceFromRightEdge =
+            window.innerWidth - wrapperRef.current.offsetLeft - inputWidth
 
-        const leftOffset =
-          overflow - Math.min(overflow, distanceFromLeftEdge - minMargin)
-        const rightOffset =
-          overflow - Math.min(overflow, distanceFromRightEdge - minMargin)
+          const leftOffset =
+            overflow - Math.min(overflow, distanceFromLeftEdge - minMargin)
+          const rightOffset =
+            overflow - Math.min(overflow, distanceFromRightEdge - minMargin)
 
-        if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
-          const left = -overflow + leftOffset - rightOffset
-          pickerRef.current.style['left'] = `${left}px`
-          const right = -overflow - leftOffset + rightOffset
-          pickerRef.current.style['right'] = `${right}px`
+          if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
+            const left = -overflow + leftOffset - rightOffset
+            pickerRef.current.style['left'] = `${left}px`
+            const right = -overflow - leftOffset + rightOffset
+            pickerRef.current.style['right'] = `${right}px`
+          }
         }
       }
+      realignPicker()
+      addEventListener('resize', realignPicker, { passive: true })
+      return () => removeEventListener('resize', realignPicker)
     }
-    realignPicker()
-    addEventListener('resize', realignPicker, { passive: true })
-    return () => removeEventListener('resize', realignPicker)
-  }, [])
+
+    return
+  }, [show])
 
   useEffect(() => {
     function handleEvent(event: { target: EventTarget | null }) {
