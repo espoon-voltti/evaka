@@ -24,6 +24,7 @@ const sv: Translations = {
     add: 'Lägg till',
     yes: 'Ja',
     no: 'Nej',
+    select: 'Utvalda',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kommunal',
@@ -186,10 +187,9 @@ const sv: Translations = {
       selectChildrenLabel: 'Utvalda barn',
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
-      times: 'Tid',
+      repetition: 'Typ eller upprepning',
       businessDays: 'Mån-Fre',
       postError: 'Misslyckades med att reservera',
-      repeats: 'Upprepas',
       repetitions: {
         DAILY: 'Dagligen',
         WEEKLY: 'Veckovis',

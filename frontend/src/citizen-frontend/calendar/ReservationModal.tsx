@@ -190,6 +190,21 @@ export default React.memo(function ReservationModal({
         ))}
       </FixedSpaceFlexWrap>
 
+      <H2>{i18n.calendar.reservationModal.repetition}</H2>
+      <Label>{i18n.common.select}</Label>
+      <Combobox<Repetition>
+        items={['DAILY', 'WEEKLY', 'SHIFT_CARE']}
+        selectedItem={formData.repetition}
+        onChange={(value) => {
+          if (value) updateForm({ repetition: value })
+        }}
+        clearable={false}
+        getItemLabel={(item) =>
+          i18n.calendar.reservationModal.repetitions[item]
+        }
+        data-qa="repetition"
+      />
+
       <H2>{i18n.calendar.reservationModal.dateRange}</H2>
       <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
       <FixedSpaceRow>
@@ -222,23 +237,6 @@ export default React.memo(function ReservationModal({
           data-qa="end-date"
         />
       </FixedSpaceRow>
-
-      <H2>{i18n.calendar.reservationModal.times}</H2>
-
-      <Label>{i18n.calendar.reservationModal.repeats}</Label>
-      <Combobox<Repetition>
-        items={['DAILY', 'WEEKLY', 'SHIFT_CARE']}
-        selectedItem={formData.repetition}
-        onChange={(value) => {
-          if (value) updateForm({ repetition: value })
-        }}
-        clearable={false}
-        getItemLabel={(item) =>
-          i18n.calendar.reservationModal.repetitions[item]
-        }
-        data-qa="repetition"
-      />
-
       <Gap size="s" />
 
       {formData.repetition === 'DAILY' && (
@@ -290,10 +288,7 @@ export default React.memo(function ReservationModal({
                               endTime: ''
                             }
                           : undefined,
-                        ...formData.weeklyTimes.slice(
-                          i + 1,
-                          formData.weeklyTimes.length
-                        )
+                        ...formData.weeklyTimes.slice(i + 1)
                       ]
                     })
                   }

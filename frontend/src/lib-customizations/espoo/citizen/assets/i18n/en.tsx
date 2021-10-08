@@ -24,6 +24,7 @@ const en: Translations = {
     add: 'Add',
     yes: 'Yes',
     no: 'No',
+    select: 'Select',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',
@@ -186,10 +187,9 @@ const en: Translations = {
       selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
-      times: 'Time',
+      repetition: 'Type or repetition',
       businessDays: 'Mon-Fri',
       postError: 'The reservation failed',
-      repeats: 'Repeating',
       repetitions: {
         DAILY: 'Daily',
         WEEKLY: 'Weekly',

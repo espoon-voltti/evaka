@@ -23,6 +23,7 @@ export default {
     add: 'Lisää',
     yes: 'Kyllä',
     no: 'Ei',
+    select: 'Valitse',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',
@@ -185,10 +186,9 @@ export default {
       selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
-      times: 'Kellonaika',
+      repetition: 'Tyyppi tai toistuvuus',
       businessDays: 'Ma-Pe',
       postError: 'Varauksen luominen ei onnistunut',
-      repeats: 'Toistuu',
       repetitions: {
         DAILY: 'Päivittäin',
         WEEKLY: 'Viikoittain',
