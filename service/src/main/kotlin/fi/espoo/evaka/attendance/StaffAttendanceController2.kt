@@ -72,16 +72,15 @@ class StaffAttendanceController2(
                 it.markStaffArrival(
                     employeeId = body.employeeId,
                     groupId = body.groupId,
-                    arrivalTime = HelsinkiDateTime.now().withTime(body.time)
+                    arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
                 )
                 null
             } else {
                 val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(body.employeeId.raw)
-                if(locked) "PIN_LOCKED" else "WRONG_PIN"
-
+                if (locked) "PIN_LOCKED" else "WRONG_PIN"
             }
         }
-        if(errorCode != null) {
+        if (errorCode != null) {
             throw Forbidden("Invalid pin code", errorCode)
         }
     }
@@ -108,15 +107,15 @@ class StaffAttendanceController2(
             if (it.employeePinIsCorrect(attendance.employeeId.raw, body.pinCode)) {
                 it.markStaffDeparture(
                     attendanceId = attendanceId,
-                    departureTime = HelsinkiDateTime.now().withTime(body.time)
+                    departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
                 )
                 null
             } else {
                 val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(attendance.employeeId.raw)
-                if(locked) "PIN_LOCKED" else "WRONG_PIN"
+                if (locked) "PIN_LOCKED" else "WRONG_PIN"
             }
         }
-        if(errorCode != null) {
+        if (errorCode != null) {
             throw Forbidden("Invalid pin code", errorCode)
         }
     }

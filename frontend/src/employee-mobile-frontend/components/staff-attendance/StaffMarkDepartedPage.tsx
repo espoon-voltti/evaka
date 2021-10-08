@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -25,6 +25,8 @@ import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { combine } from 'lib-common/api'
+import { isAfter, parse } from 'date-fns'
+import { UnitContext } from '../../state/unit'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
@@ -36,13 +38,17 @@ export default React.memo(function StaffMarkDepartedPage() {
     employeeId: string
   }>()
 
+  const { unitInfoResponse } = useContext(UnitContext)
+
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
   useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
   const [pinCode, setPinCode] = useState('')
+  const pinInputRef = useRef<HTMLInputElement>(null)
   const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
   const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)
@@ -64,6 +70,8 @@ export default React.memo(function StaffMarkDepartedPage() {
         to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
       />
     )
+
+  const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
 
   return (
     <TallContentArea
@@ -89,15 +97,22 @@ export default React.memo(function StaffMarkDepartedPage() {
         paddingVertical={'m'}
       >
         {renderResult(
-          combine(staffMember, activeAttendanceId),
-          ([staffMember, attendanceId]) =>
-            staffMember === undefined ? (
-              <ErrorSegment title={'Työntekijää ei löytynyt'} />
-            ) : (
+          combine(unitInfoResponse, staffMember, activeAttendanceId),
+          ([unitInfo, staffMember, attendanceId]) => {
+            if (staffMember === undefined)
+              return <ErrorSegment title={'Työntekijää ei löytynyt'} />
+
+            const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
+            const pinSet = staffInfo?.pinSet ?? true
+            const pinLocked =
+              (staffInfo?.pinLocked ?? false) || errorCode === 'PIN_LOCKED'
+
+            return (
               <>
                 <TimeWrapper>
                   <Title noMargin>Kirjaudu pin-koodilla</Title>
                   <InputField
+                    inputRef={pinInputRef}
                     autoFocus
                     placeholder={i18n.attendances.pin.pinCode}
                     onChange={setPinCode}
@@ -105,6 +120,14 @@ export default React.memo(function StaffMarkDepartedPage() {
                     width="s"
                     type="password"
                     data-qa="set-pin"
+                    info={
+                      errorCode === 'WRONG_PIN'
+                        ? {
+                            status: 'warning',
+                            text: 'PIN-koodi ei kelvannut'
+                          }
+                        : undefined
+                    }
                   />
                   <Gap />
                   <label>Lähtöaika</label>
@@ -114,7 +137,16 @@ export default React.memo(function StaffMarkDepartedPage() {
                     width="s"
                     type="time"
                     data-qa="set-time"
+                    info={
+                      timeInFuture
+                        ? {
+                            status: 'warning',
+                            text: `Oltava ennen ${formatTime(new Date())}`
+                          }
+                        : undefined
+                    }
                   />
+                  <Gap />
                 </TimeWrapper>
                 <Gap size={'xs'} />
                 <Actions>
@@ -127,14 +159,29 @@ export default React.memo(function StaffMarkDepartedPage() {
                       <AsyncButton
                         primary
                         text={i18n.common.confirm}
-                        disabled={!isValidTime(time) || pinCode.length < 4}
+                        disabled={
+                          pinLocked ||
+                          !pinSet ||
+                          !isValidTime(time) ||
+                          timeInFuture ||
+                          pinCode.length < 4
+                        }
                         onClick={() =>
                           postStaffDeparture(attendanceId, {
                             time,
                             pinCode
+                          }).then((res) => {
+                            if (res.isFailure) {
+                              setErrorCode(res.errorCode)
+                              if (res.errorCode === 'WRONG_PIN') {
+                                setPinCode('')
+                                pinInputRef.current?.focus()
+                              }
+                            }
+                            return res
                           })
                         }
-                        onSuccess={() => history.go(-2)}
+                        onSuccess={() => history.go(-1)}
                         data-qa="mark-departed-btn"
                       />
                     )}
@@ -142,6 +189,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                 </Actions>
               </>
             )
+          }
         )}
       </ContentArea>
     </TallContentArea>

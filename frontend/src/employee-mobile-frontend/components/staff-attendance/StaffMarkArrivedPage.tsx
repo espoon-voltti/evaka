@@ -28,6 +28,7 @@ import { UUID } from 'lib-common/types'
 import { UnitContext } from '../../state/unit'
 import { combine, Success } from 'lib-common/api'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import { isAfter, parse } from 'date-fns'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
@@ -78,6 +79,8 @@ export default React.memo(function StaffMarkArrivedPage() {
       setAttendanceGroup(groupOptions.value[0].value)
     }
   }, [attendanceGroup, groupOptions])
+
+  const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
 
   return (
     <TallContentArea
@@ -149,6 +152,14 @@ export default React.memo(function StaffMarkArrivedPage() {
                     width="s"
                     type="time"
                     data-qa="set-time"
+                    info={
+                      timeInFuture
+                        ? {
+                            status: 'warning',
+                            text: `Oltava ennen ${formatTime(new Date())}`
+                          }
+                        : undefined
+                    }
                   />
                   {renderResult(groupOptions, (groupOptions) =>
                     groupOptions.length > 1 ? (
@@ -180,6 +191,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                         pinLocked ||
                         !pinSet ||
                         !isValidTime(time) ||
+                        timeInFuture ||
                         pinCode.length < 4 ||
                         !attendanceGroup
                       }
@@ -191,16 +203,18 @@ export default React.memo(function StaffMarkArrivedPage() {
                               time,
                               pinCode
                             }).then((res) => {
-                              if (res.isFailure && res.statusCode === 403) {
+                              if (res.isFailure) {
                                 setErrorCode(res.errorCode)
-                                setPinCode('')
-                                pinInputRef.current?.focus()
+                                if (res.errorCode === 'WRONG_PIN') {
+                                  setPinCode('')
+                                  pinInputRef.current?.focus()
+                                }
                               }
                               return res
                             })
                           : Promise.reject()
                       }
-                      onSuccess={() => history.go(-2)}
+                      onSuccess={() => history.go(-1)}
                       data-qa="mark-arrived-btn"
                     />
                   </FixedSpaceRow>
