@@ -65,8 +65,8 @@ export default function PedagogicalDocuments() {
         <Thead>
           <Tr>
             <Th>{t.pedagogicalDocuments.table.date}</Th>
-            <Th>{t.pedagogicalDocuments.table.document}</Th>
             <Th>{t.pedagogicalDocuments.table.description}</Th>
+            <Th>{t.pedagogicalDocuments.table.document}</Th>
             <Th />
           </Tr>
         </Thead>
@@ -79,6 +79,12 @@ export default function PedagogicalDocuments() {
               >
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
+              <DescriptionTd
+                documentIsRead={item.isRead}
+                data-qa={`pedagogical-document-description-${item.id}`}
+              >
+                {item.description}
+              </DescriptionTd>
               <NameTd>
                 {item.attachment && (
                   <FileDownloadButton
@@ -93,12 +99,6 @@ export default function PedagogicalDocuments() {
                   />
                 )}
               </NameTd>
-              <DescriptionTd
-                documentIsRead={item.isRead}
-                data-qa={`pedagogical-document-description-${item.id}`}
-              >
-                {item.description}
-              </DescriptionTd>
               <ActionsTd>
                 {item.attachment && (
                   <FileDownloadButton

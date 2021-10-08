@@ -129,6 +129,21 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       <DateTd data-qa="pedagogical-document-start-date">
         {LocalDate.fromSystemTzDate(pedagogicalDocument.created).format()}
       </DateTd>
+      <DescriptionTd data-qa="pedagogical-document-description">
+        {editMode ? (
+          <TextArea
+            value={pedagogicalDocument.description ?? ''}
+            onChange={(e) =>
+              setPedagogicalDocument((old) => ({
+                ...old,
+                description: e.target.value
+              }))
+            }
+          />
+        ) : (
+          pedagogicalDocument.description
+        )}
+      </DescriptionTd>
       <NameTd data-qa="pedagogical-document-document">
         {
           <FileUpload
@@ -147,21 +162,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           />
         }
       </NameTd>
-      <DescriptionTd data-qa="pedagogical-document-description">
-        {editMode ? (
-          <TextArea
-            value={pedagogicalDocument.description ?? ''}
-            onChange={(e) =>
-              setPedagogicalDocument((old) => ({
-                ...old,
-                description: e.target.value
-              }))
-            }
-          />
-        ) : (
-          pedagogicalDocument.description
-        )}
-      </DescriptionTd>
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
           <InlineButtons>

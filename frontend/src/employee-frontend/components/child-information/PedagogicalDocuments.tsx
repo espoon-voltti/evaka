@@ -154,8 +154,8 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
           <Thead>
             <Tr>
               <Th>{i18n.childInformation.pedagogicalDocument.date}</Th>
-              <Th>{i18n.childInformation.pedagogicalDocument.document}</Th>
               <Th>{i18n.childInformation.pedagogicalDocument.description}</Th>
+              <Th>{i18n.childInformation.pedagogicalDocument.document}</Th>
               <Th />
             </Tr>
           </Thead>
