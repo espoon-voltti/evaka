@@ -15,6 +15,8 @@ import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessage
 import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.messaging.message.hasPermissionForMessageDraft
 import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
+import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -26,6 +28,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -649,6 +652,30 @@ WHERE employee_id = :userId
         if (!hasPermissionUsingAllRoles(user, action, mapping)) {
             throw Forbidden("Permission denied")
         }
+    }
+
+    enum class PinError {
+        PIN_LOCKED,
+        WRONG_PIN
+    }
+
+    fun verifyPinCode(
+        employeeId: EmployeeId,
+        pinCode: String
+    ) {
+        val errorCode = Database(jdbi).connect {
+            it.transaction { tx ->
+                if (tx.employeePinIsCorrect(employeeId.raw, pinCode)) {
+                    null
+                } else {
+                    val locked = tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId.raw)
+                    if (locked) PinError.PIN_LOCKED else PinError.WRONG_PIN
+                }
+            }
+        }
+
+        // throw must be outside transaction to not rollback failure count increase
+        if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }
 

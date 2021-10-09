@@ -5,8 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.employeePinIsCorrect
-import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -15,9 +13,9 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -33,7 +31,8 @@ import java.time.LocalTime
 @RestController
 @RequestMapping("/v2/staff-attendances")
 class StaffAttendanceController2(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val ac: AccessControl
 ) {
     @GetMapping
     fun getAttendancesByUnit(
@@ -67,21 +66,15 @@ class StaffAttendanceController2(
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
         // todo: convert to action auth
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
-        val errorCode = db.transaction {
-            if (it.employeePinIsCorrect(body.employeeId.raw, body.pinCode)) {
-                it.markStaffArrival(
-                    employeeId = body.employeeId,
-                    groupId = body.groupId,
-                    arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
-                )
-                null
-            } else {
-                val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(body.employeeId.raw)
-                if (locked) "PIN_LOCKED" else "WRONG_PIN"
-            }
-        }
-        if (errorCode != null) {
-            throw Forbidden("Invalid pin code", errorCode)
+
+        ac.verifyPinCode(body.employeeId, body.pinCode)
+
+        db.transaction {
+            it.markStaffArrival(
+                employeeId = body.employeeId,
+                groupId = body.groupId,
+                arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+            )
         }
     }
 
@@ -103,20 +96,13 @@ class StaffAttendanceController2(
             ?: throw NotFound("attendance not found")
         acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
-        val errorCode = db.transaction {
-            if (it.employeePinIsCorrect(attendance.employeeId.raw, body.pinCode)) {
-                it.markStaffDeparture(
-                    attendanceId = attendanceId,
-                    departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
-                )
-                null
-            } else {
-                val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(attendance.employeeId.raw)
-                if (locked) "PIN_LOCKED" else "WRONG_PIN"
-            }
-        }
-        if (errorCode != null) {
-            throw Forbidden("Invalid pin code", errorCode)
+        ac.verifyPinCode(attendance.employeeId, body.pinCode)
+
+        db.transaction {
+            it.markStaffDeparture(
+                attendanceId = attendanceId,
+                departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+            )
         }
     }
 }
