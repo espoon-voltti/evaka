@@ -1682,9 +1682,9 @@ const en: Translations = {
     description:
       'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
-      date: 'Päivämäärä',
-      document: 'Dokumentti',
-      description: 'Kuvaus'
+      date: 'Date',
+      document: 'Document',
+      description: 'Description'
     }
   }
 }

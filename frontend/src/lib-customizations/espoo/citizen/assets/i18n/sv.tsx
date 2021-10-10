@@ -1214,7 +1214,7 @@ const sv: Translations = {
   fileDownload: {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
-    download: 'Laddar'
+    download: 'Ladda ner'
   },
   income: {
     title: 'Inkomstuppgifter',
@@ -1638,9 +1638,9 @@ const sv: Translations = {
     description:
       'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
-      date: 'Päivämäärä',
-      document: 'Dokumentti',
-      description: 'Kuvaus'
+      date: 'Datum',
+      document: 'Dokument',
+      description: 'Beskrivning'
     }
   }
 }
