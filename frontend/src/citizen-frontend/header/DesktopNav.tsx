@@ -35,7 +35,8 @@ export default React.memo(function DesktopNav({
   const user = useUser()
   const t = useTranslation()
 
-  const maybeLockElem = user?.userType !== 'ENDUSER' && (
+  const isEnduser = user?.userType === 'ENDUSER'
+  const maybeLockElem = !isEnduser && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
@@ -52,20 +53,20 @@ export default React.memo(function DesktopNav({
             <StyledNavLink to="/decisions" data-qa="nav-decisions">
               {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
-            <StyledNavLink
-              to="/pedagogical-documents"
-              data-qa="nav-pedagogical-documents"
-            >
-              {t.header.nav.pedagogicalDocuments}
-              {unreadPedagogicalDocuments > 0 ? (
-                <CircledChar data-qa={'unread-pedagogical-documents-count'}>
-                  {unreadPedagogicalDocuments}
-                </CircledChar>
-              ) : (
-                ''
-              )}
-              {maybeLockElem}
-            </StyledNavLink>
+            {featureFlags.pedagogicalDocumentsEnabled && (
+              <StyledNavLink
+                to="/pedagogical-documents"
+                data-qa="nav-pedagogical-documents"
+              >
+                {t.header.nav.pedagogicalDocuments}
+                {isEnduser && unreadPedagogicalDocuments > 0 && (
+                  <CircledChar data-qa={'unread-pedagogical-documents-count'}>
+                    {unreadPedagogicalDocuments}
+                  </CircledChar>
+                )}
+                {maybeLockElem}
+              </StyledNavLink>
+            )}
             {featureFlags.experimental?.incomeStatements && (
               <StyledNavLink to="/income" data-qa="nav-income">
                 {t.header.nav.income} {maybeLockElem}

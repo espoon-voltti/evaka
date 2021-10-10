@@ -101,11 +101,13 @@ export default function App() {
                         path="/decisions/by-application/:applicationId"
                         component={requireAuth(DecisionResponseList)}
                       />
-                      <Route
-                        exact
-                        path="/pedagogical-documents"
-                        component={requireAuth(PedagogicalDocuments)}
-                      />
+                      {featureFlags.pedagogicalDocumentsEnabled && (
+                        <Route
+                          exact
+                          path="/pedagogical-documents"
+                          component={requireAuth(PedagogicalDocuments)}
+                        />
+                      )}
                       <Route
                         exact
                         path="/messages"
