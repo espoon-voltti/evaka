@@ -1,0 +1,131 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import InputField from 'lib-components/atoms/form/InputField'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { H1, Label } from 'lib-components/typography'
+import { faArrowLeft } from 'lib-icons'
+import React, { useContext, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import { formatTime, isValidTime } from 'lib-common/date'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { Result } from 'lib-common/api'
+import { postExternalStaffArrival } from '../../api/staffAttendances'
+import { useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { renderResult } from '../async-rendering'
+import { Actions, BackButtonInline } from '../attendances/components'
+import { TallContentArea } from '../mobile/components'
+
+interface FormState {
+  arrived: string
+  name: string
+  group: GroupInfo | null
+}
+
+export default function MarkExternalStaffMemberArrivalPage() {
+  const history = useHistory()
+  const { groupId } = useParams<{ groupId: string }>()
+  const { i18n } = useTranslation()
+  const { unitInfoResponse } = useContext(UnitContext)
+
+  const [form, setForm] = useState<FormState>({
+    arrived: formatTime(new Date()),
+    group: unitInfoResponse
+      .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
+      .getOrElse(null),
+    name: ''
+  })
+
+  const onSubmit = (): Promise<Result<void>> =>
+    form.group
+      ? postExternalStaffArrival({
+          arrived: form.arrived,
+          groupId: form.group.id,
+          name: form.name
+        })
+      : Promise.reject()
+
+  const formIsValid = () =>
+    !!(isValidTime(form.arrived) && form.name.trim() && form.group)
+
+  return (
+    <TallContentArea
+      opaque={false}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
+    >
+      <div>
+        <BackButtonInline
+          onClick={() => history.goBack()}
+          icon={faArrowLeft}
+          text="Kirjaa muu henkilö"
+        />
+      </div>
+      <ContentArea
+        shadow
+        opaque={true}
+        paddingHorizontal="s"
+        paddingVertical="m"
+      >
+        <H1 centered>Kirjaa muu vastuullinen henkilö sisään</H1>
+        <HorizontalLine />
+        <ListGrid>
+          <Label>Saapumisaika</Label>
+          <InputField
+            type="time"
+            value={form.arrived}
+            onChange={(arrived) => setForm((old) => ({ ...old, arrived }))}
+            width="s"
+            data-qa="input-arrived"
+          />
+
+          <Label>Nimi</Label>
+          <InputField
+            type="text"
+            value={form.name}
+            onChange={(name) => setForm((old) => ({ ...old, name }))}
+            width="full"
+            data-qa="input-name"
+          />
+
+          <Label>Ryhmä</Label>
+          {renderResult(unitInfoResponse, (unit) => (
+            <Combobox
+              items={unit.groups}
+              selectedItem={form.group}
+              getItemLabel={({ name }) => name}
+              onChange={(group) => setForm((old) => ({ ...old, group }))}
+              data-qa="input-group"
+            />
+          ))}
+        </ListGrid>
+        <Gap size="xs" />
+        <Actions>
+          <FixedSpaceRow fullWidth>
+            <Button
+              text={i18n.common.cancel}
+              onClick={() => history.goBack()}
+            />
+            <AsyncButton
+              primary
+              text={i18n.common.confirm}
+              disabled={!formIsValid()}
+              onClick={onSubmit}
+              onSuccess={() => history.go(-1)}
+              data-qa="mark-arrived-btn"
+            />
+          </FixedSpaceRow>
+        </Actions>
+      </ContentArea>
+    </TallContentArea>
+  )
+}

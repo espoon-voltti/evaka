@@ -78,7 +78,7 @@ CREATE INDEX idx$vasu_document_event_document_id ON vasu_document_event(vasu_doc
 -- staff attendance
 
 DROP TABLE IF EXISTS staff_attendance_2;
-DROP TABLE IF EXISTS staff_attendance_externals;
+DROP TABLE IF EXISTS staff_attendance_external;
 
 -- will replace the original staff attendance later
 CREATE TABLE staff_attendance_2(
@@ -99,7 +99,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_2 FOR EACH ROW EX
 CREATE INDEX idx$staff_attendance_employee_id_times ON staff_attendance_2(employee_id, arrived, departed);
 -- TODO indices
 
-CREATE TABLE staff_attendance_externals(
+CREATE TABLE staff_attendance_external(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
@@ -108,8 +108,8 @@ CREATE TABLE staff_attendance_externals(
     arrived timestamp with time zone NOT NULL,
     departed timestamp with time zone,
 
-    CONSTRAINT staff_attendance_externals_start_before_end CHECK (arrived < departed)
+    CONSTRAINT staff_attendance_external_start_before_end CHECK (arrived < departed)
 );
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_externals FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_external FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 -- TODO indices

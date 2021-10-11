@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
@@ -17,6 +18,7 @@ data class StaffAttendanceResponse(
 )
 
 data class ExternalStaffMember(
+    val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
