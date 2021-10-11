@@ -186,6 +186,8 @@ enum class Audit(
     PartnerShipsRetry("evaka.partnerships.retry"),
     PartnerShipsUpdate("evaka.partnerships.update"),
     PartnersInDifferentAddressReportRead("evaka.partners-in-different-address-report.read"),
+    PedagogicalDocumentCountUnread("evaka.pedagogical-document.count-unread"),
+    PedagogicalDocumentReadByGuardian("evaka.pedagogical-document.read-by-guardian", securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentRead("evaka.pedagogical-document.read", securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentUpdate("evaka.pedagogical-document.update", securityEvent = true, securityLevel = "high"),
     PersonContactInfoUpdate("evaka.person-contact-info.update", securityEvent = true, securityLevel = "high"),

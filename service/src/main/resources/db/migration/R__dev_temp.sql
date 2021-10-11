@@ -75,7 +75,6 @@ CREATE TABLE vasu_document_event(
 CREATE INDEX idx$vasu_document_event_document_id ON vasu_document_event(vasu_document_id);
 
 
-
 -- staff attendance
 
 DROP TABLE IF EXISTS staff_attendance_2;

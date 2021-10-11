@@ -30,6 +30,7 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
+import router from '../enduser/routes'
 
 const app = express()
 const redisClient = createRedisClient()
@@ -94,6 +95,11 @@ function internalApiRouter() {
   )
 
   if (enableDevApi) {
+    router.post(
+      '/dev-api/pedagogical-document-attachment/:id',
+      createProxy({ multipart: true })
+    )
+
     router.use(
       '/dev-api',
       createProxy({ path: ({ path }) => `/dev-api${path}` })

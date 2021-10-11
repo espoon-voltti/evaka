@@ -13,6 +13,10 @@ import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 import { useUser } from '../auth'
 import { MessageContext, MessagePageState } from '../messages/state'
+import {
+  PedagogicalDocumentsContext,
+  PedagogicalDocumentsState
+} from '../pedagogical-documents/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -25,15 +29,28 @@ export default React.memo(function Header() {
     if (user) refreshUnreadMessagesCount()
   }, [refreshUnreadMessagesCount, user])
 
+  const {
+    unreadPedagogicalDocumentsCount,
+    refreshUnreadPedagogicalDocumentsCount
+  } = useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
+
+  useEffect(() => {
+    if (user) refreshUnreadPedagogicalDocumentsCount()
+  }, [refreshUnreadPedagogicalDocumentsCount, user])
+
   return (
     <HeaderContainer>
       <CityLogo />
       <EvakaLogo />
-      <DesktopNav unreadMessagesCount={unreadMessagesCount ?? 0} />
+      <DesktopNav
+        unreadMessagesCount={unreadMessagesCount ?? 0}
+        unreadPedagogicalDocuments={unreadPedagogicalDocumentsCount ?? 0}
+      />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
+        unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount ?? 0}
       />
     </HeaderContainer>
   )

@@ -25,13 +25,18 @@ import { getLoginUri, getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
+  unreadPedagogicalDocuments: number
 }
 
-export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
+export default React.memo(function DesktopNav({
+  unreadMessagesCount,
+  unreadPedagogicalDocuments
+}: Props) {
   const user = useUser()
   const t = useTranslation()
 
-  const maybeLockElem = user?.userType !== 'ENDUSER' && (
+  const isEnduser = user?.userType === 'ENDUSER'
+  const maybeLockElem = !isEnduser && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
@@ -42,6 +47,20 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
             <StyledNavLink to="/applying" data-qa="nav-applying">
               {t.header.nav.applying} {maybeLockElem}
             </StyledNavLink>
+            {featureFlags.pedagogicalDocumentsEnabled && (
+              <StyledNavLink
+                to="/pedagogical-documents"
+                data-qa="nav-pedagogical-documents"
+              >
+                {t.header.nav.pedagogicalDocuments}
+                {isEnduser && unreadPedagogicalDocuments > 0 && (
+                  <CircledChar data-qa={'unread-pedagogical-documents-count'}>
+                    {unreadPedagogicalDocuments}
+                  </CircledChar>
+                )}
+                {maybeLockElem}
+              </StyledNavLink>
+            )}
             {user.accessibleFeatures.messages && (
               <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}

@@ -563,3 +563,13 @@ export interface EmployeePin {
   pin: string
   locked?: boolean
 }
+
+export interface PedagogicalDocument {
+  id: string
+  childId: string
+  description: string
+  created?: Date
+  createdBy?: string
+  updated?: Date
+  updatedBy?: string
+}

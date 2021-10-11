@@ -22,7 +22,6 @@ import {
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 import { UIContext } from '../../state/ui'
-import { deleteAttachment } from '../../api/attachments'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
@@ -69,14 +68,7 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
 
   const deleteDocument = async () => {
     if (!tobeDeleted) return
-    const attachmentId = tobeDeleted.attachment?.id
-    if (!attachmentId)
-      return deletePedagogicalDocument(tobeDeleted.id).then(loadData)
-    else {
-      return deleteAttachment(attachmentId)
-        .then(() => deletePedagogicalDocument(tobeDeleted.id))
-        .then(loadData)
-    }
+    return deletePedagogicalDocument(tobeDeleted.id).then(loadData)
   }
 
   const createNewDocument = () => {
@@ -154,8 +146,8 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
           <Thead>
             <Tr>
               <Th>{i18n.childInformation.pedagogicalDocument.date}</Th>
-              <Th>{i18n.childInformation.pedagogicalDocument.document}</Th>
               <Th>{i18n.childInformation.pedagogicalDocument.description}</Th>
+              <Th>{i18n.childInformation.pedagogicalDocument.document}</Th>
               <Th />
             </Tr>
           </Thead>

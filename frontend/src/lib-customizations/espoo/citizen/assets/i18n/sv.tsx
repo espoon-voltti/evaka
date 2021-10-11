@@ -90,7 +90,8 @@ const sv: Translations = {
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
-      applying: 'Ansöker'
+      applying: 'Ansöker',
+      pedagogicalDocuments: 'Kasvu ja oppiminen'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1212,7 +1213,8 @@ const sv: Translations = {
   },
   fileDownload: {
     modalHeader: 'Behandling av filen pågår',
-    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
+    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    download: 'Ladda ner'
   },
   income: {
     title: 'Inkomstuppgifter',
@@ -1629,6 +1631,16 @@ const sv: Translations = {
       message:
         'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
       returnMessage: 'Gå tillbaka till inloggningen'
+    }
+  },
+  pedagogicalDocuments: {
+    title: 'Kasvu ja oppiminen',
+    description:
+      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
+    table: {
+      date: 'Datum',
+      document: 'Dokument',
+      description: 'Beskrivning'
     }
   }
 }

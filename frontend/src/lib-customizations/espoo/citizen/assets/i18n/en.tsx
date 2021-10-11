@@ -90,7 +90,8 @@ const en: Translations = {
       income: 'Income',
       messages: 'Messages',
       calendar: 'Calendar',
-      applying: 'Applying'
+      applying: 'Applying',
+      pedagogicalDocuments: 'Kasvu ja oppiminen'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1261,7 +1262,8 @@ const en: Translations = {
   },
   fileDownload: {
     modalHeader: 'Processing file',
-    modalMessage: 'File is being processed. Try again later'
+    modalMessage: 'File is being processed. Try again later',
+    download: 'Download'
   },
   income: {
     title: 'Income information',
@@ -1673,6 +1675,16 @@ const en: Translations = {
       message:
         'The identification process failed or was stopped. To log in, go back and try again.',
       returnMessage: 'Go back'
+    }
+  },
+  pedagogicalDocuments: {
+    title: 'Kasvu ja oppiminen',
+    description:
+      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
+    table: {
+      date: 'Date',
+      document: 'Document',
+      description: 'Description'
     }
   }
 }

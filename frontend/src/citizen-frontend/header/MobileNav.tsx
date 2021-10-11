@@ -23,12 +23,14 @@ type Props = {
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
+  unreadPedagogicalDocumentsCount: number
 }
 
 export default React.memo(function MobileNav({
   showMenu,
   setShowMenu,
-  unreadMessagesCount
+  unreadMessagesCount,
+  unreadPedagogicalDocumentsCount
 }: Props) {
   const user = useUser()
   const t = useTranslation()
@@ -48,7 +50,11 @@ export default React.memo(function MobileNav({
         <MenuContainer>
           <LanguageMenu close={close} />
           <Gap size="s" />
-          <Navigation close={close} unreadMessagesCount={unreadMessagesCount} />
+          <Navigation
+            close={close}
+            unreadMessagesCount={unreadMessagesCount}
+            unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount}
+          />
           <Spacer />
           <UserContainer>
             <UserName>{`${user?.firstName ?? ''} ${
@@ -176,15 +182,18 @@ const LangButton = styled.button<{ active: boolean }>`
 
 const Navigation = React.memo(function Navigation({
   close,
-  unreadMessagesCount
+  unreadMessagesCount,
+  unreadPedagogicalDocumentsCount
 }: {
   close: () => void
   unreadMessagesCount: number
+  unreadPedagogicalDocumentsCount: number
 }) {
   const t = useTranslation()
   const user = useUser()
 
-  const maybeLockElem = user?.userType !== 'ENDUSER' && (
+  const isEnduser = user?.userType === 'ENDUSER'
+  const maybeLockElem = !isEnduser && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
@@ -201,6 +210,21 @@ const Navigation = React.memo(function Navigation({
           {featureFlags.experimental?.incomeStatements && (
             <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
               {t.header.nav.income} {maybeLockElem}
+            </StyledNavLink>
+          )}
+          {featureFlags.pedagogicalDocumentsEnabled && (
+            <StyledNavLink
+              to="/pedagogical-documents"
+              data-qa="nav-pedagogical-documents"
+              onClick={close}
+            >
+              {t.header.nav.pedagogicalDocuments}{' '}
+              {isEnduser && unreadPedagogicalDocumentsCount > 0 && (
+                <FloatingCircledChar>
+                  {unreadPedagogicalDocumentsCount}
+                </FloatingCircledChar>
+              )}
+              {maybeLockElem}
             </StyledNavLink>
           )}
           {user.accessibleFeatures.messages && (

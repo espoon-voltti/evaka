@@ -25,12 +25,13 @@ import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents
 import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
 import LocalDate from 'lib-common/local-date'
+import { isNull } from 'lodash'
 
 interface Props {
   id: UUID
   childId: UUID
   attachment: Attachment | null
-  description: string
+  description: string | null
   created: Date
   updated: Date
   initInEditMode: boolean
@@ -66,6 +67,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const updateDocument = () => {
     const { childId, description } = pedagogicalDocument
+    if (isNull(description)) return
     setSubmitting(true)
     void updatePedagogicalDocument(id, { childId, description }).then((res) => {
       setSubmitting(false)
@@ -127,6 +129,21 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       <DateTd data-qa="pedagogical-document-start-date">
         {LocalDate.fromSystemTzDate(pedagogicalDocument.created).format()}
       </DateTd>
+      <DescriptionTd data-qa="pedagogical-document-description">
+        {editMode ? (
+          <TextArea
+            value={pedagogicalDocument.description ?? ''}
+            onChange={(e) =>
+              setPedagogicalDocument((old) => ({
+                ...old,
+                description: e.target.value
+              }))
+            }
+          />
+        ) : (
+          pedagogicalDocument.description
+        )}
+      </DescriptionTd>
       <NameTd data-qa="pedagogical-document-document">
         {
           <FileUpload
@@ -145,21 +162,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           />
         }
       </NameTd>
-      <DescriptionTd data-qa="pedagogical-document-description">
-        {editMode ? (
-          <TextArea
-            value={pedagogicalDocument.description}
-            onChange={(e) =>
-              setPedagogicalDocument((old) => ({
-                ...old,
-                description: e.target.value
-              }))
-            }
-          />
-        ) : (
-          pedagogicalDocument.description
-        )}
-      </DescriptionTd>
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
           <InlineButtons>
@@ -167,7 +169,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               data-qa={'pedagogical-document-button-save'}
               onClick={updateDocument}
               text={i18n.common.save}
-              disabled={submitting}
+              disabled={!pedagogicalDocument.description?.length || submitting}
             />
             <InlineButton
               data-qa={'pedagogical-document-button-cancel'}

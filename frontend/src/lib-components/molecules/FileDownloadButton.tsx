@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { downloadBlobAsFile } from 'lib-common/utils/file'
+import { downloadBlobAsFile, openBlobInBrowser } from 'lib-common/utils/file'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -28,9 +28,12 @@ const DownloadButton = styled.button`
 interface FileDownloadButtonProps {
   file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
+  afterFetch?: () => void
   onFileUnavailable: () => void
   icon?: IconDefinition | boolean
   'data-qa'?: string
+  openInBrowser?: boolean
+  text?: string
 }
 
 /**
@@ -40,9 +43,12 @@ interface FileDownloadButtonProps {
 export default React.memo(function FileDownloadButton({
   file,
   fileFetchFn,
+  afterFetch = () => undefined,
   onFileUnavailable,
   icon,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  openInBrowser = false,
+  text
 }: FileDownloadButtonProps) {
   const getFileIfAvailable = async (file: Attachment) => {
     const result = await fileFetchFn(file.id)
@@ -57,16 +63,21 @@ export default React.memo(function FileDownloadButton({
       throw new Error(result.message)
     }
 
-    downloadBlobAsFile(file.name, result.value)
+    if (openInBrowser)
+      openBlobInBrowser(file.name, file.contentType, result.value)
+    else downloadBlobAsFile(file.name, result.value)
   }
 
   return (
-    <DownloadButton onClick={() => getFileIfAvailable(file)} data-qa={dataQa}>
+    <DownloadButton
+      onClick={() => getFileIfAvailable(file).then(afterFetch)}
+      data-qa={dataQa}
+    >
       <FixedSpaceRow spacing="xs" alignItems="center" key={file.id}>
         {icon && (
           <FontAwesomeIcon icon={icon === true ? fileIcon(file) : icon} />
         )}
-        <div>{file.name}</div>
+        <div>{text ?? file.name}</div>
       </FixedSpaceRow>
     </DownloadButton>
   )

@@ -25,7 +25,8 @@ import {
   VoucherValueDecision,
   UUID,
   DaycareGroupPlacement,
-  EmployeePin
+  EmployeePin,
+  PedagogicalDocument
 } from './types'
 import {
   insertCareAreaFixtures,
@@ -34,6 +35,7 @@ import {
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
+  insertPedagogicalDocuments,
   insertPersonFixture,
   insertVtjPersonFixture
 } from './index'
@@ -993,6 +995,14 @@ export class Fixture {
       pin: uniqueLabel(4)
     })
   }
+
+  static pedagogicalDocument(): PedagogicalDocumentBuilder {
+    return new PedagogicalDocumentBuilder({
+      id: uuidv4(),
+      childId: 'not set',
+      description: 'not set'
+    })
+  }
 }
 
 export class DaycareBuilder {
@@ -1205,5 +1215,31 @@ export class EmployeePinBuilder {
   // Note: shallow copy
   copy(): EmployeePinBuilder {
     return new EmployeePinBuilder({ ...this.data })
+  }
+}
+
+export class PedagogicalDocumentBuilder {
+  data: PedagogicalDocument
+
+  constructor(data: PedagogicalDocument) {
+    this.data = data
+  }
+
+  with(value: Partial<PedagogicalDocument>): PedagogicalDocumentBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<PedagogicalDocumentBuilder> {
+    await insertPedagogicalDocuments([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): PedagogicalDocumentBuilder {
+    return new PedagogicalDocumentBuilder({ ...this.data })
   }
 }

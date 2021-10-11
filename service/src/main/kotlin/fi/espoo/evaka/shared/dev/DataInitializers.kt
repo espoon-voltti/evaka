@@ -990,3 +990,18 @@ VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :vardaDeci
 RETURNING evaka_service_need_id
     """
 )
+
+data class DevPedagogicalDocument(
+    val id: UUID,
+    val childId: UUID,
+    val description: String
+)
+
+fun Database.Transaction.insertPedagogicalDocument(pedagogicalDocument: DevPedagogicalDocument) = insertTestDataRow(
+    pedagogicalDocument,
+    """
+INSERT INTO pedagogical_document (id, child_id, description)
+VALUES (:id, :childId, :description)
+RETURNING id
+    """
+)
