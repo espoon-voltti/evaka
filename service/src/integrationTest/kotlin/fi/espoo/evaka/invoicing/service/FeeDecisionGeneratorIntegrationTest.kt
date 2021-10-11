@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestFeeThresholds
 import fi.espoo.evaka.invoicing.testFeeThresholds
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
@@ -57,9 +58,12 @@ import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
@@ -1381,6 +1385,170 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `fee decision family sizes and sibling discounts are formed correctly when fridge partners change`() {
+        val firstPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val secondPeriod = DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 12, 31))
+        val wholePeriod = firstPeriod.copy(end = secondPeriod.end)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), wholePeriod)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id), wholePeriod)
+        insertFamilyRelations(testAdult_3.id, listOf(testChild_4.id), wholePeriod)
+
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
+        insertPartnership(testAdult_1.id, testAdult_3.id, secondPeriod)
+
+        insertPlacement(testChild_1.id, wholePeriod, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_3.id, wholePeriod, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_4.id, wholePeriod, DAYCARE, testDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, wholePeriod) }
+
+        val testAdult1decisions = getAllFeeDecisions().filter { it.headOfFamily.id == testAdult_1.id }
+        assertEquals(2, testAdult1decisions.size)
+        assertEquals(listOf(4, 4), testAdult1decisions.map { it.familySize })
+        assertEquals(listOf(testChild_1.id, testChild_1.id), testAdult1decisions.flatMap { it.children.map { it.child.id } })
+        assertEquals(listOf(50, 50), testAdult1decisions.flatMap { it.children.map { child -> child.siblingDiscount } })
+    }
+
+    @Test
+    fun `when fridge partners are guardians of all children at the same address, only send one fee decision`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
+        insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
+        insertGuardianship(testAdult_2.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
+
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
+
+        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testAdult_2.id, 310200, period)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, testAdult_1.id, period)
+            generator.generateNewDecisionsForAdult(it, testAdult_2.id, period)
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions[0].let { decision ->
+            assertEquals(5, decision.familySize)
+            assertEquals(3, decision.children.size)
+            assertEquals(testAdult_1.id, decision.headOfFamily.id)
+            assertEquals(listOf(0, 50, 80), decision.children.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
+        }
+    }
+
+    @Test
+    fun `when fridge partners are not guardians of all children at the same address, send separate fee decisions with correct family sizes and sibling discounts`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
+        insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id))
+        insertGuardianship(testAdult_2.id, listOf(testChild_8.id))
+
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
+
+        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testAdult_2.id, 310200, period)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, testAdult_1.id, period)
+            generator.generateNewDecisionsForAdult(it, testAdult_2.id, period)
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(2, decisions.size)
+        assertEquals(setOf(5), decisions.map { it.familySize }.toSet())
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamily.id }.toSet())
+
+        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id }
+        assertEquals(listOf(testChild_1, testChild_2).sortedByDescending { it.dateOfBirth }.map { it.id }, decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.child.id })
+        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
+
+        assertEquals(listOf(0, 50, 80), decisions.flatMap { it.children }.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
+    }
+
+    @Test
+    fun `when fridge partners have four children with complicated family relations, the fee decisions are created correctly`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id, testChild_4.id), period)
+        insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id))
+        insertGuardianship(testAdult_2.id, listOf(testChild_2.id, testChild_3.id, testChild_4.id))
+
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_4.id, period, DAYCARE, testDaycare.id)
+
+        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testAdult_2.id, 310200, period)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, testAdult_1.id, period)
+            generator.generateNewDecisionsForAdult(it, testAdult_2.id, period)
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(2, decisions.size)
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamily.id }.toSet())
+        assertEquals(setOf(6), decisions.map { it.familySize }.toSet())
+
+        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id }
+        assertEquals(setOf(testChild_1.id, testChild_2.id), decisionForAdult1?.children?.map { it.child.id }?.toSet())
+        assertEquals(setOf(testChild_3.id, testChild_4.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
+        assertEquals(listOf(0, 50, 80, 80), decisions.flatMap { it.children }.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
+    }
+
+    @Test
+    fun `require partnership for fridge family discounts`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
+        insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id))
+        insertGuardianship(testAdult_2.id, listOf(testChild_8.id))
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
+
+        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testAdult_2.id, 310200, period)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, testAdult_1.id, period)
+            generator.generateNewDecisionsForAdult(it, testAdult_2.id, period)
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(2, decisions.size)
+        assertEquals(setOf(3, 2), decisions.map { it.familySize }.toSet())
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamily.id }.toSet())
+
+        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id }
+        assertEquals(
+            setOf(testChild_1.id, testChild_2.id),
+            decisionForAdult1?.children?.map { it.child.id }?.toSet()
+        )
+        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
+
+        assertEquals(listOf(0, 50), decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
+        assertEquals(listOf(0), decisionForAdult2?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
+    }
+
+    @Test
     fun `fee decision generation works as expected with changing children`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
@@ -1762,6 +1930,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             childIds.forEach { childId ->
                 tx.insertTestParentship(headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)
+            }
+        }
+    }
+
+    private fun insertGuardianship(guardian: UUID, childIds: List<UUID>) {
+        db.transaction { tx ->
+            childIds.forEach { childId ->
+                tx.insertGuardian(guardian, childId)
             }
         }
     }
