@@ -68,7 +68,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then 2 reservations are added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .flatMap { it.children.mapNotNull { child -> child.reservation } }
+            .flatMap { it.children.mapNotNull { child -> child.reservations.takeIf { it.isNotEmpty() } } }
         assertEquals(2, reservations.size)
     }
 
@@ -101,7 +101,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then only 1 reservation is added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first())
     }
@@ -135,7 +135,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then no reservation are added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
         assertEquals(0, reservations.size)
     }
 
@@ -168,7 +168,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then only 1 reservation is added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first())
     }
@@ -203,7 +203,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then only 1 reservation is added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first())
     }
@@ -239,7 +239,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then 1 reservation is added
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservation != null } } }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
         assertEquals(1, reservations.size)
         assertEquals(monday, reservations.first())
 
@@ -288,12 +288,12 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // then 1 reservation is changed
         val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange) }
-            .flatMap { dailyData -> dailyData.children.map { child -> dailyData.date to child.reservation } }
+            .flatMap { dailyData -> dailyData.children.map { child -> dailyData.date to child.reservations } }
         assertEquals(2, reservations.size)
         assertEquals(monday, reservations[0].first)
-        assertEquals("12:00", reservations[0].second?.startTime)
+        assertEquals("12:00", reservations[0].second[0].startTime)
         assertEquals(monday.plusDays(1), reservations[1].first)
-        assertEquals("09:00", reservations[1].second?.startTime)
+        assertEquals("09:00", reservations[1].second[0].startTime)
     }
 
     @Test

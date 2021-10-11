@@ -4,8 +4,11 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Translations, useTranslation } from 'citizen-frontend/localization'
-import { ChildDailyData, DailyReservationData } from './api'
+import {
+  ChildDailyData,
+  DailyReservationData
+} from 'lib-common/generated/api-types/reservations'
+import { Translations, useTranslation } from '../localization'
 
 export const Reservations = React.memo(function Reservations({
   data
@@ -47,13 +50,15 @@ const NoReservationNote = styled.span`
 
 const uniqueReservations = (
   i18n: Translations,
-  reservations: ChildDailyData[]
+  data: ChildDailyData[]
 ): string[] => {
-  const uniqueReservationTimes: string[] = reservations
-    .map(({ absence, reservation }) =>
-      absence === null && reservation !== null
-        ? `${reservation.startTime} – ${reservation.endTime}`
-        : undefined
+  const uniqueReservationTimes: string[] = data
+    .flatMap(({ absence, reservations }) =>
+      absence === null
+        ? reservations.map(
+            ({ startTime, endTime }) => `${startTime} – ${endTime}`
+          )
+        : []
     )
     .filter((reservation): reservation is string => reservation !== undefined)
     .reduce<string[]>(
@@ -62,7 +67,7 @@ const uniqueReservations = (
       []
     )
 
-  const someoneIsAbsent = reservations.some(({ absence }) => absence !== null)
+  const someoneIsAbsent = data.some(({ absence }) => absence !== null)
 
   return [
     ...(someoneIsAbsent ? [i18n.calendar.absent] : []),

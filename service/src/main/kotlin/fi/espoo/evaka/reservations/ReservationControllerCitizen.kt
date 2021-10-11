@@ -115,7 +115,7 @@ data class DailyReservationData(
 data class ChildDailyData(
     val childId: UUID,
     val absence: AbsenceType?,
-    val reservation: Reservation?
+    val reservations: List<Reservation>
 )
 
 @Json
@@ -148,25 +148,26 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', g.child_id,
-                'absence', a.absence_type
-            ) || (CASE
-                WHEN ar.start_time IS NULL THEN '{}'::jsonb
-                ELSE jsonb_build_object(
-                    'reservation',
-                    jsonb_build_object(
-                        'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                        'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
-                    )
-                )
-            END)
-        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.id IS NOT NULL),
+                'absence', a.absence_type,
+                'reservations', coalesce(ar.reservations, '[]')
+            )
+        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL),
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t
 JOIN guardian g ON g.guardian_id = :guardianId
 JOIN placement p ON g.child_id = p.child_id
 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
+LEFT JOIN LATERAL (
+    SELECT
+        jsonb_agg(
+            jsonb_build_object(
+                'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+            )
+        ) AS reservations
+    FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.start_date = t::date
+) ar ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
 ) a ON true

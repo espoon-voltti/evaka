@@ -12,7 +12,7 @@ import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
-import { postReservations, ReservationChild } from './api'
+import { postReservations } from './api'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -30,8 +30,9 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
 import {
   DailyReservationRequest,
+  ReservationChild,
   TimeRange
-} from 'lib-common/api-types/reservations'
+} from 'lib-common/generated/api-types/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faPlus, faTrash } from 'lib-icons'
 

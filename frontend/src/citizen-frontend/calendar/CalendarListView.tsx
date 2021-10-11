@@ -13,7 +13,7 @@ import WeekElem from './WeekElem'
 import { defaultMargins } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../localization'
-import { DailyReservationData } from './api'
+import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 
 export interface Props {
   dailyData: DailyReservationData[]

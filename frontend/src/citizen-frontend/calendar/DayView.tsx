@@ -4,17 +4,24 @@
 
 import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { sortBy } from 'lodash'
 import {
   faCheck,
   faChevronLeft,
   faChevronRight,
   faPen,
+  faPlus,
+  faTrash,
   faUserMinus
 } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -22,11 +29,11 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
 import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
-  postReservations,
   ChildDailyData,
   ReservationChild,
   ReservationsResponse
-} from './api'
+} from 'lib-common/generated/api-types/reservations'
+import { postReservations } from './api'
 import CalendarModal from './CalendarModal'
 import { errorToInputInfo } from '../input-info-helper'
 
@@ -56,16 +63,22 @@ export default React.memo(function DayView({
   )
 
   const childrenWithReservations = useMemo(() => {
-    const reservations = data.dailyData[dateIndexInData]
+    const dailyData = data.dailyData[dateIndexInData]
 
     return data.children.map((child) => {
-      const reservation = reservations?.children.find(
+      const childReservations = dailyData?.children.find(
         ({ childId }) => childId === child.id
       )
 
       return {
         child,
-        reservation
+        data: {
+          absence: childReservations?.absence ?? null,
+          reservations: sortBy(
+            childReservations?.reservations ?? [{ startTime: '', endTime: '' }],
+            ({ startTime }) => startTime
+          )
+        }
       }
     })
   }, [dateIndexInData, data])
@@ -83,6 +96,8 @@ export default React.memo(function DayView({
     startEditing,
     editorState,
     editorStateSetter,
+    addSecondReservation,
+    removeSecondReservation,
     saving,
     save,
     navigate,
@@ -131,59 +146,105 @@ export default React.memo(function DayView({
         </ReservationTitle>
         <Gap size="s" />
         {editing
-          ? editorState.map(({ child, startTime, endTime, errors }, index) => (
+          ? editorState.map(({ child, data }, childIndex) => (
               <Fragment key={child.id}>
-                {index !== 0 ? <Separator /> : null}
+                {childIndex !== 0 ? <Separator /> : null}
                 <H3 noMargin>
                   {child.preferredName || child.firstName.split(' ')[0]}
                 </H3>
                 <Gap size="s" />
                 <Grid>
                   <Label>Varaus</Label>
-                  <InputWrapper>
-                    <InputField
-                      type="time"
-                      onChange={editorStateSetter(index, 'startTime')}
-                      value={startTime}
-                      info={errorToInputInfo(
-                        errors.startTime,
-                        i18n.validationErrors
+                  <FixedSpaceColumn>
+                    <FixedSpaceRow alignItems="center">
+                      <InputField
+                        type="time"
+                        onChange={editorStateSetter(child.id, 0, 'startTime')}
+                        value={data[0].startTime}
+                        info={errorToInputInfo(
+                          data[0].errors.startTime,
+                          i18n.validationErrors
+                        )}
+                        readonly={saving}
+                      />
+                      <span>–</span>
+                      <InputField
+                        type="time"
+                        onChange={editorStateSetter(child.id, 0, 'endTime')}
+                        value={data[0].endTime}
+                        info={errorToInputInfo(
+                          data[0].errors.endTime,
+                          i18n.validationErrors
+                        )}
+                        readonly={saving}
+                      />
+                      {data[1] ? null : (
+                        <IconButton
+                          icon={faPlus}
+                          onClick={() => addSecondReservation(child.id)}
+                        />
                       )}
-                      readonly={saving}
-                    />
-                    –
-                    <InputField
-                      type="time"
-                      onChange={editorStateSetter(index, 'endTime')}
-                      value={endTime}
-                      info={errorToInputInfo(
-                        errors.endTime,
-                        i18n.validationErrors
-                      )}
-                      readonly={saving}
-                    />
-                  </InputWrapper>
+                    </FixedSpaceRow>
+                    {data[1] ? (
+                      <FixedSpaceRow alignItems="center">
+                        <InputField
+                          type="time"
+                          onChange={editorStateSetter(child.id, 1, 'startTime')}
+                          value={data[1].startTime}
+                          info={errorToInputInfo(
+                            data[1].errors.startTime,
+                            i18n.validationErrors
+                          )}
+                          readonly={saving}
+                        />
+                        <span>–</span>
+                        <InputField
+                          type="time"
+                          onChange={editorStateSetter(child.id, 1, 'endTime')}
+                          value={data[1].endTime}
+                          info={errorToInputInfo(
+                            data[1].errors.endTime,
+                            i18n.validationErrors
+                          )}
+                          readonly={saving}
+                        />
+                        <IconButton
+                          icon={faTrash}
+                          onClick={() => removeSecondReservation(child.id)}
+                        />
+                      </FixedSpaceRow>
+                    ) : null}
+                  </FixedSpaceColumn>
                   <Label>Toteuma</Label>
                   <span>–</span>
                 </Grid>
               </Fragment>
             ))
-          : childrenWithReservations.map(({ child, reservation }, index) => (
+          : childrenWithReservations.map(({ child, data }, childIndex) => (
               <Fragment key={child.id}>
-                {index !== 0 ? <Separator /> : null}
+                {childIndex !== 0 ? <Separator /> : null}
                 <H3 noMargin>
                   {child.preferredName || child.firstName.split(' ')[0]}
                 </H3>
                 <Gap size="s" />
                 <Grid>
                   <Label>Varaus</Label>
-                  {reservation?.absence ? (
+                  {data.absence ? (
                     <span>
-                      {i18n.calendar.absences[reservation.absence] ??
+                      {i18n.calendar.absences[data.absence] ??
                         i18n.calendar.absent}
                     </span>
-                  ) : reservation?.reservation ? (
-                    <span>{`${reservation.reservation.startTime} – ${reservation.reservation.endTime}`}</span>
+                  ) : data.reservations.length > 0 &&
+                    data.reservations.some(({ startTime }) => !!startTime) ? (
+                    <span>
+                      {data.reservations
+                        .map(
+                          ({ startTime, endTime }) =>
+                            `${startTime} – ${endTime}`
+                        )
+                        .filter((res) => res)
+                        .join(', ')}
+                    </span>
                   ) : (
                     <NoReservation>Ei varausta</NoReservation>
                   )}
@@ -224,7 +285,7 @@ function useEditState(
   reloadData: () => void,
   childrenWithReservations: {
     child: ReservationChild
-    reservation: ChildDailyData | undefined
+    data: Omit<ChildDailyData, 'childId'>
   }[]
 ) {
   const editable = data.reservableDays.includes(date)
@@ -234,14 +295,16 @@ function useEditState(
 
   const editorStateFromProps = useMemo(
     () =>
-      childrenWithReservations.map(({ child, reservation }) => ({
+      childrenWithReservations.map(({ child, data }) => ({
         child,
-        startTime: reservation?.reservation?.startTime ?? '',
-        endTime: reservation?.reservation?.endTime ?? '',
-        errors: {
-          startTime: undefined,
-          endTime: undefined
-        }
+        data: data?.reservations.map(({ startTime, endTime }) => ({
+          startTime,
+          endTime,
+          errors: {
+            startTime: undefined,
+            endTime: undefined
+          }
+        }))
       })),
     [childrenWithReservations]
   )
@@ -249,30 +312,72 @@ function useEditState(
   useEffect(() => setEditorState(editorStateFromProps), [editorStateFromProps])
 
   const editorStateSetter =
-    (index: number, field: 'startTime' | 'endTime') => (value: string) =>
+    (childId: string, index: number, field: 'startTime' | 'endTime') =>
+    (value: string) =>
       setEditorState((state) =>
-        state.map((child, i) =>
-          i === index
+        state.map(({ child, data }) =>
+          child.id === childId
             ? {
-                ...child,
-                [field]: value,
-                errors: {
-                  ...child.errors,
-                  [field]:
-                    value === '' &&
-                    child[field === 'startTime' ? 'endTime' : 'startTime'] !==
-                      ''
-                      ? 'required'
-                      : regexp(value, TIME_REGEXP, 'timeFormat')
-                }
+                child,
+                data: data.map((d, i) =>
+                  index === i
+                    ? {
+                        ...d,
+                        [field]: value,
+                        errors: {
+                          ...d.errors,
+                          [field]:
+                            value === '' &&
+                            child[
+                              field === 'startTime' ? 'endTime' : 'startTime'
+                            ] !== ''
+                              ? 'required'
+                              : regexp(value, TIME_REGEXP, 'timeFormat')
+                        }
+                      }
+                    : d
+                )
               }
-            : child
+            : { child, data }
         )
       )
 
-  const stateIsValid = editorState.every(
-    ({ errors }) =>
-      errors.startTime === undefined && errors.endTime === undefined
+  const addSecondReservation = (childId: string) =>
+    setEditorState((state) =>
+      state.map((childState) =>
+        childState.child.id === childId
+          ? {
+              ...childState,
+              data: [
+                childState.data[0],
+                {
+                  startTime: '',
+                  endTime: '',
+                  errors: { startTime: undefined, endTime: undefined }
+                }
+              ]
+            }
+          : childState
+      )
+    )
+
+  const removeSecondReservation = (childId: string) =>
+    setEditorState((state) =>
+      state.map((childState) =>
+        childState.child.id === childId
+          ? {
+              ...childState,
+              data: [childState.data[0]]
+            }
+          : childState
+      )
+    )
+
+  const stateIsValid = editorState.every(({ data }) =>
+    data?.every(
+      ({ errors }) =>
+        errors.startTime === undefined && errors.endTime === undefined
+    )
   )
 
   const [saving, setSaving] = useState(false)
@@ -281,18 +386,13 @@ function useEditState(
 
     setSaving(true)
     return postReservations(
-      editorState.map(({ child, startTime, endTime }) => ({
+      editorState.map(({ child, data }) => ({
         childId: child.id,
-        date: date,
+        date,
         reservations:
-          startTime !== '' && endTime !== ''
-            ? [
-                {
-                  startTime,
-                  endTime
-                }
-              ]
-            : null
+          data?.flatMap(({ startTime, endTime }) =>
+            startTime !== '' && endTime !== '' ? [{ startTime, endTime }] : []
+          ) ?? []
       }))
     )
       .then(() => setEditing(false))
@@ -305,14 +405,17 @@ function useEditState(
 
   const navigate = (callback: () => void) => () => {
     const stateHasBeenModified = editorStateFromProps.some((childFromProps) => {
-      const editorData = editorState.find(
+      const childEditorState = editorState.find(
         (child) => child.child.id === childFromProps.child.id
       )
 
       return (
-        !editorData ||
-        childFromProps.startTime !== editorData.startTime ||
-        childFromProps.endTime !== editorData.endTime
+        !childEditorState ||
+        childFromProps.data.some(
+          ({ startTime, endTime }, index) =>
+            startTime !== childEditorState.data[index]?.startTime ||
+            endTime !== childEditorState.data[index]?.endTime
+        )
       )
     })
 
@@ -338,6 +441,8 @@ function useEditState(
     startEditing,
     editorState,
     editorStateSetter,
+    addSecondReservation,
+    removeSecondReservation,
     stateIsValid,
     saving,
     save,
@@ -394,14 +499,6 @@ const NoReservation = styled.span`
 const Separator = styled.div`
   border-top: 2px dotted ${(p) => p.theme.colors.greyscale.lighter};
   margin: ${defaultMargins.s} 0;
-`
-
-const InputWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  align-items: center;
 `
 
 const BottomBar = styled.div`

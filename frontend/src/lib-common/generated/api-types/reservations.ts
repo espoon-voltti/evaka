@@ -25,7 +25,7 @@ export interface AbsenceRequest {
 export interface ChildDailyData {
   absence: AbsenceType | null
   childId: UUID
-  reservation: Reservation | null
+  reservations: Reservation[]
 }
 
 /**
