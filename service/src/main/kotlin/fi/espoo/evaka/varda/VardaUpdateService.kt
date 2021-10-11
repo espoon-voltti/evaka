@@ -119,21 +119,29 @@ class VardaUpdateService(
     }
 
     fun nukeByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
-        val errorReport = client.getVardaChildrenErrorReport(organizerId)
-        logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
-        val mapper = db.read { it.getVardaChildToEvakaChild() }
-        val (childrenWithId, childrenWithoutId) = errorReport.take(limit).map { it.lapsiId }.partition {
-            mapper[it] != null
-        }
+        try {
+            val errorReport = client.getVardaChildrenErrorReport(organizerId)
+            logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
 
-        logger.info("VardaUpdate: found ${childrenWithId.size} matching UUIDs, missing ${childrenWithoutId.size} UUIDs")
+            if (errorReport.isNotEmpty())
+                logger.info("VardaUpdate: example error rows: ${errorReport.shuffled().take(5).map { it.errors }}")
 
-        logger.info("VardaUpdate: setting ${childrenWithId.size} children to be reset")
-        db.transaction { tx -> tx.setToBeReset(childrenWithId.map { mapper[it]!! }) }
+            val mapper = db.read { it.getVardaChildToEvakaChild() }
+            val (childrenWithId, childrenWithoutId) = errorReport.take(limit).map { it.lapsi_id }.partition {
+                mapper[it] != null
+            }
 
-        logger.info("VardaUpdate: starting to delete ${childrenWithoutId.size} children by varda id")
-        childrenWithoutId.forEach { vardaChildId ->
-            deleteChildDataFromVardaAndDbByVardaId(db, client, vardaChildId)
+            logger.info("VardaUpdate: found ${childrenWithId.size} matching UUIDs, missing ${childrenWithoutId.size} UUIDs")
+
+            logger.info("VardaUpdate: setting ${childrenWithId.size} children to be reset")
+            db.transaction { tx -> tx.setToBeReset(childrenWithId.map { mapper[it]!! }) }
+
+            logger.info("VardaUpdate: starting to delete ${childrenWithoutId.size} children by varda id")
+            childrenWithoutId.forEach { vardaChildId ->
+                deleteChildDataFromVardaAndDbByVardaId(db, client, vardaChildId)
+            }
+        } catch (e: Exception) {
+            logger.info("VardaUpdate: failed to nuke varda children by report data: ${e.localizedMessage}")
         }
     }
 }

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda.integration
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -380,15 +381,16 @@ class VardaClient(
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class ChildErrorReport(
-        val lapsiId: Long,
+        val lapsi_id: Long,
         val errors: String
     )
 
     fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
         logger.info("VardaUpdate: client reading children error report")
         return getAllPages(getChildErrorUrl(organizerId)) {
-            objectMapper.readValue<PaginatedResponse<ChildErrorReport>>(it)
+            objectMapper.readValue(it)
         }
     }
 
