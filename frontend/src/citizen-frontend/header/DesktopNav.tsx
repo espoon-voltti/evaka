@@ -47,12 +47,6 @@ export default React.memo(function DesktopNav({
             <StyledNavLink to="/applying" data-qa="nav-applying">
               {t.header.nav.applying} {maybeLockElem}
             </StyledNavLink>
-            <StyledNavLink to="/applications" data-qa="nav-applications">
-              {t.header.nav.applications} {maybeLockElem}
-            </StyledNavLink>
-            <StyledNavLink to="/decisions" data-qa="nav-decisions">
-              {t.header.nav.decisions} {maybeLockElem}
-            </StyledNavLink>
             {featureFlags.pedagogicalDocumentsEnabled && (
               <StyledNavLink
                 to="/pedagogical-documents"
@@ -65,11 +59,6 @@ export default React.memo(function DesktopNav({
                   </CircledChar>
                 )}
                 {maybeLockElem}
-              </StyledNavLink>
-            )}
-            {featureFlags.experimental?.incomeStatements && (
-              <StyledNavLink to="/income" data-qa="nav-income">
-                {t.header.nav.income} {maybeLockElem}
               </StyledNavLink>
             )}
             {user.accessibleFeatures.messages && (
