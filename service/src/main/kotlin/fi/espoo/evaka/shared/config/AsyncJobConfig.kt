@@ -22,7 +22,7 @@ class AsyncJobConfig {
     fun asyncJobRunner(jdbi: Jdbi): AsyncJobRunner<AsyncJob> = AsyncJobRunner(jdbi)
 
     @Bean
-    fun vardaAsyncJobRunner(jdbi: Jdbi): AsyncJobRunner<VardaAsyncJob> = AsyncJobRunner(jdbi)
+    fun vardaAsyncJobRunner(jdbi: Jdbi): AsyncJobRunner<VardaAsyncJob> = AsyncJobRunner(jdbi, 1)
 
     @Bean
     fun asyncJobRunnerStarter(asyncJobRunner: AsyncJobRunner<AsyncJob>, vardaAsyncJobRunner: AsyncJobRunner<VardaAsyncJob>, evakaEnv: EvakaEnv) =
