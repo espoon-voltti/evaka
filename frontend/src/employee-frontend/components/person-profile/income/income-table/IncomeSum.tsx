@@ -26,9 +26,9 @@ const IncomeSum = React.memo(function IncomeSum({
 }) {
   const { i18n } = useTranslation()
   return (
-    <Container data-qa={dataQa}>
+    <Container>
       <span>{i18n.personProfile.income.details.sum}</span>
-      <span>{formatCents(sum)} €</span>
+      <span data-qa={dataQa}>{formatCents(sum)} €</span>
     </Container>
   )
 })
