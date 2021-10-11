@@ -55,6 +55,7 @@ class VardaClient(
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
+    val getChildErrorUrl = { organizerId: Long -> "$organizerUrl$organizerId/error-report-lapset/" }
     val sourceSystem: String = env.sourceSystem
 
     data class VardaRequestError(
@@ -376,6 +377,18 @@ class VardaClient(
                     "VardaUpdate: client failed to update organizer: $err"
                 }
             }
+        }
+    }
+
+    data class ChildErrorReport(
+        val lapsiId: Long,
+        val errors: String
+    )
+
+    fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
+        logger.info("VardaUpdate: client reading children error report")
+        return getAllPages(getChildErrorUrl(organizerId)) {
+            objectMapper.readValue<PaginatedResponse<ChildErrorReport>>(it)
         }
     }
 

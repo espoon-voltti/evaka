@@ -155,4 +155,18 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
     }
+
+    @Test
+    fun `getVardaChildToEvakaChild works`() {
+        val vardaChildId = 31415L
+        val vardaPersonId = 31245
+        val vardaPersonOid = "1.2.3.4.5"
+        val childId = ChildId(testChild_1.id)
+        db.transaction {
+            insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
+        }
+
+        val mapper = db.read { it.getVardaChildToEvakaChild() }
+        assertEquals(mapOf(vardaChildId to childId), mapper)
+    }
 }
