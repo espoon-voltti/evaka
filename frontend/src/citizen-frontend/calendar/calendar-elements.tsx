@@ -66,6 +66,7 @@ const uniqueReservations = (
         uniq.some((res) => res === reservation) ? uniq : [...uniq, reservation],
       []
     )
+    .sort()
 
   const someoneIsAbsent = data.some(({ absence }) => absence !== null)
 
