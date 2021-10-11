@@ -77,6 +77,7 @@ export type ScheduledJob =
   | 'CancelOutdatedTransferApplications'
   | 'DvvUpdate'
   | 'EndOfDayAttendanceUpkeep'
+  | 'EndOfDayStaffAttendanceUpkeep'
   | 'EndOutdatedVoucherValueDecisions'
   | 'FreezeVoucherValueReports'
   | 'KoskiUpdate'

@@ -35,6 +35,10 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
                 enabled = true,
                 schedule = JobSchedule.daily(LocalTime.of(0, 0))
             )
+            ScheduledJob.EndOfDayStaffAttendanceUpkeep -> ScheduledJobSettings(
+                enabled = true,
+                schedule = JobSchedule.daily(LocalTime.of(0, 0))
+            )
             ScheduledJob.KoskiUpdate -> ScheduledJobSettings(
                 enabled = false,
                 schedule = JobSchedule.daily(LocalTime.of(0, 0))
