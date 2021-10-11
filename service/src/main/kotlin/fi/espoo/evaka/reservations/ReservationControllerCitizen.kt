@@ -164,7 +164,7 @@ LEFT JOIN LATERAL (
             jsonb_build_object(
                 'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
                 'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
-            )
+            ) ORDER BY ar.start_time ASC
         ) AS reservations
     FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.start_date = t::date
 ) ar ON true

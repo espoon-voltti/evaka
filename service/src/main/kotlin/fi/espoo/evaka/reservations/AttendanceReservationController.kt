@@ -207,7 +207,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
                 jsonb_build_object(
                     'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
                     'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
-                )
+                ) ORDER BY ar.start_time ASC
             ) AS reservations
         FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.start_date = t::date
     ) res ON true

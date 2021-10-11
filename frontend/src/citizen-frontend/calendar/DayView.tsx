@@ -4,7 +4,6 @@
 
 import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { sortBy } from 'lodash'
 import {
   faCheck,
   faChevronLeft,
@@ -74,10 +73,9 @@ export default React.memo(function DayView({
         child,
         data: {
           absence: childReservations?.absence ?? null,
-          reservations: sortBy(
-            childReservations?.reservations ?? [{ startTime: '', endTime: '' }],
-            ({ startTime }) => startTime
-          )
+          reservations: childReservations?.reservations ?? [
+            { startTime: '', endTime: '' }
+          ]
         }
       }
     })
