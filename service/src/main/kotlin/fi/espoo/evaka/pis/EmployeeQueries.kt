@@ -294,7 +294,7 @@ RETURNING locked
     """.trimIndent()
 ).bind("employeeId", employeeId)
     .mapTo<Boolean>()
-    .first()
+    .firstOrNull() ?: false
 
 fun Database.Read.isPinLocked(employeeId: UUID): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")

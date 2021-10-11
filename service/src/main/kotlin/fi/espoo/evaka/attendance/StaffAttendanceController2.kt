@@ -67,17 +67,21 @@ class StaffAttendanceController2(
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
         // todo: convert to action auth
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
-        db.transaction {
+        val errorCode = db.transaction {
             if (it.employeePinIsCorrect(body.employeeId.raw, body.pinCode)) {
                 it.markStaffArrival(
                     employeeId = body.employeeId,
                     groupId = body.groupId,
-                    arrivalTime = HelsinkiDateTime.now().withTime(body.time)
+                    arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
                 )
+                null
             } else {
-                it.updateEmployeePinFailureCountAndCheckIfLocked(body.employeeId.raw)
-                throw Forbidden("Invalid pin code")
+                val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(body.employeeId.raw)
+                if (locked) "PIN_LOCKED" else "WRONG_PIN"
             }
+        }
+        if (errorCode != null) {
+            throw Forbidden("Invalid pin code", errorCode)
         }
     }
 
@@ -99,16 +103,20 @@ class StaffAttendanceController2(
             ?: throw NotFound("attendance not found")
         acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
-        db.transaction {
+        val errorCode = db.transaction {
             if (it.employeePinIsCorrect(attendance.employeeId.raw, body.pinCode)) {
                 it.markStaffDeparture(
                     attendanceId = attendanceId,
-                    departureTime = HelsinkiDateTime.now().withTime(body.time)
+                    departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
                 )
+                null
             } else {
-                it.updateEmployeePinFailureCountAndCheckIfLocked(attendance.employeeId.raw)
-                throw Forbidden("Invalid pin code")
+                val locked = it.updateEmployeePinFailureCountAndCheckIfLocked(attendance.employeeId.raw)
+                if (locked) "PIN_LOCKED" else "WRONG_PIN"
             }
+        }
+        if (errorCode != null) {
+            throw Forbidden("Invalid pin code", errorCode)
         }
     }
 }

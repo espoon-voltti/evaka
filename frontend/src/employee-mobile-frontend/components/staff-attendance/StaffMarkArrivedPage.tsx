@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -24,15 +24,22 @@ import { postStaffArrival } from '../../api/staffAttendances'
 import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
+import { UUID } from 'lib-common/types'
+import { UnitContext } from '../../state/unit'
+import { combine, Success } from 'lib-common/api'
+import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import { isAfter, parse } from 'date-fns'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
   const { groupId, employeeId } = useParams<{
-    groupId: string
-    employeeId: string
+    groupId: UUID | 'all'
+    employeeId: UUID
   }>()
+
+  const { unitInfoResponse } = useContext(UnitContext)
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
@@ -44,7 +51,36 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
 
   const [pinCode, setPinCode] = useState('')
+  const pinInputRef = useRef<HTMLInputElement>(null)
   const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
+    groupId !== 'all' ? groupId : undefined
+  )
+  const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
+
+  const groupOptions =
+    groupId === 'all'
+      ? combine(staffMember, unitInfoResponse).map(
+          ([staffMember, unitInfoResponse]) => {
+            const groupIds = staffMember?.groupIds ?? []
+            return unitInfoResponse.groups
+              .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
+              .map((g) => ({ value: g.id, label: g.name }))
+          }
+        )
+      : Success.of([])
+
+  useEffect(() => {
+    if (
+      attendanceGroup === undefined &&
+      groupOptions.isSuccess &&
+      groupOptions.value.length === 1
+    ) {
+      setAttendanceGroup(groupOptions.value[0].value)
+    }
+  }, [attendanceGroup, groupOptions])
+
+  const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
 
   return (
     <TallContentArea
@@ -69,58 +105,124 @@ export default React.memo(function StaffMarkArrivedPage() {
         paddingHorizontal={'s'}
         paddingVertical={'m'}
       >
-        {renderResult(staffMember, (staffMember) =>
-          staffMember === undefined ? (
-            <ErrorSegment title={'Työntekijää ei löytynyt'} />
-          ) : (
-            <>
-              <TimeWrapper>
-                <Title noMargin>Kirjaudu pin-koodilla</Title>
-                <InputField
-                  autoFocus
-                  placeholder={i18n.attendances.pin.pinCode}
-                  onChange={setPinCode}
-                  value={pinCode}
-                  width="s"
-                  type="password"
-                  data-qa="set-pin"
-                />
-                <Gap />
-                <label>Saapumisaika</label>
-                <InputField
-                  onChange={setTime}
-                  value={time}
-                  width="s"
-                  type="time"
-                  data-qa="set-time"
-                />
-              </TimeWrapper>
-              <Gap size={'xs'} />
-              <Actions>
-                <FixedSpaceRow fullWidth>
-                  <Button
-                    text={i18n.common.cancel}
-                    onClick={() => history.goBack()}
-                  />
-                  <AsyncButton
-                    primary
-                    text={i18n.common.confirm}
-                    disabled={!isValidTime(time) || pinCode.length < 4}
-                    onClick={() =>
-                      postStaffArrival({
-                        employeeId,
-                        groupId,
-                        time,
-                        pinCode
-                      })
+        {renderResult(
+          combine(unitInfoResponse, staffMember),
+          ([unitInfo, staffMember]) => {
+            if (staffMember === undefined)
+              return <ErrorSegment title={'Työntekijää ei löytynyt'} />
+
+            const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
+            const pinSet = staffInfo?.pinSet ?? true
+            const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+
+            return (
+              <>
+                <TimeWrapper>
+                  <Title noMargin>Kirjaudu pin-koodilla</Title>
+                  {!pinSet ? (
+                    <ErrorSegment title={'Aseta itsellesi PIN-koodi'} />
+                  ) : pinLocked ? (
+                    <ErrorSegment title={'Vaihda lukkiutunut PIN-koodi'} />
+                  ) : (
+                    <InputField
+                      inputRef={pinInputRef}
+                      autoFocus
+                      placeholder={i18n.attendances.pin.pinCode}
+                      onChange={setPinCode}
+                      value={pinCode}
+                      width="s"
+                      type="password"
+                      data-qa="set-pin"
+                      info={
+                        errorCode === 'WRONG_PIN'
+                          ? {
+                              status: 'warning',
+                              text: 'PIN-koodi ei kelvannut'
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
+                  <Gap />
+                  <label>Saapumisaika</label>
+                  <InputField
+                    onChange={setTime}
+                    value={time}
+                    width="s"
+                    type="time"
+                    data-qa="set-time"
+                    info={
+                      timeInFuture
+                        ? {
+                            status: 'warning',
+                            text: `Oltava ${formatTime(
+                              new Date()
+                            )} tai aikaisemmin`
+                          }
+                        : undefined
                     }
-                    onSuccess={() => history.go(-2)}
-                    data-qa="mark-arrived-btn"
                   />
-                </FixedSpaceRow>
-              </Actions>
-            </>
-          )
+                  {renderResult(groupOptions, (groupOptions) =>
+                    groupOptions.length > 1 ? (
+                      <>
+                        <Gap />
+                        <label>Ryhmä</label>
+                        <SimpleSelect
+                          value={attendanceGroup}
+                          placeholder={'Valitse ryhmä'}
+                          options={groupOptions}
+                          onChange={(e) => setAttendanceGroup(e.target.value)}
+                        />
+                      </>
+                    ) : null
+                  )}
+                  <Gap />
+                </TimeWrapper>
+                <Gap size={'xs'} />
+                <Actions>
+                  <FixedSpaceRow fullWidth>
+                    <Button
+                      text={i18n.common.cancel}
+                      onClick={() => history.goBack()}
+                    />
+                    <AsyncButton
+                      primary
+                      text={i18n.common.confirm}
+                      disabled={
+                        pinLocked ||
+                        !pinSet ||
+                        !isValidTime(time) ||
+                        timeInFuture ||
+                        pinCode.length < 4 ||
+                        !attendanceGroup
+                      }
+                      onClick={() =>
+                        attendanceGroup
+                          ? postStaffArrival({
+                              employeeId,
+                              groupId: attendanceGroup,
+                              time,
+                              pinCode
+                            }).then((res) => {
+                              if (res.isFailure) {
+                                setErrorCode(res.errorCode)
+                                if (res.errorCode === 'WRONG_PIN') {
+                                  setPinCode('')
+                                  pinInputRef.current?.focus()
+                                }
+                              }
+                              return res
+                            })
+                          : Promise.reject()
+                      }
+                      onSuccess={() => history.go(-1)}
+                      data-qa="mark-arrived-btn"
+                    />
+                  </FixedSpaceRow>
+                </Actions>
+              </>
+            )
+          }
         )}
       </ContentArea>
     </TallContentArea>

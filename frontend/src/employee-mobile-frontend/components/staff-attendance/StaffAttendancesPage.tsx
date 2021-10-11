@@ -12,6 +12,13 @@ import TopBar from '../common/TopBar'
 import { UnitContext } from '../../state/unit'
 import { useHistory, useParams } from 'react-router-dom'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import Tabs from 'lib-components/molecules/Tabs'
+import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
+
+const Bold = styled.div`
+  font-weight: ${fontWeights.semibold};
+`
 
 export default function StaffAttendancesPage() {
   const history = useHistory()
@@ -20,7 +27,8 @@ export default function StaffAttendancesPage() {
     groupId: string
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, showPresent, setShowPresent } =
+    useContext(UnitContext)
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
@@ -30,6 +38,53 @@ export default function StaffAttendancesPage() {
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
     )
+
+  const presentStaffCounts = staffAttendanceResponse.map(
+    (res) =>
+      res.staff.filter((s) =>
+        groupId === 'all' ? s.present : s.present === groupId
+      ).length +
+      res.extraAttendances.filter((s) => s.groupId === groupId).length
+  )
+
+  const tabs = [
+    {
+      id: 'not-present',
+      onClick: () => setShowPresent(false),
+      active: !showPresent,
+      label: <Bold>Poissa</Bold>
+    },
+    {
+      id: 'present',
+      onClick: () => setShowPresent(true),
+      active: showPresent,
+      label: (
+        <Bold>
+          Läsnä
+          <br />
+          {`(${presentStaffCounts.getOrElse(' ')})`}
+        </Bold>
+      )
+    }
+  ]
+
+  const filteredStaff = staffAttendanceResponse.map((res) =>
+    showPresent
+      ? groupId === 'all'
+        ? [
+            ...res.staff.filter((s) => s.present !== null)
+            // todo: extra attendances
+          ]
+        : [
+            ...res.staff.filter((s) => s.present === groupId)
+            // todo: extra attendances
+          ]
+      : groupId === 'all'
+      ? res.staff.filter((s) => s.present === null)
+      : res.staff.filter(
+          (s) => s.groupIds.includes(groupId) && s.present === null
+        )
+  )
 
   return renderResult(unitInfoResponse, (unit) => (
     <>
@@ -42,25 +97,17 @@ export default function StaffAttendancesPage() {
         }
         onChangeGroup={changeGroup}
       />
-      {renderResult(
-        staffAttendanceResponse.map((res) =>
-          groupId === 'all'
-            ? res.staff
-            : res.staff.filter((staffMember) =>
-                staffMember.groupIds.includes(groupId)
-              )
-        ),
-        (staffList) => (
-          <FixedSpaceColumn spacing="zero">
-            {staffList.map((staffMember) => (
-              <StaffListItem
-                staffMember={staffMember}
-                key={staffMember.employeeId}
-              />
-            ))}
-          </FixedSpaceColumn>
-        )
-      )}
+      <Tabs tabs={tabs} mobile type={'buttons'} />
+      {renderResult(filteredStaff, (filteredStaff) => (
+        <FixedSpaceColumn spacing="zero">
+          {filteredStaff.map((staffMember) => (
+            <StaffListItem
+              staffMember={staffMember}
+              key={staffMember.employeeId}
+            />
+          ))}
+        </FixedSpaceColumn>
+      ))}
       <BottomNavBar selected="staff" />
     </>
   ))

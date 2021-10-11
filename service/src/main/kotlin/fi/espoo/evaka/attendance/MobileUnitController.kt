@@ -58,7 +58,8 @@ data class Staff(
     val id: EmployeeId,
     val firstName: String,
     val lastName: String,
-    val pinSet: Boolean = false,
+    val pinSet: Boolean,
+    val pinLocked: Boolean,
     val groups: List<GroupId>
 )
 
@@ -97,7 +98,13 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
 
     val staff = createQuery(
         """
-        SELECT e.first_name, e.last_name, e.id, char_length(COALESCE(pin.pin, '')) > 0 as pin_set, coalesce(groups, array[]::uuid[]) AS groups
+        SELECT
+            e.first_name, 
+            e.last_name,
+            e.id, 
+            char_length(COALESCE(pin.pin, '')) > 0 AS pin_set, 
+            COALESCE(pin.locked, FALSE) pin_locked, 
+            coalesce(groups, array[]::uuid[]) AS groups
         FROM daycare_acl acl 
             LEFT JOIN employee e ON acl.employee_id = e.id
             LEFT JOIN employee_pin pin ON acl.employee_id = pin.user_id

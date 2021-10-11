@@ -13,10 +13,14 @@ import { UUID } from 'lib-common/types'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
+  showPresent: boolean
+  setShowPresent: (value: boolean) => void
 }
 
 const defaultState: UnitState = {
-  unitInfoResponse: Loading.of()
+  unitInfoResponse: Loading.of(),
+  showPresent: false,
+  setShowPresent: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
@@ -29,17 +33,23 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   const { unitId } = useParams<{ unitId: UUID }>()
 
   const [unitInfoResponse, setUnitInfoResponse] = useState<Result<UnitInfo>>(
-    Loading.of()
+    defaultState.unitInfoResponse
   )
 
   const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
   useEffect(() => loadUnitInfo(unitId), [loadUnitInfo, unitId])
 
+  const [showPresent, setShowPresent] = useState<boolean>(
+    defaultState.showPresent
+  )
+
   const value = useMemo(
     () => ({
-      unitInfoResponse
+      unitInfoResponse,
+      showPresent,
+      setShowPresent
     }),
-    [unitInfoResponse]
+    [unitInfoResponse, showPresent, setShowPresent]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
