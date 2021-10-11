@@ -191,6 +191,10 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
                 vardaClient.deleteDecision(decisionId)
             }
 
+            logger.info("VardaUpdate: deleting child $evakaChildId (varda id $vardaChildId)")
+            vardaClient.deleteChild(vardaChildId)
+            db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
+
             logger.info("VardaUpdate: deleting from varda_service_need for child $evakaChildId (varda id $vardaChildId)")
             db.transaction { it.deleteVardaServiceNeedByVardaChildId(vardaChildId) }
 
@@ -596,6 +600,14 @@ WHERE evaka_service_need_id = :serviceNeedId
 fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) = createUpdate(
     """
 DELETE FROM varda_service_need
+WHERE varda_child_id = :vardaChildId
+        """
+).bind("vardaChildId", vardaChildId)
+    .execute()
+
+fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) = createUpdate(
+    """
+DELETE FROM varda_organizer_child
 WHERE varda_child_id = :vardaChildId
         """
 ).bind("vardaChildId", vardaChildId)
