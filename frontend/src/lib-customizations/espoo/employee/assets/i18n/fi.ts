@@ -149,6 +149,7 @@ export const fi = {
     openExpandingInfo: 'Avaa lisätietokenttä',
     datetime: {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      week: 'Viikko',
       weekShort: 'Vk',
       weekdays: [
         'Maanantai',
@@ -1633,12 +1634,15 @@ export const fi = {
         selectedChildren: 'Lapset, joille varaus tehdään',
         dateRange: 'Varauksen voimassaolo',
         dateRangeLabel: 'Tee varaus päiville',
+        missingDateRange: 'Valitse varattavat päivät',
+        repetition: 'Tyyppi tai toistuvuus',
         times: 'Kellonaika',
         businessDays: 'Ma-Pe',
         repeats: 'Toistuu',
         repetitions: {
           DAILY: 'Päivittäin',
-          WEEKLY: 'Viikoittain'
+          WEEKLY: 'Viikoittain',
+          SHIFT_CARE: 'Vuorohoito'
         }
       }
     },

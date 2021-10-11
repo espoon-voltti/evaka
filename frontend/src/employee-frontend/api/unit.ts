@@ -36,9 +36,12 @@ import {
 } from 'lib-common/generated/enums'
 import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
-import { DailyReservationRequest } from 'lib-common/api-types/reservations'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import {
+  ChildReservations,
+  UnitAttendanceReservations
+} from 'lib-common/api-types/reservations'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -846,39 +849,6 @@ export async function getUnitAttendanceReservations(
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export interface UnitAttendanceReservations {
-  unit: string
-  operationalDays: OperationalDay[]
-  groups: Array<{
-    group: ReservationGroup
-    children: Array<ChildReservations>
-  }>
-  ungrouped: Array<ChildReservations>
-}
-
-interface ReservationGroup {
-  id: UUID
-  name: string
-}
-
-export interface OperationalDay {
-  date: LocalDate
-  isHoliday: boolean
-}
-
-export interface CalendarChild {
-  id: string
-  firstName: string
-  lastName: string
-  dateOfBirth: LocalDate
-  dailyServiceTimes: DailyServiceTimes | null
-}
-
-export interface ChildReservations {
-  child: CalendarChild
-  dailyData: Record<JsonOf<LocalDate>, DailyChildData>
 }
 
 export interface DailyChildData {

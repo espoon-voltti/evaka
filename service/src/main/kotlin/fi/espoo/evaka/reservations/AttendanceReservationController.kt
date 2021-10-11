@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -121,13 +122,12 @@ data class UnitAttendanceReservations(
     )
 
     data class DailyChildData(
-        val reservation: ReservationTimes?,
+        val reservations: List<ReservationTimes>,
         val attendance: AttendanceTimes?,
         val absence: Absence?
     )
 
     data class ReservationTimes(
-        @PropagateNull
         val startTime: String,
         val endTime: String
     )
@@ -157,8 +157,8 @@ data class UnitAttendanceReservations(
         val group: ReservationGroup?,
         @Nested
         val child: Child,
-        @Nested("reservation")
-        val reservation: ReservationTimes?,
+        @Json
+        val reservations: List<ReservationTimes>,
         @Nested("attendance")
         val attendance: AttendanceTimes?,
         @Nested("absence")
@@ -190,8 +190,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         p.first_name,
         p.last_name,
         p.date_of_birth,
-        to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_start_time,
-        to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS reservation_end_time,
+        coalesce(res.reservations, '[]') AS reservations,
         to_char((att.arrived AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_start_time,
         to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
@@ -201,8 +200,17 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
     LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
-    LEFT JOIN attendance_reservation res ON res.child_id = p.id AND res.start_date = t::date
     LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
+    LEFT JOIN LATERAL (
+        SELECT
+            jsonb_agg(
+                jsonb_build_object(
+                    'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                    'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                )
+            ) AS reservations
+        FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.start_date = t::date
+    ) res ON true
     LEFT JOIN LATERAL (
         SELECT absence_type
         FROM absence
@@ -241,7 +249,7 @@ private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>
                     keySelector = { it.date },
                     valueTransform = {
                         UnitAttendanceReservations.DailyChildData(
-                            reservation = it.reservation,
+                            reservations = it.reservations,
                             attendance = it.attendance,
                             absence = it.absence
                         )

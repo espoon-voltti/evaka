@@ -5,7 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-import { ChildReservations, OperationalDay } from '../../../api/unit'
+import {
+  ChildReservations,
+  OperationalDay
+} from 'lib-common/api-types/reservations'
 import {
   getTimesOnWeekday,
   isIrregular,
@@ -25,7 +28,11 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
 
   if (!dailyData) return null
 
-  if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
+  if (
+    day.isHoliday &&
+    dailyData.reservations.length === 0 &&
+    !dailyData.attendance
+  )
     return null
 
   if (dailyData.absence && !dailyData.attendance)
@@ -51,14 +58,14 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
       </AttendanceTimesRow>
       <Gap size="xxs" />
       <ReservationTimesRow>
-        {dailyData.reservation ? (
+        {dailyData.reservations.length > 0 ? (
           /* show actual reservation if it exists */
           <>
             <ReservationTime>
-              {dailyData.reservation?.startTime ?? '–'}
+              {dailyData.reservations[0].startTime ?? '–'}
             </ReservationTime>
             <ReservationTime>
-              {dailyData.reservation?.endTime ?? '–'}
+              {dailyData.reservations[0].endTime ?? '–'}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay ? (
@@ -75,6 +82,16 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           <ReservationTime>Ei varausta</ReservationTime>
         )}
       </ReservationTimesRow>
+      {dailyData.reservations.length > 1 ? (
+        <ReservationTimesRow>
+          <ReservationTime>
+            {dailyData.reservations[1].startTime ?? '–'}
+          </ReservationTime>
+          <ReservationTime>
+            {dailyData.reservations[1].endTime ?? '–'}
+          </ReservationTime>
+        </ReservationTimesRow>
+      ) : null}
     </DateCell>
   )
 })

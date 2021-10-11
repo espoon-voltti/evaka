@@ -14,15 +14,15 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import {
-  CalendarChild,
-  getUnitAttendanceReservations,
-  UnitAttendanceReservations
-} from '../../../api/unit'
+import { getUnitAttendanceReservations } from '../../../api/unit'
 import ReservationsTable from './ReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import { UUID } from 'lib-common/types'
 import { renderResult } from 'employee-frontend/components/async-rendering'
+import {
+  Child,
+  UnitAttendanceReservations
+} from 'lib-common/api-types/reservations'
 
 interface Props {
   unitId: UUID
@@ -57,7 +57,7 @@ export default React.memo(function UnitAttendanceReservationsView({
   useEffect(reload, [reload])
 
   const [creatingReservationChild, setCreatingReservationChild] =
-    useState<CalendarChild | null>(null)
+    useState<Child | null>(null)
 
   return (
     <>

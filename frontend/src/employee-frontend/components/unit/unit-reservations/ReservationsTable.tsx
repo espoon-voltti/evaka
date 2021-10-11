@@ -10,10 +10,10 @@ import { defaultMargins } from 'lib-components/white-space'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import {
-  CalendarChild,
+  Child,
   ChildReservations,
   OperationalDay
-} from '../../../api/unit'
+} from 'lib-common/api-types/reservations'
 import { useTranslation } from '../../../state/i18n'
 import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
 import ChildDay, { TimeCell, TimesRow } from './ChildDay'
@@ -23,7 +23,7 @@ import { faCalendarPlus } from 'lib-icons'
 interface Props {
   operationalDays: OperationalDay[]
   reservations: ChildReservations[]
-  onMakeReservationForChild: (child: CalendarChild) => void
+  onMakeReservationForChild: (child: Child) => void
 }
 
 export default React.memo(function ReservationsTable({
