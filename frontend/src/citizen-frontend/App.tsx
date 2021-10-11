@@ -29,8 +29,7 @@ import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import { featureFlags } from 'lib-customizations/citizen'
 import Applying from './applying/Applying'
-import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
-import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
+import PedagogicalDocuments from "./pedagogical-documents/PedagogicalDocuments";
 
 export default function App() {
   return (
@@ -40,93 +39,91 @@ export default function App() {
           <Localization>
             <OverlayContextProvider>
               <MessageContextProvider>
-                <PedagogicalDocumentsContextProvider>
-                  <Header />
-                  <Main>
-                    <Switch>
-                      <Route exact path="/applying/map" component={Applying} />
+                <Header />
+                <Main>
+                  <Switch>
+                    <Route exact path="/applying/map" component={Applying} />
+                    <Route
+                      exact
+                      path="/applying/applications"
+                      component={requireAuth(Applying)}
+                    />
+                    <Route
+                      exact
+                      path="/applying/decisions"
+                      component={requireAuth(Applying)}
+                    />
+                    <Route
+                      exact
+                      path="/applications/new/:childId"
+                      component={requireAuth(ApplicationCreation)}
+                    />
+                    <Route
+                      exact
+                      path="/applications/:applicationId"
+                      component={requireAuth(ApplicationReadView)}
+                    />
+                    {featureFlags.experimental?.incomeStatements && (
                       <Route
                         exact
-                        path="/applying/applications"
-                        component={requireAuth(Applying)}
+                        path="/income"
+                        component={requireAuth(IncomeStatements)}
                       />
+                    )}
+                    {featureFlags.experimental?.incomeStatements && (
                       <Route
                         exact
-                        path="/applying/decisions"
-                        component={requireAuth(Applying)}
+                        path="/income/:incomeStatementId/edit"
+                        component={requireAuth(IncomeStatementEditor)}
                       />
+                    )}
+                    {featureFlags.experimental?.incomeStatements && (
                       <Route
                         exact
-                        path="/applications/new/:childId"
-                        component={requireAuth(ApplicationCreation)}
+                        path="/income/:incomeStatementId"
+                        component={requireAuth(IncomeStatementView)}
                       />
+                    )}
+                    <Route
+                      exact
+                      path="/applications/:applicationId/edit"
+                      component={requireAuth(ApplicationEditor)}
+                    />
+                    <Route
+                      exact
+                      path="/decisions"
+                      component={requireAuth(Decisions)}
+                    />
+                    <Route
+                      exact
+                      path="/decisions/by-application/:applicationId"
+                      component={requireAuth(DecisionResponseList)}
+                    />
+                    <Route
+                      exact
+                      path="/messages"
+                      component={requireAuth(MessagesPage, false)}
+                    />
+                    <Route
+                      exact
+                      path="/calendar"
+                      component={requireAuth(CalendarPage, false)}
+                    />
+                    {featureFlags.pedagogicalDocumentsEnabled && (
                       <Route
                         exact
-                        path="/applications/:applicationId"
-                        component={requireAuth(ApplicationReadView)}
+                        path="/pedagogical-documents"
+                        component={requireAuth(PedagogicalDocuments)}
                       />
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income"
-                          component={requireAuth(IncomeStatements)}
-                        />
-                      )}
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId/edit"
-                          component={requireAuth(IncomeStatementEditor)}
-                        />
-                      )}
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId"
-                          component={requireAuth(IncomeStatementView)}
-                        />
-                      )}
-                      <Route
-                        exact
-                        path="/applications/:applicationId/edit"
-                        component={requireAuth(ApplicationEditor)}
-                      />
-                      <Route
-                        exact
-                        path="/decisions"
-                        component={requireAuth(Decisions)}
-                      />
-                      <Route
-                        exact
-                        path="/decisions/by-application/:applicationId"
-                        component={requireAuth(DecisionResponseList)}
-                      />
-                      {featureFlags.pedagogicalDocumentsEnabled && (
-                        <Route
-                          exact
-                          path="/pedagogical-documents"
-                          component={requireAuth(PedagogicalDocuments)}
-                        />
-                      )}
-                      <Route
-                        exact
-                        path="/messages"
-                        component={requireAuth(MessagesPage, false)}
-                      />
-                      <Route
-                        exact
-                        path="/calendar"
-                        component={requireAuth(CalendarPage, false)}
-                      />
-                      <Route path="/">
-                        <Redirect to="/applying/map" />
-                      </Route>
-                    </Switch>
-                  </Main>
-                  <GlobalInfoDialog />
-                  <GlobalErrorDialog />
-                  <LoginErrorModal />
-                </PedagogicalDocumentsContextProvider>
+                    )}
+                    <Route path="/">
+                      <Redirect to="/applying/map" />
+                    </Route>
+                  </Switch>
+                </Main>
+                <GlobalInfoDialog />
+                <GlobalErrorDialog />
+                <LoginErrorModal />
               </MessageContextProvider>
             </OverlayContextProvider>
           </Localization>
