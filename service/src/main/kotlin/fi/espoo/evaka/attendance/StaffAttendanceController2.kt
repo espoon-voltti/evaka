@@ -41,8 +41,10 @@ class StaffAttendanceController2(
         @RequestParam unitId: DaycareId
     ): StaffAttendanceResponse {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
+
         // todo: convert to action auth
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+
         return db.read {
             StaffAttendanceResponse(
                 staff = it.getStaffAttendances(unitId, HelsinkiDateTime.now()),
@@ -51,6 +53,8 @@ class StaffAttendanceController2(
         }
     }
 
+    // todo: maybe employeeId and pinCode could be passed in headers as an authentication method
+    // in which case the same endpoint would also work from desktop with normal auth
     data class StaffArrivalRequest(
         val employeeId: EmployeeId,
         val pinCode: String,
@@ -64,10 +68,11 @@ class StaffAttendanceController2(
         @RequestBody body: StaffArrivalRequest
     ) {
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
+
         // todo: convert to action auth
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
-
         ac.verifyPinCode(body.employeeId, body.pinCode)
+        // todo: check that employee has access to a unit related to the group?
 
         db.transaction {
             it.markStaffArrival(
@@ -95,7 +100,6 @@ class StaffAttendanceController2(
         val attendance = db.read { it.getStaffAttendance(attendanceId) }
             ?: throw NotFound("attendance not found")
         acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
-
         ac.verifyPinCode(attendance.employeeId, body.pinCode)
 
         db.transaction {
