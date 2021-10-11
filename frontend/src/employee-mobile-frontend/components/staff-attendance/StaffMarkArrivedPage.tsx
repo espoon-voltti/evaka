@@ -113,8 +113,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
-            const pinLocked =
-              (staffInfo?.pinLocked ?? false) || errorCode === 'PIN_LOCKED'
+            const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
 
             return (
               <>
@@ -156,7 +155,9 @@ export default React.memo(function StaffMarkArrivedPage() {
                       timeInFuture
                         ? {
                             status: 'warning',
-                            text: `Oltava ennen ${formatTime(new Date())}`
+                            text: `Oltava ${formatTime(
+                              new Date()
+                            )} tai aikaisemmin`
                           }
                         : undefined
                     }
