@@ -38,6 +38,7 @@ import { Action } from 'lib-common/generated/action'
 import { mapValues } from 'lodash'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { DailyReservationRequest } from 'lib-common/api-types/reservations'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -103,6 +104,7 @@ export type UnitOccupancies = {
   planned: OccupancyResponse
   confirmed: OccupancyResponse
   realized: OccupancyResponse
+  realtime: RealtimeOccupancy | null
 }
 
 export type GroupOccupancies = {
@@ -311,7 +313,43 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
   return {
     planned: mapOccupancyResponse(data.planned),
     confirmed: mapOccupancyResponse(data.confirmed),
-    realized: mapOccupancyResponse(data.realized)
+    realized: mapOccupancyResponse(data.realized),
+    realtime: data.realtime
+      ? {
+          childAttendances: data.realtime.childAttendances.map(
+            (attendance) => ({
+              ...attendance,
+              arrived: new Date(attendance.arrived),
+              departed: attendance.departed
+                ? new Date(attendance.departed)
+                : null
+            })
+          ),
+          staffAttendances: data.realtime.staffAttendances.map(
+            (attendance) => ({
+              ...attendance,
+              arrived: new Date(attendance.arrived),
+              departed: attendance.departed
+                ? new Date(attendance.departed)
+                : null
+            })
+          ),
+          childCapacitySumSeries: data.realtime.childCapacitySumSeries.map(
+            (dataPoint) => ({
+              ...dataPoint,
+              time: new Date(dataPoint.time)
+            })
+          ),
+          staffCountSeries: data.realtime.staffCountSeries.map((dataPoint) => ({
+            ...dataPoint,
+            time: new Date(dataPoint.time)
+          })),
+          occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
+            ...dataPoint,
+            time: new Date(dataPoint.time)
+          }))
+        }
+      : null
   }
 }
 

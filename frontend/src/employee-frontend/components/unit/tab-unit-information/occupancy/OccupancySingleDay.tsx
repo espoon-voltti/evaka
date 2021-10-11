@@ -8,6 +8,9 @@ import { fontWeights } from 'lib-components/typography'
 import { OccupancyResponse } from '../../../../api/unit'
 import { useTranslation } from '../../../../state/i18n'
 import Title from 'lib-components/atoms/Title'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import OccupancyDayGraph from './OccupancyDayGraph'
+import { featureFlags } from 'lib-customizations/employee'
 
 const Container = styled.div`
   text-align: center;
@@ -23,12 +26,14 @@ interface Props {
   occupancies: OccupancyResponse
   plannedOccupancies: OccupancyResponse
   realizedOccupancies: OccupancyResponse
+  realtimeOccupancies: RealtimeOccupancy | null
 }
 
 function OccupancySingleDay({
   occupancies,
   plannedOccupancies,
-  realizedOccupancies
+  realizedOccupancies,
+  realtimeOccupancies
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -53,8 +58,11 @@ function OccupancySingleDay({
         </div>
       )}
       <Title size={4}>{i18n.unit.occupancy.subtitles.realized}</Title>
-      {realizedOccupancies.occupancies.length > 0 &&
-      realizedOccupancies.occupancies[0].percentage != null ? (
+      {featureFlags.experimental?.realtimeStaffAttendance &&
+      realtimeOccupancies ? (
+        <OccupancyDayGraph occupancy={realtimeOccupancies} />
+      ) : realizedOccupancies.occupancies.length > 0 &&
+        realizedOccupancies.occupancies[0].percentage != null ? (
         <Value>{`${realizedOccupancies.occupancies[0].percentage} %`}</Value>
       ) : (
         <div data-qa="occupancies-no-valid-values-realized">
