@@ -50,6 +50,7 @@ export default React.memo(function Header() {
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
+        unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount ?? 0}
       />
     </HeaderContainer>
   )
