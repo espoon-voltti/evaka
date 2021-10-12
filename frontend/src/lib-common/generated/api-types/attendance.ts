@@ -159,11 +159,29 @@ export interface DepartureRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.ExternalStaffArrivalRequest
+*/
+export interface ExternalStaffArrivalRequest {
+  arrived: string
+  groupId: UUID
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.ExternalStaffDepartureRequest
+*/
+export interface ExternalStaffDepartureRequest {
+  attendanceId: UUID
+  time: string
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ExternalStaffMember
 */
 export interface ExternalStaffMember {
   arrived: Date
   groupId: UUID
+  id: UUID
   name: string
 }
 

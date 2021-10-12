@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors from 'lib-customizations/common'
+import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
+import React from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { StaffMember } from 'lib-common/generated/api-types/attendance'
+import styled from 'styled-components'
+import { Staff } from './staff'
 
 const StaffBox = styled.div`
   display: flex;
@@ -71,24 +70,24 @@ export const IconBox = styled.div<{ present: boolean }>`
   border: 2px solid ${colors.greyscale.white};
 `
 
-interface StaffListItemProps {
-  staffMember: StaffMember
-}
-
 export default React.memo(function StaffListItem({
-  staffMember: { employeeId, firstName, lastName, present }
-}: StaffListItemProps) {
+  name,
+  id,
+  present,
+  type
+}: Staff) {
   const { unitId, groupId } = useParams<{
     unitId: string
     groupId: string
   }>()
 
+  const base = `/units/${unitId}/groups/${groupId}/staff-attendance`
+  const link = type === 'external' ? `${base}/external/${id}` : `${base}/${id}`
+
   return (
-    <StaffBox data-qa={`staff-${employeeId}`}>
-      <AttendanceLinkBox
-        to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
-      >
-        <IconBox present={!!present}>
+    <StaffBox data-qa={`staff-${id}`} key={id}>
+      <AttendanceLinkBox to={link}>
+        <IconBox present={present}>
           <RoundIcon
             content={farUser}
             color={present ? colors.accents.green : colors.accents.water}
@@ -96,9 +95,7 @@ export default React.memo(function StaffListItem({
           />
         </IconBox>
         <StaffBoxInfo>
-          <Bold data-qa={'employee-name'}>
-            {firstName} {lastName}
-          </Bold>
+          <Bold data-qa="employee-name">{name}</Bold>
         </StaffBoxInfo>
       </AttendanceLinkBox>
     </StaffBox>

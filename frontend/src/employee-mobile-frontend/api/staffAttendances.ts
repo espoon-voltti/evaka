@@ -7,6 +7,8 @@ import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from './client'
 import {
+  ExternalStaffArrivalRequest,
+  ExternalStaffDepartureRequest,
   StaffArrivalRequest,
   StaffAttendanceResponse,
   StaffDepartureRequest
@@ -57,6 +59,24 @@ export async function postStaffDeparture(
 ): Promise<Result<void>> {
   return client
     .post(`/v2/staff-attendances/${attendanceId}/departure`, request)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postExternalStaffArrival(
+  body: ExternalStaffArrivalRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/staff-attendances/arrival-external`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postExternalStaffDeparture(
+  body: ExternalStaffDepartureRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/staff-attendances/departure-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

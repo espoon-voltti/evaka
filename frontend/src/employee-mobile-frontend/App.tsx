@@ -12,6 +12,7 @@ import {
 } from 'react-router-dom'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import ensureAuthenticated from './components/ensureAuthenticated'
+import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
 import { ChildAttendanceContextProvider } from './state/child-attendance'
 import { I18nContextProvider } from './state/i18n'
 import { UserContextProvider } from './state/user'
@@ -28,6 +29,7 @@ import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBef
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
 import StaffPage from './components/staff/StaffPage'
 import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
+import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
@@ -167,6 +169,16 @@ function StaffAttendanceRouter() {
     <StaffAttendanceContextProvider>
       <Switch>
         <Route exact path={path} component={StaffAttendancesPage} />
+        <Route
+          exact
+          path={`${path}/external`}
+          component={MarkExternalStaffMemberArrivalPage}
+        />
+        <Route
+          exact
+          path={`${path}/external/:attendanceId`}
+          component={ExternalStaffMemberPage}
+        />
         <Route exact path={`${path}/:employeeId`} component={StaffMemberPage} />
         <Route
           exact

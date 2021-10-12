@@ -3,9 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
+import Button from 'lib-components/atoms/buttons/Button'
+import { faPlus } from 'lib-icons'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import TopBar from '../common/TopBar'
@@ -15,9 +19,15 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import Tabs from 'lib-components/molecules/Tabs'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const Bold = styled.div`
   font-weight: ${fontWeights.semibold};
+`
+const StaticIconContainer = styled.div`
+  position: fixed;
+  bottom: 68px;
+  right: 8px;
 `
 
 export default function StaffAttendancesPage() {
@@ -26,6 +36,7 @@ export default function StaffAttendancesPage() {
     unitId: string
     groupId: string
   }>()
+  const { i18n } = useTranslation()
 
   const { unitInfoResponse, showPresent, setShowPresent } =
     useContext(UnitContext)
@@ -38,13 +49,17 @@ export default function StaffAttendancesPage() {
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
     )
+  const navigateToExternalMemberArrival = () =>
+    history.push(`/units/${unitId}/groups/${groupId}/staff-attendance/external`)
 
   const presentStaffCounts = staffAttendanceResponse.map(
     (res) =>
       res.staff.filter((s) =>
         groupId === 'all' ? s.present : s.present === groupId
       ).length +
-      res.extraAttendances.filter((s) => s.groupId === groupId).length
+      res.extraAttendances.filter(
+        (s) => groupId === 'all' || s.groupId === groupId
+      ).length
   )
 
   const tabs = [
@@ -52,7 +67,7 @@ export default function StaffAttendancesPage() {
       id: 'not-present',
       onClick: () => setShowPresent(false),
       active: !showPresent,
-      label: <Bold>Poissa</Bold>
+      label: <Bold>{i18n.attendances.types.ABSENT}</Bold>
     },
     {
       id: 'present',
@@ -60,9 +75,8 @@ export default function StaffAttendancesPage() {
       active: showPresent,
       label: (
         <Bold>
-          Läsnä
-          <br />
-          {`(${presentStaffCounts.getOrElse(' ')})`}
+          {i18n.attendances.types.PRESENT}
+          <br />({presentStaffCounts.getOrElse(' ')})
         </Bold>
       )
     }
@@ -72,17 +86,17 @@ export default function StaffAttendancesPage() {
     showPresent
       ? groupId === 'all'
         ? [
-            ...res.staff.filter((s) => s.present !== null)
-            // todo: extra attendances
+            ...res.staff.filter((s) => s.present !== null),
+            ...res.extraAttendances
           ]
         : [
-            ...res.staff.filter((s) => s.present === groupId)
-            // todo: extra attendances
+            ...res.staff.filter((s) => s.present === groupId),
+            ...res.extraAttendances.filter((s) => s.groupId === groupId)
           ]
-      : groupId === 'all'
-      ? res.staff.filter((s) => s.present === null)
       : res.staff.filter(
-          (s) => s.groupIds.includes(groupId) && s.present === null
+          (s) =>
+            s.present === null &&
+            (groupId === 'all' || s.groupIds.includes(groupId))
         )
   )
 
@@ -97,17 +111,21 @@ export default function StaffAttendancesPage() {
         }
         onChangeGroup={changeGroup}
       />
-      <Tabs tabs={tabs} mobile type={'buttons'} />
-      {renderResult(filteredStaff, (filteredStaff) => (
+      <Tabs tabs={tabs} mobile type="buttons" />
+      {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
-          {filteredStaff.map((staffMember) => (
-            <StaffListItem
-              staffMember={staffMember}
-              key={staffMember.employeeId}
-            />
-          ))}
+          {staff.map((staffMember) => {
+            const s = toStaff(staffMember)
+            return <StaffListItem {...s} key={s.id} />
+          })}
         </FixedSpaceColumn>
       ))}
+      <StaticIconContainer>
+        <Button primary onClick={navigateToExternalMemberArrival}>
+          <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
+          {i18n.attendances.staff.externalPerson}
+        </Button>
+      </StaticIconContainer>
       <BottomNavBar selected="staff" />
     </>
   ))

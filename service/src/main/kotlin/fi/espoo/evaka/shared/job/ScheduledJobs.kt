@@ -97,7 +97,7 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
             it.createUpdate(
                 // language=SQL
                 """
-                    UPDATE staff_attendance_externals
+                    UPDATE staff_attendance_external
                     SET departed = now()
                     WHERE departed IS NULL AND arrived + interval '1 day' < now()
                 """.trimIndent()

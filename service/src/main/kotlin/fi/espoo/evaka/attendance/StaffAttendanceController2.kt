@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -106,6 +107,57 @@ class StaffAttendanceController2(
             it.markStaffDeparture(
                 attendanceId = attendanceId,
                 departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+            )
+        }
+    }
+
+    data class ExternalStaffArrivalRequest(
+        val name: String,
+        val groupId: GroupId,
+        val arrived: LocalTime
+    )
+    @PostMapping("/arrival-external")
+    fun markExternalArrival(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: ExternalStaffArrivalRequest
+    ): StaffAttendanceExternalId {
+        Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
+        // todo: convert to action auth
+        acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
+        return db.transaction {
+            it.markExternalStaffArrival(
+                ExternalStaffArrival(
+                    name = body.name,
+                    groupId = body.groupId, arrived = HelsinkiDateTime.now().withTime(minOf(body.arrived, LocalTime.now()))
+                )
+            )
+        }
+    }
+
+    data class ExternalStaffDepartureRequest(
+        val attendanceId: StaffAttendanceId,
+        val time: LocalTime
+    )
+    @PostMapping("/departure-external")
+    fun markExternalDeparture(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: ExternalStaffDepartureRequest
+    ) {
+        Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
+
+        // todo: convert to action auth
+        val attendance = db.read { it.getExternalStaffAttendance(body.attendanceId) }
+            ?: throw NotFound("attendance not found")
+        acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
+
+        db.transaction {
+            it.markExternalStaffDeparture(
+                ExternalStaffDeparture(
+                    id = body.attendanceId,
+                    departed = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                )
             )
         }
     }
