@@ -56,7 +56,7 @@ class VardaClient(
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
-    val getChildErrorUrl = { organizerId: Long -> "$organizerUrl$organizerId/error-report-lapset/" }
+    val getChildErrorUrl = { organizerId: Long -> "$organizerUrl$organizerId/error-report-lapset/?page_size=500" }
     val sourceSystem: String = env.sourceSystem
 
     data class VardaRequestError(
@@ -384,7 +384,13 @@ class VardaClient(
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class ChildErrorReport(
         val lapsi_id: Long,
-        val errors: String
+        val errors: List<ChildErrorReportError>
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class ChildErrorReportError(
+        val error_code: String,
+        val description: String
     )
 
     fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
@@ -430,6 +436,7 @@ class VardaClient(
         initialUrl: String,
         parseJson: (String) -> PaginatedResponse<T>
     ): List<T> {
+        logger.info("VardaUpdate: client getting paginated result from $initialUrl")
         fun fetchNext(acc: List<T>, next: String?): List<T> {
             return if (next == null) acc
             else {
