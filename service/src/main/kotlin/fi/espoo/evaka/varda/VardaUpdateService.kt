@@ -123,8 +123,9 @@ class VardaUpdateService(
             val errorReport = client.getVardaChildrenErrorReport(organizerId)
             logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
 
+            // TODO remove this after gathering enough examples to write tests
             if (errorReport.isNotEmpty())
-                logger.info("VardaUpdate: example error rows: ${errorReport.shuffled().take(5).map { it.errors }}")
+                logger.info("VardaUpdate: example error rows: ${errorReport.take(5).map { it.errors }}")
 
             val mapper = db.read { it.getVardaChildToEvakaChild() }
             val (childrenWithId, childrenWithoutId) = errorReport.take(limit).map { it.lapsi_id }.partition {
