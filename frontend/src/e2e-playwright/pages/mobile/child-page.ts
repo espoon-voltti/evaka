@@ -11,6 +11,7 @@ import { Page } from 'playwright'
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
+  #markPresentLink = new RawElement(this.page, '[data-qa="mark-present-link"]')
   #markAbsentBeforehandLink = new RawElement(
     this.page,
     '[data-qa="mark-absent-beforehand"]'
@@ -56,6 +57,10 @@ export default class MobileChildPage {
 
   async markFutureAbsences() {
     return this.#markAbsentBeforehandLink.click()
+  }
+
+  async selectMarkPresentView() {
+    return this.#markPresentLink.click()
   }
 
   async goBack() {
