@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -31,5 +32,14 @@ class VardaDevController(
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
         vardaUpdateService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
+    }
+
+    @PostMapping("/reset-by-report/:organizerId")
+    fun nukeChildrenByReport(
+        db: Database.Connection,
+        @PathVariable organizerId: Long,
+        @RequestParam(defaultValue = "1000") limit: Int,
+    ) {
+        vardaUpdateService.resetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
     }
 }

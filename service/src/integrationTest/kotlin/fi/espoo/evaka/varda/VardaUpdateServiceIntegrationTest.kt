@@ -92,6 +92,16 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     val VOUCHER_CO_PAYMENT = 5000
 
     @Test
+    fun `setToBeReset works`() {
+        fun countChildrenToBeReset(): Int = db.read { it.createQuery("SELECT count(*) FROM varda_reset_child WHERE reset_timestamp IS NULL").mapTo<Int>().first() }
+
+        assertEquals(0, countChildrenToBeReset())
+
+        db.transaction { it.setToBeReset(listOf(ChildId(testChild_1.id))) }
+        assertEquals(1, countChildrenToBeReset())
+    }
+
+    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds a new evaka service need with voucher value decision when varda has none`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)

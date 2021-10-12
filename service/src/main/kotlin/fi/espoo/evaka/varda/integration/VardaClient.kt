@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda.integration
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -55,6 +56,7 @@ class VardaClient(
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
+    val getChildErrorUrl = { organizerId: Long -> "$organizerUrl$organizerId/error-report-lapset/" }
     val sourceSystem: String = env.sourceSystem
 
     data class VardaRequestError(
@@ -376,6 +378,19 @@ class VardaClient(
                     "VardaUpdate: client failed to update organizer: $err"
                 }
             }
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class ChildErrorReport(
+        val lapsi_id: Long,
+        val errors: String
+    )
+
+    fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
+        logger.info("VardaUpdate: client reading children error report")
+        return getAllPages(getChildErrorUrl(organizerId)) {
+            objectMapper.readValue(it)
         }
     }
 
