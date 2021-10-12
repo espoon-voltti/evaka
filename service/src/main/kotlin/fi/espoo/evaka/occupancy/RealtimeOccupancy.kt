@@ -120,7 +120,7 @@ fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDat
     SELECT 
         sa.arrived,
         sa.departed
-    FROM staff_attendance_2 sa
+    FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
     WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed, '[]') && tstzrange(:dayStart, :dayEnd, '[]')
     """.trimIndent()
