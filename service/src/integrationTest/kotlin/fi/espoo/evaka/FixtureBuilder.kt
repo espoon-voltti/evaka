@@ -11,13 +11,20 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -25,7 +32,9 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
@@ -34,13 +43,15 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.lang.IllegalStateException
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 class FixtureBuilder(
     private val tx: Database.Transaction,
-    private val today: LocalDate
+    private val today: LocalDate = LocalDate.now()
 ) {
     fun addChild() = ChildBuilder(tx, today, this)
+    fun addEmployee() = EmployeeBuilder(tx, today, this)
 
     class ChildBuilder(
         private val tx: Database.Transaction,
@@ -95,6 +106,7 @@ class FixtureBuilder(
         fun addBackupCare() = BackupCareBuilder(tx, today, this)
         fun addPlacement() = PlacementBuilder(tx, today, this)
         fun addAbsence() = AbsenceBuilder(tx, today, this)
+        fun addAttendance() = ChildAttendanceBuilder(tx, today, this)
     }
 
     class AssistanceNeedBuilder(
@@ -235,7 +247,7 @@ class FixtureBuilder(
         private var from: LocalDate = today
         private var to: LocalDate = today
         private var unitId: DaycareId? = null
-        private var type: PlacementType? = null
+        private var type: PlacementType = PlacementType.DAYCARE
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
@@ -267,7 +279,7 @@ class FixtureBuilder(
         private fun doInsert() = tx.insertTestPlacement(
             childId = childFixture.childId,
             unitId = unitId ?: throw IllegalStateException("unit not set"),
-            type = type ?: throw IllegalStateException("type not set"),
+            type = type,
             startDate = from,
             endDate = to
         )
@@ -350,6 +362,123 @@ class FixtureBuilder(
             )
 
             return placementFixture
+        }
+    }
+
+    class ChildAttendanceBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val childFixture: ChildFixture
+    ) {
+        private var from: HelsinkiDateTime? = null
+        private var to: HelsinkiDateTime? = null
+        private var unitId: DaycareId? = null
+
+        fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
+        fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+        fun arriving(time: LocalTime) = arriving(today, time)
+
+        fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
+        fun departing(date: LocalDate, time: LocalTime) = this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+        fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
+
+        fun inUnit(unitId: DaycareId) = this.apply { this.unitId = unitId }
+
+        fun save(): ChildFixture {
+            tx.insertTestChildAttendance(
+                childId = childFixture.childId,
+                unitId = unitId ?: error("unit must be set"),
+                arrived = from ?: error("arrival time must be set"),
+                departed = to
+            )
+            return childFixture
+        }
+    }
+
+    class EmployeeBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val fixtureBuilder: FixtureBuilder
+    ) {
+        private var globalRoles: Set<UserRole> = emptySet()
+        private val unitRoles: MutableSet<Pair<UserRole, DaycareId>> = mutableSetOf()
+        private val groups: MutableSet<Pair<DaycareId, GroupId>> = mutableSetOf()
+
+        fun withGlobalRoles(roles: Set<UserRole>) = this.apply {
+            this.globalRoles = roles
+        }
+
+        fun withScopedRole(role: UserRole, unitId: DaycareId) = this.apply {
+            this.unitRoles.add(Pair(role, unitId))
+        }
+
+        fun withGroupAccess(unitId: DaycareId, groupId: GroupId) = this.apply {
+            this.groups.add(Pair(unitId, groupId))
+        }
+
+        fun save(): FixtureBuilder {
+            doInsert()
+            return fixtureBuilder
+        }
+
+        fun saveAnd(f: EmployeeFixture.() -> Unit): FixtureBuilder {
+            val employeeId = doInsert()
+
+            f(EmployeeFixture(tx, today, employeeId))
+
+            return fixtureBuilder
+        }
+
+        private fun doInsert(): EmployeeId {
+            val employeeId = tx.insertTestEmployee(DevEmployee(roles = globalRoles)).let { EmployeeId(it) }
+            unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId.raw, role) }
+            groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }
+            return employeeId
+        }
+    }
+
+    @TestFixture
+    class EmployeeFixture(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        val employeeId: EmployeeId
+    ) {
+        fun addRealtimeAttendance() = StaffAttendanceBuilder(tx, today, this)
+    }
+
+    class StaffAttendanceBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val employeeFixture: EmployeeFixture
+    ) {
+        private var from: HelsinkiDateTime? = null
+        private var to: HelsinkiDateTime? = null
+        private var groupId: GroupId? = null
+
+        fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
+        fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+        fun arriving(time: LocalTime) = arriving(today, time)
+
+        fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
+        fun departing(date: LocalDate, time: LocalTime) = this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+        fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
+
+        fun inGroup(groupId: GroupId) = this.apply { this.groupId = groupId }
+
+        fun save(): EmployeeFixture {
+            tx.createUpdate(
+                """
+                INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed)
+                VALUES (:employeeId, :groupId, :arrived, :departed)
+                """.trimIndent()
+            )
+                .bind("employeeId", employeeFixture.employeeId)
+                .bind("groupId", groupId ?: error("group must be set"))
+                .bind("arrived", from ?: error("arrival time must be set"))
+                .bindNullable("departed", to)
+                .updateExactlyOne()
+
+            return employeeFixture
         }
     }
 }
