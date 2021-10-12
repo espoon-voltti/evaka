@@ -118,7 +118,7 @@ class VardaUpdateService(
         resetVardaChild(db, client, msg.childId, feeDecisionMinDate)
     }
 
-    fun nukeByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
+    fun resetByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
         try {
             val errorReport = client.getVardaChildrenErrorReport(organizerId)
             logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")

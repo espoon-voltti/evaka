@@ -34,12 +34,12 @@ class VardaDevController(
         vardaUpdateService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
     }
 
-    @PostMapping("/nuke-by-report/:organizerId")
+    @PostMapping("/reset-by-report/:organizerId")
     fun nukeChildrenByReport(
         db: Database.Connection,
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaUpdateService.nukeByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
+        vardaUpdateService.resetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
     }
 }
