@@ -1515,7 +1515,7 @@ const en: Translations = {
     attachments: {
       title: 'Attachments related to income and early childhood education fees',
       description:
-        'Here, you can electronically send the attachments related to your income or early childhood education fees, such as the income statement, pay slips or Kela’s certificate of support for private care. Note! Income-related attachments are usually not required if your family has agreed to pay the highest fee.',
+        'Here, you can electronically send the attachments related to your income or early childhood education fees, such as pay slips or Kela’s certificate of support for private care. Note! Income-related attachments are usually not required if your family has agreed to pay the highest fee.',
       required: {
         title: 'Necessary attachments'
       },

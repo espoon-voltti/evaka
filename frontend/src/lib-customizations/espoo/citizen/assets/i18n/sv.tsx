@@ -1474,7 +1474,7 @@ const sv: Translations = {
     attachments: {
       title: 'Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik',
       description:
-        'Här kan du elektroniskt skicka de begärda bilagor som rör dina inkomster eller avgifter för småbarnspedagogik, såsom inkomstutredningen, lönekvittona eller FPA:s intyg över stöd för privat vård. Obs! Bilagor som rör inkomsterna behövs i regel inte, om er familj har samtyckt till den högsta avgiften.',
+        'Här kan du elektroniskt skicka de begärda bilagor som rör dina inkomster eller avgifter för småbarnspedagogik, såsom lönekvittona eller FPA:s intyg över stöd för privat vård. Obs! Bilagor som rör inkomsterna behövs i regel inte, om er familj har samtyckt till den högsta avgiften.',
       required: {
         title: 'Obligatoriska bilagor'
       },
