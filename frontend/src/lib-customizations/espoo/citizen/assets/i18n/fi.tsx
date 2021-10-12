@@ -1454,7 +1454,7 @@ export default {
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
       description:
-        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten tuloselvityksen, palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tuloihin liittyviä liitteitä ei tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
+        'Tässä voit lähettää sähköisesti sinulta pyydetyt tuloihin tai varhaiskasvatusmaksuihin liittyvät liitteet, kuten palkkakuitit tai Kelan todistuksen yksityisen hoidon tuesta. Huom! Tuloihin liittyviä liitteitä ei tarvita, jos perheenne on suostunut korkeimpaan maksuun.',
       required: {
         title: 'Tarvittavat liitteet'
       },
