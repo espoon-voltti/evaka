@@ -73,6 +73,12 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
     ) : VardaAsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    data class DeleteVardaChild(
+        val vardaChildId: Long
+    ) : VardaAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 @JsonIgnoreProperties("asyncJobType") // only present in old jobs in db

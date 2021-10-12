@@ -40,6 +40,6 @@ class VardaDevController(
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaUpdateService.resetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
+        vardaUpdateService.planResetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
     }
 }

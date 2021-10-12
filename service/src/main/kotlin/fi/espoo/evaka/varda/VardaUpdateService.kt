@@ -56,6 +56,7 @@ class VardaUpdateService(
     init {
         asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
+        asyncJobRunner.registerHandler(::deleteVardaChildByAsyncJob)
     }
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
@@ -118,7 +119,12 @@ class VardaUpdateService(
         resetVardaChild(db, client, msg.childId, feeDecisionMinDate)
     }
 
-    fun resetByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
+    fun deleteVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.DeleteVardaChild) {
+        logger.info("VardaUpdate: starting to delete child ${msg.vardaChildId}")
+        deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
+    }
+
+    fun planResetByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
         try {
             val errorReport = client.getVardaChildrenErrorReport(organizerId)
             logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
@@ -132,14 +138,16 @@ class VardaUpdateService(
                 mapper[it] != null
             }
 
-            logger.info("VardaUpdate: found ${childrenWithId.size} matching UUIDs, missing ${childrenWithoutId.size} UUIDs")
-
             logger.info("VardaUpdate: setting ${childrenWithId.size} children to be reset")
             db.transaction { tx -> tx.setToBeReset(childrenWithId.map { mapper[it]!! }) }
 
-            logger.info("VardaUpdate: starting to delete ${childrenWithoutId.size} children by varda id")
-            childrenWithoutId.forEach { vardaChildId ->
-                deleteChildDataFromVardaAndDbByVardaId(db, client, vardaChildId)
+            logger.info("VardaUpdate: scheduling ${childrenWithoutId.size} children to be deleted")
+            db.transaction { tx ->
+                asyncJobRunner.plan(
+                    tx, childrenWithoutId.map { VardaAsyncJob.DeleteVardaChild(it) },
+                    retryCount = 2,
+                    retryInterval = Duration.ofMinutes(1)
+                )
             }
         } catch (e: Exception) {
             logger.info("VardaUpdate: failed to nuke varda children by report data: ${e.localizedMessage}")
