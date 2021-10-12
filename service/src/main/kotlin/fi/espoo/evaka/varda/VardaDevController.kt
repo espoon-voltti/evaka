@@ -34,8 +34,8 @@ class VardaDevController(
         vardaUpdateService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
     }
 
-    @PostMapping("/reset-by-report/:organizerId")
-    fun nukeChildrenByReport(
+    @PostMapping("/reset-by-report/{organizerId}")
+    fun resetChildrenByReport(
         db: Database.Connection,
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
