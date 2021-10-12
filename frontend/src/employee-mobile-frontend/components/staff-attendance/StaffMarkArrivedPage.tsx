@@ -85,8 +85,8 @@ export default React.memo(function StaffMarkArrivedPage() {
   return (
     <TallContentArea
       opaque={false}
-      paddingHorizontal={'zero'}
-      paddingVertical={'zero'}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
     >
       <div>
         <BackButtonInline
@@ -102,14 +102,18 @@ export default React.memo(function StaffMarkArrivedPage() {
       <ContentArea
         shadow
         opaque={true}
-        paddingHorizontal={'s'}
-        paddingVertical={'m'}
+        paddingHorizontal="s"
+        paddingVertical="m"
       >
         {renderResult(
           combine(unitInfoResponse, staffMember),
           ([unitInfo, staffMember]) => {
             if (staffMember === undefined)
-              return <ErrorSegment title={'Työntekijää ei löytynyt'} />
+              return (
+                <ErrorSegment
+                  title={i18n.attendances.staff.errors.employeeNotFound}
+                />
+              )
 
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
@@ -118,11 +122,11 @@ export default React.memo(function StaffMarkArrivedPage() {
             return (
               <>
                 <TimeWrapper>
-                  <Title noMargin>Kirjaudu pin-koodilla</Title>
+                  <Title noMargin>{i18n.attendances.staff.loginWithPin}</Title>
                   {!pinSet ? (
-                    <ErrorSegment title={'Aseta itsellesi PIN-koodi'} />
+                    <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
                   ) : pinLocked ? (
-                    <ErrorSegment title={'Vaihda lukkiutunut PIN-koodi'} />
+                    <ErrorSegment title={i18n.attendances.staff.pinLocked} />
                   ) : (
                     <InputField
                       inputRef={pinInputRef}
@@ -137,14 +141,14 @@ export default React.memo(function StaffMarkArrivedPage() {
                         errorCode === 'WRONG_PIN'
                           ? {
                               status: 'warning',
-                              text: 'PIN-koodi ei kelvannut'
+                              text: i18n.attendances.staff.errors.wrongPin
                             }
                           : undefined
                       }
                     />
                   )}
                   <Gap />
-                  <label>Saapumisaika</label>
+                  <label>{i18n.attendances.arrivalTime}</label>
                   <InputField
                     onChange={setTime}
                     value={time}
@@ -155,9 +159,9 @@ export default React.memo(function StaffMarkArrivedPage() {
                       timeInFuture
                         ? {
                             status: 'warning',
-                            text: `Oltava ${formatTime(
-                              new Date()
-                            )} tai aikaisemmin`
+                            text: i18n.common.validation.dateLte(
+                              formatTime(new Date())
+                            )
                           }
                         : undefined
                     }
@@ -166,10 +170,10 @@ export default React.memo(function StaffMarkArrivedPage() {
                     groupOptions.length > 1 ? (
                       <>
                         <Gap />
-                        <label>Ryhmä</label>
+                        <label>{i18n.common.group}</label>
                         <SimpleSelect
                           value={attendanceGroup}
-                          placeholder={'Valitse ryhmä'}
+                          placeholder={i18n.attendances.chooseGroup}
                           options={groupOptions}
                           onChange={(e) => setAttendanceGroup(e.target.value)}
                         />
@@ -178,7 +182,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                   )}
                   <Gap />
                 </TimeWrapper>
-                <Gap size={'xs'} />
+                <Gap size="xs" />
                 <Actions>
                   <FixedSpaceRow fullWidth>
                     <Button

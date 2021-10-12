@@ -8,6 +8,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import React, { useContext, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { renderResult } from '../async-rendering'
 import { WideLinkButton } from '../mobile/components'
@@ -22,6 +23,7 @@ export default React.memo(function StaffMemberPage() {
     groupId: string
     employeeId: string
   }>()
+  const { i18n } = useTranslation()
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
@@ -36,7 +38,9 @@ export default React.memo(function StaffMemberPage() {
     <StaffMemberPageContainer>
       {renderResult(staffMember, (staffMember) =>
         staffMember === undefined ? (
-          <ErrorSegment title={'Työntekijää ei löytynyt'} />
+          <ErrorSegment
+            title={i18n.attendances.staff.errors.employeeNotFound}
+          />
         ) : (
           <>
             <EmployeeCardBackground staff={toStaff(staffMember)} />
@@ -44,12 +48,12 @@ export default React.memo(function StaffMemberPage() {
               {staffMember.latestCurrentDayAttendance && (
                 <>
                   <TimeInfo>
-                    <Label>Saapumisaika</Label>{' '}
+                    <Label>{i18n.attendances.arrivalTime}</Label>{' '}
                     {formatTime(staffMember.latestCurrentDayAttendance.arrived)}
                   </TimeInfo>
                   {staffMember.latestCurrentDayAttendance.departed && (
                     <TimeInfo>
-                      <Label>Lähtöaika</Label>{' '}
+                      <Label>{i18n.attendances.departureTime}</Label>{' '}
                       {formatTime(
                         staffMember.latestCurrentDayAttendance.departed
                       )}
@@ -63,7 +67,7 @@ export default React.memo(function StaffMemberPage() {
                   data-qa="mark-departed-link"
                   to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`}
                 >
-                  Kirjaudu poissaolevaksi
+                  {i18n.attendances.staff.markDeparted}
                 </WideLinkButton>
               ) : (
                 <WideLinkButton
@@ -71,7 +75,7 @@ export default React.memo(function StaffMemberPage() {
                   data-qa="mark-arrived-link"
                   to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`}
                 >
-                  Kirjaudu läsnäolevaksi
+                  {i18n.attendances.staff.markArrived}
                 </WideLinkButton>
               )}
             </FixedSpaceColumn>

@@ -5,6 +5,7 @@
 import React, { useContext, useEffect } from 'react'
 import Button from 'lib-components/atoms/buttons/Button'
 import { faPlus } from 'lib-icons'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -35,6 +36,7 @@ export default function StaffAttendancesPage() {
     unitId: string
     groupId: string
   }>()
+  const { i18n } = useTranslation()
 
   const { unitInfoResponse, showPresent, setShowPresent } =
     useContext(UnitContext)
@@ -65,7 +67,7 @@ export default function StaffAttendancesPage() {
       id: 'not-present',
       onClick: () => setShowPresent(false),
       active: !showPresent,
-      label: <Bold>Poissa</Bold>
+      label: <Bold>{i18n.attendances.types.ABSENT}</Bold>
     },
     {
       id: 'present',
@@ -73,7 +75,7 @@ export default function StaffAttendancesPage() {
       active: showPresent,
       label: (
         <Bold>
-          Läsnä
+          {i18n.attendances.types.PRESENT}
           <br />({presentStaffCounts.getOrElse(' ')})
         </Bold>
       )
@@ -120,7 +122,8 @@ export default function StaffAttendancesPage() {
       ))}
       <StaticIconContainer>
         <Button primary onClick={navigateToExternalMemberArrival}>
-          <FontAwesomeIcon icon={faPlus} size="sm" /> Muu henkilö
+          <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
+          {i18n.attendances.staff.externalPerson}
         </Button>
       </StaticIconContainer>
       <BottomNavBar selected="staff" />

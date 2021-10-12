@@ -44,6 +44,7 @@ export const fi = {
     },
     code: 'Koodi',
     children: 'Lapset',
+    name: 'Nimi',
     staff: 'Henkilökunta',
     messages: 'Viestit',
     back: 'Takaisin',
@@ -65,7 +66,10 @@ export const fi = {
     },
     child: 'Lapsi',
     group: 'Ryhmä',
-    yesterday: 'eilen'
+    yesterday: 'eilen',
+    validation: {
+      dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`
+    }
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -232,6 +236,20 @@ export const fi = {
           }
         }
       }
+    },
+    staff: {
+      errors: {
+        employeeNotFound: 'Työntekijää ei löytynyt',
+        wrongPin: 'Väärä PIN-koodi'
+      },
+      externalPerson: 'Muu henkilö',
+      markExternalPerson: 'Kirjaa muu henkilö',
+      markExternalPersonTitle: 'Kirjaa muu vastuullinen henkilö sisään',
+      markArrived: 'Kirjaudu läsnäolevaksi',
+      markDeparted: 'Kirjaudu poissaolevaksi',
+      loginWithPin: 'Kirjaudu PIN-koodilla',
+      pinNotSet: 'Aseta itsellesi PIN-koodi',
+      pinLocked: 'Vaihda lukkiutunut PIN-koodi'
     }
   },
   staff: {

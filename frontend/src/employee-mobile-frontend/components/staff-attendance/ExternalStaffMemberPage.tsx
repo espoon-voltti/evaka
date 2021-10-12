@@ -11,6 +11,7 @@ import { Label } from 'lib-components/typography'
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { postExternalStaffDeparture } from '../../api/staffAttendances'
+import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { renderResult } from '../async-rendering'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
@@ -23,6 +24,7 @@ export default React.memo(function ExternalStaffMemberPage() {
   const { attendanceId } = useParams<{
     attendanceId: string
   }>()
+  const { i18n } = useTranslation()
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
@@ -39,17 +41,22 @@ export default React.memo(function ExternalStaffMemberPage() {
     <StaffMemberPageContainer>
       {renderResult(attendance, (ext) =>
         !ext ? (
-          <ErrorSegment title={'Työntekijää ei löytynyt'} />
+          <ErrorSegment
+            title={i18n.attendances.staff.errors.employeeNotFound}
+          />
         ) : (
           <>
             <EmployeeCardBackground staff={toStaff(ext)} />
             <FixedSpaceColumn>
               <TimeInfo>
-                <Label>Saapumisaika</Label> {formatTime(ext.arrived)}
+                <Label>{i18n.attendances.arrivalTime}</Label>{' '}
+                {formatTime(ext.arrived)}
               </TimeInfo>
 
               <TimeInfo>
-                <Label htmlFor="time-input">Lähtöaika</Label>
+                <Label htmlFor="time-input">
+                  {i18n.attendances.departureTime}
+                </Label>
                 <InputField
                   id="time-input"
                   type="time"
@@ -61,7 +68,7 @@ export default React.memo(function ExternalStaffMemberPage() {
 
               <AsyncButton
                 primary
-                text={'Kirjaa poissaolevaksi'}
+                text={i18n.attendances.actions.markDeparted}
                 data-qa="mark-departed-link"
                 onClick={() =>
                   postExternalStaffDeparture({ attendanceId, time })

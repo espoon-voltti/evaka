@@ -34,8 +34,8 @@ export function StaffMemberPageContainer({
   return (
     <TallContentAreaNoOverflow
       opaque
-      paddingHorizontal={'0px'}
-      paddingVertical={'0px'}
+      paddingHorizontal="0px"
+      paddingVertical="0px"
       shadow
     >
       <BackButtonMargin

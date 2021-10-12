@@ -10,6 +10,7 @@ import { farUser } from 'lib-icons'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { useTranslation } from '../../../state/i18n'
 import { Staff } from '../staff'
 import { IconBox } from '../StaffListItem'
 
@@ -66,6 +67,7 @@ export function EmployeeCardBackground({
 }: {
   staff: Staff
 }) {
+  const { i18n } = useTranslation()
   return (
     <Zindex>
       <EmployeeBackground present={present}>
@@ -78,16 +80,18 @@ export function EmployeeCardBackground({
             />
           </IconBox>
 
-          <Gap size={'s'} />
+          <Gap size="s" />
 
-          <CustomTitle data-qa={'employee-name'}>{name}</CustomTitle>
+          <CustomTitle data-qa="employee-name">{name}</CustomTitle>
 
           <EmployeeStatus>
             <StaticChip
               color={getColorByStatus(present)}
               data-qa="employee-status"
             >
-              {present ? 'Läsnä' : 'Poissa'}
+              {present
+                ? i18n.attendances.types.PRESENT
+                : i18n.attendances.types.ABSENT}
             </StaticChip>
           </EmployeeStatus>
         </Center>

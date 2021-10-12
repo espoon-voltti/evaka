@@ -67,7 +67,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
         <BackButtonInline
           onClick={() => history.goBack()}
           icon={faArrowLeft}
-          text="Kirjaa muu henkilö"
+          text={i18n.attendances.staff.markExternalPerson}
         />
       </div>
       <ContentArea
@@ -76,10 +76,10 @@ export default function MarkExternalStaffMemberArrivalPage() {
         paddingHorizontal="s"
         paddingVertical="m"
       >
-        <H1 centered>Kirjaa muu vastuullinen henkilö sisään</H1>
+        <H1 centered>{i18n.attendances.staff.markExternalPersonTitle}</H1>
         <HorizontalLine />
         <ListGrid>
-          <Label>Saapumisaika</Label>
+          <Label>{i18n.attendances.arrivalTime}</Label>
           <InputField
             type="time"
             value={form.arrived}
@@ -88,7 +88,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
             data-qa="input-arrived"
           />
 
-          <Label>Nimi</Label>
+          <Label>{i18n.common.name}</Label>
           <InputField
             type="text"
             value={form.name}
@@ -97,7 +97,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
             data-qa="input-name"
           />
 
-          <Label>Ryhmä</Label>
+          <Label>{i18n.common.group}</Label>
           {renderResult(unitInfoResponse, (unit) => (
             <Combobox
               items={unit.groups}

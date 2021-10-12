@@ -100,7 +100,11 @@ export default React.memo(function StaffMarkDepartedPage() {
           combine(unitInfoResponse, staffMember, activeAttendanceId),
           ([unitInfo, staffMember, attendanceId]) => {
             if (staffMember === undefined)
-              return <ErrorSegment title={'Työntekijää ei löytynyt'} />
+              return (
+                <ErrorSegment
+                  title={i18n.attendances.staff.errors.employeeNotFound}
+                />
+              )
 
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
@@ -109,7 +113,7 @@ export default React.memo(function StaffMarkDepartedPage() {
             return (
               <>
                 <TimeWrapper>
-                  <Title noMargin>Kirjaudu pin-koodilla</Title>
+                  <Title noMargin>{i18n.attendances.staff.loginWithPin}</Title>
                   <InputField
                     inputRef={pinInputRef}
                     autoFocus
