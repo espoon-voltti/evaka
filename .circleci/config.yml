@@ -1546,37 +1546,3 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
-
-      - frontend_approve_staging_deploy:
-          type: approval
-          requires:
-            - services_deploy_test
-            - frontend_deploy_test
-          filters:
-            branches:
-              only: master
-      - frontend_deploy:
-          <<: *aws_contexts
-          name: frontend_deploy_staging
-          requires:
-            - frontend_approve_staging_deploy
-          filters:
-            branches:
-              only: master
-          target_env: staging
-      - frontend_approve_prod_deploy:
-          type: approval
-          requires:
-            - frontend_deploy_staging
-          filters:
-            branches:
-              only: master
-      - frontend_deploy:
-          <<: *aws_contexts
-          name: frontend_deploy_prod
-          requires:
-            - frontend_approve_prod_deploy
-          filters:
-            branches:
-              only: master
-          target_env: prod
