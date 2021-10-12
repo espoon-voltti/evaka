@@ -5,6 +5,7 @@ import { Line } from 'react-chartjs-2'
 import colors from 'lib-customizations/common'
 import { formatTime } from 'lib-common/date'
 import { ceil } from 'lodash'
+import { useTranslation } from '../../../../state/i18n'
 
 type DatePoint = { x: Date; y: number | null }
 
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
+  const { i18n } = useTranslation()
+
   const graphData: DatePoint[] = occupancy.occupancySeries.map((p) => ({
     x: p.time,
     y: p.occupancyRatio !== null ? p.occupancyRatio * 100 : null
@@ -78,7 +81,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
         data={{
           datasets: [
             {
-              label: 'Käyttöaste',
+              label: i18n.unit.occupancy.subtitles.realized,
               data: graphData,
               spanGaps: true,
               steppedLine: true,
