@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/varda-dev")
 class VardaDevController(
     private val vardaUpdateService: VardaUpdateService,
+    private val vardaResetService: VardaResetService
 ) {
     @PostMapping("/run-update-all")
     fun runFullVardaUpdate(
@@ -31,7 +32,7 @@ class VardaDevController(
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaUpdateService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
+        vardaResetService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
     }
 
     @PostMapping("/reset-by-report/{organizerId}")
@@ -40,6 +41,6 @@ class VardaDevController(
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaUpdateService.planResetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
+        vardaResetService.planResetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
     }
 }

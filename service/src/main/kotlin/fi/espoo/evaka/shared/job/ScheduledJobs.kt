@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
@@ -54,6 +55,7 @@ private val logger = KotlinLogging.logger { }
 @Component
 class ScheduledJobs(
     private val vardaUpdateService: VardaUpdateService,
+    private val vardaResetService: VardaResetService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
@@ -118,7 +120,7 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
     }
 
     fun vardaReset(db: Database.Connection) {
-        vardaUpdateService.planVardaReset(db, addNewChildren = true)
+        vardaResetService.planVardaReset(db, addNewChildren = true)
     }
 
     fun removeOldDraftApplications(db: Database.Connection) {
