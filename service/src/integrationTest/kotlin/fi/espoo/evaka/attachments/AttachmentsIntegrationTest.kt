@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.attachments
 
-import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,18 +16,18 @@ class AttachmentsIntegrationTest {
     @Test
     fun `file content type check works for png file`() {
         val file = pngFile.openStream()
-        checkFileContentType(file, "image/png")
+        getAndCheckFileContentType(file, listOf("image/png"))
     }
 
     @Test
     fun `file content type check works for jpg file`() {
         val file = jpgFile.openStream()
-        checkFileContentType(file, "image/jpeg")
+        getAndCheckFileContentType(file, listOf("image/jpeg"))
     }
 
     @Test
     fun `file content type check throws with magic numbers and content type mismatch`() {
         val file = pngFile.openStream()
-        assertThrows<BadRequest> { checkFileContentType(file, "application/pdf") }
+        assertThrows<BadRequest> { getAndCheckFileContentType(file, listOf("application/pdf")) }
     }
 }

@@ -6,9 +6,8 @@ package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
-import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
@@ -19,6 +18,8 @@ data class ChildImage(
 
 const val childImagesBucketPrefix = "child-images/"
 
+val allowedContentTypes = listOf("image/jpeg", "image/png")
+
 fun replaceImage(
     db: Database.Connection,
     documentClient: DocumentService,
@@ -26,11 +27,7 @@ fun replaceImage(
     childId: UUID,
     file: MultipartFile
 ) {
-    val contentType = file.contentType ?: throw BadRequest("Missing content type")
-    if (contentType != "image/jpeg") {
-        throw BadRequest("Unsupported content type")
-    }
-    checkFileContentType(file.inputStream, contentType)
+    val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
 
     var deletedId: UUID? = null
     db.transaction { tx ->

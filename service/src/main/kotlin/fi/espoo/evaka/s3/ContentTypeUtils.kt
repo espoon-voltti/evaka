@@ -6,34 +6,26 @@ package fi.espoo.evaka.s3
 
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.io.InputStream
-import javax.xml.bind.DatatypeConverter
 
-fun checkFileContentType(file: InputStream, contentType: String) {
-    val magicNumbers = contentTypesWithMagicNumbers[contentType]
-        ?: throw BadRequest("Invalid content type")
+val tika: org.apache.tika.Tika = org.apache.tika.Tika()
 
-    val contentMatchesMagicNumbers = file.use { stream ->
-        val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.maxOrNull() ?: 0)
-        magicNumbers.any { numbers ->
-            if (fileBytes.size < numbers.size) {
-                false
-            } else {
-                fileBytes.slice(numbers.indices).toByteArray().contentEquals(numbers)
-            }
-        }
-    }
-
-    if (contentMatchesMagicNumbers) return
-    throw BadRequest("Invalid content type")
+fun getAndCheckFileContentType(file: InputStream, allowedContentTypes: List<String>): String {
+    val contentType = tika.detect(file)
+    if (!isAllowedContentType(contentType, allowedContentTypes)) throw BadRequest("Invalid content type")
+    return contentType
 }
 
-private val contentTypesWithMagicNumbers = mapOf(
-    "image/jpeg" to listOf("FF D8 FF DB", "FF D8 FF EE", "FF D8 FF E1", "FF D8 FF E0 00 10 4A 46 49 46 00 01"),
-    "image/png" to listOf("89 50 4E 47 0D 0A 1A 0A"),
-    "application/pdf" to listOf("25 50 44 46 2D"),
-    "application/msword" to listOf("50 4B 03 04 14 00 06 00", "D0 CF 11 E0 A1 B1 1A E1"),
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" to listOf("50 4B 03 04"),
-    "application/vnd.oasis.opendocument.text" to listOf("50 4B 03 04")
-).mapValues { (_, magicNumbers) ->
-    magicNumbers.map { hex -> DatatypeConverter.parseHexBinary(hex.replace(" ", "")) }
+// Matches given content type with list of allowed contents types which must be either
+// of format type/subtype OR just type. For example content type "image/png" matches with
+// both allowed content types "image/png", "image" and "image/
+fun isAllowedContentType(contentType: String, allowedContentTypes: List<String>): Boolean {
+    val contentTypeParts = contentType.split("/", ";")
+    return contentTypeParts.size >= 2 && allowedContentTypes.any { allowedContentType ->
+        val allowedContentTypeParts = allowedContentType.split("/")
+        (allowedContentTypeParts.size == 1 && contentTypeParts.get(0) == allowedContentTypeParts.get(0)) ||
+            (
+                allowedContentTypeParts.size == 2 && contentTypeParts.get(0) == allowedContentTypeParts.get(0) &&
+                    contentTypeParts.get(1) == allowedContentTypeParts.get(1)
+                )
+    }
 }
