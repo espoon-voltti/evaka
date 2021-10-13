@@ -78,7 +78,7 @@ export interface Child {
   lastName: string
   placementType: PlacementType
   preferredName: string | null
-  reservation: AttendanceReservation | null
+  reservations: AttendanceReservation[]
   status: AttendanceStatus
 }
 

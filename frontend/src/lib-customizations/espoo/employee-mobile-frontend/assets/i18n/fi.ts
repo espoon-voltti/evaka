@@ -135,10 +135,10 @@ export const fi = {
     arrived: 'Saapui',
     departed: 'Lähti',
     serviceTime: {
-      reservation: (start: string, end: string) =>
-        `Varaus tänään ${start}-${end}`,
-      reservationShort: (start: string, end: string) =>
-        `Varaus ${start}-${end}`,
+      reservation: 'Varaus tänään',
+      reservations: 'Varaukset tänään',
+      reservationShort: 'Varaus',
+      reservationsShort: 'Varaukset',
       serviceToday: (start: string, end: string) =>
         `Varhaiskasvatusaika tänään ${start}-${end}`,
       serviceTodayShort: (start: string, end: string) =>

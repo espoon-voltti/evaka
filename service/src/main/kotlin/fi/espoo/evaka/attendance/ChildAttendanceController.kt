@@ -498,7 +498,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             dailyServiceTimes = child.dailyServiceTimes,
             dailyNote = daycareDailyNote,
             imageUrl = child.imageUrl,
-            reservation = attendanceReservations[child.id]
+            reservations = attendanceReservations[child.id] ?: listOf()
         )
     }
 
