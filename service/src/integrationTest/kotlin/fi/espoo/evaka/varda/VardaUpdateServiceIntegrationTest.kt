@@ -352,6 +352,34 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `getServiceNeedsForVardaByChild finds current service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(1, serviceNeeds.size)
+        assertEquals(id, serviceNeeds.first())
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild ignores future service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.plusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(0, serviceNeeds.size)
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild ignores 0 hour service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        createServiceNeed(db, since, snDefaultDaycare.copy(daycareHoursPerWeek = 0), testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(0, serviceNeeds.size)
+    }
+
+    @Test
     fun `updateChildData removes all related varda data when service need is removed from evaka`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
