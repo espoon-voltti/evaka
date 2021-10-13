@@ -102,6 +102,30 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `hasVardaServiceNeeds works`() {
+        val since = HelsinkiDateTime.now()
+        val snId = createServiceNeed(db, since, option = snDefaultDaycare)
+        val childId = ChildId(testChild_1.id)
+
+        assertEquals(false, hasVardaServiceNeeds(db, childId))
+
+        db.transaction {
+            it.createUpdate(
+                """
+                INSERT INTO varda_service_need (evaka_child_id, evaka_service_need_id, evaka_service_need_updated) 
+                VALUES (:evakaChildId, :evakaServiceNeedId, :since)
+                """.trimIndent()
+            )
+                .bind("evakaChildId", childId)
+                .bind("evakaServiceNeedId", snId)
+                .bind("since", since)
+                .execute()
+        }
+
+        assertEquals(true, hasVardaServiceNeeds(db, childId))
+    }
+
+    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds a new evaka service need with voucher value decision when varda has none`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
