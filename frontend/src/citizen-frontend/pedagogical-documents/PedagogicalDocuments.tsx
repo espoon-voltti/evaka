@@ -279,6 +279,7 @@ const DescriptionTd = styled(Td)`
   width: 45%;
   font-weight: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 400 : 600};
+  white-space: pre-line;
 `
 
 const ActionsTd = styled(Td)`
