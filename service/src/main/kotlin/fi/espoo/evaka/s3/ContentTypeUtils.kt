@@ -15,9 +15,9 @@ fun getAndCheckFileContentType(file: InputStream, allowedContentTypes: List<Stri
     return contentType
 }
 
-// Matches given content type with list of allowed contents types which must be either
-// of format type/subtype OR just type. For example content type "image/png" matches with
-// both allowed content types "image/png", "image" and "image/
+// Matches given content type with list of allowed contents types which must in input type=file accept format:
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#unique_file_type_specifiers
+// eg "image/png" or "video/*
 fun isAllowedContentType(contentType: String, allowedContentTypes: List<String>): Boolean {
     val contentTypeParts = contentType.split("/", ";")
     return contentTypeParts.size >= 2 && allowedContentTypes.any { allowedContentType ->
@@ -25,7 +25,7 @@ fun isAllowedContentType(contentType: String, allowedContentTypes: List<String>)
         (allowedContentTypeParts.size == 1 && contentTypeParts.get(0) == allowedContentTypeParts.get(0)) ||
             (
                 allowedContentTypeParts.size == 2 && contentTypeParts.get(0) == allowedContentTypeParts.get(0) &&
-                    contentTypeParts.get(1) == allowedContentTypeParts.get(1)
+                    (contentTypeParts.get(1) == "*" || contentTypeParts.get(1) == allowedContentTypeParts.get(1))
                 )
     }
 }
