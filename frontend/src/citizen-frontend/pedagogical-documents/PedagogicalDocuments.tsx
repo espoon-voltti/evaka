@@ -21,6 +21,13 @@ import { OverlayContext } from '../overlay/state'
 import { faArrowDown } from 'lib-icons'
 import styled from 'styled-components'
 import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
+import { tabletMin } from 'lib-components/breakpoints'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { faChevronDown, faChevronUp } from 'lib-icons'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 
 export default function PedagogicalDocuments() {
   const t = useTranslation()
@@ -55,6 +62,128 @@ export default function PedagogicalDocuments() {
     void markPedagogicalDocumentRead(doc.id).then(loadData)
   }
 
+  const Attachment = ({
+    item,
+    dataQa
+  }: {
+    item: PedagogicalDocumentCitizen
+    dataQa: string
+  }) => {
+    return (
+      <>
+        {item && item.attachment && (
+          <FileDownloadButton
+            key={item.attachment.id}
+            file={item.attachment}
+            fileFetchFn={getAttachmentBlob}
+            afterFetch={() => onRead(item)}
+            onFileUnavailable={onAttachmentUnavailable}
+            icon
+            data-qa={dataQa}
+            openInBrowser={true}
+          />
+        )}
+      </>
+    )
+  }
+
+  const AttachmentDownloadButton = ({
+    item,
+    dataQa
+  }: {
+    item: PedagogicalDocumentCitizen
+    dataQa: string
+  }) => {
+    return (
+      <>
+        {item.attachment && (
+          <FileDownloadButton
+            key={item.attachment.id}
+            file={item.attachment}
+            fileFetchFn={getAttachmentBlob}
+            afterFetch={() => onRead(item)}
+            onFileUnavailable={onAttachmentUnavailable}
+            icon={faArrowDown}
+            data-qa={dataQa}
+            text={t.fileDownload.download}
+          />
+        )}
+      </>
+    )
+  }
+
+  const ItemDescription = ({
+    item,
+    dataQa
+  }: {
+    item: PedagogicalDocumentCitizen
+    dataQa: string
+  }) => {
+    const [expanded, setExpanded] = useState(false)
+
+    const toggleExpanded = () => {
+      setExpanded(!expanded)
+    }
+
+    return (
+      <FixedSpaceRow spacing="xs" alignItems="end">
+        <ExpandableText expanded={expanded}>{item.description}</ExpandableText>
+        <ExpandButton
+          onClick={toggleExpanded}
+          data-qa={dataQa}
+          icon={expanded ? faChevronUp : faChevronDown}
+        />
+      </FixedSpaceRow>
+    )
+  }
+
+  const PedagogicalDocumentsDisplay = ({
+    items
+  }: {
+    items: PedagogicalDocumentCitizen[]
+  }) => {
+    return (
+      <>
+        <Mobile>
+          <PedagogicalDocumentsList items={items} />
+        </Mobile>
+        <Desktop>
+          <PedagogicalDocumentsTable items={items} />
+        </Desktop>
+      </>
+    )
+  }
+
+  const PedagogicalDocumentsList = ({
+    items
+  }: {
+    items: PedagogicalDocumentCitizen[]
+  }) => {
+    return (
+      <>
+        {items.map((item) => (
+          <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
+            <DateDiv>
+              {LocalDate.fromSystemTzDate(item.created).format()}
+            </DateDiv>
+            <Attachment
+              item={item}
+              dataQa={`pedagogical-document-list-attachment-${item.id}`}
+            />
+            <ItemDescription
+              item={item}
+              dataQa={`pedagogical-document-list-description-${item.id}`}
+            />
+            <AttachmentDownloadButton
+              item={item}
+              dataQa={`pedagogical-document-list-attachment-download-${item.id}`}
+            />
+          </ListItem>
+        ))}
+      </>
+    )
+  }
+
   const PedagogicalDocumentsTable = ({
     items
   }: {
@@ -86,32 +215,16 @@ export default function PedagogicalDocuments() {
                 {item.description}
               </DescriptionTd>
               <NameTd>
-                {item.attachment && (
-                  <FileDownloadButton
-                    key={item.attachment.id}
-                    file={item.attachment}
-                    fileFetchFn={getAttachmentBlob}
-                    afterFetch={() => onRead(item)}
-                    onFileUnavailable={onAttachmentUnavailable}
-                    icon
-                    data-qa={`pedagogical-document-attachment-${item.id}`}
-                    openInBrowser={true}
-                  />
-                )}
+                <Attachment
+                  item={item}
+                  dataQa={`pedagogical-document-attachment-${item.id}`}
+                />
               </NameTd>
               <ActionsTd>
-                {item.attachment && (
-                  <FileDownloadButton
-                    key={item.attachment.id}
-                    file={item.attachment}
-                    fileFetchFn={getAttachmentBlob}
-                    afterFetch={() => onRead(item)}
-                    onFileUnavailable={onAttachmentUnavailable}
-                    icon={faArrowDown}
-                    data-qa={`pedagogical-document-attachment-download-${item.id}`}
-                    text={t.fileDownload.download}
-                  />
-                )}
+                <AttachmentDownloadButton
+                  item={item}
+                  dataQa={`pedagogical-document-attachment-download-${item.id}`}
+                />
               </ActionsTd>
             </Tr>
           ))}
@@ -136,7 +249,9 @@ export default function PedagogicalDocuments() {
             },
             success(items) {
               return (
-                items.length > 0 && <PedagogicalDocumentsTable items={items} />
+                items.length > 0 && (
+                  <PedagogicalDocumentsDisplay items={items} />
+                )
               )
             }
           })}
@@ -152,6 +267,10 @@ const DateTd = styled(Td)`
     props.documentIsRead ? 400 : 600};
 `
 
+const DateDiv = styled.div`
+  font-weight: 600;
+`
+
 const NameTd = styled(Td)`
   width: 20%;
 `
@@ -164,4 +283,41 @@ const DescriptionTd = styled(Td)`
 
 const ActionsTd = styled(Td)`
   width: 20%;
+`
+
+const Mobile = styled.div`
+  display: none;
+
+  @media (max-width: ${tabletMin}) {
+    display: block;
+  }
+`
+
+const Desktop = styled.div`
+  display: none;
+
+  @media (min-width: ${tabletMin}) {
+    display: block;
+  }
+`
+const ListItem = styled(FixedSpaceColumn)`
+  padding: 16px;
+  border-top: 1px solid #b1b1b1;
+  border-left: ${(props: { documentIsRead: boolean }) =>
+    props.documentIsRead ? 'none' : '6px solid #249fff'};
+`
+
+type ExpandableTextProps = {
+  expanded: boolean
+}
+const ExpandableText = styled.span<ExpandableTextProps>`
+  text-overflow: ${(props) => (props.expanded ? 'auto' : 'ellipsis')};
+  overflow: ${(props) => (props.expanded ? 'auto' : 'hidden')};
+  white-space: ${(props) => (props.expanded ? 'pre-line' : 'nowrap')};
+`
+
+const ExpandButton = styled(IconButton)`
+  &:focus {
+    border: none;
+  }
 `
