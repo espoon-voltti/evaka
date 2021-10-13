@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -29,6 +28,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
 
     @BeforeEach
     fun beforeEach() {
+        db.transaction { tx -> tx.resetDatabase() }
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(group1)
@@ -57,11 +57,6 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
                     employee3Id = employeeId
                 }
         }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx -> tx.resetDatabase() }
     }
 
     @Test
