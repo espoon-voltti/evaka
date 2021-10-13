@@ -1066,9 +1066,12 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         FROM service_need sn
         JOIN placement pl ON pl.id = sn.placement_id
         JOIN daycare d ON d.id = pl.unit_id
+        JOIN service_need_option sno ON sn.option_id = sno.id
         WHERE pl.child_id = :childId
         AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
+        AND sno.daycare_hours_per_week >= 1
+        AND sn.start_date <= current_date
         """.trimIndent()
 
     return createQuery(sql)
