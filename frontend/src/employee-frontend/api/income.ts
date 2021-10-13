@@ -5,7 +5,7 @@
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import { client } from './client'
 import { UUID } from '../types'
-import { Income, IncomeOption, PartialIncome } from '../types/income'
+import { Income, IncomeOption, IncomeBody } from '../types/income'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { partition } from 'lodash'
@@ -30,7 +30,7 @@ export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
 
 export async function createIncome(
   personId: UUID,
-  income: PartialIncome
+  income: IncomeBody
 ): Promise<Result<string>> {
   return client
     .post<string>('/incomes', { personId, ...income })

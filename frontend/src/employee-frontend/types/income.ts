@@ -8,9 +8,37 @@ import LocalDate from 'lib-common/local-date'
 
 export type IncomeId = 'new' | UUID
 
-export interface PartialIncome {
+export const incomeCoefficients = [
+  'MONTHLY_WITH_HOLIDAY_BONUS',
+  'MONTHLY_NO_HOLIDAY_BONUS',
+  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
+  'BI_WEEKLY_NO_HOLIDAY_BONUS',
+  'DAILY_ALLOWANCE_21_5',
+  'DAILY_ALLOWANCE_25',
+  'YEARLY'
+] as const
+
+export type IncomeCoefficient = typeof incomeCoefficients[number]
+
+export const incomeEffects = [
+  'MAX_FEE_ACCEPTED',
+  'INCOMPLETE',
+  'INCOME'
+] as const
+
+export type IncomeEffect = typeof incomeEffects[number]
+
+export type IncomeValue = {
+  amount: number
+  coefficient: IncomeCoefficient
+  monthlyAmount: number
+}
+
+export type IncomeFields = Partial<Record<string, IncomeValue>>
+
+export interface IncomeBody {
   effect: IncomeEffect
-  data: Partial<Record<string, IncomeValue>>
+  data: IncomeFields
   isEntrepreneur: boolean
   worksAtECHA: boolean
   validFrom: LocalDate
@@ -18,7 +46,7 @@ export interface PartialIncome {
   notes: string
 }
 
-export interface Income extends PartialIncome {
+export interface Income extends IncomeBody {
   id: UUID
   personId: UUID
   total: number
@@ -44,29 +72,3 @@ export const deserializeIncome = (json: JsonOf<Income>): Income => ({
   validTo: json.validTo ? LocalDate.parseIso(json.validTo) : undefined,
   updatedAt: new Date(json.updatedAt)
 })
-
-export type IncomeValue = {
-  amount: number
-  coefficient: IncomeCoefficient
-  monthlyAmount?: number
-}
-
-export const incomeCoefficients = [
-  'MONTHLY_WITH_HOLIDAY_BONUS',
-  'MONTHLY_NO_HOLIDAY_BONUS',
-  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
-  'BI_WEEKLY_NO_HOLIDAY_BONUS',
-  'DAILY_ALLOWANCE_21_5',
-  'DAILY_ALLOWANCE_25',
-  'YEARLY'
-] as const
-
-export type IncomeCoefficient = typeof incomeCoefficients[number]
-
-export const incomeEffects = [
-  'MAX_FEE_ACCEPTED',
-  'INCOMPLETE',
-  'INCOME'
-] as const
-
-export type IncomeEffect = typeof incomeEffects[number]

@@ -8,20 +8,22 @@ import IncomeItemHeader from './IncomeItemHeader'
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import { useTranslation } from '../../../state/i18n'
-import { Income, PartialIncome, IncomeId } from '../../../types/income'
+import { Income, IncomeBody, IncomeId } from '../../../types/income'
 import { UUID } from '../../../types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
+import { IncomeTypeOptions } from '../../../api/income'
 
 interface Props {
   incomes: Income[]
+  incomeTypeOptions: IncomeTypeOptions
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void
   editing: string | undefined
   setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
   deleting: string | undefined
   setDeleting: React.Dispatch<React.SetStateAction<string | undefined>>
-  createIncome: (income: PartialIncome) => Promise<void>
+  createIncome: (income: IncomeBody) => Promise<void>
   updateIncome: (incomeId: UUID, income: Income) => Promise<void>
   deleteIncome: (incomeId: UUID) => Promise<void>
   onSuccessfulUpdate: () => void
@@ -29,6 +31,7 @@ interface Props {
 
 const IncomeList = React.memo(function IncomeList({
   incomes,
+  incomeTypeOptions,
   isRowOpen,
   toggleRow,
   editing,
@@ -81,6 +84,7 @@ const IncomeList = React.memo(function IncomeList({
           />
           <Gap size="m" />
           <IncomeItemEditor
+            incomeTypeOptions={incomeTypeOptions}
             cancel={() => setEditing(undefined)}
             create={createIncome}
             update={() => new Promise((res) => res())}
@@ -90,7 +94,7 @@ const IncomeList = React.memo(function IncomeList({
         </div>
       )}
       {incomes.map((item: Income) => (
-        <div key={item.id}>
+        <div key={item.id} data-qa="income-list-item">
           {deleting === item.id ? renderDeleteModal(item) : null}
           <IncomeItemHeader
             title={`${
@@ -109,13 +113,17 @@ const IncomeList = React.memo(function IncomeList({
               {editing === item.id ? (
                 <IncomeItemEditor
                   baseIncome={item}
+                  incomeTypeOptions={incomeTypeOptions}
                   cancel={() => setEditing(undefined)}
                   create={createIncome}
                   update={(income) => updateIncome(item.id, income)}
                   onSuccess={onSuccessfulUpdate}
                 />
               ) : (
-                <IncomeItemBody income={item} />
+                <IncomeItemBody
+                  income={item}
+                  incomeTypeOptions={incomeTypeOptions}
+                />
               )}
             </>
           ) : null}
