@@ -36,7 +36,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
         SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
-        FROM staff_attendance_2 sa
+        FROM staff_attendance_realtime sa
         WHERE sa.employee_id = dacl.employee_id AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
         ORDER BY sa.arrived DESC 
         LIMIT 1
@@ -53,7 +53,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
 fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendance? = createQuery(
     """
     SELECT id, employee_id, group_id, arrived, departed
-    FROM staff_attendance_2
+    FROM staff_attendance_realtime
     WHERE id = :id
 """
 ).bind("id", id).mapTo<StaffMemberAttendance>().firstOrNull()
@@ -80,7 +80,7 @@ fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalS
 
 fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime) = createUpdate(
     """
-    INSERT INTO staff_attendance_2 (employee_id, group_id, arrived, departed) VALUES (
+    INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed) VALUES (
         :employeeId, :groupId, :arrived, NULL
     ) ON CONFLICT DO NOTHING 
     """.trimIndent()
@@ -92,7 +92,7 @@ fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: Group
 
 fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
-    UPDATE staff_attendance_2 
+    UPDATE staff_attendance_realtime 
     SET departed = :departed
     WHERE id = :id AND departed IS NULL AND arrived < :departed
     """.trimIndent()

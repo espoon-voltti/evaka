@@ -68,6 +68,7 @@ export default React.memo(function OccupancyContainer({
           occupancies={occupancies.confirmed}
           plannedOccupancies={occupancies.planned}
           realizedOccupancies={occupancies.realized}
+          realtimeOccupancies={occupancies.realtime}
         />
       ) : (
         <WrapBox>

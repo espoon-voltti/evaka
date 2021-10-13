@@ -78,10 +78,12 @@ CREATE INDEX idx$vasu_document_event_document_id ON vasu_document_event(vasu_doc
 -- staff attendance
 
 DROP TABLE IF EXISTS staff_attendance_2;
+DROP TABLE IF EXISTS staff_attendance_realtime;
 DROP TABLE IF EXISTS staff_attendance_external;
+DROP TABLE IF EXISTS staff_attendance_externals;
 
 -- will replace the original staff attendance later
-CREATE TABLE staff_attendance_2(
+CREATE TABLE staff_attendance_realtime(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
@@ -94,10 +96,12 @@ CREATE TABLE staff_attendance_2(
     CONSTRAINT staff_attendance_no_overlaps EXCLUDE USING gist (employee_id WITH =, tstzrange(arrived, departed) WITH &&)
 );
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_2 FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_realtime FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
-CREATE INDEX idx$staff_attendance_employee_id_times ON staff_attendance_2(employee_id, arrived, departed);
--- TODO indices
+CREATE INDEX idx$staff_attendance_realtime_employee_id ON staff_attendance_realtime(employee_id);
+CREATE INDEX idx$staff_attendance_realtime_group_id_times ON staff_attendance_realtime(group_id, arrived, departed);
+CREATE INDEX idx$staff_attendance_realtime_group_id_times_gist ON staff_attendance_realtime USING GIST (employee_id, tstzrange(arrived, departed));
+CREATE INDEX idx$staff_attendance_realtime_group_id_present ON staff_attendance_realtime(group_id) WHERE departed IS NULL;
 
 CREATE TABLE staff_attendance_external(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
@@ -112,4 +116,7 @@ CREATE TABLE staff_attendance_external(
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON staff_attendance_external FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
--- TODO indices
+
+CREATE INDEX idx$staff_attendance_external_group_id_times ON staff_attendance_external(group_id, arrived, departed);
+CREATE INDEX idx$staff_attendance_external_group_id_times_gist ON staff_attendance_external USING GIST (group_id, tstzrange(arrived, departed));
+CREATE INDEX idx$staff_attendance_external_group_id_present ON staff_attendance_external(group_id) WHERE departed IS NULL;

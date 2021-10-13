@@ -20,8 +20,11 @@ import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
+import fi.espoo.evaka.occupancy.RealtimeOccupancy
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriods
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
+import fi.espoo.evaka.occupancy.getChildOccupancyAttendances
+import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
@@ -148,7 +151,8 @@ data class Caretakers(
 data class UnitOccupancies(
     val planned: OccupancyResponse,
     val confirmed: OccupancyResponse,
-    val realized: OccupancyResponse
+    val realized: OccupancyResponse,
+    val realtime: RealtimeOccupancy?
 )
 
 private fun getUnitOccupancies(
@@ -159,7 +163,13 @@ private fun getUnitOccupancies(
     return UnitOccupancies(
         planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
         confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED))
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED)),
+        realtime = period.start.takeIf { it == period.end }?.let { date ->
+            RealtimeOccupancy(
+                childAttendances = tx.getChildOccupancyAttendances(unitId, date),
+                staffAttendances = tx.getStaffOccupancyAttendances(unitId, date)
+            )
+        }
     )
 }
 

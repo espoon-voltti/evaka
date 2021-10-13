@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,6 +24,25 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/occupancy")
 class OccupancyController(private val acl: AccessControlList) {
+    @GetMapping("/by-unit/{unitId}/realtime")
+    fun getRealtimeOccupancy(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+    ): RealtimeOccupancy {
+        Audit.OccupancyRead.log(targetId = unitId)
+        acl.getRolesForUnit(user, unitId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
+
+        return db.read {
+            RealtimeOccupancy(
+                childAttendances = it.getChildOccupancyAttendances(unitId, date),
+                staffAttendances = it.getStaffOccupancyAttendances(unitId, date)
+            )
+        }
+    }
+
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
         db: Database.Connection,
@@ -33,7 +51,7 @@ class OccupancyController(private val acl: AccessControlList) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
-    ): ResponseEntity<OccupancyResponse> {
+    ): OccupancyResponse {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
@@ -42,12 +60,11 @@ class OccupancyController(private val acl: AccessControlList) {
             it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
         }
 
-        val response = OccupancyResponse(
+        return OccupancyResponse(
             occupancies = occupancies,
             max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
             min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
         )
-        return ResponseEntity.ok(response)
     }
 
     @GetMapping("/by-unit/{unitId}/groups")
@@ -58,7 +75,7 @@ class OccupancyController(private val acl: AccessControlList) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
-    ): ResponseEntity<List<OccupancyResponseGroupLevel>> {
+    ): List<OccupancyResponseGroupLevel> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
@@ -67,7 +84,7 @@ class OccupancyController(private val acl: AccessControlList) {
             it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type)
         }
 
-        val response = occupancies.groupBy({ it.groupId }) {
+        return occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
         }.entries.map { (key, value) ->
             OccupancyResponseGroupLevel(
@@ -79,8 +96,6 @@ class OccupancyController(private val acl: AccessControlList) {
                 )
             )
         }
-
-        return ResponseEntity.ok(response)
     }
 }
 
