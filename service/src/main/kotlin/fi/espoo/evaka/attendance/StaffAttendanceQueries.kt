@@ -42,6 +42,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         LIMIT 1
     ) att ON TRUE
     WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER')
+    ORDER BY e.last_name, e.first_name
     """.trimIndent()
 )
     .bind("unitId", unitId)
@@ -58,7 +59,7 @@ fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendan
 """
 ).bind("id", id).mapTo<StaffMemberAttendance>().firstOrNull()
 
-fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceId): ExternalStaffMember? = createQuery(
+fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceExternalId): ExternalStaffMember? = createQuery(
     """
     SELECT id, name, group_id, arrived
     FROM staff_attendance_external
@@ -78,17 +79,20 @@ fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalS
     .mapTo<ExternalStaffMember>()
     .list()
 
-fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime) = createUpdate(
+fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime): StaffAttendanceId = createUpdate(
     """
-    INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed) VALUES (
-        :employeeId, :groupId, :arrived, NULL
-    ) ON CONFLICT DO NOTHING 
+    INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived) VALUES (
+        :employeeId, :groupId, :arrived
+    )
+    RETURNING id
     """.trimIndent()
 )
     .bind("employeeId", employeeId)
     .bind("groupId", groupId)
     .bind("arrived", arrivalTime)
-    .execute()
+    .executeAndReturnGeneratedKeys()
+    .mapTo<StaffAttendanceId>()
+    .one()
 
 fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
@@ -119,7 +123,7 @@ fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival):
     .one()
 
 data class ExternalStaffDeparture(
-    val id: StaffAttendanceId,
+    val id: StaffAttendanceExternalId,
     val departed: HelsinkiDateTime
 )
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) = createUpdate(

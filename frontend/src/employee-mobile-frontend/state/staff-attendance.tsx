@@ -15,7 +15,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { getUnitStaffAttendances } from '../api/staffAttendances'
+import { getUnitStaffAttendances } from '../api/realtimeStaffAttendances'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { client } from '../api/client'
 

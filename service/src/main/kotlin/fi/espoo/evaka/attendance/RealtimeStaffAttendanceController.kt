@@ -26,12 +26,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalTime
 
-/**
- * This controller will gradually replace fi.espoo.evaka.daycare.controllers.StaffAttendanceController
- */
 @RestController
-@RequestMapping("/v2/staff-attendances")
-class StaffAttendanceController2(
+@RequestMapping("/realtime-staff-attendances")
+class RealtimeStaffAttendanceController(
     private val acl: AccessControlList,
     private val ac: AccessControl
 ) {
@@ -136,7 +133,7 @@ class StaffAttendanceController2(
     }
 
     data class ExternalStaffDepartureRequest(
-        val attendanceId: StaffAttendanceId,
+        val attendanceId: StaffAttendanceExternalId,
         val time: LocalTime
     )
     @PostMapping("/departure-external")
