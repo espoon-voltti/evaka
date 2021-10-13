@@ -23,6 +23,7 @@ function ErrorMessage() {
       }}
       close={clearErrorMessage}
       zIndex={errorModalZIndex}
+      data-qa="app-error-modal"
     />
   ) : null
 }

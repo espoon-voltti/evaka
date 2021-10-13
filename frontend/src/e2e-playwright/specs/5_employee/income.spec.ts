@@ -13,6 +13,7 @@ import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import FridgeHeadInformationPage, {
   IncomesSection
 } from '../../pages/employee/fridge-head-information-page'
+import ErrorModal from '../../pages/employee/error-modal'
 
 let page: Page
 let personId: UUID
@@ -125,5 +126,41 @@ describe('Income', () => {
 
     await waitUntilEqual(() => incomesSection.getIncomeSum(), '8380 €') // (100000 / 12) + 50
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
+  })
+
+  it('Non-contiguous incomes warning', async () => {
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('010120')
+    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('010320')
+    await incomesSection.fillIncomeEndDate('310320')
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    const errorModal = new ErrorModal(page)
+    await errorModal.ensureTitle('Tulotiedot puuttuvat joiltain päiviltä')
+  })
+
+  it('Overlapping incomes error', async () => {
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('010120')
+    await incomesSection.fillIncomeEndDate('310320')
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('010220')
+    await incomesSection.fillIncomeEndDate('310420')
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    const errorModal = new ErrorModal(page)
+    await errorModal.ensureText(
+      'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.'
+    )
   })
 })
