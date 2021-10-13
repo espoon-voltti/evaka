@@ -353,7 +353,8 @@ data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
                 val settings = ScheduledJobSettings(
                     enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
                     schedule = env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
-                        ?: default.schedule
+                        ?: default.schedule,
+                    retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
                 )
                 (job to settings)
             }

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.job
 
-import com.github.kagkarlsson.scheduler.task.schedule.Schedule
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.resetDatabase
@@ -24,9 +23,13 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule = object : JobSchedule {
-        override fun getScheduleForJob(job: ScheduledJob): Schedule? = if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
-            JobSchedule.daily(testTime)
-        } else null
+        override fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings? =
+            if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
+                ScheduledJobSettings(
+                    enabled = true,
+                    schedule = JobSchedule.daily(testTime)
+                )
+            } else null
     }
 
     @BeforeEach

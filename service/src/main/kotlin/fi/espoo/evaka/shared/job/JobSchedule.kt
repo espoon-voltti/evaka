@@ -12,7 +12,7 @@ import fi.espoo.evaka.application.utils.helsinkiZone
 import java.time.LocalTime
 
 interface JobSchedule {
-    fun getScheduleForJob(job: ScheduledJob): Schedule?
+    fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings?
 
     companion object {
         fun daily(at: LocalTime): Schedule = Daily(helsinkiZone, at)
@@ -20,16 +20,22 @@ interface JobSchedule {
     }
 }
 
-data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
+data class ScheduledJobSettings(
+    val enabled: Boolean,
+    val schedule: Schedule,
+    val retryCount: Int? = null
+) {
     companion object {
         fun default(job: ScheduledJob) = when (job) {
             ScheduledJob.VardaUpdate -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(23, 30))
+                schedule = JobSchedule.daily(LocalTime.of(23, 30)),
+                retryCount = 1
             )
             ScheduledJob.VardaReset -> ScheduledJobSettings(
                 enabled = true,
-                schedule = JobSchedule.daily(LocalTime.of(20, 0))
+                schedule = JobSchedule.daily(LocalTime.of(20, 0)),
+                retryCount = 1
             )
             ScheduledJob.EndOfDayAttendanceUpkeep -> ScheduledJobSettings(
                 enabled = true,
@@ -41,7 +47,8 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
             )
             ScheduledJob.KoskiUpdate -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(0, 0))
+                schedule = JobSchedule.daily(LocalTime.of(0, 0)),
+                retryCount = 1
             )
             ScheduledJob.RemoveOldDraftApplications -> ScheduledJobSettings(
                 enabled = false,
@@ -77,7 +84,8 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
             )
             ScheduledJob.InactivePeopleCleanup -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(3, 30))
+                schedule = JobSchedule.daily(LocalTime.of(3, 30)),
+                retryCount = 1
             )
             ScheduledJob.InactiveEmployeesRoleReset -> ScheduledJobSettings(
                 enabled = true,
@@ -88,8 +96,5 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
 }
 
 class DefaultJobSchedule(val env: ScheduledJobsEnv) : JobSchedule {
-    override fun getScheduleForJob(job: ScheduledJob): Schedule? = env.jobs[job]?.let {
-        val enabled = it.enabled
-        it.schedule.takeIf { enabled }
-    }
+    override fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings? = env.jobs[job]
 }

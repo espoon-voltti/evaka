@@ -31,12 +31,20 @@ class ScheduledJobRunner(
     val scheduler: Scheduler = Scheduler.create(dataSource)
         .startTasks(
             ScheduledJob.values()
-                .mapNotNull { job -> schedule.getScheduleForJob(job)?.let { Pair(job, it) } }
-                .map { (job, schedule) ->
+                .mapNotNull { job ->
+                    val settings = schedule.getSettingsForJob(job)
+                    if (settings?.enabled == true)
+                        job to settings
+                    else
+                        null
+                }
+                .map { (job, settings) ->
                     val logMeta = mapOf("jobName" to job.name)
                     logger.info(logMeta) { "Scheduling job ${job.name}: $schedule" }
-                    Tasks.recurring(job.name, schedule).execute { _, _ ->
-                        Database(jdbi).connect { this.planAsyncJob(it, job) }
+                    Tasks.recurring(job.name, settings.schedule).execute { _, _ ->
+                        Database(jdbi).connect {
+                            this.planAsyncJob(it, job, settings.retryCount ?: ASYNC_JOB_RETRY_COUNT)
+                        }
                     }
                 }
         )
@@ -44,11 +52,11 @@ class ScheduledJobRunner(
         .pollingInterval(POLLING_INTERVAL)
         .build()
 
-    private fun planAsyncJob(db: Database.Connection, job: ScheduledJob) {
+    private fun planAsyncJob(db: Database.Connection, job: ScheduledJob, retryCount: Int) {
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = ASYNC_JOB_RETRY_COUNT)
+            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = retryCount)
         }
         asyncJobRunner.wakeUp()
     }
