@@ -102,6 +102,30 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `hasVardaServiceNeeds works`() {
+        val since = HelsinkiDateTime.now()
+        val snId = createServiceNeed(db, since, option = snDefaultDaycare)
+        val childId = ChildId(testChild_1.id)
+
+        assertEquals(false, hasVardaServiceNeeds(db, childId))
+
+        db.transaction {
+            it.createUpdate(
+                """
+                INSERT INTO varda_service_need (evaka_child_id, evaka_service_need_id, evaka_service_need_updated) 
+                VALUES (:evakaChildId, :evakaServiceNeedId, :since)
+                """.trimIndent()
+            )
+                .bind("evakaChildId", childId)
+                .bind("evakaServiceNeedId", snId)
+                .bind("since", since)
+                .execute()
+        }
+
+        assertEquals(true, hasVardaServiceNeeds(db, childId))
+    }
+
+    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds a new evaka service need with voucher value decision when varda has none`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
@@ -349,6 +373,34 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
         assertEquals(1, serviceNeeds.size)
         assertEquals(id, serviceNeeds.first())
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild finds current service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(1, serviceNeeds.size)
+        assertEquals(id, serviceNeeds.first())
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild ignores future service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.plusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(0, serviceNeeds.size)
+    }
+
+    @Test
+    fun `getServiceNeedsForVardaByChild ignores 0 hour service needs`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        createServiceNeed(db, since, snDefaultDaycare.copy(daycareHoursPerWeek = 0), testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        assertEquals(0, serviceNeeds.size)
     }
 
     @Test

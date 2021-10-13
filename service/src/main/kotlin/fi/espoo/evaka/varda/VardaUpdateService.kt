@@ -174,7 +174,28 @@ fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDi
     serviceNeedDiffByChild.additions.forEach { addedServiceNeedId ->
         handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate)
     }
+
+    val evakaChildId = serviceNeedDiffByChild.childId
+    if (!hasVardaServiceNeeds(db, evakaChildId)) {
+        logger.info("VardaUpdate: deleting child for not having service needs ($evakaChildId)")
+        deleteChildDataFromVardaAndDb(db, client, evakaChildId.raw)
+    }
 }
+
+fun hasVardaServiceNeeds(db: Database.Connection, evakaChildId: ChildId) =
+    db.read {
+        it.createQuery(
+            """
+            SELECT EXISTS (
+                SELECT evaka_service_need_id FROM varda_service_need
+                WHERE evaka_child_id = :evaka_child_id
+            )
+            """.trimIndent()
+        )
+            .bind("evaka_child_id", evakaChildId)
+            .mapTo<Boolean>()
+            .first()
+    }
 
 fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
@@ -1066,9 +1087,12 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         FROM service_need sn
         JOIN placement pl ON pl.id = sn.placement_id
         JOIN daycare d ON d.id = pl.unit_id
+        JOIN service_need_option sno ON sn.option_id = sno.id
         WHERE pl.child_id = :childId
         AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
+        AND sno.daycare_hours_per_week >= 1
+        AND sn.start_date <= current_date
         """.trimIndent()
 
     return createQuery(sql)
