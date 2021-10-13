@@ -331,13 +331,13 @@ export interface RawReportRow {
   groupName: string | null
   hasAssistanceNeed: boolean
   hasServiceNeed: boolean
-  hoursPerWeek: number | null
+  hoursPerWeek: number
   language: string | null
-  partDay: boolean | null
-  partWeek: boolean | null
+  partDay: boolean
+  partWeek: boolean
   placementType: PlacementType
   postOffice: string
-  shiftCare: boolean | null
+  shiftCare: boolean
   unitId: UUID
   unitName: string
   unitProviderType: string
