@@ -55,7 +55,11 @@ export async function deleteIncome(incomeId: string): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export type IncomeTypeOptions = [IncomeOption[], IncomeOption[]]
+export type IncomeTypeOptions = {
+  incomeTypes: IncomeOption[]
+  expenseTypes: IncomeOption[]
+}
+
 export async function getIncomeOptions(): Promise<Result<IncomeTypeOptions>> {
   return client
     .get<IncomeTypes>(`/incomes/types`)
@@ -65,7 +69,7 @@ export async function getIncomeOptions(): Promise<Result<IncomeTypeOptions>> {
           Object.entries(res.data).map(([value, type]) => ({ ...type, value })),
           (type) => type.multiplier > 0
         )
-      )
+      ).map(([incomeTypes, expenseTypes]) => ({ incomeTypes, expenseTypes }))
     )
     .catch((e) => Failure.fromError(e))
 }
