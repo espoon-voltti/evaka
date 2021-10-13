@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useMemo, useState } from 'react'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, Label } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
@@ -198,46 +195,48 @@ export default React.memo(function ReservationModalSingleChild({
           initialMonth={LocalDate.today()}
         />
       </FixedSpaceRow>
-      <Gap size="s" />
+      <Gap size="m" />
 
-      {formData.repetition === 'DAILY' && (
-        <FixedSpaceRow alignItems="center">
-          <Label>
-            {i18n.unit.attendanceReservations.reservationModal.businessDays}
-          </Label>
-          <InputField
-            value={formData.startTime}
-            type={'time'}
-            onChange={(value) => updateForm({ startTime: value })}
-            info={errorToInputInfo(
-              validationResult.errors?.startTime,
-              i18n.validationErrors
-            )}
-            hideErrorsBeforeTouched={!showAllErrors}
-            data-qa="daily-start-time"
-          />
-          <span>–</span>
-          <InputField
-            value={formData.endTime}
-            type={'time'}
-            onChange={(value) => updateForm({ endTime: value })}
-            info={errorToInputInfo(
-              validationResult.errors?.endTime,
-              i18n.validationErrors
-            )}
-            hideErrorsBeforeTouched={!showAllErrors}
-            data-qa="daily-end-time"
-          />
-        </FixedSpaceRow>
-      )}
+      <TimeInputGrid>
+        {formData.repetition === 'DAILY' && (
+          <>
+            <Label>
+              {i18n.unit.attendanceReservations.reservationModal.businessDays}
+            </Label>
+            <Inputs>
+              <InputField
+                value={formData.startTime}
+                type={'time'}
+                onChange={(value) => updateForm({ startTime: value })}
+                info={errorToInputInfo(
+                  validationResult.errors?.startTime,
+                  i18n.validationErrors
+                )}
+                hideErrorsBeforeTouched={!showAllErrors}
+                data-qa="daily-start-time"
+              />
+              <span>–</span>
+              <InputField
+                value={formData.endTime}
+                type={'time'}
+                onChange={(value) => updateForm({ endTime: value })}
+                info={errorToInputInfo(
+                  validationResult.errors?.endTime,
+                  i18n.validationErrors
+                )}
+                hideErrorsBeforeTouched={!showAllErrors}
+                data-qa="daily-end-time"
+              />
+            </Inputs>
+          </>
+        )}
 
-      {formData.repetition === 'WEEKLY' && (
-        <FixedSpaceColumn>
-          {[0, 1, 2, 3, 4].map((i) => {
+        {formData.repetition === 'WEEKLY' &&
+          [0, 1, 2, 3, 4].map((i) => {
             const times = formData.weeklyTimes[i]
 
             return (
-              <FixedSpaceRow key={`day-${i}`} alignItems="center">
+              <Fragment key={`day-${i}`}>
                 <Checkbox
                   label={i18n.common.datetime.weekdaysShort[i]}
                   checked={!!times}
@@ -256,64 +255,63 @@ export default React.memo(function ReservationModalSingleChild({
                     })
                   }
                 />
-                {times ? (
-                  <>
-                    <InputField
-                      value={times.startTime}
-                      type={'time'}
-                      onChange={(value) =>
-                        updateForm({
-                          weeklyTimes: [
-                            ...formData.weeklyTimes.slice(0, i),
-                            {
-                              startTime: value,
-                              endTime: times.endTime
-                            },
-                            ...formData.weeklyTimes.slice(i + 1)
-                          ]
-                        })
-                      }
-                      info={errorToInputInfo(
-                        validationResult.errors?.weeklyTimes?.[i]?.startTime,
-                        i18n.validationErrors
-                      )}
-                      hideErrorsBeforeTouched={!showAllErrors}
-                      data-qa={`weekly-start-time-${i}`}
-                    />
-                    <span>–</span>
-                    <InputField
-                      value={times.endTime}
-                      type={'time'}
-                      onChange={(value) =>
-                        updateForm({
-                          weeklyTimes: [
-                            ...formData.weeklyTimes.slice(0, i),
-                            {
-                              startTime: times.startTime,
-                              endTime: value
-                            },
-                            ...formData.weeklyTimes.slice(i + 1)
-                          ]
-                        })
-                      }
-                      info={errorToInputInfo(
-                        validationResult.errors?.weeklyTimes?.[i]?.endTime,
-                        i18n.validationErrors
-                      )}
-                      hideErrorsBeforeTouched={!showAllErrors}
-                      data-qa={`weekly-end-time-${i}`}
-                    />
-                  </>
-                ) : null}
-              </FixedSpaceRow>
+                <Inputs>
+                  {times ? (
+                    <>
+                      <InputField
+                        value={times.startTime}
+                        type={'time'}
+                        onChange={(value) =>
+                          updateForm({
+                            weeklyTimes: [
+                              ...formData.weeklyTimes.slice(0, i),
+                              {
+                                startTime: value,
+                                endTime: times.endTime
+                              },
+                              ...formData.weeklyTimes.slice(i + 1)
+                            ]
+                          })
+                        }
+                        info={errorToInputInfo(
+                          validationResult.errors?.weeklyTimes?.[i]?.startTime,
+                          i18n.validationErrors
+                        )}
+                        hideErrorsBeforeTouched={!showAllErrors}
+                        data-qa={`weekly-start-time-${i}`}
+                      />
+                      <span>–</span>
+                      <InputField
+                        value={times.endTime}
+                        type={'time'}
+                        onChange={(value) =>
+                          updateForm({
+                            weeklyTimes: [
+                              ...formData.weeklyTimes.slice(0, i),
+                              {
+                                startTime: times.startTime,
+                                endTime: value
+                              },
+                              ...formData.weeklyTimes.slice(i + 1)
+                            ]
+                          })
+                        }
+                        info={errorToInputInfo(
+                          validationResult.errors?.weeklyTimes?.[i]?.endTime,
+                          i18n.validationErrors
+                        )}
+                        hideErrorsBeforeTouched={!showAllErrors}
+                        data-qa={`weekly-end-time-${i}`}
+                      />
+                    </>
+                  ) : null}
+                </Inputs>
+              </Fragment>
             )
           })}
-        </FixedSpaceColumn>
-      )}
 
-      {formData.repetition === 'SHIFT_CARE' ? (
-        <FixedSpaceColumn>
-          {shiftCareRange ? (
+        {formData.repetition === 'SHIFT_CARE' ? (
+          shiftCareRange ? (
             shiftCareRange.map((date, index) => {
               const [timeRange, extraTimeRange]:
                 | [TimeRange]
@@ -336,38 +334,119 @@ export default React.memo(function ReservationModalSingleChild({
                       {i18n.common.datetime.week} {date.getIsoWeek()}
                     </Week>
                   ) : null}
-                  <FixedSpaceRow key={`day-${date.formatIso()}`}>
-                    <Label>
-                      {`${
-                        i18n.common.datetime.weekdaysShort[
-                          date.getIsoDayOfWeek() - 1
-                        ]
-                      } ${date.format('d.M.')}`}
-                    </Label>
-                    <FixedSpaceColumn>
+                  <Label>
+                    {`${
+                      i18n.common.datetime.weekdaysShort[
+                        date.getIsoDayOfWeek() - 1
+                      ]
+                    } ${date.format('d.M.')}`}
+                  </Label>
+                  <FixedSpaceRow
+                    key={`day-${date.formatIso()}`}
+                    alignItems="center"
+                  >
+                    <InputField
+                      value={timeRange.startTime ?? ''}
+                      type="time"
+                      onChange={(value) => {
+                        const updatedRange = {
+                          startTime: value,
+                          endTime: timeRange.endTime ?? ''
+                        }
+
+                        updateForm({
+                          shiftCareTimes: {
+                            ...formData.shiftCareTimes,
+                            [date.formatIso()]: extraTimeRange
+                              ? [updatedRange, extraTimeRange]
+                              : [updatedRange]
+                          }
+                        })
+                      }}
+                      info={errorToInputInfo(
+                        validationResult.errors?.shiftCareTimes?.[
+                          date.formatIso()
+                        ]?.[0]?.startTime,
+                        i18n.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!showAllErrors}
+                      data-qa={`shift-care-start-time-${date.formatIso()}`}
+                    />
+                    <span>–</span>
+                    <InputField
+                      value={timeRange.endTime ?? ''}
+                      type="time"
+                      onChange={(value) => {
+                        const updatedRange = {
+                          startTime: timeRange.startTime ?? '',
+                          endTime: value
+                        }
+
+                        updateForm({
+                          shiftCareTimes: {
+                            ...formData.shiftCareTimes,
+                            [date.formatIso()]: extraTimeRange
+                              ? [updatedRange, extraTimeRange]
+                              : [updatedRange]
+                          }
+                        })
+                      }}
+                      info={errorToInputInfo(
+                        validationResult.errors?.shiftCareTimes?.[
+                          date.formatIso()
+                        ]?.[0]?.endTime,
+                        i18n.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!showAllErrors}
+                      data-qa={`shift-care-end-time-${date.formatIso()}`}
+                    />
+                  </FixedSpaceRow>
+                  {extraTimeRange ? (
+                    <div />
+                  ) : (
+                    <IconButton
+                      icon={faPlus}
+                      onClick={() =>
+                        updateForm({
+                          shiftCareTimes: {
+                            ...formData.shiftCareTimes,
+                            [date.formatIso()]: [
+                              timeRange,
+                              {
+                                startTime: '',
+                                endTime: ''
+                              }
+                            ]
+                          }
+                        })
+                      }
+                    />
+                  )}
+                  {extraTimeRange ? (
+                    <>
+                      <div />
                       <FixedSpaceRow alignItems="center">
                         <InputField
-                          value={timeRange.startTime ?? ''}
+                          value={extraTimeRange.startTime ?? ''}
                           type="time"
-                          onChange={(value) => {
-                            const updatedRange = {
-                              startTime: value,
-                              endTime: timeRange.endTime ?? ''
-                            }
-
+                          onChange={(value) =>
                             updateForm({
                               shiftCareTimes: {
                                 ...formData.shiftCareTimes,
-                                [date.formatIso()]: extraTimeRange
-                                  ? [updatedRange, extraTimeRange]
-                                  : [updatedRange]
+                                [date.formatIso()]: [
+                                  timeRange,
+                                  {
+                                    startTime: value,
+                                    endTime: extraTimeRange.endTime ?? ''
+                                  }
+                                ]
                               }
                             })
-                          }}
+                          }
                           info={errorToInputInfo(
                             validationResult.errors?.shiftCareTimes?.[
                               date.formatIso()
-                            ]?.[0]?.startTime,
+                            ]?.[1]?.startTime,
                             i18n.validationErrors
                           )}
                           hideErrorsBeforeTouched={!showAllErrors}
@@ -375,122 +454,45 @@ export default React.memo(function ReservationModalSingleChild({
                         />
                         <span>–</span>
                         <InputField
-                          value={timeRange.endTime ?? ''}
+                          value={extraTimeRange.endTime ?? ''}
                           type="time"
-                          onChange={(value) => {
-                            const updatedRange = {
-                              startTime: timeRange.startTime ?? '',
-                              endTime: value
-                            }
-
+                          onChange={(value) =>
                             updateForm({
                               shiftCareTimes: {
                                 ...formData.shiftCareTimes,
-                                [date.formatIso()]: extraTimeRange
-                                  ? [updatedRange, extraTimeRange]
-                                  : [updatedRange]
+                                [date.formatIso()]: [
+                                  timeRange,
+                                  {
+                                    startTime: extraTimeRange.startTime ?? '',
+                                    endTime: value
+                                  }
+                                ]
                               }
                             })
-                          }}
+                          }
                           info={errorToInputInfo(
                             validationResult.errors?.shiftCareTimes?.[
                               date.formatIso()
-                            ]?.[0]?.endTime,
+                            ]?.[1]?.endTime,
                             i18n.validationErrors
                           )}
                           hideErrorsBeforeTouched={!showAllErrors}
                           data-qa={`shift-care-end-time-${date.formatIso()}`}
                         />
-                        {extraTimeRange ? null : (
-                          <IconButton
-                            icon={faPlus}
-                            onClick={() =>
-                              updateForm({
-                                shiftCareTimes: {
-                                  ...formData.shiftCareTimes,
-                                  [date.formatIso()]: [
-                                    timeRange,
-                                    {
-                                      startTime: '',
-                                      endTime: ''
-                                    }
-                                  ]
-                                }
-                              })
-                            }
-                          />
-                        )}
                       </FixedSpaceRow>
-                      {extraTimeRange ? (
-                        <FixedSpaceRow alignItems="center">
-                          <InputField
-                            value={extraTimeRange.startTime ?? ''}
-                            type="time"
-                            onChange={(value) =>
-                              updateForm({
-                                shiftCareTimes: {
-                                  ...formData.shiftCareTimes,
-                                  [date.formatIso()]: [
-                                    timeRange,
-                                    {
-                                      startTime: value,
-                                      endTime: extraTimeRange.endTime ?? ''
-                                    }
-                                  ]
-                                }
-                              })
+                      <IconButton
+                        icon={faTrash}
+                        onClick={() =>
+                          updateForm({
+                            shiftCareTimes: {
+                              ...formData.shiftCareTimes,
+                              [date.formatIso()]: [timeRange]
                             }
-                            info={errorToInputInfo(
-                              validationResult.errors?.shiftCareTimes?.[
-                                date.formatIso()
-                              ]?.[1]?.startTime,
-                              i18n.validationErrors
-                            )}
-                            hideErrorsBeforeTouched={!showAllErrors}
-                            data-qa={`shift-care-start-time-${date.formatIso()}`}
-                          />
-                          <span>–</span>
-                          <InputField
-                            value={extraTimeRange.endTime ?? ''}
-                            type="time"
-                            onChange={(value) =>
-                              updateForm({
-                                shiftCareTimes: {
-                                  ...formData.shiftCareTimes,
-                                  [date.formatIso()]: [
-                                    timeRange,
-                                    {
-                                      startTime: extraTimeRange.startTime ?? '',
-                                      endTime: value
-                                    }
-                                  ]
-                                }
-                              })
-                            }
-                            info={errorToInputInfo(
-                              validationResult.errors?.shiftCareTimes?.[
-                                date.formatIso()
-                              ]?.[1]?.endTime,
-                              i18n.validationErrors
-                            )}
-                            hideErrorsBeforeTouched={!showAllErrors}
-                            data-qa={`shift-care-end-time-${date.formatIso()}`}
-                          />
-                          <IconButton
-                            icon={faTrash}
-                            onClick={() =>
-                              updateForm({
-                                shiftCareTimes: {
-                                  ...formData.shiftCareTimes,
-                                  [date.formatIso()]: [timeRange]
-                                }
-                              })
-                            }
-                          />
-                        </FixedSpaceRow>
-                      ) : null}
-                    </FixedSpaceColumn>
-                  </FixedSpaceRow>
+                          })
+                        }
+                      />
+                    </>
+                  ) : null}
                 </Fragment>
               )
             })
@@ -501,9 +503,9 @@ export default React.memo(function ReservationModalSingleChild({
                   .missingDateRange
               }
             </MissingDateRange>
-          )}
-        </FixedSpaceColumn>
-      ) : null}
+          )
+        ) : null}
+      </TimeInputGrid>
     </AsyncFormModal>
   )
 })
@@ -660,17 +662,36 @@ function errorsExist(errors: ReservationErrors): boolean {
   return false
 }
 
+const TimeInputGrid = styled.div`
+  display: grid;
+  grid-template-columns: max-content max-content auto;
+  grid-column-gap: ${defaultMargins.s};
+  grid-row-gap: ${defaultMargins.s};
+  align-items: center;
+`
+
+const Inputs = styled(FixedSpaceRow).attrs({ alignItems: 'center' })`
+  grid-column-start: 2;
+  grid-column-end: 4;
+`
+
 const Week = styled.div`
   color: ${({ theme }) => theme.colors.main.dark};
   font-weight: ${fontWeights.semibold};
+  grid-column-start: 1;
+  grid-column-end: 4;
 `
 
 const Separator = styled.div`
   border-top: 2px dotted ${(p) => p.theme.colors.greyscale.lighter};
-  margin: ${defaultMargins.m} 0;
+  margin: ${defaultMargins.s} 0;
+  grid-column-start: 1;
+  grid-column-end: 4;
 `
 
 const MissingDateRange = styled.span`
   color: ${({ theme }) => theme.colors.greyscale.dark};
   font-style: italic;
+  grid-column-start: 1;
+  grid-column-end: 4;
 `
