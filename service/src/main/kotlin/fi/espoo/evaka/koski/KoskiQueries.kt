@@ -33,10 +33,7 @@ UNION
 
 SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(:today) kvsr
-JOIN koski_study_right ksr
-ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-WHERE to_jsonb(kvsr) IS DISTINCT FROM ksr.input_data
-AND ksr.void_date IS NULL
+WHERE kvsr.void_date IS NULL
 AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
 AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
 """
@@ -51,7 +48,10 @@ fun Database.Transaction.beginKoskiUpload(sourceSystem: String, key: KoskiStudyR
         // language=SQL
         """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, payload, version)
-SELECT child_id, unit_id, type, kvsr.void_date, coalesce(to_jsonb(kasr), to_jsonb(kvsr)), '{}', 0
+SELECT
+    child_id, unit_id, type,
+    CASE WHEN kvsr.child_id IS NOT NULL THEN :today END AS void_date,
+    coalesce(to_jsonb(kasr), to_jsonb(kvsr)), '{}', 0
 FROM (
     SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
 ) params
@@ -59,6 +59,8 @@ LEFT JOIN koski_active_study_right(:today) kasr
 USING (child_id, unit_id, type)
 LEFT JOIN koski_voided_study_right(:today) kvsr
 USING (child_id, unit_id, type)
+WHERE kvsr.void_date IS NULL
+
 ON CONFLICT (child_id, unit_id, type)
 DO UPDATE SET
     void_date = excluded.void_date,
