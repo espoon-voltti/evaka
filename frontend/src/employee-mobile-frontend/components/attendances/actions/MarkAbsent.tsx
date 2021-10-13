@@ -42,9 +42,7 @@ export default React.memo(function MarkAbsent() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -114,7 +112,10 @@ export default React.memo(function MarkAbsent() {
                     primary
                     text={i18n.common.confirm}
                     onClick={() => postAbsence(selectedAbsenceType)}
-                    onSuccess={() => history.goBack()}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      history.goBack()
+                    }}
                     data-qa="mark-absent-btn"
                   />
                 ) : (

@@ -51,9 +51,7 @@ export default React.memo(function MarkDeparted() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [childDepartureInfo, setChildDepartureInfo] = useState<
@@ -180,7 +178,10 @@ export default React.memo(function MarkDeparted() {
                         onClick={() =>
                           markDepartedWithAbsence(selectedAbsenceType)
                         }
-                        onSuccess={() => history.goBack()}
+                        onSuccess={() => {
+                          reloadAttendances()
+                          history.goBack()
+                        }}
                         data-qa="mark-departed-with-absence-btn"
                       />
                     ) : (
@@ -204,7 +205,10 @@ export default React.memo(function MarkDeparted() {
                     primary
                     text={i18n.common.confirm}
                     onClick={() => markDeparted()}
-                    onSuccess={() => history.go(-2)}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      history.go(-2)
+                    }}
                     data-qa="mark-departed-btn"
                     disabled={timeError !== undefined}
                   />

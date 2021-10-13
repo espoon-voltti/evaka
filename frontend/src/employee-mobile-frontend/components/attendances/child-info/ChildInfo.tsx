@@ -147,9 +147,7 @@ export default React.memo(function AttendanceChildPage() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [uiMode, setUiMode] = useState<
     'default' | 'img-modal' | 'img-crop' | 'img-delete'

@@ -152,9 +152,7 @@ export default React.memo(function DailyNoteEditor() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [dirty, setDirty] = useState(false)
 

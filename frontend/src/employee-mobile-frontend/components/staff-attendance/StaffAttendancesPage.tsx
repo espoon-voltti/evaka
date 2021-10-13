@@ -38,17 +38,25 @@ export default function StaffAttendancesPage() {
   }>()
   const { i18n } = useTranslation()
 
-  const { unitInfoResponse, showPresent, setShowPresent } =
+  const { unitInfoResponse, showPresent, setShowPresent, reloadUnitInfo } =
     useContext(UnitContext)
+  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
+
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+  useEffect(
+    () => reloadStaffAttendance(true),
+    [reloadStaffAttendance, showPresent]
+  )
 
-  const changeGroup = (group: GroupInfo | undefined) =>
+  const changeGroup = (group: GroupInfo | undefined) => {
+    reloadStaffAttendance(true)
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
     )
+  }
+
   const navigateToExternalMemberArrival = () =>
     history.push(`/units/${unitId}/groups/${groupId}/staff-attendance/external`)
 

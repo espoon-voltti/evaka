@@ -39,7 +39,8 @@ export default React.memo(function AttendancePageWrapper() {
   }>()
   const history = useHistory()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
 
   const selectedGroup =
     groupIdOrAll === 'all'
@@ -52,9 +53,7 @@ export default React.memo(function AttendancePageWrapper() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')

@@ -28,7 +28,7 @@ export default React.memo(function StaffMemberPage() {
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
 
   const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)

@@ -43,15 +43,13 @@ export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
 
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
-
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [selectedStaff, setSelectedStaff] = useState<{
     name: string

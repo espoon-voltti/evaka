@@ -38,12 +38,13 @@ export default React.memo(function StaffMarkArrivedPage() {
     employeeId: UUID
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
 
   const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)
@@ -208,7 +209,10 @@ export default React.memo(function StaffMarkArrivedPage() {
                             })
                           : Promise.reject()
                       }
-                      onSuccess={() => history.go(-1)}
+                      onSuccess={() => {
+                        reloadStaffAttendance()
+                        history.go(-1)
+                      }}
                       data-qa="mark-arrived-btn"
                     />
                   </FixedSpaceRow>

@@ -29,7 +29,7 @@ export default React.memo(function ExternalStaffMemberPage() {
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
 
   const attendance = staffAttendanceResponse.map((res) =>
     res.extraAttendances.find((s) => s.id === attendanceId)
@@ -73,7 +73,10 @@ export default React.memo(function ExternalStaffMemberPage() {
                 onClick={() =>
                   postExternalStaffDeparture({ attendanceId, time })
                 }
-                onSuccess={() => history.goBack()}
+                onSuccess={() => {
+                  reloadStaffAttendance()
+                  history.goBack()
+                }}
               />
             </FixedSpaceColumn>
           </>

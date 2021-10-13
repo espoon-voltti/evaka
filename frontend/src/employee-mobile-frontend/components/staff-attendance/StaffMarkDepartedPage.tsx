@@ -42,7 +42,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const [time, setTime] = useState<string>(formatTime(new Date()))
@@ -179,7 +179,10 @@ export default React.memo(function StaffMarkDepartedPage() {
                             return res
                           })
                         }
-                        onSuccess={() => history.go(-1)}
+                        onSuccess={() => {
+                          reloadStaffAttendance()
+                          history.go(-1)
+                        }}
                         data-qa="mark-departed-btn"
                       />
                     )}

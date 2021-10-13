@@ -24,6 +24,7 @@ import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import { Actions, BackButtonInline } from '../attendances/components'
 import { TallContentArea } from '../mobile/components'
+import { StaffAttendanceContext } from '../../state/staff-attendance'
 
 interface FormState {
   arrived: string
@@ -36,6 +37,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
+  const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
 
   const [form, setForm] = useState<FormState>({
     arrived: formatTime(new Date()),
@@ -120,7 +122,10 @@ export default function MarkExternalStaffMemberArrivalPage() {
               text={i18n.common.confirm}
               disabled={!formIsValid()}
               onClick={onSubmit}
-              onSuccess={() => history.go(-1)}
+              onSuccess={() => {
+                reloadStaffAttendance()
+                history.go(-1)
+              }}
               data-qa="mark-arrived-btn"
             />
           </FixedSpaceRow>

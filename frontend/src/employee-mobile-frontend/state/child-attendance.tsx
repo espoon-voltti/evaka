@@ -12,7 +12,7 @@ import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
 
 interface ChildAttendanceState {
   attendanceResponse: Result<AttendanceResponse>
-  reloadAttendances: () => void
+  reloadAttendances: (soft?: boolean) => void
 }
 
 const defaultState: ChildAttendanceState = {
@@ -39,9 +39,15 @@ export const ChildAttendanceContextProvider = React.memo(
       getDaycareAttendances,
       setAttendanceResponse
     )
+    const softLoadAttendances = useRestApi(
+      getDaycareAttendances,
+      setAttendanceResponse,
+      true
+    )
     const reloadAttendances = useCallback(
-      () => loadAttendances(unitId),
-      [loadAttendances, unitId]
+      (soft?: boolean) =>
+        soft ? softLoadAttendances(unitId) : loadAttendances(unitId),
+      [loadAttendances, softLoadAttendances, unitId]
     )
 
     const value = useMemo(

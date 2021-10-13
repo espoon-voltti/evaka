@@ -13,7 +13,7 @@ import { getUnitStaffAttendances } from '../api/staffAttendances'
 
 interface StaffAttendanceState {
   staffAttendanceResponse: Result<StaffAttendanceResponse>
-  reloadStaffAttendance: () => void
+  reloadStaffAttendance: (soft?: boolean) => void
 }
 
 const defaultState: StaffAttendanceState = {
@@ -40,9 +40,15 @@ export const StaffAttendanceContextProvider = React.memo(
       getUnitStaffAttendances,
       setStaffAttendanceResponse
     )
+    const softLoadStaffAttendance = useRestApi(
+      getUnitStaffAttendances,
+      setStaffAttendanceResponse,
+      true
+    )
     const reloadStaffAttendance = useCallback(
-      () => loadStaffAttendance(unitId),
-      [loadStaffAttendance, unitId]
+      (soft?: boolean) =>
+        soft ? softLoadStaffAttendance(unitId) : loadStaffAttendance(unitId),
+      [loadStaffAttendance, softLoadStaffAttendance, unitId]
     )
 
     const value = useMemo(

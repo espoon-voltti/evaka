@@ -36,9 +36,7 @@ export default React.memo(function MarkPresent() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
 
@@ -110,7 +108,10 @@ export default React.memo(function MarkPresent() {
                   text={i18n.common.confirm}
                   disabled={!isValidTime(time)}
                   onClick={() => childArrives()}
-                  onSuccess={() => history.go(-2)}
+                  onSuccess={() => {
+                    reloadAttendances()
+                    history.go(-2)
+                  }}
                   data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>
