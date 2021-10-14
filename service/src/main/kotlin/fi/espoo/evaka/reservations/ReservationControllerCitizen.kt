@@ -232,8 +232,9 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
         SELECT :childId, :start, :end, :userId, NULL
-        FROM placement pl 
-        JOIN daycare d ON d.id = pl.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        FROM placement pl
+        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
+        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
         JOIN guardian g ON g.child_id = pl.child_id AND g.guardian_id = :userId
         WHERE 
             pl.child_id = :childId AND 
