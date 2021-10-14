@@ -21,7 +21,7 @@ import { client } from '../api/client'
 
 interface StaffAttendanceState {
   staffAttendanceResponse: Result<StaffAttendanceResponse>
-  reloadStaffAttendance: (soft?: boolean) => void
+  reloadStaffAttendance: () => void
 }
 
 const defaultState: StaffAttendanceState = {
