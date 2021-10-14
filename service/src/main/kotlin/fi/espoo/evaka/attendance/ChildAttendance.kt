@@ -69,7 +69,10 @@ data class Child(
     val dailyNote: DaycareDailyNote?,
     val imageUrl: String?,
     val reservations: List<AttendanceReservation>
-)
+) {
+    // Added for backwards compatibility. Remove when employee mobile clients are guaranteed to be recent enough.
+    val reservation = reservations.firstOrNull()
+}
 
 enum class AttendanceStatus {
     COMING, PRESENT, DEPARTED, ABSENT
