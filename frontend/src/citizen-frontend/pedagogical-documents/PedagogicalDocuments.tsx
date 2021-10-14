@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Loading, Result } from 'lib-common/api'
@@ -296,7 +296,7 @@ const Desktop = styled.div`
   }
 `
 const ListItem = styled(FixedSpaceColumn)`
-  padding: 16px;
+  padding: ${defaultMargins.s};
   border-top: 1px solid #b1b1b1;
   border-left: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 'none' : '6px solid #249fff'};
