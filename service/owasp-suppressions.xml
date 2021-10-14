@@ -83,4 +83,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2020-0822</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        We do not run user-provided Lua scripts in Redis
+        ]]></notes>
+        <cve>CVE-2021-32626</cve>
+    </suppress>
 </suppressions>
