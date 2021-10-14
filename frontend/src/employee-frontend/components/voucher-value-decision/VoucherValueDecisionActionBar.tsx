@@ -2,69 +2,106 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import StickyActionBar from '../../components/common/StickyActionBar'
 import {
   markVoucherValueDecisionSent,
-  sendVoucherValueDecisions
+  sendVoucherValueDecisions,
+  setVoucherDecisionType
 } from '../../api/invoicing'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-
-const ErrorMessage = styled.div`
-  color: ${(p) => p.theme.colors.accents.orangeDark};
-  margin: 0 20px;
-`
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { UIContext } from '../../state/ui'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
-  loadDecision: () => void
+  loadDecision(): Promise<void>
+  modified: boolean
+  setModified: (value: boolean) => void
+  newDecisionType: string
 }
 
 export default React.memo(function VoucherValueDecisionActionBar({
   decision,
-  loadDecision
+  loadDecision,
+  modified,
+  setModified,
+  newDecisionType
 }: Props) {
   const { i18n } = useTranslation()
-  const [error, setError] = useState<string>()
+  const { setErrorMessage, clearErrorMessage } = useContext(UIContext)
 
-  return decision.status === 'WAITING_FOR_MANUAL_SENDING' ? (
-    <StickyActionBar align="right">
-      {error ? <ErrorMessage>{error}</ErrorMessage> : null}
-      <AsyncButton
-        data-qa={'button-mark-decision-sent'}
-        primary
-        text="Merkitse lähetetyksi"
-        onClick={() => markVoucherValueDecisionSent([decision.id])}
-        onSuccess={loadDecision}
-      />
-    </StickyActionBar>
-  ) : decision.status === 'DRAFT' ? (
-    <StickyActionBar align="right">
-      <AsyncButton
-        primary
-        data-qa={'button-send-decision'}
-        text="Lähetä"
-        onClick={() =>
-          sendVoucherValueDecisions([decision.id]).then((result) => {
-            if (result.isSuccess) {
-              setError(undefined)
+  const updateType = () =>
+    setVoucherDecisionType(decision.id, newDecisionType).then((result) => {
+      if (result.isSuccess) {
+        clearErrorMessage()
+      } else if (result.isFailure) {
+        setErrorMessage({
+          title: i18n.common.error.unknown,
+          text: i18n.common.error.saveFailed,
+          type: 'error',
+          resolveLabel: i18n.common.ok
+        })
+      }
+    })
+
+  const isDraft = decision.status === 'DRAFT'
+  const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'
+
+  return (
+    <FixedSpaceRow justifyContent="flex-end">
+      {isDraft && (
+        <>
+          <AsyncButton
+            text={i18n.common.save}
+            textInProgress={i18n.common.saving}
+            textDone={i18n.common.saved}
+            onClick={updateType}
+            onSuccess={() => loadDecision().then(() => setModified(false))}
+            disabled={!modified}
+            data-qa="button-save-decision"
+          />
+          <AsyncButton
+            primary
+            data-qa={'button-send-decision'}
+            disabled={modified}
+            text="Lähetä"
+            onClick={() =>
+              sendVoucherValueDecisions([decision.id]).then((result) => {
+                if (result.isSuccess) {
+                  clearErrorMessage()
+                } else if (result.isFailure) {
+                  setErrorMessage({
+                    title: i18n.common.error.unknown,
+                    text:
+                      result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+                        ? i18n.valueDecisions.buttons.errors
+                            .WAITING_FOR_MANUAL_SENDING
+                        : i18n.common.error.saveFailed,
+                    type: 'error',
+                    resolveLabel: i18n.common.ok
+                  })
+                }
+              })
             }
-
-            if (result.isFailure) {
-              setError(
-                i18n.valueDecisions.buttons.errors[result.errorCode ?? ''] ??
-                  i18n.common.error.unknown
-              )
-            }
-
-            return result
-          })
-        }
-        onSuccess={loadDecision}
-      />
-    </StickyActionBar>
-  ) : null
+            onSuccess={loadDecision}
+          />
+        </>
+      )}
+      {isWaiting && (
+        <StickyActionBar align={'right'}>
+          <AsyncButton
+            data-qa={'button-mark-decision-sent'}
+            primary
+            text={i18n.valueDecisions.buttons.markSent}
+            onClick={() => markVoucherValueDecisionSent([decision.id])}
+            disabled={modified}
+            onSuccess={loadDecision}
+          />
+        </StickyActionBar>
+      )}
+    </FixedSpaceRow>
+  )
 })

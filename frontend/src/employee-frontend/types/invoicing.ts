@@ -314,6 +314,7 @@ export interface VoucherValueDecisionDetailed {
   totalIncome: number | null
   requiresManualSending: boolean
   isRetroactive: boolean
+  decisionType: FeeDecisionType
 }
 
 export interface VoucherValueDecisionPlacement {

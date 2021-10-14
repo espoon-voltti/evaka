@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -30,13 +30,12 @@ export default React.memo(function VoucherValueDecisionPage() {
   const [decision, setDecision] = useState<
     Result<VoucherValueDecisionDetailed>
   >(Loading.of())
+  const [modified, setModified] = useState<boolean>(false)
+  const [newDecisionType, setNewDecisionType] = useState<string>('')
 
-  const loadDecision = useCallback(
-    () => void getVoucherValueDecision(id).then(setDecision),
-    [id]
-  )
-
-  useEffect(loadDecision, [loadDecision])
+  const loadDecision = () =>
+    getVoucherValueDecision(id).then((dec) => setDecision(dec))
+  useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (decision.isSuccess) {
@@ -47,8 +46,18 @@ export default React.memo(function VoucherValueDecisionPage() {
       decision.value.status === 'DRAFT'
         ? setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
         : setTitle(`${name} | ${i18n.titles.valueDecision}`)
+      setNewDecisionType(decision.value.decisionType)
     }
   }, [decision, formatTitleName, setTitle, i18n])
+
+  const changeDecisionType = (type: string) => {
+    if (decision.isSuccess) {
+      setNewDecisionType(type)
+      decision.value.decisionType === type
+        ? setModified(false)
+        : setModified(true)
+    }
+  }
 
   if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />
@@ -60,7 +69,11 @@ export default React.memo(function VoucherValueDecisionPage() {
       {decision.isSuccess && (
         <>
           <ContentArea opaque>
-            <VoucherValueDecisionHeading {...decision.value} />
+            <VoucherValueDecisionHeading
+              {...decision.value}
+              changeDecisionType={changeDecisionType}
+              newDecisionType={newDecisionType}
+            />
             <VoucherValueDecisionChildSection
               key={decision.value.child.id}
               child={decision.value.child}
@@ -68,11 +81,14 @@ export default React.memo(function VoucherValueDecisionPage() {
               serviceNeed={decision.value.serviceNeed}
             />
             <VoucherValueDecisionSummary decision={decision.value} />
+            <VoucherValueDecisionActionBar
+              decision={decision.value}
+              loadDecision={loadDecision}
+              modified={modified}
+              setModified={setModified}
+              newDecisionType={newDecisionType}
+            />
           </ContentArea>
-          <VoucherValueDecisionActionBar
-            decision={decision.value}
-            loadDecision={loadDecision}
-          />
         </>
       )}
     </Container>

@@ -8,7 +8,6 @@ import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import { Gap } from 'lib-components/white-space'
 import { H1 } from 'lib-components/typography'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdfUrl } from '../../api/invoicing'
@@ -21,39 +20,7 @@ import {
 import colors from 'lib-customizations/common'
 import { formatDate } from 'lib-common/date'
 import { formatName } from '../../utils'
-
-interface TypeSelectProps {
-  selected: string
-  changeDecisionType: (type: string) => void
-}
-
-const TypeSelect = ({ selected, changeDecisionType }: TypeSelectProps) => {
-  const { i18n } = useTranslation()
-
-  const options = [
-    { value: 'NORMAL', label: i18n.feeDecision.type.NORMAL },
-    {
-      value: 'RELIEF_ACCEPTED',
-      label: i18n.feeDecision.type.RELIEF_ACCEPTED
-    },
-    {
-      value: 'RELIEF_PARTLY_ACCEPTED',
-      label: i18n.feeDecision.type.RELIEF_PARTLY_ACCEPTED
-    },
-    {
-      value: 'RELIEF_REJECTED',
-      label: i18n.feeDecision.type.RELIEF_REJECTED
-    }
-  ]
-
-  return (
-    <SimpleSelect
-      value={selected}
-      options={options}
-      onChange={(e) => changeDecisionType(e.target.value)}
-    />
-  )
-}
+import { TypeSelect } from './TypeSelect'
 
 interface Props {
   id: string
@@ -96,6 +63,7 @@ export default React.memo(function Heading({
       <TypeSelect
         changeDecisionType={changeDecisionType}
         selected={newDecisionType}
+        type={'FEE_DECISION'}
       />
     ) : (
       i18n.feeDecision.type[decisionType]

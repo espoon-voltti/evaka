@@ -463,12 +463,24 @@ export function getVoucherValueDecisionPdfUrl(decisionId: string): string {
   return `${API_URL}/value-decisions/pdf/${decisionId}`
 }
 
-export async function setDecisionType(
+export async function setFeeDecisionType(
   decisionId: string,
   type: string
 ): Promise<Result<void>> {
   return client
     .post<void>(`/fee-decisions/set-type/${decisionId}`, {
+      type: type
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function setVoucherDecisionType(
+  decisionId: string,
+  type: string
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/voucher-value-decisions/set-type/${decisionId}`, {
       type: type
     })
     .then((res) => Success.of(res.data))
