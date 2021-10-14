@@ -277,7 +277,7 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
             pl.child_id = :childId AND 
             daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
             extract(DOW FROM :date) = ANY(d.operation_days) AND 
-            NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date) AND
+            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
         ON CONFLICT DO NOTHING;
         """.trimIndent()
