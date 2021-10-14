@@ -32,7 +32,7 @@ export default React.memo(function WeekElem({
   return (
     <div>
       <WeekDiv>
-        {i18n.common.datetime.weekShort} {weekNumber}
+        {i18n.common.datetime.week} {weekNumber}
       </WeekDiv>
       <div>
         {dailyReservations.map((d) => (
