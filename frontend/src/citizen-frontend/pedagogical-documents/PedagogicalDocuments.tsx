@@ -163,9 +163,7 @@ export default function PedagogicalDocuments() {
       <>
         {items.map((item) => (
           <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
-            <DateDiv>
-              {LocalDate.fromSystemTzDate(item.created).format()}
-            </DateDiv>
+            <div>{LocalDate.fromSystemTzDate(item.created).format()}</div>
             <Attachment
               item={item}
               dataQa={`pedagogical-document-list-attachment-${item.id}`}
@@ -267,10 +265,6 @@ const DateTd = styled(Td)`
     props.documentIsRead ? 400 : 600};
 `
 
-const DateDiv = styled.div`
-  font-weight: 600;
-`
-
 const NameTd = styled(Td)`
   width: 20%;
 `
@@ -306,6 +300,12 @@ const ListItem = styled(FixedSpaceColumn)`
   border-top: 1px solid #b1b1b1;
   border-left: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 'none' : '6px solid #249fff'};
+  font-weight: 600;
+
+  & > div {
+    font-weight: ${(props: { documentIsRead: boolean }) =>
+      props.documentIsRead ? 400 : 600};
+  }
 `
 
 type ExpandableTextProps = {
