@@ -14,20 +14,19 @@ import {
 
 export function useRestApi<F extends ApiFunction>(
   f: F,
-  setState: (result: Result<ApiResultOf<F>>) => void,
-  keepStale?: boolean
+  setState: (result: Result<ApiResultOf<F>>) => void
 ): (...args: Parameters<F>) => void {
   const [api] = useState(() => withStaleCancellation(f))
   const mountedRef = useRef(true)
 
   return useCallback(
     (...args: Parameters<F>) => {
-      if (!keepStale) setState(Loading.of())
+      setState(Loading.of())
       void api(...args).then((result) => {
         if (!mountedRef.current || isCancelled(result)) return
         setState(result)
       })
     },
-    [api, setState, keepStale]
+    [api, setState]
   )
 }

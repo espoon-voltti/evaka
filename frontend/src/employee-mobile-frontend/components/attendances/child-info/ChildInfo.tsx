@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
+import React, { Fragment, useContext, useRef, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -146,8 +146,6 @@ export default React.memo(function AttendanceChildPage() {
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
-
-  useEffect(() => reloadAttendances(true), [reloadAttendances])
 
   const [uiMode, setUiMode] = useState<
     'default' | 'img-modal' | 'img-crop' | 'img-delete'

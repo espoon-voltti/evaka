@@ -39,8 +39,7 @@ export default React.memo(function AttendancePageWrapper() {
   }>()
   const history = useHistory()
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
+  const { unitInfoResponse } = useContext(UnitContext)
 
   const selectedGroup =
     groupIdOrAll === 'all'
@@ -49,11 +48,7 @@ export default React.memo(function AttendancePageWrapper() {
           .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
           .getOrElse(undefined)
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
-
-  useEffect(() => reloadAttendances(true), [reloadAttendances])
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')

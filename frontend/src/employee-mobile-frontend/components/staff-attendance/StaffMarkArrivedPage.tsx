@@ -38,13 +38,11 @@ export default React.memo(function StaffMarkArrivedPage() {
     employeeId: UUID
   }>()
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
+  const { unitInfoResponse } = useContext(UnitContext)
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
 
   const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)

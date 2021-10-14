@@ -51,8 +51,6 @@ export default React.memo(function MarkDeparted() {
     ChildAttendanceContext
   )
 
-  useEffect(() => reloadAttendances(true), [reloadAttendances])
-
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [childDepartureInfo, setChildDepartureInfo] = useState<
     Result<AbsenceThreshold[]>

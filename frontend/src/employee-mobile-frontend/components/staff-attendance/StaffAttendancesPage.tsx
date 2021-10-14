@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import Button from 'lib-components/atoms/buttons/Button'
 import { faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
@@ -38,20 +38,12 @@ export default function StaffAttendancesPage() {
   }>()
   const { i18n } = useTranslation()
 
-  const { unitInfoResponse, showPresent, setShowPresent, reloadUnitInfo } =
+  const { unitInfoResponse, showPresent, setShowPresent } =
     useContext(UnitContext)
-  useEffect(() => reloadUnitInfo(true), [reloadUnitInfo])
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
-  useEffect(
-    () => reloadStaffAttendance(true),
-    [reloadStaffAttendance, showPresent]
-  )
+  const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
 
   const changeGroup = (group: GroupInfo | undefined) => {
-    reloadStaffAttendance(true)
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
     )

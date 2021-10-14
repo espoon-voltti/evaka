@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext, useCallback } from 'react'
+import React, {
+  useMemo,
+  useState,
+  createContext,
+  useCallback,
+  useEffect
+} from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -10,6 +16,8 @@ import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { getUnitStaffAttendances } from '../api/staffAttendances'
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { client } from '../api/client'
 
 interface StaffAttendanceState {
   staffAttendanceResponse: Result<StaffAttendanceResponse>
@@ -40,15 +48,18 @@ export const StaffAttendanceContextProvider = React.memo(
       getUnitStaffAttendances,
       setStaffAttendanceResponse
     )
-    const softLoadStaffAttendance = useRestApi(
-      getUnitStaffAttendances,
-      setStaffAttendanceResponse,
-      true
-    )
+
     const reloadStaffAttendance = useCallback(
-      (soft?: boolean) =>
-        soft ? softLoadStaffAttendance(unitId) : loadStaffAttendance(unitId),
-      [loadStaffAttendance, softLoadStaffAttendance, unitId]
+      () => loadStaffAttendance(unitId),
+      [loadStaffAttendance, unitId]
+    )
+
+    useEffect(reloadStaffAttendance, [reloadStaffAttendance])
+
+    useEffect(
+      () =>
+        idleTracker(client, reloadStaffAttendance, { thresholdInMinutes: 5 }),
+      [reloadStaffAttendance]
     )
 
     const value = useMemo(

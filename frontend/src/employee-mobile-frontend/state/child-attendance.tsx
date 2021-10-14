@@ -2,17 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext, useCallback } from 'react'
+import React, {
+  useMemo,
+  useState,
+  createContext,
+  useCallback,
+  useEffect
+} from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { getDaycareAttendances } from '../api/attendances'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { client } from '../api/client'
 
 interface ChildAttendanceState {
   attendanceResponse: Result<AttendanceResponse>
-  reloadAttendances: (soft?: boolean) => void
+  reloadAttendances: () => void
 }
 
 const defaultState: ChildAttendanceState = {
@@ -39,15 +47,17 @@ export const ChildAttendanceContextProvider = React.memo(
       getDaycareAttendances,
       setAttendanceResponse
     )
-    const softLoadAttendances = useRestApi(
-      getDaycareAttendances,
-      setAttendanceResponse,
-      true
-    )
+
     const reloadAttendances = useCallback(
-      (soft?: boolean) =>
-        soft ? softLoadAttendances(unitId) : loadAttendances(unitId),
-      [loadAttendances, softLoadAttendances, unitId]
+      () => loadAttendances(unitId),
+      [loadAttendances, unitId]
+    )
+
+    useEffect(reloadAttendances, [reloadAttendances])
+
+    useEffect(
+      () => idleTracker(client, reloadAttendances, { thresholdInMinutes: 5 }),
+      [reloadAttendances]
     )
 
     const value = useMemo(

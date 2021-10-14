@@ -6,7 +6,7 @@ import { formatTime } from 'lib-common/date'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
@@ -25,10 +25,7 @@ export default React.memo(function StaffMemberPage() {
   }>()
   const { i18n } = useTranslation()
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
-  useEffect(() => reloadStaffAttendance(true), [reloadStaffAttendance])
+  const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
 
   const staffMember = staffAttendanceResponse.map((res) =>
     res.staff.find((s) => s.employeeId === employeeId)

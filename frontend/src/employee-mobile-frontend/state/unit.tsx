@@ -23,7 +23,7 @@ interface UnitState {
   unitInfoResponse: Result<UnitInfo>
   showPresent: boolean
   setShowPresent: (value: boolean) => void
-  reloadUnitInfo: (soft?: boolean) => void
+  reloadUnitInfo: () => void
 }
 
 const defaultState: UnitState = {
@@ -46,32 +46,23 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     defaultState.unitInfoResponse
   )
 
-  const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
-  const softLoadUnitInfo = useRestApi(
-    getMobileUnitInfo,
-    setUnitInfoResponse,
-    true
-  )
-  const reloadUnitInfo = useCallback(
-    (soft?: boolean) =>
-      soft ? softLoadUnitInfo(unitId) : loadUnitInfo(unitId),
-    [loadUnitInfo, softLoadUnitInfo, unitId]
-  )
-  useEffect(() => loadUnitInfo(unitId), [loadUnitInfo, unitId])
-
   const [showPresent, setShowPresent] = useState<boolean>(
     defaultState.showPresent
   )
 
-  useEffect(() => {
-    return idleTracker(
-      client,
-      () => {
-        void reloadUnitInfo(true)
-      },
-      { thresholdInMinutes: 5 }
-    )
-  }, [reloadUnitInfo])
+  const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
+
+  const reloadUnitInfo = useCallback(
+    () => loadUnitInfo(unitId),
+    [loadUnitInfo, unitId]
+  )
+
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
+
+  useEffect(
+    () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
+    [reloadUnitInfo]
+  )
 
   const value = useMemo(
     () => ({
