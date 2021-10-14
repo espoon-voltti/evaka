@@ -112,7 +112,7 @@ export async function waitUntilFalse(f: () => Promise<boolean>) {
 }
 
 /**
- * Waits until the given function returns a promise which resolves to false
+ * Waits until the element matching the given locator is visible
  */
 export async function waitUntilVisible(locator: Locator) {
   return waitForCondition(

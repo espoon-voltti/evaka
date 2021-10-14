@@ -15,9 +15,10 @@ import {
   createIncome,
   deleteIncome,
   getIncomes,
+  IncomeTypeOptions,
   updateIncome
 } from '../../api/income'
-import { Income, IncomeId, PartialIncome } from '../../types/income'
+import { Income, IncomeId, IncomeBody } from '../../types/income'
 import { UUID } from '../../types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
@@ -31,6 +32,7 @@ import { formatDate } from 'lib-common/date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { featureFlags } from 'lib-customizations/employee'
 import { UnwrapResult } from '../async-rendering'
+import { useIncomeTypeOptions } from '../../utils/income'
 
 interface Props {
   id: UUID
@@ -90,6 +92,8 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
     }
   }, [i18n, incomes, incomeDataChanged, setErrorMessage])
 
+  const incomeTypeOptions = useIncomeTypeOptions()
+
   return (
     <CollapsibleSection
       icon={faEuroSign}
@@ -98,10 +102,10 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       startCollapsed={!open}
     >
       <UnwrapResult
-        result={incomes}
+        result={combine(incomes, incomeTypeOptions)}
         failure={() => <div>{i18n.personProfile.income.error}</div>}
       >
-        {([incomes, incomeStatements]) => (
+        {([[incomes, incomeStatements], incomeTypeOptions]) => (
           <>
             {featureFlags.experimental?.incomeStatements && (
               <IncomeStatements
@@ -112,6 +116,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
             <Incomes
               personId={id}
               incomes={incomes}
+              incomeTypeOptions={incomeTypeOptions}
               isIncomeRowOpen={isIncomeRowOpen}
               toggleIncomeRow={toggleIncomeRow}
               onSuccessfulUpdate={reload}
@@ -204,12 +209,14 @@ function IncomeStatementRow({
 function Incomes({
   personId,
   incomes,
+  incomeTypeOptions,
   isIncomeRowOpen,
   toggleIncomeRow,
   onSuccessfulUpdate
 }: {
   personId: UUID
   incomes: Income[]
+  incomeTypeOptions: IncomeTypeOptions
   isIncomeRowOpen: (id: IncomeId) => boolean
   toggleIncomeRow: (id: IncomeId) => void
   onSuccessfulUpdate: () => void
@@ -260,13 +267,14 @@ function Incomes({
       <Gap size="m" />
       <IncomeList
         incomes={incomes}
+        incomeTypeOptions={incomeTypeOptions}
         isRowOpen={isIncomeRowOpen}
         toggleRow={toggleIncomeRow}
         editing={editing}
         setEditing={setEditing}
         deleting={deleting}
         setDeleting={setDeleting}
-        createIncome={(income: PartialIncome) =>
+        createIncome={(income: IncomeBody) =>
           createIncome(personId, income).then(toggleCreated).then(handleErrors)
         }
         updateIncome={(incomeId: UUID, income: Income) =>

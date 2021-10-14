@@ -2,27 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
 import Title from 'lib-components/atoms/Title'
-import IncomeTable from './IncomeTable'
+import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
 import { Income } from '../../../types/income'
 import { useTranslation } from '../../../state/i18n'
 import { formatDate } from 'lib-common/date'
 import { UserContext } from '../../../state/user'
+import { IncomeTypeOptions } from '../../../api/income'
 
 interface Props {
+  incomeTypeOptions: IncomeTypeOptions
   income: Income
 }
 
-const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
+const IncomeItemBody = React.memo(function IncomeItemBody({
+  incomeTypeOptions,
+  income
+}: Props) {
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
 
   const applicationLinkVisible = roles.find((r) => ['ADMIN'].includes(r))
+
+  const tableData = useMemo(
+    () => tableDataFromIncomeFields(income.data),
+    [income.data]
+  )
 
   return (
     <>
@@ -73,8 +83,8 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
             {i18n.personProfile.income.details.incomeTitle}
           </Title>
           <IncomeTable
-            data={income.data}
-            setData={() => undefined}
+            incomeTypeOptions={incomeTypeOptions}
+            data={tableData}
             type="income"
             total={income.totalIncome}
           />
@@ -82,8 +92,8 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
             {i18n.personProfile.income.details.expensesTitle}
           </Title>
           <IncomeTable
-            data={income.data}
-            setData={() => undefined}
+            incomeTypeOptions={incomeTypeOptions}
+            data={tableData}
             type="expenses"
             total={income.totalExpenses}
           />

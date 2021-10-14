@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Gap } from 'lib-components/white-space'
@@ -12,11 +12,9 @@ import { Income } from '../../types/income'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { formatName, formatPercent } from '../../utils'
-import { Result, Success } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getIncomeOptions, IncomeTypeOptions } from '../../api/income'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { useIncomeTypeOptions } from 'employee-frontend/utils/income'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
@@ -26,22 +24,16 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
   decision
 }: Props) {
   const { i18n } = useTranslation()
-  const [incomeOptions, setIncomeOptions] = useState<Result<IncomeTypeOptions>>(
-    Success.of([[], []])
-  )
-  const loadIncomeOptions = useRestApi(getIncomeOptions, setIncomeOptions)
-  useEffect(() => {
-    loadIncomeOptions()
-  }, [loadIncomeOptions])
+  const incomeTypeOptions = useIncomeTypeOptions()
 
-  if (incomeOptions.isLoading) {
+  if (incomeTypeOptions.isLoading) {
     return <SpinnerSegment />
   }
-  if (incomeOptions.isFailure) {
+  if (incomeTypeOptions.isFailure) {
     return <ErrorSegment />
   }
 
-  const [incomeTypes] = incomeOptions.value
+  const { incomeTypes } = incomeTypeOptions.value
 
   const personIncome = (income: Income | null) => {
     if (!income || income.effect !== 'INCOME') {

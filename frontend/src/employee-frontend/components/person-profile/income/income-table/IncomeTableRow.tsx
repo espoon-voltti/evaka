@@ -2,67 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { Td, Tr } from 'lib-components/layout/Table'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import EuroInput from '../../../../components/common/EuroInput'
-import { TableIncomeState } from '../IncomeTable'
 import { Translations } from '../../../../state/i18n'
 import {
   incomeCoefficients,
   IncomeCoefficient,
   IncomeOption
 } from '../../../../types/income'
-import { formatCents, parseCents } from 'lib-common/money'
-
-type TypeLabelProps = { indent: boolean }
-
-const TypeLabel = styled.span<TypeLabelProps>`
-  margin-left: ${(props) => (props.indent ? '2rem' : '0')};
-`
-
-const MonthlyValue = styled.span`
-  font-style: italic;
-`
-
-const coefficientMultipliers: Record<IncomeCoefficient, number> = {
-  MONTHLY_WITH_HOLIDAY_BONUS: 1.0417,
-  MONTHLY_NO_HOLIDAY_BONUS: 1,
-  BI_WEEKLY_WITH_HOLIDAY_BONUS: 2.2323,
-  BI_WEEKLY_NO_HOLIDAY_BONUS: 2.1429,
-  DAILY_ALLOWANCE_21_5: 21.5,
-  DAILY_ALLOWANCE_25: 25,
-  YEARLY: 0.0833
-}
-
-const calculateMonthlyAmount = (
-  amount: string,
-  coefficient: IncomeCoefficient
-) => {
-  const parsed = parseCents(amount)
-  return parsed ? Math.round(parsed * coefficientMultipliers[coefficient]) : 0
-}
+import { formatCents } from 'lib-common/money'
+import { IncomeValueString } from '../IncomeTable'
 
 type Props = {
   i18n: Translations
   type: IncomeOption
-  editing: boolean
-  amount: string
-  coefficient: IncomeCoefficient
-  monthlyAmount: number
-  updateData: Dispatch<SetStateAction<TableIncomeState>>
+  state: IncomeValueString
+  onChange?: (option: IncomeOption, value: IncomeValueString) => void
 }
 
-const IncomeTableRow = React.memo(function IncomeTableRow({
+export const IncomeTableRow = React.memo(function IncomeTableRow({
   i18n,
   type,
-  editing,
-  amount,
-  coefficient,
-  monthlyAmount,
-  updateData
+  state,
+  onChange
 }: Props) {
   const coefficientOptions = incomeCoefficients.map((id) => ({
     value: id,
@@ -75,67 +41,55 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
         <TypeLabel indent={type.isSubType}>{type.nameFi}</TypeLabel>
       </Td>
       <Td align="right">
-        {editing ? (
+        {onChange !== undefined ? (
           <EuroInput
-            value={amount}
-            onChange={(amount) =>
-              updateData((prev) => ({
-                ...prev,
-                [type.value]: {
-                  amount,
-                  coefficient:
-                    prev[type.value]?.coefficient ?? 'MONTHLY_NO_HOLIDAY_BONUS',
-                  monthlyAmount: undefined
-                }
-              }))
-            }
+            value={state.amount}
+            onChange={(amount) => onChange(type, { ...state, amount })}
             allowEmpty
             data-qa={`income-input-${type.value}`}
           />
         ) : (
-          <span>{amount} €</span>
+          <span>{state.amount} €</span>
         )}
       </Td>
       <Td>
         {type.withCoefficient ? (
-          editing ? (
+          onChange !== undefined ? (
             <SimpleSelect
-              value={coefficient}
+              value={state.coefficient}
               options={coefficientOptions}
-              onChange={(e) => {
-                updateData((prev) => ({
-                  ...prev,
-                  [type.value]: {
-                    amount: prev[type.value]?.amount ?? '',
-                    coefficient: e.target.value as IncomeCoefficient,
-                    monthlyAmount: undefined
-                  }
-                }))
-              }}
+              onChange={(e) =>
+                onChange(type, {
+                  ...state,
+                  coefficient: e.target.value as IncomeCoefficient
+                })
+              }
               data-qa={`income-coefficient-select-${type.value}`}
             />
           ) : (
             <span>
-              {coefficient
-                ? i18n.personProfile.income.details.incomeCoefficients[
-                    coefficient
-                  ]
-                : ''}
+              {
+                i18n.personProfile.income.details.incomeCoefficients[
+                  state.coefficient
+                ]
+              }
             </span>
           )
         ) : undefined}
       </Td>
       <Td align="right">
-        <MonthlyValue>
-          {`${
-            formatCents(
-              monthlyAmount || calculateMonthlyAmount(amount, coefficient)
-            ) ?? ''
-          } €`}
-        </MonthlyValue>
+        <MonthlyValue>{`${formatCents(state.monthlyAmount)} €`} </MonthlyValue>
       </Td>
     </Tr>
   )
 })
+
+const TypeLabel = styled.span<{ indent: boolean }>`
+  margin-left: ${(props) => (props.indent ? '2rem' : '0')};
+`
+
+const MonthlyValue = styled.span`
+  font-style: italic;
+`
 
 export default IncomeTableRow
