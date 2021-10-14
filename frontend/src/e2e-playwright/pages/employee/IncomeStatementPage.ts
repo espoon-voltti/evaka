@@ -19,8 +19,8 @@ export class IncomeStatementPage {
 
   async setHandled(handled = true) {
     handled
-      ? await this.#handledCheckbox.check()
-      : await this.#handledCheckbox.uncheck()
+      ? await this.#handledCheckbox.check({ force: true })
+      : await this.#handledCheckbox.uncheck({ force: true })
   }
 
   async submit() {

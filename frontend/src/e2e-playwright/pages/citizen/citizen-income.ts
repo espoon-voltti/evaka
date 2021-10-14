@@ -69,7 +69,9 @@ export default class CitizenIncomePage {
     check: boolean
   ) {
     const locator = this.page.locator(`[data-qa="${checkbox}-input"]`)
-    check ? await locator.check() : await locator.uncheck()
+    check
+      ? await locator.check({ force: true })
+      : await locator.uncheck({ force: true })
   }
 
   async toggleEntrepreneurStartupGrant(check: boolean) {
