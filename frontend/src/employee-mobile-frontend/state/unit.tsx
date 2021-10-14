@@ -71,7 +71,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
       setShowPresent,
       reloadUnitInfo
     }),
-    [unitInfoResponse, showPresent, setShowPresent, reloadUnitInfo]
+    [unitInfoResponse, showPresent, reloadUnitInfo]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
