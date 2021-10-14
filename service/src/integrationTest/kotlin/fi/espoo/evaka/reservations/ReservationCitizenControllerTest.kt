@@ -48,8 +48,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(child, testDate, TimeRange(startTime, endTime)),
-                    DailyReservationRequest(child, testDate.plusDays(1), TimeRange(startTime, endTime))
+                    DailyReservationRequest(child, testDate, listOf(TimeRange(startTime, endTime))),
+                    DailyReservationRequest(child, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)))
                 )
             },
         )
@@ -70,8 +70,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
-                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString()))
+                ChildDailyData(testChild_1.id, null, listOf(Reservation(startTime.toString(), endTime.toString()))),
+                ChildDailyData(testChild_2.id, null, listOf(Reservation(startTime.toString(), endTime.toString())))
             ),
             dailyData[0].children.toSet()
         )
@@ -79,8 +79,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, Reservation(startTime.toString(), endTime.toString())),
-                ChildDailyData(testChild_2.id, null, Reservation(startTime.toString(), endTime.toString())),
+                ChildDailyData(testChild_1.id, null, listOf(Reservation(startTime.toString(), endTime.toString()))),
+                ChildDailyData(testChild_2.id, null, listOf(Reservation(startTime.toString(), endTime.toString()))),
             ),
             dailyData[1].children.toSet()
         )

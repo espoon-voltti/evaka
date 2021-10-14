@@ -359,7 +359,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
 fun Database.Read.fetchAttendanceReservations(
     unitId: DaycareId,
     date: LocalDate
-): Map<UUID, AttendanceReservation> = createQuery(
+): Map<UUID, List<AttendanceReservation>> = createQuery(
     """
     SELECT
         child.id AS child_id,
@@ -379,7 +379,8 @@ fun Database.Read.fetchAttendanceReservations(
             ctx.mapColumn("end_time")
         )
     }
-    .toMap()
+    .groupBy { (childId, _) -> childId }
+    .mapValues { it.value.map { (_, reservation) -> reservation } }
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = getPersonById(childId)

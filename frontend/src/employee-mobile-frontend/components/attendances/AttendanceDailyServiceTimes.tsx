@@ -11,23 +11,26 @@ import { ServiceTime } from './components'
 
 interface Props {
   times: DailyServiceTimes | null
-  reservation: AttendanceReservation | null
+  reservations: AttendanceReservation[]
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({
   times,
-  reservation
+  reservations
 }: Props) {
   const { i18n } = useTranslation()
 
   const todaysTimes = getTodaysServiceTimes(times)
   return (
     <ServiceTime>
-      {reservation !== null ? (
-        i18n.attendances.serviceTime.reservation(
-          reservation.startTime,
-          reservation.endTime
-        )
+      {reservations.length > 0 ? (
+        `${
+          reservations.length > 1
+            ? i18n.attendances.serviceTime.reservations
+            : i18n.attendances.serviceTime.reservation
+        } ${reservations
+          .map(({ startTime, endTime }) => `${startTime}-${endTime}`)
+          .join(', ')}`
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (

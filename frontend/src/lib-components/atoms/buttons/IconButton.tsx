@@ -136,6 +136,7 @@ function IconButton({
 }: IconButtonProps) {
   return (
     <StyledButton
+      type="button"
       className={classNames(className, { disabled })}
       data-qa={dataQa}
       onClick={onClick}

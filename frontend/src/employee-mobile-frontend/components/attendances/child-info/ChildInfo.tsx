@@ -262,7 +262,7 @@ export default React.memo(function AttendanceChildPage() {
               <FlexColumn paddingHorizontal={'s'}>
                 <AttendanceDailyServiceTimes
                   times={child.dailyServiceTimes}
-                  reservation={child.reservation}
+                  reservations={child.reservations}
                 />
                 <ArrivalAndDeparture child={child} />
                 <Absences child={child} />

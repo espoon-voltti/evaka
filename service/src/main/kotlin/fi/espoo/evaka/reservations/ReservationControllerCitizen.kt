@@ -115,7 +115,7 @@ data class DailyReservationData(
 data class ChildDailyData(
     val childId: UUID,
     val absence: AbsenceType?,
-    val reservation: Reservation?
+    val reservations: List<Reservation>
 )
 
 @Json
@@ -148,25 +148,26 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', g.child_id,
-                'absence', a.absence_type
-            ) || (CASE
-                WHEN ar.start_time IS NULL THEN '{}'::jsonb
-                ELSE jsonb_build_object(
-                    'reservation',
-                    jsonb_build_object(
-                        'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                        'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
-                    )
-                )
-            END)
-        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.id IS NOT NULL),
+                'absence', a.absence_type,
+                'reservations', coalesce(ar.reservations, '[]')
+            )
+        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL),
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t
 JOIN guardian g ON g.guardian_id = :guardianId
 JOIN placement p ON g.child_id = p.child_id
 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-LEFT JOIN attendance_reservation ar ON ar.child_id = g.child_id AND ar.start_date = t::date
+LEFT JOIN LATERAL (
+    SELECT
+        jsonb_agg(
+            jsonb_build_object(
+                'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+            ) ORDER BY ar.start_time ASC
+        ) AS reservations
+    FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.start_date = t::date
+) ar ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
 ) a ON true
@@ -221,12 +222,12 @@ fun getReservableDays(today: LocalDate): FiniteDateRange {
 }
 
 fun createReservationsAsCitizen(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
-    tx.clearOldAbsences(reservations.filter { it.reservation != null }.map { it.childId to it.date })
+    tx.clearOldAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations)
 }
 
-private fun Database.Transaction.insertValidReservations(userId: UUID, reservations: List<DailyReservationRequest>) {
+private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
@@ -244,22 +245,22 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, reservati
         """.trimIndent()
     )
 
-    reservations.forEach { res ->
-        if (res.reservation != null) {
+    requests.forEach { request ->
+        request.reservations?.forEach { res ->
             val start = HelsinkiDateTime.of(
-                date = res.date,
-                time = res.reservation.startTime
+                date = request.date,
+                time = res.startTime
             )
             val end = HelsinkiDateTime.of(
-                date = if (res.reservation.endTime.isAfter(res.reservation.startTime)) res.date else res.date.plusDays(1),
-                time = res.reservation.endTime
+                date = if (res.endTime.isAfter(res.startTime)) request.date else request.date.plusDays(1),
+                time = res.endTime
             )
             batch
                 .bind("userId", userId)
-                .bind("childId", res.childId)
+                .bind("childId", request.childId)
                 .bind("start", start)
                 .bind("end", end)
-                .bind("date", res.date)
+                .bind("date", request.date)
                 .add()
         }
     }

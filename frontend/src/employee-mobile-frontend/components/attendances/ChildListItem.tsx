@@ -212,13 +212,16 @@ export default React.memo(function ChildListItem({
 
 const childReservationInfo = (
   i18n: Translations,
-  { reservation, dailyServiceTimes }: Child
+  { reservations, dailyServiceTimes }: Child
 ): React.ReactNode => {
-  if (reservation !== null) {
-    return i18n.attendances.serviceTime.reservationShort(
-      reservation.startTime,
-      reservation.endTime
-    )
+  if (reservations.length > 0) {
+    return `${
+      reservations.length > 1
+        ? i18n.attendances.serviceTime.reservationsShort
+        : i18n.attendances.serviceTime.reservationShort
+    } ${reservations
+      .map(({ startTime, endTime }) => `${startTime}-${endTime}`)
+      .join(', ')}`
   }
 
   const todaysServiceTime = getTodaysServiceTimes(dailyServiceTimes)

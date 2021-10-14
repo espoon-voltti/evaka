@@ -45,6 +45,7 @@ export default React.memo(function FormModal({
         <Gap horizontal size={'xs'} />
         <Button
           primary
+          type="submit"
           data-qa="modal-okBtn"
           onClick={resolve.action}
           disabled={resolve.disabled}

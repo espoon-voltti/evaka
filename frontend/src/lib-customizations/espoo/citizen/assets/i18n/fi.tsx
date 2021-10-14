@@ -23,6 +23,7 @@ export default {
     add: 'Lisää',
     yes: 'Kyllä',
     no: 'Ei',
+    select: 'Valitse',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',
@@ -55,6 +56,7 @@ export default {
     },
     datetime: {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
+      week: 'Viikko',
       weekShort: 'Vk',
       weekdays: [
         'Maanantai',
@@ -184,13 +186,14 @@ export default {
       selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
-      times: 'Kellonaika',
+      missingDateRange: 'Valitse varattavat päivät',
+      repetition: 'Tyyppi tai toistuvuus',
       businessDays: 'Ma-Pe',
       postError: 'Varauksen luominen ei onnistunut',
-      repeats: 'Toistuu',
       repetitions: {
         DAILY: 'Päivittäin',
-        WEEKLY: 'Viikoittain'
+        WEEKLY: 'Viikoittain',
+        SHIFT_CARE: 'Vuorohoito'
       }
     },
     absenceModal: {

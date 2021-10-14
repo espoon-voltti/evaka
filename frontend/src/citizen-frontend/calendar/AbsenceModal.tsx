@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
@@ -20,7 +21,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { useLang, useTranslation } from '../localization'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
-import { AbsencesRequest, postAbsences, ReservationChild } from './api'
+import { AbsencesRequest, postAbsences } from './api'
 import { errorToInputInfo } from '../input-info-helper'
 
 interface Props {
@@ -75,7 +76,7 @@ export default React.memo(function AbsenceModal({
       }}
     >
       <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
-      <Gap size="s" />
+      <Gap size="xs" />
       <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (
           <SelectionChip

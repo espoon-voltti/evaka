@@ -68,7 +68,7 @@ data class Child(
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: DaycareDailyNote?,
     val imageUrl: String?,
-    val reservation: AttendanceReservation?
+    val reservations: List<AttendanceReservation>
 )
 
 enum class AttendanceStatus {

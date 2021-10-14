@@ -7,36 +7,11 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { AbsenceType } from 'lib-common/generated/enums'
-import { DailyReservationRequest } from 'lib-common/api-types/reservations'
-
-export interface ChildDailyData {
-  childId: string
-  absence: AbsenceType | null
-  reservation: {
-    startTime: string
-    endTime: string
-  } | null
-}
-
-export interface DailyReservationData {
-  date: LocalDate
-  isHoliday: boolean
-  children: ChildDailyData[]
-}
-
-export interface ReservationChild {
-  id: UUID
-  firstName: string
-  preferredName?: string
-}
-
-export interface ReservationsResponse {
-  dailyData: DailyReservationData[]
-  children: ReservationChild[]
-  reservableDays: FiniteDateRange
-}
+import {
+  DailyReservationRequest,
+  ReservationsResponse
+} from 'lib-common/generated/api-types/reservations'
 
 export async function getReservations(
   from: LocalDate,

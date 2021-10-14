@@ -24,6 +24,7 @@ const en: Translations = {
     add: 'Add',
     yes: 'Yes',
     no: 'No',
+    select: 'Select',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',
@@ -56,6 +57,7 @@ const en: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      week: 'Week',
       weekShort: 'Wk',
       weekdays: [
         'Monday',
@@ -185,13 +187,14 @@ const en: Translations = {
       selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
-      times: 'Time',
+      missingDateRange: 'Select days to reserve',
+      repetition: 'Type or repetition',
       businessDays: 'Mon-Fri',
       postError: 'The reservation failed',
-      repeats: 'Repeating',
       repetitions: {
         DAILY: 'Daily',
-        WEEKLY: 'Weekly'
+        WEEKLY: 'Weekly',
+        SHIFT_CARE: 'Shift care'
       }
     },
     absenceModal: {

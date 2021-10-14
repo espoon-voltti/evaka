@@ -13,7 +13,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DailyReservationData } from './api'
+import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import { Reservations } from './calendar-elements'
 import { WeeklyData } from './CalendarListView'
 import { headerHeightMobile } from 'citizen-frontend/header/const'

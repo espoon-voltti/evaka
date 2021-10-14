@@ -12,7 +12,7 @@ import java.util.UUID
 data class DailyReservationRequest(
     val childId: UUID,
     val date: LocalDate,
-    val reservation: TimeRange?
+    val reservations: List<TimeRange>?
 )
 
 data class TimeRange(
