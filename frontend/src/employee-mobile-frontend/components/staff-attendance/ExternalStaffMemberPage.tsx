@@ -8,7 +8,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { postExternalStaffDeparture } from '../../api/staffAttendances'
 import { useTranslation } from '../../state/i18n'
@@ -29,7 +29,6 @@ export default React.memo(function ExternalStaffMemberPage() {
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
   const attendance = staffAttendanceResponse.map((res) =>
     res.extraAttendances.find((s) => s.id === attendanceId)
@@ -73,7 +72,10 @@ export default React.memo(function ExternalStaffMemberPage() {
                 onClick={() =>
                   postExternalStaffDeparture({ attendanceId, time })
                 }
-                onSuccess={() => history.goBack()}
+                onSuccess={() => {
+                  reloadStaffAttendance()
+                  history.goBack()
+                }}
               />
             </FixedSpaceColumn>
           </>

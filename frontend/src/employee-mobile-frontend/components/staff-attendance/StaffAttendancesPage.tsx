@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import Button from 'lib-components/atoms/buttons/Button'
 import { faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
@@ -40,15 +40,15 @@ export default function StaffAttendancesPage() {
 
   const { unitInfoResponse, showPresent, setShowPresent } =
     useContext(UnitContext)
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
-  const changeGroup = (group: GroupInfo | undefined) =>
+  const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
+
+  const changeGroup = (group: GroupInfo | undefined) => {
     history.push(
       `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
     )
+  }
+
   const navigateToExternalMemberArrival = () =>
     history.push(`/units/${unitId}/groups/${groupId}/staff-attendance/external`)
 

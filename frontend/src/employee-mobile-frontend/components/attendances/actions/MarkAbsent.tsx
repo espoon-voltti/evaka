@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -41,10 +41,6 @@ export default React.memo(function MarkAbsent() {
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
-
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -114,7 +110,10 @@ export default React.memo(function MarkAbsent() {
                     primary
                     text={i18n.common.confirm}
                     onClick={() => postAbsence(selectedAbsenceType)}
-                    onSuccess={() => history.goBack()}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      history.goBack()
+                    }}
                     data-qa="mark-absent-btn"
                   />
                 ) : (

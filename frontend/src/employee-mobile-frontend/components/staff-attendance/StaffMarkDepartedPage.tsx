@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext, useEffect, useState } from 'react'
+import { Redirect, useHistory, useParams } from 'react-router-dom'
 import { isAfter, parse } from 'date-fns'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
@@ -14,8 +16,6 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
-import React, { useContext, useEffect, useState } from 'react'
-import { Redirect, useHistory, useParams } from 'react-router-dom'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { postStaffDeparture } from '../../api/staffAttendances'
 import { useTranslation } from '../../state/i18n'
@@ -37,12 +37,12 @@ export default React.memo(function StaffMarkDepartedPage() {
     employeeId: string
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
   )
-  useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const [time, setTime] = useState<string>(formatTime(new Date()))
@@ -179,7 +179,10 @@ export default React.memo(function StaffMarkDepartedPage() {
                             return res
                           })
                         }
-                        onSuccess={() => history.go(-1)}
+                        onSuccess={() => {
+                          reloadStaffAttendance()
+                          history.go(-1)
+                        }}
                         data-qa="mark-departed-btn"
                       />
                     )}

@@ -152,10 +152,6 @@ export default React.memo(function DailyNoteEditor() {
     ChildAttendanceContext
   )
 
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
-
   const [dirty, setDirty] = useState(false)
 
   const [dailyNote, setDailyNote] = useState<DailyNoteEdited>(
@@ -195,6 +191,7 @@ export default React.memo(function DailyNoteEditor() {
     } else {
       if (groupNote.id) await deleteDaycareDailyNote(groupNote.id)
     }
+    reloadAttendances()
     history.goBack()
   }
   const saveNotes = async () => {
@@ -261,6 +258,7 @@ export default React.memo(function DailyNoteEditor() {
         resolve={{
           action: () => {
             void saveNotes().then(() => {
+              reloadAttendances()
               history.goBack()
             })
           },
@@ -594,6 +592,7 @@ export default React.memo(function DailyNoteEditor() {
                       primary={true}
                       onClick={() =>
                         void saveNotes().then(() => {
+                          reloadAttendances()
                           history.goBack()
                         })
                       }

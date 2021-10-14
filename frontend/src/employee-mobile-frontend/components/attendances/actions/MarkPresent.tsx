@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -35,10 +35,6 @@ export default React.memo(function MarkPresent() {
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
-
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
 
@@ -110,7 +106,10 @@ export default React.memo(function MarkPresent() {
                   text={i18n.common.confirm}
                   disabled={!isValidTime(time)}
                   onClick={() => childArrives()}
-                  onSuccess={() => history.go(-2)}
+                  onSuccess={() => {
+                    reloadAttendances()
+                    history.go(-2)
+                  }}
                   data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>

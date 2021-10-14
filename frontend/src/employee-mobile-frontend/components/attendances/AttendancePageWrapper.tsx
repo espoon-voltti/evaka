@@ -48,13 +48,7 @@ export default React.memo(function AttendancePageWrapper() {
           .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
           .getOrElse(undefined)
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
-
-  useEffect(() => {
-    reloadAttendances()
-  }, [reloadAttendances])
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')

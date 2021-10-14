@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext, useEffect } from 'react'
+import React, {
+  useMemo,
+  useState,
+  createContext,
+  useEffect,
+  useCallback
+} from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
@@ -10,17 +16,21 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { getMobileUnitInfo } from '../api/unit'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { client } from '../api/client'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
   showPresent: boolean
   setShowPresent: (value: boolean) => void
+  reloadUnitInfo: () => void
 }
 
 const defaultState: UnitState = {
   unitInfoResponse: Loading.of(),
   showPresent: false,
-  setShowPresent: () => undefined
+  setShowPresent: () => undefined,
+  reloadUnitInfo: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
@@ -36,20 +46,32 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     defaultState.unitInfoResponse
   )
 
-  const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
-  useEffect(() => loadUnitInfo(unitId), [loadUnitInfo, unitId])
-
   const [showPresent, setShowPresent] = useState<boolean>(
     defaultState.showPresent
+  )
+
+  const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
+
+  const reloadUnitInfo = useCallback(
+    () => loadUnitInfo(unitId),
+    [loadUnitInfo, unitId]
+  )
+
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
+
+  useEffect(
+    () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
+    [reloadUnitInfo]
   )
 
   const value = useMemo(
     () => ({
       unitInfoResponse,
       showPresent,
-      setShowPresent
+      setShowPresent,
+      reloadUnitInfo
     }),
-    [unitInfoResponse, showPresent, setShowPresent]
+    [unitInfoResponse, showPresent, reloadUnitInfo]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
