@@ -38,7 +38,7 @@ import {
   faUsers
 } from 'lib-icons'
 import { flow, set } from 'lodash/fp'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import Combobox from 'lib-components/atoms/form/Combobox'
@@ -129,6 +129,28 @@ export default React.memo(function ApplicationEditView({
       ) ?? [],
     [serviceNeedOptions]
   )
+
+  useEffect(() => {
+    if (
+      featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
+      application.form.preferences.serviceNeed?.serviceNeedOption === null
+    ) {
+      setApplication(
+        set(
+          'form.preferences.serviceNeed.serviceNeedOption',
+          application.form.preferences.serviceNeed.partTime
+            ? partTimeOptions[0] ?? null
+            : fullTimeOptions[0] ?? null
+        )
+      )
+    }
+  }, [
+    partTimeOptions,
+    fullTimeOptions,
+    application.form.preferences.serviceNeed?.serviceNeedOption,
+    application.form.preferences.serviceNeed?.partTime,
+    setApplication
+  ])
 
   const preferencesInUnitsList = units
     .map((us) =>
