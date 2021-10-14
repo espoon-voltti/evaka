@@ -38,8 +38,8 @@ describe('Income', () => {
   it('Create a new max fee accepted income', async () => {
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -49,8 +49,8 @@ describe('Income', () => {
   it('Create a new income with multiple values.', async () => {
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.chooseIncomeEffect('INCOME')
 
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
@@ -78,8 +78,8 @@ describe('Income', () => {
     await waitUntilFalse(() => incomesSection.saveIsDisabled())
 
     // inverted date range
-    await incomesSection.fillIncomeStartDate('310120')
-    await incomesSection.fillIncomeEndDate('010120')
+    await incomesSection.fillIncomeStartDate('31.1.2020')
+    await incomesSection.fillIncomeEndDate('1.1.2020')
     await waitUntilTrue(() => incomesSection.saveIsDisabled())
   })
 
@@ -87,8 +87,8 @@ describe('Income', () => {
     // create new income item
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.chooseIncomeEffect('INCOME')
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
@@ -111,8 +111,8 @@ describe('Income', () => {
   it('Income coefficients are saved and affect the sum.', async () => {
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
 
     await incomesSection.chooseIncomeEffect('INCOME')
 
@@ -130,14 +130,14 @@ describe('Income', () => {
 
   it('Non-contiguous incomes warning', async () => {
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310120')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('010320')
-    await incomesSection.fillIncomeEndDate('310320')
+    await incomesSection.fillIncomeStartDate('1.3.2020')
+    await incomesSection.fillIncomeEndDate('31.3.2020')
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -147,14 +147,14 @@ describe('Income', () => {
 
   it('Overlapping incomes error', async () => {
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('010120')
-    await incomesSection.fillIncomeEndDate('310320')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.3.2020')
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('010220')
-    await incomesSection.fillIncomeEndDate('310420')
+    await incomesSection.fillIncomeStartDate('1.2.2020')
+    await incomesSection.fillIncomeEndDate('31.4.2020')
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
