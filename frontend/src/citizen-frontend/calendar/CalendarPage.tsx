@@ -102,6 +102,7 @@ export default React.memo(function CalendarPage() {
                 onCreateAbsencesClicked={() => setOpenModal('absences')}
                 selectedDate={selectedDate}
                 selectDate={selectDate}
+                includeWeekends={response.includesWeekends}
               />
             </DesktopOnly>
             {openModal === 'pickAction' && (

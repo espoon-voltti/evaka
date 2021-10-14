@@ -23,6 +23,7 @@ export interface Props {
   onCreateAbsencesClicked: () => void
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
+  includeWeekends: boolean
 }
 
 export default React.memo(function CalendarGridView({
@@ -30,7 +31,8 @@ export default React.memo(function CalendarGridView({
   onCreateReservationClicked,
   onCreateAbsencesClicked,
   selectedDate,
-  selectDate
+  selectDate,
+  includeWeekends
 }: Props) {
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
@@ -82,15 +84,17 @@ export default React.memo(function CalendarGridView({
             <MonthTitle>{`${
               i18n.common.datetime.months[month - 1]
             } ${year}`}</MonthTitle>
-            <CalendarHeader>
+            <CalendarHeader includeWeekends={includeWeekends}>
               <HeadingCell />
-              {[0, 1, 2, 3, 4].map((d) => (
-                <HeadingCell key={d}>
-                  {i18n.common.datetime.weekdaysShort[d]}
-                </HeadingCell>
-              ))}
+              {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map(
+                (d) => (
+                  <HeadingCell key={d}>
+                    {i18n.common.datetime.weekdaysShort[d]}
+                  </HeadingCell>
+                )
+              )}
             </CalendarHeader>
-            <Grid>
+            <Grid includeWeekends={includeWeekends}>
               {weeks.map((w) => (
                 <Fragment key={`${w.weekNumber}${month}${year}`}>
                   <WeekNumber>{w.weekNumber}</WeekNumber>
@@ -203,6 +207,9 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
   )
 }
 
+const daysWithoutWeekends = [0, 1, 2, 3, 4]
+const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
+
 const StickyHeader = styled.div`
   position: sticky;
   top: ${headerHeightDesktop}px;
@@ -218,17 +225,17 @@ const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
   align-items: center;
 `
 
-const gridPattern = css`
+const gridPattern = (includeWeekends: boolean) => css`
   display: grid;
-  grid-template-columns: 28px repeat(5, 1fr);
+  grid-template-columns: 28px repeat(${includeWeekends ? 7 : 5}, 1fr);
 `
 
-const CalendarHeader = styled.div`
-  ${gridPattern}
+const CalendarHeader = styled.div<{ includeWeekends: boolean }>`
+  ${({ includeWeekends }) => gridPattern(includeWeekends)}
 `
 
-const Grid = styled.div`
-  ${gridPattern}
+const Grid = styled.div<{ includeWeekends: boolean }>`
+  ${({ includeWeekends }) => gridPattern(includeWeekends)}
 `
 
 const HeadingCell = styled.div`

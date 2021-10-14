@@ -28,6 +28,11 @@ export async function getReservations(
           ...data,
           date: LocalDate.parseIso(data.date)
         })),
+        children: res.data.children.map((child) => ({
+          ...child,
+          placementMinStart: LocalDate.parseIso(child.placementMinStart),
+          placementMaxEnd: LocalDate.parseIso(child.placementMaxEnd)
+        })),
         reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)
       })
     )
