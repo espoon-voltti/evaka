@@ -946,6 +946,7 @@ jobs:
 
   frontend_build_core:
     executor: frontend_executor
+    resource_class: medium+
     steps:
       - prepare_frontend_build
       - build_frontend
