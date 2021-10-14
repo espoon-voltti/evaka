@@ -160,7 +160,7 @@ export interface DepartureRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.ExternalStaffArrivalRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalStaffArrivalRequest
 */
 export interface ExternalStaffArrivalRequest {
   arrived: string
@@ -169,7 +169,7 @@ export interface ExternalStaffArrivalRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.ExternalStaffDepartureRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalStaffDepartureRequest
 */
 export interface ExternalStaffDepartureRequest {
   attendanceId: UUID
@@ -230,7 +230,7 @@ export interface Staff {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.StaffArrivalRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffArrivalRequest
 */
 export interface StaffArrivalRequest {
   employeeId: UUID
@@ -248,7 +248,7 @@ export interface StaffAttendanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceController2.StaffDepartureRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
   pinCode: string

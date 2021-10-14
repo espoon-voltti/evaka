@@ -18,7 +18,7 @@ export async function getUnitStaffAttendances(
   unitId: UUID
 ): Promise<Result<StaffAttendanceResponse>> {
   return client
-    .get<JsonOf<StaffAttendanceResponse>>(`/v2/staff-attendances`, {
+    .get<JsonOf<StaffAttendanceResponse>>(`/realtime-staff-attendances`, {
       params: { unitId }
     })
     .then((res) =>
@@ -48,7 +48,7 @@ export async function postStaffArrival(
   request: StaffArrivalRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/v2/staff-attendances/arrival`, request)
+    .post(`/realtime-staff-attendances/arrival`, request)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -58,7 +58,7 @@ export async function postStaffDeparture(
   request: StaffDepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/v2/staff-attendances/${attendanceId}/departure`, request)
+    .post(`/realtime-staff-attendances/${attendanceId}/departure`, request)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -67,7 +67,7 @@ export async function postExternalStaffArrival(
   body: ExternalStaffArrivalRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/v2/staff-attendances/arrival-external`, body)
+    .post(`/realtime-staff-attendances/arrival-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -76,7 +76,7 @@ export async function postExternalStaffDeparture(
   body: ExternalStaffDepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/v2/staff-attendances/departure-external`, body)
+    .post(`/realtime-staff-attendances/departure-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

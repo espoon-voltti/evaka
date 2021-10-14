@@ -14,9 +14,11 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
+import org.jdbi.v3.core.JdbiException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,12 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalTime
 
-/**
- * This controller will gradually replace fi.espoo.evaka.daycare.controllers.StaffAttendanceController
- */
 @RestController
-@RequestMapping("/v2/staff-attendances")
-class StaffAttendanceController2(
+@RequestMapping("/realtime-staff-attendances")
+class RealtimeStaffAttendanceController(
     private val acl: AccessControlList,
     private val ac: AccessControl
 ) {
@@ -75,12 +74,16 @@ class StaffAttendanceController2(
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
-        db.transaction {
-            it.markStaffArrival(
-                employeeId = body.employeeId,
-                groupId = body.groupId,
-                arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
-            )
+        try {
+            db.transaction {
+                it.markStaffArrival(
+                    employeeId = body.employeeId,
+                    groupId = body.groupId,
+                    arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                )
+            }
+        } catch (e: JdbiException) {
+            throw mapPSQLException(e)
         }
     }
 
@@ -136,7 +139,7 @@ class StaffAttendanceController2(
     }
 
     data class ExternalStaffDepartureRequest(
-        val attendanceId: StaffAttendanceId,
+        val attendanceId: StaffAttendanceExternalId,
         val time: LocalTime
     )
     @PostMapping("/departure-external")

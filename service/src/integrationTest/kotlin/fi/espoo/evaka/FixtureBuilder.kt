@@ -403,6 +403,8 @@ class FixtureBuilder(
         private var globalRoles: Set<UserRole> = emptySet()
         private val unitRoles: MutableSet<Pair<UserRole, DaycareId>> = mutableSetOf()
         private val groups: MutableSet<Pair<DaycareId, GroupId>> = mutableSetOf()
+        private var firstName: String = "First"
+        private var lastName: String = "Last"
 
         fun withGlobalRoles(roles: Set<UserRole>) = this.apply {
             this.globalRoles = roles
@@ -414,6 +416,11 @@ class FixtureBuilder(
 
         fun withGroupAccess(unitId: DaycareId, groupId: GroupId) = this.apply {
             this.groups.add(Pair(unitId, groupId))
+        }
+
+        fun withName(firstName: String, lastName: String) = this.apply {
+            this.firstName = firstName
+            this.lastName = lastName
         }
 
         fun save(): FixtureBuilder {
@@ -430,7 +437,8 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): EmployeeId {
-            val employeeId = tx.insertTestEmployee(DevEmployee(roles = globalRoles)).let { EmployeeId(it) }
+            val employee = DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName)
+            val employeeId = tx.insertTestEmployee(employee).let { EmployeeId(it) }
             unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId.raw, role) }
             groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }
             return employeeId
