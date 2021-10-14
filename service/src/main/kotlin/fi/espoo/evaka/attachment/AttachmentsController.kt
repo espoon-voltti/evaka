@@ -275,13 +275,7 @@ class AttachmentsController(
         "application/vnd.oasis.opendocument.text"
     )
 
-    val pedagogicalDocumentAllowedAttacmentContentTypes = listOf(
-        "image/jpeg",
-        "image/png",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.oasis.opendocument.text",
+    val pedagogicalDocumentAllowedAttacmentContentTypes = defaultAllowedAttachmentContentTypes + listOf(
         "video/*",
         "audio/*"
     )
