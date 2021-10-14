@@ -2,31 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Redirect, useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
-
-import { faArrowLeft } from 'lib-icons'
-import colors from 'lib-customizations/common'
+import { isAfter, parse } from 'date-fns'
+import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { Gap } from 'lib-components/white-space'
-import InputField from 'lib-components/atoms/form/InputField'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import Title from 'lib-components/atoms/Title'
+import InputField from 'lib-components/atoms/form/InputField'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
-import { renderResult } from '../async-rendering'
-import { TallContentArea } from '../mobile/components'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { faArrowLeft } from 'lib-icons'
+import React, { useContext, useEffect, useState } from 'react'
+import { Redirect, useHistory, useParams } from 'react-router-dom'
+import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { postStaffDeparture } from '../../api/staffAttendances'
-import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
-import { combine } from 'lib-common/api'
-import { isAfter, parse } from 'date-fns'
 import { UnitContext } from '../../state/unit'
+import { renderResult } from '../async-rendering'
+import { Actions, BackButtonInline } from '../attendances/components'
+import { TallContentArea } from '../mobile/components'
+import { TimeWrapper } from './components/staff-components'
+import { Label } from 'lib-components/typography'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
@@ -45,8 +44,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   )
   useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
-  const [pinCode, setPinCode] = useState('')
-  const pinInputRef = useRef<HTMLInputElement>(null)
+  const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
@@ -112,28 +110,24 @@ export default React.memo(function StaffMarkDepartedPage() {
 
             return (
               <>
-                <TimeWrapper>
-                  <Title noMargin>{i18n.attendances.staff.loginWithPin}</Title>
-                  <InputField
-                    inputRef={pinInputRef}
-                    autoFocus
-                    placeholder={i18n.attendances.pin.pinCode}
-                    onChange={setPinCode}
-                    value={pinCode}
-                    width="s"
-                    type="password"
-                    data-qa="set-pin"
-                    info={
-                      errorCode === 'WRONG_PIN'
-                        ? {
-                            status: 'warning',
-                            text: 'PIN-koodi ei kelvannut'
-                          }
-                        : undefined
-                    }
+                <Title centered noMargin>
+                  {i18n.attendances.staff.loginWithPin}
+                </Title>
+                <Gap />
+                {!pinSet ? (
+                  <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
+                ) : pinLocked ? (
+                  <ErrorSegment title={i18n.attendances.staff.pinLocked} />
+                ) : (
+                  <PinInput
+                    pin={pinCode}
+                    onPinChange={setPinCode}
+                    invalid={errorCode === 'WRONG_PIN'}
                   />
-                  <Gap />
-                  <label>Lähtöaika</label>
+                )}
+                <Gap />
+                <TimeWrapper>
+                  <Label>{i18n.attendances.departureTime}</Label>
                   <InputField
                     onChange={setTime}
                     value={time}
@@ -144,16 +138,16 @@ export default React.memo(function StaffMarkDepartedPage() {
                       timeInFuture
                         ? {
                             status: 'warning',
-                            text: `Oltava ${formatTime(
-                              new Date()
-                            )} tai aikaisemmin`
+                            text: i18n.common.validation.dateLte(
+                              formatTime(new Date())
+                            )
                           }
                         : undefined
                     }
                   />
                   <Gap />
                 </TimeWrapper>
-                <Gap size={'xs'} />
+                <Gap size="xs" />
                 <Actions>
                   <FixedSpaceRow fullWidth>
                     <Button
@@ -169,18 +163,17 @@ export default React.memo(function StaffMarkDepartedPage() {
                           !pinSet ||
                           !isValidTime(time) ||
                           timeInFuture ||
-                          pinCode.length < 4
+                          pinCode.join('').trim().length < 4
                         }
                         onClick={() =>
                           postStaffDeparture(attendanceId, {
                             time,
-                            pinCode
+                            pinCode: pinCode.join('')
                           }).then((res) => {
                             if (res.isFailure) {
                               setErrorCode(res.errorCode)
                               if (res.errorCode === 'WRONG_PIN') {
-                                setPinCode('')
-                                pinInputRef.current?.focus()
+                                setPinCode(EMPTY_PIN)
                               }
                             }
                             return res
@@ -200,21 +193,3 @@ export default React.memo(function StaffMarkDepartedPage() {
     </TallContentArea>
   )
 })
-
-const TimeWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 20px;
-  color: ${colors.blues.dark};
-  font-weight: ${fontWeights.semibold};
-
-  input {
-    font-size: 60px;
-    width: 100%;
-    color: ${colors.blues.dark};
-    font-family: Montserrat, sans-serif;
-    font-weight: ${fontWeights.light};
-    border-bottom: none;
-  }
-`

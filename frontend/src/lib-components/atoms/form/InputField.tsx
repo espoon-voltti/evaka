@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { RefObject, useState } from 'react'
+import React, { HTMLAttributes, RefObject, useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -34,7 +34,7 @@ interface StyledInputProps {
   clearable: boolean
   align?: 'left' | 'right'
 }
-const StyledInput = styled.input<StyledInputProps>`
+export const StyledInput = styled.input<StyledInputProps>`
   width: ${(p) => inputWidths[p.width]};
 
   @media (max-width: ${tabletMin}) {
@@ -168,10 +168,13 @@ interface TextInputProps extends BaseProps {
   clearable?: boolean
   align?: 'left' | 'right'
   icon?: IconProp
+  inputMode?: HTMLAttributes<HTMLInputElement>['inputMode']
+  onKeyDown?: HTMLAttributes<HTMLInputElement>['onKeyDown']
   symbol?: string
   type?: string
   min?: number
   max?: number
+  maxLength?: number
   step?: number
   id?: string
   'data-qa'?: string
@@ -193,6 +196,7 @@ function InputField({
   width = 'full',
   placeholder,
   info,
+  inputMode,
   clearable = false,
   align,
   'data-qa': dataQa,
@@ -202,6 +206,7 @@ function InputField({
   type,
   min,
   max,
+  maxLength,
   step,
   hideErrorsBeforeTouched,
   id,
@@ -237,12 +242,14 @@ function InputField({
           disabled={readonly}
           width={width}
           clearable={clearable}
+          inputMode={inputMode}
           align={align}
           className={classNames(className, infoStatus)}
           data-qa={dataQa}
           type={type}
           min={min}
           max={max}
+          maxLength={maxLength}
           step={step}
           id={id}
           aria-describedby={ariaId}

@@ -2,33 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
-
-import { faArrowLeft } from 'lib-icons'
-import colors from 'lib-customizations/common'
+import { isAfter, parse } from 'date-fns'
+import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { Gap } from 'lib-components/white-space'
-import InputField from 'lib-components/atoms/form/InputField'
+import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import Title from 'lib-components/atoms/Title'
+import InputField from 'lib-components/atoms/form/InputField'
+import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
-import { renderResult } from '../async-rendering'
-import { TallContentArea } from '../mobile/components'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { faArrowLeft } from 'lib-icons'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { postStaffArrival } from '../../api/staffAttendances'
-import { Actions, BackButtonInline } from '../attendances/components'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
-import { UUID } from 'lib-common/types'
 import { UnitContext } from '../../state/unit'
-import { combine, Success } from 'lib-common/api'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
-import { isAfter, parse } from 'date-fns'
+import { renderResult } from '../async-rendering'
+import { Actions, BackButtonInline } from '../attendances/components'
+import { TallContentArea } from '../mobile/components'
+import { TimeWrapper } from './components/staff-components'
+import { Label } from 'lib-components/typography'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
@@ -50,7 +49,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     res.staff.find((s) => s.employeeId === employeeId)
   )
 
-  const [pinCode, setPinCode] = useState('')
+  const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
@@ -121,34 +120,24 @@ export default React.memo(function StaffMarkArrivedPage() {
 
             return (
               <>
+                <Title centered noMargin>
+                  {i18n.attendances.staff.loginWithPin}
+                </Title>
+                <Gap />
+                {!pinSet ? (
+                  <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
+                ) : pinLocked ? (
+                  <ErrorSegment title={i18n.attendances.staff.pinLocked} />
+                ) : (
+                  <PinInput
+                    pin={pinCode}
+                    onPinChange={setPinCode}
+                    invalid={errorCode === 'WRONG_PIN'}
+                  />
+                )}
+                <Gap />
                 <TimeWrapper>
-                  <Title noMargin>{i18n.attendances.staff.loginWithPin}</Title>
-                  {!pinSet ? (
-                    <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
-                  ) : pinLocked ? (
-                    <ErrorSegment title={i18n.attendances.staff.pinLocked} />
-                  ) : (
-                    <InputField
-                      inputRef={pinInputRef}
-                      autoFocus
-                      placeholder={i18n.attendances.pin.pinCode}
-                      onChange={setPinCode}
-                      value={pinCode}
-                      width="s"
-                      type="password"
-                      data-qa="set-pin"
-                      info={
-                        errorCode === 'WRONG_PIN'
-                          ? {
-                              status: 'warning',
-                              text: i18n.attendances.staff.errors.wrongPin
-                            }
-                          : undefined
-                      }
-                    />
-                  )}
-                  <Gap />
-                  <label>{i18n.attendances.arrivalTime}</label>
+                  <Label>{i18n.attendances.arrivalTime}</Label>
                   <InputField
                     onChange={setTime}
                     value={time}
@@ -170,7 +159,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                     groupOptions.length > 1 ? (
                       <>
                         <Gap />
-                        <label>{i18n.common.group}</label>
+                        <Label>{i18n.common.group}</Label>
                         <SimpleSelect
                           value={attendanceGroup}
                           placeholder={i18n.attendances.chooseGroup}
@@ -197,7 +186,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                         !pinSet ||
                         !isValidTime(time) ||
                         timeInFuture ||
-                        pinCode.length < 4 ||
+                        pinCode.join('').trim().length < 4 ||
                         !attendanceGroup
                       }
                       onClick={() =>
@@ -206,12 +195,12 @@ export default React.memo(function StaffMarkArrivedPage() {
                               employeeId,
                               groupId: attendanceGroup,
                               time,
-                              pinCode
+                              pinCode: pinCode.join('')
                             }).then((res) => {
                               if (res.isFailure) {
                                 setErrorCode(res.errorCode)
                                 if (res.errorCode === 'WRONG_PIN') {
-                                  setPinCode('')
+                                  setPinCode(EMPTY_PIN)
                                   pinInputRef.current?.focus()
                                 }
                               }
@@ -232,21 +221,3 @@ export default React.memo(function StaffMarkArrivedPage() {
     </TallContentArea>
   )
 })
-
-const TimeWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 20px;
-  color: ${colors.blues.dark};
-  font-weight: ${fontWeights.semibold};
-
-  input {
-    font-size: 60px;
-    width: 100%;
-    color: ${colors.blues.dark};
-    font-family: Montserrat, sans-serif;
-    font-weight: ${fontWeights.light};
-    border-bottom: none;
-  }
-`
