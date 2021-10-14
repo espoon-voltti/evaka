@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
+import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.DRAFT
@@ -22,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.SENT
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
@@ -154,6 +156,19 @@ class VoucherValueDecisionController(
         }
         return ResponseEntity(pdf, headers, HttpStatus.OK)
     }
+
+    @PostMapping("/set-type/{uuid}")
+    fun setType(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable uuid: VoucherValueDecisionId,
+        @RequestBody request: VoucherValueDecisionTypeRequest
+    ): ResponseEntity<Unit> {
+        Audit.VoucherValueDecisionSetType.log(targetId = uuid)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        db.transaction { valueDecisionService.setType(it, uuid, request.type) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun sendVoucherValueDecisions(
@@ -220,4 +235,8 @@ data class SearchVoucherValueDecisionRequest(
     val startDate: String?,
     val endDate: String?,
     val searchByStartDate: Boolean = false
+)
+
+data class VoucherValueDecisionTypeRequest(
+    val type: VoucherValueDecisionType
 )

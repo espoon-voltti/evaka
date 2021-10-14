@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -258,6 +259,7 @@ fun createVoucherValueDecisionFixture(
 ) = VoucherValueDecision(
     id = VoucherValueDecisionId(UUID.randomUUID()),
     status = status,
+    decisionType = VoucherValueDecisionType.NORMAL,
     validFrom = validFrom,
     validTo = validTo,
     headOfFamily = PersonData.JustId(headOfFamilyId),

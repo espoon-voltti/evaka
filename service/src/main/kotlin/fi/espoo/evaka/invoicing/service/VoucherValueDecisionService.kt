@@ -11,13 +11,16 @@ import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
+import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -170,6 +173,16 @@ ORDER BY start_date ASC
     private fun generatePdf(decision: VoucherValueDecisionDetailed): ByteArray {
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.sv else DocumentLang.fi
         return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, lang))
+    }
+
+    fun setType(tx: Database.Transaction, decisionId: VoucherValueDecisionId, type: VoucherValueDecisionType) {
+        val decision = tx.getVoucherValueDecision(decisionId)
+            ?: throw BadRequest("Decision not found with id $decisionId")
+        if (decision.status != VoucherValueDecisionStatus.DRAFT) {
+            throw BadRequest("Can't change type for decision $decisionId")
+        }
+
+        tx.setVoucherValueDecisionType(decisionId, type)
     }
 }
 

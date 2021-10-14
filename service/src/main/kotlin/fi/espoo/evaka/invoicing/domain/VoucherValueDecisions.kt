@@ -26,6 +26,7 @@ data class VoucherValueDecision(
     override val headOfFamily: PersonData.JustId,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
+    val decisionType: VoucherValueDecisionType,
     @Nested("partner")
     val partner: PersonData.JustId?,
     @Json
@@ -91,6 +92,13 @@ data class VoucherValueDecision(
     override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
 }
 
+enum class VoucherValueDecisionType {
+    NORMAL,
+    RELIEF_REJECTED,
+    RELIEF_PARTLY_ACCEPTED,
+    RELIEF_ACCEPTED
+}
+
 enum class VoucherValueDecisionStatus {
     DRAFT,
     WAITING_FOR_SENDING,
@@ -113,6 +121,7 @@ data class VoucherValueDecisionDetailed(
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
+    val decisionType: VoucherValueDecisionType,
     @Nested("head")
     val headOfFamily: PersonData.Detailed,
     @Nested("partner")
@@ -165,6 +174,9 @@ data class VoucherValueDecisionDetailed(
 
     @JsonProperty("requiresManualSending")
     fun requiresManualSending(): Boolean {
+        if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+            return true
+        }
         return this.headOfFamily.let {
             listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item -> item.isNullOrBlank() }
         }
