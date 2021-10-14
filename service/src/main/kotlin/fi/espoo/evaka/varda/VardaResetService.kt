@@ -70,10 +70,6 @@ class VardaResetService(
             val errorReport = client.getVardaChildrenErrorReport(organizerId)
             logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
 
-            // TODO remove this after gathering enough examples to write tests
-            if (errorReport.isNotEmpty())
-                logger.info("VardaUpdate: example error rows: ${errorReport.take(5).map { it.errors }}")
-
             val mapper = db.read { it.getVardaChildToEvakaChild() }
             val (childrenWithId, childrenWithoutId) = errorReport.take(limit).map { it.lapsi_id }.partition {
                 mapper[it] != null
@@ -103,13 +99,12 @@ private fun resetVardaChild(db: Database.Connection, client: VardaClient, childI
             logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
             childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
                 logger.info("VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})")
-                if (!handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate))
-                    error("VardaUpdate: failed to send service need for child $childId")
+                handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate)
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
             logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
         } catch (e: Exception) {
-            logger.warn("VardaUpdate: could not add service need for child $childId while doing reset - full reset will be retried next time: ${e.localizedMessage}")
+            logger.warn("VardaUpdate: failed to reset child $childId: ${e.localizedMessage}")
         }
     }
 }
