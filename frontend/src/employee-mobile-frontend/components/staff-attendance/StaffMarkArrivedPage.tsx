@@ -38,7 +38,8 @@ export default React.memo(function StaffMarkArrivedPage() {
     employeeId: UUID
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext

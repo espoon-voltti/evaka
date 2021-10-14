@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import { isAfter, parse } from 'date-fns'
 import { combine } from 'lib-common/api'
@@ -37,7 +37,8 @@ export default React.memo(function StaffMarkDepartedPage() {
     employeeId: string
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext

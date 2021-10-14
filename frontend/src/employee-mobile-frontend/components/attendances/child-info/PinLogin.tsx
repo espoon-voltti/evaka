@@ -4,6 +4,7 @@
 
 import React, {
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -42,7 +43,8 @@ export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(reloadUnitInfo, [reloadUnitInfo])
 
   const { attendanceResponse } = useContext(ChildAttendanceContext)
 
