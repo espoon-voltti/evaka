@@ -145,10 +145,20 @@ export default function PedagogicalDocuments() {
     return (
       <>
         <Mobile>
-          <PedagogicalDocumentsList items={items} />
+          <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
+            <PaddedDiv>
+              <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
+              <p>{t.pedagogicalDocuments.description}</p>
+            </PaddedDiv>
+            <PedagogicalDocumentsList items={items} />
+          </ContentArea>
         </Mobile>
         <Desktop>
-          <PedagogicalDocumentsTable items={items} />
+          <ContentArea opaque paddingVertical="L">
+            <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
+            <p>{t.pedagogicalDocuments.description}</p>
+            <PedagogicalDocumentsTable items={items} />
+          </ContentArea>
         </Desktop>
       </>
     )
@@ -235,25 +245,19 @@ export default function PedagogicalDocuments() {
     <>
       <Container>
         <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
-          <p>{t.pedagogicalDocuments.description}</p>
-          {pedagogicalDocuments.mapAll({
-            loading() {
-              return <SpinnerSegment />
-            },
-            failure() {
-              return <ErrorSegment />
-            },
-            success(items) {
-              return (
-                items.length > 0 && (
-                  <PedagogicalDocumentsDisplay items={items} />
-                )
-              )
-            }
-          })}
-        </ContentArea>
+        {pedagogicalDocuments.mapAll({
+          loading() {
+            return <SpinnerSegment />
+          },
+          failure() {
+            return <ErrorSegment />
+          },
+          success(items) {
+            return (
+              items.length > 0 && <PedagogicalDocumentsDisplay items={items} />
+            )
+          }
+        })}
       </Container>
     </>
   )
@@ -295,8 +299,15 @@ const Desktop = styled.div`
     display: block;
   }
 `
+
+const PaddedDiv = styled.div`
+  padding: 0 ${defaultMargins.s};
+`
+
 const ListItem = styled(FixedSpaceColumn)`
   padding: ${defaultMargins.s};
+  ${(props: { documentIsRead: boolean }) =>
+    !props.documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
   border-top: 1px solid #b1b1b1;
   border-left: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 'none' : '6px solid #249fff'};
@@ -312,6 +323,7 @@ type ExpandableTextProps = {
   expanded: boolean
 }
 const ExpandableText = styled.span<ExpandableTextProps>`
+  flex: 1;
   text-overflow: ${(props) => (props.expanded ? 'auto' : 'ellipsis')};
   overflow: ${(props) => (props.expanded ? 'auto' : 'hidden')};
   white-space: ${(props) => (props.expanded ? 'pre-line' : 'nowrap')};
