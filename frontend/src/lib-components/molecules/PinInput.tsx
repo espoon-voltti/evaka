@@ -2,10 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import { range } from 'lodash'
-import React, { useMemo, useRef } from 'react'
+import React, { RefObject, useMemo, useRef } from 'react'
 import styled from 'styled-components'
-import { StyledInput } from '../atoms/form/InputField'
+import {
+  InputFieldUnderRow,
+  InputInfo,
+  StyledInput
+} from '../atoms/form/InputField'
+import UnderRowStatusIcon from '../atoms/StatusIcon'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
@@ -21,9 +27,16 @@ const SingleNumberInput = styled(StyledInput)<{ invalid?: boolean }>`
   color: ${(p) => p.theme.colors.main.dark};
 `
 
+const Centered = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`
+
 const PinContainer = styled.div`
   display: flex;
   justify-content: center;
+  align-items: center;
 
   ${SingleNumberInput} + ${SingleNumberInput} {
     margin-left: ${defaultMargins.s};
@@ -39,14 +52,25 @@ interface Props {
   pin: string[]
   onPinChange: (code: string[]) => void
   invalid?: boolean
+  info?: InputInfo | undefined
+  inputRef?: RefObject<HTMLInputElement>
 }
 
-export function PinInput({ pin, onPinChange, invalid = false }: Props) {
+export function PinInput({
+  pin,
+  onPinChange,
+  info,
+  inputRef,
+  invalid = false
+}: Props) {
   const input1 = useRef<HTMLInputElement>(null)
   const input2 = useRef<HTMLInputElement>(null)
   const input3 = useRef<HTMLInputElement>(null)
   const input4 = useRef<HTMLInputElement>(null)
-  const refs = useMemo(() => [input1, input2, input3, input4], [])
+  const refs = useMemo(
+    () => [inputRef ?? input1, input2, input3, input4],
+    [inputRef]
+  )
 
   if (pin.length !== 4) throw new Error('Invalid PIN length')
 
@@ -71,23 +95,31 @@ export function PinInput({ pin, onPinChange, invalid = false }: Props) {
   }
 
   return (
-    <PinContainer data-qa="pin-input">
-      {range(0, 4).map((i) => (
-        <SingleNumberInput
-          key={i}
-          type="password"
-          width="xs"
-          inputMode="numeric"
-          maxLength={1}
-          invalid={invalid}
-          clearable={false}
-          autoFocus={i === 0}
-          value={pin[i]}
-          ref={refs[i]}
-          onChange={(e) => onChange(i, e.target.value)}
-          onKeyUp={(e) => moveFocusLeftOnBackspace(i, e.key)}
-        />
-      ))}
-    </PinContainer>
+    <Centered>
+      <PinContainer data-qa="pin-input">
+        {range(0, 4).map((i) => (
+          <SingleNumberInput
+            key={i}
+            type="password"
+            width="xs"
+            inputMode="numeric"
+            maxLength={1}
+            invalid={invalid}
+            clearable={false}
+            autoFocus={i === 0}
+            value={pin[i]}
+            ref={refs[i]}
+            onChange={(e) => onChange(i, e.target.value)}
+            onKeyUp={(e) => moveFocusLeftOnBackspace(i, e.key)}
+          />
+        ))}
+      </PinContainer>
+      {info && (
+        <InputFieldUnderRow className={classNames(info.status)}>
+          <span data-qa="pin-input-info">{info.text}</span>
+          <UnderRowStatusIcon status={info?.status} />
+        </InputFieldUnderRow>
+      )}
+    </Centered>
   )
 }

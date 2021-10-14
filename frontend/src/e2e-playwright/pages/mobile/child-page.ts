@@ -3,12 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
-import {
-  Combobox,
-  RawElement,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
+import { Combobox, RawElement } from 'e2e-playwright/utils/element'
 import { Child } from 'e2e-test-common/dev-api/types'
+import { range } from 'lodash'
 import { Page } from 'playwright'
 
 export default class MobileChildPage {
@@ -31,8 +28,8 @@ export default class MobileChildPage {
 
   #goBack = new RawElement(this.page, '[data-qa="go-back"]')
   #staffCombobox = new Combobox(this.page, '[data-qa="select-staff"]')
-  #pinInput = new RawTextInput(this.page, '[data-qa="set-pin"]')
-  #pinInfo = new RawElement(this.page, '[data-qa="set-pin-info"]')
+  #pinInput = this.page.locator('[data-qa="pin-input"]')
+  #pinInfo = new RawElement(this.page, '[data-qa="pin-input-info"]')
   #submitPin = new RawElement(this.page, '[data-qa="submit-pin"]')
   #sensitiveInfo = {
     name: new RawElement(this.page, '[data-qa="child-info-name"]'),
@@ -72,8 +69,9 @@ export default class MobileChildPage {
     await this.#sensitiveInfoLink.click()
     await this.#staffCombobox.fill(employeeName)
     await this.#staffCombobox.findItem(employeeName).click()
-    await this.#pinInput.click()
-    await this.#pinInput.type(employeePin)
+    for (const i of range(0, employeePin.length)) {
+      await this.#pinInput.locator('input').nth(i).type(employeePin[i])
+    }
     await this.#submitPin.click()
   }
 
