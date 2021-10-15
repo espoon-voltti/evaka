@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { useTranslation } from '../../state/i18n'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import React from 'react'
