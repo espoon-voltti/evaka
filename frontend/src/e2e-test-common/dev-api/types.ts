@@ -10,6 +10,7 @@ import {
   ApplicationStatus
 } from 'lib-common/generated/enums'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 export type UUID = string
@@ -219,8 +220,6 @@ export interface Child {
   diet?: string
   medication?: string
 }
-
-type PlacementType = 'DAYCARE' | 'PRESCHOOL' | 'PRESCHOOL_DAYCARE'
 
 export interface DaycarePlacement {
   id: UUID

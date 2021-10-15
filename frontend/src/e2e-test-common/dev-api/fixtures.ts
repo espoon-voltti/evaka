@@ -42,6 +42,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/generated/enums'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -828,11 +829,12 @@ export function createDaycarePlacementFixture(
   childId: string,
   unitId: string,
   startDate = '2021-05-01',
-  endDate = '2022-08-31'
+  endDate = '2022-08-31',
+  type: PlacementType = 'DAYCARE'
 ): DaycarePlacement {
   return {
     id,
-    type: 'DAYCARE',
+    type,
     childId,
     unitId,
     startDate,

@@ -25,6 +25,7 @@ import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -37,18 +38,6 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   await insertDaycareGroupFixtures([daycareGroupFixture])
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    fixtures.familyWithTwoGuardians.children[0].id,
-    fixtures.daycareFixture.id
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  const groupPlacementFixture = createDaycareGroupPlacementFixture(
-    daycarePlacementFixture.id,
-    daycareGroupFixture.id
-  )
-  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
-
   const employee = await Fixture.employee().save()
 
   page = await (await newBrowserContext()).newPage()
@@ -66,16 +55,53 @@ afterEach(async () => {
   await page.close()
 })
 
+const createPlacement = async (placementType: PlacementType) => {
+  const daycarePlacementFixture = createDaycarePlacementFixture(
+    uuidv4(),
+    fixtures.familyWithTwoGuardians.children[0].id,
+    fixtures.daycareFixture.id,
+    '2021-05-01',
+    '2022-08-31',
+    placementType
+  )
+  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  const groupPlacementFixture = createDaycareGroupPlacementFixture(
+    daycarePlacementFixture.id,
+    daycareGroupFixture.id
+  )
+  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
+}
+
+const checkAbsentTypeSelectionExistance = async (expectedToExist: boolean) => {
+  await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
+  await childPage.selectMarkPresentView()
+  await childAttendancePage.selectMarkPresent()
+  await childAttendancePage.selectPresentTab()
+  await childAttendancePage.selectChildLink(0)
+  await childAttendancePage.selectMarkDepartedLink()
+
+  expectedToExist
+    ? await childAttendancePage.assertMarkAbsentByTypeButtonExists(
+        'OTHER_ABSENCE'
+      )
+    : await childAttendancePage.assertMarkAbsentByTypeButtonDoesNotExist(
+        'OTHER_ABSENCE'
+      )
+}
+
 describe('Child mobile attendances', () => {
-  test('Child in non free 5y free placement is not suggested to mark absence types', async () => {
-    await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
-    await childPage.selectMarkPresentView()
-    await childAttendancePage.selectMarkPresent()
-    await childAttendancePage.selectPresentTab()
-    await childAttendancePage.selectChildLink(0)
-    await childAttendancePage.selectMarkDepartedLink()
-    await childAttendancePage.assertMarkAbsentByTypeButtonDoesNotExist(
-      'OTHER_ABSENCE'
-    )
+  test('Child free 5y free placement is suggested to mark absence types', async () => {
+    await createPlacement('DAYCARE_FIVE_YEAR_OLDS')
+    await checkAbsentTypeSelectionExistance(true)
+  })
+
+  test('Child free part time 5y free placement is suggested to mark absence types', async () => {
+    await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
+    await checkAbsentTypeSelectionExistance(true)
+  })
+
+  test('Child in paid daycare is not suggested to mark absence types', async () => {
+    await createPlacement('DAYCARE')
+    await checkAbsentTypeSelectionExistance(false)
   })
 })

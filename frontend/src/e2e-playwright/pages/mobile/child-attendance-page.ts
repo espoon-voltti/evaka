@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { waitUntilFalse } from '../../utils'
+import { waitUntilFalse, waitUntilTrue } from '../../utils'
 
 export default class ChildAttendancePage {
   constructor(private readonly page: Page) {}
@@ -39,5 +39,9 @@ export default class ChildAttendancePage {
 
   async assertMarkAbsentByTypeButtonDoesNotExist(type: AbsenceType) {
     await waitUntilFalse(() => this.#markAbsentByTypeButton(type).isVisible())
+  }
+
+  async assertMarkAbsentByTypeButtonExists(type: AbsenceType) {
+    await waitUntilTrue(() => this.#markAbsentByTypeButton(type).isVisible())
   }
 }
