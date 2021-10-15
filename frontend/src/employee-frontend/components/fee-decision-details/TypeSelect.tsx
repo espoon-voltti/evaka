@@ -5,10 +5,11 @@
 import { useTranslation } from '../../state/i18n'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import React from 'react'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 interface TypeSelectProps {
   selected: string
-  changeDecisionType: (type: string) => void
+  changeDecisionType: (type: VoucherValueDecisionType) => void
   type: 'FEE_DECISION' | 'VALUE_DECISION'
 }
 
@@ -42,7 +43,9 @@ export const TypeSelect = ({
     <SimpleSelect
       value={selected}
       options={options}
-      onChange={(e) => changeDecisionType(e.target.value)}
+      onChange={(e) =>
+        changeDecisionType(e.target.value as VoucherValueDecisionType)
+      }
     />
   )
 }

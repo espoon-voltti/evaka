@@ -21,6 +21,7 @@ import WarningLabel from '../../components/common/WarningLabel'
 import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 type Props = {
   id: string
@@ -34,7 +35,7 @@ type Props = {
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
   decisionType: FeeDecisionType
-  changeDecisionType: (type: string) => void
+  changeDecisionType: (type: VoucherValueDecisionType) => void
   newDecisionType: string
 }
 

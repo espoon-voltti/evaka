@@ -17,6 +17,7 @@ import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import colors from 'lib-customizations/common'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};
@@ -31,7 +32,8 @@ export default React.memo(function VoucherValueDecisionPage() {
     Result<VoucherValueDecisionDetailed>
   >(Loading.of())
   const [modified, setModified] = useState<boolean>(false)
-  const [newDecisionType, setNewDecisionType] = useState<string>('')
+  const [newDecisionType, setNewDecisionType] =
+    useState<VoucherValueDecisionType>('NORMAL')
 
   const loadDecision = () =>
     getVoucherValueDecision(id).then((dec) => setDecision(dec))
@@ -50,7 +52,7 @@ export default React.memo(function VoucherValueDecisionPage() {
     }
   }, [decision, formatTitleName, setTitle, i18n])
 
-  const changeDecisionType = (type: string) => {
+  const changeDecisionType = (type: VoucherValueDecisionType) => {
     if (decision.isSuccess) {
       setNewDecisionType(type)
       decision.value.decisionType === type

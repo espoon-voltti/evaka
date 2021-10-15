@@ -9,6 +9,7 @@ import { UUID } from './index'
 import { FeeAlterationType } from './fee-alteration'
 import { Income, IncomeEffect } from './income'
 import { PlacementType } from 'lib-common/generated/enums'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 // Enums
 
@@ -314,7 +315,7 @@ export interface VoucherValueDecisionDetailed {
   totalIncome: number | null
   requiresManualSending: boolean
   isRetroactive: boolean
-  decisionType: FeeDecisionType
+  decisionType: VoucherValueDecisionType
 }
 
 export interface VoucherValueDecisionPlacement {
