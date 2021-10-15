@@ -174,13 +174,13 @@ export default function PedagogicalDocuments() {
         {items.map((item) => (
           <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
             <div>{LocalDate.fromSystemTzDate(item.created).format()}</div>
-            <Attachment
-              item={item}
-              dataQa={`pedagogical-document-list-attachment-${item.id}`}
-            />
             <ItemDescription
               item={item}
               dataQa={`pedagogical-document-list-description-${item.id}`}
+            />
+            <Attachment
+              item={item}
+              dataQa={`pedagogical-document-list-attachment-${item.id}`}
             />
             <AttachmentDownloadButton
               item={item}
