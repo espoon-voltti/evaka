@@ -480,7 +480,7 @@ export async function setVoucherDecisionType(
   type: string
 ): Promise<Result<void>> {
   return client
-    .post<void>(`/voucher-value-decisions/set-type/${decisionId}`, {
+    .post<void>(`/value-decisions/set-type/${decisionId}`, {
       type: type
     })
     .then((res) => Success.of(res.data))
