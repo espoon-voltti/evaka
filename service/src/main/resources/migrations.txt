@@ -153,3 +153,4 @@ V152__application_note_non_nullable_updated_by.sql
 V153__make_invoice_fields_non_nullable.sql
 V154__pedagogical_document_read.sql
 V155__realtime_staff_attendance.sql
+V156__remove_old_varda_tables.sql
