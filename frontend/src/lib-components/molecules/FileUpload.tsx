@@ -80,6 +80,7 @@ export interface FileUploadProps {
   slim?: boolean
   'data-qa'?: string
   slimSingleFile?: boolean
+  accept?: string[]
 }
 
 const FileUploadContainer = styled.div<{ slim: boolean }>`
@@ -274,7 +275,15 @@ export default React.memo(function FileUpload({
   slimSingleFile = false,
   slim = false,
   disabled = false,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  accept = [
+    'image/jpeg',
+    'image/png',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text'
+  ]
 }: FileUploadProps) {
   const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -403,7 +412,7 @@ export default React.memo(function FileUpload({
     <input
       disabled={disabled}
       type="file"
-      accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
+      accept={accept?.join(',')}
       onChange={onChange}
       data-qa="btn-upload-file"
       ref={inputRef}

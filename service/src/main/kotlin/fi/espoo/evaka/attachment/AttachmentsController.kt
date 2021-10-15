@@ -11,7 +11,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
-import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -60,7 +60,7 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
-        return handleFileUpload(db, user, AttachmentParent.Application(applicationId), file, type).also {
+        return handleFileUpload(db, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
             db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
         }
     }
@@ -74,7 +74,7 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
-        return handleFileUpload(db, user, AttachmentParent.IncomeStatement(incomeStatementId), file)
+        return handleFileUpload(db, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes)
     }
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -86,7 +86,7 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForMessageDraft.log(draftId)
         accessControl.requirePermissionFor(user, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
-        return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file)
+        return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes)
     }
 
     @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -99,7 +99,7 @@ class AttachmentsController(
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
 
-        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file)
+        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttacmentContentTypes)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -116,7 +116,7 @@ class AttachmentsController(
         val attachTo = AttachmentParent.Application(applicationId)
         checkAttachmentCount(db, attachTo, user)
 
-        return handleFileUpload(db, user, attachTo, file, type)
+        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes, type)
             .also { db.transaction { stateService.reCalculateDueDate(it, applicationId) } }
     }
 
@@ -139,7 +139,7 @@ class AttachmentsController(
             if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId) else AttachmentParent.None
         checkAttachmentCount(db, attachTo, user)
 
-        return handleFileUpload(db, user, attachTo, file, null)
+        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes)
     }
 
     private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
@@ -169,14 +169,14 @@ class AttachmentsController(
         user: AuthenticatedUser,
         attachTo: AttachmentParent,
         file: MultipartFile,
+        allowedContentTypes: List<String>,
         type: AttachmentType? = null
     ): AttachmentId {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
             ?: throw BadRequest("Filename missing")
 
-        val contentType = file.contentType ?: throw BadRequest("Missing content type")
-        checkFileContentType(file.inputStream, contentType)
+        val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
 
         val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
@@ -265,4 +265,18 @@ class AttachmentsController(
         tx.deleteAttachment(attachmentId)
         documentClient.delete(filesBucket, "$attachmentId")
     }
+
+    val defaultAllowedAttachmentContentTypes: List<String> = listOf(
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.oasis.opendocument.text"
+    )
+
+    val pedagogicalDocumentAllowedAttacmentContentTypes = defaultAllowedAttachmentContentTypes + listOf(
+        "video/*",
+        "audio/*"
+    )
 }
