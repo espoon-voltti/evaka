@@ -24,11 +24,20 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div th:if="${not #strings.isEmpty(sendAddress.row3)}" th:text="${sendAddress.row3}"></div>
     </div>
 
-    <h1 th:text="#{text.title}"></h1>
+    <h1 th:if="${isReliefDecision}" th:text="#{text.relief.title}"></h1>
+    <h1 th:unless="${isReliefDecision}" th:text="#{text.title}"></h1>
 
-    <p th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${#temporals.format(validFrom, 'd.M.yyyy')})}"></p>
+
+    <p th:if="${decisionType == 'RELIEF_ACCEPTED'}" th:text="#{text.relief.accepted}"></p>
+    <p th:if="${decisionType == 'RELIEF_PARTLY_ACCEPTED'}" th:text="#{text.relief.partlyAccepted}"></p>
+    <p th:if="${decisionType == 'RELIEF_REJECTED'}" th:text="#{text.relief.rejected}"></p>
+
+    <p th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${validFrom})}"></p>
 
     <p th:utext="${placementUnit.name}" ></p>
+
+    <p th:if="${isReliefDecision}"
+       th:text="#{text.relief.decision(${coPayment}, ${validFrom})}"></p>
 
     <table class="loose narrow">
         <tbody>
@@ -53,11 +62,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <td th:text="#{decision.baseValue}"></td>
             <td class="text-right" th:text="${value}"></td>
         </tr>
+        <tr th:each="alteration: ${feeAlterations}">
+            <td th:switch="${alteration.type.name}">
+                <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
+                <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
+                <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
+            </td>
+            <td class="text-right" th:text="${alteration.effectFormatted}"></td>
+        </tr>
         <tr>
             <td th:text="#{decision.coPayment}"></td>
             <td class="text-right">
-                <strong>-</strong>
-                <strong th:text="${coPayment}"></strong>
+                <strong th:text="|-${coPayment}|"></strong>
             </td>
         </tr>
 

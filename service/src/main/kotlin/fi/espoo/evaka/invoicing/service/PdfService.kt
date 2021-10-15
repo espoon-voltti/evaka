@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
@@ -119,6 +120,13 @@ class PDFService(
         }
     }
 
+    private data class FeeAlterationPdfPart(
+        val type: FeeAlteration.Type,
+        val amount: Int,
+        val isAbsolute: Boolean,
+        val effectFormatted: String
+    )
+
     private fun getVoucherValueDecisionPdfVariables(data: VoucherValueDecisionPdfData): Map<String, Any?> {
         val (decision, lang) = data
 
@@ -131,11 +139,14 @@ class PDFService(
             "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
             else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
         }
+
+        val isReliefDecision = decision.decisionType !== VoucherValueDecisionType.NORMAL
+
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
-            "validFrom" to decision.validFrom,
-            "validTo" to decision.validTo,
+            "validFrom" to dateFmt(decision.validFrom),
+            "validTo" to dateFmt(decision.validTo),
             "placementUnit" to decision.placement.unit,
             "placementType" to decision.placement.type,
             "familySize" to decision.familySize,
@@ -153,8 +164,13 @@ class PDFService(
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
+            "feeAlterations" to decision.feeAlterations.map { fa ->
+                FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
+            },
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
+            "isReliefDecision" to isReliefDecision,
+            "decisionType" to decision.decisionType.toString(),
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
@@ -180,12 +196,6 @@ class PDFService(
     }
 
     fun getFeeDecisionPdfVariables(data: FeeDecisionPdfData): Map<String, Any?> {
-        data class FeeAlterationPdfPart(
-            val type: FeeAlteration.Type,
-            val amount: Int,
-            val isAbsolute: Boolean,
-            val effectFormatted: String
-        )
         data class FeeDecisionPdfPart(
             val childName: String,
             val placementType: PlacementType,
