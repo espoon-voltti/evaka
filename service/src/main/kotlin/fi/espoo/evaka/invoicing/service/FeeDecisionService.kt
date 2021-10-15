@@ -141,7 +141,7 @@ class FeeDecisionService(
         tx.updateFeeDecisionDocumentKey(decision.id, key)
     }
 
-    fun sendDecision(tx: Database.Transaction, id: FeeDecisionId) {
+    fun sendDecision(tx: Database.Transaction, id: FeeDecisionId): Boolean {
         val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
@@ -155,7 +155,7 @@ class FeeDecisionService(
 
         if (decision.requiresManualSending()) {
             tx.setFeeDecisionWaitingForManualSending(decision.id)
-            return
+            return false
         }
 
         val recipient = decision.headOfFamily
@@ -189,6 +189,8 @@ class FeeDecisionService(
 
         evakaMessageClient.send(message)
         tx.setFeeDecisionSent(listOf(decision.id))
+
+        return true
     }
 
     fun setSent(tx: Database.Transaction, ids: List<FeeDecisionId>) {

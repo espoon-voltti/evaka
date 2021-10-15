@@ -58,7 +58,7 @@ class VoucherValueDecisionService(
         return key to s3Client.getPdf(bucket, key)
     }
 
-    fun sendDecision(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
+    fun sendDecision(tx: Database.Transaction, decisionId: VoucherValueDecisionId): Boolean {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -72,7 +72,7 @@ class VoucherValueDecisionService(
                 listOf(decision.id),
                 VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
             )
-            return
+            return false
         }
 
         val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
@@ -99,6 +99,8 @@ class VoucherValueDecisionService(
         )
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), Instant.now())
+
+        return true
     }
 
     fun endDecisionsWithEndedPlacements(tx: Database.Transaction, now: LocalDate) {
