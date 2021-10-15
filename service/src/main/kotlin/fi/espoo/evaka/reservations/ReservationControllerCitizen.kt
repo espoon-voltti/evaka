@@ -140,7 +140,8 @@ data class ReservationChild(
     val preferredName: String?,
     val placementMinStart: LocalDate,
     val placementMaxEnd: LocalDate,
-    val maxOperationalDays: Set<Int>
+    val maxOperationalDays: Set<Int>,
+    val inShiftCareUnit: Boolean
 )
 
 data class AbsenceRequest(
@@ -203,27 +204,31 @@ GROUP BY date, is_holiday
 private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name, child.preferred_name, p.start_date AS placement_min_start, p.end_date AS placement_max_end, p.operation_days AS max_operational_days
+SELECT ch.id, ch.first_name, child.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
 LEFT JOIN child ON ch.id = child.id
 LEFT JOIN LATERAL (
-    SELECT min(p.start_date) AS start_date, max(p.end_date) AS end_date, array_agg(DISTINCT p.operation_days) AS operation_days
+    SELECT
+        min(p.start_date) AS placement_min_start,
+        max(p.end_date) AS placement_max_end,
+        array_agg(DISTINCT p.operation_days) AS max_operational_days,
+        bool_or(p.round_the_clock) AS in_shift_care_unit
     FROM (
-        SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days
+        SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock
         FROM placement pl
         JOIN daycare u ON pl.unit_id = u.id
         WHERE pl.child_id = g.child_id AND daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
 
         UNION ALL
 
-        SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days
+        SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock AS shift_care
         FROM backup_care bc
         JOIN daycare u ON bc.unit_id = u.id
         WHERE bc.child_id = g.child_id AND daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
     ) p
 ) p ON true
-WHERE p.start_date IS NOT NULL
+WHERE p.placement_min_start IS NOT NULL
 ORDER BY first_name
         """.trimIndent()
     )

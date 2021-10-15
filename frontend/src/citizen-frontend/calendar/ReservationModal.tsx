@@ -140,6 +140,12 @@ export default React.memo(function ReservationModal({
     return [...new FiniteDateRange(parsedStartDate, parsedEndDate).dates()]
   }, [formData.repetition, formData.startDate, formData.endDate])
 
+  const noShiftCareChildren = useMemo(
+    () =>
+      availableChildren.every(({ isInShiftCareUnit }) => !isInShiftCareUnit),
+    [availableChildren]
+  )
+
   return (
     <FormModal
       mobileFullScreen
@@ -438,7 +444,7 @@ export default React.memo(function ReservationModal({
                       data-qa={`shift-care-end-time-${date.formatIso()}`}
                     />
                   </FixedSpaceRow>
-                  {extraTimeRange ? (
+                  {extraTimeRange || noShiftCareChildren ? (
                     <div />
                   ) : (
                     <IconButton

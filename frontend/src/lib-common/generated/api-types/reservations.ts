@@ -60,6 +60,7 @@ export interface Reservation {
 export interface ReservationChild {
   firstName: string
   id: UUID
+  inShiftCareUnit: boolean
   maxOperationalDays: number[]
   placementMaxEnd: LocalDate
   placementMinStart: LocalDate

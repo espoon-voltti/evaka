@@ -176,7 +176,7 @@ export default React.memo(function DayView({
                         )}
                         readonly={saving}
                       />
-                      {data[1] ? null : (
+                      {data[1] || !child.inShiftCareUnit ? null : (
                         <IconButton
                           icon={faPlus}
                           onClick={() => addSecondReservation(child.id)}
