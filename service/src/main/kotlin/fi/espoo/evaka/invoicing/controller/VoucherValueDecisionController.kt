@@ -15,7 +15,6 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
-import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.DRAFT
