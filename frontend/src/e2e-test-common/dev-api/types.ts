@@ -10,6 +10,7 @@ import {
   ApplicationStatus
 } from 'lib-common/generated/enums'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 export type UUID = string
 type ISODate = string
@@ -83,6 +84,7 @@ export interface VoucherValueDecision {
   status: 'DRAFT' | 'SENT'
   validFrom: ISODate
   validTo: ISODate
+  decisionType: VoucherValueDecisionType
   headOfFamily: { id: UUID }
   familySize: number
   feeThresholds: FeeDecisionThresholds
