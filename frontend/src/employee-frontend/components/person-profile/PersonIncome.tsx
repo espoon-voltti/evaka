@@ -30,7 +30,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { formatDate } from 'lib-common/date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { featureFlags } from 'lib-customizations/employee'
 import { UnwrapResult } from '../async-rendering'
 import { useIncomeTypeOptions } from '../../utils/income'
 
@@ -107,12 +106,10 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       >
         {([[incomes, incomeStatements], incomeTypeOptions]) => (
           <>
-            {featureFlags.experimental?.incomeStatements && (
-              <IncomeStatements
-                personId={id}
-                incomeStatements={incomeStatements}
-              />
-            )}
+            <IncomeStatements
+              personId={id}
+              incomeStatements={incomeStatements}
+            />
             <Incomes
               personId={id}
               incomes={incomes}
