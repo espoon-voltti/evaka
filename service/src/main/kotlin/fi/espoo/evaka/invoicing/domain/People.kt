@@ -62,5 +62,6 @@ data class FridgeFamily(
     val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
     val children: List<PersonData.WithDateOfBirth>,
-    val period: DateRange
+    val period: DateRange,
+    val fridgeSiblings: List<PersonData.WithDateOfBirth>
 )

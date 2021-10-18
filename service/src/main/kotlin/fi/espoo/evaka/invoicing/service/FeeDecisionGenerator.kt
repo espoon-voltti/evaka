@@ -48,24 +48,27 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     from: LocalDate,
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
-    children: List<PersonData.WithDateOfBirth>
+    children: List<PersonData.WithDateOfBirth>,
+    fridgeSiblings: List<PersonData.WithDateOfBirth>,
 ) {
-    val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
+    val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size + fridgeSiblings.size
     val prices = getFeeThresholds(from)
     val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
     val placements = getPaidPlacements(from, children)
+    val fridgeSiblingPlacements = getPaidPlacements(from, fridgeSiblings)
     val invoicedUnits = getUnitsThatAreInvoiced()
 
     val newDrafts =
-        generateFeeDecisions2(
+        generateFeeDecisions(
             from,
             headOfFamily,
             partner,
             familySize,
             placements,
+            fridgeSiblingPlacements,
             prices,
             incomes,
             feeAlterations,
@@ -91,12 +94,13 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     upsertFeeDecisions(updatedDecisions)
 }
 
-private fun generateFeeDecisions2(
+private fun generateFeeDecisions(
     from: LocalDate,
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
+    fridgeChildPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
+    fridgeSiblingPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
     prices: List<FeeThresholds>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
@@ -104,7 +108,7 @@ private fun generateFeeDecisions2(
 ): List<FeeDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.validDuring } +
-        allPlacements.flatMap { (_, placements) ->
+        fridgeChildPlacements.flatMap { (_, placements) ->
             placements.map { it.first }
         } +
         feeAlterations.map { DateRange(it.validFrom, it.validTo) }
@@ -130,7 +134,7 @@ private fun generateFeeDecisions2(
                         ?.toDecisionIncome()
                 }
 
-            val validPlacements = allPlacements
+            val validPlacements = (fridgeChildPlacements + fridgeSiblingPlacements)
                 .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
                 .filter { (_, placement) -> placement != null }
                 .map { (child, placement) -> child to placement!! }
@@ -176,7 +180,7 @@ private fun generateFeeDecisions2(
                             feeAlterationsWithEffects,
                             finalFee
                         )
-                    }.filterNotNull()
+                    }.filterNotNull().filter { feeDecisionChild -> fridgeChildPlacements.map { it.first.id }.contains(feeDecisionChild.child.id) }
             } else {
                 listOf()
             }

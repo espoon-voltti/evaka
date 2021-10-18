@@ -17,6 +17,7 @@ import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.Partner
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.FeatureFlags
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -27,6 +28,13 @@ import fi.espoo.evaka.shared.domain.orMax
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.UUID
+
+data class Quadruple<out A, out B, out C, out D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D
+)
 
 @Component
 class FinanceDecisionGenerator(
@@ -50,7 +58,8 @@ class FinanceDecisionGenerator(
                     maxOf(period.start, it.period.start),
                     it.headOfFamily,
                     it.partner,
-                    it.children
+                    it.children,
+                    it.fridgeSiblings,
                 )
             }
     }
@@ -74,7 +83,8 @@ class FinanceDecisionGenerator(
                     maxOf(feeDecisionMinDate, period.start, family.period.start),
                     family.headOfFamily,
                     family.partner,
-                    family.children
+                    family.children,
+                    family.fridgeSiblings,
                 )
                 family.children.forEach { child ->
                     tx.handleValueDecisionChanges(
@@ -98,11 +108,15 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
     return parentRelations.flatMap {
         val fridgePartners = getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
         val fridgeChildren = getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
+        val fridgePartnerParentships = fridgePartners.flatMap { partner -> getParentships(partner.person.id, null, false, period) }
+        val fridgePartnerParentshipsWithGuardianship = filterFridgePartnerParentshipsByGuardianship(it.headOfChildId, fridgePartnerParentships)
         generateFamilyCompositions(
             it.headOfChild.id,
             fridgePartners,
             fridgeChildren,
-            DateRange(maxOf(period.start, it.startDate), minEndDate(period.end, it.endDate))
+            DateRange(maxOf(period.start, it.startDate), minEndDate(period.end, it.endDate)),
+            fridgePartnerParentships,
+            fridgePartnerParentshipsWithGuardianship
         )
     }
 }
@@ -118,14 +132,22 @@ private fun Database.Read.findFamiliesByAdult(personId: UUID, period: DateRange)
 private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
     val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
     val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
-    return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
+    val fridgePartnerParentships = partners.flatMap { getParentships(it.person.id, null, false, period) }
+    val fridgePartnerParentshipsWithGuardianship = filterFridgePartnerParentshipsByGuardianship(headOfFamilyId, fridgePartnerParentships)
+    return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period, fridgePartnerParentships, fridgePartnerParentshipsWithGuardianship)
+}
+
+private fun Database.Read.filterFridgePartnerParentshipsByGuardianship(headOfFamily: UUID, fridgePartnerParentships: Iterable<Parentship>): List<Parentship> = fridgePartnerParentships.filter {
+    getChildGuardians(it.child.id).contains(headOfFamily)
 }
 
 private fun generateFamilyCompositions(
     headOfFamily: UUID,
     partners: Iterable<Partner>,
     parentships: Iterable<Parentship>,
-    wholePeriod: DateRange
+    wholePeriod: DateRange,
+    fridgePartnerParentships: Iterable<Parentship>,
+    fridgePartnerParentshipsWithGuardianship: Iterable<Parentship>
 ): List<FridgeFamily> {
     val periodsWhenChildrenAreNotAdults = parentships.map {
         val birthday = it.child.dateOfBirth
@@ -143,22 +165,78 @@ private fun generateFamilyCompositions(
                 // Do not include children that are over 18 years old during the period
                 .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
                 .map { it.child }
-            period to Triple(
+            val fridgePartnerChildren = fridgePartnerParentships
+                .filter { it.headOfChild == partner }
+                .filter { DateRange(it.startDate, it.endDate).contains(period) }
+                // Do not include children that are over 18 years old during the period
+                .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
+                .map { it.child }
+            period to Quadruple(
                 PersonData.JustId(headOfFamily),
                 partner?.let { PersonData.JustId(it.id) },
-                children.map { PersonData.WithDateOfBirth(it.id, it.dateOfBirth) }
+                children.map { PersonData.WithDateOfBirth(it.id, it.dateOfBirth) },
+                fridgePartnerChildren.map { PersonData.WithDateOfBirth(it.id, it.dateOfBirth) }
             )
         }
 
     return mergePeriods(familyPeriods).map { (period, familyData) ->
+        val (children, fridgeChildren) = if (familyData.second?.id != null) {
+            getChildrenAndFridgeChildren(headOfFamily, familyData.second.id, familyData.third, familyData.fourth, fridgePartnerParentshipsWithGuardianship)
+        } else {
+            Pair(familyData.third, listOf())
+        }
+
         FridgeFamily(
             headOfFamily = familyData.first,
             partner = familyData.second,
-            children = familyData.third,
-            period = period
+            children = children,
+            period = period,
+            fridgeSiblings = fridgeChildren,
         )
     }
 }
+
+fun getChildrenAndFridgeChildren(
+    headOfFamily: UUID,
+    fridgePartner: UUID,
+    children: List<PersonData.WithDateOfBirth>,
+    fridgePartnerChildren: List<PersonData.WithDateOfBirth>,
+    fridgePartnerParentshipsWithGuardianship: Iterable<Parentship>
+):
+    Pair<List<PersonData.WithDateOfBirth>, List<PersonData.WithDateOfBirth>> =
+    if (fridgePartnerChildren.map { it.id }.toSet() == fridgePartnerParentshipsWithGuardianship.map { it.child.id }.toSet()) {
+        if (shouldReceiveFeeDecision(headOfFamily, fridgePartner, children, fridgePartnerChildren)) {
+            Pair(children + fridgePartnerChildren, listOf())
+        } else {
+            Pair(listOf(), children + fridgePartnerChildren)
+        }
+    } else {
+        Pair(children, fridgePartnerChildren)
+    }
+
+/*
+ *  In case headOfFamily is a guardian of all fridgePartner's fridge children,
+ *  only one of these two should receive fee decision. This function decides
+ *  which one it is.
+ */
+fun shouldReceiveFeeDecision(
+    headOfFamily: UUID,
+    fridgePartner: UUID,
+    children: List<PersonData.WithDateOfBirth>,
+    fridgePartnerChildren: List<PersonData.WithDateOfBirth>
+):
+    Boolean =
+    if (children.size != fridgePartnerChildren.size) {
+        children.size > fridgePartnerChildren.size
+    } else {
+        val date1 = children.map { it.dateOfBirth }.minOrNull() ?: LocalDate.MAX
+        val date2 = fridgePartnerChildren.map { it.dateOfBirth }.minOrNull() ?: LocalDate.MAX
+        if (date1 != date2) {
+            date1 < date2
+        } else {
+            headOfFamily > fridgePartner
+        }
+    }
 
 internal fun <Decision : FinanceDecision<Decision>> mergeAndFilterUnnecessaryDrafts(
     drafts: List<Decision>,

@@ -351,6 +351,18 @@ val testChild_7 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
+val testChild_8 = PersonData.Detailed(
+    id = UUID.randomUUID(),
+    dateOfBirth = LocalDate.of(2016, 3, 10),
+    ssn = "010316A1237",
+    firstName = "Captain",
+    lastName = "America",
+    streetAddress = "Kamreerintie 2",
+    postalCode = "02770",
+    postOffice = "Espoo",
+    restrictedDetailsEnabled = false
+)
+
 val testChildWithNamelessGuardian = PersonData.Detailed(
     id = UUID.randomUUID(),
     dateOfBirth = LocalDate.of(2018, 12, 31),
@@ -373,6 +385,7 @@ val allChildren = setOf(
     testChild_5,
     testChild_6,
     testChild_7,
+    testChild_8,
     testChildWithNamelessGuardian
 )
 val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }
