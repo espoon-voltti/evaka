@@ -64,22 +64,28 @@ export default React.memo(function DayView({
   const childrenWithReservations = useMemo(() => {
     const dailyData = data.dailyData[dateIndexInData]
 
-    return data.children.map((child) => {
-      const childReservations = dailyData?.children.find(
-        ({ childId }) => childId === child.id
+    return data.children
+      .filter(
+        (child) =>
+          child.placementMinStart.isEqualOrBefore(date) &&
+          child.placementMaxEnd.isEqualOrAfter(date)
       )
+      .map((child) => {
+        const childReservations = dailyData?.children.find(
+          ({ childId }) => childId === child.id
+        )
 
-      return {
-        child,
-        data: {
-          absence: childReservations?.absence ?? null,
-          reservations: childReservations?.reservations ?? [
-            { startTime: '', endTime: '' }
-          ]
+        return {
+          child,
+          data: {
+            absence: childReservations?.absence ?? null,
+            reservations: childReservations?.reservations ?? [
+              { startTime: '', endTime: '' }
+            ]
+          }
         }
-      }
-    })
-  }, [dateIndexInData, data])
+      })
+  }, [dateIndexInData, data, date])
 
   const [previousDate, nextDate] = useMemo(() => {
     return [
