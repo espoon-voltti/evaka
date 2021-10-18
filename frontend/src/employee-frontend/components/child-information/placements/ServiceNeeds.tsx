@@ -53,17 +53,6 @@ function ServiceNeeds({ placement, reload }: Props) {
 
   const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
 
-  if (
-    serviceNeedOptions.isSuccess &&
-    serviceNeedOptions.value.find(
-      (opt) => opt.validPlacementType === placementType && !opt.defaultOption
-    ) === undefined
-  ) {
-    // only default option exists so service needs are not relevant
-    // and do not need to be rendered
-    return null
-  }
-
   const options = serviceNeedOptions.isSuccess
     ? serviceNeedOptions.value
         .filter(
@@ -76,7 +65,14 @@ function ServiceNeeds({ placement, reload }: Props) {
         }))
     : []
 
-  return (
+  const placementHasNonDefaultServiceNeedOptions =
+    serviceNeedOptions.isSuccess &&
+    serviceNeedOptions.value.some(
+      (opt) => opt.validPlacementType === placementType && !opt.defaultOption
+    )
+
+  // if only default option exists service needs are not relevant and do not need to be rendered
+  return placementHasNonDefaultServiceNeedOptions ? (
     <div>
       <HeaderRow>
         <H4 noMargin>{t.title}</H4>
@@ -197,7 +193,7 @@ function ServiceNeeds({ placement, reload }: Props) {
         />
       )}
     </div>
-  )
+  ) : null
 }
 
 type ServiceNeedOrGap = ServiceNeed | DateRange
