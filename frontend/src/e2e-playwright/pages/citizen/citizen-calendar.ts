@@ -25,16 +25,19 @@ export default class CitizenCalendarPage {
   #repetitionCombobox = new Combobox(this.page, '[data-qa="repetition"]')
   #dailyStartTimeInput = new RawTextInput(
     this.page,
-    '[data-qa="daily-start-time"]'
+    '[data-qa="daily-start-time-0"]'
   )
-  #dailyEndTimeInput = new RawTextInput(this.page, '[data-qa="daily-end-time"]')
+  #dailyEndTimeInput = new RawTextInput(
+    this.page,
+    '[data-qa="daily-end-time-0"]'
+  )
   #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new RawTextInput(this.page, `[data-qa="weekly-start-time-${index}"]`)
+      new RawTextInput(this.page, `[data-qa="weekly-${index}-start-time-0"]`)
   )
   #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new RawTextInput(this.page, `[data-qa="weekly-end-time-${index}"]`)
+      new RawTextInput(this.page, `[data-qa="weekly-${index}-end-time-0"]`)
   )
   #absenceChip = (type: string) =>
     new Checkbox(this.page, `[data-qa="absence-${type}"]`)

@@ -29,13 +29,17 @@ interface Props {
   groupId: UUID | 'no-group'
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
+  isShiftCareUnit: boolean
+  operationalDays: number[]
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
   unitId,
   groupId,
   selectedDate,
-  setSelectedDate
+  setSelectedDate,
+  isShiftCareUnit,
+  operationalDays
 }: Props) {
   const dateRange = useMemo(
     () => getWeekDateRange(selectedDate),
@@ -71,6 +75,8 @@ export default React.memo(function UnitAttendanceReservationsView({
                 child={creatingReservationChild}
                 onReload={reload}
                 onClose={() => setCreatingReservationChild(null)}
+                isShiftCareUnit={isShiftCareUnit}
+                operationalDays={operationalDays}
               />
             )}
 

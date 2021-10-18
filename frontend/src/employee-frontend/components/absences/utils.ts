@@ -21,9 +21,7 @@ export function dateIsDayOfWeek(date: LocalDate, dayOfWeek: DayOfWeek) {
 }
 
 export function getWeekDay(date: LocalDate) {
-  return translations.fi.datePicker.weekdaysShort[
-    date.toSystemTzDate().getDay()
-  ]
+  return translations.fi.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
 }
 
 export function getMonthDays(date: LocalDate): LocalDate[] {

@@ -1642,7 +1642,7 @@ export const fi = {
         repetitions: {
           DAILY: 'Päivittäin',
           WEEKLY: 'Viikoittain',
-          SHIFT_CARE: 'Vuorohoito'
+          IRREGULAR: 'Epäsäännöllinen'
         }
       }
     },
@@ -2077,15 +2077,15 @@ export const fi = {
       'joulukuu'
     ],
     weekdaysLong: [
-      'sunnuntai',
       'maanantai',
       'tiistai',
       'keskiviikko',
       'torstai',
       'perjantai',
-      'lauantai'
+      'lauantai',
+      'sunnuntai'
     ],
-    weekdaysShort: ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
+    weekdaysShort: ['ma', 'ti', 'ke', 'to', 'pe', 'la', 'su']
   },
   absences: {
     title: 'Poissaolot',

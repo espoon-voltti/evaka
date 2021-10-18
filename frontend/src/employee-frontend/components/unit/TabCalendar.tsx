@@ -101,6 +101,14 @@ export default React.memo(function TabCalendar() {
           groupId={groupId}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          isShiftCareUnit={unitInformation
+            .map(({ daycare }) => daycare.roundTheClock)
+            .getOrElse(false)}
+          operationalDays={
+            unitInformation
+              .map(({ daycare }) => daycare.operationDays)
+              .getOrElse(null) ?? [1, 2, 3, 4, 5]
+          }
         />
       )}
     </ContentArea>

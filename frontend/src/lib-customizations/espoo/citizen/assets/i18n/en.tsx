@@ -188,13 +188,12 @@ const en: Translations = {
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
       missingDateRange: 'Select days to reserve',
-      repetition: 'Type or repetition',
-      businessDays: 'Mon-Fri',
+      repetition: 'Repetition',
       postError: 'The reservation failed',
       repetitions: {
         DAILY: 'Daily',
         WEEKLY: 'Weekly',
-        SHIFT_CARE: 'Shift care'
+        IRREGULAR: 'Irregular'
       }
     },
     absenceModal: {

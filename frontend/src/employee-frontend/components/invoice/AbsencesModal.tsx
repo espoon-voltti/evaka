@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { getDay } from 'date-fns'
 
 import LocalDate from 'lib-common/local-date'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -125,7 +124,7 @@ export default function AbsencesModal({ child, date }: Props) {
       .map(
         (abs: Absence) =>
           `${
-            i18n.datePicker.weekdaysShort[getDay(abs.date.toSystemTzDate())]
+            i18n.datePicker.weekdaysShort[abs.date.getIsoDayOfWeek() - 1]
           } ${abs.date.format()}`
       )
     return absencesList.join('<br />')
