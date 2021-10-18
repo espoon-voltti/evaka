@@ -114,9 +114,11 @@ export default function PedagogicalDocuments() {
 
   const ItemDescription = ({
     item,
+    clampLines,
     dataQa
   }: {
     item: PedagogicalDocumentCitizen
+    clampLines: number
     dataQa: string
   }) => {
     const [expanded, setExpanded] = useState(false)
@@ -125,14 +127,26 @@ export default function PedagogicalDocuments() {
       setExpanded(!expanded)
     }
 
+    // A description with more than 50 characters per line will be collapsed
+    const shouldShowExpandButton =
+      item?.description && item.description.length > 50 * clampLines
+
     return (
       <FixedSpaceRow spacing="xs" alignItems="end">
-        <ExpandableText expanded={expanded}>{item.description}</ExpandableText>
-        <ExpandButton
-          onClick={toggleExpanded}
+        <ExpandableText
+          expanded={expanded}
+          clampLines={clampLines}
           data-qa={dataQa}
-          icon={expanded ? faChevronUp : faChevronDown}
-        />
+        >
+          {item.description}
+        </ExpandableText>
+        {shouldShowExpandButton && (
+          <ExpandButton
+            onClick={toggleExpanded}
+            data-qa={`${dataQa}-button`}
+            icon={expanded ? faChevronUp : faChevronDown}
+          />
+        )}
       </FixedSpaceRow>
     )
   }
@@ -176,6 +190,7 @@ export default function PedagogicalDocuments() {
             <div>{LocalDate.fromSystemTzDate(item.created).format()}</div>
             <ItemDescription
               item={item}
+              clampLines={1}
               dataQa={`pedagogical-document-list-description-${item.id}`}
             />
             <Attachment
@@ -213,10 +228,12 @@ export default function PedagogicalDocuments() {
               <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
-              <DescriptionTd
-                data-qa={`pedagogical-document-description-${item.id}`}
-              >
-                {item.description}
+              <DescriptionTd>
+                <ItemDescription
+                  item={item}
+                  clampLines={3}
+                  dataQa={`pedagogical-document-description-${item.id}`}
+                />
               </DescriptionTd>
               <NameTd>
                 <Attachment
@@ -322,12 +339,16 @@ const ListItem = styled(FixedSpaceColumn)`
 
 type ExpandableTextProps = {
   expanded: boolean
+  clampLines: number
 }
 const ExpandableText = styled.span<ExpandableTextProps>`
   flex: 1;
-  text-overflow: ${(props) => (props.expanded ? 'auto' : 'ellipsis')};
-  overflow: ${(props) => (props.expanded ? 'auto' : 'hidden')};
-  white-space: ${(props) => (props.expanded ? 'pre-line' : 'nowrap')};
+  white-space: pre-line;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: ${(props) =>
+    props.expanded ? 'none' : props.clampLines};
 `
 
 const ExpandButton = styled(IconButton)`
