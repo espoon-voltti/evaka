@@ -17,7 +17,7 @@ import { UIContext } from '../../state/ui'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
-  loadDecision(): Promise<void>
+  loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: string

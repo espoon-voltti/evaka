@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -35,9 +35,11 @@ export default React.memo(function VoucherValueDecisionPage() {
   const [newDecisionType, setNewDecisionType] =
     useState<VoucherValueDecisionType>('NORMAL')
 
-  const loadDecision = () =>
-    getVoucherValueDecision(id).then((dec) => setDecision(dec))
-  useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const loadDecision = useCallback(
+    () => getVoucherValueDecision(id).then(setDecision),
+    [id]
+  )
+  useEffect(() => void loadDecision(), [loadDecision])
 
   useEffect(() => {
     if (decision.isSuccess) {
