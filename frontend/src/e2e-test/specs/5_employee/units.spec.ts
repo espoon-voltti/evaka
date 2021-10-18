@@ -26,7 +26,7 @@ import {
   insertDaycareCaretakerFixtures,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
-  insertServiceNeedOptions,
+  insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
@@ -46,7 +46,7 @@ fixture('Employee - Units')
   .beforeEach(async (t) => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    await insertServiceNeedOptions()
+    await insertDefaultServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     childFixture = fixtures.familyWithTwoGuardians.children[0]
     daycarePlacementFixture = createDaycarePlacementFixture(

@@ -434,15 +434,12 @@ fun Database.Transaction.insertTestServiceNeed(
     optionId: ServiceNeedOptionId,
     shiftCare: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
-    updated: HelsinkiDateTime = HelsinkiDateTime.now()
+    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
 ): ServiceNeedId {
     createUpdate(
         """
-ALTER TABLE service_need DISABLE TRIGGER set_timestamp;
-INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at, updated)
-VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt, :updated);
-ALTER TABLE service_need ENABLE TRIGGER set_timestamp;
+INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
+VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt);
 """
     )
         .bind("id", id)
@@ -453,12 +450,23 @@ ALTER TABLE service_need ENABLE TRIGGER set_timestamp;
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
-        .bind("updated", updated)
         .execute()
     return id
 }
 
 fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
+    createUpdate(
+        // language=sql
+        """
+INSERT INTO service_need_option (id, name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
+VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
+"""
+    )
+        .bindKotlin(option)
+        .execute()
+}
+
+fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
     createUpdate(
         // language=sql
         """

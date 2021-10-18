@@ -10,7 +10,7 @@ import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  insertServiceNeedOptions,
+  insertDefaultServiceNeedOptions,
   postDaycareDailyNote,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -48,7 +48,7 @@ fixture('Mobile employee daily notes')
     await resetDatabase()
     const fixtures = await initializeAreaAndPersonData()
 
-    await insertServiceNeedOptions()
+    await insertDefaultServiceNeedOptions()
     await insertEmployeeFixture({
       id: employeeId,
       externalId: `espooad: ${employeeId}`,

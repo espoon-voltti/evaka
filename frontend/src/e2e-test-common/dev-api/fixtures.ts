@@ -26,7 +26,8 @@ import {
   UUID,
   DaycareGroupPlacement,
   EmployeePin,
-  PedagogicalDocument
+  PedagogicalDocument,
+  ServiceNeedFixture
 } from './types'
 import {
   insertCareAreaFixtures,
@@ -37,12 +38,15 @@ import {
   insertEmployeePins,
   insertPedagogicalDocuments,
   insertPersonFixture,
+  insertServiceNeedOptions,
+  insertServiceNeeds,
   insertVtjPersonFixture
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/generated/enums'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -1006,6 +1010,41 @@ export class Fixture {
       description: 'not set'
     })
   }
+
+  static serviceNeed(): ServiceNeedBuilder {
+    return new ServiceNeedBuilder({
+      id: uuidv4(),
+      placementId: 'not set',
+      startDate: new Date(),
+      endDate: new Date(),
+      optionId: 'not set',
+      shiftCare: false,
+      confirmedBy: 'not set',
+      confirmedAt: LocalDate.today()
+    })
+  }
+
+  static serviceNeedOption(): ServiceNeedOptionBuilder {
+    const id = uniqueLabel()
+
+    return new ServiceNeedOptionBuilder({
+      id: uuidv4(),
+      daycareHoursPerWeek: 0,
+      defaultOption: false,
+      feeCoefficient: 0.0,
+      feeDescriptionFi: `Test service need option ${id}`,
+      feeDescriptionSv: `Test service need option ${id}`,
+      name: `test_service_need_option_${id}`,
+      occupancyCoefficient: 0,
+      partDay: false,
+      partWeek: false,
+      updated: new Date(),
+      validPlacementType: 'DAYCARE',
+      voucherValueCoefficient: 0,
+      voucherValueDescriptionFi: `Test service need option ${id}`,
+      voucherValueDescriptionSv: `Test service need option ${id}`
+    })
+  }
 }
 
 export class DaycareBuilder {
@@ -1244,5 +1283,57 @@ export class PedagogicalDocumentBuilder {
   // Note: shallow copy
   copy(): PedagogicalDocumentBuilder {
     return new PedagogicalDocumentBuilder({ ...this.data })
+  }
+}
+
+export class ServiceNeedOptionBuilder {
+  data: ServiceNeedOption
+
+  constructor(data: ServiceNeedOption) {
+    this.data = data
+  }
+
+  with(value: Partial<ServiceNeedOption>): ServiceNeedOptionBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<ServiceNeedOptionBuilder> {
+    await insertServiceNeedOptions([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): ServiceNeedOptionBuilder {
+    return new ServiceNeedOptionBuilder({ ...this.data })
+  }
+}
+
+export class ServiceNeedBuilder {
+  data: ServiceNeedFixture
+
+  constructor(data: ServiceNeedFixture) {
+    this.data = data
+  }
+
+  with(value: Partial<ServiceNeedFixture>): ServiceNeedBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<ServiceNeedBuilder> {
+    await insertServiceNeeds([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): ServiceNeedBuilder {
+    return new ServiceNeedBuilder({ ...this.data })
   }
 }

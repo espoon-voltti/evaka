@@ -574,3 +574,14 @@ export interface PedagogicalDocument {
   updated?: Date
   updatedBy?: string
 }
+
+export interface ServiceNeedFixture {
+  id: string
+  placementId: string
+  startDate: Date
+  endDate: Date
+  optionId: string
+  shiftCare: boolean
+  confirmedBy: UUID
+  confirmedAt: LocalDate
+}

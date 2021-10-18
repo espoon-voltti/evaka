@@ -37,7 +37,8 @@ import {
   UserRole,
   PersonDetailWithDependantsAndGuardians,
   HighestFeeFixture,
-  PedagogicalDocument
+  PedagogicalDocument,
+  ServiceNeedFixture
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -47,6 +48,7 @@ import {
 import { FeeThresholds } from 'lib-common/api-types/finance'
 import * as fs from 'fs/promises'
 import FormData from 'form-data'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -418,7 +420,27 @@ export async function insertChildFixture(
   }
 }
 
-export async function insertServiceNeedOptions(): Promise<void> {
+export async function insertServiceNeeds(
+  serviceNeeds: ServiceNeedFixture[]
+): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/service-need`, serviceNeeds)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertServiceNeedOptions(
+  serviceNeedOptions: ServiceNeedOption[]
+): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/service-need-option`, serviceNeedOptions)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDefaultServiceNeedOptions(): Promise<void> {
   try {
     await devClient.post<UUID>(`/service-need-options`)
   } catch (e) {

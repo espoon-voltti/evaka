@@ -78,6 +78,8 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -764,6 +766,23 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }.key
     }
 
+    @PostMapping("/service-need")
+    fun createServiceNeeds(db: Database.Connection, @RequestBody serviceNeeds: List<DevServiceNeed>): ResponseEntity<Unit> {
+        db.transaction {
+            serviceNeeds.forEach { sn ->
+                it.insertTestServiceNeed(
+                    placementId = sn.placementId,
+                    period = FiniteDateRange(sn.startDate, sn.endDate),
+                    optionId = sn.optionId,
+                    shiftCare = sn.shiftCare,
+                    id = sn.id,
+                    confirmedBy = sn.confirmedBy
+                )
+            }
+        }
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/service-need-option")
     fun createServiceNeedOption(db: Database.Connection, @RequestBody serviceNeedOptions: List<ServiceNeedOption>): ResponseEntity<Unit> {
         db.transaction {
@@ -773,7 +792,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/service-need-options")
-    fun createServiceNeedOptions(db: Database.Connection): ResponseEntity<Unit> {
+    fun createDefaultServiceNeedOptions(db: Database.Connection): ResponseEntity<Unit> {
         db.transaction { it.insertServiceNeedOptions() }
         return ResponseEntity.noContent().build()
     }
@@ -1080,3 +1099,14 @@ data class ApplicationForm(
 )
 
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: UUID)
+
+data class DevServiceNeed(
+    val id: ServiceNeedId,
+    val placementId: PlacementId,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val optionId: ServiceNeedOptionId,
+    val shiftCare: Boolean,
+    val confirmedBy: UUID,
+    val confirmedAt: LocalDate? = null
+)

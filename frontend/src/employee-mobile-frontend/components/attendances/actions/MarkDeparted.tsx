@@ -156,7 +156,10 @@ export default React.memo(function MarkDeparted() {
                 }
               />
             </TimeWrapper>
-            {child && absentFrom.isSuccess && absentFrom.value.length > 0 ? (
+            {child &&
+            child.paidPlacement &&
+            absentFrom.isSuccess &&
+            absentFrom.value.length > 0 ? (
               <FixedSpaceColumn>
                 <AbsentFrom child={child} absentFrom={absentFrom.value} />
                 <AbsenceSelector

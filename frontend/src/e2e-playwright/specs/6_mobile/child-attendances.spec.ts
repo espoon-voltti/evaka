@@ -6,6 +6,7 @@ import {
   createDaycareGroupPlacementFixture,
   createDaycarePlacementFixture,
   daycareGroupFixture,
+  EmployeeBuilder,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
@@ -19,6 +20,7 @@ import {
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
+  insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
@@ -26,19 +28,22 @@ import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let childAttendancePage: ChildAttendancePage
+let employee: EmployeeBuilder
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  await insertDefaultServiceNeedOptions()
 
   await insertDaycareGroupFixtures([daycareGroupFixture])
-  const employee = await Fixture.employee().save()
+  employee = await Fixture.employee().save()
 
   page = await (await newBrowserContext()).newPage()
   listPage = new MobileListPage(page)
@@ -55,12 +60,14 @@ afterEach(async () => {
   await page.close()
 })
 
-const createPlacement = async (placementType: PlacementType) => {
+const createPlacement = async (
+  placementType: PlacementType
+): Promise<DaycarePlacement> => {
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     fixtures.familyWithTwoGuardians.children[0].id,
     fixtures.daycareFixture.id,
-    '2021-05-01',
+    '2021-05-01', // TODO use dynamic date
     '2022-08-31',
     placementType
   )
@@ -70,6 +77,8 @@ const createPlacement = async (placementType: PlacementType) => {
     daycareGroupFixture.id
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
+
+  return daycarePlacementFixture
 }
 
 const checkAbsentTypeSelectionExistance = async (expectedToExist: boolean) => {
@@ -90,18 +99,31 @@ const checkAbsentTypeSelectionExistance = async (expectedToExist: boolean) => {
 }
 
 describe('Child mobile attendances', () => {
-  test('Child free 5y free placement is suggested to mark absence types', async () => {
-    await createPlacement('DAYCARE_FIVE_YEAR_OLDS')
-    await checkAbsentTypeSelectionExistance(true)
-  })
-
-  test('Child free part time 5y free placement is suggested to mark absence types', async () => {
-    await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
-    await checkAbsentTypeSelectionExistance(true)
-  })
-
-  test('Child in paid daycare is not suggested to mark absence types', async () => {
+  test('Child in daycare placement is not required to mark absence types if there is no paid service need set', async () => {
     await createPlacement('DAYCARE')
     await checkAbsentTypeSelectionExistance(false)
+  })
+
+  test('Child in daycare placement is required to mark absence types if there is paid service need set', async () => {
+    const placement = await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
+    const sno = await Fixture.serviceNeedOption()
+      .with({
+        validPlacementType: 'DAYCARE',
+        feeCoefficient: 189.0,
+        daycareHoursPerWeek: 40
+      })
+      .save()
+
+    await Fixture.serviceNeed()
+      .with({
+        optionId: sno.data.id,
+        placementId: placement.id,
+        startDate: new Date(placement.startDate),
+        endDate: new Date(placement.endDate),
+      confirmedBy: employee.data.id!, // eslint-disable-line
+      })
+      .save()
+
+    await checkAbsentTypeSelectionExistance(true)
   })
 })
