@@ -360,7 +360,7 @@ export default React.memo(function FeeThresholdsEditor({
         <AsyncButton
           primary
           text={i18n.common.save}
-          onClick={async () => {
+          onClick={async (cancel) => {
             if (!('payload' in validationResult)) {
               return
             }
@@ -377,7 +377,7 @@ export default React.memo(function FeeThresholdsEditor({
                 })
               )
 
-              if (!resolved) return 'AsyncButton.cancel'
+              if (!resolved) return cancel()
             }
 
             return await handleSaveErrors(
