@@ -62,6 +62,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -761,6 +762,14 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                 file.contentType ?: "image/jpeg"
             )
         }.key
+    }
+
+    @PostMapping("/service-need-option")
+    fun createServiceNeedOption(db: Database.Connection, @RequestBody serviceNeedOptions: List<ServiceNeedOption>): ResponseEntity<Unit> {
+        db.transaction {
+            serviceNeedOptions.forEach { option -> it.insertServiceNeedOption(option) }
+        }
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/service-need-options")

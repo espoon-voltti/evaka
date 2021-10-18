@@ -76,6 +76,7 @@ export interface Child {
   id: UUID
   imageUrl: string | null
   lastName: string
+  paidPlacement: boolean
   placementType: PlacementType
   preferredName: string | null
   reservation: AttendanceReservation | null

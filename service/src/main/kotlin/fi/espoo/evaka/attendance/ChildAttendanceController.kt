@@ -485,20 +485,21 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
         val daycareDailyNote = daycareDailyNotesForChildrenPlacedInUnit.firstOrNull { it.childId == child.id }
 
         Child(
-            id = child.id,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            preferredName = child.preferredName,
-            placementType = child.placementType,
-            groupId = child.groupId,
-            backup = child.backup,
-            status = status,
-            attendance = attendance,
-            absences = absences,
-            dailyServiceTimes = child.dailyServiceTimes,
-            dailyNote = daycareDailyNote,
-            imageUrl = child.imageUrl,
-            reservations = attendanceReservations[child.id] ?: listOf()
+                id = child.id,
+                firstName = child.firstName,
+                lastName = child.lastName,
+                preferredName = child.preferredName,
+                placementType = child.placementType,
+                paidPlacement = child.paidPlacement,
+                groupId = child.groupId,
+                backup = child.backup,
+                status = status,
+                attendance = attendance,
+                absences = absences,
+                dailyServiceTimes = child.dailyServiceTimes,
+                dailyNote = daycareDailyNote,
+                imageUrl = child.imageUrl,
+                reservations = attendanceReservations[child.id] ?: listOf()
         )
     }
 

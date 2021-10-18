@@ -60,6 +60,7 @@ data class Child(
     val lastName: String,
     val preferredName: String?,
     val placementType: PlacementType,
+    val paidPlacement: Boolean,
     val groupId: GroupId,
     val backup: Boolean,
     val status: AttendanceStatus,
