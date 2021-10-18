@@ -108,7 +108,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val snId = createServiceNeed(db, since, option = snDefaultDaycare)
         val childId = ChildId(testChild_1.id)
 
-        assertEquals(false, hasVardaServiceNeeds(db, childId))
+        assertEquals(false, db.read { it.hasVardaServiceNeeds(childId) })
 
         db.transaction {
             it.createUpdate(
@@ -123,7 +123,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        assertEquals(true, hasVardaServiceNeeds(db, childId))
+        assertEquals(true, db.read { it.hasVardaServiceNeeds(childId) })
     }
 
     @Test

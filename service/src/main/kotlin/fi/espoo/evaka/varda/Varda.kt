@@ -7,8 +7,17 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaDecision(
@@ -87,4 +96,109 @@ data class VardaFeeData(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaFeeDataResponse(
     val id: Long
+)
+
+data class VardaGuardianWithId(
+    val id: UUID,
+    val henkilotunnus: String?,
+    val henkilo_oid: String?,
+    val etunimet: String,
+    val sukunimi: String,
+    val asuinpaikantunnus: String?
+) {
+    fun toVardaGuardian(): VardaGuardian = VardaGuardian(
+        henkilotunnus = henkilotunnus,
+        henkilo_oid = henkilo_oid,
+        etunimet = etunimet,
+        sukunimi = sukunimi
+    )
+}
+
+data class VardaChildCalculatedServiceNeedChanges(
+    val childId: ChildId,
+    val additions: List<ServiceNeedId>,
+    val updates: List<ServiceNeedId>,
+    val deletes: List<ServiceNeedId>
+)
+
+data class VardaServiceNeed(
+    val evakaChildId: ChildId,
+    val evakaServiceNeedId: ServiceNeedId,
+    var evakaServiceNeedUpdated: HelsinkiDateTime? = null,
+    var vardaChildId: Long? = null,
+    var vardaDecisionId: Long? = null,
+    var vardaPlacementId: Long? = null,
+    var vardaFeeDataIds: List<Long> = listOf(),
+    var updateFailed: Boolean = false,
+    val errors: MutableList<String> = mutableListOf()
+)
+
+data class ChangedChildServiceNeed(
+    val evakaChildId: ChildId,
+    val evakaServiceNeedId: ServiceNeedId
+)
+
+data class FeeDataByServiceNeed(
+    val evakaChildId: UUID,
+    val serviceNeedId: ServiceNeedId,
+    val feeDecisionIds: List<FeeDecisionId> = emptyList(),
+    val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList()
+) {
+    fun hasFeeData() = feeDecisionIds.isNotEmpty() || voucherValueDecisionIds.isNotEmpty()
+}
+
+data class EvakaServiceNeedInfoForVarda(
+    val id: ServiceNeedId,
+    val serviceNeedUpdated: Instant,
+    val childId: ChildId,
+    val applicationDate: LocalDate,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val urgent: Boolean,
+    val hoursPerWeek: Double,
+    val temporary: Boolean,
+    val daily: Boolean,
+    val shiftCare: Boolean,
+    val providerType: ProviderType,
+    val ophOrganizerOid: String?,
+    val ophUnitOid: String?
+) {
+    val providerTypeCode = VardaUnitProviderType.valueOf(providerType.toString()).vardaCode
+
+    val asPeriod = DateRange(startDate, endDate)
+
+    fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision = VardaDecision(
+        lapsi = vardaChildUrl,
+        hakemus_pvm = this.applicationDate,
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        pikakasittely_kytkin = this.urgent,
+        tuntimaara_viikossa = this.hoursPerWeek,
+        tilapainen_vaka_kytkin = this.temporary,
+        paivittainen_vaka_kytkin = this.daily,
+        vuorohoito_kytkin = this.shiftCare,
+        jarjestamismuoto_koodi = this.providerTypeCode,
+        lahdejarjestelma = sourceSystem
+    )
+
+    fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(
+        varhaiskasvatuspaatos = vardaDecisionUrl,
+        toimipaikka_oid = this.ophUnitOid
+            ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
+        alkamis_pvm = this.startDate,
+        paattymis_pvm = this.endDate,
+        lahdejarjestelma = sourceSystem
+    )
+
+    fun toVardaServiceNeed(): VardaServiceNeed =
+        VardaServiceNeed(
+            evakaChildId = this.childId,
+            evakaServiceNeedId = this.id,
+            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated)
+        )
+}
+
+data class VardaChildIdPair(
+    val vardaChildId: Long,
+    val evakaChildId: ChildId
 )
