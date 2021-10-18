@@ -7,7 +7,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { H1 } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { Loading, Result } from 'lib-common/api'
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -261,10 +261,10 @@ export default function PedagogicalDocuments() {
 
 const ItemTr = styled(Tr)`
   font-weight: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? 400 : 600};
+    props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
 
   button {
-    font-weight: 600;
+    font-weight: ${fontWeights.semibold};
   }
 `
 
@@ -312,11 +312,11 @@ const ListItem = styled(FixedSpaceColumn)`
   border-top: 1px solid #b1b1b1;
   border-left: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 'none' : '6px solid #249fff'};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 
   & > div {
     font-weight: ${(props: { documentIsRead: boolean }) =>
-      props.documentIsRead ? 400 : 600};
+      props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
   }
 `
 
