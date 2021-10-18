@@ -27,7 +27,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      incomeStatements: true,
       messageAttachments: true,
       realtimeStaffAttendance: false,
       vasu: true
@@ -48,7 +47,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: true,
-      incomeStatements: true,
       messageAttachments: true,
       realtimeStaffAttendance: true,
       vasu: true
@@ -69,7 +67,6 @@ const features: Features = {
     urgencyAttachmentsEnabled: true,
     experimental: {
       ai: false,
-      incomeStatements: false,
       messageAttachments: true,
       realtimeStaffAttendance: false,
       vasu: false

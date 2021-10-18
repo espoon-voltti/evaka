@@ -207,11 +207,9 @@ const Navigation = React.memo(function Navigation({
           >
             {t.header.nav.applying} {maybeLockElem}
           </StyledNavLink>
-          {featureFlags.experimental?.incomeStatements && (
-            <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
-              {t.header.nav.income} {maybeLockElem}
-            </StyledNavLink>
-          )}
+          <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
+            {t.header.nav.income} {maybeLockElem}
+          </StyledNavLink>
           {featureFlags.pedagogicalDocumentsEnabled && (
             <StyledNavLink
               to="/pedagogical-documents"

@@ -67,27 +67,21 @@ export default function App() {
                         path="/applications/:applicationId"
                         component={requireAuth(ApplicationReadView)}
                       />
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income"
-                          component={requireAuth(IncomeStatements)}
-                        />
-                      )}
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId/edit"
-                          component={requireAuth(IncomeStatementEditor)}
-                        />
-                      )}
-                      {featureFlags.experimental?.incomeStatements && (
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId"
-                          component={requireAuth(IncomeStatementView)}
-                        />
-                      )}
+                      <Route
+                        exact
+                        path="/income"
+                        component={requireAuth(IncomeStatements)}
+                      />
+                      <Route
+                        exact
+                        path="/income/:incomeStatementId/edit"
+                        component={requireAuth(IncomeStatementEditor)}
+                      />
+                      <Route
+                        exact
+                        path="/income/:incomeStatementId"
+                        component={requireAuth(IncomeStatementView)}
+                      />
                       <Route
                         exact
                         path="/applications/:applicationId/edit"

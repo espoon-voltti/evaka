@@ -215,15 +215,13 @@ const UserMenu = React.memo(function UserMenu() {
       </DropDownButton>
       {open && user ? (
         <DropDown data-qa={'user-menu'}>
-          {featureFlags.experimental?.incomeStatements && (
-            <DropDownItem
-              selected={window.location.pathname.includes('/income')}
-              data-qa={'user-menu-income'}
-              onClick={() => (location.href = '/income')}
-            >
-              {t.header.nav.income}
-            </DropDownItem>
-          )}
+          <DropDownItem
+            selected={window.location.pathname.includes('/income')}
+            data-qa={'user-menu-income'}
+            onClick={() => (location.href = '/income')}
+          >
+            {t.header.nav.income}
+          </DropDownItem>
           <DropDownItem
             key={'user-menu-logout'}
             selected={false}
