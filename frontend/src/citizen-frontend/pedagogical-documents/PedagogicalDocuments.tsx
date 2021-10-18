@@ -209,15 +209,11 @@ export default function PedagogicalDocuments() {
         </Thead>
         <Tbody>
           {items.map((item) => (
-            <Tr key={item.id}>
-              <DateTd
-                data-qa={`pedagogical-document-date-${item.id}`}
-                documentIsRead={item.isRead}
-              >
+            <ItemTr key={item.id} documentIsRead={item.isRead}>
+              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
               <DescriptionTd
-                documentIsRead={item.isRead}
                 data-qa={`pedagogical-document-description-${item.id}`}
               >
                 {item.description}
@@ -234,7 +230,7 @@ export default function PedagogicalDocuments() {
                   dataQa={`pedagogical-document-attachment-download-${item.id}`}
                 />
               </ActionsTd>
-            </Tr>
+            </ItemTr>
           ))}
         </Tbody>
       </Table>
@@ -263,10 +259,17 @@ export default function PedagogicalDocuments() {
   )
 }
 
-const DateTd = styled(Td)`
-  width: 15%;
+const ItemTr = styled(Tr)`
   font-weight: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 400 : 600};
+
+  button {
+    font-weight: 600;
+  }
+`
+
+const DateTd = styled(Td)`
+  width: 15%;
 `
 
 const NameTd = styled(Td)`
@@ -275,8 +278,6 @@ const NameTd = styled(Td)`
 
 const DescriptionTd = styled(Td)`
   width: 45%;
-  font-weight: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? 400 : 600};
   white-space: pre-line;
 `
 
