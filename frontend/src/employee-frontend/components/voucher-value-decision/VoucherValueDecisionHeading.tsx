@@ -13,12 +13,15 @@ import { useTranslation } from '../../state/i18n'
 import { formatDate } from 'lib-common/date'
 import {
   VoucherValueDecisionStatus,
-  PersonDetailed
+  PersonDetailed,
+  FeeDecisionType
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '../../components/common/WarningLabel'
 import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
+import { TypeSelect } from '../fee-decision-details/TypeSelect'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 type Props = {
   id: string
@@ -31,6 +34,9 @@ type Props = {
   documentKey: string | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
+  decisionType: FeeDecisionType
+  changeDecisionType: (type: VoucherValueDecisionType) => void
+  newDecisionType: string
 }
 
 export default React.memo(function VoucherValueDecisionHeading({
@@ -43,6 +49,9 @@ export default React.memo(function VoucherValueDecisionHeading({
   sentAt,
   financeDecisionHandlerFirstName,
   financeDecisionHandlerLastName,
+  decisionType,
+  changeDecisionType,
+  newDecisionType,
   documentKey
 }: Props) {
   const { i18n } = useTranslation()
@@ -57,6 +66,17 @@ export default React.memo(function VoucherValueDecisionHeading({
       <Cursive>{i18n.valueDecision.pdfInProgress}</Cursive>
     </DisabledLink>
   )
+
+  const reliefValue =
+    status === 'DRAFT' ? (
+      <TypeSelect
+        changeDecisionType={changeDecisionType}
+        selected={newDecisionType}
+        type={'VALUE_DECISION'}
+      />
+    ) : (
+      i18n.feeDecision.type[decisionType]
+    )
 
   return (
     <>
@@ -84,6 +104,10 @@ export default React.memo(function VoucherValueDecisionHeading({
           {
             label: i18n.valueDecision.validPeriod,
             value: `${validFrom.format()} - ${validTo?.format() ?? ''}`
+          },
+          {
+            label: i18n.feeDecision.relief,
+            value: reliefValue
           },
           ...(sentAt
             ? [

@@ -36,8 +36,12 @@ class InvoicingAsyncJobs(
 
     fun runSendFeeDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyFeeDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
-        feeService.sendDecision(tx, decisionId)
-        logger.info { "Successfully sent fee decision msg to suomi.fi (id: $decisionId)." }
+        feeService.sendDecision(tx, decisionId).let { sent ->
+            logger.info {
+                if (sent) "Successfully sent fee decision msg to suomi.fi (id: $decisionId)."
+                else "Marked fee decision as requiring manual sending (id: $decisionId)."
+            }
+        }
     }
 
     fun runCreateVoucherValueDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyVoucherValueDecisionApproved) = db.transaction { tx ->
@@ -49,7 +53,11 @@ class InvoicingAsyncJobs(
 
     fun runSendVoucherValueDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
-        valueDecisionService.sendDecision(tx, decisionId)
-        logger.info { "Successfully sent fee decision msg to suomi.fi (id: $decisionId)." }
+        valueDecisionService.sendDecision(tx, decisionId).let { sent ->
+            logger.info {
+                if (sent) "Successfully sent voucher value decision msg to suomi.fi (id: $decisionId)."
+                else "Marked voucher value decision as requiring manual sending (id: $decisionId)."
+            }
+        }
     }
 }

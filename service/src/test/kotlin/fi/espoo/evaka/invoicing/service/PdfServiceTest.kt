@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
@@ -116,6 +117,7 @@ class PdfServiceTest {
             "Pelimerkki"
         ),
         decisionNumber = testDecision1.decisionNumber,
+        decisionType = VoucherValueDecisionType.NORMAL,
         status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
         headOfFamily = PersonData.Detailed(
             id = UUID.randomUUID(),

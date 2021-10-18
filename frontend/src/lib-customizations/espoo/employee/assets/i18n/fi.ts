@@ -2005,6 +2005,13 @@ export const fi = {
       SENT: 'Lähetetty',
       ANNULLED: 'Mitätöity'
     },
+    type: {
+      NORMAL: 'Tavallinen arvopäätös, ei huojennusta',
+      RELIEF_ACCEPTED: 'Huojennus hyväksytty (Lähetetään manuaalisesti)',
+      RELIEF_PARTLY_ACCEPTED:
+        'Osittainen' + ' huojennus hyväksytty (Lähetetään manuaalisesti)',
+      RELIEF_REJECTED: 'Huojennus hylätty (Lähetetään manuaalisesti)'
+    },
     child: {
       name: 'Nimi',
       ssn: 'Henkilötunnus',

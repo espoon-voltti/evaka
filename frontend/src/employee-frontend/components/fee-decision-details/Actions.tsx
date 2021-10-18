@@ -10,7 +10,7 @@ import { FeeDecisionDetailed } from '../../types/invoicing'
 import {
   confirmFeeDecisions,
   markFeeDecisionSent,
-  setDecisionType
+  setFeeDecisionType
 } from '../../api/invoicing'
 import { ErrorMessage } from './FeeDecisionDetailsPage'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -36,7 +36,7 @@ const Actions = React.memo(function Actions({
   const [error, setError] = useState(false)
 
   const updateType = () =>
-    setDecisionType(decision.id, newDecisionType)
+    setFeeDecisionType(decision.id, newDecisionType)
       .then(() => setError(false))
       .catch(() => setError(true))
 

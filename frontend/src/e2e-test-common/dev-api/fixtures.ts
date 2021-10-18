@@ -752,6 +752,7 @@ export const voucherValueDecisionsFixture = (
   validFrom,
   validTo,
   headOfFamily: { id: adultId },
+  decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,
   child: { id: childId, dateOfBirth: '2017-06-30' },

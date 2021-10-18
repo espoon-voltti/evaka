@@ -269,6 +269,7 @@ enum class Audit(
     VoucherValueDecisionRead("evaka.value-decision.read"),
     VoucherValueDecisionSearch("evaka.value-decision.search"),
     VoucherValueDecisionSend("evaka.value-decision.send"),
+    VoucherValueDecisionSetType("evaka.value-decision.set-type"),
     VtjRequest("evaka.vtj.request", securityEvent = true, securityLevel = "high");
 
     fun log(targetId: Any? = null, objectId: Any? = null) {

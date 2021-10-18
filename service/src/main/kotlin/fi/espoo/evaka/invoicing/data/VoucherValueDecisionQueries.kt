@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.WithCount
@@ -37,6 +38,7 @@ INSERT INTO voucher_value_decision (
     valid_from,
     valid_to,
     decision_number,
+    decision_type,
     head_of_family_id,
     partner_id,
     head_of_family_income,
@@ -68,6 +70,7 @@ INSERT INTO voucher_value_decision (
     :validFrom,
     :validTo,
     :decisionNumber,
+    :decisionType::voucher_value_decision_type,
     :headOfFamilyId,
     :partnerId,
     :headOfFamilyIncome,
@@ -421,6 +424,23 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<VoucherValue
     createUpdate(sql)
         .bind("ids", ids.toTypedArray())
         .bind("status", status)
+        .execute()
+}
+
+fun Database.Transaction.setVoucherValueDecisionType(id: VoucherValueDecisionId, type: VoucherValueDecisionType) {
+    //language=SQL
+    val sql =
+        """
+        UPDATE voucher_value_decision
+        SET decision_type = :type::voucher_value_decision_type
+        WHERE id = :id
+          AND status = :requiredStatus::voucher_value_decision_status
+    """
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("type", type.toString())
+        .bind("requiredStatus", VoucherValueDecisionStatus.DRAFT.toString())
         .execute()
 }
 

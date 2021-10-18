@@ -440,6 +440,22 @@ export interface VoucherValueDecisionSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+*/
+export type VoucherValueDecisionType = 
+  | 'NORMAL'
+  | 'RELIEF_REJECTED'
+  | 'RELIEF_PARTLY_ACCEPTED'
+  | 'RELIEF_ACCEPTED'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionTypeRequest
+*/
+export interface VoucherValueDecisionTypeRequest {
+  type: VoucherValueDecisionType
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.PersonData.WithDateOfBirth
 */
 export interface WithDateOfBirth {

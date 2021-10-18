@@ -23,6 +23,8 @@ import colors from 'lib-customizations/common'
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};
   margin-right: 20px;
+  display: flex;
+  align-items: center;
 `
 
 export default React.memo(function FeeDecisionDetailsPage() {

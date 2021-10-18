@@ -25,6 +25,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
@@ -186,6 +187,7 @@ private fun generateNewValueDecisions(
                     period to VoucherValueDecision(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
+                        decisionType = VoucherValueDecisionType.NORMAL,
                         headOfFamily = headOfFamily,
                         partner = partner,
                         headOfFamilyIncome = income,
