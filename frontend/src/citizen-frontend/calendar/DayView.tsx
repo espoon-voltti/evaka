@@ -28,10 +28,11 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
 import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
-  ChildDailyData,
+  Reservation,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { AbsenceType } from 'lib-common/generated/enums'
 import { postReservations } from './api'
 import CalendarModal from './CalendarModal'
 import { errorToInputInfo } from '../input-info-helper'
@@ -83,10 +84,8 @@ export default React.memo(function DayView({
           child,
           editableReservation,
           data: {
-            absence: childReservations?.absence ?? null,
-            reservations: childReservations?.reservations ?? [
-              { startTime: '', endTime: '' }
-            ]
+            absence: childReservations?.absence ?? undefined,
+            reservations: childReservations?.reservations
           }
         }
       })
@@ -168,7 +167,7 @@ export default React.memo(function DayView({
                 <Grid>
                   <Label>{i18n.calendar.reservation}</Label>
                   {editing &&
-                  (editableReservation || childState[0].startTime) ? (
+                  (editableReservation || data.reservations?.length) ? (
                     <FixedSpaceColumn>
                       <FixedSpaceRow alignItems="center">
                         <InputField
@@ -238,7 +237,7 @@ export default React.memo(function DayView({
                       {i18n.calendar.absences[data.absence] ??
                         i18n.calendar.absent}
                     </span>
-                  ) : data.reservations.length > 0 &&
+                  ) : data.reservations?.length &&
                     data.reservations.some(({ startTime }) => !!startTime) ? (
                     <span>
                       {data.reservations
@@ -292,7 +291,10 @@ function useEditState(
   childrenWithReservations: {
     child: ReservationChild
     editableReservation: boolean
-    data: Omit<ChildDailyData, 'childId'>
+    data: {
+      absence: AbsenceType | undefined
+      reservations: Reservation[] | undefined
+    }
   }[]
 ) {
   const editable =
@@ -308,14 +310,20 @@ function useEditState(
     () =>
       childrenWithReservations.map(({ child, data }) => ({
         child,
-        data: data?.reservations.map(({ startTime, endTime }) => ({
+        data: data?.reservations?.map(({ startTime, endTime }) => ({
           startTime,
           endTime,
           errors: {
             startTime: undefined,
             endTime: undefined
           }
-        }))
+        })) ?? [
+          {
+            startTime: '',
+            endTime: '',
+            errors: { startTime: undefined, endTime: undefined }
+          }
+        ]
       })),
     [childrenWithReservations]
   )
@@ -330,24 +338,33 @@ function useEditState(
           child.id === childId
             ? {
                 child,
-                data: data.map((d, i) =>
-                  index === i
-                    ? {
-                        ...d,
-                        [field]: value,
-                        errors: {
-                          ...d.errors,
-                          [field]:
-                            value === '' &&
-                            child[
-                              field === 'startTime' ? 'endTime' : 'startTime'
-                            ] !== ''
-                              ? 'required'
-                              : regexp(value, TIME_REGEXP, 'timeFormat')
-                        }
-                      }
-                    : d
-                )
+                data: data.map((timeRange, i) => {
+                  if (index !== i) {
+                    return timeRange
+                  }
+
+                  const oppositeField =
+                    field === 'startTime' ? 'endTime' : 'startTime'
+
+                  return {
+                    ...timeRange,
+                    [field]: value,
+                    errors: {
+                      ...timeRange.errors,
+                      [field]:
+                        value === '' &&
+                        timeRange[
+                          field === 'startTime' ? 'endTime' : 'startTime'
+                        ] !== ''
+                          ? 'required'
+                          : regexp(value, TIME_REGEXP, 'timeFormat'),
+                      [oppositeField]:
+                        value !== '' && timeRange[oppositeField] === ''
+                          ? 'required'
+                          : regexp(value, TIME_REGEXP, 'timeFormat')
+                    }
+                  }
+                })
               }
             : { child, data }
         )
