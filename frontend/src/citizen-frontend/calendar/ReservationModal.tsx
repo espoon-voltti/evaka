@@ -7,9 +7,9 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, Label } from 'lib-components/typography'
-import React, { Fragment, useEffect, useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { useLang, useTranslation } from '../localization'
 import { postReservations } from './api'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -21,9 +21,7 @@ import DatePicker, {
 } from 'lib-components/molecules/date-picker/DatePicker'
 import { UUID } from 'lib-common/types'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
-import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
@@ -118,15 +116,6 @@ export default React.memo(function ReservationModal({
     [reservableDays, formData]
   )
 
-  const [postResult, setPostResult] = useState<Result<null>>()
-
-  useEffect(() => {
-    if (postResult?.isSuccess) {
-      onReload()
-      onClose()
-    }
-  }, [postResult, onReload, onClose])
-
   const shiftCareRange = useMemo(() => {
     if (formData.repetition !== 'IRREGULAR') return
 
@@ -163,22 +152,24 @@ export default React.memo(function ReservationModal({
   }, [availableChildren])
 
   return (
-    <FormModal
+    <AsyncFormModal
       mobileFullScreen
       title={i18n.calendar.reservationModal.title}
       resolve={{
-        action: () => {
+        action: (cancel) => {
           if (validationResult.errors) {
             setShowAllErrors(true)
+            return cancel()
           } else {
-            void postReservations(validationResult.requestPayload).then(
-              (result) => setPostResult(result)
-            )
+            return postReservations(validationResult.requestPayload)
           }
         },
+        onSuccess: () => {
+          onReload()
+          onClose()
+        },
         label: i18n.common.confirm,
-        disabled:
-          postResult?.isLoading || formData.selectedChildren.length === 0
+        disabled: formData.selectedChildren.length === 0
       }}
       reject={{
         action: onClose,
@@ -389,14 +380,7 @@ export default React.memo(function ReservationModal({
           )
         ) : null}
       </TimeInputGrid>
-
-      {postResult?.isFailure && (
-        <>
-          <Gap size="m" />
-          <ErrorSegment title={i18n.calendar.reservationModal.postError} />
-        </>
-      )}
-    </FormModal>
+    </AsyncFormModal>
   )
 })
 
