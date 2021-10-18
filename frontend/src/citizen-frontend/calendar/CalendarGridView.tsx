@@ -24,6 +24,7 @@ export interface Props {
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
 }
 
 export default React.memo(function CalendarGridView({
@@ -32,7 +33,8 @@ export default React.memo(function CalendarGridView({
   onCreateAbsencesClicked,
   selectedDate,
   selectDate,
-  includeWeekends
+  includeWeekends,
+  dayIsReservable
 }: Props) {
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
@@ -119,7 +121,7 @@ export default React.memo(function CalendarGridView({
                         data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
                       >
                         <DayCellHeader>
-                          <DayCellDate holiday={d.isHoliday}>
+                          <DayCellDate inactive={!dayIsReservable(d)}>
                             {d.date.format('d.M.')}
                           </DayCellDate>
                         </DayCellHeader>
@@ -287,10 +289,10 @@ const DayCellHeader = styled.div`
   margin-bottom: ${defaultMargins.m};
 `
 
-const DayCellDate = styled.div<{ holiday: boolean }>`
+const DayCellDate = styled.div<{ inactive: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
+  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.blues.dark)};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `

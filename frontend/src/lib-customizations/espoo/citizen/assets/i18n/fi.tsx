@@ -180,6 +180,8 @@ export default {
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',
+    reservation: 'Varaus',
+    realized: 'Toteuma',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Lapset, joille varaus tehdään',

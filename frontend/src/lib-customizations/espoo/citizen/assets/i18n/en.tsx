@@ -181,6 +181,8 @@ const en: Translations = {
     newAbsence: 'Report absence',
     newReservationBtn: 'Make a reservation',
     noReservation: 'No reservations',
+    reservation: 'Reservation',
+    realized: 'Realized',
     reservationModal: {
       title: 'Make a reservation',
       selectChildren: 'Children the reservation is made for',

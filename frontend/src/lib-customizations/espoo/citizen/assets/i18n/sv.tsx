@@ -181,6 +181,8 @@ const sv: Translations = {
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Reservera',
     noReservation: 'Ingen reservation',
+    reservation: 'Reservation',
+    realized: 'Insikt',
     reservationModal: {
       title: 'Reservera',
       selectChildren: 'Barn som reserveras för',

@@ -11,7 +11,10 @@ import CalendarGridView from './CalendarGridView'
 import { getReservations } from './api'
 import LocalDate from 'lib-common/local-date'
 import { Loading, Result } from 'lib-common/api'
-import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationsResponse
+} from 'lib-common/generated/api-types/reservations'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
 import { useUser } from '../auth'
@@ -61,6 +64,20 @@ export default React.memo(function CalendarPage() {
     [history]
   )
 
+  const dayIsReservable = useCallback(
+    ({ date, isHoliday }: DailyReservationData) =>
+      data
+        .map(({ children }) =>
+          children.some(
+            ({ maxOperationalDays, inShiftCareUnit }) =>
+              maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
+              (inShiftCareUnit || !isHoliday)
+          )
+        )
+        .getOrElse(false),
+    [data]
+  )
+
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
@@ -91,6 +108,7 @@ export default React.memo(function CalendarPage() {
                   dailyData={response.dailyData}
                   onHoverButtonClick={() => setOpenModal('pickAction')}
                   selectDate={selectDate}
+                  dayIsReservable={dayIsReservable}
                 />
               </ContentArea>
             </MobileOnly>
@@ -103,6 +121,7 @@ export default React.memo(function CalendarPage() {
                 selectedDate={selectedDate}
                 selectDate={selectDate}
                 includeWeekends={response.includesWeekends}
+                dayIsReservable={dayIsReservable}
               />
             </DesktopOnly>
             {openModal === 'pickAction' && (

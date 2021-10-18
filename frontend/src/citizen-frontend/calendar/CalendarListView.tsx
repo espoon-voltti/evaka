@@ -19,12 +19,14 @@ export interface Props {
   dailyData: DailyReservationData[]
   onHoverButtonClick: () => void
   selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
 }
 
 export default React.memo(function CalendarListView({
   dailyData,
   onHoverButtonClick,
-  selectDate
+  selectDate,
+  dayIsReservable
 }: Props) {
   const i18n = useTranslation()
   const weeklyData = useMemo(() => asWeeklyData(dailyData), [dailyData])
@@ -37,6 +39,7 @@ export default React.memo(function CalendarListView({
             {...w}
             key={`${w.dailyReservations[0].date.formatIso()}`}
             selectDate={selectDate}
+            dayIsReservable={dayIsReservable}
           />
         ))}
       </FixedSpaceColumn>
