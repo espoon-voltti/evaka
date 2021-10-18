@@ -7,7 +7,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { H1 } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { Loading, Result } from 'lib-common/api'
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -174,13 +174,13 @@ export default function PedagogicalDocuments() {
         {items.map((item) => (
           <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
             <div>{LocalDate.fromSystemTzDate(item.created).format()}</div>
-            <Attachment
-              item={item}
-              dataQa={`pedagogical-document-list-attachment-${item.id}`}
-            />
             <ItemDescription
               item={item}
               dataQa={`pedagogical-document-list-description-${item.id}`}
+            />
+            <Attachment
+              item={item}
+              dataQa={`pedagogical-document-list-attachment-${item.id}`}
             />
             <AttachmentDownloadButton
               item={item}
@@ -209,15 +209,11 @@ export default function PedagogicalDocuments() {
         </Thead>
         <Tbody>
           {items.map((item) => (
-            <Tr key={item.id}>
-              <DateTd
-                data-qa={`pedagogical-document-date-${item.id}`}
-                documentIsRead={item.isRead}
-              >
+            <ItemTr key={item.id} documentIsRead={item.isRead}>
+              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
               <DescriptionTd
-                documentIsRead={item.isRead}
                 data-qa={`pedagogical-document-description-${item.id}`}
               >
                 {item.description}
@@ -234,7 +230,7 @@ export default function PedagogicalDocuments() {
                   dataQa={`pedagogical-document-attachment-download-${item.id}`}
                 />
               </ActionsTd>
-            </Tr>
+            </ItemTr>
           ))}
         </Tbody>
       </Table>
@@ -263,10 +259,17 @@ export default function PedagogicalDocuments() {
   )
 }
 
+const ItemTr = styled(Tr)`
+  font-weight: ${(props: { documentIsRead: boolean }) =>
+    props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+
+  button {
+    font-weight: ${fontWeights.semibold};
+  }
+`
+
 const DateTd = styled(Td)`
   width: 15%;
-  font-weight: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? 400 : 600};
 `
 
 const NameTd = styled(Td)`
@@ -275,8 +278,6 @@ const NameTd = styled(Td)`
 
 const DescriptionTd = styled(Td)`
   width: 45%;
-  font-weight: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? 400 : 600};
   white-space: pre-line;
 `
 
@@ -311,11 +312,11 @@ const ListItem = styled(FixedSpaceColumn)`
   border-top: 1px solid #b1b1b1;
   border-left: ${(props: { documentIsRead: boolean }) =>
     props.documentIsRead ? 'none' : '6px solid #249fff'};
-  font-weight: 600;
+  font-weight: ${fontWeights.semibold};
 
   & > div {
     font-weight: ${(props: { documentIsRead: boolean }) =>
-      props.documentIsRead ? 400 : 600};
+      props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
   }
 `
 
