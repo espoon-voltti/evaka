@@ -25,6 +25,7 @@ import ChildNotes from './components/attendances/notes/ChildNotes'
 import ensureAuthenticated from './components/ensureAuthenticated'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
+import MobileReloadNotification from './components/MobileReloadNotification'
 import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
@@ -61,6 +62,7 @@ export default function App() {
                 <Redirect to="/landing" />
               </Switch>
             </Router>
+            <MobileReloadNotification />
           </UserContextProvider>
         </ErrorBoundary>
       </ThemeProvider>

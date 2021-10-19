@@ -1637,5 +1637,9 @@ export default {
       description: 'Kuvaus'
     },
     toggleExpandText: 'Näytä tai piilota teksti'
+  },
+  reloadNotification: {
+    title: 'Uusi versio eVakasta saatavilla',
+    buttonText: 'Lataa sivu uudelleen'
   }
 }

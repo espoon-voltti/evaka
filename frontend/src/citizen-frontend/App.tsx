@@ -31,6 +31,7 @@ import Applying from './applying/Applying'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
 import { UnwrapResult } from './async-rendering'
+import CitizenReloadNotification from './CitizenReloadNotification'
 
 export default function App() {
   const i18n = useTranslation()
@@ -126,6 +127,7 @@ export default function App() {
                     </Main>
                     <GlobalInfoDialog />
                     <GlobalErrorDialog />
+                    <CitizenReloadNotification />
                     <LoginErrorModal translations={i18n.login.failedModal} />
                   </PedagogicalDocumentsContextProvider>
                 </MessageContextProvider>

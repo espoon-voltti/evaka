@@ -80,6 +80,7 @@ import { hasRole } from './utils/roles'
 import VardaErrors from './components/reports/VardaErrors'
 import UnitFeaturesPage from './components/UnitFeaturesPage'
 import SettingsPage from './components/SettingsPage'
+import ReloadNotification from 'lib-components/molecules/ReloadNotification'
 import { AuthStatus } from 'lib-common/api-types/employee-auth'
 import { getAuthStatus } from './api/auth'
 
@@ -447,6 +448,10 @@ export default function App() {
                   <Route exact path="/" component={RedirectToMainPage} />
                 </Switch>
                 <ErrorMessage />
+                <ReloadNotification
+                  i18n={i18n.reloadNotification}
+                  apiVersion={authStatus?.apiVersion}
+                />
                 <LoginErrorModal translations={i18n.login.failedModal} />
               </Router>
             </StateProvider>

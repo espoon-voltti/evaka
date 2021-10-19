@@ -35,11 +35,13 @@ export type User = Person & {
 }
 
 type AuthState = {
+  apiVersion: string | undefined
   user: Result<User | undefined>
   refreshAuthStatus: () => void
 }
 
 const defaultState: AuthState = {
+  apiVersion: undefined,
   user: Loading.of(),
   refreshAuthStatus: () => undefined
 }
@@ -60,6 +62,7 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
 
   const value = useMemo(
     () => ({
+      apiVersion: authStatus.map((a) => a.apiVersion).getOrElse(undefined),
       user: authStatus.map((a) => (a.loggedIn ? a.user : undefined)),
       refreshAuthStatus
     }),

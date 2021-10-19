@@ -1705,6 +1705,10 @@ const en: Translations = {
       description: 'Description'
     },
     toggleExpandText: 'Show or hide the text'
+  },
+  reloadNotification: {
+    title: 'New version of eVakasta is available',
+    buttonText: 'Reload page'
   }
 }
 
