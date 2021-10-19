@@ -59,7 +59,7 @@ export default React.memo(function FormModal({
 type AsyncModalProps = ModalBaseProps & {
   resolve: {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    action: () => Promise<any>
+    action: (cancel: () => Promise<void>) => Promise<any>
     label: string
     disabled?: boolean
     onSuccess: () => void

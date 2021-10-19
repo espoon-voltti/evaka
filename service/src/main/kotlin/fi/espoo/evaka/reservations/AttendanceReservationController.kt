@@ -271,13 +271,14 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
         SELECT :childId, :start, :end, NULL, :userId
-        FROM placement pl 
-        JOIN daycare d ON d.id = pl.unit_id
+        FROM placement pl
+        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
+        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id)
         WHERE 
             pl.child_id = :childId AND 
             daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
             extract(DOW FROM :date) = ANY(d.operation_days) AND 
-            NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date) AND
+            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
         ON CONFLICT DO NOTHING;
         """.trimIndent()

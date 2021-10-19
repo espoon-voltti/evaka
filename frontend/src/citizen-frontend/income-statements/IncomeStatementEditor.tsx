@@ -91,7 +91,7 @@ export default function IncomeStatementEditor({
         prev.map((state) => ({ ...state, formData: fn(state.formData) }))
       )
 
-    const save = () => {
+    const save = (cancel: () => Promise<void>) => {
       const validatedData = formData ? fromBody(formData) : undefined
       if (validatedData) {
         if (id) {
@@ -102,7 +102,7 @@ export default function IncomeStatementEditor({
       } else {
         setShowFormErrors(true)
         if (form.current) form.current.scrollToErrors()
-        return Promise.resolve('AsyncButton.cancel' as const)
+        return cancel()
       }
     }
 

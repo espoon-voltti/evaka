@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.utils.dateNow
 import org.jdbi.v3.core.kotlin.mapTo
@@ -47,11 +46,21 @@ class ReservationControllerCitizen(
             throw BadRequest("Invalid date range $from - $to")
         }
 
-        return db.read {
+        return db.read { tx ->
+            val children = tx.getReservationChildren(user.id, range)
+            val includeWeekends = children.any {
+                it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
+            }
+            val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
+            val reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate())
             ReservationsResponse(
-                dailyData = it.getReservationsCitizen(user.id, range),
-                children = it.getReservationChildren(user.id, range),
-                reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate())
+                dailyData = reservations,
+                children = children,
+                reservableDays = FiniteDateRange(
+                    maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
+                    minOf(reservableDays.end, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
+                ),
+                includesWeekends = includeWeekends
             )
         }
     }
@@ -101,7 +110,8 @@ class ReservationControllerCitizen(
 data class ReservationsResponse(
     val dailyData: List<DailyReservationData>,
     val children: List<ReservationChild>,
-    val reservableDays: FiniteDateRange
+    val reservableDays: FiniteDateRange,
+    val includesWeekends: Boolean
 )
 
 data class DailyReservationData(
@@ -127,7 +137,11 @@ data class Reservation(
 data class ReservationChild(
     val id: UUID,
     val firstName: String,
-    val preferredName: String?
+    val preferredName: String?,
+    val placementMinStart: LocalDate,
+    val placementMaxEnd: LocalDate,
+    val maxOperationalDays: Set<Int>,
+    val inShiftCareUnit: Boolean
 )
 
 data class AbsenceRequest(
@@ -136,7 +150,11 @@ data class AbsenceRequest(
     val absenceType: AbsenceType
 )
 
-fun Database.Read.getReservationsCitizen(guardianId: UUID, range: FiniteDateRange): List<DailyReservationData> {
+fun Database.Read.getReservationsCitizen(
+    guardianId: UUID,
+    range: FiniteDateRange,
+    includeWeekends: Boolean
+): List<DailyReservationData> {
     if (range.durationInDays() > 450) throw BadRequest("Range too long")
 
     return createQuery(
@@ -171,30 +189,46 @@ LEFT JOIN LATERAL (
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
 ) a ON true
+WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
         """.trimIndent()
     )
         .bind("guardianId", guardianId)
         .bind("start", range.start)
         .bind("end", range.end)
+        .bind("includeWeekends", includeWeekends)
         .mapTo<DailyReservationData>()
         .toList()
-        .filter { !it.date.isWeekend() }
 }
 
 private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name, child.preferred_name
+SELECT ch.id, ch.first_name, child.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
 LEFT JOIN child ON ch.id = child.id
-WHERE EXISTS(
-    SELECT 1
-    FROM placement pl
-    JOIN daycare u ON u.id = pl.unit_id
-    WHERE pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
-)
+LEFT JOIN LATERAL (
+    SELECT
+        min(p.start_date) AS placement_min_start,
+        max(p.end_date) AS placement_max_end,
+        array_agg(DISTINCT p.operation_days) AS max_operational_days,
+        bool_or(p.round_the_clock) AS in_shift_care_unit
+    FROM (
+        SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock
+        FROM placement pl
+        JOIN daycare u ON pl.unit_id = u.id
+        WHERE pl.child_id = g.child_id AND daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+
+        UNION ALL
+
+        SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock AS shift_care
+        FROM backup_care bc
+        JOIN daycare u ON bc.unit_id = u.id
+        WHERE bc.child_id = g.child_id AND daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+    ) p
+) p ON true
+WHERE p.placement_min_start IS NOT NULL
 ORDER BY first_name
         """.trimIndent()
     )
@@ -232,14 +266,15 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
         SELECT :childId, :start, :end, :userId, NULL
-        FROM placement pl 
-        JOIN daycare d ON d.id = pl.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        FROM placement pl
+        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
+        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
         JOIN guardian g ON g.child_id = pl.child_id AND g.guardian_id = :userId
         WHERE 
             pl.child_id = :childId AND 
             daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
             extract(DOW FROM :date) = ANY(d.operation_days) AND 
-            NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date) AND
+            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
         ON CONFLICT DO NOTHING;
         """.trimIndent()

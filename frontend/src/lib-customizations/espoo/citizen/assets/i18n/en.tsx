@@ -181,6 +181,8 @@ const en: Translations = {
     newAbsence: 'Report absence',
     newReservationBtn: 'Make a reservation',
     noReservation: 'No reservations',
+    reservation: 'Reservation',
+    realized: 'Realized',
     reservationModal: {
       title: 'Make a reservation',
       selectChildren: 'Children the reservation is made for',
@@ -188,13 +190,12 @@ const en: Translations = {
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
       missingDateRange: 'Select days to reserve',
-      repetition: 'Type or repetition',
-      businessDays: 'Mon-Fri',
+      repetition: 'Repetition',
       postError: 'The reservation failed',
       repetitions: {
         DAILY: 'Daily',
         WEEKLY: 'Weekly',
-        SHIFT_CARE: 'Shift care'
+        IRREGULAR: 'Irregular'
       }
     },
     absenceModal: {

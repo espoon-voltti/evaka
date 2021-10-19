@@ -28,10 +28,11 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
 import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
-  ChildDailyData,
+  Reservation,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { AbsenceType } from 'lib-common/generated/enums'
 import { postReservations } from './api'
 import CalendarModal from './CalendarModal'
 import { errorToInputInfo } from '../input-info-helper'
@@ -64,22 +65,31 @@ export default React.memo(function DayView({
   const childrenWithReservations = useMemo(() => {
     const dailyData = data.dailyData[dateIndexInData]
 
-    return data.children.map((child) => {
-      const childReservations = dailyData?.children.find(
-        ({ childId }) => childId === child.id
+    return data.children
+      .filter(
+        (child) =>
+          child.placementMinStart.isEqualOrBefore(date) &&
+          child.placementMaxEnd.isEqualOrAfter(date)
       )
+      .map((child) => {
+        const childReservations = dailyData?.children.find(
+          ({ childId }) => childId === child.id
+        )
 
-      return {
-        child,
-        data: {
-          absence: childReservations?.absence ?? null,
-          reservations: childReservations?.reservations ?? [
-            { startTime: '', endTime: '' }
-          ]
+        const editableReservation =
+          child.maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
+          (!dailyData.isHoliday || child.inShiftCareUnit)
+
+        return {
+          child,
+          editableReservation,
+          data: {
+            absence: childReservations?.absence ?? undefined,
+            reservations: childReservations?.reservations
+          }
         }
-      }
-    })
-  }, [dateIndexInData, data])
+      })
+  }, [dateIndexInData, data, date])
 
   const [previousDate, nextDate] = useMemo(() => {
     return [
@@ -143,8 +153,11 @@ export default React.memo(function DayView({
           ) : null}
         </ReservationTitle>
         <Gap size="s" />
-        {editing
-          ? editorState.map(({ child, data }, childIndex) => (
+        {childrenWithReservations.map(
+          ({ child, editableReservation, data }, childIndex) => {
+            const { data: childState } = editorState[childIndex]
+
+            return (
               <Fragment key={child.id}>
                 {childIndex !== 0 ? <Separator /> : null}
                 <H3 noMargin>
@@ -152,45 +165,17 @@ export default React.memo(function DayView({
                 </H3>
                 <Gap size="s" />
                 <Grid>
-                  <Label>Varaus</Label>
-                  <FixedSpaceColumn>
-                    <FixedSpaceRow alignItems="center">
-                      <InputField
-                        type="time"
-                        onChange={editorStateSetter(child.id, 0, 'startTime')}
-                        value={data[0].startTime}
-                        info={errorToInputInfo(
-                          data[0].errors.startTime,
-                          i18n.validationErrors
-                        )}
-                        readonly={saving}
-                      />
-                      <span>–</span>
-                      <InputField
-                        type="time"
-                        onChange={editorStateSetter(child.id, 0, 'endTime')}
-                        value={data[0].endTime}
-                        info={errorToInputInfo(
-                          data[0].errors.endTime,
-                          i18n.validationErrors
-                        )}
-                        readonly={saving}
-                      />
-                      {data[1] ? null : (
-                        <IconButton
-                          icon={faPlus}
-                          onClick={() => addSecondReservation(child.id)}
-                        />
-                      )}
-                    </FixedSpaceRow>
-                    {data[1] ? (
+                  <Label>{i18n.calendar.reservation}</Label>
+                  {editing &&
+                  (editableReservation || data.reservations?.length) ? (
+                    <FixedSpaceColumn>
                       <FixedSpaceRow alignItems="center">
                         <InputField
                           type="time"
-                          onChange={editorStateSetter(child.id, 1, 'startTime')}
-                          value={data[1].startTime}
+                          onChange={editorStateSetter(child.id, 0, 'startTime')}
+                          value={childState[0].startTime}
                           info={errorToInputInfo(
-                            data[1].errors.startTime,
+                            childState[0].errors.startTime,
                             i18n.validationErrors
                           )}
                           readonly={saving}
@@ -198,41 +183,61 @@ export default React.memo(function DayView({
                         <span>–</span>
                         <InputField
                           type="time"
-                          onChange={editorStateSetter(child.id, 1, 'endTime')}
-                          value={data[1].endTime}
+                          onChange={editorStateSetter(child.id, 0, 'endTime')}
+                          value={childState[0].endTime}
                           info={errorToInputInfo(
-                            data[1].errors.endTime,
+                            childState[0].errors.endTime,
                             i18n.validationErrors
                           )}
                           readonly={saving}
                         />
-                        <IconButton
-                          icon={faTrash}
-                          onClick={() => removeSecondReservation(child.id)}
-                        />
+                        {data[1] || !child.inShiftCareUnit ? null : (
+                          <IconButton
+                            icon={faPlus}
+                            onClick={() => addSecondReservation(child.id)}
+                          />
+                        )}
                       </FixedSpaceRow>
-                    ) : null}
-                  </FixedSpaceColumn>
-                  <Label>Toteuma</Label>
-                  <span>–</span>
-                </Grid>
-              </Fragment>
-            ))
-          : childrenWithReservations.map(({ child, data }, childIndex) => (
-              <Fragment key={child.id}>
-                {childIndex !== 0 ? <Separator /> : null}
-                <H3 noMargin>
-                  {child.preferredName || child.firstName.split(' ')[0]}
-                </H3>
-                <Gap size="s" />
-                <Grid>
-                  <Label>Varaus</Label>
-                  {data.absence ? (
+                      {data[1] ? (
+                        <FixedSpaceRow alignItems="center">
+                          <InputField
+                            type="time"
+                            onChange={editorStateSetter(
+                              child.id,
+                              1,
+                              'startTime'
+                            )}
+                            value={childState[1].startTime}
+                            info={errorToInputInfo(
+                              childState[1].errors.startTime,
+                              i18n.validationErrors
+                            )}
+                            readonly={saving}
+                          />
+                          <span>–</span>
+                          <InputField
+                            type="time"
+                            onChange={editorStateSetter(child.id, 1, 'endTime')}
+                            value={childState[1].endTime}
+                            info={errorToInputInfo(
+                              childState[1].errors.endTime,
+                              i18n.validationErrors
+                            )}
+                            readonly={saving}
+                          />
+                          <IconButton
+                            icon={faTrash}
+                            onClick={() => removeSecondReservation(child.id)}
+                          />
+                        </FixedSpaceRow>
+                      ) : null}
+                    </FixedSpaceColumn>
+                  ) : data.absence ? (
                     <span>
                       {i18n.calendar.absences[data.absence] ??
                         i18n.calendar.absent}
                     </span>
-                  ) : data.reservations.length > 0 &&
+                  ) : data.reservations?.length &&
                     data.reservations.some(({ startTime }) => !!startTime) ? (
                     <span>
                       {data.reservations
@@ -244,13 +249,15 @@ export default React.memo(function DayView({
                         .join(', ')}
                     </span>
                   ) : (
-                    <NoReservation>Ei varausta</NoReservation>
+                    <NoReservation>{i18n.calendar.noReservation}</NoReservation>
                   )}
-                  <Label>Toteuma</Label>
+                  <Label>{i18n.calendar.realized}</Label>
                   <span>–</span>
                 </Grid>
               </Fragment>
-            ))}
+            )
+          }
+        )}
         {confirmationModal ? (
           <InfoModal
             title={i18n.common.saveConfirmation}
@@ -283,10 +290,18 @@ function useEditState(
   reloadData: () => void,
   childrenWithReservations: {
     child: ReservationChild
-    data: Omit<ChildDailyData, 'childId'>
+    editableReservation: boolean
+    data: {
+      absence: AbsenceType | undefined
+      reservations: Reservation[] | undefined
+    }
   }[]
 ) {
-  const editable = data.reservableDays.includes(date)
+  const editable =
+    data.reservableDays.includes(date) &&
+    childrenWithReservations.some(
+      ({ editableReservation }) => editableReservation
+    )
 
   const [editing, setEditing] = useState(false)
   const startEditing = () => setEditing(true)
@@ -295,14 +310,20 @@ function useEditState(
     () =>
       childrenWithReservations.map(({ child, data }) => ({
         child,
-        data: data?.reservations.map(({ startTime, endTime }) => ({
+        data: data?.reservations?.map(({ startTime, endTime }) => ({
           startTime,
           endTime,
           errors: {
             startTime: undefined,
             endTime: undefined
           }
-        }))
+        })) ?? [
+          {
+            startTime: '',
+            endTime: '',
+            errors: { startTime: undefined, endTime: undefined }
+          }
+        ]
       })),
     [childrenWithReservations]
   )
@@ -317,24 +338,33 @@ function useEditState(
           child.id === childId
             ? {
                 child,
-                data: data.map((d, i) =>
-                  index === i
-                    ? {
-                        ...d,
-                        [field]: value,
-                        errors: {
-                          ...d.errors,
-                          [field]:
-                            value === '' &&
-                            child[
-                              field === 'startTime' ? 'endTime' : 'startTime'
-                            ] !== ''
-                              ? 'required'
-                              : regexp(value, TIME_REGEXP, 'timeFormat')
-                        }
-                      }
-                    : d
-                )
+                data: data.map((timeRange, i) => {
+                  if (index !== i) {
+                    return timeRange
+                  }
+
+                  const oppositeField =
+                    field === 'startTime' ? 'endTime' : 'startTime'
+
+                  return {
+                    ...timeRange,
+                    [field]: value,
+                    errors: {
+                      ...timeRange.errors,
+                      [field]:
+                        value === '' &&
+                        timeRange[
+                          field === 'startTime' ? 'endTime' : 'startTime'
+                        ] !== ''
+                          ? 'required'
+                          : regexp(value, TIME_REGEXP, 'timeFormat'),
+                      [oppositeField]:
+                        value !== '' && timeRange[oppositeField] === ''
+                          ? 'required'
+                          : regexp(value, TIME_REGEXP, 'timeFormat')
+                    }
+                  }
+                })
               }
             : { child, data }
         )

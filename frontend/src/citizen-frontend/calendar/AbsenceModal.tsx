@@ -57,10 +57,10 @@ export default React.memo(function AbsenceModal({
       mobileFullScreen
       title={i18n.calendar.absenceModal.title}
       resolve={{
-        action: () => {
+        action: (cancel) => {
           if (!request) {
             setShowAllErrors(true)
-            return Promise.resolve('AsyncButton.cancel')
+            return cancel()
           }
           return postAbsences(request)
         },

@@ -42,7 +42,7 @@ export default React.memo(function ReservationsTable({
             <DateTh key={date.formatIso()} faded={isHoliday}>
               <Date>
                 {`${
-                  i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek()]
+                  i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
                 } ${date.format('dd.MM.')}`}
               </Date>
               <TimesRow>

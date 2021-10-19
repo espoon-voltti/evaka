@@ -181,6 +181,8 @@ const sv: Translations = {
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Reservera',
     noReservation: 'Ingen reservation',
+    reservation: 'Reservation',
+    realized: 'Insikt',
     reservationModal: {
       title: 'Reservera',
       selectChildren: 'Barn som reserveras för',
@@ -188,13 +190,12 @@ const sv: Translations = {
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
       missingDateRange: 'Välj barn att reservera',
-      repetition: 'Typ eller upprepning',
-      businessDays: 'Mån-Fre',
+      repetition: 'Upprepning',
       postError: 'Misslyckades med att reservera',
       repetitions: {
         DAILY: 'Dagligen',
         WEEKLY: 'Veckovis',
-        SHIFT_CARE: 'Skiftvård'
+        IRREGULAR: 'Irreguljär'
       }
     },
     absenceModal: {

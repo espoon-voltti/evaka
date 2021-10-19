@@ -180,6 +180,8 @@ export default {
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',
+    reservation: 'Varaus',
+    realized: 'Toteuma',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Lapset, joille varaus tehdään',
@@ -187,13 +189,12 @@ export default {
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
       missingDateRange: 'Valitse varattavat päivät',
-      repetition: 'Tyyppi tai toistuvuus',
-      businessDays: 'Ma-Pe',
+      repetition: 'Toistuvuus',
       postError: 'Varauksen luominen ei onnistunut',
       repetitions: {
         DAILY: 'Päivittäin',
         WEEKLY: 'Viikoittain',
-        SHIFT_CARE: 'Vuorohoito'
+        IRREGULAR: 'Epäsäännöllinen'
       }
     },
     absenceModal: {

@@ -21,18 +21,20 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
 }
 
 export default React.memo(function WeekElem({
   weekNumber,
   dailyReservations,
-  selectDate
+  selectDate,
+  dayIsReservable
 }: Props) {
   const i18n = useTranslation()
   return (
     <div>
       <WeekDiv>
-        {i18n.common.datetime.weekShort} {weekNumber}
+        {i18n.common.datetime.week} {weekNumber}
       </WeekDiv>
       <div>
         {dailyReservations.map((d) => (
@@ -40,6 +42,7 @@ export default React.memo(function WeekElem({
             dailyReservations={d}
             key={d.date.formatIso()}
             selectDate={selectDate}
+            dayIsReservable={dayIsReservable}
           />
         ))}
       </div>
@@ -62,11 +65,13 @@ const WeekDiv = styled.div`
 interface DayProps {
   dailyReservations: DailyReservationData
   selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
 }
 
 const DayElem = React.memo(function DayElem({
   dailyReservations,
-  selectDate
+  selectDate,
+  dayIsReservable
 }: DayProps) {
   const i18n = useTranslation()
   const ref = useRef<HTMLDivElement>()
@@ -99,7 +104,7 @@ const DayElem = React.memo(function DayElem({
       onClick={() => selectDate(dailyReservations.date)}
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
-      <DayColumn spacing="xxs" holiday={dailyReservations.isHoliday}>
+      <DayColumn spacing="xxs" inactive={!dayIsReservable(dailyReservations)}>
         <div>
           {
             i18n.common.datetime.weekdaysShort[
@@ -126,9 +131,9 @@ const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   cursor: pointer;
 `
 
-const DayColumn = styled(FixedSpaceColumn)<{ holiday: boolean }>`
+const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`
   width: 3rem;
-  color: ${(p) => (p.holiday ? colors.greyscale.dark : colors.blues.dark)};
+  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.blues.dark)};
   font-weight: ${fontWeights.semibold};
 `
 

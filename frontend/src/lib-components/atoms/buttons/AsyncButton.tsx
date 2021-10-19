@@ -14,9 +14,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'lib-icons'
 import { StyledButton } from './Button'
 
-export type AsyncClickCallback = () => Promise<
-  void | Result | (void | Result)[] | 'AsyncButton.cancel'
->
+export type AsyncClickCallback = (
+  cancel: () => Promise<void>
+) => Promise<void | Result>
 
 type Props = {
   text: string
@@ -53,6 +53,7 @@ export default React.memo(function AsyncButton({
   const [showFailure, setShowFailure] = useState(false)
   const onSuccessRef = useRef(onSuccess)
   const onFailureRef = useRef(onFailure)
+  const canceledRef = useRef(false)
 
   const handleFailure = () => {
     setShowFailure(true)
@@ -61,26 +62,20 @@ export default React.memo(function AsyncButton({
 
   const callback = () => {
     setInProgress(true)
-    onClick()
+    onClick(() => {
+      canceledRef.current = true
+      return Promise.resolve()
+    })
       .then((result) => {
-        if (result === 'AsyncButton.cancel') {
+        if (canceledRef.current) {
+          canceledRef.current = false
           return
         }
 
-        if (Array.isArray(result)) {
-          let failure = false
-          for (const elem of result) {
-            if (elem && elem.isFailure) {
-              failure = true
-            }
-            failure ? handleFailure() : setShowSuccess(true)
-          }
+        if (result && result.isFailure) {
+          handleFailure()
         } else {
-          if (result && result.isFailure) {
-            handleFailure()
-          } else {
-            setShowSuccess(true)
-          }
+          setShowSuccess(true)
         }
       })
       .catch(() => handleFailure())

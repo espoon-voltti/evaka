@@ -60,6 +60,10 @@ export interface Reservation {
 export interface ReservationChild {
   firstName: string
   id: UUID
+  inShiftCareUnit: boolean
+  maxOperationalDays: number[]
+  placementMaxEnd: LocalDate
+  placementMinStart: LocalDate
   preferredName: string | null
 }
 
@@ -69,6 +73,7 @@ export interface ReservationChild {
 export interface ReservationsResponse {
   children: ReservationChild[]
   dailyData: DailyReservationData[]
+  includesWeekends: boolean
   reservableDays: FiniteDateRange
 }
 
