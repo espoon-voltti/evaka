@@ -67,7 +67,11 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
           `lib-customizations/${customizationsModule}`
         )
       }
-    )
+    ),
+    new webpack.DefinePlugin({
+      // This matches APP_COMMIT in apigw
+      'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
+    })
   ]
 
   if (isDevServer) {
