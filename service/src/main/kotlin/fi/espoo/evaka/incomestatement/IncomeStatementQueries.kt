@@ -7,6 +7,7 @@ package fi.espoo.evaka.incomestatement
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -72,11 +73,11 @@ SELECT
         WHERE a.income_statement_id = ist.id 
         ${if (excludeEmployeeAttachments) "AND uploaded_by_employee IS NULL" else ""}
         ORDER BY a.created
-    ) s) AS attachments
+    ) s) AS attachments,
+   COUNT(*) OVER () AS count
 FROM income_statement ist
 WHERE person_id = :personId
-${if (single) "AND ist.id = :id" else ""}
-ORDER BY start_date DESC
+${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFFSET :offset"}
         """
 }
 
@@ -169,12 +170,16 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
 
 fun Database.Read.readIncomeStatementsForPerson(
     personId: UUID,
-    includeEmployeeContent: Boolean
-): List<IncomeStatement> =
+    includeEmployeeContent: Boolean,
+    page: Int,
+    pageSize: Int
+): Paged<IncomeStatement> =
     createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
-        .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
-        .list()
+        .bind("offset", (page - 1) * pageSize)
+        .bind("limit", pageSize)
+        .map { row -> WithCount(row.mapColumn("count"), mapIncomeStatement(row, includeEmployeeContent)) }
+        .let(mapToPaged(pageSize))
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: UUID,
@@ -445,6 +450,12 @@ LIMIT :pageSize OFFSET :offset
         .bind("offset", (page - 1) * pageSize)
         .map(withCountMapper<IncomeStatementAwaitingHandler>())
         .let(mapToPaged(pageSize))
+
+fun Database.Read.readIncomeStatementStartDates(user: AuthenticatedUser.Citizen): List<LocalDate> =
+    createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
+        .bind("personId", user.id)
+        .mapTo<LocalDate>()
+        .list()
 
 fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")

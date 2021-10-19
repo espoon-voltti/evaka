@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllPersonsAttachments
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen/income-statements")
@@ -29,19 +32,31 @@ class IncomeStatementControllerCitizen {
     @GetMapping
     fun getIncomeStatements(
         db: Database.Connection,
-        user: AuthenticatedUser
-    ): List<IncomeStatement> {
+        user: AuthenticatedUser.Citizen,
+        @RequestParam page: Int,
+        @RequestParam pageSize: Int
+    ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
-            tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false)
+            tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
         }
+    }
+
+    @GetMapping("/start-dates")
+    fun getIncomeStatementStartDates(
+        db: Database.Connection,
+        user: AuthenticatedUser.Citizen
+    ): List<LocalDate> {
+        Audit.IncomeStatementStartDates.log()
+        user.requireOneOfRoles(UserRole.END_USER)
+        return db.read { it.readIncomeStatementStartDates(user) }
     }
 
     @GetMapping("/{incomeStatementId}")
     fun getIncomeStatement(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
@@ -79,7 +94,7 @@ class IncomeStatementControllerCitizen {
     @PutMapping("/{incomeStatementId}")
     fun updateIncomeStatement(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
@@ -105,7 +120,7 @@ class IncomeStatementControllerCitizen {
     @DeleteMapping("/{id}")
     fun removeIncomeStatement(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable id: IncomeStatementId
     ) {
         Audit.IncomeStatementDelete.log(id)

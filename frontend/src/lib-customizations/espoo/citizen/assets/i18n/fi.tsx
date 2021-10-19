@@ -24,6 +24,7 @@ export default {
     yes: 'Kyllä',
     no: 'Ei',
     select: 'Valitse',
+    page: 'Sivu',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',

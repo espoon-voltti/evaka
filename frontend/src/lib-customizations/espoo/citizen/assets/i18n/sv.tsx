@@ -25,6 +25,7 @@ const sv: Translations = {
     yes: 'Ja',
     no: 'Nej',
     select: 'Utvalda',
+    page: 'Sida',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kommunal',

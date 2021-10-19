@@ -15,11 +15,21 @@ import { UUID } from '../types'
 import { client } from './client'
 
 export async function getIncomeStatements(
-  personId: UUID
-): Promise<Result<IncomeStatement[]>> {
+  personId: UUID,
+  page: number,
+  pageSize = 10
+): Promise<Result<Paged<IncomeStatement>>> {
   return client
-    .get<JsonOf<IncomeStatement[]>>(`/income-statements/person/${personId}`)
-    .then((res) => res.data.map(deserializeIncomeStatement))
+    .get<JsonOf<Paged<IncomeStatement>>>(
+      `/income-statements/person/${personId}`,
+      {
+        params: { page, pageSize }
+      }
+    )
+    .then(({ data: { data, ...rest } }) => ({
+      ...rest,
+      data: data.map(deserializeIncomeStatement)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

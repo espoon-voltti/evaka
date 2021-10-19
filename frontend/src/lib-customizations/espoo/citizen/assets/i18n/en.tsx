@@ -25,6 +25,7 @@ const en: Translations = {
     yes: 'Yes',
     no: 'No',
     select: 'Select',
+    page: 'Page',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',

@@ -153,7 +153,9 @@ data class Attachment(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class IncomeStatement {
+sealed class IncomeStatement(
+    val type: IncomeStatementType
+) {
     abstract val id: IncomeStatementId
     abstract val startDate: LocalDate
     abstract val endDate: LocalDate?
@@ -171,7 +173,7 @@ sealed class IncomeStatement {
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
         override val handlerNote: String
-    ) : IncomeStatement()
+    ) : IncomeStatement(IncomeStatementType.HIGHEST_FEE)
 
     @JsonTypeName("INCOME")
     data class Income(
@@ -188,5 +190,5 @@ sealed class IncomeStatement {
         override val handled: Boolean,
         override val handlerNote: String,
         val attachments: List<Attachment>,
-    ) : IncomeStatement()
+    ) : IncomeStatement(IncomeStatementType.INCOME)
 }

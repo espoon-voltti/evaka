@@ -1186,7 +1186,6 @@ export const fi = {
     },
     income: {
       title: 'Tulotiedot',
-      error: 'Tulotietojen lataus epäonnistui',
       itemHeader: 'Tulotiedot ajalle',
       itemHeaderNew: 'Uusi tulotieto',
       details: {

@@ -12,6 +12,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -26,6 +27,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 
 class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
@@ -47,7 +49,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val incomeStatements = getIncomeStatements()
+        val incomeStatements = getIncomeStatements().data
         assertEquals(
             listOf(
                 IncomeStatement.HighestFee(
@@ -106,7 +108,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val incomeStatements = getIncomeStatements()
+        val incomeStatements = getIncomeStatements().data
         assertEquals(
             listOf(
                 IncomeStatement.Income(
@@ -301,7 +303,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val incomeStatements = getIncomeStatements()
+        val incomeStatements = getIncomeStatements().data
         assertEquals(
             listOf(
                 IncomeStatement.Income(
@@ -427,7 +429,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             ),
         )
 
-        val incomeStatement = getIncomeStatements()[0]
+        val incomeStatement = getIncomeStatements().data[0]
 
         updateIncomeStatement(
             incomeStatement.id,
@@ -506,7 +508,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
             )
         )
-        val id = getIncomeStatements().first().id
+        val id = getIncomeStatements().data.first().id
 
         markIncomeStatementHandled(id, "foooooo")
 
@@ -528,16 +530,44 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
             )
         )
-        val incomeStatement = getIncomeStatements().first()
+        val incomeStatement = getIncomeStatements().data.first()
         assertEquals("", incomeStatement.handlerNote)
 
         markIncomeStatementHandled(incomeStatement.id, "foo bar")
 
-        val handled = getIncomeStatements().first()
+        val handled = getIncomeStatements().data.first()
         assertEquals(true, handled.handled)
         assertEquals("", handled.handlerNote)
 
         deleteIncomeStatement(incomeStatement.id, 403)
+    }
+
+    @Test
+    fun `paging works`() {
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2020, 4, 3),
+                endDate = LocalDate.of(2020, 12, 31),
+            )
+        )
+        createIncomeStatement(
+            IncomeStatementBody.HighestFee(
+                startDate = LocalDate.of(2021, 1, 1),
+                endDate = null,
+            )
+        )
+
+        val result = getIncomeStatements()
+        assertEquals(2, result.total)
+        assertEquals(1, result.pages)
+        assertNull(result.data.first().endDate)
+        assertEquals(LocalDate.of(2020, 12, 31), result.data.last().endDate)
+
+        val paged = getIncomeStatements(pageSize = 1)
+        assertEquals(2, paged.total)
+        assertEquals(2, paged.pages)
+        assertEquals(1, paged.data.size)
+        assertNull(paged.data.first().endDate)
     }
 
     @Test
@@ -621,7 +651,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             ),
         )
 
-        val incomeStatementId = getIncomeStatements()[0].id
+        val incomeStatementId = getIncomeStatements().data[0].id
 
         uploadAttachmentAsEmployee(employee, incomeStatementId)
 
@@ -635,12 +665,12 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun getIncomeStatements(): List<IncomeStatement> =
-        http.get("/citizen/income-statements")
+    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> =
+        http.get("/citizen/income-statements?page=$page&pageSize=$pageSize")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
-            .responseObject<List<IncomeStatement>>(objectMapper)
+            .responseObject<Paged<IncomeStatement>>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
