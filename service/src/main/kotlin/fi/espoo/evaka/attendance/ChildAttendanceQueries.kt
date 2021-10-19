@@ -127,7 +127,6 @@ data class ChildBasics(
     val dateOfBirth: LocalDate,
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
-    val paidPlacement: Boolean,
     val groupId: GroupId,
     val backup: Boolean,
     val imageUrl: String?
@@ -141,12 +140,9 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 gp.daycare_group_id as group_id,
                 p.child_id,
                 p.type as placement_type,
-                false AS backup,
-                CASE WHEN sno.fee_coefficient > 0.0 THEN 'TRUE' ELSE 'FALSE' END as paid_placement
+                false AS backup
             FROM daycare_group_placement gp
             JOIN placement p ON p.id = gp.daycare_placement_id
-            LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
-            LEFT JOIN service_need_option sno ON sn.option_id = sno.id
             WHERE
                 p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :date AND
                 NOT EXISTS (
@@ -163,15 +159,12 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 bc.group_id,
                 p.child_id,
                 p.type as placement_type,
-                true AS backup,
-                CASE WHEN sno.fee_coefficient > 0.0 THEN 'TRUE' ELSE 'FALSE' END as paid_placement  
+                true AS backup
             FROM backup_care bc
             JOIN placement p ON (
                 p.child_id = bc.child_id AND
                 daterange(p.start_date, p.end_date, '[]') @> :date
             )
-            LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
-            LEFT JOIN service_need_option sno ON sn.option_id = sno.id
             WHERE
                 bc.unit_id = :unitId AND
                 bc.group_id IS NOT NULL AND
@@ -200,8 +193,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             cimg.id AS image_id,
             c.group_id,
             c.placement_type,
-            c.backup,
-            c.paid_placement
+            c.backup
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
         JOIN child ch ON ch.id = c.child_id
@@ -220,7 +212,6 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 preferredName = row.mapColumn("preferred_name"),
                 dateOfBirth = row.mapColumn("date_of_birth"),
                 placementType = row.mapColumn("placement_type"),
-                paidPlacement = row.mapColumn("paid_placement"),
                 dailyServiceTimes = toDailyServiceTimes(row),
                 groupId = row.mapColumn("group_id"),
                 backup = row.mapColumn("backup"),

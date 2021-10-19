@@ -99,17 +99,32 @@ const checkAbsentTypeSelectionExistance = async (expectedToExist: boolean) => {
 }
 
 describe('Child mobile attendances', () => {
-  test('Child in daycare placement is not required to mark absence types if there is no paid service need set', async () => {
+  test('Child in daycare placement is not required to mark absence types', async () => {
     await createPlacement('DAYCARE')
     await checkAbsentTypeSelectionExistance(false)
   })
 
-  test('Child in daycare placement is required to mark absence types if there is paid service need set', async () => {
+  test('Child in preschool placement is not required to mark absence types', async () => {
+    await createPlacement('PRESCHOOL')
+    await checkAbsentTypeSelectionExistance(false)
+  })
+
+  test('Child in preschool daycare placement is not required to mark absence types', async () => {
+    await createPlacement('PRESCHOOL_DAYCARE')
+    await checkAbsentTypeSelectionExistance(false)
+  })
+
+  test('Child in 5yo daycare placement is not required to mark absence types if there is no paid service need set', async () => {
+    await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
+    await checkAbsentTypeSelectionExistance(false)
+  })
+
+  test('Child in 5yo daycare placement is required to mark absence types if there is paid service need set', async () => {
     const placement = await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
     const sno = await Fixture.serviceNeedOption()
       .with({
-        validPlacementType: 'DAYCARE',
-        feeCoefficient: 189.0,
+        validPlacementType: 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
+        feeCoefficient: 25.0,
         daycareHoursPerWeek: 40
       })
       .save()
@@ -120,7 +135,7 @@ describe('Child mobile attendances', () => {
         placementId: placement.id,
         startDate: new Date(placement.startDate),
         endDate: new Date(placement.endDate),
-      confirmedBy: employee.data.id!, // eslint-disable-line
+        confirmedBy: employee.data.id!, // eslint-disable-line
       })
       .save()
 
