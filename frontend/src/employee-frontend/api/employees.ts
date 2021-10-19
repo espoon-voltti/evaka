@@ -8,7 +8,7 @@ import { client } from './client'
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
 import { UUID } from 'lib-common/types'
-import { GlobalRole } from '../types'
+import { GlobalRole } from 'lib-common/api-types/employee-auth'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client

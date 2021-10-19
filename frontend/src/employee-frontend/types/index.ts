@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeFeatures } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
-
 export type CareTypeLabel =
   | 'club'
   | 'daycare'
@@ -14,33 +11,6 @@ export type CareTypeLabel =
   | 'backup-care'
   | 'temporary'
   | 'school-shift-care'
-
-export interface User {
-  id: UUID
-  name: string
-  accessibleFeatures: EmployeeFeatures
-}
-
-export const globalRoles = [
-  'ADMIN',
-  'SERVICE_WORKER',
-  'FINANCE_ADMIN',
-  'DIRECTOR'
-] as const
-
-export type GlobalRole = typeof globalRoles[number]
-
-export const scopedRoles = [
-  'UNIT_SUPERVISOR',
-  'SPECIAL_EDUCATION_TEACHER',
-  'STAFF'
-] as const
-
-export type ScopedRole = typeof scopedRoles[number]
-
-export const adRoles = [...globalRoles, ...scopedRoles] as const
-
-export type AdRole = GlobalRole | ScopedRole
 
 export type SearchOrder = 'ASC' | 'DESC'
 

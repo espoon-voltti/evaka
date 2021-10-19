@@ -5,7 +5,7 @@
 import { ErrorBoundary } from '@sentry/react'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { featureFlags } from 'lib-customizations/employee'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
   Redirect,
@@ -16,7 +16,6 @@ import {
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
-import { AuthStatus, getAuthStatus } from './api/auth'
 import { client } from './api/client'
 import AIPage from './components/ai/AIPage'
 import ApplicationPage from './components/ApplicationPage'
@@ -81,36 +80,12 @@ import { hasRole } from './utils/roles'
 import VardaErrors from './components/reports/VardaErrors'
 import UnitFeaturesPage from './components/UnitFeaturesPage'
 import SettingsPage from './components/SettingsPage'
+import { AuthStatus } from 'lib-common/api-types/employee-auth'
+import { getAuthStatus } from './api/auth'
 
 export default function App() {
   const { i18n } = useTranslation()
-  const [authStatus, setAuthStatus] = useState<AuthStatus>()
-
-  useEffect(() => {
-    void getAuthStatus()
-      .then(setAuthStatus)
-      .catch(() =>
-        setAuthStatus({ loggedIn: false, user: undefined, roles: undefined })
-      )
-  }, [])
-
-  useEffect(() => {
-    return idleTracker(
-      client,
-      () => {
-        void getAuthStatus()
-          .then(setAuthStatus)
-          .catch(() =>
-            setAuthStatus({
-              loggedIn: false,
-              user: undefined,
-              roles: undefined
-            })
-          )
-      },
-      { thresholdInMinutes: 20 }
-    )
-  }, [])
+  const authStatus = useAuthStatus()
 
   if (authStatus === undefined) {
     return null
@@ -521,3 +496,28 @@ const redirectTo = (urlMapper: (params: { [k: string]: string }) => string) =>
     const routeParams = useParams()
     return <Redirect to={urlMapper(routeParams)} />
   }
+
+function useAuthStatus(): AuthStatus | undefined {
+  const [authStatus, setAuthStatus] = useState<AuthStatus>()
+
+  const refreshAuthStatus = useCallback(
+    () => getAuthStatus().then(setAuthStatus),
+    []
+  )
+
+  useEffect(() => {
+    void refreshAuthStatus()
+  }, [refreshAuthStatus])
+
+  useEffect(() => {
+    return idleTracker(
+      client,
+      () => {
+        void refreshAuthStatus()
+      },
+      { thresholdInMinutes: 20 }
+    )
+  }, [refreshAuthStatus])
+
+  return authStatus
+}

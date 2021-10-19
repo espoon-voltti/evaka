@@ -22,7 +22,7 @@ export default function Authenticated(props: { children: ReactNode }) {
       })
       .catch(() => setUser(undefined))
       .finally(() => setLoading(false))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [setLoading, setUser])
 
   return <>{props.children}</>
 }

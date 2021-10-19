@@ -7,12 +7,6 @@ import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { Translations } from '../state/i18n'
 import { PlacementType } from 'lib-common/generated/enums'
 
-export interface User {
-  id: string
-  name: string
-  unitId?: string // only mobile devices have this
-}
-
 export type ChildAttendanceUIState =
   | 'coming'
   | 'present'
@@ -33,15 +27,6 @@ export function mapChildAttendanceUIState(
       return 'ABSENT'
   }
 }
-
-export type AdRole =
-  | 'SERVICE_WORKER'
-  | 'UNIT_SUPERVISOR'
-  | 'STAFF'
-  | 'FINANCE_ADMIN'
-  | 'ADMIN'
-  | 'DIRECTOR'
-  | 'SPECIAL_EDUCATION_TEACHER'
 
 export type AbsenceType =
   | 'OTHER_ABSENCE'

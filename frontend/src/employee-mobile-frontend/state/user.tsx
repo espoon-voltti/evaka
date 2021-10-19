@@ -8,7 +8,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { createContext, useEffect, useMemo } from 'react'
 import { getAuthStatus } from '../api/auth'
 import { client } from '../api/client'
-import { User } from '../types'
+import { User } from 'lib-common/api-types/employee-auth'
 
 export interface UserState {
   loggedIn: boolean

@@ -5,30 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
-
-interface User {
-  id: string
-  name: string
-  unitId?: string // only mobile devices have this
-}
-
-const adRoles = [
-  'SERVICE_WORKER',
-  'UNIT_SUPERVISOR',
-  'STAFF',
-  'FINANCE_ADMIN',
-  'ADMIN',
-  'DIRECTOR',
-  'SPECIAL_EDUCATION_TEACHER'
-] as const
-
-type AdRole = typeof adRoles[number]
-
-export interface AuthStatus {
-  loggedIn: boolean
-  user?: User
-  roles?: AdRole[]
-}
+import { AuthStatus } from 'lib-common/api-types/employee-auth'
 
 export async function getAuthStatus(): Promise<Result<AuthStatus>> {
   return client

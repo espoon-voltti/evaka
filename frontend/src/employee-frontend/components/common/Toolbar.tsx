@@ -11,9 +11,9 @@ import Tooltip from '../../components/common/Tooltip'
 import StatusLabel from '../../components/common/StatusLabel'
 import colors from 'lib-customizations/common'
 import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
-import { AdRole } from '../../types'
 import { UserContext } from '../../state/user'
 import { requireRole } from '../../utils/roles'
+import { AdRole } from 'lib-common/api-types/employee-auth'
 
 const ToolbarWrapper = styled.div`
   display: flex;
