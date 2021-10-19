@@ -20,7 +20,7 @@ import {
   createServiceNeed,
   updateServiceNeed
 } from '../../../../api/child/service-needs'
-import { UUID } from '../../../../types'
+import { UUID } from 'lib-common/types'
 
 interface ServiceNeedCreateRowProps {
   placement: Placement

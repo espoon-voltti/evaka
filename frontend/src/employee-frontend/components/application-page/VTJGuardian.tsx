@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { UUID } from '../../types'
 import { getPersonDetails } from '../../api/person'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../../types/person'
@@ -13,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+import { UUID } from 'lib-common/types'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null

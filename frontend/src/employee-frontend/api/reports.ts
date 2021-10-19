@@ -27,7 +27,6 @@ import {
   DecisionsReportRow,
   VardaErrorReportRow
 } from '../types/reports'
-import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -35,6 +34,7 @@ import {
   ServiceVoucherUnitReport,
   ServiceVoucherReport
 } from 'lib-common/generated/api-types/reports'
+import { UUID } from 'lib-common/types'
 
 export interface PeriodFilters {
   from: LocalDate

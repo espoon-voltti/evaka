@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState, Fragment } from 'react'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
 import { ChildState } from '../../state/child'
@@ -23,6 +22,7 @@ import _ from 'lodash'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import { FlexRow } from '../common/styled/containers'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

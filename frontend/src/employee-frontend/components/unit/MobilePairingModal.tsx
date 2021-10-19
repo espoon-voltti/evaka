@@ -20,7 +20,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import Loader from 'lib-components/atoms/Loader'
 import { faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
-import { UUID } from '../../types'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   unitId: UUID

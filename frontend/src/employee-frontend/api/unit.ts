@@ -22,7 +22,7 @@ import {
   VisitingAddress
 } from '../types/unit'
 import { ServiceNeed, UnitBackupCare } from '../types/child'
-import { AdRole, DayOfWeek, UUID } from '../types'
+import { AdRole, DayOfWeek } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -42,6 +42,7 @@ import {
   ChildReservations,
   UnitAttendanceReservations
 } from 'lib-common/api-types/reservations'
+import { UUID } from 'lib-common/types'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {

@@ -8,7 +8,6 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { UUID } from '../types'
 import { Translations, useTranslation } from '../state/i18n'
 import {
   FixedSpaceColumn,
@@ -45,6 +44,7 @@ import {
 } from '../api/attachments'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { renderResult } from './async-rendering'
+import { UUID } from 'lib-common/types'
 
 export default React.memo(function IncomeStatementPage({
   match

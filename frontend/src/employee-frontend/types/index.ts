@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { EmployeeFeatures } from 'lib-common/generated/api-types/shared'
-
-export type UUID = string
+import { UUID } from 'lib-common/types'
 
 export type CareTypeLabel =
   | 'club'

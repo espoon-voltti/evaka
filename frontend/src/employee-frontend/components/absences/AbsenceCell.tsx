@@ -9,12 +9,12 @@ import {
   billableCareTypes,
   AbsenceBackupCare
 } from '../../types/absence'
-import { UUID } from '../../types'
 import { AbsencesState, AbsencesContext } from '../../state/absence'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { Absence } from 'lib-common/api-types/child/Absences'
 import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 interface AbsenceCellPartProps {
   position: string

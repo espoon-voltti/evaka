@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from '../types'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ApplicationResponse } from '../types/application'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
@@ -38,6 +37,7 @@ import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { renderResult } from './async-rendering'
+import { UUID } from 'lib-common/types'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;

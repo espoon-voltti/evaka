@@ -9,7 +9,6 @@ import { faQuestion } from 'lib-icons'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { ChildContext } from '../../../state'
-import { UUID } from '../../../types'
 import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import {
   getChildBackupCares,
@@ -19,6 +18,7 @@ import styled from 'styled-components'
 import { ChildBackupCare } from '../../../types/child'
 import Toolbar from '../../../components/common/Toolbar'
 import { ALL_ROLES_BUT_STAFF } from '../../../utils/roles'
+import { UUID } from 'lib-common/types'
 
 export interface Props {
   childId: UUID

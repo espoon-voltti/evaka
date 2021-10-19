@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading, Result } from 'lib-common/api'
@@ -29,6 +28,7 @@ import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import Toolbar from '../../components/common/Toolbar'
 import { getAge } from 'lib-common/utils/local-date'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

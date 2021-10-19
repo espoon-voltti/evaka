@@ -9,7 +9,6 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Parentship } from '../../../types/fridge'
-import { UUID } from '../../../types'
 import { Loading, Result } from 'lib-common/api'
 import { faChild } from 'lib-icons'
 import { formatName } from '../../../utils'
@@ -18,6 +17,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { getPersonDetails } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   headPersonId: UUID

@@ -15,9 +15,9 @@ import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
-import { UUID } from '../../types'
 import { Invoice } from '../../types/invoicing'
 import { formatCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

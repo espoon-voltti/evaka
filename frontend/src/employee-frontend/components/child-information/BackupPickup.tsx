@@ -17,7 +17,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import InputField from 'lib-components/atoms/form/InputField'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
-import { UUID } from '../../types'
 import {
   createBackupPickup,
   getChildBackupPickups,
@@ -33,6 +32,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { RequireRole } from '../../utils/roles'
 import { FlexRow } from '../common/styled/containers'
 import { ChildContext } from '../../state'
+import { UUID } from 'lib-common/types'
 
 interface BackupPickupProps {
   id: UUID

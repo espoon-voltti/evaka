@@ -22,7 +22,7 @@ import {
 } from '../types/invoicing'
 import { Loading, Result } from 'lib-common/api'
 import { CareArea } from '../types/unit'
-import { UUID } from '../types'
+import { UUID } from 'lib-common/types'
 
 export interface Checked {
   [id: string]: boolean

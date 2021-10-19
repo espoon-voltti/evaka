@@ -6,7 +6,6 @@ import React, { useState, useContext, useEffect } from 'react'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { faFileAlt } from 'lib-icons'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { Loading } from 'lib-common/api'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -23,6 +22,7 @@ import CreateApplicationModal from '../../components/child-information/CreateApp
 import { inferApplicationType } from '../person-profile/PersonApplications'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

@@ -8,7 +8,6 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { ChildContext } from '../../state'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { UUID } from '../../types'
 import AssistanceNeedRow from './assistance-need/AssistanceNeedRow'
 import AssistanceNeedForm from '../../components/child-information/assistance-need/AssistanceNeedForm'
 import { UIContext } from '../../state/ui'
@@ -21,6 +20,7 @@ import {
 } from '../../api/child/assistance-needs'
 import { AssistanceBasisOption } from '../../types/child'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
 
 const TitleRow = styled.div`
   display: flex;

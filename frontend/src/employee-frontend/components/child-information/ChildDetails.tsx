@@ -5,13 +5,13 @@
 import React, { useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Success } from 'lib-common/api'
-import { UUID } from '../../types'
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { renderResult } from '../async-rendering'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

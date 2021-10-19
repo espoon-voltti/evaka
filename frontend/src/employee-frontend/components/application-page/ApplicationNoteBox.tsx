@@ -14,13 +14,13 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import { addSeconds, isAfter } from 'date-fns'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { createNote, deleteNote, updateNote } from '../../api/applications'
-import { UUID } from '../../types'
 import { UIContext } from '../../state/ui'
 import { useTranslation } from '../../state/i18n'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { UUID } from 'lib-common/types'
 
 const NoteContainer = styled.div`
   display: flex;

@@ -7,9 +7,9 @@ import { client } from '../client'
 import { ServiceNeedOption } from '../../types/child'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from '../../types'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { PlacementType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface ServiceNeedCreateRequest {
   placementId: UUID

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SearchOrder, UUID } from '../types'
+import { SearchOrder } from '../types'
 import {
   ApplicationListSummary,
   ApplicationNote,
@@ -30,6 +30,7 @@ import {
 } from 'lib-common/api-types/units/terms'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { ApplicationType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export async function getApplication(
   id: UUID

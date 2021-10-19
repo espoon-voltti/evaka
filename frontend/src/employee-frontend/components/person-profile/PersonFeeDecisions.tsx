@@ -10,7 +10,6 @@ import { Link } from 'react-router-dom'
 import { faChild, faPlus } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { fontWeights } from 'lib-components/typography'
-import { UUID } from '../../types'
 import { useTranslation, Translations } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { Loading, Result } from 'lib-common/api'
@@ -29,6 +28,7 @@ import { DateTd, StatusTd } from '../PersonProfile'
 import { formatCents } from 'lib-common/money'
 import colors from 'lib-customizations/common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

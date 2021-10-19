@@ -8,11 +8,11 @@ import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UUID } from '../../../types'
 import { addSsn } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 import { isSsnValid } from '../../../utils/validation/validations'
 import colors from 'lib-customizations/common'
+import { UUID } from 'lib-common/types'
 
 const Error = styled.div`
   display: flex;

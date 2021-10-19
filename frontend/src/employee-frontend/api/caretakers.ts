@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types'
 import { CaretakersResponse } from '../types/caretakers'
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export async function getCaretakers(
   unitId: UUID,

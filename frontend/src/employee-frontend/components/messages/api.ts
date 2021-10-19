@@ -21,12 +21,12 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
-import { UUID } from '../../types'
 import {
   deserializeDraftContent,
   deserializeReceiver,
   deserializeSentMessage
 } from './types'
+import { UUID } from 'lib-common/types'
 
 export async function getReceivers(
   unitId: UUID

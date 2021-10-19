@@ -21,9 +21,9 @@ import { getDaycares } from '../../../api/unit'
 import Select from '../../../components/common/Select'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UUID } from '../../../types'
 import { Unit } from '../../../types/unit'
 import { PlacementType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface Props {
   childId: UUID

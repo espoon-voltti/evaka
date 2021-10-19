@@ -21,9 +21,9 @@ import {
 } from '../../../api/applications'
 import { UIContext } from '../../../state/ui'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
-import { UUID } from '../../../types'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { UUID } from 'lib-common/types'
 
 const ButtonRow = styled.div`
   display: flex;

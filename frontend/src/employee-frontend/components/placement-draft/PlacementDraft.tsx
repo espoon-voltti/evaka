@@ -24,7 +24,6 @@ import {
   Unit
 } from '../../state/placementdraft'
 import { useTranslation } from '../../state/i18n'
-import { UUID } from '../../types'
 import { Loading, Result, Success } from 'lib-common/api'
 import { getApplicationUnits } from '../../api/daycare'
 import { formatName } from '../../utils'
@@ -42,6 +41,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import WarningLabel from '../../components/common/WarningLabel'
 import Tooltip from '../../components/common/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { UUID } from 'lib-common/types'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DayOfWeek, UUID } from './index'
+import { DayOfWeek } from './index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
@@ -12,6 +12,7 @@ import {
 } from 'lib-customizations/types'
 import { ServiceNeed } from './child'
 import { PlacementType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface CareArea {
   id: UUID

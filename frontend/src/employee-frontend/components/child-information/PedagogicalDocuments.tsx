@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
-import { UUID } from '../../types'
 import { Loading } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import * as _ from 'lodash'
@@ -24,6 +23,7 @@ import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 import { UIContext } from '../../state/ui'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

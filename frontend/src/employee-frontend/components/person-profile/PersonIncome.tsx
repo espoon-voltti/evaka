@@ -28,12 +28,12 @@ import { getIncomeStatements } from '../../api/income-statement'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
-import { UUID } from '../../types'
 import { Income, IncomeBody, IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

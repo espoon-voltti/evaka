@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading, Result } from 'lib-common/api'
@@ -30,6 +29,7 @@ import {
 import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
+import { UUID } from 'lib-common/types'
 
 const TopBar = styled.div`
   display: flex;

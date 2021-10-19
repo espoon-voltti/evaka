@@ -15,7 +15,6 @@ import {
   daycareGroupFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { UUID } from 'e2e-test-common/dev-api/types'
 import ChildInformationPage, {
   PedagogicalDocumentsSection
 } from 'e2e-playwright/pages/employee/child-information'
@@ -23,6 +22,7 @@ import { newBrowserContext } from 'e2e-playwright/browser'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { format } from 'date-fns'
+import { UUID } from 'lib-common/types'
 
 let page: Page
 let childInformationPage: ChildInformationPage

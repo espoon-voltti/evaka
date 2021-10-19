@@ -4,10 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from './client'
-import { UUID } from '../types'
 import { FamilyContact, FamilyOverview } from '../types/family-overview'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export async function getFamilyOverview(
   adultId: UUID

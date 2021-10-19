@@ -19,10 +19,10 @@ import styled from 'styled-components'
 import { faQuestion } from 'lib-icons'
 import { deletePerson, mergePeople } from '../../api/person'
 import { UIContext } from '../../state/ui'
-import { UUID } from '../../types'
 import { CHILD_AGE } from '../../constants'
 import LocalDate from 'lib-common/local-date'
 import { TableScrollable } from './common'
+import { UUID } from 'lib-common/types'
 
 interface RowProps {
   odd: boolean

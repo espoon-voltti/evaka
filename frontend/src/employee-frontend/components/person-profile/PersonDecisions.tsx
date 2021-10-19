@@ -7,7 +7,6 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faChild } from 'lib-icons'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
@@ -19,6 +18,7 @@ import Loader from 'lib-components/atoms/Loader'
 import { getGuardianDecisions } from '../../api/person'
 import { Decision } from '../../types/decision'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

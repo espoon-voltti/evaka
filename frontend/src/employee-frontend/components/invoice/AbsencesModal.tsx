@@ -18,11 +18,11 @@ import { getAbsencesByChild } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { AbsenceTypes, billableCareTypes } from '../../types/absence'
-import { UUID } from '../../types'
 import ColourInfoItem from '../../components/common/ColourInfoItem'
 import Tooltip from '../../components/common/Tooltip'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 const Section = styled.section``
 

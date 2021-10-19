@@ -1,10 +1,6 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -15,7 +11,6 @@ import {
   updateSelector
 } from './SelectorNode'
 import { useTranslation } from '../../state/i18n'
-import { UUID } from '../../types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'
@@ -24,6 +19,7 @@ import { faAngleUp, faAngleDown } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
+import { UUID } from 'lib-common/types'
 
 const Container = styled(ContentArea)`
   overflow-y: auto;

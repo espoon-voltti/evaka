@@ -7,7 +7,6 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faChild } from 'lib-icons'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
@@ -21,6 +20,7 @@ import { DependantAddress, PersonWithChildren } from '../../types/person'
 import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { getAge } from 'lib-common/utils/local-date'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

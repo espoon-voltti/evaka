@@ -23,7 +23,6 @@ import {
   PersonDetailWithDependantsAndGuardians,
   PlacementPlan,
   VoucherValueDecision,
-  UUID,
   DaycareGroupPlacement,
   EmployeePin,
   PedagogicalDocument,
@@ -47,6 +46,7 @@ import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/generated/enums'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { UUID } from 'lib-common/types'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',

@@ -14,7 +14,6 @@ import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from 'lib-common/form-state'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { fontWeights } from 'lib-components/typography'
-import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { ChildContext } from '../../../state'
@@ -37,6 +36,7 @@ import styled from 'styled-components'
 import { ChildBackupCare } from '../../../types/child'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
 
 export interface Props {
   childId: UUID

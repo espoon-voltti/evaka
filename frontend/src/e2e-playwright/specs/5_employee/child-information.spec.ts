@@ -17,7 +17,6 @@ import {
   enduserNonSsnChildFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { UUID } from 'e2e-test-common/dev-api/types'
 import ChildInformationPage, {
   DailyServiceTimeSection
 } from 'e2e-playwright/pages/employee/child-information'
@@ -28,6 +27,7 @@ import {
   waitUntilTrue
 } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import { UUID } from 'lib-common/types'
 
 let page: Page
 let childInformationPage: ChildInformationPage

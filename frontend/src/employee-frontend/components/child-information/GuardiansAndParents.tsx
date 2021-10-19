@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
@@ -22,6 +21,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import FridgeParents from './FridgeParents'
 import { Gap } from 'lib-components/white-space'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

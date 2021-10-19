@@ -13,7 +13,6 @@ import { ChildContext } from '../../../state'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { UUID } from '../../../types'
 import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'
 import { faPen } from 'lib-icons'
@@ -26,6 +25,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
 import { FlexRow } from '../../common/styled/containers'
 import { UnwrapResult } from '../../async-rendering'
+import { UUID } from 'lib-common/types'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;

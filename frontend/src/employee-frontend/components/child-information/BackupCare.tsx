@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import * as _ from 'lodash'
-import { UUID } from '../../types'
 import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
@@ -16,6 +15,7 @@ import BackupCareRow from '../../components/child-information/backup-care/Backup
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { UUID } from 'lib-common/types'
 
 export interface Props {
   id: UUID
