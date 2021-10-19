@@ -284,6 +284,10 @@ export const fi = {
     login: 'Kirjaudu',
     loggedIn: 'Kirjautunut sisään'
   },
+  messages: {
+    title: 'Viestit',
+    inputPlaceholder: 'Kirjoita...'
+  },
   mobile: {
     landerText1:
       'Tervetuloa käyttämään Espoon varhaiskasvatuksen mobiilisovellusta!',

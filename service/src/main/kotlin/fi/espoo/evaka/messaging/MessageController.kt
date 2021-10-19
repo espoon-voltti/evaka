@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
 
@@ -42,11 +44,43 @@ class MessageController(
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
+    fun Database.Read.getFakeUser(unitId: DaycareId) = this.createQuery(
+        """
+            SELECT employee_id FROM daycare_acl_view
+            WHERE role = 'UNIT_SUPERVISOR'
+            AND daycare_id = :unitId
+        """.trimIndent()
+    )
+        .bind("unitId", unitId)
+        .mapTo<UUID>()
+        .first()
+
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         user.requireAnyEmployee()
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
+    }
+
+    @GetMapping("/mobile/my-accounts/{unitId}")
+    fun getAccountsByDevice(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId
+    ): Set<NestedMessageAccount> {
+        val fakeUserId = db.read { it.getFakeUser(unitId) }
+        return db.read { it.getEmployeeNestedMessageAccounts(fakeUserId) }
+    }
+
+    @GetMapping("/mobile/{accountId}/received")
+    fun getReceivedMessagesByDevice(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam pageSize: Int,
+        @RequestParam page: Int,
+    ): Paged<MessageThread> {
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
     @GetMapping("/{accountId}/received")
@@ -171,6 +205,28 @@ class MessageController(
         return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
 
+    data class ReplyToMessageBody(
+        val content: String,
+        val recipientAccountIds: Set<MessageAccountId>,
+    )
+
+    @PostMapping("/mobile/{accountId}/{messageId}/reply")
+    fun replyToThreadMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable messageId: MessageId,
+        @RequestBody body: ReplyToMessageBody,
+    ): MessageService.ThreadReply {
+        return messageService.replyToThread(
+            db = db,
+            replyToMessageId = messageId,
+            senderAccount = accountId,
+            recipientAccountIds = body.recipientAccountIds,
+            content = body.content
+        )
+    }
+
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
@@ -189,6 +245,16 @@ class MessageController(
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
+    }
+
+    @PutMapping("/mobile/{accountId}/threads/{threadId}/read")
+    fun markThreadReadMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+    ) {
+        return db.transaction { it.markThreadRead(accountId, threadId) }
     }
 
     @PutMapping("/{accountId}/threads/{threadId}/read")

@@ -33,6 +33,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../attachments'
 import { OverlayContext } from '../overlay/state'
+import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 
 const TitleRow = styled.div`
   display: flex;
@@ -124,15 +125,6 @@ function SingleMessage({ message }: { message: Message }) {
     </MessageContainer>
   )
 }
-
-const ThreadContainer = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  min-width: 300px;
-  max-width: 100%;
-  min-height: 500px;
-  overflow-y: auto;
-`
 
 const AutoScrollPositionSpan = styled.span<{ top: string }>`
   position: absolute;

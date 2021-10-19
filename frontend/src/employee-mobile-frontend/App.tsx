@@ -39,6 +39,8 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 import { UnitContextProvider } from './state/unit'
 import { UserContextProvider } from './state/user'
+import MessagesPage from './components/messages/MessagesPage'
+import { MessageContextProvider } from './state/messages'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -97,6 +99,7 @@ function GroupRouter() {
         path={`${path}/staff-attendance`}
         component={StaffAttendanceRouter}
       />
+      <Route path={`${path}/messages`} component={MessagesRouter} />
     </Switch>
   )
 }
@@ -191,5 +194,18 @@ function StaffAttendanceRouter() {
         <Redirect to={path} />
       </Switch>
     </StaffAttendanceContextProvider>
+  )
+}
+
+function MessagesRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+      <MessageContextProvider>
+        <Switch>
+          <Route exact path={path} component={MessagesPage} />
+          <Redirect to={path} />
+        </Switch>
+      </MessageContextProvider>
   )
 }

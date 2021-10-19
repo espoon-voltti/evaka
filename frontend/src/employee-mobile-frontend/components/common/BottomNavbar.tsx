@@ -7,7 +7,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { faChild, faUser } from 'lib-icons'
+import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
@@ -16,7 +16,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { featureFlags } from 'lib-customizations/employee'
 
-export type NavItem = 'child' | 'staff'
+export type NavItem = 'child' | 'staff' | 'messages'
 
 const bottomNavBarHeight = 60
 
@@ -122,6 +122,18 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             }
           >
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
+          </BottomText>
+        </Button>
+        <Button>
+          <BottomText
+            text={i18n.common.messages}
+            selected={selected === 'messages'}
+            onClick={() =>
+              selected !== 'messages' &&
+              history.push(`/units/${unitId}/groups/${groupId}/messages`)
+            }
+          >
+            <CustomIcon icon={faComments} selected={selected === 'messages'} />
           </BottomText>
         </Button>
       </Root>
