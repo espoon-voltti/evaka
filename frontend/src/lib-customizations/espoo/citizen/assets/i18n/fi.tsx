@@ -110,6 +110,11 @@ export default {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  errorPage: {
+    reload: 'Lataa sivu uudelleen',
+    text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
+    title: 'Jotain meni pieleen'
+  },
   map: {
     title: 'Yksiköt kartalla',
     mainInfo:
