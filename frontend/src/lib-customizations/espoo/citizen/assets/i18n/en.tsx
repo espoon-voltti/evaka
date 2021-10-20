@@ -111,6 +111,11 @@ const en: Translations = {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  errorPage: {
+    reload: 'Reload page',
+    text: 'We encountered an unexpected error. The developers have been notified with the error details.',
+    title: 'Something went wrong'
+  },
   map: {
     title: 'Units on the map',
     mainInfo:
