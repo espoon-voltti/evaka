@@ -118,7 +118,11 @@ export default function App() {
   return (
     <I18nContextProvider>
       <ThemeProvider theme={theme}>
-        <ErrorBoundary fallback={() => <ErrorPage labels={i18n.errorPage} />}>
+        <ErrorBoundary
+          fallback={() => (
+            <ErrorPage basePath="/employee" labels={i18n.errorPage} />
+          )}
+        >
           <UserContextProvider user={authStatus.user} roles={authStatus.roles}>
             <StateProvider>
               <Router basename="/employee">

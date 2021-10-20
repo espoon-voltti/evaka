@@ -15,16 +15,6 @@ const ErrorContainer = styled(ContentArea)`
   justify-content: center;
 `
 
-function getApplicationBasePath() {
-  const path = window.location.pathname
-  if (path.startsWith('/employee/mobile')) {
-    return '/employee/mobile'
-  } else if (path.startsWith('/employee')) {
-    return '/employee'
-  }
-  return '/'
-}
-
 interface Labels {
   title: string
   text: string
@@ -32,13 +22,15 @@ interface Labels {
 }
 
 interface Props {
+  basePath: string
   labels: Labels
 }
 
-export function ErrorPage({ labels: { reload, text, title } }: Props) {
-  const onClick = () => {
-    window.location.replace(getApplicationBasePath())
-  }
+export function ErrorPage({
+  basePath,
+  labels: { reload, text, title }
+}: Props) {
+  const onClick = () => window.location.replace(basePath)
   return (
     <main>
       <Container>

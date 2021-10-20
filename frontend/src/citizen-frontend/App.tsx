@@ -41,7 +41,9 @@ export default function App() {
     <BrowserRouter basename="/">
       <ThemeProvider theme={theme}>
         <Localization>
-          <ErrorBoundary fallback={() => <ErrorPage labels={i18n.errorPage} />}>
+          <ErrorBoundary
+            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
+          >
             <Authentication>
               <OverlayContextProvider>
                 <MessageContextProvider>

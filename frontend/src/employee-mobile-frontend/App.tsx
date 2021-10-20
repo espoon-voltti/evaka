@@ -53,7 +53,11 @@ export default function App() {
   return (
     <I18nContextProvider>
       <ThemeProvider theme={theme}>
-        <ErrorBoundary fallback={() => <ErrorPage labels={i18n.errorPage} />}>
+        <ErrorBoundary
+          fallback={() => (
+            <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
+          )}
+        >
           <UserContextProvider
             user={authStatus?.user}
             refreshAuthStatus={refreshAuthStatus}
