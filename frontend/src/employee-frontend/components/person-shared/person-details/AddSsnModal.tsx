@@ -40,7 +40,7 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
   const submit = () => {
     let isMounted = true
     setSubmitting(true)
-    addSsn(personId, ssn)
+    void addSsn(personId, ssn)
       .then((result) => {
         if (result.isSuccess) {
           if (onUpdateComplete) onUpdateComplete(result.value)

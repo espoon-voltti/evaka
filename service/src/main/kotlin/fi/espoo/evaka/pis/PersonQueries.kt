@@ -78,6 +78,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
         SELECT
             id,
             social_security_number,
+            ssn_adding_disabled,
             first_name,
             last_name,
             email,
@@ -348,6 +349,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
         id = rs.getUUID("id"),
         identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
             ?: ExternalIdentifier.NoID(),
+        ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),
         email = rs.getString("email"),
@@ -417,3 +419,10 @@ fun Database.Read.getDependantGuardians(personId: UUID) =
         .bind("personId", personId)
         .map(toPersonDTO)
         .toList()
+
+fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: Boolean) {
+    createUpdate("UPDATE person SET ssn_adding_disabled = :disabled WHERE id = :id")
+        .bind("id", id)
+        .bind("disabled", disabled)
+        .execute()
+}

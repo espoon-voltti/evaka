@@ -124,6 +124,14 @@ export type MobileDevice = never
 
 export type Pairing = never
 
+export type Person =
+  | 'ADD_SSN'
+  | 'DISABLE_SSN'
+  | 'READ'
+  | 'READ_FAMILY_OVERVIEW'
+  | 'READ_INCOME'
+  | 'READ_INCOME_STATEMENTS'
+
 export type Placement =
   | 'CREATE_GROUP_PLACEMENT'
   | 'CREATE_SERVICE_NEED'

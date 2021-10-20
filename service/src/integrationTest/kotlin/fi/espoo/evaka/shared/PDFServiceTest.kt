@@ -75,6 +75,7 @@ private val voucherDecision = daycareDecision.copy(
 private val child = PersonDTO(
     testChild_1.id,
     ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
+    false,
     "Kullervo Kyöstinpoika",
     "Pöysti",
     null,
@@ -91,6 +92,7 @@ private val child = PersonDTO(
 private val guardian = PersonDTO(
     testAdult_1.id,
     ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
+    false,
     "Kyösti Taavetinpoika",
     "Pöysti",
     "kyostipoysti@example.com",

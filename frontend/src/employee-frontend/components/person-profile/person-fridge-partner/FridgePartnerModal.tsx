@@ -18,7 +18,7 @@ import {
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
-import { getPersonDetails } from '../../../api/person'
+import { getPerson } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 import { UUID } from 'lib-common/types'
 
@@ -88,7 +88,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {
-    void getPersonDetails(headPersonId).then(setPersonData)
+    void getPerson(headPersonId).then(setPersonData)
   }, [headPersonId, setPersonData])
 
   const onSubmit = () => {

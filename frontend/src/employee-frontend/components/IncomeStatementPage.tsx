@@ -34,7 +34,7 @@ import { combine, Loading, Result } from 'lib-common/api'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { PersonContext } from '../state/person'
-import { getPersonDetails } from '../api/person'
+import { getPerson } from '../api/person'
 import { getAttachmentBlob } from '../api/attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
@@ -57,7 +57,7 @@ export default React.memo(function IncomeStatementPage({
   >(Loading.of())
 
   const { person, setPerson } = useContext(PersonContext)
-  const loadPerson = useRestApi(getPersonDetails, setPerson)
+  const loadPerson = useRestApi(getPerson, setPerson)
   const loadIncomeStatement = useRestApi(getIncomeStatement, setIncomeStatement)
 
   useEffect(() => {

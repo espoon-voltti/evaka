@@ -137,6 +137,7 @@ class VTJPersonDetailsServiceTest {
     private fun VtjPerson.toPersonDTO() = PersonDTO(
         id = randomUUID(),
         identity = SSN.getInstance(socialSecurityNumber),
+        ssnAddingDisabled = false,
         firstName = firstNames,
         lastName = lastName,
         language = nativeLanguage?.code ?: "fi",

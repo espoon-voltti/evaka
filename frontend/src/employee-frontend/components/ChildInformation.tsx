@@ -251,7 +251,12 @@ const ChildInformation = React.memo(function ChildInformation({
     void getChildDetails(id).then((result) => {
       setPerson(result.map((details) => details.person))
       if (result.isSuccess) {
-        setPermittedActions(result.value.permittedActions)
+        setPermittedActions(
+          new Set([
+            ...result.value.permittedActions,
+            ...result.value.permittedPersonActions
+          ])
+        )
       }
     })
 

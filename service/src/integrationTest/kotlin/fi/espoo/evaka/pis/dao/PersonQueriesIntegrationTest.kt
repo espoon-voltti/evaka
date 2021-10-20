@@ -304,6 +304,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         return PersonDTO(
             id = UUID.randomUUID(),
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
+            ssnAddingDisabled = false,
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",

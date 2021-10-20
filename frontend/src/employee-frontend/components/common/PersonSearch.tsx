@@ -13,7 +13,7 @@ import { BaseProps } from 'lib-components/utils'
 import {
   findByNameOrAddress,
   getOrCreatePersonBySsn,
-  getPersonDetails
+  getPerson
 } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
 
@@ -44,7 +44,7 @@ const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   }
 
   if (q.length === 36) {
-    return await getPersonDetails(q).then((res) => res.map((r) => [r]))
+    return await getPerson(q).then((res) => res.map((r) => [r]))
   }
 
   return await findByNameOrAddress(q, 'last_name,first_name', 'ASC')

@@ -124,6 +124,7 @@ export interface CaretakersResponse {
 */
 export interface ChildResponse {
   permittedActions: Action.Child[]
+  permittedPersonActions: Action.Person[]
   person: PersonJSON
 }
 

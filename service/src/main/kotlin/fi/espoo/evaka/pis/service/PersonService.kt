@@ -19,6 +19,8 @@ import fi.espoo.evaka.pis.lockPersonBySSN
 import fi.espoo.evaka.pis.updateNonSsnPersonDetails
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.pis.updatePersonNonVtjDetails
+import fi.espoo.evaka.pis.updatePersonSsnAddingDisabled
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -159,8 +161,8 @@ class PersonService(
         return tx.getPersonById(id)!!
     }
 
-    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN): PersonDTO {
-        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
+    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: PersonId, ssn: ExternalIdentifier.SSN): PersonDTO {
+        val person = tx.getPersonById(id.raw) ?: throw NotFound("Person $id not found")
 
         return when (person.identity) {
             is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
@@ -176,10 +178,21 @@ class PersonService(
                     personDetails.mapToDto(),
                     person.copy(identity = ssn)
                 )
+
+                tx.updatePersonSsnAddingDisabled(id, false)
                 tx.updatePersonFromVtj(updatedPerson)
                 upsertVtjPerson(tx, personDetails.mapToDto())
             }
         }.exhaust()
+    }
+
+    fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
+        val person = tx.getPersonById(personId.raw) ?: throw NotFound("Person $personId not found")
+
+        if (person.identity is ExternalIdentifier.SSN)
+            throw BadRequest("Cannot disable a SSN, person $personId already has a SSN")
+
+        tx.updatePersonSsnAddingDisabled(personId, disabled)
     }
 
     // Does a request to VTJ
@@ -196,6 +209,7 @@ class PersonService(
         PersonDTO(
             id = person.id,
             identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
+            ssnAddingDisabled = false,
             firstName = person.firstName,
             lastName = person.lastName,
             email = null,
@@ -282,6 +296,7 @@ class PersonService(
 data class PersonDTO(
     val id: UUID,
     val identity: ExternalIdentifier,
+    val ssnAddingDisabled: Boolean,
     val firstName: String?,
     val lastName: String?,
     val email: String?,
@@ -331,6 +346,7 @@ data class PersonDTO(
 data class PersonJSON(
     val id: UUID,
     val socialSecurityNumber: String? = null,
+    val ssnAddingDisabled: Boolean,
     val firstName: String? = null,
     val lastName: String? = null,
     val email: String? = null,
@@ -355,6 +371,7 @@ data class PersonJSON(
         fun from(p: PersonDTO): PersonJSON = PersonJSON(
             id = p.id,
             socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
+            ssnAddingDisabled = p.ssnAddingDisabled,
             firstName = p.firstName,
             lastName = p.lastName,
             email = p.email,
@@ -427,6 +444,7 @@ data class PersonWithChildrenDTO(
             is String -> ExternalIdentifier.SSN.getInstance(socialSecurityNumber)
             else -> ExternalIdentifier.NoID()
         },
+        ssnAddingDisabled = false,
         dateOfBirth = dateOfBirth,
         dateOfDeath = dateOfDeath,
         firstName = firstName,
@@ -515,6 +533,7 @@ private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId:
 private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO = PersonDTO(
     id = inputPerson.id, // This will be overwritten
     identity = ExternalIdentifier.SSN.getInstance(inputPerson.socialSecurityNumber),
+    ssnAddingDisabled = false,
     firstName = inputPerson.firstName,
     lastName = inputPerson.lastName,
 

@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -57,8 +58,26 @@ class PersonController(
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
-    @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
+    @GetMapping("/{personId}")
     fun getPerson(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId
+    ): PersonResponse {
+        Audit.PersonDetailsRead.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.READ, personId)
+        return db.transaction { it.getPersonById(personId.raw) }
+            ?.let {
+                PersonResponse(
+                    PersonJSON.from(it),
+                    accessControl.getPermittedPersonActions(user, listOf(personId)).values.first()
+                )
+            }
+            ?: throw NotFound("Person $personId not found")
+    }
+
+    @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
+    fun getPersonIdentity(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
@@ -161,11 +180,11 @@ class PersonController(
     fun addSsn(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID,
+        @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.ADD_SSN, personId)
 
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
@@ -174,6 +193,19 @@ class PersonController(
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
         return ResponseEntity.ok(PersonJSON.from(person))
+    }
+
+    @PutMapping("/{personId}/ssn/disable")
+    fun disableSsn(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId,
+        @RequestBody body: DisableSsnRequest
+    ) {
+        Audit.PersonUpdate.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.DISABLE_SSN, personId)
+
+        db.transaction { personService.disableSsn(it, personId, body.disabled) }
     }
 
     @PostMapping("/details/ssn")
@@ -242,6 +274,11 @@ class PersonController(
             .let { ResponseEntity.ok(it) }
     }
 
+    data class PersonResponse(
+        val person: PersonJSON,
+        val permittedActions: Set<Action.Person>
+    )
+
     data class MergeRequest(
         val master: UUID,
         val duplicate: UUID
@@ -249,6 +286,10 @@ class PersonController(
 
     data class AddSsnRequest(
         val ssn: String
+    )
+
+    data class DisableSsnRequest(
+        val disabled: Boolean
     )
 
     data class PersonIdentityResponseJSON(

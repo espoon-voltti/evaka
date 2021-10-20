@@ -1037,6 +1037,10 @@ export const fi = {
     personDetails: 'Henkilö- ja yhteystiedot',
     addSsn: 'Aseta hetu',
     noSsn: 'Hetuton',
+    ssnAddingDisabledCheckbox:
+      'Vain pääkäyttäjillä on oikeus asettaa lapselle henkilötunnus',
+    ssnAddingDisabledInfo:
+      'Palveluohjauksen ja talouden käyttäjät eivät saa asetettua lapselle henkilötunnusta. Kun henkilötunnus puuttuu, lapsella ei ole huoltajasuhdetta. Jos henkilötunnus halutaan myöhemmin asettaa, lapsen aiemmat dokumentit on poistettava järjestelmästä.',
     ssnInvalid: 'Epäkelpo henkilötunnus',
     ssnConflict: 'Tämä käyttäjä löytyy jo järjestelmästä.',
     partner: 'Puolisot',

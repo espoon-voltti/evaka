@@ -14,6 +14,7 @@ export interface PersonIdentity {
 export interface PersonDetails {
   id: UUID
   socialSecurityNumber: string | null
+  ssnAddingDisabled: boolean
   firstName: string | null
   lastName: string | null
   email: string | null
@@ -32,7 +33,7 @@ export interface PersonDetails {
   invoicingPostalCode: string
   invoicingPostOffice: string
   forceManualFeeDecisions: boolean
-  ophPersonOid: string
+  ophPersonOid: string | null
 }
 
 export const deserializePersonDetails = (

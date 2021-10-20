@@ -25,8 +25,8 @@ import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicald
 export interface ChildState {
   person: Result<PersonDetails>
   setPerson: (request: Result<PersonDetails>) => void
-  permittedActions: Set<Action.Child>
-  setPermittedActions: (r: Set<Action.Child>) => void
+  permittedActions: Set<Action.Child | Action.Person>
+  setPermittedActions: (r: Set<Action.Child | Action.Person>) => void
   serviceNeeds: Result<ServiceNeed[]>
   setServiceNeeds: (request: Result<ServiceNeed[]>) => void
   serviceNeedOptions: Result<ServiceNeedOption[]>
@@ -102,7 +102,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [person, setPerson] = useState<Result<PersonDetails>>(
     defaultState.person
   )
-  const [permittedActions, setPermittedActions] = useState<Set<Action.Child>>(
+  const [permittedActions, setPermittedActions] = useState(
     defaultState.permittedActions
   )
   const [serviceNeeds, setServiceNeeds] = useState<Result<ServiceNeed[]>>(

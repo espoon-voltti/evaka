@@ -1029,6 +1029,7 @@ data class DevPerson(
     val firstName: String = "Test",
     val lastName: String = "Person",
     val ssn: String? = null,
+    val ssnAddingDisabled: Boolean? = null,
     val email: String? = null,
     val phone: String? = null,
     val backupPhone: String = "",
@@ -1051,6 +1052,7 @@ data class DevPerson(
     fun toPersonDTO() = PersonDTO(
         id = this.id,
         identity = this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) } ?: ExternalIdentifier.NoID(),
+        ssnAddingDisabled = this.ssnAddingDisabled ?: false,
         firstName = this.firstName,
         lastName = this.lastName,
         email = this.email,

@@ -332,6 +332,8 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
+        ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
+        DISABLE_SSN(),
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_INCOME(FINANCE_ADMIN),

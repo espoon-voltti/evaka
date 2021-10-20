@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Success } from 'lib-common/api'
 import { getPersonDetails } from '../../api/person'
@@ -16,6 +16,7 @@ import { faUser } from 'lib-icons'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
+import { Action } from 'lib-common/generated/action'
 
 interface Props {
   id: UUID
@@ -23,14 +24,26 @@ interface Props {
 
 const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
   const { i18n } = useTranslation()
-  const { person, setPerson, reloadFamily } =
-    useContext<PersonState>(PersonContext)
+  const {
+    person,
+    setPerson,
+    reloadFamily,
+    permittedActions,
+    setPermittedActions
+  } = useContext<PersonState>(PersonContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setPerson(Loading.of())
-    void getPersonDetails(id).then(setPerson)
-  }
+    void getPersonDetails(id).then((res) => {
+      setPerson(res.map(({ person }) => person))
+      setPermittedActions(
+        res
+          .map(({ permittedActions }) => new Set(permittedActions))
+          .getOrElse(new Set<Action.Person>())
+      )
+    })
+  }, [id, setPerson, setPermittedActions])
 
   // FIXME: This component shouldn't know about family's dependency on its data
   const updateData = (p: PersonDetailsType) => {
@@ -38,7 +51,7 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
     reloadFamily(id)
   }
 
-  useEffect(loadData, [id, setPerson])
+  useEffect(loadData, [loadData])
 
   useEffect(() => {
     if (person.isSuccess) {
@@ -61,6 +74,7 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
             person={person}
             isChild={false}
             onUpdateComplete={(p) => updateData(p)}
+            permittedActions={permittedActions}
           />
         ))}
       </CollapsibleSection>

@@ -12,9 +12,7 @@ import { defaultMargins, SpacingSize } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'
 
-const InfoBoxContainer = styled(Container)<{
-  fullWidth?: boolean
-}>`
+const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
   ${({ fullWidth }) => fullWidth && `width: 100%;`}
 
   @keyframes open {
@@ -53,6 +51,7 @@ const InfoContainer = styled.div`
 const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
   margin-top: ${({ margin }) => defaultMargins[margin]};
 `
+
 type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
@@ -70,46 +69,88 @@ export default function ExpandingInfo({
   fullWidth,
   'data-qa': dataQa
 }: ExpandingInfoProps) {
-  const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
 
   return (
     <span aria-live="polite">
       <FixedSpaceRow spacing="xs" alignItems={'center'}>
         <div>{children}</div>
-        <RoundIconWithMargin
-          data-qa={dataQa}
-          margin={margin ?? 'zero'}
-          content={fasInfo}
-          color={colors.brand.secondary}
-          size="s"
+        <InfoButton
           onClick={() => setExpanded(!expanded)}
-          tabindex={0}
-          role="button"
           aria-label={ariaLabel}
+          margin={margin ?? 'zero'}
+          data-qa={dataQa}
         />
       </FixedSpaceRow>
       {expanded && (
-        <InfoBoxContainer fullWidth={fullWidth}>
-          <InfoBoxContentArea opaque={false}>
-            <RoundIcon
-              content={fasInfo}
-              color={colors.brand.secondary}
-              size="s"
-            />
-
-            <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
-              {info}
-            </InfoContainer>
-
-            <IconButton
-              onClick={() => setExpanded(false)}
-              icon={faTimes}
-              gray
-            />
-          </InfoBoxContentArea>
-        </InfoBoxContainer>
+        <ExpandingInfoBox
+          info={info}
+          close={() => setExpanded(false)}
+          fullWidth={fullWidth}
+          data-qa={dataQa}
+        />
       )}
     </span>
   )
 }
+
+export const InfoButton = React.memo(function InfoButton({
+  onClick,
+  'aria-label': ariaLabel,
+  margin,
+  className,
+  'data-qa': dataQa
+}: {
+  onClick: () => void
+  'aria-label': string
+  margin?: SpacingSize
+  className?: string
+  'data-qa'?: string
+}) {
+  const { colors } = useTheme()
+
+  return (
+    <RoundIconWithMargin
+      className={className}
+      data-qa={dataQa}
+      margin={margin ?? 'zero'}
+      content={fasInfo}
+      color={colors.brand.secondary}
+      size="s"
+      onClick={onClick}
+      tabindex={0}
+      role="button"
+      aria-label={ariaLabel}
+    />
+  )
+})
+
+export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
+  info,
+  close,
+  fullWidth,
+  className,
+  'data-qa': dataQa
+}: {
+  info: ReactNode
+  close: () => void
+  fullWidth?: boolean
+  className?: string
+  'data-qa'?: string
+}) {
+  const { colors } = useTheme()
+
+  return (
+    <InfoBoxContainer className={className} fullWidth={fullWidth}>
+      <InfoBoxContentArea opaque={false}>
+        <RoundIcon content={fasInfo} color={colors.brand.secondary} size="s" />
+
+        <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
+          {info}
+        </InfoContainer>
+
+        <IconButton onClick={close} icon={faTimes} gray />
+      </InfoBoxContentArea>
+    </InfoBoxContainer>
+  )
+})

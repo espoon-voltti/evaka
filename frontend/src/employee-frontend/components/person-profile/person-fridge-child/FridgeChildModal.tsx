@@ -15,7 +15,7 @@ import { formatName } from '../../../utils'
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '../../../api/parentships'
-import { getPersonDetails } from '../../../api/person'
+import { getPerson } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 import { UUID } from 'lib-common/types'
 
@@ -80,7 +80,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {
-    void getPersonDetails(headPersonId).then(setPersonData)
+    void getPerson(headPersonId).then(setPersonData)
   }, [headPersonId, setPersonData])
 
   const childFormActions = () => {
