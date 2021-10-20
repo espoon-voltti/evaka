@@ -163,7 +163,7 @@ export default React.memo(function MarkDeparted() {
                   selectedAbsenceType={selectedAbsenceType}
                   setSelectedAbsenceType={setSelectedAbsenceType}
                 />
-                <Actions>
+                <Actions data-qa={'absence-actions'}>
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
@@ -193,7 +193,7 @@ export default React.memo(function MarkDeparted() {
                 </Actions>
               </FixedSpaceColumn>
             ) : (
-              <Actions>
+              <Actions data-qa={'non-absence-actions'}>
                 <FixedSpaceRow fullWidth>
                   <Button
                     text={i18n.common.cancel}
