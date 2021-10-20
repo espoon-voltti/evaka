@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
@@ -11,10 +12,11 @@ import {
   useRouteMatch
 } from 'react-router-dom'
 import { idleTracker } from 'lib-common/utils/idleTracker'
+import { ErrorPage } from 'lib-components/molecules/ErrorPage'
 import ensureAuthenticated from './components/ensureAuthenticated'
 import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
 import { ChildAttendanceContextProvider } from './state/child-attendance'
-import { I18nContextProvider } from './state/i18n'
+import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UserContextProvider } from './state/user'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
@@ -41,6 +43,7 @@ import { UnitContextProvider } from './state/unit'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 
 export default function App() {
+  const { i18n } = useTranslation()
   const [authStatus, refreshAuthStatus] = useAuthState()
 
   if (authStatus === undefined) {
@@ -48,26 +51,28 @@ export default function App() {
   }
 
   return (
-    <UserContextProvider
-      user={authStatus?.user}
-      refreshAuthStatus={refreshAuthStatus}
-    >
-      <I18nContextProvider>
-        <ThemeProvider theme={theme}>
-          <Router basename="/employee/mobile">
-            <Switch>
-              <Route exact path="/landing" component={MobileLander} />
-              <Route exact path="/pairing" component={PairingWizard} />
-              <Route
-                path="/units/:unitId"
-                component={ensureAuthenticated(UnitRouter)}
-              />
-              <Route component={RedirectToMainPage} />
-            </Switch>
-          </Router>
-        </ThemeProvider>
-      </I18nContextProvider>
-    </UserContextProvider>
+    <I18nContextProvider>
+      <ThemeProvider theme={theme}>
+        <ErrorBoundary fallback={() => <ErrorPage labels={i18n.errorPage} />}>
+          <UserContextProvider
+            user={authStatus?.user}
+            refreshAuthStatus={refreshAuthStatus}
+          >
+            <Router basename="/employee/mobile">
+              <Switch>
+                <Route exact path="/landing" component={MobileLander} />
+                <Route exact path="/pairing" component={PairingWizard} />
+                <Route
+                  path="/units/:unitId"
+                  component={ensureAuthenticated(UnitRouter)}
+                />
+                <Route component={RedirectToMainPage} />
+              </Switch>
+            </Router>
+          </UserContextProvider>
+        </ErrorBoundary>
+      </ThemeProvider>
+    </I18nContextProvider>
   )
 }
 

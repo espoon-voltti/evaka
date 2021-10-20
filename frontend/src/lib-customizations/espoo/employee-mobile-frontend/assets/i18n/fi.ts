@@ -71,6 +71,11 @@ export const fi = {
       dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`
     }
   },
+  errorPage: {
+    reload: 'Lataa sivu uudelleen',
+    text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
+    title: 'Jotain meni pieleen'
+  },
   absences: {
     title: 'Poissaolomerkinnät',
     absenceTypes: {
