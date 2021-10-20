@@ -229,8 +229,10 @@ class ChildAttendanceController(
             // temporary hotfix for case where scheduled job was missing and child arrived yesterday
             val forgottenToDepart = attendance.arrived.toLocalDate() != dateNow()
 
+            val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
+
             if (forgottenToDepart) listOf()
-            else getPartialAbsenceThresholds(placementBasics, arrived)
+            else getPartialAbsenceThresholds(placementBasics, arrived, childHasPaidServiceNeedToday)
         }
     }
 
@@ -267,7 +269,9 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime())
+            val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
+
+            val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime(), childHasPaidServiceNeedToday)
                 .filter { body.departed <= it.time }
             tx.deleteAbsencesByDate(childId, dateNow())
             if (absentFrom.isNotEmpty()) {
@@ -551,14 +555,15 @@ data class AbsenceThreshold(
 
 private fun getPartialAbsenceThresholds(
     placementBasics: ChildPlacementBasics,
-    arrived: LocalTime
+    arrived: LocalTime,
+    childHasPaidServiceNeedToday: Boolean
 ): List<AbsenceThreshold> {
     val placementType = placementBasics.placementType
 
     return listOfNotNull(
         preschoolAbsenceThreshold(placementType, arrived),
         preschoolDaycareAbsenceThreshold(placementType, arrived),
-        daycareAbsenceThreshold(placementType, arrived)
+        daycareAbsenceThreshold(placementType, arrived, childHasPaidServiceNeedToday)
     )
 }
 
@@ -600,11 +605,29 @@ private fun preschoolDaycareAbsenceThreshold(placementType: PlacementType, arriv
     return null
 }
 
-private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: LocalTime): AbsenceThreshold? {
-    if (placementType in listOf(DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS)) {
+private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: LocalTime, childHasPaidServiceNeedToday: Boolean): AbsenceThreshold? {
+    if (placementType in listOf(DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS) && childHasPaidServiceNeedToday) {
         val threshold = arrived.plus(fiveYearOldFreeLimit)
         return AbsenceThreshold(AbsenceCareType.DAYCARE, threshold)
     }
 
     return null
 }
+
+private fun Database.Read.childHasPaidServiceNeedToday(
+    childId: UUID
+): Boolean = createQuery(
+    """
+SELECT EXISTS(
+    SELECT *
+    FROM placement p  
+        LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> current_date
+        LEFT JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE
+        p.child_id = :childId
+        AND daterange(p.start_date, p.end_date, '[]') @> current_date
+        AND sno.fee_coefficient > 0.0)
+    """.trimIndent()
+).bind("childId", childId)
+    .mapTo<Boolean>()
+    .first()

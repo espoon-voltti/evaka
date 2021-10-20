@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
@@ -39,6 +38,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.lang.IllegalStateException
@@ -347,7 +347,7 @@ class FixtureBuilder(
         fun withId(id: ServiceNeedId) = this.apply { this.id = id }
 
         fun save(): PlacementFixture {
-            if (serviceNeedOption != null) tx.insertServiceNeedOption(serviceNeedOption!!)
+            if (serviceNeedOption != null) tx.upsertServiceNeedOption(serviceNeedOption!!)
 
             tx.insertTestServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
@@ -357,7 +357,6 @@ class FixtureBuilder(
                     from ?: placementFixture.placementPeriod.start,
                     to ?: placementFixture.placementPeriod.end
                 ),
-                updated = updated,
                 id = id ?: ServiceNeedId(UUID.randomUUID())
             )
 

@@ -18,7 +18,7 @@ import {
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
-  insertServiceNeedOptions,
+  insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
@@ -38,7 +38,7 @@ const daycareGroup2Fixture: DaycareGroup = {
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
-  await insertServiceNeedOptions()
+  await insertDefaultServiceNeedOptions()
 
   await insertDaycareGroupFixtures([daycareGroupFixture, daycareGroup2Fixture])
   const daycarePlacementFixture = createDaycarePlacementFixture(

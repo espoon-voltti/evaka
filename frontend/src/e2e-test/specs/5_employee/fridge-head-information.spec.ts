@@ -12,7 +12,7 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertFeeThresholds,
-  insertServiceNeedOptions,
+  insertDefaultServiceNeedOptions,
   insertVoucherValues,
   resetDatabase,
   runPendingAsyncJobs
@@ -37,7 +37,7 @@ fixture('Employee - Head of family details')
   .beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    await insertServiceNeedOptions()
+    await insertDefaultServiceNeedOptions()
     await insertVoucherValues()
     regularPerson = fixtures.familyWithTwoGuardians.guardian
     fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian

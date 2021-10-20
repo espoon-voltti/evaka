@@ -21,7 +21,7 @@ import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  insertServiceNeedOptions,
+  insertDefaultServiceNeedOptions,
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
@@ -42,7 +42,7 @@ fixture('Employee - Absences')
   .beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    await insertServiceNeedOptions()
+    await insertDefaultServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
