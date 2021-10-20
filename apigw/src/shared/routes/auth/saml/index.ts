@@ -5,6 +5,7 @@
 import express, { Router, urlencoded } from 'express'
 import _ from 'lodash'
 import passport from 'passport'
+import path from 'path'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
 import { adMock, gatewayRole, nodeEnv } from '../../../config'
@@ -38,9 +39,9 @@ function getDefaultPageUrl(req: express.Request): string {
 
 function getRedirectUrl(req: express.Request): string {
   const relayState = req.body.RelayState || req.query.RelayState
-  if (typeof relayState === 'string') {
+  // Trust relayState only if it's a abolute path
+  if (typeof relayState === 'string' && path.isAbsolute(relayState)) {
     try {
-      // Trust relayState only if it's a relative URI
       const dummyOrigin = 'http://evaka'
       const url = new URL(relayState, dummyOrigin)
       if (url.origin === dummyOrigin) {
