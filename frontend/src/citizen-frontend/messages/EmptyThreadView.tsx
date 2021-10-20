@@ -9,6 +9,7 @@ import { H3 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
+import { tabletMin } from 'lib-components/breakpoints'
 
 interface Props {
   inboxEmpty: boolean
@@ -37,4 +38,9 @@ const EmptyThreadViewContainer = styled.div`
   width: 100%;
   background: white;
   padding-top: 10%;
+
+  display: none;
+  @media (min-width: ${tabletMin}) {
+    display: block;
+  }
 `
