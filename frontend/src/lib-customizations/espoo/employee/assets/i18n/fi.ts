@@ -182,6 +182,11 @@ export const fi = {
     sv: 'Ruotsi',
     en: 'Englanti'
   },
+  errorPage: {
+    reload: 'Lataa sivu uudelleen',
+    text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
+    title: 'Jotain meni pieleen'
+  },
   validationError: {
     mandatoryField: 'Pakollinen tieto',
     dateRange: 'Päivämäärä on virheellinen',
