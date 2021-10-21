@@ -263,12 +263,13 @@ const PersonDetails = React.memo(function PersonDetails({
             value: person.socialSecurityNumber ?? (
               <FixedSpaceColumn spacing="xs">
                 {editing || !permittedActions.has('ADD_SSN') ? (
-                  <span>{i18n.personProfile.noSsn}</span>
+                  <span data-qa="no-ssn">{i18n.personProfile.noSsn}</span>
                 ) : (
                   <InlineButton
                     onClick={() => toggleUiMode('add-ssn-modal')}
                     text={i18n.personProfile.addSsn}
                     disabled={!permittedActions.has('ADD_SSN')}
+                    data-qa="add-ssn-button"
                   />
                 )}
                 {permittedActions.has('DISABLE_SSN') ? (
@@ -278,6 +279,7 @@ const PersonDetails = React.memo(function PersonDetails({
                       label={i18n.personProfile.ssnAddingDisabledCheckbox}
                       disabled={ssnDisableRequest.isLoading}
                       onChange={disableSsnAdding}
+                      data-qa="disable-ssn-adding"
                     />
                     <InfoButton
                       onClick={toggleShowSsnAddingDisabledInfo}
