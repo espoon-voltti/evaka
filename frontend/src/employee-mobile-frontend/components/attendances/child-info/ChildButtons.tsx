@@ -10,14 +10,14 @@ import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../../state/i18n'
+import { GroupNote } from 'lib-common/generated/api-types/messaging'
 
 interface Props {
   unitId: UUID
   groupId: UUID
   child: Child
-  groupNote: DaycareDailyNote | null | undefined
+  groupNote: GroupNote | null | undefined
 }
 
 export default React.memo(function ChildButtons({

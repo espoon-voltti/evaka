@@ -4,15 +4,14 @@
 
 import config from 'e2e-test-common/config'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   insertDefaultServiceNeedOptions,
-  postDaycareDailyNote,
-  resetDatabase
+  resetDatabase,
+  postChildDailyNote
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import { t } from 'testcafe'
@@ -27,9 +26,9 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import LocalDate from 'lib-common/local-date'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 
 const employeeId = uuidv4()
 
@@ -102,10 +101,8 @@ fixture('Mobile employee daily notes')
 const unitPage = new UnitPage()
 
 test('Child daycare daily note indicators are shown on group view and can be edited', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const childId = enduserChildFixtureJari.id
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: 130,
@@ -122,7 +119,7 @@ test('Child daycare daily note indicators are shown on group view and can be edi
       ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
       : ''
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, daycareDailyNote)
 
   await unitPage.navigateHere(daycare.data.id)
   await unitPage.openTabGroups()
@@ -171,10 +168,8 @@ test('Child daycare daily note indicators are shown on group view and can be edi
 })
 
 test('Group daycare daily notes can be written and are shown on child notes', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const childId = enduserChildFixtureJari.id
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Toinen viesti',
     feedingNote: 'NONE',
     sleepingMinutes: null,
@@ -183,7 +178,7 @@ test('Group daycare daily notes can be written and are shown on child notes', as
     reminderNote: 'Muistakaa muistakaa!'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, daycareDailyNote)
 
   await unitPage.navigateHere(daycare.data.id)
   await unitPage.openTabGroups()

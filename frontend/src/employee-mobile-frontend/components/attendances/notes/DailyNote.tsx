@@ -10,12 +10,12 @@ import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import { fontWeights, Label } from 'lib-components/typography'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../../state/i18n'
+import { GroupNote } from 'lib-common/generated/api-types/messaging'
 
 interface Props {
   child: Child | undefined
-  groupNote: DaycareDailyNote | undefined
+  groupNote: GroupNote | undefined
 }
 
 export default React.memo(function DailyNote({ child, groupNote }: Props) {

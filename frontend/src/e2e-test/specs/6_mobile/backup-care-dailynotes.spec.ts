@@ -6,14 +6,14 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
-import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertBackupCareFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  postDaycareDailyNote,
+  postChildDailyNote,
+  postGroupNote,
   postMobileDevice,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -31,7 +31,10 @@ import {
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import LocalDate from 'lib-common/local-date'
+import {
+  ChildDailyNoteBody,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/messaging'
 
 let fixtures: AreaAndPersonFixtures
 
@@ -46,6 +49,8 @@ let daycare: DaycareBuilder
 let backupCareDaycareGroup: DaycareGroupBuilder
 let backupCareDaycare: DaycareBuilder
 let careArea: CareAreaBuilder
+
+const childId = enduserChildFixtureJari.id
 
 fixture('Mobile daily notes for backup care')
   .meta({ type: 'regression', subType: 'mobile' })
@@ -70,7 +75,7 @@ fixture('Mobile daily notes for backup care')
 
     daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
+      childId,
       daycare.data.id
     )
 
@@ -93,7 +98,7 @@ fixture('Mobile daily notes for backup care')
     await insertBackupCareFixtures([
       {
         id: uuidv4(),
-        childId: fixtures.enduserChildFixtureJari.id,
+        childId: childId,
         unitId: backupCareDaycare.data.id,
         groupId: backupCareDaycareGroup.data.id,
         period: {
@@ -119,10 +124,7 @@ const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
 
 test('Daycare daily note is shown for backupcare child', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: backupCareDaycareGroup.data.id,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const childDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: null,
@@ -131,30 +133,19 @@ test('Daycare daily note is shown for backupcare child', async (t) => {
     reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, childDailyNote)
 
   await t
-    .expect(
-      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
+    .expect(mobileGroupsPage.childName(childId).textContent)
     .eql(
       `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
     )
 
-  await t
-    .expect(
-      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-        .visible
-    )
-    .ok()
+  await t.expect(mobileGroupsPage.childDailyNoteLink(childId).visible).ok()
 })
 
 test('User can create a daily note for a backup care child', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: 140,
@@ -172,20 +163,12 @@ test('User can create a daily note for a backup care child', async (t) => {
       : ''
 
   await t
-    .expect(
-      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
+    .expect(mobileGroupsPage.childName(childId).textContent)
     .eql(
       `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
     )
 
-  await t
-    .expect(
-      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-        .visible
-    )
-    .notOk()
+  await t.expect(mobileGroupsPage.childDailyNoteLink(childId).visible).notOk()
 
   await childPage.createDailyNote(
     fixtures.enduserChildFixtureJari,
@@ -193,9 +176,7 @@ test('User can create a daily note for a backup care child', async (t) => {
     daycareDailyNote
   )
 
-  await t.click(
-    mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-  )
+  await t.click(mobileGroupsPage.childDailyNoteLink(childId))
   await t
     .expect(childPage.dailyNoteNoteInput.textContent)
     .eql(daycareDailyNote.note)
@@ -207,10 +188,7 @@ test('User can create a daily note for a backup care child', async (t) => {
 })
 
 test('User can delete a daily note for a backup care child', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: null,
@@ -219,36 +197,23 @@ test('User can delete a daily note for a backup care child', async (t) => {
     reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, daycareDailyNote)
 
-  await t.click(
-    mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-  )
+  await t.click(mobileGroupsPage.childDailyNoteLink(childId))
 
   await childPage.deleteDailyNote()
 
-  await t
-    .expect(
-      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-        .visible
-    )
-    .notOk()
+  await t.expect(mobileGroupsPage.childDailyNoteLink(childId).visible).notOk()
 })
 
 test('User can see group daily note for a backup care child in the group', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: backupCareDaycareGroup.data.id,
-    childId: null,
-    date: LocalDate.today(),
-    note: 'Testi ryhmäviesti',
-    feedingNote: 'MEDIUM',
-    sleepingMinutes: 3,
-    sleepingNote: 'NONE',
-    reminders: [],
-    reminderNote: ''
+  const groupId = backupCareDaycareGroup.data.id
+
+  const daycareDailyNote: GroupNoteBody = {
+    note: 'Testi ryhmäviesti'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postGroupNote(groupId, daycareDailyNote)
 
   await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
   await t.click(mobileGroupsPage.childDailyNoteLink2)

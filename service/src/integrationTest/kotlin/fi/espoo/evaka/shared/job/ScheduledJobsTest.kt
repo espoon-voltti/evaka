@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -350,7 +349,6 @@ class ScheduledJobsTest : FullApplicationTest() {
                 AuthenticatedUser.Employee(UUID.randomUUID(), emptySet()),
                 testChild_2.id,
                 ChildDailyNoteBody(
-                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
                     feedingNote = null,
                     note = "",
                     reminderNote = "",
@@ -379,7 +377,6 @@ class ScheduledJobsTest : FullApplicationTest() {
                 AuthenticatedUser.Employee(UUID.randomUUID(), emptySet()),
                 testChild_1.id,
                 ChildDailyNoteBody(
-                    date = LocalDate.ofInstant(sixteenHoursAgo, ZoneOffset.UTC),
                     feedingNote = null,
                     note = "",
                     reminderNote = "",
@@ -417,7 +414,6 @@ class ScheduledJobsTest : FullApplicationTest() {
                 AuthenticatedUser.Employee(UUID.randomUUID(), emptySet()),
                 testChild_2.id,
                 ChildDailyNoteBody(
-                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
                     feedingNote = null,
                     note = "",
                     reminderNote = "",

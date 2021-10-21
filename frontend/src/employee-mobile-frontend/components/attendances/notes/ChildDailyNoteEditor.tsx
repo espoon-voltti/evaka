@@ -2,17 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import {
-  DaycareDailyNote,
-  DaycareDailyNoteBody,
-  daycareDailyNoteReminderValues,
-  daycareDailyNoteLevelInfoValues
-} from 'lib-common/generated/api-types/messaging'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -37,99 +27,83 @@ import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import {
-  deleteDaycareDailyNote,
-  insertDaycareDailyNoteForChild,
-  updateDaycareDailyNoteForChild,
-  upsertDaycareDailyNoteForGroup
-} from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { ChipWrapper, TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
+import {
+  ChildDailyNote,
+  ChildDailyNoteBody,
+  childDailyNoteLevelValues,
+  childDailyNoteReminderValues,
+  GroupNote,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/messaging'
+import {
+  deleteChildDailyNote,
+  deleteGroupNote,
+  postChildDailyNote,
+  postGroupNote,
+  putChildDailyNote,
+  putGroupNote
+} from '../../../api/notes'
 
-type DailyNoteEdited = DaycareDailyNoteBody & {
-  id: UUID | null
+type ChildDailyNoteFormData = Omit<ChildDailyNoteBody, 'sleepingMinutes'> & {
   sleepingHours: number | null
+  sleepingMinutes: number | null
 }
 
-const dailyNoteEditedToDailyNoteBody = ({
+const childDailyNoteFormDataToRequestBody = ({
+  feedingNote,
+  note,
+  reminderNote,
+  reminders,
   sleepingHours,
   sleepingMinutes,
-  ...rest
-}: DailyNoteEdited): DaycareDailyNoteBody => ({
-  ...rest,
+  sleepingNote
+}: ChildDailyNoteFormData): ChildDailyNoteBody => ({
+  feedingNote,
+  note,
+  reminderNote,
+  reminders,
   sleepingMinutes:
     sleepingHours != null || sleepingMinutes != null
       ? (sleepingMinutes || 0) + (sleepingHours || 0) * 60
-      : null
+      : null,
+  sleepingNote
 })
 
-const dailyNoteToDailyNoteEdited = (
-  note: DaycareDailyNote
-): DailyNoteEdited => ({
-  ...note,
-  sleepingHours: note.sleepingMinutes
-    ? Math.floor(note.sleepingMinutes / 60)
-    : null,
-  sleepingMinutes: note.sleepingMinutes ? note.sleepingMinutes % 60 : null
+const childDailyNoteToFormData = ({
+  feedingNote,
+  note,
+  reminderNote,
+  reminders,
+  sleepingMinutes,
+  sleepingNote
+}: ChildDailyNote): ChildDailyNoteFormData => ({
+  feedingNote,
+  note,
+  reminderNote,
+  reminders,
+  sleepingHours: sleepingMinutes ? Math.floor(sleepingMinutes / 60) : null,
+  sleepingMinutes: sleepingMinutes ? sleepingMinutes % 60 : null,
+  sleepingNote
 })
 
-const dailyNoteIsEmpty = (dailyNote: DailyNoteEdited) =>
+const childDailyNoteIsEmpty = (dailyNote: ChildDailyNoteFormData) =>
   !dailyNote.sleepingNote &&
   dailyNote.sleepingMinutes === null &&
   dailyNote.sleepingHours === null &&
   dailyNote.reminders.length === 0 &&
   !dailyNote.reminderNote &&
   !dailyNote.note &&
-  !dailyNote.id &&
-  !dailyNote.groupId &&
   !dailyNote.feedingNote
 
-const initDailyNote = ({
-  childId,
-  groupId
-}: {
-  childId?: string
-  groupId?: string
-}): DailyNoteEdited => ({
-  id: null,
-  childId: childId ?? null,
-  groupId: groupId ?? null,
-  date: LocalDate.today(),
-  note: '',
-  feedingNote: null,
-  sleepingNote: null,
-  sleepingHours: null,
-  sleepingMinutes: null,
-  reminders: [],
-  reminderNote: ''
+const groupNoteToFormData = ({ note }: GroupNote): GroupNoteBody => ({
+  note
 })
 
-const genNewGroupNote = (
-  attendanceResponse: Result<AttendanceResponse>,
-  groupId: string,
-  groupNote: string | null
-): DailyNoteEdited => ({
-  childId: null,
-  date: LocalDate.today(),
-  groupId,
-  note: groupNote,
-  id: attendanceResponse
-    .map(
-      ({ groupNotes }) =>
-        groupNotes.find((g) => g.groupId == groupId)?.dailyNote.id ?? null
-    )
-    .getOrElse(null),
-  feedingNote: null,
-  sleepingNote: null,
-  sleepingHours: null,
-  sleepingMinutes: null,
-  reminders: [],
-  reminderNote: null
-})
-
-export default React.memo(function DailyNoteEditor() {
+export default React.memo(function ChildDailyNoteEditor() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
@@ -148,13 +122,19 @@ export default React.memo(function DailyNoteEditor() {
 
   const [dirty, setDirty] = useState(false)
 
-  const [dailyNote, setDailyNote] = useState<DailyNoteEdited>(
-    initDailyNote({ childId })
-  )
+  const [dailyNote, setDailyNote] = useState<ChildDailyNoteFormData>({
+    note: '',
+    feedingNote: null,
+    sleepingNote: null,
+    sleepingHours: null,
+    sleepingMinutes: null,
+    reminders: [],
+    reminderNote: ''
+  })
 
-  const [groupNote, setGroupNote] = useState<DailyNoteEdited>(
-    initDailyNote({ groupId })
-  )
+  const [groupNote, setGroupNote] = useState<GroupNoteBody>({
+    note: ''
+  })
 
   type NoteType = 'NOTE' | 'GROUP_NOTE'
 
@@ -166,56 +146,73 @@ export default React.memo(function DailyNoteEditor() {
     attendanceResponse.map(({ children, groupNotes }) => {
       const child = children.find((ac) => ac.id === childId)
       if (child?.dailyNote) {
-        setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
+        setDailyNote(childDailyNoteToFormData(child.dailyNote))
       }
-      const gNote = groupNotes.find((g) => g.groupId == groupId)?.dailyNote
+      const gNote = groupNotes.find((g) => g.groupId == groupId)
       if (gNote) {
-        setGroupNote(dailyNoteToDailyNoteEdited(gNote))
+        setGroupNote(groupNoteToFormData(gNote))
       }
     })
   }, [attendanceResponse, childId, groupId])
 
-  const child =
+  const child = attendanceResponse.isSuccess
+    ? attendanceResponse.value.children.find((ac) => ac.id === childId)
+    : undefined
+
+  const dailyNoteId = child?.dailyNote?.id
+  const groupNoteId =
     attendanceResponse.isSuccess &&
-    attendanceResponse.value.children.find((ac) => ac.id === childId)
+    attendanceResponse.value.groupNotes.length > 0
+      ? attendanceResponse.value.groupNotes[0].id
+      : undefined
 
   const deleteNote = async () => {
     if (deleteType === 'NOTE') {
-      if (dailyNote.id) await deleteDaycareDailyNote(dailyNote.id)
+      if (dailyNoteId) await deleteChildDailyNote(dailyNoteId)
     } else {
-      if (groupNote.id) await deleteDaycareDailyNote(groupNote.id)
+      if (groupNoteId) await deleteGroupNote(groupNoteId)
     }
     reloadAttendances()
     history.goBack()
   }
+
   const saveNotes = async () => {
     const promises = []
-    if (groupNote.note) {
-      const newGroupNote = genNewGroupNote(
-        attendanceResponse,
-        groupId,
-        groupNote.note
-      )
-      promises.push(upsertDaycareDailyNoteForGroup(groupId, newGroupNote))
-    }
-    if (!dailyNoteIsEmpty(dailyNote)) {
-      const body = dailyNoteEditedToDailyNoteBody(dailyNote)
+
+    if (!childDailyNoteIsEmpty(dailyNote)) {
+      const body = childDailyNoteFormDataToRequestBody(dailyNote)
       promises.push(
-        dailyNote.id
-          ? updateDaycareDailyNoteForChild(childId, dailyNote.id, body)
-          : insertDaycareDailyNoteForChild(childId, body)
+        dailyNoteId
+          ? putChildDailyNote(dailyNoteId, body)
+          : postChildDailyNote(childId, body)
       )
     }
-    setDirty(false)
+
+    if (groupNote.note) {
+      promises.push(
+        groupNoteId
+          ? putGroupNote(groupNoteId, groupNote)
+          : postGroupNote(groupId, groupNote)
+      )
+    }
+
     await Promise.all(promises)
+    setDirty(false)
   }
 
-  const editNote: UpdateStateFn<DailyNoteEdited> = (changes) => {
+  const editChildDailyNote: UpdateStateFn<ChildDailyNoteFormData> = (
+    changes
+  ) => {
     setDailyNote((prev) => ({ ...prev, ...changes }))
     setDirty(true)
   }
 
-  function DeleteAbsencesModal() {
+  const editGroupNote: UpdateStateFn<GroupNoteBody> = (changes) => {
+    setDailyNote((prev) => ({ ...prev, ...changes }))
+    setDirty(true)
+  }
+
+  function DeleteNoteModal() {
     return (
       <InfoModal
         iconColour={'orange'}
@@ -323,7 +320,7 @@ export default React.memo(function DailyNoteEditor() {
               >
                 <NoteTypeTab type="NOTE" dataQa="tab-note">
                   <TabTitle>{i18n.common.child}</TabTitle>
-                  {dailyNote.id && (
+                  {dailyNoteId && (
                     <RoundIcon
                       content={'1'}
                       color={colors.accents.orange}
@@ -333,7 +330,7 @@ export default React.memo(function DailyNoteEditor() {
                 </NoteTypeTab>
                 <NoteTypeTab type="GROUP_NOTE" dataQa="tab-group-note">
                   <TabTitle>{i18n.common.group}</TabTitle>
-                  {groupNote.id && (
+                  {groupNoteId && (
                     <RoundIcon
                       content="1"
                       color={colors.accents.orange}
@@ -343,10 +340,174 @@ export default React.memo(function DailyNoteEditor() {
                 </NoteTypeTab>
               </TabContainer>
 
+              {selectedTab == 'NOTE' && (
+                <ContentArea shadow opaque paddingHorizontal="s">
+                  <FixedSpaceColumn spacing={'m'}>
+                    {dailyNoteId && (
+                      <FixedSpaceRow
+                        fullWidth
+                        justifyContent="flex-end"
+                        spacing="xxs"
+                        onClick={() => {
+                          setDeleteType('NOTE')
+                          setUiMode('confirmDelete')
+                        }}
+                      >
+                        <IconButton
+                          icon={faTrash}
+                          data-qa="open-delete-dialog-btn"
+                          gray
+                        />
+                        <span>{i18n.common.clear}</span>
+                      </FixedSpaceRow>
+                    )}
+
+                    <H2 noMargin>{i18n.attendances.notes.note}</H2>
+
+                    <FixedSpaceColumn spacing="xxs">
+                      <Label>{i18n.attendances.notes.labels.note}</Label>
+                      <TextArea
+                        value={dailyNote.note || ''}
+                        onChange={(e) =>
+                          editChildDailyNote({ note: e.target.value })
+                        }
+                        placeholder={i18n.attendances.notes.placeholders.note}
+                        data-qa="daily-note-note-input"
+                      />
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing="s">
+                      <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
+                      <ChipWrapper $noMargin>
+                        {childDailyNoteLevelValues.map((level) => (
+                          <Fragment key={level}>
+                            <ChoiceChip
+                              text={i18n.attendances.notes.feedingValues[level]}
+                              selected={dailyNote.feedingNote === level}
+                              onChange={() => {
+                                editChildDailyNote({
+                                  feedingNote:
+                                    dailyNote.feedingNote === level
+                                      ? null
+                                      : level
+                                })
+                              }}
+                              data-qa={`feeding-note-${level}`}
+                            />
+                            <Gap horizontal size="xxs" />
+                          </Fragment>
+                        ))}
+                      </ChipWrapper>
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing="s">
+                      <Label>
+                        {i18n.attendances.notes.labels.sleepingNote}
+                      </Label>
+                      <ChipWrapper $noMargin>
+                        {childDailyNoteLevelValues.map((level) => (
+                          <Fragment key={level}>
+                            <ChoiceChip
+                              text={
+                                i18n.attendances.notes.sleepingValues[level]
+                              }
+                              selected={dailyNote.sleepingNote === level}
+                              onChange={() =>
+                                editChildDailyNote({
+                                  sleepingNote:
+                                    dailyNote.sleepingNote === level
+                                      ? null
+                                      : level
+                                })
+                              }
+                              data-qa={`sleeping-note-${level}`}
+                            />
+                            <Gap horizontal size="xxs" />
+                          </Fragment>
+                        ))}
+                      </ChipWrapper>
+                    </FixedSpaceColumn>
+                    <Time>
+                      <InputField
+                        value={dailyNote.sleepingHours?.toString() ?? ''}
+                        onChange={(value) =>
+                          editChildDailyNote({
+                            sleepingHours: parseInt(value)
+                          })
+                        }
+                        placeholder={i18n.attendances.notes.placeholders.hours}
+                        data-qa="sleeping-time-hours-input"
+                        width="s"
+                        type="number"
+                      />
+                      <span>{i18n.common.hourShort}</span>
+                      <InputField
+                        value={dailyNote.sleepingMinutes?.toString() ?? ''}
+                        onChange={(value) =>
+                          editChildDailyNote({
+                            sleepingMinutes: parseInt(value)
+                          })
+                        }
+                        placeholder={
+                          i18n.attendances.notes.placeholders.minutes
+                        }
+                        data-qa="sleeping-time-minutes-input"
+                        width="s"
+                        type="number"
+                        info={
+                          dailyNote.sleepingMinutes &&
+                          dailyNote.sleepingMinutes > 59
+                            ? {
+                                text: i18n.common.errors.minutes,
+                                status: 'warning'
+                              }
+                            : undefined
+                        }
+                      />
+                      <span>{i18n.common.minuteShort}</span>
+                    </Time>
+                    <FixedSpaceColumn spacing={'s'}>
+                      <Label>
+                        {i18n.attendances.notes.labels.reminderNote}
+                      </Label>
+                      <FixedSpaceColumn spacing="xs">
+                        {childDailyNoteReminderValues.map((reminder) => (
+                          <Checkbox
+                            key={reminder}
+                            label={i18n.attendances.notes.reminders[reminder]}
+                            onChange={(checked) =>
+                              editChildDailyNote({
+                                reminders: checked
+                                  ? [...dailyNote.reminders, reminder]
+                                  : dailyNote.reminders.filter(
+                                      (v) => v !== reminder
+                                    )
+                              })
+                            }
+                            checked={dailyNote.reminders.includes(reminder)}
+                            data-qa={`reminders-${reminder}`}
+                          />
+                        ))}
+                        <TextArea
+                          value={dailyNote.reminderNote ?? ''}
+                          onChange={(e) =>
+                            editChildDailyNote({
+                              reminderNote: e.target.value
+                            })
+                          }
+                          placeholder={
+                            i18n.attendances.notes.placeholders.reminderNote
+                          }
+                          data-qa="reminder-note-input"
+                        />
+                      </FixedSpaceColumn>
+                    </FixedSpaceColumn>
+                  </FixedSpaceColumn>
+                </ContentArea>
+              )}
+
               {selectedTab == 'GROUP_NOTE' && (
                 <ContentArea shadow opaque paddingHorizontal={'s'}>
                   <FixedSpaceColumn spacing={'m'}>
-                    {groupNote.id && (
+                    {groupNoteId && (
                       <>
                         <FixedSpaceRow
                           fullWidth
@@ -375,177 +536,14 @@ export default React.memo(function DailyNoteEditor() {
                       </Label>
                       <TextArea
                         value={groupNote?.note ?? ''}
-                        onChange={(
-                          e: React.ChangeEvent<HTMLTextAreaElement>
-                        ) => {
-                          setDirty(true)
-                          setGroupNote({ ...groupNote, note: e.target.value })
-                        }}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          editGroupNote({ note: e.target.value })
+                        }
                         placeholder={
                           i18n.attendances.notes.placeholders.groupNote
                         }
                         data-qa="daily-note-group-note-input"
                       />
-                    </FixedSpaceColumn>
-                  </FixedSpaceColumn>
-                </ContentArea>
-              )}
-
-              {selectedTab == 'NOTE' && (
-                <ContentArea shadow opaque paddingHorizontal="s">
-                  <FixedSpaceColumn spacing={'m'}>
-                    {dailyNote.id && (
-                      <FixedSpaceRow
-                        fullWidth
-                        justifyContent="flex-end"
-                        spacing="xxs"
-                        onClick={() => {
-                          setDeleteType('NOTE')
-                          setUiMode('confirmDelete')
-                        }}
-                      >
-                        <IconButton
-                          icon={faTrash}
-                          data-qa="open-delete-dialog-btn"
-                          gray
-                        />
-                        <span>{i18n.common.clear}</span>
-                      </FixedSpaceRow>
-                    )}
-
-                    <H2 noMargin>{i18n.attendances.notes.note}</H2>
-
-                    <FixedSpaceColumn spacing="xxs">
-                      <Label>{i18n.attendances.notes.labels.note}</Label>
-                      <TextArea
-                        value={dailyNote.note || ''}
-                        onChange={(e) => editNote({ note: e.target.value })}
-                        placeholder={i18n.attendances.notes.placeholders.note}
-                        data-qa="daily-note-note-input"
-                      />
-                    </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing="s">
-                      <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-                      <ChipWrapper $noMargin>
-                        {daycareDailyNoteLevelInfoValues.map((level) => (
-                          <Fragment key={level}>
-                            <ChoiceChip
-                              text={i18n.attendances.notes.feedingValues[level]}
-                              selected={dailyNote.feedingNote === level}
-                              onChange={() => {
-                                editNote({
-                                  feedingNote:
-                                    dailyNote.feedingNote === level
-                                      ? null
-                                      : level
-                                })
-                              }}
-                              data-qa={`feeding-note-${level}`}
-                            />
-                            <Gap horizontal size="xxs" />
-                          </Fragment>
-                        ))}
-                      </ChipWrapper>
-                    </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing="s">
-                      <Label>
-                        {i18n.attendances.notes.labels.sleepingNote}
-                      </Label>
-                      <ChipWrapper $noMargin>
-                        {daycareDailyNoteLevelInfoValues.map((level) => (
-                          <Fragment key={level}>
-                            <ChoiceChip
-                              text={
-                                i18n.attendances.notes.sleepingValues[level]
-                              }
-                              selected={dailyNote.sleepingNote === level}
-                              onChange={() =>
-                                editNote({
-                                  sleepingNote:
-                                    dailyNote.sleepingNote === level
-                                      ? null
-                                      : level
-                                })
-                              }
-                              data-qa={`sleeping-note-${level}`}
-                            />
-                            <Gap horizontal size="xxs" />
-                          </Fragment>
-                        ))}
-                      </ChipWrapper>
-                    </FixedSpaceColumn>
-                    <Time>
-                      <InputField
-                        value={dailyNote.sleepingHours?.toString() ?? ''}
-                        onChange={(value) =>
-                          editNote({
-                            sleepingHours: parseInt(value)
-                          })
-                        }
-                        placeholder={i18n.attendances.notes.placeholders.hours}
-                        data-qa="sleeping-time-hours-input"
-                        width="s"
-                        type="number"
-                      />
-                      <span>{i18n.common.hourShort}</span>
-                      <InputField
-                        value={dailyNote.sleepingMinutes?.toString() ?? ''}
-                        onChange={(value) =>
-                          editNote({ sleepingMinutes: parseInt(value) })
-                        }
-                        placeholder={
-                          i18n.attendances.notes.placeholders.minutes
-                        }
-                        data-qa="sleeping-time-minutes-input"
-                        width="s"
-                        type="number"
-                        info={
-                          dailyNote.sleepingMinutes &&
-                          dailyNote.sleepingMinutes > 59
-                            ? {
-                                text: i18n.common.errors.minutes,
-                                status: 'warning'
-                              }
-                            : undefined
-                        }
-                      />
-                      <span>{i18n.common.minuteShort}</span>
-                    </Time>
-                    <FixedSpaceColumn spacing={'s'}>
-                      <Label>
-                        {i18n.attendances.notes.labels.reminderNote}
-                      </Label>
-                      <FixedSpaceColumn spacing="xs">
-                        {daycareDailyNoteReminderValues.map((reminder) => (
-                          <Checkbox
-                            key={reminder}
-                            label={i18n.attendances.notes.reminders[reminder]}
-                            onChange={(checked) =>
-                              editNote({
-                                reminders: checked
-                                  ? [...dailyNote.reminders, reminder]
-                                  : dailyNote.reminders.filter(
-                                      (v) => v !== reminder
-                                    )
-                              })
-                            }
-                            checked={dailyNote.reminders.includes(reminder)}
-                            data-qa={`reminders-${reminder}`}
-                          />
-                        ))}
-                        <TextArea
-                          value={dailyNote.reminderNote ?? ''}
-                          onChange={(e) =>
-                            editNote({
-                              reminderNote: e.target.value
-                            })
-                          }
-                          placeholder={
-                            i18n.attendances.notes.placeholders.reminderNote
-                          }
-                          data-qa="reminder-note-input"
-                        />
-                      </FixedSpaceColumn>
                     </FixedSpaceColumn>
                   </FixedSpaceColumn>
                 </ContentArea>
@@ -579,7 +577,7 @@ export default React.memo(function DailyNoteEditor() {
           </TallContentArea>
         </>
       )}
-      {uiMode === 'confirmDelete' && <DeleteAbsencesModal />}
+      {uiMode === 'confirmDelete' && <DeleteNoteModal />}
       {uiMode === 'confirmExit' && <ConfirmExitModal />}
     </>
   )

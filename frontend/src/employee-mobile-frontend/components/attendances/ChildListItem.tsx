@@ -17,9 +17,9 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { Link, useParams } from 'react-router-dom'
 import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from '../../state/unit'
+import { GroupNote } from 'lib-common/generated/api-types/messaging'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -112,7 +112,7 @@ interface ChildListItemProps {
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
-  groupNote?: DaycareDailyNote | null
+  groupNote?: GroupNote | null
 }
 
 export default React.memo(function ChildListItem({

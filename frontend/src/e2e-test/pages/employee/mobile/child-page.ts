@@ -4,13 +4,13 @@
 
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import { t, Selector } from 'testcafe'
-import {
-  DaycareDailyNoteBody,
-  DaycareDailyNoteLevelInfo,
-  DaycareDailyNoteReminder
-} from 'lib-common/generated/api-types/messaging'
 import { AbsenceType } from '../absences/absences-page'
 import MobileGroupsPage from './mobile-groups'
+import {
+  ChildDailyNoteBody,
+  ChildDailyNoteLevel,
+  ChildDailyNoteReminder
+} from 'lib-common/generated/api-types/messaging'
 
 export default class ChildPage {
   readonly childName = Selector('[data-qa="child-name"]')
@@ -53,11 +53,11 @@ export default class ChildPage {
 
   readonly markAbsentRadio = (absenceType: AbsenceType) =>
     Selector(`[data-qa="mark-absent-${absenceType}"]`)
-  readonly dailyNoteFeedingNote = (level: DaycareDailyNoteLevelInfo) =>
+  readonly dailyNoteFeedingNote = (level: ChildDailyNoteLevel) =>
     Selector(`[data-qa="feeding-note-${level}"]`)
-  readonly dailyNoteSleepingNote = (level: DaycareDailyNoteLevelInfo) =>
+  readonly dailyNoteSleepingNote = (level: ChildDailyNoteLevel) =>
     Selector(`[data-qa="sleeping-note-${level}"]`)
-  readonly dailyNoteReminders = (reminder: DaycareDailyNoteReminder) =>
+  readonly dailyNoteReminders = (reminder: ChildDailyNoteReminder) =>
     Selector(`[data-qa="reminders-${reminder}"]`)
 
   readonly absence = Selector('[data-qa="absence"]')
@@ -164,7 +164,7 @@ export default class ChildPage {
   async createDailyNote(
     childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
-    dailyNote: DaycareDailyNoteBody
+    dailyNote: ChildDailyNoteBody
   ) {
     const hours = Math.floor(Number(dailyNote.sleepingMinutes) / 60).toString()
     const minutes = (Number(dailyNote.sleepingMinutes) % 60).toString()

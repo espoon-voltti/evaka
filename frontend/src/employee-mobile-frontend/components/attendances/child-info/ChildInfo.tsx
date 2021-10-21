@@ -171,7 +171,7 @@ export default React.memo(function AttendanceChildPage() {
   const groupNote = attendanceResponse.isSuccess
     ? attendanceResponse.value.groupNotes.find(
         (g) => g.groupId === child?.groupId
-      )?.dailyNote
+      )
     : undefined
 
   if (uiMode === 'img-crop' && rawImage) {

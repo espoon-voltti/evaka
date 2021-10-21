@@ -4,7 +4,6 @@
 
 import { BaseError } from 'make-error-cause'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import config from '../config'
 import {
   Application,
@@ -49,6 +48,10 @@ import * as fs from 'fs/promises'
 import FormData from 'form-data'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { UUID } from 'lib-common/types'
+import {
+  ChildDailyNoteBody,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/messaging'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -708,11 +711,23 @@ export async function putDigitransitAutocomplete(
   }
 }
 
-export async function postDaycareDailyNote(
-  note: DaycareDailyNoteBody
+export async function postChildDailyNote(
+  childId: UUID,
+  note: ChildDailyNoteBody
 ): Promise<void> {
   try {
-    await devClient.post(`/messaging/daycare-daily-note`, note)
+    await devClient.post(`/children/${childId}/child-daily-notes`, note)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function postGroupNote(
+  groupId: UUID,
+  note: GroupNoteBody
+): Promise<void> {
+  try {
+    await devClient.post(`/daycare-groups/${groupId}/group-notes`, note)
   } catch (e) {
     throw new DevApiError(e)
   }
