@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Result } from 'lib-common/api'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import {
   DaycareDailyNote,
@@ -12,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
@@ -35,12 +37,11 @@ import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { UpdateStateFn } from 'lib-common/form-state'
 import {
   deleteDaycareDailyNote,
-  upsertDaycareDailyNoteForGroup,
+  insertDaycareDailyNoteForChild,
   updateDaycareDailyNoteForChild,
-  insertDaycareDailyNoteForChild
+  upsertDaycareDailyNoteForGroup
 } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
@@ -214,7 +215,7 @@ export default React.memo(function DailyNoteEditor() {
       )
     }
     setDirty(false)
-    return Promise.all(promises)
+    await Promise.all(promises)
   }
 
   const editNote: UpdateStateFn<DailyNoteEdited> = (changes) => {
@@ -572,15 +573,13 @@ export default React.memo(function DailyNoteEditor() {
                     data-qa="cancel-daily-note-btn"
                   />
 
-                  {/*TODO async button ?*/}
-                  <Button
+                  <AsyncButton
                     primary
-                    onClick={() =>
-                      void saveNotes().then(() => {
-                        reloadAttendances()
-                        history.goBack()
-                      })
-                    }
+                    onClick={saveNotes}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      history.goBack()
+                    }}
                     text={i18n.common.save}
                     data-qa="create-daily-note-btn"
                   />
