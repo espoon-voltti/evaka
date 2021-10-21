@@ -102,7 +102,7 @@ class MessageNotificationEmailService(
     private fun getSubject(): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
-        return "Uusi viesti eVakassa / Ny meddelande i eVaka / New message in eVaka$postfix"
+        return "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
     }
 
     private fun getCitizenMessagesUrl(lang: Language): String {
