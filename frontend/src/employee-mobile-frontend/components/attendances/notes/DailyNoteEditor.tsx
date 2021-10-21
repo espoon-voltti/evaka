@@ -285,6 +285,13 @@ export default React.memo(function DailyNoteEditor() {
     </Tab>
   )
 
+  const goBackWithConfirm = () => {
+    if (dirty) {
+      setUiMode('confirmExit')
+    } else {
+      history.goBack()
+    }
+  }
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
@@ -293,18 +300,12 @@ export default React.memo(function DailyNoteEditor() {
         <>
           <TallContentArea
             opaque={false}
-            paddingHorizontal={'zero'}
-            paddingVertical={'zero'}
+            paddingHorizontal="zero"
+            paddingVertical="zero"
           >
             <TopRow>
               <BackButtonInline
-                onClick={() => {
-                  if (dirty) {
-                    setUiMode('confirmExit')
-                  } else {
-                    history.goBack()
-                  }
-                }}
+                onClick={goBackWithConfirm}
                 icon={faArrowLeft}
                 text={`${child.firstName} ${child.lastName}`}
               />
@@ -313,8 +314,8 @@ export default React.memo(function DailyNoteEditor() {
               <TitleArea
                 shadow
                 opaque
-                paddingHorizontal={'s'}
-                paddingVertical={'6px'}
+                paddingHorizontal="s"
+                paddingVertical="6px"
               >
                 <Title>{i18n.attendances.notes.dailyNotes}</Title>
               </TitleArea>
@@ -322,10 +323,10 @@ export default React.memo(function DailyNoteEditor() {
               <TabContainer
                 shadow
                 opaque
-                paddingHorizontal={'0px'}
-                paddingVertical={'0px'}
+                paddingHorizontal="0px"
+                paddingVertical="0px"
               >
-                <NoteTypeTab type={'NOTE'} dataQa={'tab-note'}>
+                <NoteTypeTab type="NOTE" dataQa="tab-note">
                   <TabTitle>{i18n.common.child}</TabTitle>
                   {dailyNote.id && (
                     <RoundIcon
@@ -335,13 +336,13 @@ export default React.memo(function DailyNoteEditor() {
                     />
                   )}
                 </NoteTypeTab>
-                <NoteTypeTab type={'GROUP_NOTE'} dataQa={'tab-group-note'}>
+                <NoteTypeTab type="GROUP_NOTE" dataQa="tab-group-note">
                   <TabTitle>{i18n.common.group}</TabTitle>
                   {groupNote.id && (
                     <RoundIcon
-                      content={'1'}
+                      content="1"
                       color={colors.accents.orange}
-                      size={'xs'}
+                      size="xs"
                     />
                   )}
                 </NoteTypeTab>
@@ -353,9 +354,9 @@ export default React.memo(function DailyNoteEditor() {
                     {groupNote.id && (
                       <>
                         <FixedSpaceRow
-                          fullWidth={true}
-                          justifyContent={'flex-end'}
-                          spacing={'xxs'}
+                          fullWidth
+                          justifyContent="flex-end"
+                          spacing="xxs"
                           onClick={() => {
                             setDeleteType('GROUP_NOTE')
                             setUiMode('confirmDelete')
@@ -373,7 +374,7 @@ export default React.memo(function DailyNoteEditor() {
 
                     <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
 
-                    <FixedSpaceColumn spacing={'xxs'}>
+                    <FixedSpaceColumn spacing="xxs">
                       <Label>
                         {i18n.attendances.notes.labels.groupNotesHeader}
                       </Label>
@@ -388,7 +389,7 @@ export default React.memo(function DailyNoteEditor() {
                         placeholder={
                           i18n.attendances.notes.placeholders.groupNote
                         }
-                        data-qa={'daily-note-group-note-input'}
+                        data-qa="daily-note-group-note-input"
                       />
                     </FixedSpaceColumn>
                   </FixedSpaceColumn>
@@ -396,13 +397,13 @@ export default React.memo(function DailyNoteEditor() {
               )}
 
               {selectedTab == 'NOTE' && (
-                <ContentArea shadow opaque paddingHorizontal={'s'}>
+                <ContentArea shadow opaque paddingHorizontal="s">
                   <FixedSpaceColumn spacing={'m'}>
                     {dailyNote.id && (
                       <FixedSpaceRow
-                        fullWidth={true}
-                        justifyContent={'flex-end'}
-                        spacing={'xxs'}
+                        fullWidth
+                        justifyContent="flex-end"
+                        spacing="xxs"
                         onClick={() => {
                           setDeleteType('NOTE')
                           setUiMode('confirmDelete')
@@ -419,7 +420,7 @@ export default React.memo(function DailyNoteEditor() {
 
                     <H2 noMargin>{i18n.attendances.notes.note}</H2>
 
-                    <FixedSpaceColumn spacing={'xxs'}>
+                    <FixedSpaceColumn spacing="xxs">
                       <Label>{i18n.attendances.notes.labels.note}</Label>
                       <TextArea
                         value={dailyNote.note || ''}
@@ -427,10 +428,10 @@ export default React.memo(function DailyNoteEditor() {
                           editNote({ ...dailyNote, note: e.target.value })
                         }
                         placeholder={i18n.attendances.notes.placeholders.note}
-                        data-qa={'daily-note-note-input'}
+                        data-qa="daily-note-note-input"
                       />
                     </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing={'s'}>
+                    <FixedSpaceColumn spacing="s">
                       <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
                       <ChipWrapper $noMargin>
                         {levelInfoValues.map((levelInfo) => (
@@ -451,12 +452,12 @@ export default React.memo(function DailyNoteEditor() {
                               }}
                               data-qa={`feeding-note-${levelInfo}`}
                             />
-                            <Gap horizontal size={'xxs'} />
+                            <Gap horizontal size="xxs" />
                           </Fragment>
                         ))}
                       </ChipWrapper>
                     </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing={'s'}>
+                    <FixedSpaceColumn spacing="s">
                       <Label>
                         {i18n.attendances.notes.labels.sleepingNote}
                       </Label>
@@ -479,7 +480,7 @@ export default React.memo(function DailyNoteEditor() {
                               }}
                               data-qa={`sleeping-note-${levelInfo}`}
                             />
-                            <Gap horizontal size={'xxs'} />
+                            <Gap horizontal size="xxs" />
                           </Fragment>
                         ))}
                       </ChipWrapper>
@@ -529,7 +530,7 @@ export default React.memo(function DailyNoteEditor() {
                       <Label>
                         {i18n.attendances.notes.labels.reminderNote}
                       </Label>
-                      <FixedSpaceColumn spacing={'xs'}>
+                      <FixedSpaceColumn spacing="xs">
                         {reminderValues.map((reminder) => (
                           <Checkbox
                             key={reminder}
@@ -556,9 +557,7 @@ export default React.memo(function DailyNoteEditor() {
                         ))}
                         <TextArea
                           value={dailyNote.reminderNote ?? ''}
-                          onChange={(
-                            e: React.ChangeEvent<HTMLTextAreaElement>
-                          ) =>
+                          onChange={(e) =>
                             editNote({
                               ...dailyNote,
                               reminderNote: e.target.value
@@ -575,39 +574,38 @@ export default React.memo(function DailyNoteEditor() {
                 </ContentArea>
               )}
 
-              <ContentArea shadow paddingHorizontal={'s'} opaque={false}>
-                <FixedSpaceColumn spacing={'m'}>
-                  <FixedSpaceRow
-                    fullWidth={true}
-                    justifyContent={'space-evenly'}
-                    spacing={'xxs'}
-                  >
-                    <Button
-                      onClick={() => history.goBack()}
-                      text={i18n.common.cancel}
-                      data-qa="cancel-daily-note-btn"
-                    />
+              <StickyActionContainer>
+                <FixedSpaceRow
+                  fullWidth
+                  justifyContent="space-evenly"
+                  spacing="xxs"
+                >
+                  <Button
+                    onClick={goBackWithConfirm}
+                    text={i18n.common.cancel}
+                    data-qa="cancel-daily-note-btn"
+                  />
 
-                    <Button
-                      primary={true}
-                      onClick={() =>
-                        void saveNotes().then(() => {
-                          reloadAttendances()
-                          history.goBack()
-                        })
-                      }
-                      text={i18n.common.save}
-                      data-qa="create-daily-note-btn"
-                    />
-                  </FixedSpaceRow>
-                </FixedSpaceColumn>
-              </ContentArea>
+                  {/*TODO async button ?*/}
+                  <Button
+                    primary
+                    onClick={() =>
+                      void saveNotes().then(() => {
+                        reloadAttendances()
+                        history.goBack()
+                      })
+                    }
+                    text={i18n.common.save}
+                    data-qa="create-daily-note-btn"
+                  />
+                </FixedSpaceRow>
+              </StickyActionContainer>
             </FixedSpaceColumn>
           </TallContentArea>
         </>
       )}
-      {uiMode === `confirmDelete` && <DeleteAbsencesModal />}
-      {uiMode === `confirmExit` && <ConfirmExitModal />}
+      {uiMode === 'confirmDelete' && <DeleteAbsencesModal />}
+      {uiMode === 'confirmExit' && <ConfirmExitModal />}
     </>
   )
 })
@@ -680,4 +678,11 @@ const TopRow = styled.div`
 
 const TabTitle = styled.span`
   margin-right: ${defaultMargins.xxs};
+`
+
+const StickyActionContainer = styled.section`
+  position: sticky;
+  bottom: 0;
+  background-color: ${({ theme }) => theme.colors.greyscale.lightest};
+  padding: ${defaultMargins.s};
 `
