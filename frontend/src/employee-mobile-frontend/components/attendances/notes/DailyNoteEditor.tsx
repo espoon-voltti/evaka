@@ -8,8 +8,8 @@ import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import {
   DaycareDailyNote,
   DaycareDailyNoteBody,
-  DaycareDailyNoteLevelInfo,
-  DaycareDailyNoteReminder
+  daycareDailyNoteReminderValues,
+  daycareDailyNoteLevelInfoValues
 } from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -128,14 +128,6 @@ const genNewGroupNote = (
   reminders: [],
   reminderNote: null
 })
-
-const levelInfoValues: DaycareDailyNoteLevelInfo[] = ['GOOD', 'MEDIUM', 'NONE']
-
-const reminderValues: DaycareDailyNoteReminder[] = [
-  'DIAPERS',
-  'CLOTHES',
-  'LAUNDRY'
-]
 
 export default React.memo(function DailyNoteEditor() {
   const { i18n } = useTranslation()
@@ -435,22 +427,20 @@ export default React.memo(function DailyNoteEditor() {
                     <FixedSpaceColumn spacing="s">
                       <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
                       <ChipWrapper $noMargin>
-                        {levelInfoValues.map((levelInfo) => (
-                          <Fragment key={levelInfo}>
+                        {daycareDailyNoteLevelInfoValues.map((level) => (
+                          <Fragment key={level}>
                             <ChoiceChip
-                              text={
-                                i18n.attendances.notes.feedingValues[levelInfo]
-                              }
-                              selected={dailyNote.feedingNote === levelInfo}
+                              text={i18n.attendances.notes.feedingValues[level]}
+                              selected={dailyNote.feedingNote === level}
                               onChange={() => {
                                 editNote({
                                   feedingNote:
-                                    dailyNote.feedingNote === levelInfo
+                                    dailyNote.feedingNote === level
                                       ? null
-                                      : levelInfo
+                                      : level
                                 })
                               }}
-                              data-qa={`feeding-note-${levelInfo}`}
+                              data-qa={`feeding-note-${level}`}
                             />
                             <Gap horizontal size="xxs" />
                           </Fragment>
@@ -462,22 +452,22 @@ export default React.memo(function DailyNoteEditor() {
                         {i18n.attendances.notes.labels.sleepingNote}
                       </Label>
                       <ChipWrapper $noMargin>
-                        {levelInfoValues.map((levelInfo) => (
-                          <Fragment key={levelInfo}>
+                        {daycareDailyNoteLevelInfoValues.map((level) => (
+                          <Fragment key={level}>
                             <ChoiceChip
                               text={
-                                i18n.attendances.notes.sleepingValues[levelInfo]
+                                i18n.attendances.notes.sleepingValues[level]
                               }
-                              selected={dailyNote.sleepingNote === levelInfo}
-                              onChange={() => {
+                              selected={dailyNote.sleepingNote === level}
+                              onChange={() =>
                                 editNote({
                                   sleepingNote:
-                                    dailyNote.sleepingNote === levelInfo
+                                    dailyNote.sleepingNote === level
                                       ? null
-                                      : levelInfo
+                                      : level
                                 })
-                              }}
-                              data-qa={`sleeping-note-${levelInfo}`}
+                              }
+                              data-qa={`sleeping-note-${level}`}
                             />
                             <Gap horizontal size="xxs" />
                           </Fragment>
@@ -526,7 +516,7 @@ export default React.memo(function DailyNoteEditor() {
                         {i18n.attendances.notes.labels.reminderNote}
                       </Label>
                       <FixedSpaceColumn spacing="xs">
-                        {reminderValues.map((reminder) => (
+                        {daycareDailyNoteReminderValues.map((reminder) => (
                           <Checkbox
                             key={reminder}
                             label={i18n.attendances.notes.reminders[reminder]}
