@@ -158,3 +158,4 @@ V157__voucher_value_decision_type.sql
 V158__separate_daily_and_group_notes.sql
 V159__child_sticky_notes.sql
 V160__person_disable_ssn.sql
+V161__pedagogical_documents_email_notification.sql
