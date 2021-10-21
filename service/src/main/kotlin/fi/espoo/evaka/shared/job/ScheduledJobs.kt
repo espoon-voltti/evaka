@@ -13,7 +13,7 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
-import fi.espoo.evaka.messaging.daycarydailynote.deleteExpiredDaycareDailyNotes
+import fi.espoo.evaka.messaging.note.child.daily.deleteExpiredChildDailyNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans
@@ -160,7 +160,7 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
     }
 
     fun removeOldDaycareDailyNotes(db: Database.Connection) {
-        db.transaction { it.deleteExpiredDaycareDailyNotes(Instant.now()) }
+        db.transaction { it.deleteExpiredChildDailyNotes(HelsinkiDateTime.now()) }
     }
 
     fun removeOldAsyncJobs(db: Database.Connection) {

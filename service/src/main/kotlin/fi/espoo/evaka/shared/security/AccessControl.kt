@@ -24,13 +24,14 @@ import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
@@ -105,6 +106,16 @@ WHERE employee_id = :userId
         "child_id",
         permittedRoleActions::childActions
     )
+    private val childDailyNote = ActionConfig(
+        """
+SELECT cdn.id, role
+FROM child_acl_view
+JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "cdn.id",
+        permittedRoleActions::childDailyNoteActions
+    )
     private val group = ActionConfig(
         """
 SELECT daycare_group_id AS id, role
@@ -113,6 +124,16 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "daycare_group_id",
         permittedRoleActions::groupActions
+    )
+    private val groupNote = ActionConfig(
+        """
+SELECT gn.id, role
+FROM daycare_group_acl_view
+JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "gn.id",
+        permittedRoleActions::groupNoteActions
     )
     private val groupPlacement = ActionConfig(
         """
@@ -247,8 +268,10 @@ WHERE employee_id = :userId
             is Action.ApplicationNote -> hasPermissionFor(user, action, id as ApplicationNoteId)
             is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
+            is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, id as ChildDailyNoteId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
+            is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
             is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
@@ -380,15 +403,6 @@ WHERE employee_id = :userId
 
     fun getPermittedChildActions(user: AuthenticatedUser, ids: Collection<ChildId>): Map<ChildId, Set<Action.Child>> =
         this.child.getPermittedActions(user, ids)
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.DailyNote, id: DaycareDailyNoteId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { acl.getRolesForDailyNote(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::dailyNoteActions
-        )
-    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Decision, id: DecisionId) {
         assertPermission(

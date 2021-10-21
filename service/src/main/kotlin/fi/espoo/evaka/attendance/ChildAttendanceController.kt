@@ -7,7 +7,8 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
+import fi.espoo.evaka.messaging.note.child.daily.getLatestChildDailyNotesInUnit
+import fi.espoo.evaka.messaging.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.markEmployeeLastLogin
@@ -478,7 +479,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
     val childrenBasics = fetchChildrenBasics(unitId, instant.toLocalDate())
     val childrenAttendances = fetchChildrenAttendances(unitId, instant)
     val childrenAbsences = fetchChildrenAbsences(unitId, instant.toLocalDate())
-    val daycareDailyNotesForChildrenPlacedInUnit = getDaycareDailyNotesForChildrenPlacedInUnit(unitId)
+    val dailyNotesForChildrenInUnit = getLatestChildDailyNotesInUnit(unitId)
     val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
 
     val children = childrenBasics.map { child ->
@@ -486,7 +487,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
         val absences = childrenAbsences.filter { it.childId == child.id }
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
         val status = getChildAttendanceStatus(placementBasics, attendance, absences)
-        val daycareDailyNote = daycareDailyNotesForChildrenPlacedInUnit.firstOrNull { it.childId == child.id }
+        val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
 
         Child(
             id = child.id,
@@ -500,13 +501,13 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             attendance = attendance,
             absences = absences,
             dailyServiceTimes = child.dailyServiceTimes,
-            dailyNote = daycareDailyNote,
+            dailyNote = dailyNote,
             imageUrl = child.imageUrl,
             reservations = attendanceReservations[child.id] ?: listOf()
         )
     }
 
-    val groupNotes = fetchGroupNotes(unitId)
+    val groupNotes = getGroupNotesForUnit(unitId)
     return AttendanceResponse(children, groupNotes)
 }
 

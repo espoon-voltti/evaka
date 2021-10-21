@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupPickupId
-import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -266,33 +265,6 @@ JOIN mobile_device d ON daycare_id = d.unit_id
 WHERE employee_id = :userId AND d.id = :deviceId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("deviceId", deviceId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    fun getRolesForDailyNote(user: AuthenticatedUser, noteId: DaycareDailyNoteId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    """
-SELECT role
-FROM daycare_daily_note dn
-JOIN LATERAL (
-    SELECT role
-    FROM child_acl_view acl
-    WHERE acl.employee_id = :userId
-    AND acl.child_id = dn.child_id
-
-    UNION ALL
-
-    SELECT role
-    FROM daycare_group_acl_view acl
-    WHERE acl.employee_id = :userId
-    AND acl.daycare_group_id = dn.group_id
-) acls ON true
-WHERE dn.id = :noteId
-"""
-                ).bind("userId", user.id).bind("noteId", noteId).mapTo<UserRole>().toSet()
             }
         }
     )

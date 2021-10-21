@@ -22,10 +22,11 @@ interface PermittedRoleActions {
     fun backupCareActions(role: UserRole): Set<Action.BackupCare>
     fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
     fun childActions(role: UserRole): Set<Action.Child>
-    fun dailyNoteActions(role: UserRole): Set<Action.DailyNote>
+    fun childDailyNoteActions(role: UserRole): Set<Action.ChildDailyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
     fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds>
     fun groupActions(role: UserRole): Set<Action.Group>
+    fun groupNoteActions(role: UserRole): Set<Action.GroupNote>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
     fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
@@ -55,10 +56,11 @@ class StaticPermittedRoleActions(
     val backupCare: ActionsByRole<Action.BackupCare> = getDefaults(),
     val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
     val child: ActionsByRole<Action.Child> = getDefaults(),
-    val dailyNote: ActionsByRole<Action.DailyNote> = getDefaults(),
+    val childDailyNote: ActionsByRole<Action.ChildDailyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
     val feeThresholds: ActionsByRole<Action.FeeThresholds> = getDefaults(),
     val group: ActionsByRole<Action.Group> = getDefaults(),
+    val groupNote: ActionsByRole<Action.GroupNote> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
     val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
@@ -81,10 +83,11 @@ class StaticPermittedRoleActions(
     override fun backupCareActions(role: UserRole): Set<Action.BackupCare> = backupCare[role] ?: emptySet()
     override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
     override fun childActions(role: UserRole): Set<Action.Child> = child[role] ?: emptySet()
-    override fun dailyNoteActions(role: UserRole): Set<Action.DailyNote> = dailyNote[role] ?: emptySet()
+    override fun childDailyNoteActions(role: UserRole): Set<Action.ChildDailyNote> = childDailyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
     override fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds> = feeThresholds[role] ?: emptySet()
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
+    override fun groupNoteActions(role: UserRole): Set<Action.GroupNote> = groupNote[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
     override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()

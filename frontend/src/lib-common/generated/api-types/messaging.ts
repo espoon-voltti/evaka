@@ -18,6 +18,57 @@ export type AccountType =
   | 'CITIZEN'
 
 /**
+* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNote
+*/
+export interface ChildDailyNote {
+  childId: UUID
+  date: LocalDate
+  feedingNote: ChildDailyNoteLevel | null
+  id: UUID
+  modifiedAt: Date
+  modifiedBy: string
+  note: string
+  reminderNote: string
+  reminders: ChildDailyNoteReminder[]
+  sleepingMinutes: number | null
+  sleepingNote: ChildDailyNoteLevel | null
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteBody
+*/
+export interface ChildDailyNoteBody {
+  feedingNote: ChildDailyNoteLevel | null
+  note: string
+  reminderNote: string
+  reminders: ChildDailyNoteReminder[]
+  sleepingMinutes: number | null
+  sleepingNote: ChildDailyNoteLevel | null
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteLevel
+*/
+export const childDailyNoteLevelValues = [
+  'GOOD',
+  'MEDIUM',
+  'NONE'
+] as const
+
+export type ChildDailyNoteLevel = typeof childDailyNoteLevelValues[number]
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteReminder
+*/
+export const childDailyNoteReminderValues = [
+  'DIAPERS',
+  'CLOTHES',
+  'LAUNDRY'
+] as const
+
+export type ChildDailyNoteReminder = typeof childDailyNoteReminderValues[number]
+
+/**
 * Generated from fi.espoo.evaka.messaging.message.CitizenMessageBody
 */
 export interface CitizenMessageBody {
@@ -25,61 +76,6 @@ export interface CitizenMessageBody {
   recipients: MessageAccount[]
   title: string
 }
-
-/**
-* Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
-*/
-export interface DaycareDailyNote {
-  childId: UUID | null
-  date: LocalDate
-  feedingNote: DaycareDailyNoteLevelInfo | null
-  groupId: UUID | null
-  id: UUID
-  modifiedAt: Date
-  modifiedBy: string
-  note: string | null
-  reminderNote: string | null
-  reminders: DaycareDailyNoteReminder[]
-  sleepingMinutes: number | null
-  sleepingNote: DaycareDailyNoteLevelInfo | null
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
-*/
-export interface DaycareDailyNoteBody {
-  childId: UUID | null
-  date: LocalDate
-  feedingNote: DaycareDailyNoteLevelInfo | null
-  groupId: UUID | null
-  note: string | null
-  reminderNote: string | null
-  reminders: DaycareDailyNoteReminder[]
-  sleepingMinutes: number | null
-  sleepingNote: DaycareDailyNoteLevelInfo | null
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteLevelInfo
-*/
-export const daycareDailyNoteLevelInfoValues = [
-  'GOOD',
-  'MEDIUM',
-  'NONE'
-] as const
-
-export type DaycareDailyNoteLevelInfo = typeof daycareDailyNoteLevelInfoValues[number]
-
-/**
-* Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteReminder
-*/
-export const daycareDailyNoteReminderValues = [
-  'DIAPERS',
-  'CLOTHES',
-  'LAUNDRY'
-] as const
-
-export type DaycareDailyNoteReminder = typeof daycareDailyNoteReminderValues[number]
 
 /**
 * Generated from fi.espoo.evaka.messaging.message.DraftContent
@@ -110,6 +106,24 @@ export interface Group {
   name: string
   unitId: UUID
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.group.GroupNote
+*/
+export interface GroupNote {
+  groupId: UUID
+  id: UUID
+  modifiedAt: Date
+  modifiedBy: string
+  note: string
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.group.GroupNoteBody
+*/
+export interface GroupNoteBody {
+  note: string
 }
 
 /**
@@ -186,6 +200,22 @@ export type MessageType =
 export interface NestedMessageAccount {
   account: MessageAccount
   daycareGroup: Group | null
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.NotesController.NotesByChildResponse
+*/
+export interface NotesByChildResponse {
+  childDailyNote: ChildDailyNote | null
+  groupNotes: GroupNote[]
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.note.NotesController.NotesByGroupResponse
+*/
+export interface NotesByGroupResponse {
+  childDailyNotes: ChildDailyNote[]
+  groupNotes: GroupNote[]
 }
 
 /**

@@ -9,9 +9,11 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
@@ -182,6 +184,10 @@ sealed interface Action {
         CREATE_BACKUP_PICKUP(UNIT_SUPERVISOR, STAFF),
         READ_BACKUP_PICKUP(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
 
+        READ_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+        CREATE_DAILY_NOTE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+        DELETE_DAILY_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+
         READ_DAILY_SERVICE_TIMES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
         UPDATE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
         DELETE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
@@ -209,8 +215,9 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class DailyNote(private val roles: EnumSet<UserRole>) : Action {
-        ;
+    enum class ChildDailyNote(private val roles: EnumSet<UserRole>) : ScopedAction<ChildDailyNoteId> {
+        UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+        DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -237,7 +244,6 @@ sealed interface Action {
 
         CREATE_ABSENCES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_ABSENCES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_DAYCARE_DAILY_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         DELETE_ABSENCES(UNIT_SUPERVISOR, STAFF),
 
         READ_CARETAKERS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
@@ -245,7 +251,17 @@ sealed interface Action {
         UPDATE_CARETAKERS(UNIT_SUPERVISOR),
         DELETE_CARETAKERS(UNIT_SUPERVISOR),
 
+        CREATE_NOTE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+        READ_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE)
         ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class GroupNote(private val roles: EnumSet<UserRole>) : ScopedAction<GroupNoteId> {
+        UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+        DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

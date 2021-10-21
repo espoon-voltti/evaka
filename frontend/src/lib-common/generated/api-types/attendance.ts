@@ -8,8 +8,9 @@
 import LocalDate from '../../local-date'
 import { AbsenceCareType } from './daycare'
 import { AbsenceType } from './daycare'
+import { ChildDailyNote } from './messaging'
 import { DailyServiceTimes } from '../../api-types/child/common'
-import { DaycareDailyNote } from './messaging'
+import { GroupNote } from './messaging'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -69,7 +70,7 @@ export interface Child {
   absences: ChildAbsence[]
   attendance: ChildAttendance | null
   backup: boolean
-  dailyNote: DaycareDailyNote | null
+  dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimes | null
   firstName: string
   groupId: UUID
@@ -207,14 +208,6 @@ export interface GetChildSensitiveInfoRequest {
 export interface GroupInfo {
   id: UUID
   name: string
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.GroupNote
-*/
-export interface GroupNote {
-  dailyNote: DaycareDailyNote
-  groupId: UUID
 }
 
 /**

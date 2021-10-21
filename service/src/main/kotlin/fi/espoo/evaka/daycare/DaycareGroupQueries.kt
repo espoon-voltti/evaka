@@ -77,7 +77,7 @@ fun Database.Read.getDaycareGroups(daycareId: DaycareId, startDate: LocalDate?, 
 fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) = createUpdate(
     // language=SQL
     """
-DELETE FROM daycare_daily_note WHERE group_id = :groupId;        
+DELETE FROM group_note WHERE group_id = :groupId;        
 DELETE FROM daycare_group
 WHERE id = :groupId
 """
