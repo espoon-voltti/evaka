@@ -22,6 +22,7 @@ export default class ChildAttendancePage {
     .first()
   #childStatusLabel = this.page.locator('[data-qa="child-status"]')
   #nonAbsenceActions = this.page.locator('[data-qa="non-absence-actions"]')
+  #setTimeInput = this.page.locator('[data-qa="set-time"]')
 
   #markAbsentByTypeButton = (type: AbsenceType) =>
     this.page.locator(`[data-qa="mark-absent-${type}"]`)
@@ -68,5 +69,10 @@ export default class ChildAttendancePage {
 
   async assertChildStatusLabelIsShown(expectedText: string) {
     await waitUntilEqual(() => this.#childStatusLabel.innerText(), expectedText)
+  }
+
+  // time format: "09:46"
+  async setTime(time: string) {
+    await this.#setTimeInput.type(time)
   }
 }
