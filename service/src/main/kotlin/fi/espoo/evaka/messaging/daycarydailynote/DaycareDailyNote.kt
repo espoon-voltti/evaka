@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -37,10 +38,12 @@ data class DaycareDailyNoteBody(
     val reminderNote: String?,
 )
 
+@ConstList("daycareDailyNoteLevelInfoValues")
 enum class DaycareDailyNoteLevelInfo {
     GOOD, MEDIUM, NONE
 }
 
+@ConstList("daycareDailyNoteReminderValues")
 enum class DaycareDailyNoteReminder {
     DIAPERS, CLOTHES, LAUNDRY
 }

@@ -62,18 +62,24 @@ export interface DaycareDailyNoteBody {
 /**
 * Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteLevelInfo
 */
-export type DaycareDailyNoteLevelInfo = 
-  | 'GOOD'
-  | 'MEDIUM'
-  | 'NONE'
+export const daycareDailyNoteLevelInfoValues = [
+  'GOOD',
+  'MEDIUM',
+  'NONE'
+] as const
+
+export type DaycareDailyNoteLevelInfo = typeof daycareDailyNoteLevelInfoValues[number]
 
 /**
 * Generated from fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteReminder
 */
-export type DaycareDailyNoteReminder = 
-  | 'DIAPERS'
-  | 'CLOTHES'
-  | 'LAUNDRY'
+export const daycareDailyNoteReminderValues = [
+  'DIAPERS',
+  'CLOTHES',
+  'LAUNDRY'
+] as const
+
+export type DaycareDailyNoteReminder = typeof daycareDailyNoteReminderValues[number]
 
 /**
 * Generated from fi.espoo.evaka.messaging.message.DraftContent
