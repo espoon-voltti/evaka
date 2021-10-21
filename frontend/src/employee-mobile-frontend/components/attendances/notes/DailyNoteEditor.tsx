@@ -35,6 +35,7 @@ import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { UpdateStateFn } from 'lib-common/form-state'
 import {
   deleteDaycareDailyNote,
   upsertDaycareDailyNoteForGroup,
@@ -216,8 +217,8 @@ export default React.memo(function DailyNoteEditor() {
     return Promise.all(promises)
   }
 
-  const editNote = (dailyNote: DailyNoteEdited) => {
-    setDailyNote(dailyNote)
+  const editNote: UpdateStateFn<DailyNoteEdited> = (changes) => {
+    setDailyNote((prev) => ({ ...prev, ...changes }))
     setDirty(true)
   }
 
@@ -249,6 +250,7 @@ export default React.memo(function DailyNoteEditor() {
         iconColour={'orange'}
         title={i18n.attendances.notes.confirmTitle}
         icon={faExclamation}
+        close={() => setUiMode('default')}
         reject={{
           action: () => {
             history.goBack()
@@ -263,7 +265,7 @@ export default React.memo(function DailyNoteEditor() {
             })
           },
           label: i18n.common.save,
-          disabled: !!(dailyNote?.sleepingMinutes || 0 > 59)
+          disabled: (dailyNote?.sleepingMinutes || 0) > 59
         }}
       />
     )
@@ -424,9 +426,7 @@ export default React.memo(function DailyNoteEditor() {
                       <Label>{i18n.attendances.notes.labels.note}</Label>
                       <TextArea
                         value={dailyNote.note || ''}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          editNote({ ...dailyNote, note: e.target.value })
-                        }
+                        onChange={(e) => editNote({ note: e.target.value })}
                         placeholder={i18n.attendances.notes.placeholders.note}
                         data-qa="daily-note-note-input"
                       />
@@ -443,7 +443,6 @@ export default React.memo(function DailyNoteEditor() {
                               selected={dailyNote.feedingNote === levelInfo}
                               onChange={() => {
                                 editNote({
-                                  ...dailyNote,
                                   feedingNote:
                                     dailyNote.feedingNote === levelInfo
                                       ? null
@@ -471,7 +470,6 @@ export default React.memo(function DailyNoteEditor() {
                               selected={dailyNote.sleepingNote === levelInfo}
                               onChange={() => {
                                 editNote({
-                                  ...dailyNote,
                                   sleepingNote:
                                     dailyNote.sleepingNote === levelInfo
                                       ? null
@@ -490,7 +488,6 @@ export default React.memo(function DailyNoteEditor() {
                         value={dailyNote.sleepingHours?.toString() ?? ''}
                         onChange={(value) =>
                           editNote({
-                            ...dailyNote,
                             sleepingHours: parseInt(value)
                           })
                         }
@@ -503,10 +500,7 @@ export default React.memo(function DailyNoteEditor() {
                       <InputField
                         value={dailyNote.sleepingMinutes?.toString() ?? ''}
                         onChange={(value) =>
-                          editNote({
-                            ...dailyNote,
-                            sleepingMinutes: parseInt(value)
-                          })
+                          editNote({ sleepingMinutes: parseInt(value) })
                         }
                         placeholder={
                           i18n.attendances.notes.placeholders.minutes
@@ -535,22 +529,15 @@ export default React.memo(function DailyNoteEditor() {
                           <Checkbox
                             key={reminder}
                             label={i18n.attendances.notes.reminders[reminder]}
-                            onChange={(checked) => {
-                              checked
-                                ? editNote({
-                                    ...dailyNote,
-                                    reminders: [
-                                      ...dailyNote.reminders,
-                                      reminder
-                                    ]
-                                  })
-                                : editNote({
-                                    ...dailyNote,
-                                    reminders: dailyNote.reminders.filter(
+                            onChange={(checked) =>
+                              editNote({
+                                reminders: checked
+                                  ? [...dailyNote.reminders, reminder]
+                                  : dailyNote.reminders.filter(
                                       (v) => v !== reminder
                                     )
-                                  })
-                            }}
+                              })
+                            }
                             checked={dailyNote.reminders.includes(reminder)}
                             data-qa={`reminders-${reminder}`}
                           />
@@ -559,7 +546,6 @@ export default React.memo(function DailyNoteEditor() {
                           value={dailyNote.reminderNote ?? ''}
                           onChange={(e) =>
                             editNote({
-                              ...dailyNote,
                               reminderNote: e.target.value
                             })
                           }
