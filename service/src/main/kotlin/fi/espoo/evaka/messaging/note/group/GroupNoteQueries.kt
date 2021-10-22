@@ -31,6 +31,7 @@ fun Database.Read.getGroupNotesForChild(childId: UUID): List<GroupNote> = create
         LEFT JOIN backup_care bc ON bc.child_id = ch.id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         WHERE ch.id = :childId
     )
+    ORDER BY gn.created
     """.trimIndent()
 )
     .bind("childId", childId)
