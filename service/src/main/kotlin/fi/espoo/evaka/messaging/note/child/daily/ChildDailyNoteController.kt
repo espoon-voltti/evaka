@@ -59,16 +59,4 @@ class ChildDailyNoteController(
 
         return db.transaction { it.deleteChildDailyNote(noteId) }
     }
-
-    @DeleteMapping("/children/{childId}/child-daily-notes")
-    fun deleteChildDailyNotesForChild(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable childId: UUID
-    ) {
-        Audit.ChildDailyNoteDelete.log(childId)
-        ac.requirePermissionFor(user, Action.Child.DELETE_DAILY_NOTES, childId)
-
-        return db.transaction { it.deleteChildDailyNotes(childId) }
-    }
 }

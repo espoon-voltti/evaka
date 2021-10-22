@@ -124,12 +124,6 @@ fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
         .execute()
 }
 
-fun Database.Transaction.deleteChildDailyNotes(childId: UUID) {
-    createUpdate("DELETE from child_daily_note WHERE child_id = :id")
-        .bind("id", childId)
-        .execute()
-}
-
 fun Database.Transaction.deleteExpiredChildDailyNotes(now: HelsinkiDateTime) {
     createUpdate("DELETE FROM child_daily_note WHERE modified_at < :now - INTERVAL '16 hours'")
         .bind("now", now)
