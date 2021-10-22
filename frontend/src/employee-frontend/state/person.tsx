@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext } from 'react'
+import React, { useMemo, useState, createContext, useCallback } from 'react'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import { PersonWithChildren, PersonDetails } from '../types/person'
 import { Parentship, Partnership } from '../types/fridge'
 import { Income } from '../types/income'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Paged, Result } from 'lib-common/api'
 import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
@@ -18,7 +19,8 @@ export interface PersonState {
   person: Result<PersonDetails>
   parentships: Result<Parentship[]>
   partnerships: Result<Partnership[]>
-  incomes: Result<[Income[], IncomeStatement[]]>
+  incomes: Result<Income[]>
+  incomeStatements: Result<Paged<IncomeStatement>>
   applications: Result<ApplicationSummary[]>
   dependants: Result<PersonWithChildren[]>
   decisions: Result<Decision[]>
@@ -27,7 +29,8 @@ export interface PersonState {
   setPerson: (request: Result<PersonDetails>) => void
   setParentships: (request: Result<Parentship[]>) => void
   setPartnerships: (request: Result<Partnership[]>) => void
-  setIncomes: (r: Result<[Income[], IncomeStatement[]]>) => void
+  setIncomes: (r: Result<Income[]>) => void
+  setIncomeStatements: (r: Result<Paged<IncomeStatement>>) => void
   setApplications: (r: Result<ApplicationSummary[]>) => void
   setDependants: (r: Result<PersonWithChildren[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
@@ -41,6 +44,7 @@ const defaultState: PersonState = {
   parentships: Loading.of(),
   partnerships: Loading.of(),
   incomes: Loading.of(),
+  incomeStatements: Loading.of(),
   applications: Loading.of(),
   dependants: Loading.of(),
   decisions: Loading.of(),
@@ -50,6 +54,7 @@ const defaultState: PersonState = {
   setParentships: () => undefined,
   setPartnerships: () => undefined,
   setIncomes: () => undefined,
+  setIncomeStatements: () => undefined,
   setApplications: () => undefined,
   setDependants: () => undefined,
   setDecisions: () => undefined,
@@ -65,38 +70,21 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
 }: {
   children: JSX.Element
 }) {
-  const [person, setPerson] = useState<Result<PersonDetails>>(
-    defaultState.person
+  const [person, setPerson] = useState(defaultState.person)
+  const [parentships, setParentships] = useState(defaultState.parentships)
+  const [partnerships, setPartnerships] = useState(defaultState.partnerships)
+  const [applications, setApplications] = useState(defaultState.applications)
+  const [incomes, setIncomes] = useState(defaultState.incomes)
+  const [incomeStatements, setIncomeStatements] = useState(
+    defaultState.incomeStatements
   )
-  const [parentships, setParentships] = useState<Result<Parentship[]>>(
-    defaultState.parentships
-  )
-  const [partnerships, setPartnerships] = useState<Result<Partnership[]>>(
-    defaultState.partnerships
-  )
-  const [applications, setApplications] = useState<
-    Result<ApplicationSummary[]>
-  >(defaultState.applications)
-  const [incomes, setIncomes] = useState<Result<[Income[], IncomeStatement[]]>>(
-    defaultState.incomes
-  )
-  const [dependants, setDependants] = useState<Result<PersonWithChildren[]>>(
-    defaultState.dependants
-  )
-  const [decisions, setDecisions] = useState<Result<Decision[]>>(
-    defaultState.decisions
-  )
-  const [family, setFamily] = useState<Result<FamilyOverview>>(
-    defaultState.family
-  )
-  const [invoices, setInvoices] = useState<Result<Invoice[]>>(
-    defaultState.invoices
-  )
+  const [dependants, setDependants] = useState(defaultState.dependants)
+  const [decisions, setDecisions] = useState(defaultState.decisions)
+  const [family, setFamily] = useState(defaultState.family)
+  const [invoices, setInvoices] = useState(defaultState.invoices)
 
-  const reloadFamily = React.useCallback((id: string) => {
-    setFamily(Loading.of())
-    void getFamilyOverview(id).then(setFamily)
-  }, [])
+  const loadFamily = useRestApi(getFamilyOverview, setFamily)
+  const reloadFamily = useCallback((id: string) => loadFamily(id), [loadFamily])
 
   const value = useMemo(
     () => ({
@@ -112,6 +100,8 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setDependants,
       incomes,
       setIncomes,
+      incomeStatements,
+      setIncomeStatements,
       decisions,
       setDecisions,
       family,
@@ -122,23 +112,15 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     }),
     [
       person,
-      setPerson,
       parentships,
-      setParentships,
       partnerships,
-      setPartnerships,
       applications,
-      setApplications,
       dependants,
-      setDependants,
       incomes,
-      setIncomes,
+      incomeStatements,
       decisions,
-      setDecisions,
       family,
-      setFamily,
       invoices,
-      setInvoices,
       reloadFamily
     ]
   )

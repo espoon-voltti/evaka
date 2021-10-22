@@ -10,10 +10,11 @@ import * as Form from './types/form'
 import { fromBody } from './types/body'
 import {
   createIncomeStatement,
-  getIncomeStatements,
+  getIncomeStatement,
+  getIncomeStatementStartDates,
   updateIncomeStatement
 } from './api'
-import { combine, Failure, Loading, Result, Success } from 'lib-common/api'
+import { combine, Loading, Result, Success } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
@@ -34,18 +35,12 @@ function isValidStartDate(otherStartDates: LocalDate[]) {
 async function initializeEditorState(
   id: UUID | undefined
 ): Promise<Result<EditorState>> {
-  const incomeStatements = await getIncomeStatements()
-
-  const startDates = incomeStatements.map((i) => i.map((s) => s.startDate))
-
-  const incomeStatement: Result<IncomeStatement | undefined> =
-    id === undefined
-      ? Success.of(undefined)
-      : incomeStatements.chain((i): Result<IncomeStatement> => {
-          const found = i.find((s) => s.id === id)
-          if (found === undefined) return Failure.of({ message: 'Not found' })
-          return Success.of(found)
-        })
+  const incomeStatementPromise: Promise<Result<IncomeStatement | undefined>> =
+    id ? getIncomeStatement(id) : Promise.resolve(Success.of(undefined))
+  const [incomeStatement, startDates] = await Promise.all([
+    incomeStatementPromise,
+    getIncomeStatementStartDates()
+  ])
 
   return combine(incomeStatement, startDates).map(
     ([incomeStatement, startDates]) => ({

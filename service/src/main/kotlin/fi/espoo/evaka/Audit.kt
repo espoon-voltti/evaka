@@ -132,6 +132,7 @@ enum class Audit(
     IncomeStatementUpdateHandled("evaka.income-statement.handled.update"),
     IncomeStatementsAwaitingHandler("evaka.income-statements.awaiting-handler.read"),
     IncomeStatementsOfPerson("evaka.income-statements.person.read"),
+    IncomeStatementStartDates("evaka.income-statement.start-dates.read"),
     InvoicesCreate("evaka.invoices.create"),
     InvoicesDeleteDrafts("evaka.invoices.delete-drafts"),
     InvoicesMarkSent("evaka.invoices.mark-sent"),

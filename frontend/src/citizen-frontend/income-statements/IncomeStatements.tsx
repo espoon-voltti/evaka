@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Paged, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -15,6 +15,7 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+import Pagination from 'lib-components/Pagination'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
@@ -109,12 +110,18 @@ export default function IncomeStatements() {
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [incomeStatements, setIncomeStatements] = useState<
-    Result<IncomeStatement[]>
+    Result<Paged<IncomeStatement>>
   >(Loading.of())
 
   const loadData = useRestApi(getIncomeStatements, setIncomeStatements)
+  const [page, setPage] = useState(1)
 
-  useEffect(() => loadData(), [loadData])
+  const fetchIncomeStatements = useCallback(
+    () => loadData(page, 10),
+    [loadData, page]
+  )
+
+  useEffect(fetchIncomeStatements, [fetchIncomeStatements])
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'
@@ -132,10 +139,10 @@ export default function IncomeStatements() {
           })
         }
         setDeletionState({ status: 'row-not-selected' })
-        loadData()
+        fetchIncomeStatements()
       })
     },
-    [loadData, setErrorMessage, t]
+    [fetchIncomeStatements, setErrorMessage, t]
   )
 
   return (
@@ -156,10 +163,10 @@ export default function IncomeStatements() {
               data-qa="new-income-statement-btn"
             />
           </HeadingContainer>
-          {renderResult(incomeStatements, (items) =>
-            items.length > 0 ? (
+          {renderResult(incomeStatements, ({ data, pages }) => (
+            <>
               <IncomeStatementsTable
-                items={items}
+                items={data}
                 onRemoveIncomeStatement={(id) =>
                   setDeletionState({
                     status: 'confirming',
@@ -167,8 +174,15 @@ export default function IncomeStatements() {
                   })
                 }
               />
-            ) : null
-          )}
+              <Gap />
+              <Pagination
+                pages={pages}
+                currentPage={page}
+                setPage={setPage}
+                label={t.common.page}
+              />
+            </>
+          ))}
 
           {deletionState.status !== 'row-not-selected' && (
             <InfoModal

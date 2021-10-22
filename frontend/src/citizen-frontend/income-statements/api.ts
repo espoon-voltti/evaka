@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import { Failure, Paged, Result, Success } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
 import { client } from '../api-client'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -12,12 +13,18 @@ import {
 import { IncomeStatementBody } from './types/body'
 import { UUID } from 'lib-common/types'
 
-export async function getIncomeStatements(): Promise<
-  Result<IncomeStatement[]>
-> {
+export async function getIncomeStatements(
+  page: number,
+  pageSize: number
+): Promise<Result<Paged<IncomeStatement>>> {
   return client
-    .get<JsonOf<IncomeStatement[]>>('/citizen/income-statements')
-    .then((res) => res.data.map(deserializeIncomeStatement))
+    .get<JsonOf<Paged<IncomeStatement>>>('/citizen/income-statements', {
+      params: { page, pageSize }
+    })
+    .then(({ data: { data, ...rest } }) => ({
+      ...rest,
+      data: data.map(deserializeIncomeStatement)
+    }))
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
@@ -31,6 +38,13 @@ export async function getIncomeStatement(
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
+
+export const getIncomeStatementStartDates = (): Promise<Result<LocalDate[]>> =>
+  client
+    .get<JsonOf<LocalDate[]>>(`/citizen/income-statements/start-dates`)
+    .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
 
 export async function createIncomeStatement(
   body: IncomeStatementBody

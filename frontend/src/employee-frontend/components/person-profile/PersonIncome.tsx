@@ -2,15 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
-import { faEuroSign, faFileAlt } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { combine, Result } from 'lib-common/api'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { formatDate } from 'lib-common/date'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import IncomeList from './income/IncomeList'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
-import { PersonContext } from '../../state/person'
-import { combine, Loading, Result } from 'lib-common/api'
+import Pagination from 'lib-components/Pagination'
+import { Dimmed, H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faEuroSign, faFileAlt } from 'lib-icons'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   createIncome,
   deleteIncome,
@@ -18,20 +24,16 @@ import {
   IncomeTypeOptions,
   updateIncome
 } from '../../api/income'
-import { Income, IncomeId, IncomeBody } from '../../types/income'
-import { UUID } from '../../types'
-import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import { getIncomeStatements } from '../../api/income-statement'
-import { Dimmed, H3 } from 'lib-components/typography'
-import { Link } from 'react-router-dom'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { formatDate } from 'lib-common/date'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { UnwrapResult } from '../async-rendering'
+import { useTranslation } from '../../state/i18n'
+import { PersonContext } from '../../state/person'
+import { UIContext } from '../../state/ui'
+import { UUID } from '../../types'
+import { Income, IncomeBody, IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
+import { renderResult } from '../async-rendering'
+import IncomeList from './income/IncomeList'
+import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 
 interface Props {
   id: UUID
@@ -42,39 +44,35 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const { incomes, setIncomes, reloadFamily } = useContext(PersonContext)
-  const [incomeDataChanged, setIncomeDataChanged] = useState<boolean>(false)
 
   const [openIncomeRows, setOpenIncomeRows] = useState<IncomeId[]>([])
-  const toggleIncomeRow = React.useCallback((id: IncomeId) => {
+  const toggleIncomeRow = useCallback((id: IncomeId) => {
     setOpenIncomeRows((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     )
   }, [])
-  const isIncomeRowOpen = React.useCallback(
+  const isIncomeRowOpen = useCallback(
     (id: IncomeId) => openIncomeRows.includes(id),
     [openIncomeRows]
   )
 
-  const loadData = React.useCallback(() => {
-    setIncomes(Loading.of())
-    void Promise.all([getIncomes(id), getIncomeStatements(id)])
-      .then((results) => combine(...results))
-      .then(setIncomes)
-      .then(() => setIncomeDataChanged(true))
-  }, [setIncomes, setIncomeDataChanged, id])
+  const loadIncomeData = useRestApi(getIncomes, setIncomes)
+  const loadIncomes = useCallback(
+    (personId: UUID) => loadIncomeData(personId),
+    [loadIncomeData]
+  )
 
   // FIXME: This component shouldn't know about family's dependency on its data
-  const reload = React.useCallback(() => {
-    loadData()
+  const reloadIncomes = useCallback(() => {
+    loadIncomes(id)
     reloadFamily(id)
-  }, [loadData, reloadFamily, id])
+  }, [id, loadIncomes, reloadFamily])
 
-  useEffect(loadData, [loadData])
+  useEffect(reloadIncomes, [reloadIncomes])
   useEffect(() => {
-    if (incomeDataChanged && incomes.isSuccess) {
-      const [inc] = incomes.value
+    if (incomes.isSuccess) {
       const missingIncomePeriodsString = getMissingIncomePeriodsString(
-        inc,
+        incomes.value,
         i18n.common.and.toLowerCase()
       )
       if (missingIncomePeriodsString.length) {
@@ -89,7 +87,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         })
       }
     }
-  }, [i18n, incomes, incomeDataChanged, setErrorMessage])
+  }, [i18n, incomes, setErrorMessage])
 
   const incomeTypeOptions = useIncomeTypeOptions()
 
@@ -100,32 +98,48 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       data-qa="person-income-collapsible"
       startCollapsed={!open}
     >
-      <UnwrapResult
-        result={combine(incomes, incomeTypeOptions)}
-        failure={() => <div>{i18n.personProfile.income.error}</div>}
-      >
-        {([[incomes, incomeStatements], incomeTypeOptions]) => (
-          <>
-            <IncomeStatements
-              personId={id}
-              incomeStatements={incomeStatements}
-            />
-            <Incomes
-              personId={id}
-              incomes={incomes}
-              incomeTypeOptions={incomeTypeOptions}
-              isIncomeRowOpen={isIncomeRowOpen}
-              toggleIncomeRow={toggleIncomeRow}
-              onSuccessfulUpdate={reload}
-            />
-          </>
-        )}
-      </UnwrapResult>
+      <IncomeStatements personId={id} />
+      <Gap />
+      {renderResult(
+        combine(incomes, incomeTypeOptions),
+        ([incomes, incomeTypeOptions]) => (
+          <Incomes
+            personId={id}
+            incomes={incomes}
+            incomeTypeOptions={incomeTypeOptions}
+            isIncomeRowOpen={isIncomeRowOpen}
+            toggleIncomeRow={toggleIncomeRow}
+            onSuccessfulUpdate={reloadIncomes}
+          />
+        )
+      )}
     </CollapsibleSection>
   )
 })
 
-function IncomeStatements({
+function IncomeStatements({ personId }: { personId: UUID }) {
+  const { i18n } = useTranslation()
+  const { incomeStatements, setIncomeStatements } = useContext(PersonContext)
+  const [page, setPage] = useState(1)
+  const loadData = useRestApi(getIncomeStatements, setIncomeStatements)
+
+  useEffect(() => loadData(personId, page), [loadData, page, personId])
+
+  return renderResult(incomeStatements, ({ data, pages }) => (
+    <>
+      <H3>{i18n.personProfile.incomeStatement.title}</H3>
+      <IncomeStatementsTable personId={personId} incomeStatements={data} />
+      <Pagination
+        pages={pages}
+        currentPage={page}
+        setPage={setPage}
+        label={i18n.common.page}
+      />
+    </>
+  ))
+}
+
+function IncomeStatementsTable({
   personId,
   incomeStatements
 }: {
@@ -133,32 +147,27 @@ function IncomeStatements({
   incomeStatements: IncomeStatement[]
 }) {
   const i18n = useTranslation().i18n.personProfile.incomeStatement
-  return (
-    <>
-      <H3>{i18n.title}</H3>
-      {incomeStatements.length === 0 ? (
-        <div>{i18n.noIncomeStatements}</div>
-      ) : (
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{i18n.incomeStatementHeading}</Th>
-              <Th>{i18n.createdHeading}</Th>
-              <Th>{i18n.handledHeading}</Th>
-            </Tr>
-          </Thead>
-          <Tbody data-qa="income-statements">
-            {incomeStatements.map((incomeStatement) => (
-              <IncomeStatementRow
-                key={incomeStatement.id}
-                personId={personId}
-                incomeStatement={incomeStatement}
-              />
-            ))}
-          </Tbody>
-        </Table>
-      )}
-    </>
+  return incomeStatements.length === 0 ? (
+    <div>{i18n.noIncomeStatements}</div>
+  ) : (
+    <Table>
+      <Thead>
+        <Tr>
+          <Th>{i18n.incomeStatementHeading}</Th>
+          <Th>{i18n.createdHeading}</Th>
+          <Th>{i18n.handledHeading}</Th>
+        </Tr>
+      </Thead>
+      <Tbody data-qa="income-statements">
+        {incomeStatements.map((incomeStatement) => (
+          <IncomeStatementRow
+            key={incomeStatement.id}
+            personId={personId}
+            incomeStatement={incomeStatement}
+          />
+        ))}
+      </Tbody>
+    </Table>
   )
 }
 

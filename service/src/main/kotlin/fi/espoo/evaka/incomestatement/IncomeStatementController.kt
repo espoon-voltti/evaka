@@ -31,11 +31,20 @@ class IncomeStatementController(
     fun getIncomeStatements(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable personId: PersonId
-    ): List<IncomeStatement> {
+        @PathVariable personId: PersonId,
+        @RequestParam page: Int,
+        @RequestParam pageSize: Int
+    ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read { it.readIncomeStatementsForPerson(personId.raw, includeEmployeeContent = true) }
+        return db.read {
+            it.readIncomeStatementsForPerson(
+                personId = personId.raw,
+                includeEmployeeContent = true,
+                page = page,
+                pageSize = pageSize
+            )
+        }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")

@@ -39,7 +39,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     private val employeeId = UUID.randomUUID()
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
-    private val citizen = AuthenticatedUser.Citizen(citizenId)
 
     @BeforeEach
     fun beforeEach() {
@@ -106,6 +105,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             ),
             incomeStatement3
         )
+
+        assertEquals(listOf(false), getIncomeStatements(citizenId).data.map { it.handled })
     }
 
     @Test
@@ -323,6 +324,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         http.get("/income-statements/person/$citizenId/$id")
             .asUser(employee)
             .responseObject<IncomeStatement>(objectMapper)
+            .let { (_, _, body) -> body.get() }
+
+    private fun getIncomeStatements(personId: UUID): Paged<IncomeStatement> =
+        http.get("/income-statements/person/$personId?page=1&pageSize=10")
+            .asUser(employee)
+            .responseObject<Paged<IncomeStatement>>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun setIncomeStatementHandled(id: IncomeStatementId, body: IncomeStatementController.SetIncomeStatementHandledBody) {
