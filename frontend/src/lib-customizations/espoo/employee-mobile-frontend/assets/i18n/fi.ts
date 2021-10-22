@@ -69,7 +69,8 @@ export const fi = {
     yesterday: 'eilen',
     validation: {
       dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`
-    }
+    },
+    openExpandingInfo: 'Avaa lisätietokenttä'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
@@ -192,7 +193,12 @@ export const fi = {
       closeWithoutSaving: 'Sulje tallentamatta',
       groupNote: 'Ryhmän muistiinpanot',
       note: 'Tänään koettua ja opittua',
-      otherThings: 'Muut asiat'
+      otherThings: 'Muut asiat',
+      noteInfo: [
+        'Muistiinpanoihin ei merkitä terveystietoihin tai salassapidettäviin asioihin liittyviä tietoja.',
+        'Lapsi-välilehden muistiinpanot säilytetään 16 tuntia ja Huom! -välilehden merkinnät viikon ajan luomis-/päivityshetkestä lukien. Tämän jälkeen ne poistetaan automaattisesti.',
+        'Ryhmän muistiinpanot ovat voimassa toistaiseksi.'
+      ]
     },
     absenceTitle: 'Poissaolomerkintä',
     pin: {
