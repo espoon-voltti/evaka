@@ -36,8 +36,7 @@ export default React.memo(function ApplicationReadView() {
     t,
     apiData
       .map(({ type }) => t.applications.editor.heading.title[type])
-      .getOrElse(''),
-    [apiData]
+      .getOrElse('')
   )
 
   return (

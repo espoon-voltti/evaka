@@ -411,8 +411,7 @@ export default React.memo(function ApplicationEditor() {
     t,
     apiData
       .map(({ type }) => t.applications.editor.heading.title[type])
-      .getOrElse(''),
-    [apiData]
+      .getOrElse('')
   )
 
   return (
