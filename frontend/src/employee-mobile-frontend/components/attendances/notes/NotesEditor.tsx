@@ -103,7 +103,7 @@ const groupNoteToFormData = ({ note }: GroupNote): GroupNoteBody => ({
   note
 })
 
-export default React.memo(function ChildDailyNoteEditor() {
+export default React.memo(function NotesEditor() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
@@ -208,7 +208,7 @@ export default React.memo(function ChildDailyNoteEditor() {
   }
 
   const editGroupNote: UpdateStateFn<GroupNoteBody> = (changes) => {
-    setDailyNote((prev) => ({ ...prev, ...changes }))
+    setGroupNote((prev) => ({ ...prev, ...changes }))
     setDirty(true)
   }
 

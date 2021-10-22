@@ -605,6 +605,12 @@ WHERE employee_id = :userId
                 acc[row.mapColumn("id")]!! += row.mapColumn<UserRole>("role")
                 acc
             }
+        is AuthenticatedUser.MobileDevice -> tx.createQuery("${this.query} AND ${this.idExpression} = ANY(:ids)")
+            .bind("userId", user.id).bind("ids", ids)
+            .reduceRows(ids.associateTo(linkedMapOf()) { it to enumSetOf<UserRole>() }) { acc, row ->
+                acc[row.mapColumn("id")]!! += row.mapColumn<UserRole>("role")
+                acc
+            }
         else -> ids.associate { (it to enumSetOf(*user.roles.toTypedArray())) }
     }
 
