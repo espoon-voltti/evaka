@@ -11,8 +11,8 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { FeeAlteration } from '../../../types/fee-alteration'
-import { UUID } from '../../../types'
 import FeeAlterationEditor from './FeeAlterationEditor'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   feeAlterations: FeeAlteration[]

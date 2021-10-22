@@ -37,7 +37,6 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { UUID } from '../../types'
 import {
   VoucherReportRowType,
   ServiceVoucherUnitReport,
@@ -50,6 +49,7 @@ import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 import { formatDecimal } from 'lib-common/utils/number'
+import { UUID } from 'lib-common/types'
 
 const FilterWrapper = styled.div`
   width: 400px;

@@ -5,7 +5,7 @@
 // This will be used with Testcafe's useRole.
 
 import config from 'e2e-test-common/config'
-import { UUID } from 'e2e-test-common/dev-api/types'
+import { UUID } from 'lib-common/types'
 
 export interface DevLoginUser {
   aad: UUID

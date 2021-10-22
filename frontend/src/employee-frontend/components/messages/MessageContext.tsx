@@ -24,7 +24,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { UUID } from '../../types'
 import {
   getMessageDrafts,
   getMessagingAccounts,
@@ -36,6 +35,7 @@ import {
   ReplyToThreadParams
 } from './api'
 import { AccountView } from './types-view'
+import { UUID } from 'lib-common/types'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from './index'
 import { PersonDetails } from './person'
+import { UUID } from 'lib-common/types'
 
 export interface Partnership {
   id: UUID

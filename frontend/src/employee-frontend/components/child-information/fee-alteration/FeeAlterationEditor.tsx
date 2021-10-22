@@ -18,7 +18,7 @@ import {
   feeAlterationTypes,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
-import { UUID } from '../../../types'
+import { UUID } from 'lib-common/types'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   personId,

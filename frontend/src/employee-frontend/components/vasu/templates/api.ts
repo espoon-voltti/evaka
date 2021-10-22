@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../../types'
 import { Result, Success, Failure } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { client } from '../../../api/client'
 import { VasuContent } from '../vasu-content'
+import { UUID } from 'lib-common/types'
 
 export interface VasuTemplateSummary {
   id: UUID

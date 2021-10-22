@@ -14,7 +14,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { acceptDecision, rejectDecision } from '../../api/applications'
-import { UUID } from '../../types'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   applicationId: UUID

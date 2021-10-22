@@ -17,8 +17,8 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import DecisionResponse from '../../components/application-page/DecisionResponse'
-import { UUID } from '../../types'
 import { ApplicationStatus } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'

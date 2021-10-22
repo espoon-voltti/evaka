@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { cloneDeep, range } from 'lodash'
-import { UUID } from '../../types'
 import { Loading, Result } from 'lib-common/api'
 import {
   getFamilyContacts,
@@ -31,6 +30,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { UserContext } from '../../state/user'
 import BackupPickup from './BackupPickup'
 import { ChildContext } from '../../state'
+import { UUID } from 'lib-common/types'
 
 interface FamilyContactsProps {
   id: UUID

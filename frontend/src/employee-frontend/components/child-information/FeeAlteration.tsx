@@ -12,7 +12,6 @@ import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { ChildContext } from '../../state'
-import { UUID } from '../../types'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
 import { Loading, Result } from 'lib-common/api'
 import {
@@ -25,6 +24,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { UUID } from 'lib-common/types'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

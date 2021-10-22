@@ -11,13 +11,14 @@ import {
   PersonWithChildren,
   SearchColumn
 } from '../types/person'
-import { SearchOrder, UUID } from '../types'
+import { SearchOrder } from '../types'
 import { client } from './client'
 import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { Action } from 'lib-common/generated/action'
+import { UUID } from 'lib-common/types'
 
 export async function getPersonDetails(
   id: UUID

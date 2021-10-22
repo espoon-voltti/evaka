@@ -22,12 +22,12 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { UUID } from '../../types'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageType } from 'lib-common/generated/enums'
 import { View } from './types-view'
+import { UUID } from 'lib-common/types'
 
 const MessageContainer = styled.div`
   background-color: white;

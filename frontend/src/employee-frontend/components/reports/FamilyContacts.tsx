@@ -16,8 +16,8 @@ import { getFamilyContactsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { TableScrollable } from './common'
-import { UUID } from '../../types'
 import { getDaycare, UnitResponse } from '../../api/unit'
+import { UUID } from 'lib-common/types'
 
 function FamilyContacts() {
   const { unitId } = useParams<{ unitId: UUID }>()

@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GlobalRole, ScopedRole, UUID } from './index'
+import { GlobalRole, ScopedRole } from './index'
+import { UUID } from 'lib-common/types'
 
 export interface Employee {
   id: UUID

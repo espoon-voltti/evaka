@@ -5,11 +5,11 @@
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from './index'
 import { FeeAlterationType } from './fee-alteration'
 import { Income, IncomeEffect } from './income'
 import { PlacementType } from 'lib-common/generated/enums'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { UUID } from 'lib-common/types'
 
 // Enums
 

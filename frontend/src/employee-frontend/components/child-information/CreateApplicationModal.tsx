@@ -26,10 +26,10 @@ import Select, { SelectOption } from '../../components/common/Select'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { UUID } from '../../types'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
 import { ApplicationType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 

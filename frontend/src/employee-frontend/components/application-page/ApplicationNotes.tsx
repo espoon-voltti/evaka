@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { UUID } from '../../types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationNote } from '../../types/application'
@@ -18,6 +17,7 @@ import { UserContext } from '../../state/user'
 import { requireRole } from '../../utils/roles'
 import styled from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { UUID } from 'lib-common/types'
 
 const Sticky = styled.div`
   position: sticky;

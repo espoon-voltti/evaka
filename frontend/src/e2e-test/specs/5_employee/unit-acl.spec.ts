@@ -15,9 +15,9 @@ import {
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
-import { UUID } from 'e2e-test-common/dev-api/types'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { employeeLogin } from '../../config/users'
+import { UUID } from 'lib-common/types'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()

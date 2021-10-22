@@ -5,8 +5,8 @@
 import { ClientFunction, Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
 import { postPairingChallenge } from 'e2e-test-common/dev-api'
-import { UUID } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export default class UnitPage {
   private readonly baseUrl = config.employeeUrl

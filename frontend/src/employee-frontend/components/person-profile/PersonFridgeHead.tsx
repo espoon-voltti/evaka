@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Success } from 'lib-common/api'
 import { getPersonDetails } from '../../api/person'
@@ -16,6 +15,7 @@ import PersonDetails from '../../components/person-shared/PersonDetails'
 import { faUser } from 'lib-icons'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

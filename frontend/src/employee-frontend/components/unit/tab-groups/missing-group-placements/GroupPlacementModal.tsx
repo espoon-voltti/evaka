@@ -19,13 +19,13 @@ import {
   MissingGroupPlacement
 } from '../../../../api/unit'
 import { updateBackupCare } from '../../../../api/child/backup-care'
-import { UUID } from '../../../../types'
 import Select from '../../../../components/common/Select'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { formatName } from '../../../../utils'
 import { DaycareGroup } from '../../../../types/unit'
 import { EVAKA_START } from '../../../../constants'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
 
 const Bold = styled.div`
   font-weight: ${fontWeights.semibold};

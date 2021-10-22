@@ -4,7 +4,6 @@
 
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
-import { UUID } from '../types'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
 import { Td } from 'lib-components/layout/Table'
@@ -27,6 +26,7 @@ import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '../state/i18n'
 import CircularLabel from '../components/common/CircularLabel'
 import { Gap, defaultMargins } from 'lib-components/white-space'
+import { UUID } from 'lib-common/types'
 
 export const NameTd = styled(Td)`
   width: 30%;

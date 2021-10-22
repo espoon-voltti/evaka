@@ -43,7 +43,6 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { fontWeights, H2 } from 'lib-components/typography'
 import Button from 'lib-components/atoms/buttons/Button'
-import { UUID } from '../../../types'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -56,6 +55,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import { Action } from 'lib-common/generated/action'
+import { UUID } from 'lib-common/types'
 
 type Props = {
   unitId: string

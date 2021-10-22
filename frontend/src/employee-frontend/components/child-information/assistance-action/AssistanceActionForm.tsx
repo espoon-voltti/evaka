@@ -16,7 +16,6 @@ import {
   AssistanceActionOption,
   AssistanceMeasure
 } from '../../../types/child'
-import { UUID } from '../../../types'
 
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
@@ -37,6 +36,7 @@ import {
 } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { UUID } from 'lib-common/types'
 
 const CheckboxRow = styled.div`
   display: flex;

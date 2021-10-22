@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
 import { Decision } from './decision'
 import { PersonDetails } from './person'
@@ -19,6 +18,7 @@ import {
   ApplicationStatus,
   PlacementType
 } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface ApplicationSummary {
   applicationId: UUID

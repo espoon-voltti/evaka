@@ -13,8 +13,8 @@ import {
   CellPart,
   CareTypeCategory
 } from '../types/absence'
-import { UUID } from '../types'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface AbsencesState {
   absences: Result<Group>

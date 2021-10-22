@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from './index'
+import { UUID } from 'lib-common/types'
 
 export interface CaretakersResponse {
   unitName: string

@@ -22,7 +22,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { UUID } from '../../types'
 import { VasuStateChip } from '../common/VasuStateChip'
 import {
   createVasuDocument,
@@ -37,6 +36,7 @@ import {
 } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
 import { UnwrapResult } from '../async-rendering'
+import { UUID } from 'lib-common/types'
 
 const StateCell = styled(Td)`
   display: flex;

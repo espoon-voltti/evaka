@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
@@ -10,6 +9,7 @@ import { getDocumentState } from './vasu-events'
 import { VasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
 export type VasuDocumentEventType =

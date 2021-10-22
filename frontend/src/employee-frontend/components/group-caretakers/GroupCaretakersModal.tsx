@@ -14,10 +14,10 @@ import {
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
-import { UUID } from '../../types'
 import { postCaretakers, putCaretakers } from '../../api/caretakers'
 import { Result } from 'lib-common/api'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { UUID } from 'lib-common/types'
 
 const NumberInputContainer = styled.div`
   width: 150px;

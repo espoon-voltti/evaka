@@ -9,13 +9,13 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 
-import { UUID } from './index'
 import { Translations } from '../state/i18n'
 import {
   AbsenceCareType,
   AbsenceType,
   PlacementType
 } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export type TableMode = 'MONTH'
 

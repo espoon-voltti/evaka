@@ -15,9 +15,9 @@ import {
   deserializeChild,
   AbsenceUpdatePayload
 } from '../types/absence'
-import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 interface SearchParams {
   year: number

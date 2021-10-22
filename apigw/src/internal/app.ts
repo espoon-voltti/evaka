@@ -30,7 +30,6 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
-import router from '../enduser/routes'
 
 const app = express()
 const redisClient = createRedisClient()

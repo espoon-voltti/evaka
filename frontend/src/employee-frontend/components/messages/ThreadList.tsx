@@ -5,7 +5,6 @@
 import { Result } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/enums'
 import React from 'react'
-import { UUID } from '../../types'
 import { renderResult } from '../async-rendering'
 import {
   Hyphen,
@@ -18,6 +17,7 @@ import {
   TypeAndDate
 } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
+import { UUID } from 'lib-common/types'
 
 export type ThreadListItem = {
   id: UUID

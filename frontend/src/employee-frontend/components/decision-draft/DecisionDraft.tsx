@@ -29,7 +29,6 @@ import {
 } from '../../api/decision-draft'
 import { DecisionDraftState, DecisionDraftContext } from '../../state/decision'
 import { useTranslation, Translations } from '../../state/i18n'
-import { UUID } from '../../types'
 import { Loading, Result } from 'lib-common/api'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LabelValueList from '../../components/common/LabelValueList'
@@ -47,6 +46,7 @@ import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { UUID } from 'lib-common/types'
 
 const ColumnTitle = styled.div`
   font-weight: ${fontWeights.semibold};

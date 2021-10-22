@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import { RawElement } from 'e2e-playwright/utils/element'
-import { UUID } from 'e2e-test-common/dev-api/types'
+import { UUID } from 'lib-common/types'
 
 export default class UnitPage {
   constructor(private readonly page: Page) {}

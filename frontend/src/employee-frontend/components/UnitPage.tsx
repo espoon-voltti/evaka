@@ -14,7 +14,6 @@ import { useTranslation } from '../state/i18n'
 import { RouteWithTitle } from './RouteWithTitle'
 import { Gap } from 'lib-components/white-space'
 import Tabs from 'lib-components/molecules/Tabs'
-import { UUID } from '../types'
 import TabUnitInformation from '../components/unit/TabUnitInformation'
 import TabGroups from '../components/unit/TabGroups'
 import { TitleContext, TitleState } from '../state/title'
@@ -28,6 +27,7 @@ import TabApplications from '../components/unit/TabApplications'
 import { useQuery } from 'lib-common/utils/useQuery'
 import LocalDate from 'lib-common/local-date'
 import TabCalendar from './unit/TabCalendar'
+import { UUID } from 'lib-common/types'
 
 export default React.memo(function UnitPage() {
   const { id } = useParams<{ id: UUID }>()

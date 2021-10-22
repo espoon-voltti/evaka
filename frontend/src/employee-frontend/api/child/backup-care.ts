@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { ChildBackupCare, UnitBackupCare } from '../../types/child'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
 
 interface BackupCaresResponse<T extends ChildBackupCare | UnitBackupCare> {
   backupCares: T[]

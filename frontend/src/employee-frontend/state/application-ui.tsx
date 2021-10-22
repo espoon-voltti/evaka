@@ -24,9 +24,9 @@ import {
   TransferApplicationFilter
 } from '../components/common/Filters'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { UUID } from '../types'
 import { CareArea } from '../types/unit'
 import { ApplicationListSummary } from '../types/application'
+import { UUID } from 'lib-common/types'
 
 // Nothing in here yet. Filters will be added here in next PR.
 

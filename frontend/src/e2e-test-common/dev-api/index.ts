@@ -26,7 +26,6 @@ import {
   PersonDetail,
   PlacementPlan,
   SuomiFiMessage,
-  UUID,
   VoucherValueDecision,
   VtjPerson,
   FamilyContact,
@@ -49,6 +48,7 @@ import { FeeThresholds } from 'lib-common/api-types/finance'
 import * as fs from 'fs/promises'
 import FormData from 'form-data'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { UUID } from 'lib-common/types'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {

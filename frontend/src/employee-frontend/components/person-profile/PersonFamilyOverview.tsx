@@ -19,10 +19,10 @@ import {
   FamilyOverviewRow,
   FamilyOverviewPersonRole
 } from '../../types/family-overview'
-import { UUID } from '../../types'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { formatName } from '../../utils'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

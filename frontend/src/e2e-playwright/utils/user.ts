@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
-import { UUID } from 'e2e-test-common/dev-api/types'
+import { UUID } from 'lib-common/types'
 
 export type UserRole =
   | 'ADMIN'

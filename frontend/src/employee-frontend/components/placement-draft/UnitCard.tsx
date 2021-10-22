@@ -29,7 +29,7 @@ import { formatPercentage } from 'lib-common/utils/number'
 import { Occupancy } from '../../types/unit'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { Unit } from '../../state/placementdraft'
-import { UUID } from '../../types'
+import { UUID } from 'lib-common/types'
 
 const MarginBox = styled.div`
   margin: 1rem;

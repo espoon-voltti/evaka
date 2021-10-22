@@ -5,10 +5,10 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../client'
 import { Placement } from '../../types/child'
-import { UUID } from '../../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { PlacementType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 
 export interface PlacementCreate {
   childId: UUID

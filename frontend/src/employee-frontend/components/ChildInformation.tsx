@@ -32,7 +32,6 @@ import { ChildContext, ChildState } from '../state/child'
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
-import { UUID } from '../types'
 import { Parentship } from '../types/fridge'
 import { requireRole } from '../utils/roles'
 import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
@@ -41,6 +40,7 @@ import { getLayout, Layouts } from './layouts'
 import CircularLabel from './common/CircularLabel'
 import { Action } from 'lib-common/generated/action'
 import PedagogicalDocuments from './child-information/PedagogicalDocuments'
+import { UUID } from 'lib-common/types'
 
 const HeaderRow = styled.div`
   display: flex;

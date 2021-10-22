@@ -9,7 +9,6 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Partnership } from '../../../types/fridge'
-import { UUID } from '../../../types'
 import { Loading, Result } from 'lib-common/api'
 import { faPen, faUser } from 'lib-icons'
 import { formatName } from '../../../utils'
@@ -21,6 +20,7 @@ import {
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
 import { getPersonDetails } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   headPersonId: UUID

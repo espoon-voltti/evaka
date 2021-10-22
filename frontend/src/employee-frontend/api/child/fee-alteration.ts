@@ -4,10 +4,10 @@
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import { client } from '../client'
-import { UUID } from '../../types'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export async function getFeeAlterations(
   personId: UUID

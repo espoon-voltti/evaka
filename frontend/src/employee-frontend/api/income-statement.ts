@@ -11,8 +11,8 @@ import {
 } from 'lib-common/api-types/incomeStatement'
 import { JsonOf } from 'lib-common/json'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
-import { UUID } from '../types'
 import { client } from './client'
+import { UUID } from 'lib-common/types'
 
 export async function getIncomeStatements(
   personId: UUID,

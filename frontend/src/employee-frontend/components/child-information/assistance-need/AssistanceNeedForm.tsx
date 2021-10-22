@@ -13,7 +13,6 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
-import { UUID } from '../../../types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { textAreaRows } from '../../utils'
 
@@ -36,6 +35,7 @@ import {
 } from '../../../api/child/assistance-needs'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
+import { UUID } from 'lib-common/types'
 
 const CheckboxRow = styled.div`
   display: flex;

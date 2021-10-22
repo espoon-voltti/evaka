@@ -11,7 +11,6 @@ import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
-import { UUID } from '../types'
 import { Loading, Result } from 'lib-common/api'
 import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { deleteCaretakers, getCaretakers } from '../api/caretakers'
@@ -26,6 +25,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../state/i18n'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { UUID } from 'lib-common/types'
 
 const NarrowContainer = styled.div`
   max-width: 900px;

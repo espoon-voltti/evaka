@@ -4,7 +4,6 @@
 
 import React, { useCallback, useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { UUID } from '../../types'
 import { Td, Tr } from 'lib-components/layout/Table'
 import {
   Attachment,
@@ -26,6 +25,7 @@ import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
 import LocalDate from 'lib-common/local-date'
 import { isNull } from 'lodash'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

@@ -12,8 +12,8 @@ import {
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { UUID } from 'lib-common/types'
 
-export type UUID = string
 type ISODate = string
 type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'

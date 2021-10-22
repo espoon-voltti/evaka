@@ -9,10 +9,10 @@ import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeId } from '../../../types/income'
-import { UUID } from '../../../types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 import { IncomeTypeOptions } from '../../../api/income'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   incomes: Income[]

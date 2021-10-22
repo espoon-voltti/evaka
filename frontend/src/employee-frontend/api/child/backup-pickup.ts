@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { ChildBackupPickup } from '../../types/child'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 
 interface ChildBackupPickupContent {
   name: string
