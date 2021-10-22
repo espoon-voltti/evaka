@@ -23,12 +23,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Only affects spring framework version 5.0.5 combined with any spring security.
-        ]]></notes>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         Dependency of spring-ws-security, which is already at latest version (3.0.10.RELEASE).
         ]]></notes>
         <filePath regex="true">.*/commons-collections-3\.2\.1\.jar</filePath>
@@ -46,12 +40,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         Not relevant for us as we do not use velocity templates.
         ]]></notes>
         <cve>CVE-2020-13936</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us as we do not use WebFlux.
-        ]]></notes>
-        <cve>CVE-2021-22118</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -79,21 +67,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Affects windows hosts, we run tomcat on linux
-        ]]></notes>
-        <cve>CVE-2020-0822</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         We do not run user-provided Lua scripts in Redis
         ]]></notes>
         <cve>CVE-2021-32626</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        A memory leak in tomcat, affects current available spring boot apps. Suppress
-        until a fix is released
-        ]]></notes>
-        <cve>CVE-2021-42340</cve>
     </suppress>
 </suppressions>
