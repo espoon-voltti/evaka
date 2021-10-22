@@ -11,6 +11,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 import styled from 'styled-components'
@@ -27,7 +28,6 @@ import { MessageContext } from './state'
 import { formatDate } from 'lib-common/date'
 import { faReply } from '@fortawesome/free-solid-svg-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { MessageType } from 'lib-common/generated/enums'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
@@ -43,14 +43,33 @@ const TitleRow = styled.div`
     margin-top: ${defaultMargins.L};
   }
 `
+
+const StickyTitleRow = styled(TitleRow)`
+  position: sticky;
+  top: 0;
+  padding: 15px;
+  background: white;
+  max-height: 100px;
+`
+
+const StickyTitleRowTitle = styled(H2)`
+  top: 0;
+  padding: 15px;
+  background: white;
+  overflow: scroll;
+  max-height: 100px;
+`
+
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
 `
+
 const SentDate = styled.div`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.dark};
 `
+
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
@@ -60,26 +79,12 @@ const ReplyToThreadButton = styled(InlineButton)`
   padding-left: 28px;
 `
 
-function SingleMessage({
-  title,
-  type,
-  message
-}: {
-  message: Message
-  type?: MessageType
-  title?: string
-}) {
+function SingleMessage({ message }: { message: Message }) {
   const i18n = useTranslation()
   const { setErrorMessage } = useContext(OverlayContext)
 
   return (
     <MessageContainer>
-      {title && type && (
-        <TitleRow>
-          <H2 data-qa="thread-reader-title">{title}</H2>
-          <MessageTypeChip type={type} labels={i18n.messages.types} />
-        </TitleRow>
-      )}
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatDate(message.sentAt)}</SentDate>
@@ -124,6 +129,11 @@ const ThreadContainer = styled.div`
   overflow-y: auto;
 `
 
+const AutoScrollPositionSpan = styled.span<{ top: string }>`
+  position: absolute;
+  top: ${(p) => p.top};
+`
+
 interface Props {
   accountId: UUID
   thread: MessageThread
@@ -139,8 +149,22 @@ export default React.memo(function ThreadView({
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
+  const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState<number>(0)
+  const stickyTitleRowRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setStickyTitleRowHeight(stickyTitleRowRef.current?.clientHeight || 0)
+  }, [setStickyTitleRowHeight, stickyTitleRowRef])
 
   useEffect(() => setReplyEditorVisible(false), [threadId])
+
+  const autoScrollRef = useRef<HTMLSpanElement>(null)
+  const scrollToBottom = () => {
+    autoScrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, replyEditorVisible])
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
@@ -171,13 +195,26 @@ export default React.memo(function ThreadView({
   )
   return (
     <ThreadContainer>
+      {title && type && (
+        <StickyTitleRow ref={stickyTitleRowRef}>
+          <StickyTitleRowTitle data-qa="thread-reader-title">
+            {title}
+          </StickyTitleRowTitle>
+          <MessageTypeChip type={type} labels={i18n.messages.types} />
+        </StickyTitleRow>
+      )}
       {messages.map((message, idx) => (
-        <SingleMessage
-          key={message.id}
-          message={message}
-          title={idx === 0 ? title : undefined}
-          type={idx === 0 ? type : undefined}
-        />
+        <React.Fragment key={`${message.id}-fragment`}>
+          {idx === messages.length - 1 && !replyEditorVisible && (
+            <div style={{ position: 'relative' }}>
+              <AutoScrollPositionSpan
+                top={`-${stickyTitleRowHeight}px`}
+                ref={autoScrollRef}
+              />
+            </div>
+          )}
+          <SingleMessage key={message.id} message={message} />
+        </React.Fragment>
       ))}
       {type === 'MESSAGE' &&
         messages.length > 0 &&
@@ -202,8 +239,10 @@ export default React.memo(function ThreadView({
               data-qa="message-reply-editor-btn"
               text={i18n.messages.replyToThread}
             />
+            <Gap size={'m'} />
           </>
         ))}
+      {replyEditorVisible && <span ref={autoScrollRef} />}
     </ThreadContainer>
   )
 })
