@@ -19,7 +19,7 @@ interface Props extends BaseProps {
 
 export default function Title({
   'data-qa': dataQa,
-  size,
+  size = 1,
   children,
   centered,
   className,
@@ -88,21 +88,6 @@ export default function Title({
         >
           {children}
         </H4>
-      )
-    default:
-      return (
-        <H1
-          data-qa={dataQa}
-          centered={centered}
-          fitted
-          className={className}
-          noMargin={noMargin}
-          smaller={smaller}
-          bold={bold}
-          primary={primary}
-        >
-          {children}
-        </H1>
       )
   }
 }

@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -28,7 +28,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2, Label } from 'lib-components/typography'
+import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
@@ -204,11 +204,6 @@ export default React.memo(function NotesEditor() {
     setDirty(true)
   }
 
-  const editGroupNote: UpdateStateFn<GroupNoteBody> = (changes) => {
-    setGroupNote((prev) => ({ ...prev, ...changes }))
-    setDirty(true)
-  }
-
   function DeleteNoteModal() {
     return (
       <InfoModal
@@ -344,37 +339,36 @@ export default React.memo(function NotesEditor() {
               <ContentArea shadow opaque paddingHorizontal="s">
                 <FixedSpaceColumn spacing="m">
                   {dailyNoteId && (
-                    <FixedSpaceRow
-                      fullWidth
-                      justifyContent="flex-end"
-                      spacing="xxs"
-                      onClick={() => {
-                        setDeleteType('NOTE')
-                        setUiMode('confirmDelete')
-                      }}
-                    >
-                      <IconButton
+                    <FixedSpaceRow fullWidth justifyContent="flex-end">
+                      <InlineButton
+                        onClick={() => {
+                          setDeleteType('NOTE')
+                          setUiMode('confirmDelete')
+                        }}
+                        text={i18n.common.clear}
                         icon={faTrash}
                         data-qa="open-delete-dialog-btn"
-                        gray
                       />
-                      <span>{i18n.common.clear}</span>
                     </FixedSpaceRow>
                   )}
 
-                  <H2 noMargin>{i18n.attendances.notes.note}</H2>
+                  <H2 primary noMargin>
+                    {i18n.attendances.notes.note}
+                  </H2>
 
-                  <FixedSpaceColumn spacing="xxs">
-                    <Label>{i18n.attendances.notes.labels.note}</Label>
-                    <TextArea
-                      value={dailyNote.note || ''}
-                      onChange={(e) =>
-                        editChildDailyNote({ note: e.target.value })
-                      }
-                      placeholder={i18n.attendances.notes.placeholders.note}
-                      data-qa="daily-note-note-input"
-                    />
-                  </FixedSpaceColumn>
+                  <TextArea
+                    value={dailyNote.note || ''}
+                    onChange={(e) =>
+                      editChildDailyNote({ note: e.target.value })
+                    }
+                    placeholder={i18n.attendances.notes.placeholders.note}
+                    data-qa="daily-note-note-input"
+                  />
+
+                  <H3 primary smaller noMargin>
+                    {i18n.attendances.notes.otherThings}
+                  </H3>
+
                   <FixedSpaceColumn spacing="s">
                     <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
                     <ChipWrapper $noMargin>
@@ -498,43 +492,35 @@ export default React.memo(function NotesEditor() {
               <ContentArea shadow opaque paddingHorizontal="s">
                 <FixedSpaceColumn spacing="m">
                   {groupNoteId && (
-                    <>
-                      <FixedSpaceRow
-                        fullWidth
-                        justifyContent="flex-end"
-                        spacing="xxs"
+                    <FixedSpaceRow fullWidth justifyContent="flex-end">
+                      <InlineButton
                         onClick={() => {
                           setDeleteType('GROUP_NOTE')
                           setUiMode('confirmDelete')
                         }}
-                      >
-                        <IconButton
-                          icon={faTrash}
-                          data-qa="open-delete-groupnote-dialog-btn"
-                          gray
-                        />
-                        <span>{i18n.common.clear}</span>
-                      </FixedSpaceRow>
-                    </>
+                        text={i18n.common.clear}
+                        icon={faTrash}
+                        data-qa="open-delete-group-note-dialog-btn"
+                      />
+                    </FixedSpaceRow>
                   )}
 
-                  <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
+                  <H2 primary noMargin>
+                    {i18n.attendances.notes.groupNote}
+                  </H2>
 
-                  <FixedSpaceColumn spacing="xxs">
-                    <Label>
-                      {i18n.attendances.notes.labels.groupNotesHeader}
-                    </Label>
-                    <TextArea
-                      value={groupNote?.note ?? ''}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        editGroupNote({ note: e.target.value })
-                      }
-                      placeholder={
-                        i18n.attendances.notes.placeholders.groupNote
-                      }
-                      data-qa="daily-note-group-note-input"
-                    />
-                  </FixedSpaceColumn>
+                  <TextArea
+                    value={groupNote?.note ?? ''}
+                    onChange={(e) => {
+                      setDirty(true)
+                      setGroupNote((prev) => ({
+                        ...prev,
+                        note: e.target.value
+                      }))
+                    }}
+                    placeholder={i18n.attendances.notes.placeholders.groupNote}
+                    data-qa="daily-note-group-note-input"
+                  />
                 </FixedSpaceColumn>
               </ContentArea>
             )}
