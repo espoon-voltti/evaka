@@ -158,7 +158,7 @@ export const fi = {
     notes: {
       dailyNotes: 'Muistiinpanot',
       labels: {
-        note: 'Päivän tapahtumia (ei terveystietoja)',
+        note: 'Päivän tapahtumia',
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',
@@ -180,9 +180,9 @@ export const fi = {
         LAUNDRY: 'Repussa pyykkiä'
       },
       placeholders: {
-        note: 'Mitä tänään opin, leikin, oivalsin.',
-        groupNote: 'Kirjoita muistiinpano ja ajankohta',
-        reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
+        note: 'Leikkejä, onnistumisia, iloja, opittuja asioita',
+        groupNote: 'Kirjoita koko ryhmää koskeva muistiinpano',
+        reminderNote: 'Muuta muistettavaa (esim. aurinkovoide)',
         hours: 'tunnit',
         minutes: 'minuutit'
       },
@@ -190,8 +190,9 @@ export const fi = {
       clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?',
       confirmTitle: 'Tallennetaanko tehdyt merkinnät ennen sulkemista?',
       closeWithoutSaving: 'Sulje tallentamatta',
-      groupNote: 'Ryhmän muistiinpano',
-      note: 'Lapsen päivän muistiinpanot'
+      groupNote: 'Ryhmän muistiinpanot',
+      note: 'Tänään koettua ja opittua',
+      otherThings: 'Muut asiat'
     },
     absenceTitle: 'Poissaolomerkintä',
     pin: {
