@@ -8,7 +8,7 @@ import {
   ChildDailyNoteBody,
   ChildDailyNoteReminder,
   GroupNote
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 import {
   deleteChildDailyNote,
   postChildDailyNote,

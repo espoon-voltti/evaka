@@ -9,7 +9,7 @@ import {
   ChildDailyNoteLevel,
   ChildDailyNoteReminder,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}

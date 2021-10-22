@@ -18,57 +18,6 @@ export type AccountType =
   | 'CITIZEN'
 
 /**
-* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNote
-*/
-export interface ChildDailyNote {
-  childId: UUID
-  date: LocalDate
-  feedingNote: ChildDailyNoteLevel | null
-  id: UUID
-  modifiedAt: Date
-  modifiedBy: string
-  note: string
-  reminderNote: string
-  reminders: ChildDailyNoteReminder[]
-  sleepingMinutes: number | null
-  sleepingNote: ChildDailyNoteLevel | null
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteBody
-*/
-export interface ChildDailyNoteBody {
-  feedingNote: ChildDailyNoteLevel | null
-  note: string
-  reminderNote: string
-  reminders: ChildDailyNoteReminder[]
-  sleepingMinutes: number | null
-  sleepingNote: ChildDailyNoteLevel | null
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteLevel
-*/
-export const childDailyNoteLevelValues = [
-  'GOOD',
-  'MEDIUM',
-  'NONE'
-] as const
-
-export type ChildDailyNoteLevel = typeof childDailyNoteLevelValues[number]
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteReminder
-*/
-export const childDailyNoteReminderValues = [
-  'DIAPERS',
-  'CLOTHES',
-  'LAUNDRY'
-] as const
-
-export type ChildDailyNoteReminder = typeof childDailyNoteReminderValues[number]
-
-/**
 * Generated from fi.espoo.evaka.messaging.message.CitizenMessageBody
 */
 export interface CitizenMessageBody {
@@ -106,24 +55,6 @@ export interface Group {
   name: string
   unitId: UUID
   unitName: string
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.group.GroupNote
-*/
-export interface GroupNote {
-  groupId: UUID
-  id: UUID
-  modifiedAt: Date
-  modifiedBy: string
-  note: string
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.group.GroupNoteBody
-*/
-export interface GroupNoteBody {
-  note: string
 }
 
 /**
@@ -200,22 +131,6 @@ export type MessageType =
 export interface NestedMessageAccount {
   account: MessageAccount
   daycareGroup: Group | null
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.NotesController.NotesByChildResponse
-*/
-export interface NotesByChildResponse {
-  childDailyNote: ChildDailyNote | null
-  groupNotes: GroupNote[]
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.note.NotesController.NotesByGroupResponse
-*/
-export interface NotesByGroupResponse {
-  childDailyNotes: ChildDailyNote[]
-  groupNotes: GroupNote[]
 }
 
 /**

@@ -6,7 +6,7 @@ import { UUID } from 'lib-common/types'
 import {
   ChildDailyNoteBody,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from './client'
 

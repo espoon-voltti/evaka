@@ -12,7 +12,7 @@ import {
   childDailyNoteReminderValues,
   GroupNote,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

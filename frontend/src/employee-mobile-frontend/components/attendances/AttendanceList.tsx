@@ -18,7 +18,7 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/messaging'
+import { GroupNote } from 'lib-common/generated/api-types/note'
 
 interface Props {
   attendanceChildren: Child[]

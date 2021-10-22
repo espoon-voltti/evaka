@@ -14,9 +14,9 @@ import fi.espoo.evaka.application.getApplicationAttachments
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteBody
-import fi.espoo.evaka.messaging.note.child.daily.createChildDailyNote
-import fi.espoo.evaka.messaging.note.child.daily.getLatestChildDailyNote
+import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
+import fi.espoo.evaka.note.child.daily.createChildDailyNote
+import fi.espoo.evaka.note.child.daily.getLatestChildDailyNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.resetDatabase

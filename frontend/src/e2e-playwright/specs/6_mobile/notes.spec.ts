@@ -32,7 +32,7 @@ import MobileNotePage from '../../pages/mobile/note-page'
 import {
   ChildDailyNoteBody,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 
 let page: Page
 let childPage: MobileChildPage

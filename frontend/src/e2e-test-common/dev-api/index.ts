@@ -51,7 +51,7 @@ import { UUID } from 'lib-common/types'
 import {
   ChildDailyNoteBody,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {

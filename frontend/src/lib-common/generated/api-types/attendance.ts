@@ -8,9 +8,9 @@
 import LocalDate from '../../local-date'
 import { AbsenceCareType } from './daycare'
 import { AbsenceType } from './daycare'
-import { ChildDailyNote } from './messaging'
+import { ChildDailyNote } from './note'
 import { DailyServiceTimes } from '../../api-types/child/common'
-import { GroupNote } from './messaging'
+import { GroupNote } from './note'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 

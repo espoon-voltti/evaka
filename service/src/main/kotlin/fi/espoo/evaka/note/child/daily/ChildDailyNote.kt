@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging.note.child.daily
+package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.ChildDailyNoteId

@@ -11,7 +11,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
-import { GroupNote } from 'lib-common/generated/api-types/messaging'
+import { GroupNote } from 'lib-common/generated/api-types/note'
 
 interface Props {
   unitId: UUID

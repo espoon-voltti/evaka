@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging.note.group
+package fi.espoo.evaka.note.group
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId

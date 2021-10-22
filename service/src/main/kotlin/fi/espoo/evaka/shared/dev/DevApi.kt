@@ -43,10 +43,10 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.messaging.note.child.daily.ChildDailyNoteBody
-import fi.espoo.evaka.messaging.note.child.daily.createChildDailyNote
-import fi.espoo.evaka.messaging.note.group.GroupNoteBody
-import fi.espoo.evaka.messaging.note.group.createGroupNote
+import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
+import fi.espoo.evaka.note.child.daily.createChildDailyNote
+import fi.espoo.evaka.note.group.GroupNoteBody
+import fi.espoo.evaka.note.group.createGroupNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
 import fi.espoo.evaka.pairing.challengePairing

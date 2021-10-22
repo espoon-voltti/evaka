@@ -67,7 +67,7 @@ import { Action } from 'lib-common/generated/action'
 import {
   ChildDailyNote,
   NotesByGroupResponse
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 import { renderResult } from '../../../async-rendering'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
 import ChildDailyNoteModal from '../daycare-daily-notes/ChildDailyNoteModal'

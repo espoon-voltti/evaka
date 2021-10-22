@@ -13,7 +13,7 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
-import fi.espoo.evaka.messaging.note.child.daily.deleteExpiredChildDailyNotes
+import fi.espoo.evaka.note.child.daily.deleteExpiredChildDailyNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans

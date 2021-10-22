@@ -6,8 +6,8 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCareType
-import fi.espoo.evaka.messaging.note.child.daily.ChildDailyNote
-import fi.espoo.evaka.messaging.note.group.GroupNote
+import fi.espoo.evaka.note.child.daily.ChildDailyNote
+import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId

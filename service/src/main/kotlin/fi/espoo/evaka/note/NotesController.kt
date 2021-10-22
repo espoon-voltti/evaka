@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging.note
+package fi.espoo.evaka.note
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.messaging.note.child.daily.ChildDailyNote
-import fi.espoo.evaka.messaging.note.child.daily.getLatestChildDailyNote
-import fi.espoo.evaka.messaging.note.child.daily.getLatestChildDailyNotesInGroup
-import fi.espoo.evaka.messaging.note.group.GroupNote
-import fi.espoo.evaka.messaging.note.group.getGroupNotesForChild
-import fi.espoo.evaka.messaging.note.group.getGroupNotesForGroup
+import fi.espoo.evaka.note.child.daily.ChildDailyNote
+import fi.espoo.evaka.note.child.daily.getLatestChildDailyNote
+import fi.espoo.evaka.note.child.daily.getLatestChildDailyNotesInGroup
+import fi.espoo.evaka.note.group.GroupNote
+import fi.espoo.evaka.note.group.getGroupNotesForChild
+import fi.espoo.evaka.note.group.getGroupNotesForGroup
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database

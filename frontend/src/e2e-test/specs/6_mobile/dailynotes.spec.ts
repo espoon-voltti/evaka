@@ -29,7 +29,7 @@ import {
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/messaging'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 let fixtures: AreaAndPersonFixtures
 

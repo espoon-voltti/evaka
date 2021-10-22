@@ -10,7 +10,7 @@ import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
   ChildDailyNoteReminder
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 
 export default class ChildPage {
   readonly childName = Selector('[data-qa="child-name"]')

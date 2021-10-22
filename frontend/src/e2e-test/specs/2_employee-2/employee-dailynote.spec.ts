@@ -28,7 +28,7 @@ import {
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/messaging'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 const employeeId = uuidv4()
 

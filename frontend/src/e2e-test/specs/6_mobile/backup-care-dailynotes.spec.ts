@@ -34,7 +34,7 @@ import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   ChildDailyNoteBody,
   GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 
 let fixtures: AreaAndPersonFixtures
 

@@ -19,7 +19,7 @@ import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from '../../state/unit'
-import { GroupNote } from 'lib-common/generated/api-types/messaging'
+import { GroupNote } from 'lib-common/generated/api-types/note'
 
 const ChildBox = styled.div`
   align-items: center;

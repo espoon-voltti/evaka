@@ -7,8 +7,8 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.messaging.note.child.daily.getLatestChildDailyNotesInUnit
-import fi.espoo.evaka.messaging.note.group.getGroupNotesForUnit
+import fi.espoo.evaka.note.child.daily.getLatestChildDailyNotesInUnit
+import fi.espoo.evaka.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.markEmployeeLastLogin

@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import {
-  GroupNote,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/messaging'
+import { GroupNote, GroupNoteBody } from 'lib-common/generated/api-types/note'
 import {
   deleteGroupNote,
   postGroupNote,

@@ -7,7 +7,7 @@ import {
   ChildDailyNoteBody,
   GroupNoteBody,
   NotesByGroupResponse
-} from 'lib-common/generated/api-types/messaging'
+} from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
