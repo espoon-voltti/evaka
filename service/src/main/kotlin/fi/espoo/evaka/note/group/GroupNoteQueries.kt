@@ -7,7 +7,6 @@ package fi.espoo.evaka.note.group
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -16,7 +15,7 @@ import java.util.UUID
 
 fun Database.Read.getGroupNotesForChild(childId: UUID): List<GroupNote> = createQuery(
     """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_by, gn.modified_at
+    SELECT gn.id, gn.group_id, gn.note, gn.modified_at
     FROM group_note gn
     WHERE group_id = (
         SELECT (
@@ -53,7 +52,7 @@ fun Database.Read.getGroupNotesForUnit(unitId: DaycareId): List<GroupNote> {
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> = createQuery(
     """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_by, gn.modified_at
+    SELECT gn.id, gn.group_id, gn.note, gn.modified_at
     FROM group_note gn
     WHERE group_id = ANY(:groupIds)
     """.trimIndent()
@@ -62,28 +61,26 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
     .mapTo<GroupNote>()
     .list()
 
-fun Database.Transaction.createGroupNote(user: AuthenticatedUser, groupId: GroupId, note: GroupNoteBody): GroupNoteId {
+fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate(
         """
-INSERT INTO group_note (group_id, note, modified_by)
-VALUES (:groupId, :note, :modifiedBy)
+INSERT INTO group_note (group_id, note)
+VALUES (:groupId, :note)
 RETURNING id
         """.trimIndent()
     )
         .bindKotlin(note)
         .bind("groupId", groupId)
-        .bind("modifiedBy", user.id)
         .executeAndReturnGeneratedKeys()
         .mapTo<GroupNoteId>()
         .one()
 }
 
-fun Database.Transaction.updateGroupNote(user: AuthenticatedUser, id: GroupNoteId, note: GroupNoteBody): GroupNote {
+fun Database.Transaction.updateGroupNote(id: GroupNoteId, note: GroupNoteBody): GroupNote {
     return createUpdate(
         """
 UPDATE group_note SET
     note = :note, 
-    modified_by = :modifiedBy,
     modified_at = now()
 WHERE id = :id
 RETURNING *
@@ -91,7 +88,6 @@ RETURNING *
     )
         .bind("id", id)
         .bindKotlin(note)
-        .bind("modifiedBy", user.id)
         .executeAndReturnGeneratedKeys()
         .mapTo<GroupNote>()
         .one()

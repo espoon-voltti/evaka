@@ -684,7 +684,6 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     ): ChildDailyNoteId {
         return db.transaction {
             it.createChildDailyNote(
-                user = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet()),
                 childId = childId,
                 note = body
             )
@@ -699,7 +698,6 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     ): GroupNoteId {
         return db.transaction {
             it.createGroupNote(
-                user = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet()),
                 groupId = groupId,
                 note = body
             )

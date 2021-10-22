@@ -12,8 +12,7 @@ data class GroupNote(
     val id: GroupNoteId,
     val groupId: GroupId,
     val note: String,
-    val modifiedAt: HelsinkiDateTime,
-    val modifiedBy: String
+    val modifiedAt: HelsinkiDateTime
 )
 
 data class GroupNoteBody(

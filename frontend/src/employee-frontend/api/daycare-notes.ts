@@ -11,7 +11,6 @@ import {
 import { UUID } from 'lib-common/types'
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
 
 export async function getNotesByGroup(
   groupId: UUID
@@ -22,7 +21,6 @@ export async function getNotesByGroup(
       Success.of({
         childDailyNotes: res.data.childDailyNotes.map((note) => ({
           ...note,
-          date: LocalDate.parseIso(note.date),
           modifiedAt: new Date(note.modifiedAt)
         })),
         groupNotes: res.data.groupNotes.map((note) => ({

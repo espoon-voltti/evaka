@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.note.child.daily.getLatestChildDailyNotesInUnit
+import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
@@ -479,7 +479,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
     val childrenBasics = fetchChildrenBasics(unitId, instant.toLocalDate())
     val childrenAttendances = fetchChildrenAttendances(unitId, instant)
     val childrenAbsences = fetchChildrenAbsences(unitId, instant.toLocalDate())
-    val dailyNotesForChildrenInUnit = getLatestChildDailyNotesInUnit(unitId)
+    val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId)
     val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
 
     val children = childrenBasics.map { child ->

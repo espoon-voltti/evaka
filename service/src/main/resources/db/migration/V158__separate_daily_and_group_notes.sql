@@ -6,8 +6,7 @@ CREATE TABLE group_note (
     updated timestamp with time zone DEFAULT now() NOT NULL,
     group_id uuid NOT NULL REFERENCES daycare_group,
     note text NOT NULL,
-    modified_at timestamp with time zone NOT NULL DEFAULT now(),
-    modified_by text NOT NULL
+    modified_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON group_note FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
@@ -24,10 +23,13 @@ UPDATE daycare_daily_note SET created = modified_at, updated = modified_at;
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON daycare_daily_note FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
+-- drop modified_by until evaka_user can be referenced
+ALTER TABLE daycare_daily_note DROP COLUMN modified_by;
+
 -- copy group notes to new table
 
-INSERT INTO group_note (id, created, updated, group_id, note, modified_at, modified_by)
-SELECT id, created, updated, group_id, coalesce(note, ''), modified_at, modified_by
+INSERT INTO group_note (id, created, updated, group_id, note, modified_at)
+SELECT id, created, updated, group_id, coalesce(note, ''), modified_at
 FROM daycare_daily_note
 WHERE child_id IS NULL AND group_id IS NOT NULL;
 
@@ -48,7 +50,18 @@ ALTER TABLE child_daily_note DROP CONSTRAINT daycare_daily_note_check;
 ALTER TABLE child_daily_note DROP CONSTRAINT unique_daycare_daily_note;
 ALTER TABLE child_daily_note DROP COLUMN group_id;
 ALTER TABLE child_daily_note ALTER COLUMN child_id SET NOT NULL;
-CREATE UNIQUE INDEX uniq$child_daily_note_child_id_date ON child_daily_note(child_id, date);
+
+-- no date, only one note per child
+DELETE FROM child_daily_note WHERE id IN (
+    SELECT id
+    FROM (
+         SELECT id, rank() OVER (PARTITION BY child_id ORDER BY date DESC) AS rank
+         FROM child_daily_note
+    ) AS ranked
+    WHERE ranked.rank > 1
+);
+ALTER TABLE child_daily_note DROP COLUMN date;
+CREATE UNIQUE INDEX uniq$child_daily_note_child_id ON child_daily_note(child_id);
 
 -- text columns as not null
 UPDATE child_daily_note SET note = '' WHERE note IS NULL;

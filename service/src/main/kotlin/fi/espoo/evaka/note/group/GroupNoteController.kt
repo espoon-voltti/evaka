@@ -32,7 +32,7 @@ class GroupNoteController(
         Audit.GroupNoteCreate.log(groupId)
         ac.requirePermissionFor(user, Action.Group.CREATE_NOTE, groupId)
 
-        return db.transaction { it.createGroupNote(user, groupId, body) }
+        return db.transaction { it.createGroupNote(groupId, body) }
     }
 
     @PutMapping("/group-notes/{noteId}")
@@ -45,7 +45,7 @@ class GroupNoteController(
         Audit.GroupNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.GroupNote.UPDATE, noteId)
 
-        return db.transaction { it.updateGroupNote(user, noteId, body) }
+        return db.transaction { it.updateGroupNote(noteId, body) }
     }
 
     @DeleteMapping("/group-notes/{noteId}")

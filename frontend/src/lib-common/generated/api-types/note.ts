@@ -5,7 +5,6 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
@@ -13,11 +12,9 @@ import { UUID } from '../../types'
 */
 export interface ChildDailyNote {
   childId: UUID
-  date: LocalDate
   feedingNote: ChildDailyNoteLevel | null
   id: UUID
   modifiedAt: Date
-  modifiedBy: string
   note: string
   reminderNote: string
   reminders: ChildDailyNoteReminder[]
@@ -66,7 +63,6 @@ export interface GroupNote {
   groupId: UUID
   id: UUID
   modifiedAt: Date
-  modifiedBy: string
   note: string
 }
 

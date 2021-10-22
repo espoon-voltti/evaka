@@ -6,8 +6,8 @@ package fi.espoo.evaka.note
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
-import fi.espoo.evaka.note.child.daily.getLatestChildDailyNote
-import fi.espoo.evaka.note.child.daily.getLatestChildDailyNotesInGroup
+import fi.espoo.evaka.note.child.daily.getChildDailyNote
+import fi.espoo.evaka.note.child.daily.getChildDailyNotesInGroup
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.note.group.getGroupNotesForChild
 import fi.espoo.evaka.note.group.getGroupNotesForGroup
@@ -40,7 +40,7 @@ class NotesController(
 
         return db.read {
             NotesByChildResponse(
-                childDailyNote = it.getLatestChildDailyNote(childId),
+                childDailyNote = it.getChildDailyNote(childId),
                 groupNotes = it.getGroupNotesForChild(childId)
             )
         }
@@ -61,7 +61,7 @@ class NotesController(
 
         return db.read {
             NotesByGroupResponse(
-                childDailyNotes = it.getLatestChildDailyNotesInGroup(groupId),
+                childDailyNotes = it.getChildDailyNotesInGroup(groupId),
                 groupNotes = it.getGroupNotesForGroup(groupId)
             )
         }

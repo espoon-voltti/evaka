@@ -8,8 +8,11 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import mu.KotlinLogging
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 class ChildDailyNoteController(
@@ -32,7 +37,14 @@ class ChildDailyNoteController(
         Audit.ChildDailyNoteCreate.log(childId)
         ac.requirePermissionFor(user, Action.Child.CREATE_DAILY_NOTE, childId)
 
-        return db.transaction { it.createChildDailyNote(user, childId, body) }
+        try {
+            return db.transaction { it.createChildDailyNote(childId, body) }
+        } catch (e: Exception) {
+            val error = mapPSQLException(e)
+            // monitor if there is issues with stale data or need for upsert
+            if (error is Conflict) logger.warn("User tried to create a duplicate note for child")
+            throw error
+        }
     }
 
     @PutMapping("/child-daily-notes/{noteId}")
@@ -45,7 +57,7 @@ class ChildDailyNoteController(
         Audit.ChildDailyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.transaction { it.updateChildDailyNote(user, noteId, body) }
+        return db.transaction { it.updateChildDailyNote(noteId, body) }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")

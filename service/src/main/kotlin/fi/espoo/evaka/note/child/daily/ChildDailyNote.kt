@@ -7,21 +7,18 @@ package fi.espoo.evaka.note.child.daily
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.LocalDate
 import java.util.UUID
 
 data class ChildDailyNote(
     val id: ChildDailyNoteId,
     val childId: UUID,
-    val date: LocalDate,
     val note: String,
     val feedingNote: ChildDailyNoteLevel?,
     val sleepingNote: ChildDailyNoteLevel?,
     val sleepingMinutes: Int?,
     val reminders: List<ChildDailyNoteReminder> = emptyList(),
     val reminderNote: String,
-    val modifiedAt: HelsinkiDateTime,
-    val modifiedBy: String
+    val modifiedAt: HelsinkiDateTime
 )
 
 data class ChildDailyNoteBody(

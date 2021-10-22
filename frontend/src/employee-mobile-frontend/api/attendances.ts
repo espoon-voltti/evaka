@@ -251,7 +251,6 @@ function deserializeAttendanceResponse(
             dailyNote: attendanceChild.dailyNote
               ? {
                   ...attendanceChild.dailyNote,
-                  date: LocalDate.parseIso(attendanceChild.dailyNote.date),
                   modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
                 }
               : null
