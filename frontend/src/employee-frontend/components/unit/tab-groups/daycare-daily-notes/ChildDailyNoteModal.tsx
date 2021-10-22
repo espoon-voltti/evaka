@@ -28,6 +28,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { UUID } from 'lib-common/types'
+import { UpdateStateFn } from 'lib-common/form-state'
 
 interface ChildDailyNoteFormData
   extends Omit<ChildDailyNoteBody, 'sleepingMinutes'> {
@@ -99,7 +100,7 @@ export default React.memo(function DaycareDailyNoteModal({
     initialFormData(note)
   )
 
-  const updateForm = (updates: Partial<ChildDailyNoteFormData>) => {
+  const updateForm: UpdateStateFn<ChildDailyNoteFormData> = (updates) => {
     setForm((prev) => ({ ...prev, ...updates }))
   }
 

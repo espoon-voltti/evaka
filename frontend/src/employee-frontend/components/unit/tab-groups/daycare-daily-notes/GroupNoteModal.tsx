@@ -19,6 +19,7 @@ import {
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { UUID } from 'lib-common/types'
+import { UpdateStateFn } from 'lib-common/form-state'
 
 type GroupNoteFormData = GroupNoteBody
 
@@ -49,7 +50,7 @@ export default React.memo(function GroupNoteModal({
     initialFormData(groupNote)
   )
 
-  const updateForm = (updates: Partial<GroupNoteFormData>) => {
+  const updateForm: UpdateStateFn<GroupNoteFormData> = (updates) => {
     setForm((prev) => ({ ...prev, ...updates }))
   }
 
