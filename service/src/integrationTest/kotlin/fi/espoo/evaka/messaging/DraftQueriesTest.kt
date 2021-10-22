@@ -5,12 +5,6 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.UpsertableDraftContent
-import fi.espoo.evaka.messaging.message.deleteDraft
-import fi.espoo.evaka.messaging.message.getDrafts
-import fi.espoo.evaka.messaging.message.initDraft
-import fi.espoo.evaka.messaging.message.upsertDraft
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId

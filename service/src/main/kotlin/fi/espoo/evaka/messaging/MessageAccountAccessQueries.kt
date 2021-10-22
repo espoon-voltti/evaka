@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging.message
+package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.MessageDraftId

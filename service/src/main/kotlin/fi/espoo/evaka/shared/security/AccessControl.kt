@@ -11,9 +11,9 @@ import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
-import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageContent
-import fi.espoo.evaka.messaging.message.hasPermissionForAttachmentThroughMessageDraft
-import fi.espoo.evaka.messaging.message.hasPermissionForMessageDraft
+import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
+import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
+import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
 import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked

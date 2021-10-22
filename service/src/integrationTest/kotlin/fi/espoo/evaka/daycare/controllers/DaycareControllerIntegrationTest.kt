@@ -14,8 +14,8 @@ import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.insertMessageContent
+import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser

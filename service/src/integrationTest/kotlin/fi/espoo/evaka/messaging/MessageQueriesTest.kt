@@ -6,26 +6,6 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.ThreadWithParticipants
-import fi.espoo.evaka.messaging.message.addToBlocklist
-import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.createPersonMessageAccount
-import fi.espoo.evaka.messaging.message.getAccountNames
-import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getCitizenReceivers
-import fi.espoo.evaka.messaging.message.getDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
-import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
-import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
-import fi.espoo.evaka.messaging.message.getThreadByMessageId
-import fi.espoo.evaka.messaging.message.getUnreadMessagesCounts
-import fi.espoo.evaka.messaging.message.insertMessage
-import fi.espoo.evaka.messaging.message.insertMessageContent
-import fi.espoo.evaka.messaging.message.insertRecipients
-import fi.espoo.evaka.messaging.message.insertThread
-import fi.espoo.evaka.messaging.message.markThreadRead
-import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
