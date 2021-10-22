@@ -916,7 +916,7 @@ jobs:
             - apigw/dist
       - run:
           working_directory: *workspace_apigw
-          command: yarn lint
+          command: yarn lint:strict
       - run:
           working_directory: *workspace_apigw
           command: yarn test-ci
@@ -962,7 +962,7 @@ jobs:
       - prepare_frontend_build
       - run:
           working_directory: *workspace_frontend
-          command: yarn lint-strict
+          command: yarn lint:strict
       - run:
           working_directory: *workspace_frontend
           command: yarn type-check
