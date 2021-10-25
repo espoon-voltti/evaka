@@ -8,6 +8,7 @@ import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
   ChildDailyNoteReminder,
+  ChildStickyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
 
@@ -15,11 +16,11 @@ export default class MobileNotePage {
   constructor(private readonly page: Page) {}
 
   #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
-  #groupTab = this.page.locator('[data-qa="tab-group-note"]')
 
   #note = {
     dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
-    groupNote: this.page.locator('[data-qa="daily-note-group-note-input"]'),
+    groupNoteInput: this.page.locator('[data-qa="sticky-note-input"]'),
+    stickyNote: this.page.locator('[data-qa="sticky-note"]'),
     sleepingTimeHours: this.page.locator(
       '[data-qa="sleeping-time-hours-input"]'
     ),
@@ -35,12 +36,16 @@ export default class MobileNotePage {
       this.page.locator(`[data-qa="reminders-${reminder}"]`)
   }
 
-  async selectGroupTab() {
-    await this.#groupTab.click()
+  async selectTab(tab: 'note' | 'group' | 'sticky') {
+    await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
-  async fillGroupNote(groupNote: GroupNoteBody) {
-    if (groupNote.note) await this.#note.groupNote.type(groupNote.note)
+  async fillStickyNote({ note }: GroupNoteBody | ChildStickyNoteBody) {
+    if (note) await this.#note.groupNoteInput.type(note)
+  }
+
+  async saveStickyNote() {
+    await this.page.locator(`[data-qa="sticky-note-save"]`).click()
   }
 
   async fillNote(dailyNote: ChildDailyNoteBody) {
@@ -64,12 +69,12 @@ export default class MobileNotePage {
     }
   }
 
-  async saveNote() {
+  async saveChildDailyNote() {
     await this.#createNoteButton.click()
   }
-  async assertGroupNote(expected: GroupNoteBody) {
+  async assertGroupNote(expected: GroupNoteBody, nth = 0) {
     await waitUntilEqual(
-      () => this.#note.groupNote.inputValue(),
+      () => this.#note.stickyNote.nth(nth).locator('p').textContent(),
       expected.note || ''
     )
   }

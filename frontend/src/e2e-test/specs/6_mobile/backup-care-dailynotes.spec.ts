@@ -222,7 +222,6 @@ test('User can see group daily note for a backup care child in the group', async
 
   await t.click(mobileGroupsPage.groupNoteTab)
 
-  await t
-    .expect(childPage.dailyNoteGroupNoteInput.value)
-    .eql(daycareDailyNote.note)
+  await t.expect(childPage.stickyNoteInput.value).eql('')
+  await t.expect(childPage.stickyNote.textContent).eql('Testi ryhmäviesti')
 })

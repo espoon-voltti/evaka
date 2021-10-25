@@ -121,6 +121,8 @@ const Button = styled.button`
   flex: 0 0 auto;
 `
 
+export const getItemLabel = ({ label }: { label: string }) => label
+
 interface MenuItemProps<T> {
   item: T
   highlighted: boolean

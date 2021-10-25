@@ -107,7 +107,7 @@ afterEach(async () => {
 
 describe('Child and group notes', () => {
   test('Child daily note can be created', async () => {
-    const daycareDailyNote: ChildDailyNoteBody = {
+    const childDailyNote: ChildDailyNoteBody = {
       note: 'Testiviesti',
       feedingNote: 'MEDIUM',
       sleepingMinutes: 65,
@@ -116,11 +116,11 @@ describe('Child and group notes', () => {
       reminderNote: 'Näki painajaisia'
     }
 
-    await notePage.fillNote(daycareDailyNote)
-    await notePage.saveNote()
+    await notePage.fillNote(childDailyNote)
+    await notePage.saveChildDailyNote()
     await childPage.assertNotesExist()
     await childPage.openNotes()
-    await notePage.assertNote(daycareDailyNote)
+    await notePage.assertNote(childDailyNote)
   })
 
   test('Child group note can be created', async () => {
@@ -129,12 +129,12 @@ describe('Child and group notes', () => {
       expires: LocalDate.today().addDays(7)
     }
 
-    await notePage.selectGroupTab()
-    await notePage.fillGroupNote(groupNote)
-    await notePage.saveNote()
+    await notePage.selectTab('group')
+    await notePage.fillStickyNote(groupNote)
+    await notePage.saveStickyNote()
     await childPage.assertNotesExist()
     await childPage.openNotes()
-    await notePage.selectGroupTab()
+    await notePage.selectTab('group')
     await notePage.assertGroupNote(groupNote)
   })
 })
