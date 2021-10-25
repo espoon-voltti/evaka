@@ -30,7 +30,7 @@ import java.util.UUID
  * Controller for "system" endpoints intended to be only called from apigw as the system internal user
  */
 class SystemController(private val personService: PersonService, private val accessControl: AccessControl) {
-    @PostMapping("/system/person-identity", "/system/citizen-login")
+    @PostMapping("/system/citizen-login")
     fun citizenLogin(
         db: Database.Connection,
         user: AuthenticatedUser.SystemInternalUser,
@@ -51,7 +51,7 @@ class SystemController(private val personService: PersonService, private val acc
         }
     }
 
-    @PostMapping("/system/employee-identity", "/system/employee-login")
+    @PostMapping("/system/employee-login")
     fun employeeLogin(
         db: Database.Connection,
         user: AuthenticatedUser.SystemInternalUser,
