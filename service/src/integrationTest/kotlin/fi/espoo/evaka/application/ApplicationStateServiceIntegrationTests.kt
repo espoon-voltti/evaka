@@ -118,7 +118,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `initialize daycare application form with null service need option`() {
-        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
+        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(false)
         db.transaction { tx ->
             // given
             tx.insertApplication(
