@@ -807,7 +807,6 @@ jobs:
     steps:
       - checkout
       - store_repo
-      - notify_slack
 
   fetch_private_dependencies:
     executor: aws_core_executor
@@ -1314,121 +1313,58 @@ jobs:
 workflows:
   version: 2
 
-  build_test_and_deploy_fork:
-    jobs:
-      - checkout_repo:
-          filters:
-            branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              # Currently ALL jobs require secrets -> stop already at checkout for forks
-              only: /pull\/[0-9]+/
-      - check_licenses:
-          requires:
-            - checkout_repo
-      - lint_scripts:
-          requires:
-            - checkout_repo
-      - build_base_image:
-          requires:
-            - checkout_repo
-
-      - apigw_build_and_test:
-          requires:
-            - checkout_repo
-      - apigw_build_and_push_image:
-          executor: apigw_executor
-          requires:
-            - build_base_image
-            - apigw_build_and_test
-
-      - frontend_build_core:
-          requires:
-            - checkout_repo
-      - frontend_build_misc_and_test:
-          requires:
-            - checkout_repo
-
-      - proxy_build_and_push_image:
-          executor: nodejs_executor
-          requires:
-            - checkout_repo
-
-      - service_build:
-          requires:
-            - checkout_repo
-      - service_build_and_push_image:
-          executor: nodejs_executor
-          requires:
-            - build_base_image
-            - service_build
-      - service_test:
-          requires:
-            - service_build
-      - service_integration_test:
-          requires:
-            - service_build
-
-      - message_service_build:
-          requires:
-            - checkout_repo
-      - message_service_test:
-          requires:
-            - message_service_build
-      - message_service_integration_test:
-          requires:
-            - message_service_build
-      - message_service_build_and_push_image:
-          executor: nodejs_executor
-          requires:
-            - build_base_image
-            - message_service_test
-            - message_service_integration_test
-
-      - e2e-build-testcafe:
-          executor: frontend_executor
-          requires:
-            - checkout_repo
-      - e2e-build-playwright:
-          executor: frontend_executor
-          requires:
-            - checkout_repo
-
-      - e2e-test-testcafe:
-          requires:
-            - e2e-build-testcafe
-            - frontend_build_core
-            - apigw_build_and_push_image
-            - service_build_and_push_image
-      - e2e-test-playwright:
-          requires:
-            - e2e-build-playwright
-            - frontend_build_core
-            - apigw_build_and_push_image
-            - service_build_and_push_image
-
   build_test_and_deploy:
     jobs:
-      - checkout_repo:
-          <<: *default_contexts
+      - checkout_repo
+      - fetch_private_dependencies:
           filters:
             branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              # Currently ALL jobs require secrets -> stop already at checkout for forks
               ignore: /pull\/[0-9]+/
-      - fetch_private_dependencies:
           <<: *aws_contexts
           requires:
             - checkout_repo
       - check_licenses:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
+          <<: *default_contexts
+          requires:
+            - checkout_repo
+      - check_licenses:
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          name: check_licenses_form
+          requires:
+            - checkout_repo
+
+      - lint_scripts:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *default_contexts
           requires:
             - checkout_repo
       - lint_scripts:
+          name: lint_scripts_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          requires:
+            - checkout_repo
+
+      - build_base_image:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *default_contexts
           requires:
             - checkout_repo
       - build_base_image:
-          <<: *default_contexts
+          name: build_base_image_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
           requires:
             - checkout_repo
 
@@ -1437,10 +1373,30 @@ workflows:
           requires:
             - fetch_private_dependencies
       - apigw_build_and_push_image:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *aws_contexts
           requires:
             - build_base_image
             - apigw_build_and_test
+
+      - apigw_build_and_test:
+          name: apigw_build_and_test_fork
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - apigw_build_and_push_image:
+          name: apigw_build_and_push_image_fork
+          executor: apigw_executor
+          requires:
+            - build_base_image_fork
+            - apigw_build_and_test_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
 
       - frontend_build_core:
           <<: *aws_docker_contexts
@@ -1451,11 +1407,32 @@ workflows:
           requires:
             - fetch_private_dependencies
 
+      - frontend_build_core:
+          name: frontend_build_core_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          requires:
+            - checkout_repo
+      - frontend_build_misc_and_test:
+          name: frontend_build_misc_and_test_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          requires:
+            - checkout_repo
+
       - e2e-build-testcafe:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *aws_docker_contexts
           requires:
             - checkout_repo
       - e2e-build-playwright:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *aws_docker_contexts
           requires:
             - checkout_repo
@@ -1473,6 +1450,43 @@ workflows:
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
+
+      - e2e-build-testcafe:
+          name: e2e-build-testcafe_fork
+          executor: frontend_executor
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - e2e-build-playwright:
+          name: e2e-build-playwright_fork
+          executor: frontend_executor
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - e2e-test-testcafe:
+          name: e2e-test-testcafe_fork
+          requires:
+            - e2e-build-testcafe_fork
+            - frontend_build_core_fork
+            - apigw_build_and_push_image_fork
+            - service_build_and_push_image_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - e2e-test-playwright:
+          name: e2e-test-playwright_fork
+          requires:
+            - e2e-build-playwright_fork
+            - frontend_build_core_fork
+            - apigw_build_and_push_image_fork
+            - service_build_and_push_image_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
 
       - proxy_build_and_push_image:
           context:
@@ -1481,6 +1495,18 @@ workflows:
             - voltti-slack
           requires:
             - checkout_repo
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
+
+      - proxy_build_and_push_image:
+          name: proxy_build_and_push_image_fork
+          executor: nodejs_executor
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
 
       - service_build:
           <<: *default_contexts
@@ -1491,6 +1517,10 @@ workflows:
           requires:
             - build_base_image
             - service_build
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
+
       - service_test:
           <<: *default_contexts
           requires:
@@ -1500,10 +1530,38 @@ workflows:
           requires:
             - service_build
 
+      - service_build:
+          name: service_build_fork
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - service_build_and_push_image:
+          name: service_build_and_push_image_fork
+          executor: nodejs_executor
+          requires:
+            - build_base_image_fork
+            - service_build_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - service_test:
+          name: service_test_fork
+          requires:
+            - service_build_fork
+      - service_integration_test:
+          name: service_integration_test_fork
+          requires:
+            - service_build_fork
+
       - message_service_build:
           <<: *default_contexts
           requires:
             - fetch_private_dependencies
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
       - message_service_test:
           <<: *default_contexts
           requires:
@@ -1513,11 +1571,40 @@ workflows:
           requires:
             - message_service_build
       - message_service_build_and_push_image:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *aws_contexts
           requires:
             - build_base_image
             - message_service_test
             - message_service_integration_test
+
+      - message_service_build:
+          name: message_service_build_fork
+          requires:
+            - checkout_repo
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+      - message_service_test:
+          name: message_service_test_fork
+          requires:
+            - message_service_build_fork
+      - message_service_integration_test:
+          name: message_service_integration_test_fork
+          requires:
+            - message_service_build_fork
+      - message_service_build_and_push_image:
+          name: message_service_build_and_push_image_fork
+          executor: nodejs_executor
+          requires:
+            - build_base_image_fork
+            - message_service_test_fork
+            - message_service_integration_test_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
 
       - clone_infra_repo:
           <<: *aws_contexts
@@ -1555,6 +1642,9 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test, staging, prod]
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
 
       - frontend_deploy:
           <<: *aws_contexts
