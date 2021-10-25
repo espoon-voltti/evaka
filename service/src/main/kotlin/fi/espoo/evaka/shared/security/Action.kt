@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.MOBILE
@@ -337,7 +338,12 @@ sealed interface Action {
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_INCOME(FINANCE_ADMIN),
-        READ_INCOME_STATEMENTS(FINANCE_ADMIN);
+        READ_INCOME_STATEMENTS(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
+        READ_INVOICE_ADDRESS(FINANCE_ADMIN),
+        READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
+        UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
+        UPDATE_OPH_OID(DIRECTOR, UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

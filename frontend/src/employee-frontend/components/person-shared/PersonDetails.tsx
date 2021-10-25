@@ -16,9 +16,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { patchPersonDetails, updateSsnAddingDisabled } from '../../api/person'
 import { UIContext, UiState } from '../../state/ui'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
-import { UserContext } from '../../state/user'
 import styled from 'styled-components'
-import { RequireRole, requireRole } from '../../utils/roles'
 import LocalDate from 'lib-common/local-date'
 import {
   FixedSpaceColumn,
@@ -84,7 +82,6 @@ const PersonDetails = React.memo(function PersonDetails({
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
-  const { roles } = useContext(UserContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
   const [form, setForm] = useState<Form>({
@@ -182,21 +179,14 @@ const PersonDetails = React.memo(function PersonDetails({
       )}
       {(!isChild || person.socialSecurityNumber === null) && (
         <RightAlignedRow>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          {permittedActions.has('UPDATE') ? (
             <InlineButton
               icon={faPen}
               onClick={() => toggleUiMode('person-details-editing')}
               data-qa="edit-person-settings-button"
               text={i18n.common.edit}
             />
-          </RequireRole>
+          ) : null}
         </RightAlignedRow>
       )}
       <LabelValueList
@@ -356,14 +346,15 @@ const PersonDetails = React.memo(function PersonDetails({
               </span>
             )
           },
-          ...(requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR', 'DIRECTOR')
+          ...(permittedActions.has('READ_OPH_OID')
             ? [
                 {
                   label: i18n.common.form.ophPersonOid,
                   dataQa: 'person-oph-person-oid',
                   valueWidth: '100%',
                   value:
-                    powerEditing || editing ? (
+                    (powerEditing || editing) &&
+                    permittedActions.has('UPDATE_OPH_OID') ? (
                       <>
                         <InputField
                           width={'L'}
@@ -382,12 +373,13 @@ const PersonDetails = React.memo(function PersonDetails({
                 }
               ]
             : []),
-          ...(!isChild && requireRole(roles, 'FINANCE_ADMIN')
+          ...(!isChild && permittedActions.has('READ_INVOICE_ADDRESS')
             ? [
                 {
                   label: i18n.common.form.invoicingAddress,
                   value:
-                    powerEditing || editing ? (
+                    (powerEditing || editing) &&
+                    permittedActions.has('UPDATE_INVOICE_ADDRESS') ? (
                       <>
                         <InputField
                           value={form.invoiceRecipientName}

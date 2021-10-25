@@ -19,6 +19,7 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -85,6 +86,14 @@ class PersonController(
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, PersonId(personId))
         return db.transaction { it.getPersonById(personId) }
+            ?.hideNonPermittedPersonData(
+                includeInvoiceAddress = accessControl.hasPermissionFor(
+                    user,
+                    Action.Person.READ_INVOICE_ADDRESS,
+                    PersonId(personId)
+                ),
+                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, PersonId(personId))
+            )
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
     }
@@ -160,7 +169,24 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
-        return db.transaction { personService.patchUserDetails(it, personId, data) }
+
+        val userEditablePersonData = data
+            .let {
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_INVOICE_ADDRESS, PersonId(personId))) it
+                else it.copy(
+                    invoiceRecipientName = null,
+                    invoicingStreetAddress = null,
+                    invoicingPostalCode = null,
+                    invoicingPostOffice = null,
+                    forceManualFeeDecisions = null
+                )
+            }
+            .let {
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_OPH_OID, PersonId(personId))) it
+                else it.copy(ophPersonOid = null)
+            }
+
+        return db.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 

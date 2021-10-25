@@ -343,6 +343,22 @@ data class PersonDTO(
     )
 }
 
+fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) = this
+    .let {
+        if (includeInvoiceAddress) it
+        else it.copy(
+            invoiceRecipientName = "",
+            invoicingStreetAddress = "",
+            invoicingPostalCode = "",
+            invoicingPostOffice = "",
+            forceManualFeeDecisions = false
+        )
+    }
+    .let {
+        if (includeOphOid) it
+        else it.copy(ophPersonOid = "")
+    }
+
 data class PersonJSON(
     val id: UUID,
     val socialSecurityNumber: String? = null,
