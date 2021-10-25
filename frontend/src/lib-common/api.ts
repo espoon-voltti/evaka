@@ -44,7 +44,7 @@ export class Loading<T> {
   mapAll<A>(fs: {
     loading: () => A
     failure: () => A
-    success: (v: T) => A
+    success: (v: T, isReloading: boolean) => A
   }): A {
     return fs.loading()
   }
@@ -106,7 +106,7 @@ export class Failure<T> {
   mapAll<A>(fs: {
     loading: () => A
     failure: () => A
-    success: (v: T) => A
+    success: (v: T, isReloading: boolean) => A
   }): A {
     return fs.failure()
   }
@@ -118,20 +118,21 @@ export class Failure<T> {
 
 export class Success<T> {
   readonly value: T
+  readonly isReloading: boolean
 
   readonly isLoading = false
   readonly isFailure = false
   readonly isSuccess = true
 
-  private constructor(value: T) {
+  private constructor(value: T, isReloading: boolean) {
     this.value = value
-    return this
+    this.isReloading = isReloading
   }
 
   static of(): Success<void>
   static of<T>(v: T): Success<T>
   static of<T>(v?: T): Success<T | undefined> {
-    return new Success(v)
+    return new Success(v, false)
   }
 
   chain<A>(f: (v: T) => Result<A>): Result<A> {
@@ -140,26 +141,30 @@ export class Success<T> {
 
   apply<A>(f: Result<(v: T) => A>): Result<A> {
     if (f.isSuccess) {
-      return Success.of(f.value(this.value))
+      return new Success(f.value(this.value), this.isReloading || f.isReloading)
     }
     return f as unknown as Result<A>
   }
 
   map<A>(f: (v: T) => A): Result<A> {
-    return this.chain((v) => Success.of(f(v)))
+    return this.chain((v) => new Success(f(v), this.isReloading))
   }
 
   mapAll<A>(fs: {
     loading: () => A
     failure: () => A
-    success: (v: T) => A
+    success: (v: T, isReloading: boolean) => A
   }): A {
-    return fs.success(this.value)
+    return fs.success(this.value, this.isReloading)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getOrElse<A>(_other: A): A | T {
     return this.value
+  }
+
+  reloading(): Result<T> {
+    return new Success(this.value, true)
   }
 }
 
