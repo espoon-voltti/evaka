@@ -68,6 +68,9 @@ enum class Audit(
     ChildBackupPickupDelete("evaka.child.backup-pickup.delete"),
     ChildBackupPickupRead("evaka.child.backup-pickup.read"),
     ChildBackupPickupUpdate("evaka.child.backup-pickup.update"),
+    ChildDailyNoteCreate("evaka.child-daily-note.create"),
+    ChildDailyNoteUpdate("evaka.child-daily-note.update"),
+    ChildDailyNoteDelete("evaka.child-daily-note.delete"),
     ChildDailyServiceTimesDelete("evaka.child.daily-service-times.delete"),
     ChildDailyServiceTimesEdit("evaka.child.daily-service-times.edit"),
     ChildDailyServiceTimesRead("evaka.child.daily-service-times.read"),
@@ -82,9 +85,13 @@ enum class Audit(
     ChildSensitiveInfoRead("evaka.child-sensitive-info.read"),
     ChildVasuDocumentsRead("evaka.child.vasu-documents.read"),
     CitizenLogin("evaka.citizen.login", securityEvent = true, securityLevel = "high"),
+    @Deprecated("use ChildDailyNoteCreate or GroupNoteCreate")
     DaycareDailyNoteCreate("evaka.daycare-daily-note.create"),
+    @Deprecated("use ChildDailyNoteUpdate or GroupNoteUpdate")
     DaycareDailyNoteUpdate("evaka.daycare-daily-note.update"),
+    @Deprecated("use NotesByChildRead or NotesByGroupRead")
     DaycareDailyNoteRead("evaka.daycare-daily-note.read"),
+    @Deprecated("use ChildDailyNoteDelete or GroupNoteDelete")
     DaycareDailyNoteDelete("evaka.daycare-daily-note.delete"),
     DaycareGroupPlacementCreate("evaka.daycare-group-placement.create"),
     DaycareGroupPlacementDelete("evaka.daycare-group-placement.delete"),
@@ -125,6 +132,9 @@ enum class Audit(
     FinanceBasicsFeeThresholdsRead("evaka.finance-basics-fee-thresholds.read"),
     FinanceBasicsFeeThresholdsCreate("evaka.finance-basics-fee-thresholds.create"),
     FinanceBasicsFeeThresholdsUpdate("evaka.finance-basics-fee-thresholds.update"),
+    GroupNoteCreate("evaka.group-note.create"),
+    GroupNoteUpdate("evaka.group-note.update"),
+    GroupNoteDelete("evaka.group-note.delete"),
     IncomeStatementCreate("evaka.income-statement.create"),
     IncomeStatementDelete("evaka.income-statement.delete"),
     IncomeStatementOfPerson("evaka.income-statement.person.read"),
@@ -169,6 +179,8 @@ enum class Audit(
     NoteDelete("evaka.note.delete"),
     NoteRead("evaka.note.read"),
     NoteUpdate("evaka.note.update"),
+    NotesByChildRead("evaka.note.child.read"),
+    NotesByGroupRead("evaka.note.group.read"),
     OccupancyRead("evaka.occupancy.read"),
     OccupancyReportRead("evaka.occupancy-report.read"),
     PairingInit("pairing.init", securityEvent = true),

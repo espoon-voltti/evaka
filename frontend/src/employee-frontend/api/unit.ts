@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import { client } from './client'
 import {
   Coordinate,
@@ -793,24 +792,6 @@ export async function updateDaycare(
   return client
     .put<JsonOf<Unit>>(`/daycares/${encodeURIComponent(id)}`, fields)
     .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function getGroupDaycareDailyNotes(
-  groupId: UUID
-): Promise<Result<DaycareDailyNote[]>> {
-  return client
-    .get<JsonOf<DaycareDailyNote[]>>(
-      `/daycare-daily-note/daycare/group/${groupId}`
-    )
-    .then((res) =>
-      res.data.map((data) => ({
-        ...data,
-        date: LocalDate.parseIso(data.date),
-        modifiedAt: new Date(data.modifiedAt)
-      }))
-    )
-    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
 

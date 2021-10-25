@@ -12,8 +12,8 @@ import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
-import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.hasGroupPlacements
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId

@@ -9,14 +9,6 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.message.MessageController
-import fi.espoo.evaka.messaging.message.MessageReceiversResponse
-import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.createPersonMessageAccount
-import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase

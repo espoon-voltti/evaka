@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  DaycareDailyNoteBody,
-  DaycareDailyNoteLevelInfo,
-  DaycareDailyNoteReminder
-} from 'lib-common/generated/api-types/messaging'
 import { Page } from 'playwright'
 import { waitUntilEqual } from '../../utils'
+import {
+  ChildDailyNoteBody,
+  ChildDailyNoteLevel,
+  ChildDailyNoteReminder,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/note'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
@@ -26,11 +27,11 @@ export default class MobileNotePage {
       '[data-qa="sleeping-time-minutes-input"]'
     ),
     reminderNote: this.page.locator('[data-qa="reminder-note-input"]'),
-    feedingNote: (level: DaycareDailyNoteLevelInfo) =>
+    feedingNote: (level: ChildDailyNoteLevel) =>
       this.page.locator(`[data-qa="feeding-note-${level}"]`),
-    sleepingNote: (level: DaycareDailyNoteLevelInfo) =>
+    sleepingNote: (level: ChildDailyNoteLevel) =>
       this.page.locator(`[data-qa="sleeping-note-${level}"]`),
-    reminders: (reminder: DaycareDailyNoteReminder) =>
+    reminders: (reminder: ChildDailyNoteReminder) =>
       this.page.locator(`[data-qa="reminders-${reminder}"]`)
   }
 
@@ -38,11 +39,11 @@ export default class MobileNotePage {
     await this.#groupTab.click()
   }
 
-  async fillGroupNote(groupNote: DaycareDailyNoteBody) {
+  async fillGroupNote(groupNote: GroupNoteBody) {
     if (groupNote.note) await this.#note.groupNote.type(groupNote.note)
   }
 
-  async fillNote(dailyNote: DaycareDailyNoteBody) {
+  async fillNote(dailyNote: ChildDailyNoteBody) {
     if (dailyNote.note) await this.#note.dailyNote.type(dailyNote.note)
     if (dailyNote.feedingNote)
       await this.#note.feedingNote(dailyNote.feedingNote).click()
@@ -66,14 +67,14 @@ export default class MobileNotePage {
   async saveNote() {
     await this.#createNoteButton.click()
   }
-  async assertGroupNote(expected: DaycareDailyNoteBody) {
+  async assertGroupNote(expected: GroupNoteBody) {
     await waitUntilEqual(
       () => this.#note.groupNote.inputValue(),
       expected.note || ''
     )
   }
 
-  async assertNote(expected: DaycareDailyNoteBody) {
+  async assertNote(expected: ChildDailyNoteBody) {
     await waitUntilEqual(
       () => this.#note.dailyNote.inputValue(),
       expected.note || ''

@@ -4,20 +4,19 @@
 
 import React, { useState } from 'react'
 import {
-  DaycareDailyNote,
-  DaycareDailyNoteBody,
-  DaycareDailyNoteReminder
-} from 'lib-common/generated/api-types/messaging'
+  ChildDailyNote,
+  ChildDailyNoteBody,
+  ChildDailyNoteReminder,
+  GroupNote
+} from 'lib-common/generated/api-types/note'
 import {
-  deleteDaycareDailyNote,
-  insertDaycareDailyNoteForChild,
-  updateDaycareDailyNoteForChild,
-  upsertDaycareDailyNoteForGroup
-} from '../../../../api/daycare-daily-notes'
+  deleteChildDailyNote,
+  postChildDailyNote,
+  putChildDailyNote
+} from '../../../../api/daycare-notes'
 import { useTranslation } from '../../../../state/i18n'
 import { faExclamation, faTrash } from 'lib-icons'
 import { formatName } from '../../../../utils'
-import LocalDate from 'lib-common/local-date'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import {
   FixedSpaceColumn,
@@ -28,23 +27,21 @@ import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
+import { UUID } from 'lib-common/types'
+import { UpdateStateFn } from 'lib-common/form-state'
 
-interface DaycareDailyNoteFormData
-  extends Omit<DaycareDailyNoteBody, 'sleepingMinutes'> {
+interface ChildDailyNoteFormData
+  extends Omit<ChildDailyNoteBody, 'sleepingMinutes'> {
   sleepingHours: string
   sleepingMinutes: string
 }
 
 const initialFormData = (
-  note: DaycareDailyNote | null,
-  childId: string | null,
-  groupId: string | null
-): DaycareDailyNoteFormData => {
-  return note != null
+  note: ChildDailyNote | null
+): ChildDailyNoteFormData => {
+  return note
     ? {
         ...note,
-        childId,
-        groupId,
         sleepingHours: note.sleepingMinutes
           ? Math.floor(Number(note.sleepingMinutes) / 60).toString()
           : '',
@@ -53,13 +50,10 @@ const initialFormData = (
           : ''
       }
     : {
-        childId,
-        groupId,
-        date: LocalDate.today(),
         reminders: [],
         feedingNote: null,
-        note: null,
-        reminderNote: null,
+        note: '',
+        reminderNote: '',
         sleepingHours: '',
         sleepingMinutes: '',
         sleepingNote: null
@@ -67,12 +61,9 @@ const initialFormData = (
 }
 
 const formDataToRequestBody = (
-  form: DaycareDailyNoteFormData
-): DaycareDailyNoteBody => ({
-  childId: form.childId,
-  date: form.date,
+  form: ChildDailyNoteFormData
+): ChildDailyNoteBody => ({
   feedingNote: form.feedingNote,
-  groupId: form.groupId,
   note: form.note,
   reminderNote: form.reminderNote,
   reminders: form.reminders,
@@ -85,12 +76,11 @@ const formDataToRequestBody = (
 })
 
 interface Props {
-  note: DaycareDailyNote | null
-  childId: string | null
-  groupId: string | null
+  note: ChildDailyNote | null
+  childId: UUID
   childFirstName: string
   childLastName: string
-  groupNote: string | null
+  groupNotes: GroupNote[]
   onClose: () => void
   reload: () => void
 }
@@ -98,23 +88,20 @@ interface Props {
 export default React.memo(function DaycareDailyNoteModal({
   note,
   childId,
-  groupId,
   childFirstName,
   childLastName,
-  groupNote,
+  groupNotes,
   onClose,
   reload
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [form, setForm] = useState<DaycareDailyNoteFormData>(
-    initialFormData(note, childId, groupId)
+  const [form, setForm] = useState<ChildDailyNoteFormData>(
+    initialFormData(note)
   )
 
-  const updateForm = <K extends keyof DaycareDailyNoteFormData>(
-    updates: Pick<DaycareDailyNoteFormData, K>
-  ) => {
-    setForm({ ...form, ...updates })
+  const updateForm: UpdateStateFn<ChildDailyNoteFormData> = (updates) => {
+    setForm((prev) => ({ ...prev, ...updates }))
   }
 
   const [submitting, setSubmitting] = useState(false)
@@ -123,92 +110,32 @@ export default React.memo(function DaycareDailyNoteModal({
     // TODO error handling
     setSubmitting(true)
     const body = formDataToRequestBody(form)
-    const closeAndReload = () => {
-      onClose()
-      reload()
-    }
-    if (childId != null) {
-      const promise = note?.id
-        ? updateDaycareDailyNoteForChild(childId, note.id, body)
-        : insertDaycareDailyNoteForChild(childId, body)
-      void promise.then(closeAndReload).finally(() => setSubmitting(false))
-    } else if (groupId != null) {
-      void upsertDaycareDailyNoteForGroup(groupId, {
-        id: note?.id || null,
-        ...body
+    const promise = note
+      ? putChildDailyNote(note.id, body)
+      : postChildDailyNote(childId, body)
+    void promise
+      .then(() => {
+        onClose()
+        reload()
       })
-        .then(closeAndReload)
-        .finally(() => setSubmitting(false))
-    }
+      .finally(() => setSubmitting(false))
   }
 
   const deleteNote = async (event: React.MouseEvent) => {
     event.preventDefault()
-    if (note?.id) await deleteDaycareDailyNote(note.id)
+    if (note) await deleteChildDailyNote(note.id)
     onClose()
     reload()
   }
 
-  const toggleReminder = (reminder: DaycareDailyNoteReminder) => {
+  const toggleReminder = (reminder: ChildDailyNoteReminder) => {
     const reminders = form.reminders.some((r) => r == reminder)
       ? form.reminders.filter((r) => r != reminder)
       : [...form.reminders, reminder]
     updateForm({ reminders })
   }
 
-  return groupId !== null ? (
-    <FormModal
-      data-qa={'daycare-daily-group-note-modal'}
-      title={i18n.unit.groups.daycareDailyNote.groupNoteHeader}
-      icon={faExclamation}
-      iconColour={'blue'}
-      resolve={{
-        action: () => {
-          submit()
-        },
-        disabled: submitting,
-        label: i18n.common.confirm
-      }}
-      reject={{
-        action: () => {
-          onClose()
-        },
-        label: i18n.common.cancel
-      }}
-    >
-      <FixedSpaceColumn>
-        <FixedSpaceColumn alignItems={'center'} fullWidth={true}>
-          <FixedSpaceRow
-            fullWidth={true}
-            justifyContent={'flex-end'}
-            spacing={'s'}
-          >
-            <IconButton
-              icon={faTrash}
-              onClick={deleteNote}
-              data-qa={'btn-delete-note'}
-            />
-            <span>{i18n.common.remove}</span>
-          </FixedSpaceRow>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn alignItems={'left'} fullWidth={true} spacing={'L'}>
-          <FixedSpaceColumn>
-            <div className="bold">
-              {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
-            </div>
-            <TextArea
-              value={form.note || ''}
-              placeholder={i18n.unit.groups.daycareDailyNote.groupNoteHint}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                updateForm({ note: e.target.value })
-              }
-              data-qa="group-note-input"
-            />
-          </FixedSpaceColumn>
-        </FixedSpaceColumn>
-      </FixedSpaceColumn>
-    </FormModal>
-  ) : (
+  return (
     <FormModal
       data-qa={'daycare-daily-note-modal'}
       title={i18n.unit.groups.daycareDailyNote.header}
@@ -383,12 +310,12 @@ export default React.memo(function DaycareDailyNoteModal({
             data-qa="reminder-note-input"
           />
 
-          {groupNote && (
+          {groupNotes.length > 0 && (
             <FixedSpaceColumn>
               <div className="bold">
                 {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
               </div>
-              <p data-qa={'group-note'}>{groupNote}</p>
+              <p data-qa={'group-note'}>{groupNotes[0].note}</p>
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>

@@ -43,8 +43,10 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
-import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
+import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
+import fi.espoo.evaka.note.child.daily.createChildDailyNote
+import fi.espoo.evaka.note.group.GroupNoteBody
+import fi.espoo.evaka.note.group.createGroupNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
 import fi.espoo.evaka.pairing.challengePairing
@@ -68,10 +70,11 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.DaycareDailyNoteId
+import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
@@ -673,12 +676,32 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }.let { ResponseEntity.noContent().build() }
     }
 
-    @PostMapping("/messaging/daycare-daily-note")
-    fun postDaycareDailyNote(
+    @PostMapping("/children/{childId}/child-daily-notes")
+    fun postChildDailyNote(
         db: Database.Connection,
-        @RequestBody body: DaycareDailyNoteBody
-    ): DaycareDailyNoteId {
-        return db.transaction { it.createDaycareDailyNote(body, UUID.randomUUID()) }
+        @PathVariable childId: UUID,
+        @RequestBody body: ChildDailyNoteBody
+    ): ChildDailyNoteId {
+        return db.transaction {
+            it.createChildDailyNote(
+                childId = childId,
+                note = body
+            )
+        }
+    }
+
+    @PostMapping("/daycare-groups/{groupId}/group-notes")
+    fun postGroupNote(
+        db: Database.Connection,
+        @PathVariable groupId: GroupId,
+        @RequestBody body: GroupNoteBody
+    ): GroupNoteId {
+        return db.transaction {
+            it.createGroupNote(
+                groupId = groupId,
+                note = body
+            )
+        }
     }
 
     @GetMapping("/digitransit/autocomplete")

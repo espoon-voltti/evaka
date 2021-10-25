@@ -14,7 +14,6 @@ import {
   Child,
   ChildResult
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -199,46 +198,6 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function insertDaycareDailyNoteForChild(
-  childId: UUID,
-  body: DaycareDailyNoteBody
-): Promise<Result<void>> {
-  return client
-    .post(`/daycare-daily-note/child/${childId}`, body)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function updateDaycareDailyNoteForChild(
-  childId: UUID,
-  noteId: UUID,
-  body: DaycareDailyNoteBody
-): Promise<Result<void>> {
-  return client
-    .put(`/daycare-daily-note/child/${childId}/${noteId}`, body)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function upsertDaycareDailyNoteForGroup(
-  groupId: UUID,
-  { id, ...body }: DaycareDailyNoteBody & { id: UUID | null }
-): Promise<Result<void>> {
-  const url = `/daycare-daily-note/group/${groupId}${id ? `/${id}` : ''}`
-  return (id ? client.put(url, body) : client.post(url, body))
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function deleteDaycareDailyNote(
-  noteId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/daycare-daily-note/${noteId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function deleteAbsenceRange(
   unitId: UUID,
   childId: UUID,
@@ -292,7 +251,6 @@ function deserializeAttendanceResponse(
             dailyNote: attendanceChild.dailyNote
               ? {
                   ...attendanceChild.dailyNote,
-                  date: LocalDate.parseIso(attendanceChild.dailyNote.date),
                   modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
                 }
               : null
@@ -300,11 +258,7 @@ function deserializeAttendanceResponse(
         }),
       groupNotes: data.groupNotes.map((groupNote) => ({
         ...groupNote,
-        dailyNote: {
-          ...groupNote.dailyNote,
-          date: LocalDate.parseIso(groupNote.dailyNote.date),
-          modifiedAt: new Date(groupNote.dailyNote.modifiedAt)
-        }
+        modifiedAt: new Date(groupNote.modifiedAt)
       }))
     }
   }

@@ -6,11 +6,8 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNoteBody
-import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -60,7 +57,6 @@ class AclIntegrationTest : PureJdbiTest() {
     private lateinit var decisionId: DecisionId
     private lateinit var placementId: PlacementId
     private lateinit var mobileId: MobileDeviceId
-    private lateinit var noteId: DaycareDailyNoteId
     private lateinit var fridgeParentId: PersonId
     private lateinit var guardianId: PersonId
 
@@ -93,20 +89,6 @@ class AclIntegrationTest : PureJdbiTest() {
             )
             placementId = it.insertTestPlacement(childId = childId, unitId = daycareId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2100, 1, 1))
             mobileId = MobileDeviceId(it.insertTestEmployee(DevEmployee()))
-            noteId = it.createDaycareDailyNote(
-                DaycareDailyNoteBody(
-                    groupId = groupId,
-                    childId = null,
-                    date = LocalDate.of(2019, 1, 7),
-                    note = "Test",
-                    feedingNote = null,
-                    reminderNote = null,
-                    reminders = emptyList(),
-                    sleepingMinutes = null,
-                    sleepingNote = null
-                ),
-                employeeId
-            )
             it.insertTestMobileDevice(DevMobileDevice(id = mobileId, unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
@@ -132,7 +114,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(aclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(aclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(aclRoles, acl.getRolesForUnitGroup(user, groupId))
-        assertEquals(aclRoles, acl.getRolesForDailyNote(user, noteId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
     }
@@ -152,7 +133,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(negativeAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(negativeAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(negativeAclRoles, acl.getRolesForUnitGroup(user, groupId))
-        assertEquals(negativeAclRoles, acl.getRolesForDailyNote(user, noteId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
 
@@ -164,7 +144,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(positiveAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(positiveAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(positiveAclRoles, acl.getRolesForUnitGroup(user, groupId))
-        assertEquals(positiveAclRoles, acl.getRolesForDailyNote(user, noteId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
     }
@@ -182,6 +161,5 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(expectedAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(expectedAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(expectedAclRoles, acl.getRolesForUnitGroup(user, groupId))
-        assertEquals(expectedAclRoles, acl.getRolesForDailyNote(user, noteId))
     }
 }

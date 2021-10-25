@@ -14,12 +14,11 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
-import { DaycareDailyNote } from 'lib-common/generated/api-types/messaging'
 import {
   AttendanceStatus,
-  Child,
-  GroupNote
+  Child
 } from 'lib-common/generated/api-types/attendance'
+import { GroupNote } from 'lib-common/generated/api-types/note'
 
 interface Props {
   attendanceChildren: Child[]
@@ -53,8 +52,8 @@ export default React.memo(function AttendanceList({
     return allowedType && allowedGroup
   })
 
-  const getGroupNote = (child: Child): DaycareDailyNote | undefined =>
-    groupsNotes.find(({ groupId }) => groupId == child.groupId)?.dailyNote
+  const getGroupNote = (child: Child): GroupNote | undefined =>
+    groupsNotes.find(({ groupId }) => groupId == child.groupId)
 
   return (
     <FixedSpaceColumn>

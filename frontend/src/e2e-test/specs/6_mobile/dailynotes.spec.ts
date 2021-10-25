@@ -6,13 +6,12 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
-import { DaycareDailyNoteBody } from 'lib-common/generated/api-types/messaging'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  postDaycareDailyNote,
+  postChildDailyNote,
   postMobileDevice,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -30,7 +29,7 @@ import {
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import LocalDate from 'lib-common/local-date'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 let fixtures: AreaAndPersonFixtures
 
@@ -96,10 +95,8 @@ const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
 
 test('Daycare groups are shown', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: daycareGroup.data.id,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const childId = enduserChildFixtureJari.id
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: null,
@@ -108,7 +105,7 @@ test('Daycare groups are shown', async (t) => {
     reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, daycareDailyNote)
 
   await t
     .expect(
@@ -139,10 +136,8 @@ test('Daycare group empty list indicator is shown', async (t) => {
 })
 
 test('User can delete a daily note for a child', async (t) => {
-  const daycareDailyNote: DaycareDailyNoteBody = {
-    groupId: null,
-    childId: enduserChildFixtureJari.id,
-    date: LocalDate.today(),
+  const childId = enduserChildFixtureJari.id
+  const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
     sleepingMinutes: null,
@@ -151,7 +146,7 @@ test('User can delete a daily note for a child', async (t) => {
     reminderNote: 'Ei enää pähkinöitä antaa saa'
   }
 
-  await postDaycareDailyNote(daycareDailyNote)
+  await postChildDailyNote(childId, daycareDailyNote)
 
   await t.click(
     mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)

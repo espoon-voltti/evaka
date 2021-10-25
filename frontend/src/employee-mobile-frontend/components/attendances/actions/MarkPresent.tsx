@@ -55,7 +55,6 @@ export default React.memo(function MarkPresent() {
   const groupNote =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
-      ?.dailyNote
 
   return (
     <>

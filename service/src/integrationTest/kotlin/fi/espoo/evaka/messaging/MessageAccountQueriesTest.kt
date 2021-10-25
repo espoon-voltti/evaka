@@ -5,21 +5,6 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.messaging.message.AccountType
-import fi.espoo.evaka.messaging.message.MessageAccount
-import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.createPersonMessageAccount
-import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
-import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.message.getEmployeeMessageAccountIds
-import fi.espoo.evaka.messaging.message.getEmployeeNestedMessageAccounts
-import fi.espoo.evaka.messaging.message.getUnreadMessagesCounts
-import fi.espoo.evaka.messaging.message.insertMessage
-import fi.espoo.evaka.messaging.message.insertMessageContent
-import fi.espoo.evaka.messaging.message.insertRecipients
-import fi.espoo.evaka.messaging.message.insertThread
-import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -139,7 +124,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
 
         val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(employee1Id) }
         assertEquals(1, accounts2.size)
-        assertNull(accounts2.find { it.account.type === fi.espoo.evaka.messaging.message.AccountType.PERSONAL })
+        assertNull(accounts2.find { it.account.type === AccountType.PERSONAL })
 
         val groupAccount = accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")
         assertEquals(groupAccountName, groupAccount.account.name)

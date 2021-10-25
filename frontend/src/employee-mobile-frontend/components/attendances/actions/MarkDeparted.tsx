@@ -72,7 +72,6 @@ export default React.memo(function MarkDeparted() {
   const groupNote =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
-      ?.dailyNote
 
   function markDeparted() {
     return childDeparts(unitId, childId, time)

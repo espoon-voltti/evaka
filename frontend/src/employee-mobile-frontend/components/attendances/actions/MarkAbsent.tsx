@@ -63,7 +63,6 @@ export default React.memo(function MarkAbsent() {
   const groupNote =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
-      ?.dailyNote
 
   return (
     <>

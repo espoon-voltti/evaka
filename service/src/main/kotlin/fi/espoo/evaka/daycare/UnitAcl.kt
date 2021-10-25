@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
-import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
+import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.DaycareAclRow

@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.messaging.message.createPersonMessageAccount
+import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.db.Database

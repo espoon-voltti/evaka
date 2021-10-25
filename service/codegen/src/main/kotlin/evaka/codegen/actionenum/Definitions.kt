@@ -16,7 +16,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.OtherIncome
-import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.security.Action
 import java.nio.file.Path
@@ -34,7 +34,7 @@ val generatedFiles = listOf(
             generateEnum<Action.BackupCare>(),
             generateEnum<Action.BackupPickup>(),
             generateEnum<Action.Child>(),
-            generateEnum<Action.DailyNote>(),
+            generateEnum<Action.ChildDailyNote>(),
             generateEnum<Action.Decision>(),
             generateEnum<Action.Group>(),
             generateEnum<Action.GroupPlacement>(),

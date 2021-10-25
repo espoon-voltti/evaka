@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
@@ -111,12 +110,6 @@ fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): C
         .bind("unitId", unitId)
         .mapTo<ChildAttendance>()
         .firstOrNull()
-}
-
-fun Database.Read.fetchGroupNotes(unitId: DaycareId): List<GroupNote> {
-    return getDaycareDailyNotesForDaycareGroups(unitId)
-        .groupBy { it.groupId }
-        .flatMap { (groupId, notes) -> notes.map { note -> GroupNote(groupId!!, note) } }
 }
 
 data class ChildBasics(
