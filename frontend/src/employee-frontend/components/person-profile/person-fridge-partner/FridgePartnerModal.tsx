@@ -19,8 +19,8 @@ import {
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
 import { getPerson } from '../../../api/person'
-import { PersonDetails } from '../../../types/person'
 import { UUID } from 'lib-common/types'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 
 interface Props {
   headPersonId: UUID
@@ -29,7 +29,7 @@ interface Props {
 }
 
 export interface FridgePartnerForm {
-  partner?: PersonDetails
+  partner?: PersonSummary
   startDate: LocalDate
   endDate: LocalDate | null
 }
@@ -37,7 +37,7 @@ export interface FridgePartnerForm {
 function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const [personData, setPersonData] = useState<Result<PersonDetails>>(
+  const [personData, setPersonData] = useState<Result<PersonSummary>>(
     Loading.of()
   )
   const initialForm: FridgePartnerForm = {
@@ -173,7 +173,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
               {i18n.personProfile.fridgePartner.searchTitle}
             </div>
             <PersonSearch
-              onResult={(person: PersonDetails | undefined) =>
+              onResult={(person) =>
                 assignFridgePartnerForm({ partner: person })
               }
               onlyAdults

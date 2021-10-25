@@ -58,7 +58,18 @@ fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 
-fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonDTO> {
+data class PersonSummary(
+    val id: UUID,
+    val firstName: String?,
+    val lastName: String?,
+    val dateOfBirth: LocalDate,
+    val dateOfDeath: LocalDate?,
+    val socialSecurityNumber: String?,
+    val streetAddress: String?,
+    val restrictedDetailsEnabled: Boolean
+)
+
+fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonSummary> {
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
@@ -78,31 +89,12 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
         SELECT
             id,
             social_security_number,
-            ssn_adding_disabled,
             first_name,
             last_name,
-            email,
-            phone,
-            backup_phone,
-            language,
             date_of_birth,
             date_of_death,
-            nationalities,
-            restricted_details_enabled,
-            restricted_details_end_date,
             street_address,
-            postal_code,
-            post_office,
-            residence_code,
-            updated_from_vtj,
-            vtj_guardians_queried,
-            vtj_dependants_queried,
-            invoice_recipient_name,
-            invoicing_street_address,
-            invoicing_postal_code,
-            invoicing_post_office,
-            force_manual_fee_decisions,
-            oph_person_oid
+            restricted_details_enabled
         FROM person
         WHERE $freeTextQuery
         ${if (scopedRole) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
@@ -113,7 +105,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
     return createQuery(sql)
         .bindMap(freeTextParams)
         .applyIf(scopedRole) { bind("userId", user.id) }
-        .map(toPersonDTO)
+        .mapTo<PersonSummary>()
         .toList()
 }
 

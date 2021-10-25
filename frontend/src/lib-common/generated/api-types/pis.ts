@@ -350,6 +350,20 @@ export interface PersonResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.PersonSummary
+*/
+export interface PersonSummary {
+  dateOfBirth: LocalDate
+  dateOfDeath: LocalDate | null
+  firstName: string | null
+  id: UUID
+  lastName: string | null
+  restrictedDetailsEnabled: boolean
+  socialSecurityNumber: string | null
+  streetAddress: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 */
 export interface PersonWithChildrenDTO {

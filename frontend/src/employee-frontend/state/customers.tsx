@@ -9,16 +9,17 @@ import React, {
   useState,
   createContext
 } from 'react'
-import { PersonDetails, SearchColumn } from '../types/person'
+import { SearchColumn } from '../types/person'
 import { SearchOrder } from '../types'
 import { Result, Success } from 'lib-common/api'
 import { findByNameOrAddress } from '../api/person'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 
 export interface CustomersState {
-  customers: Result<PersonDetails[]>
-  setCustomers: (request: Result<PersonDetails[]>) => void
+  customers: Result<PersonSummary[]>
+  setCustomers: (request: Result<PersonSummary[]>) => void
   useCustomerSearch: () => void
   searchTerm: string
   setSearchTerm: (term: string) => void
@@ -44,7 +45,7 @@ export const CustomersContext = createContext<CustomersState>(defaultState)
 
 export const CustomersContextProvider = React.memo(
   function CustomersContextProvider({ children }: { children: JSX.Element }) {
-    const [customers, setCustomers] = useState<Result<PersonDetails[]>>(
+    const [customers, setCustomers] = useState<Result<PersonSummary[]>>(
       defaultState.customers
     )
     const [searchTerm, setSearchTerm] = useState<string>(
@@ -56,15 +57,6 @@ export const CustomersContextProvider = React.memo(
     const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-    // TODO: fix the deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const useCustomerSearch = () => {
-      const searchCustomers = useRestApi(findByNameOrAddress, setCustomers)
-      useEffect(() => {
-        void searchCustomers(searchTerm, sortColumn, sortDirection)
-      }, [searchCustomers, debouncedSearchTerm, sortColumn, sortDirection]) // eslint-disable-line react-hooks/exhaustive-deps
-    }
-
     const sortToggle = useCallback(
       (column: SearchColumn) => () => {
         if (sortColumn === column) {
@@ -75,8 +67,15 @@ export const CustomersContextProvider = React.memo(
       [sortColumn, sortDirection, setSortColumn, setSortDirection]
     )
 
-    const value = useMemo(
-      () => ({
+    const value = useMemo(() => {
+      const useCustomerSearch = () => {
+        const searchCustomers = useRestApi(findByNameOrAddress, setCustomers)
+        useEffect(() => {
+          void searchCustomers(searchTerm, sortColumn, sortDirection)
+        }, [debouncedSearchTerm, sortColumn, sortDirection]) // eslint-disable-line react-hooks/exhaustive-deps
+      }
+
+      return {
         customers,
         setCustomers,
         useCustomerSearch,
@@ -86,19 +85,17 @@ export const CustomersContextProvider = React.memo(
         sortColumn,
         sortDirection,
         sortToggle
-      }),
-      [
-        customers,
-        setCustomers,
-        useCustomerSearch,
-        searchTerm,
-        setSearchTerm,
-        debouncedSearchTerm,
-        sortColumn,
-        sortDirection,
-        sortToggle
-      ]
-    )
+      }
+    }, [
+      customers,
+      setCustomers,
+      searchTerm,
+      setSearchTerm,
+      debouncedSearchTerm,
+      sortColumn,
+      sortDirection,
+      sortToggle
+    ])
 
     return (
       <CustomersContext.Provider value={value}>

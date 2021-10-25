@@ -16,7 +16,11 @@ import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
+import {
+  PersonJSON,
+  PersonResponse,
+  PersonSummary
+} from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 
@@ -109,15 +113,20 @@ export async function findByNameOrAddress(
   searchTerm: string,
   orderBy: SearchColumn,
   sortDirection: SearchOrder
-): Promise<Result<PersonJSON[]>> {
+): Promise<Result<PersonSummary[]>> {
   return client
-    .post<JsonOf<PersonJSON[]>>('/person/search', {
+    .post<JsonOf<PersonSummary[]>>('/person/search', {
       searchTerm,
       orderBy,
       sortDirection
     })
-    .then((res) => res.data)
-    .then((results) => results.map(deserializePersonDetails))
+    .then(({ data }) =>
+      data.map((json) => ({
+        ...json,
+        dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+        dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
+      }))
+    )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

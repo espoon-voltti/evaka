@@ -16,8 +16,8 @@ import { DbPersonSearch as PersonSearch } from '../../../components/common/Perso
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { getPerson } from '../../../api/person'
-import { PersonDetails } from '../../../types/person'
 import { UUID } from 'lib-common/types'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 
 interface Props {
   headPersonId: UUID
@@ -26,7 +26,7 @@ interface Props {
 }
 
 export interface FridgeChildForm {
-  child?: PersonDetails
+  child?: PersonSummary
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -34,7 +34,7 @@ export interface FridgeChildForm {
 function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const [personData, setPersonData] = useState<Result<PersonDetails>>(
+  const [personData, setPersonData] = useState<Result<PersonSummary>>(
     Loading.of()
   )
   const initialForm: FridgeChildForm = {
@@ -158,7 +158,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                   {i18n.personProfile.fridgeChild.searchTitle}
                 </div>
                 <PersonSearch
-                  onResult={(person: PersonDetails | undefined) => {
+                  onResult={(person) => {
                     let endDate = form.endDate
                     if (person) {
                       endDate = person.dateOfBirth.addYears(18).subDays(1)

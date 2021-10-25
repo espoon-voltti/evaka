@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
+import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getDeceasedPeople
@@ -128,20 +129,17 @@ class PersonController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: SearchPersonBody
-    ): ResponseEntity<List<PersonJSON>>? {
+    ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return ResponseEntity.ok()
-            .body(
-                db.read {
-                    it.searchPeople(
-                        user,
-                        body.searchTerm,
-                        body.orderBy,
-                        body.sortDirection
-                    )
-                }.map { personDTO -> PersonJSON.from(personDTO) }
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_PEOPLE)
+        return db.read {
+            it.searchPeople(
+                user,
+                body.searchTerm,
+                body.orderBy,
+                body.sortDirection
             )
+        }
     }
 
     @PutMapping(value = ["/{personId}/contact-info"])
