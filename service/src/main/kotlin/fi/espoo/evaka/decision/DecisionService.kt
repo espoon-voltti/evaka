@@ -6,6 +6,7 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getUnitManager
@@ -117,6 +118,7 @@ class DecisionService(
             guardian,
             child,
             application.transferApplication,
+            application.form.preferences.serviceNeed,
             decisionLanguage,
             unitManager
         )
@@ -293,6 +295,7 @@ fun createDecisionPdf(
     guardian: PersonDTO,
     child: PersonDTO,
     isTransferApplication: Boolean,
+    serviceNeed: ServiceNeed?,
     lang: String,
     unitManager: DaycareManager
 ): ByteArray {
@@ -308,7 +311,8 @@ fun createDecisionPdf(
         guardian,
         unitManager,
         sendAddress,
-        isPartTimeDecision
+        isPartTimeDecision,
+        serviceNeed
     )
 
     return pdfService.render(pages)
@@ -322,7 +326,8 @@ private fun generateDecisionPages(
     guardian: PersonDTO,
     manager: DaycareManager,
     sendAddress: DecisionSendAddress,
-    isPartTimeDecision: Boolean
+    isPartTimeDecision: Boolean,
+    serviceNeed: ServiceNeed?
 ): Page {
     return Page(
         Template(template),
@@ -334,6 +339,7 @@ private fun generateDecisionPages(
             setVariable("manager", manager)
             setVariable("sendAddress", sendAddress)
             setVariable("isPartTimeDecision", isPartTimeDecision)
+            setVariable("serviceNeed", serviceNeed)
             setVariable(
                 "hideDaycareTime",
                 decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB || decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER

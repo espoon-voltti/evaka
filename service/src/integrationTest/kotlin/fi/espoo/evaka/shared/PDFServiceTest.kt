@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.decision.Decision
@@ -148,7 +149,7 @@ class PDFServiceTest {
         createPDF(clubDecision, false, "sv")
     }
 
-    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
+    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String, serviceNeed: ServiceNeed? = null) {
         val decisionPdfByteArray =
             createDecisionPdf(
                 EvakaMessageProvider(),
@@ -158,6 +159,7 @@ class PDFServiceTest {
                 guardian,
                 child,
                 isTransferApplication,
+                serviceNeed,
                 lang,
                 manager
             )
