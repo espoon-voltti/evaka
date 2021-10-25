@@ -15,8 +15,7 @@ import AdditionalDetailsSection from '../../applications/editor/AdditionalDetail
 import { ApplicationFormProps } from './ApplicationEditor'
 import Loader from 'lib-components/atoms/Loader'
 import { getServiceNeedOptionPublicInfos } from '../api'
-import { featureFlags } from 'lib-customizations/citizen'
-import { Result, Success } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../../localization'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -34,20 +33,28 @@ export default React.memo(function ApplicationFormDaycare({
 
   const [serviceNeedOptions, setServiceNeedOptions] = useState<
     Result<ServiceNeedOptionPublicInfo[]>
-  >(Success.of([]))
+  >(Loading.of())
 
   const loadServiceNeedOptions = useRestApi(
     getServiceNeedOptionPublicInfos,
     setServiceNeedOptions
   )
 
+  // If service need options are not enabled, backend sets to null
+  const shouldLoadServiceNeedOptions =
+    formData.serviceNeed.serviceNeedOption !== null
+
   useEffect(() => {
-    if (featureFlags.daycareApplication.serviceNeedOptionsEnabled) {
+    if (shouldLoadServiceNeedOptions) {
       loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
     } else {
-      setServiceNeedOptions(Success.of([]))
+      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
-  }, [setServiceNeedOptions, loadServiceNeedOptions])
+  }, [
+    setServiceNeedOptions,
+    loadServiceNeedOptions,
+    shouldLoadServiceNeedOptions
+  ])
 
   const preferredStartDate = useMemo(
     () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),

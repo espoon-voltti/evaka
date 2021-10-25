@@ -53,13 +53,17 @@ import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
+import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeatureFlags
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -95,6 +99,7 @@ class ApplicationStateService(
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
     private val incomeTypesProvider: IncomeTypesProvider,
+    private val featureFlags: FeatureFlags,
     env: BucketEnv
 ) {
     private val filesBucket = env.attachments
@@ -110,6 +115,7 @@ class ApplicationStateService(
         val form = ApplicationForm.initForm(type, guardian, child)
             .let { form -> withDefaultStartDate(tx, type, form) }
             .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
+            .let { form -> withDefaultServiceNeedOption(tx, type, form) }
 
         tx.updateForm(
             applicationId,
@@ -159,7 +165,31 @@ class ApplicationStateService(
         return form.copy(otherChildren = vtjOtherChildren ?: listOf())
     }
 
-    // STATE TRANSITIONS
+    private fun withDefaultServiceNeedOption(
+        tx: Database.Transaction,
+        type: ApplicationType,
+        form: ApplicationForm
+    ): ApplicationForm {
+        var defaultServiceNeedOption: ServiceNeedOptionPublicInfo? = null
+        if (ApplicationType.DAYCARE == type && featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
+            defaultServiceNeedOption = tx.getServiceNeedOptionPublicInfos(listOf(PlacementType.DAYCARE)).firstOrNull()
+        }
+
+        return form.copy(
+            preferences = form.preferences.copy(
+                serviceNeed = form.preferences.serviceNeed?.copy(
+                    serviceNeedOption = defaultServiceNeedOption?.let {
+                        ServiceNeedOption(
+                            id = it.id.raw,
+                            name = it.name
+                        )
+                    }
+                )
+            )
+        )
+    }
+
+// STATE TRANSITIONS
 
     fun sendApplication(
         tx: Database.Transaction,

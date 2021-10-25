@@ -38,7 +38,7 @@ import {
   faUsers
 } from 'lib-icons'
 import { flow, set } from 'lodash/fp'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import Combobox from 'lib-components/atoms/form/Combobox'
@@ -130,28 +130,6 @@ export default React.memo(function ApplicationEditView({
     [serviceNeedOptions]
   )
 
-  useEffect(() => {
-    if (
-      featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-      application.form.preferences.serviceNeed?.serviceNeedOption === null
-    ) {
-      setApplication(
-        set(
-          'form.preferences.serviceNeed.serviceNeedOption',
-          application.form.preferences.serviceNeed.partTime
-            ? partTimeOptions[0] ?? null
-            : fullTimeOptions[0] ?? null
-        )
-      )
-    }
-  }, [
-    partTimeOptions,
-    fullTimeOptions,
-    application.form.preferences.serviceNeed?.serviceNeedOption,
-    application.form.preferences.serviceNeed?.partTime,
-    setApplication
-  ])
-
   const preferencesInUnitsList = units
     .map((us) =>
       preferredUnits.filter(({ id }) => us.find((unit) => unit.id === id))
@@ -223,6 +201,18 @@ export default React.memo(function ApplicationEditView({
       : undefined
   }
 
+  const updateServiceNeed = (partTime: boolean) => {
+    setApplication(
+      flow(
+        set('form.preferences.serviceNeed.partTime', partTime),
+        set(
+          'form.preferences.serviceNeed.serviceNeedOption',
+          serviceNeed?.serviceNeedOption ? partTimeOptions[0] : null
+        )
+      )
+    )
+  }
+
   return (
     <div data-qa="application-edit-view">
       <ApplicationTitle application={application} />
@@ -290,19 +280,10 @@ export default React.memo(function ApplicationEditView({
                       label={i18n.application.serviceNeed.partTime}
                       checked={serviceNeed.partTime === true}
                       onChange={() => {
-                        setApplication(
-                          flow(
-                            set('form.preferences.serviceNeed.partTime', true),
-                            set(
-                              'form.preferences.serviceNeed.serviceNeedOption',
-                              partTimeOptions[0] ?? null
-                            )
-                          )
-                        )
+                        updateServiceNeed(true)
                       }}
                     />
-                    {featureFlags.daycareApplication
-                      .serviceNeedOptionsEnabled &&
+                    {serviceNeed.serviceNeedOption !== null &&
                       serviceNeed.partTime && (
                         <SubRadios>
                           <FixedSpaceColumn spacing={'xs'}>
@@ -341,8 +322,7 @@ export default React.memo(function ApplicationEditView({
                         )
                       }}
                     />
-                    {featureFlags.daycareApplication
-                      .serviceNeedOptionsEnabled &&
+                    {serviceNeed.serviceNeedOption !== null &&
                       !serviceNeed.partTime && (
                         <SubRadios>
                           <FixedSpaceColumn spacing={'xs'}>

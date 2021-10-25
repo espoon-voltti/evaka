@@ -161,27 +161,34 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
   const [serviceNeedOptions, setServiceNeedOptions] = useState<
     Result<ServiceNeedOptionPublicInfo[]>
-  >(Success.of([]))
+  >(Loading.of())
 
   const loadServiceNeedOptions = useRestApi(
     getServiceNeedOptionPublicInfos,
     setServiceNeedOptions
   )
 
+  const shouldLoadServiceNeedOptions =
+    editedApplication !== undefined &&
+    editedApplication.type === 'DAYCARE' &&
+    editedApplication.form.preferences.serviceNeed !== null &&
+    // If service need options are not enabled, backend sets to null
+    editedApplication.form.preferences.serviceNeed.serviceNeedOption !== null
+
   useEffect(() => {
-    if (!editing || editedApplication?.type !== 'DAYCARE') {
+    if (!editing) {
       return
     }
-    if (featureFlags.daycareApplication.serviceNeedOptionsEnabled) {
+    if (shouldLoadServiceNeedOptions) {
       loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
     } else {
-      setServiceNeedOptions(Success.of([]))
+      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
   }, [
     setServiceNeedOptions,
     loadServiceNeedOptions,
-    editing,
-    editedApplication?.type
+    shouldLoadServiceNeedOptions,
+    editing
   ])
 
   const renderApplication = (applicationData: ApplicationResponse) =>

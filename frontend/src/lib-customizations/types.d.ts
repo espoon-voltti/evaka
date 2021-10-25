@@ -100,7 +100,6 @@ interface BaseFeatureFlags {
   assistanceBasisOtherEnabled: boolean
   daycareApplication: {
     dailyTimesEnabled: boolean
-    serviceNeedOptionsEnabled: boolean
   }
   groupsTableServiceNeedsEnabled: boolean
   evakaLogin: boolean

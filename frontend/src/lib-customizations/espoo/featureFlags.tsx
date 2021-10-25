@@ -16,8 +16,7 @@ const features: Features = {
     assistanceActionOtherEnabled: true,
     assistanceBasisOtherEnabled: true,
     daycareApplication: {
-      dailyTimesEnabled: true,
-      serviceNeedOptionsEnabled: false
+      dailyTimesEnabled: true
     },
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
@@ -36,8 +35,7 @@ const features: Features = {
     assistanceActionOtherEnabled: true,
     assistanceBasisOtherEnabled: true,
     daycareApplication: {
-      dailyTimesEnabled: true,
-      serviceNeedOptionsEnabled: false
+      dailyTimesEnabled: true
     },
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
@@ -56,8 +54,7 @@ const features: Features = {
     assistanceActionOtherEnabled: true,
     assistanceBasisOtherEnabled: true,
     daycareApplication: {
-      dailyTimesEnabled: true,
-      serviceNeedOptionsEnabled: false
+      dailyTimesEnabled: true
     },
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,

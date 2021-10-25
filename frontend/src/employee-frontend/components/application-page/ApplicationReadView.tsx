@@ -196,8 +196,7 @@ function ApplicationReadView({
               {serviceNeed !== null && (
                 <>
                   <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
-                  {!featureFlags.daycareApplication
-                    .serviceNeedOptionsEnabled && (
+                  {serviceNeed.serviceNeedOption === null && (
                     <>
                       {serviceNeed.partTime ? (
                         <span>{i18n.application.serviceNeed.partTime}</span>
@@ -206,9 +205,8 @@ function ApplicationReadView({
                       )}
                     </>
                   )}
-                  {featureFlags.daycareApplication
-                    .serviceNeedOptionsEnabled && (
-                    <span>{serviceNeed.serviceNeedOption?.name}</span>
+                  {serviceNeed.serviceNeedOption !== null && (
+                    <span>{serviceNeed.serviceNeedOption.name}</span>
                   )}
                 </>
               )}

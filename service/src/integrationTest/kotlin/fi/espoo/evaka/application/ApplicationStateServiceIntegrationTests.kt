@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
@@ -33,6 +34,7 @@ import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.FeatureFlags
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -65,6 +67,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
@@ -76,6 +79,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
+
+    @MockBean
+    private lateinit var featureFlags: FeatureFlags
+
     @Autowired
     private lateinit var service: ApplicationStateService
 
@@ -106,6 +113,64 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
+        }
+    }
+
+    @Test
+    fun `initialize daycare application form with null service need option`() {
+        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
+        }
+
+        db.transaction { tx ->
+            service.initializeApplicationForm(
+                tx,
+                AuthenticatedUser.Citizen(testAdult_1.id),
+                applicationId,
+                ApplicationType.DAYCARE,
+                tx.getPersonById(testChild_1.id)!!,
+                tx.getPersonById(testAdult_1.id)!!
+            )
+        }
+
+        db.read {
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertNull(application.form.preferences.serviceNeed?.serviceNeedOption)
+        }
+    }
+
+    @Test
+    fun `initialize daycare application form with service need option`() {
+        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
+        }
+
+        db.transaction { tx ->
+            service.initializeApplicationForm(
+                tx,
+                AuthenticatedUser.Citizen(testAdult_1.id),
+                applicationId,
+                ApplicationType.DAYCARE,
+                tx.getPersonById(testChild_1.id)!!,
+                tx.getPersonById(testAdult_1.id)!!
+            )
+        }
+
+        db.read {
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertNotNull(application.form.preferences.serviceNeed?.serviceNeedOption)
         }
     }
 

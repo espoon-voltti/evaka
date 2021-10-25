@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
@@ -64,24 +64,13 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     [serviceNeedOptions]
   )
 
-  useEffect(() => {
-    if (
-      featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-      formData.serviceNeedOption === null
-    ) {
-      updateFormData({
-        serviceNeedOption: formData.partTime
-          ? partTimeOptions[0] ?? null
-          : fullTimeOptions[0] ?? null
-      })
-    }
-  }, [
-    partTimeOptions,
-    fullTimeOptions,
-    formData.serviceNeedOption,
-    formData.partTime,
-    updateFormData
-  ])
+  const updateServiceNeed = (partTime: boolean) => {
+    updateFormData({
+      partTime,
+      serviceNeedOption:
+        formData.serviceNeedOption !== null ? fullTimeOptions[0] : null
+    })
+  }
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -136,50 +125,43 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             })
           }
         />
-        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-          formData.partTime && (
-            <SubRadios>
-              <FixedSpaceColumn spacing={'xs'}>
-                {partTimeOptions.map((opt) => (
-                  <Radio
-                    key={opt.id}
-                    label={opt.name}
-                    checked={formData.serviceNeedOption?.id === opt.id}
-                    onChange={() => updateFormData({ serviceNeedOption: opt })}
-                    data-qa={`part-time-option-${opt.id}`}
-                  />
-                ))}
-              </FixedSpaceColumn>
-            </SubRadios>
-          )}
+        {partTimeOptions.length > 0 && formData.partTime && (
+          <SubRadios>
+            <FixedSpaceColumn spacing={'xs'}>
+              {partTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={opt.name}
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`part-time-option-${opt.id}`}
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
         <Radio
           id={`service-need-part-time-false`}
           label={t.applications.editor.serviceNeed.partTime.false}
           checked={!formData.partTime}
           data-qa={'partTime-input-false'}
-          onChange={() =>
-            updateFormData({
-              partTime: false,
-              serviceNeedOption: fullTimeOptions[0] ?? null
-            })
-          }
+          onChange={() => updateServiceNeed(false)}
         />
-        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-          !formData.partTime && (
-            <SubRadios>
-              <FixedSpaceColumn spacing={'xs'}>
-                {fullTimeOptions.map((opt) => (
-                  <Radio
-                    key={opt.id}
-                    label={opt.name}
-                    checked={formData.serviceNeedOption?.id === opt.id}
-                    onChange={() => updateFormData({ serviceNeedOption: opt })}
-                    data-qa={`full-time-option-${opt.id}`}
-                  />
-                ))}
-              </FixedSpaceColumn>
-            </SubRadios>
-          )}
+        {fullTimeOptions.length > 0 && !formData.partTime && (
+          <SubRadios>
+            <FixedSpaceColumn spacing={'xs'}>
+              {fullTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={opt.name}
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`full-time-option-${opt.id}`}
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
       </FixedSpaceColumn>
     )
   }
