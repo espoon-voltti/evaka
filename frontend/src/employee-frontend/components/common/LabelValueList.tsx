@@ -34,7 +34,9 @@ const LabelValueList = React.memo(function LabelValueList({
     >
       {contents.map(({ label, value, valueWidth, dataQa, onlyValue }, index) =>
         onlyValue ? (
-          { value }
+          <OnlyValue index={index + 1} width={valueWidth} key={index}>
+            {value}
+          </OnlyValue>
         ) : (
           <Fragment key={index}>
             <Label index={index + 1}>{label}</Label>
@@ -54,7 +56,7 @@ const GridContainer = styled.div<{
   labelWidth: LabelWidth
 }>`
   display: grid;
-  grid-template-columns: [label] ${(p) => p.labelWidth} [value] auto;
+  grid-template-columns: ${(p) => p.labelWidth} auto;
   grid-template-rows: repeat(${({ size }) => size}, auto);
   grid-gap: ${({ spacing }) => (spacing === 'small' ? '0.5em' : '1em')} 4em;
   justify-items: start;
@@ -62,13 +64,19 @@ const GridContainer = styled.div<{
 `
 
 const Label = styled.div<{ index: number }>`
-  grid-column: label;
+  grid-column: 1;
   grid-row: ${({ index }) => index};
   font-weight: ${fontWeights.semibold};
 `
 
 const Value = styled.div<{ index: number; width?: string }>`
-  grid-column: value;
+  grid-column: 2;
+  grid-row: ${({ index }) => index};
+  ${({ width }) => width && `width: ${width};`};
+`
+
+const OnlyValue = styled.div<{ index: number; width?: string }>`
+  grid-column: 1 / -1;
   grid-row: ${({ index }) => index};
   ${({ width }) => width && `width: ${width};`};
 `

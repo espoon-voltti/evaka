@@ -286,6 +286,7 @@ class VtjClientServiceTest {
     ) = PersonDTO(
         id = id,
         identity = externalId,
+        ssnAddingDisabled = false,
         firstName = firstName,
         lastName = lastName,
         email = email,

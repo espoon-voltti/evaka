@@ -4,7 +4,11 @@
 
 import { Page } from 'playwright'
 import LocalDate from 'lib-common/local-date'
-import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
+import {
+  Checkbox,
+  RawElement,
+  RawTextInput
+} from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class PersonSearchPage {
@@ -43,6 +47,12 @@ export default class PersonSearchPage {
     address: new RawElement(this.page, '[data-qa="person-address"]'),
     ssn: new RawElement(this.page, '[data-qa="person-ssn"]')
   }
+  #addSsnButton = new RawElement(this.page, '[data-qa="add-ssn-button"]')
+  #noSsnText = new RawElement(this.page, '[data-qa="no-ssn"]')
+  #disableSsnAddingCheckbox = new Checkbox(
+    this.page,
+    '[data-qa="disable-ssn-adding"]'
+  )
   #ssnInput = new RawTextInput(this.page, '[data-qa="ssn-input"]')
   #modalConfirm = new RawElement(this.page, '[data-qa="modal-okBtn"]')
 
@@ -111,8 +121,24 @@ export default class PersonSearchPage {
   }
 
   async addSsn(ssn: string) {
-    await this.#personData.ssn.find('button').click()
+    await this.#addSsnButton.click()
     await this.#ssnInput.type(ssn)
     await this.#modalConfirm.click()
+  }
+
+  async checkAddSsnButtonVisibility(visible: boolean) {
+    if (visible) {
+      await this.#addSsnButton.waitUntilVisible()
+    } else {
+      await this.#noSsnText.waitUntilVisible()
+    }
+  }
+
+  async disableSsnAdding(disabled: boolean) {
+    if ((await this.#disableSsnAddingCheckbox.checked) === disabled) {
+      return
+    }
+
+    await this.#disableSsnAddingCheckbox.click()
   }
 }

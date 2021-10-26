@@ -285,7 +285,7 @@ WHERE employee_id = :userId
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
-            is Action.Person -> this.person.hasPermission(user, action, id as PersonId)
+            is Action.Person -> hasPermissionFor(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
             is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
@@ -416,6 +416,15 @@ WHERE employee_id = :userId
     fun getPermittedChildActions(user: AuthenticatedUser, ids: Collection<ChildId>): Map<ChildId, Set<Action.Child>> =
         this.child.getPermittedActions(user, ids)
 
+    fun getPermittedPersonActions(
+        user: AuthenticatedUser,
+        ids: Collection<PersonId>
+    ): Map<PersonId, Set<Action.Person>> = ids.associateWith { personId ->
+        Action.Person.values()
+            .filter { action -> hasPermissionFor(user, action, personId) }
+            .toSet()
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Decision, id: DecisionId) {
         assertPermission(
             user = user,
@@ -496,6 +505,23 @@ WHERE employee_id = :userId
             }
             else -> false
         }
+
+    private fun hasPermissionFor(
+        user: AuthenticatedUser,
+        action: Action.Person,
+        id: PersonId
+    ): Boolean = when (action) {
+        Action.Person.ADD_SSN -> Database(jdbi).connect {
+            val ssnAddingDisabled = it.read { tx ->
+                tx.createQuery("SELECT ssn_adding_disabled FROM person WHERE id = :id")
+                    .bind("id", id)
+                    .mapTo<Boolean>()
+                    .one()
+            }
+            if (ssnAddingDisabled) user.isAdmin else this.person.hasPermission(user, action, id)
+        }
+        else -> this.person.hasPermission(user, action, id)
+    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(

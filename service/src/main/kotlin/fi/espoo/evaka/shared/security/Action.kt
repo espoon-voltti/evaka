@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.MOBILE
@@ -51,6 +52,8 @@ sealed interface Action {
         SEARCH_APPLICATION_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
         READ_PERSON_APPLICATION(SERVICE_WORKER), // Applications summary on person page
+
+        SEARCH_PEOPLE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
 
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
@@ -332,10 +335,17 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
+        ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
+        DISABLE_SSN(),
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
         READ_INCOME(FINANCE_ADMIN),
-        READ_INCOME_STATEMENTS(FINANCE_ADMIN);
+        READ_INCOME_STATEMENTS(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
+        READ_INVOICE_ADDRESS(FINANCE_ADMIN),
+        READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
+        UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
+        UPDATE_OPH_OID(DIRECTOR, UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

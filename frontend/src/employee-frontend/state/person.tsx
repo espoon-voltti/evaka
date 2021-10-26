@@ -14,9 +14,11 @@ import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { Action } from 'lib-common/generated/action'
 
 export interface PersonState {
   person: Result<PersonDetails>
+  permittedActions: Set<Action.Person>
   parentships: Result<Parentship[]>
   partnerships: Result<Partnership[]>
   incomes: Result<Income[]>
@@ -27,6 +29,7 @@ export interface PersonState {
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
   setPerson: (request: Result<PersonDetails>) => void
+  setPermittedActions: React.Dispatch<React.SetStateAction<Set<Action.Person>>>
   setParentships: (request: Result<Parentship[]>) => void
   setPartnerships: (request: Result<Partnership[]>) => void
   setIncomes: (r: Result<Income[]>) => void
@@ -41,6 +44,7 @@ export interface PersonState {
 
 const defaultState: PersonState = {
   person: Loading.of(),
+  permittedActions: new Set(),
   parentships: Loading.of(),
   partnerships: Loading.of(),
   incomes: Loading.of(),
@@ -51,6 +55,7 @@ const defaultState: PersonState = {
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
+  setPermittedActions: () => undefined,
   setParentships: () => undefined,
   setPartnerships: () => undefined,
   setIncomes: () => undefined,
@@ -71,6 +76,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   children: JSX.Element
 }) {
   const [person, setPerson] = useState(defaultState.person)
+  const [permittedActions, setPermittedActions] = useState(
+    defaultState.permittedActions
+  )
   const [parentships, setParentships] = useState(defaultState.parentships)
   const [partnerships, setPartnerships] = useState(defaultState.partnerships)
   const [applications, setApplications] = useState(defaultState.applications)
@@ -90,6 +98,8 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     () => ({
       person,
       setPerson,
+      permittedActions,
+      setPermittedActions,
       parentships,
       setParentships,
       partnerships,
@@ -112,6 +122,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     }),
     [
       person,
+      permittedActions,
       parentships,
       partnerships,
       applications,

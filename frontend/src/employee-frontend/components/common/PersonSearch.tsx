@@ -13,20 +13,20 @@ import { BaseProps } from 'lib-components/utils'
 import {
   findByNameOrAddress,
   getOrCreatePersonBySsn,
-  getPersonDetails
+  getPerson
 } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
 
 import { useTranslation } from '../../state/i18n'
-import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
 import { isSsnValid } from '../../utils/validation/validations'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 
 const Container = styled.div`
   margin: 10px 0;
 `
 
-const searchFromVtj = async (q: string): Promise<Result<PersonDetails[]>> => {
+const searchFromVtj = async (q: string): Promise<Result<PersonSummary[]>> => {
   if (isSsnValid(q.toUpperCase())) {
     return await getOrCreatePersonBySsn(q.toUpperCase(), true).then((res) =>
       res.map((r) => [r])
@@ -36,7 +36,7 @@ const searchFromVtj = async (q: string): Promise<Result<PersonDetails[]>> => {
   return Success.of([])
 }
 
-const search = async (q: string): Promise<Result<PersonDetails[]>> => {
+const search = async (q: string): Promise<Result<PersonSummary[]>> => {
   if (isSsnValid(q.toUpperCase())) {
     return await getOrCreatePersonBySsn(q.toUpperCase(), false).then((res) =>
       res.map((r) => [r])
@@ -44,17 +44,17 @@ const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   }
 
   if (q.length === 36) {
-    return await getPersonDetails(q).then((res) => res.map((r) => [r]))
+    return await getPerson(q).then((res) => res.map((r) => [r]))
   }
 
   return await findByNameOrAddress(q, 'last_name,first_name', 'ASC')
 }
 
 interface Props extends BaseProps {
-  getItemDataQa: (item: PersonDetails) => string
-  filterItems: (inputValue: string, items: PersonDetails[]) => PersonDetails[]
-  searchFn: (q: string) => Promise<Result<PersonDetails[]>>
-  onResult: (result: PersonDetails | undefined) => void
+  getItemDataQa: (item: PersonSummary) => string
+  filterItems: (inputValue: string, items: PersonSummary[]) => PersonSummary[]
+  searchFn: (q: string) => Promise<Result<PersonSummary[]>>
+  onResult: (result: PersonSummary | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
   onlyChildren?: boolean
   onlyAdults?: boolean
@@ -72,10 +72,10 @@ function PersonSearch({
 }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
-  const [persons, setPersons] = useState<Result<PersonDetails[]>>(
+  const [persons, setPersons] = useState<Result<PersonSummary[]>>(
     Success.of([])
   )
-  const [selectedPerson, setSelectedPerson] = useState<PersonDetails>()
+  const [selectedPerson, setSelectedPerson] = useState<PersonSummary>()
   const debouncedQuery = useDebounce(query, 500)
 
   useEffect(() => {
@@ -87,7 +87,7 @@ function PersonSearch({
     searchPeople(debouncedQuery)
   }, [searchPeople, debouncedQuery])
 
-  const filterPeople = (people: PersonDetails[]) =>
+  const filterPeople = (people: PersonSummary[]) =>
     people.filter((person) =>
       person.dateOfBirth
         ? onlyChildren
@@ -104,7 +104,7 @@ function PersonSearch({
   )
 
   const formatItemLabel = useCallback(
-    ({ firstName, lastName }: PersonDetails) =>
+    ({ firstName, lastName }: PersonSummary) =>
       formatName(firstName, lastName, i18n),
     [i18n]
   )
@@ -115,7 +115,7 @@ function PersonSearch({
       firstName,
       lastName,
       streetAddress
-    }: PersonDetails): string =>
+    }: PersonSummary): string =>
       `${formatName(firstName, lastName, i18n)} (${dateOfBirth.format()})${
         streetAddress ? `\n${streetAddress}` : ''
       }`,
@@ -123,7 +123,7 @@ function PersonSearch({
   )
 
   const onChange = useCallback(
-    (option: PersonDetails | null) => setSelectedPerson(option || undefined),
+    (option: PersonSummary | null) => setSelectedPerson(option || undefined),
     []
   )
   return (
@@ -153,8 +153,8 @@ type PersonSearchProps = Omit<
 >
 
 export function DbPersonSearch(props: PersonSearchProps) {
-  const filterItems = useCallback((_, items: PersonDetails[]) => items, [])
-  const getItemDataQa = useCallback((p: PersonDetails) => `person-${p.id}`, [])
+  const filterItems = useCallback((_, items: PersonSummary[]) => items, [])
+  const getItemDataQa = useCallback((p: PersonSummary) => `person-${p.id}`, [])
 
   return (
     <PersonSearch
@@ -168,11 +168,11 @@ export function DbPersonSearch(props: PersonSearchProps) {
 
 export function VtjPersonSearch(props: PersonSearchProps) {
   const filterItems = useCallback(
-    (_, items: PersonDetails[]) => items.filter((i) => i.socialSecurityNumber),
+    (_, items: PersonSummary[]) => items.filter((i) => i.socialSecurityNumber),
     []
   )
   const getItemDataQa = useCallback(
-    (p: PersonDetails) => `person-${p.socialSecurityNumber ?? 'null'}`,
+    (p: PersonSummary) => `person-${p.socialSecurityNumber ?? 'null'}`,
     []
   )
   return (

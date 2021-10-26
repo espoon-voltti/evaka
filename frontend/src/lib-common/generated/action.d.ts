@@ -18,6 +18,7 @@ export type Global =
   | 'READ_VASU_TEMPLATE'
   | 'SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED'
   | 'SEARCH_APPLICATION_WITH_ASSISTANCE_NEED'
+  | 'SEARCH_PEOPLE'
 
 export type Application =
   | 'ACCEPT_DECISION'
@@ -123,6 +124,19 @@ export type GroupPlacement =
 export type MobileDevice = never
 
 export type Pairing = never
+
+export type Person =
+  | 'ADD_SSN'
+  | 'DISABLE_SSN'
+  | 'READ'
+  | 'READ_FAMILY_OVERVIEW'
+  | 'READ_INCOME'
+  | 'READ_INCOME_STATEMENTS'
+  | 'READ_INVOICE_ADDRESS'
+  | 'READ_OPH_OID'
+  | 'UPDATE'
+  | 'UPDATE_INVOICE_ADDRESS'
+  | 'UPDATE_OPH_OID'
 
 export type Placement =
   | 'CREATE_GROUP_PLACEMENT'

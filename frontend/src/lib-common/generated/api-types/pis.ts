@@ -6,6 +6,7 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { EmployeeFeatures } from './shared'
 import { ExternalId } from './identity'
 import { IncomeEffect } from './invoicing'
@@ -63,6 +64,13 @@ export interface DaycareRole {
   daycareId: UUID
   daycareName: string
   role: UserRole
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.DisableSsnRequest
+*/
+export interface DisableSsnRequest {
+  disabled: boolean
 }
 
 /**
@@ -327,6 +335,29 @@ export interface PersonJSON {
   postOffice: string | null
   postalCode: string | null
   residenceCode: string | null
+  restrictedDetailsEnabled: boolean
+  socialSecurityNumber: string | null
+  ssnAddingDisabled: boolean
+  streetAddress: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonResponse
+*/
+export interface PersonResponse {
+  permittedActions: Action.Person[]
+  person: PersonJSON
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.PersonSummary
+*/
+export interface PersonSummary {
+  dateOfBirth: LocalDate
+  dateOfDeath: LocalDate | null
+  firstName: string | null
+  id: UUID
+  lastName: string | null
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
   streetAddress: string | null

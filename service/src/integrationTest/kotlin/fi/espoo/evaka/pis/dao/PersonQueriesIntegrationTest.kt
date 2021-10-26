@@ -146,7 +146,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(adminUser, "010199-8137", "last_name", "ASC") }
         assertEquals(1, persons.size)
-        assertEquals(persons[0].identity, created.identity)
+        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
     }
 
     @Test
@@ -154,7 +154,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val created = db.transaction { createVtjPerson(it, "230601A329J") }
         val persons = db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC") }
         assertEquals(1, persons.size)
-        assertEquals(persons[0].identity, created.identity)
+        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
     }
 
     @Test
@@ -249,7 +249,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(adminUser, "atti", "last_name", "ASC") }
 
-        assertEquals(persons, emptyList<PersonDTO>())
+        assertEquals(persons, emptyList())
     }
 
     @Test
@@ -257,7 +257,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(adminUser, "eikäläine", "last_name", "ASC") }
 
-        assertEquals(persons, emptyList<PersonDTO>())
+        assertEquals(persons, emptyList())
     }
 
     @Test
@@ -265,7 +265,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(adminUser, "okuti", "last_name", "ASC") }
 
-        assertEquals(persons, emptyList<PersonDTO>())
+        assertEquals(persons, emptyList())
     }
 
     @Test
@@ -274,7 +274,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val persons = db.read { it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC") }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].identity, created.identity)
+        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
     }
 
     @Test
@@ -283,7 +283,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val persons = db.read { it.searchPeople(adminUser, "<Jokut>", "last_name", "ASC") }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].identity, created.identity)
+        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
     }
 
     @Test
@@ -292,7 +292,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val persons = db.read { it.searchPeople(adminUser, "'O'Brien", "last_name", "ASC") }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].identity, created.identity)
+        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
     }
 
     private fun createVtjPerson(tx: Database.Transaction, validSSN: String = "010199-8137"): PersonDTO {
@@ -304,6 +304,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         return PersonDTO(
             id = UUID.randomUUID(),
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
+            ssnAddingDisabled = false,
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",

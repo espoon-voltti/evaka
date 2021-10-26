@@ -38,6 +38,7 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
             person={person}
             isChild={true}
             onUpdateComplete={(p) => setPerson(Success.of(p))}
+            permittedActions={permittedActions}
           />
         ))}
         {permittedActions.has('READ_ADDITIONAL_INFO') && (

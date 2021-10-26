@@ -12,7 +12,9 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -33,10 +35,21 @@ class ChildController(private val accessControl: AccessControl) {
     fun getChild(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
-        val child = db.read { it.getPersonById(childId) } ?: throw NotFound("Child $childId not found")
+        val child = db.read { it.getPersonById(childId) }
+            ?.hideNonPermittedPersonData(
+                includeInvoiceAddress = accessControl.hasPermissionFor(
+                    user,
+                    Action.Person.READ_INVOICE_ADDRESS,
+                    PersonId(childId)
+                ),
+                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, PersonId(childId))
+            )
+            ?: throw NotFound("Child $childId not found")
         return ChildResponse(
             person = PersonJSON.from(child),
-            permittedActions = accessControl.getPermittedChildActions(user, listOf(ChildId(childId))).values.first()
+            permittedActions = accessControl.getPermittedChildActions(user, listOf(ChildId(childId))).values.first(),
+            permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(PersonId(childId)))
+                .values.first()
         )
     }
 
@@ -60,7 +73,11 @@ class ChildController(private val accessControl: AccessControl) {
         return noContent()
     }
 
-    data class ChildResponse(val person: PersonJSON, val permittedActions: Set<Action.Child>)
+    data class ChildResponse(
+        val person: PersonJSON,
+        val permittedActions: Set<Action.Child>,
+        val permittedPersonActions: Set<Action.Person>
+    )
 }
 
 fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { getPersonDetails } from '../../api/person'
+import { getPerson } from '../../api/person'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../../types/person'
 import { Dimmed, H4, Label } from 'lib-components/typography'
@@ -30,7 +30,7 @@ function VTJGuardian({
 
   useEffect(() => {
     if (guardianId) {
-      void getPersonDetails(guardianId).then(setGuardian)
+      void getPerson(guardianId).then(setGuardian)
     }
   }, [guardianId])
 

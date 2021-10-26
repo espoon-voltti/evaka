@@ -76,11 +76,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        assertEquals(HttpStatus.OK, response?.statusCode)
-
-        with(response?.body!!) {
-            assertEquals(person.id, this.first().id)
-        }
+        assertEquals(person.id, response.first().id)
     }
 
     @Test
@@ -98,11 +94,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        assertEquals(HttpStatus.OK, response?.statusCode)
-
-        with(response?.body!!) {
-            assertEquals(person.id, this.first().id)
-        }
+        assertEquals(person.id, response.first().id)
     }
 
     @Test
@@ -120,11 +112,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        assertEquals(HttpStatus.OK, response?.statusCode)
-
-        with(response?.body!!) {
-            assertEquals(person.id, this.first().id)
-        }
+        assertEquals(person.id, response.first().id)
     }
 
     @Test
@@ -144,11 +132,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        assertEquals(HttpStatus.OK, response?.statusCode)
-
-        with(response?.body!!) {
-            assertEquals(person.id, this.first().id)
-        }
+        assertEquals(person.id, response.first().id)
     }
 
     private fun updateContactInfo(user: AuthenticatedUser) {

@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
+import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getDeceasedPeople
@@ -19,12 +20,14 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -57,8 +60,26 @@ class PersonController(
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
-    @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
+    @GetMapping("/{personId}")
     fun getPerson(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId
+    ): PersonResponse {
+        Audit.PersonDetailsRead.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.READ, personId)
+        return db.transaction { it.getPersonById(personId.raw) }
+            ?.let {
+                PersonResponse(
+                    PersonJSON.from(it),
+                    accessControl.getPermittedPersonActions(user, listOf(personId)).values.first()
+                )
+            }
+            ?: throw NotFound("Person $personId not found")
+    }
+
+    @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
+    fun getPersonIdentity(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
@@ -66,6 +87,14 @@ class PersonController(
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, PersonId(personId))
         return db.transaction { it.getPersonById(personId) }
+            ?.hideNonPermittedPersonData(
+                includeInvoiceAddress = accessControl.hasPermissionFor(
+                    user,
+                    Action.Person.READ_INVOICE_ADDRESS,
+                    PersonId(personId)
+                ),
+                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, PersonId(personId))
+            )
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
     }
@@ -100,20 +129,17 @@ class PersonController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: SearchPersonBody
-    ): ResponseEntity<List<PersonJSON>>? {
+    ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return ResponseEntity.ok()
-            .body(
-                db.read {
-                    it.searchPeople(
-                        user,
-                        body.searchTerm,
-                        body.orderBy,
-                        body.sortDirection
-                    )
-                }.map { personDTO -> PersonJSON.from(personDTO) }
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_PEOPLE)
+        return db.read {
+            it.searchPeople(
+                user,
+                body.searchTerm,
+                body.orderBy,
+                body.sortDirection
             )
+        }
     }
 
     @PutMapping(value = ["/{personId}/contact-info"])
@@ -141,7 +167,24 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
-        return db.transaction { personService.patchUserDetails(it, personId, data) }
+
+        val userEditablePersonData = data
+            .let {
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_INVOICE_ADDRESS, PersonId(personId))) it
+                else it.copy(
+                    invoiceRecipientName = null,
+                    invoicingStreetAddress = null,
+                    invoicingPostalCode = null,
+                    invoicingPostOffice = null,
+                    forceManualFeeDecisions = null
+                )
+            }
+            .let {
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_OPH_OID, PersonId(personId))) it
+                else it.copy(ophPersonOid = null)
+            }
+
+        return db.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 
@@ -161,11 +204,11 @@ class PersonController(
     fun addSsn(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID,
+        @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.ADD_SSN, personId)
 
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
@@ -174,6 +217,19 @@ class PersonController(
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
         return ResponseEntity.ok(PersonJSON.from(person))
+    }
+
+    @PutMapping("/{personId}/ssn/disable")
+    fun disableSsn(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId,
+        @RequestBody body: DisableSsnRequest
+    ) {
+        Audit.PersonUpdate.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.DISABLE_SSN, personId)
+
+        db.transaction { personService.disableSsn(it, personId, body.disabled) }
     }
 
     @PostMapping("/details/ssn")
@@ -242,6 +298,11 @@ class PersonController(
             .let { ResponseEntity.ok(it) }
     }
 
+    data class PersonResponse(
+        val person: PersonJSON,
+        val permittedActions: Set<Action.Person>
+    )
+
     data class MergeRequest(
         val master: UUID,
         val duplicate: UUID
@@ -249,6 +310,10 @@ class PersonController(
 
     data class AddSsnRequest(
         val ssn: String
+    )
+
+    data class DisableSsnRequest(
+        val disabled: Boolean
     )
 
     data class PersonIdentityResponseJSON(
