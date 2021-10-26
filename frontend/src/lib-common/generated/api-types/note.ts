@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
+import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
@@ -57,9 +58,29 @@ export const childDailyNoteReminderValues = [
 export type ChildDailyNoteReminder = typeof childDailyNoteReminderValues[number]
 
 /**
+* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNote
+*/
+export interface ChildStickyNote {
+  childId: UUID
+  expires: LocalDate
+  id: UUID
+  modifiedAt: Date
+  note: string
+}
+
+/**
+* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
+*/
+export interface ChildStickyNoteBody {
+  expires: LocalDate
+  note: string
+}
+
+/**
 * Generated from fi.espoo.evaka.note.group.GroupNote
 */
 export interface GroupNote {
+  expires: LocalDate
   groupId: UUID
   id: UUID
   modifiedAt: Date
@@ -70,6 +91,7 @@ export interface GroupNote {
 * Generated from fi.espoo.evaka.note.group.GroupNoteBody
 */
 export interface GroupNoteBody {
+  expires: LocalDate
   note: string
 }
 
@@ -78,6 +100,7 @@ export interface GroupNoteBody {
 */
 export interface NotesByChildResponse {
   childDailyNote: ChildDailyNote | null
+  childStickyNotes: ChildStickyNote[]
   groupNotes: GroupNote[]
 }
 
@@ -86,5 +109,6 @@ export interface NotesByChildResponse {
 */
 export interface NotesByGroupResponse {
   childDailyNotes: ChildDailyNote[]
+  childStickyNotes: ChildStickyNote[]
   groupNotes: GroupNote[]
 }

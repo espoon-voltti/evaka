@@ -35,6 +35,7 @@ import {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 
@@ -210,7 +211,8 @@ test('User can see group daily note for a backup care child in the group', async
   const groupId = backupCareDaycareGroup.data.id
 
   const daycareDailyNote: GroupNoteBody = {
-    note: 'Testi ryhmäviesti'
+    note: 'Testi ryhmäviesti',
+    expires: LocalDate.today().addDays(7)
   }
 
   await postGroupNote(groupId, daycareDailyNote)

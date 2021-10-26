@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -115,6 +116,16 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "cdn.id",
         permittedRoleActions::childDailyNoteActions
+    )
+    private val childStickyNote = ActionConfig(
+        """
+SELECT csn.id, role
+FROM child_acl_view
+JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "csn.id",
+        permittedRoleActions::childStickyNoteActions
     )
     private val group = ActionConfig(
         """
@@ -269,6 +280,7 @@ WHERE employee_id = :userId
             is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, id as ChildDailyNoteId)
+            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, id as ChildStickyNoteId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)

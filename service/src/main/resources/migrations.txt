@@ -156,3 +156,4 @@ V155__realtime_staff_attendance.sql
 V156__remove_old_varda_tables.sql
 V157__voucher_value_decision_type.sql
 V158__separate_daily_and_group_notes.sql
+V159__child_sticky_notes.sql

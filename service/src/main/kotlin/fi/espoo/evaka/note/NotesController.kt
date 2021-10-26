@@ -8,6 +8,9 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInGroup
+import fi.espoo.evaka.note.child.sticky.ChildStickyNote
+import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
+import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForGroup
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.note.group.getGroupNotesForChild
 import fi.espoo.evaka.note.group.getGroupNotesForGroup
@@ -27,6 +30,7 @@ class NotesController(
 ) {
     data class NotesByChildResponse(
         val childDailyNote: ChildDailyNote?,
+        val childStickyNotes: List<ChildStickyNote>,
         val groupNotes: List<GroupNote>
     )
     @GetMapping("/children/{childId}/notes")
@@ -41,6 +45,7 @@ class NotesController(
         return db.read {
             NotesByChildResponse(
                 childDailyNote = it.getChildDailyNote(childId),
+                childStickyNotes = it.getChildStickyNotesForChild(childId),
                 groupNotes = it.getGroupNotesForChild(childId)
             )
         }
@@ -48,6 +53,7 @@ class NotesController(
 
     data class NotesByGroupResponse(
         val childDailyNotes: List<ChildDailyNote>,
+        val childStickyNotes: List<ChildStickyNote>,
         val groupNotes: List<GroupNote>
     )
     @GetMapping("/daycare-groups/{groupId}/notes")
@@ -62,6 +68,7 @@ class NotesController(
         return db.read {
             NotesByGroupResponse(
                 childDailyNotes = it.getChildDailyNotesInGroup(groupId),
+                childStickyNotes = it.getChildStickyNotesForGroup(groupId),
                 groupNotes = it.getGroupNotesForGroup(groupId)
             )
         }

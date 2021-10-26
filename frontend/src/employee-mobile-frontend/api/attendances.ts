@@ -253,12 +253,18 @@ function deserializeAttendanceResponse(
                   ...attendanceChild.dailyNote,
                   modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
                 }
-              : null
+              : null,
+            stickyNotes: attendanceChild.stickyNotes.map((note) => ({
+              ...note,
+              modifiedAt: new Date(note.modifiedAt),
+              expires: LocalDate.parseIso(note.expires)
+            }))
           }
         }),
       groupNotes: data.groupNotes.map((groupNote) => ({
         ...groupNote,
-        modifiedAt: new Date(groupNote.modifiedAt)
+        modifiedAt: new Date(groupNote.modifiedAt),
+        expires: LocalDate.parseIso(groupNote.expires)
       }))
     }
   }

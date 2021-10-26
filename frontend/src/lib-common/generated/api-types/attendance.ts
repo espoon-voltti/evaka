@@ -9,6 +9,7 @@ import LocalDate from '../../local-date'
 import { AbsenceCareType } from './daycare'
 import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
+import { ChildStickyNote } from './note'
 import { DailyServiceTimes } from '../../api-types/child/common'
 import { GroupNote } from './note'
 import { PlacementType } from './placement'
@@ -82,6 +83,7 @@ export interface Child {
   reservation: AttendanceReservation | null
   reservations: AttendanceReservation[]
   status: AttendanceStatus
+  stickyNotes: ChildStickyNote[]
 }
 
 /**

@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
+import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
 import fi.espoo.evaka.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
@@ -480,6 +481,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
     val childrenAttendances = fetchChildrenAttendances(unitId, instant)
     val childrenAbsences = fetchChildrenAbsences(unitId, instant.toLocalDate())
     val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId)
+    val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId)
     val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
 
     val children = childrenBasics.map { child ->
@@ -488,6 +490,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
         val status = getChildAttendanceStatus(placementBasics, attendance, absences)
         val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
+        val stickyNotes = stickyNotesForChildrenInUnit.filter { it.childId == child.id }
 
         Child(
             id = child.id,
@@ -502,6 +505,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             absences = absences,
             dailyServiceTimes = child.dailyServiceTimes,
             dailyNote = dailyNote,
+            stickyNotes = stickyNotes,
             imageUrl = child.imageUrl,
             reservations = attendanceReservations[child.id] ?: listOf()
         )

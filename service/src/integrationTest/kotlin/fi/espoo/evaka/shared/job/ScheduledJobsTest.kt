@@ -358,7 +358,7 @@ class ScheduledJobsTest : FullApplicationTest() {
             )
         }
 
-        scheduledJobs.removeOldDaycareDailyNotes(db)
+        scheduledJobs.removeExpiredNotes(db)
 
         db.read {
             val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
@@ -421,7 +421,7 @@ class ScheduledJobsTest : FullApplicationTest() {
             )
         }
 
-        scheduledJobs.removeOldDaycareDailyNotes(db)
+        scheduledJobs.removeExpiredNotes(db)
 
         db.read {
             val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
