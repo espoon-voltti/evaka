@@ -20,7 +20,6 @@ import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PlacementId
@@ -31,6 +30,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1

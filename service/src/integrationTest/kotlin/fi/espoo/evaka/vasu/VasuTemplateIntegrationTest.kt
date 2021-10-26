@@ -8,11 +8,11 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

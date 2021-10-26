@@ -11,10 +11,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach

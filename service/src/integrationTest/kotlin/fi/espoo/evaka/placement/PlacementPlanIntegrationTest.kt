@@ -17,13 +17,13 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication

@@ -11,7 +11,6 @@ import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.job.ScheduledJobs

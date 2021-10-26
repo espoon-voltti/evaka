@@ -25,7 +25,6 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -33,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1

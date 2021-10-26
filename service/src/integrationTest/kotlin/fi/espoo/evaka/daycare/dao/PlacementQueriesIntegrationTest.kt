@@ -7,8 +7,8 @@ package fi.espoo.evaka.daycare.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

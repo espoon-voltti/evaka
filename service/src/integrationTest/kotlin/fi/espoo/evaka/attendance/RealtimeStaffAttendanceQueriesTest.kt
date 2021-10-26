@@ -7,11 +7,11 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach

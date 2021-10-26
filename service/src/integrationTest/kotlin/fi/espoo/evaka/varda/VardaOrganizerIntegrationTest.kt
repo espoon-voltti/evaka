@@ -7,7 +7,7 @@ package fi.espoo.evaka.varda
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach

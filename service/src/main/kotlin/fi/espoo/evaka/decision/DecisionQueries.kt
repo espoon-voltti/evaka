@@ -32,19 +32,18 @@ private val decisionSelector =
             u.phone,
             m.name AS manager,
             ap.child_id, ap.guardian_id,
-            p.first_name, p.last_name,
+            (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by,
             c.first_name AS child_first_name, c.last_name AS child_last_name
         FROM decision d
         INNER JOIN daycare u on d.unit_id = u.id
         INNER JOIN application ap on d.application_id = ap.id 
-        INNER JOIN employee p on d.created_by = p.id
         INNER JOIN person c on ap.child_id = c.id
         LEFT JOIN unit_manager m on u.unit_manager_id = m.id
     """.trimIndent()
 
 private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     id = DecisionId(rs.getUUID("id")),
-    createdBy = "${rs.getString("first_name")} ${rs.getString("last_name")}",
+    createdBy = rs.getString("created_by"),
     type = DecisionType.valueOf(rs.getString("type")),
     startDate = rs.getDate("start_date").toLocalDate(),
     endDate = rs.getDate("end_date").toLocalDate(),

@@ -13,7 +13,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -31,6 +30,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach

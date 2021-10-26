@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1

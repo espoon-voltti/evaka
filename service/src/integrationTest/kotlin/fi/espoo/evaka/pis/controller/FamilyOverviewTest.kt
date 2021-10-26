@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.service.FamilyOverview
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2

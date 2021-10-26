@@ -28,11 +28,9 @@ fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<Applic
         """
 SELECT 
     n.id, n.application_id, n.content, 
-    n.created, n.created_by, e.first_name || ' ' || e.last_name AS created_by_name,
-    n.updated, n.updated_by, e2.first_name || ' ' || e2.last_name AS updated_by_name
+    n.created, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
+    n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name
 FROM application_note n
-LEFT JOIN employee e ON n.created_by = e.id
-LEFT JOIN employee e2 ON n.updated_by = e2.id
 WHERE application_id = :applicationId
 ORDER BY n.created
         """.trimIndent()
@@ -57,12 +55,12 @@ SELECT
     n.content,
     n.created_by,
     n.updated_by,
-    e.first_name || ' ' || e.last_name AS created_by_name,
-    e.first_name || ' ' || e.last_name AS updated_by_name,
+    eu.name AS created_by_name,
+    eu.name AS updated_by_name,
     n.created,
     n.updated
 FROM new_note n
-LEFT JOIN employee e ON n.created_by = e.id
+LEFT JOIN evaka_user eu ON n.created_by = eu.id
         """.trimIndent()
 
     return createQuery(sql)
@@ -83,11 +81,9 @@ WITH updated_note AS (
 )
 SELECT 
     n.id, n.application_id, n.content, 
-    n.created, n.created_by, e.first_name || ' ' || e.last_name AS created_by_name,
-    n.updated, n.updated_by, e2.first_name || ' ' || e2.last_name AS updated_by_name
+    n.created, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
+    n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name
 FROM updated_note n
-LEFT JOIN employee e ON n.created_by = e.id
-LEFT JOIN employee e2 ON n.updated_by = e2.id
         """
 
     return createQuery(sql)

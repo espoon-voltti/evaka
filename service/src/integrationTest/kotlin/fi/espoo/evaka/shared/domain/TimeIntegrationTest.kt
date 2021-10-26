@@ -6,10 +6,10 @@ package fi.espoo.evaka.shared.domain
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2

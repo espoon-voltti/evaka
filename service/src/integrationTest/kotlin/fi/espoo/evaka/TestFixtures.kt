@@ -30,6 +30,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -49,6 +50,7 @@ import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -523,6 +525,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 restrictedDetailsEnabled = it.restrictedDetailsEnabled
             )
         )
+        upsertCitizenUser(PersonId(it.id))
     }
 
     allChildren.forEach {
@@ -583,8 +586,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertAssistanceActionOptions()
     insertAssistanceBasisOptions()
 }
-
-fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
 
 fun Database.Transaction.insertPreschoolTerms() {
     //language=SQL

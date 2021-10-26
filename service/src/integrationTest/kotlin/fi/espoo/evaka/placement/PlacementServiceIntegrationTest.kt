@@ -7,7 +7,6 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
@@ -16,6 +15,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare

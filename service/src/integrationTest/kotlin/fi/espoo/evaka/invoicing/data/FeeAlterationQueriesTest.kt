@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1

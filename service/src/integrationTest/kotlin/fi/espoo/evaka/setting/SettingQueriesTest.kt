@@ -5,7 +5,7 @@
 package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test

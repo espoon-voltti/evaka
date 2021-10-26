@@ -6,10 +6,10 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

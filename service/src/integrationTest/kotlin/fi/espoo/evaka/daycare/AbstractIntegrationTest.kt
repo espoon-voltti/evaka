@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

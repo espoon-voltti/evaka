@@ -20,7 +20,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -28,6 +27,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1

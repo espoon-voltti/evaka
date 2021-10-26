@@ -19,7 +19,6 @@ import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -34,6 +33,7 @@ import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare

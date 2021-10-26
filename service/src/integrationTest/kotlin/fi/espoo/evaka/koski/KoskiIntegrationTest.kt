@@ -15,7 +15,6 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -28,6 +27,7 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testAreaId

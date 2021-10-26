@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test

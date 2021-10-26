@@ -5,11 +5,11 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

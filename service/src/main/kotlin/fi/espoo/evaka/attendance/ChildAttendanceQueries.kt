@@ -60,7 +60,7 @@ fun Database.Transaction.insertAbsence(
     // language=sql
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by_employee_id)
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
         VALUES (:childId, :date, :careType, :absenceType, :userId)
         RETURNING *
         """.trimIndent()

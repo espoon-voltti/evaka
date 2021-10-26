@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.markEmployeeLastLogin
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class MobileDevicesController(
@@ -117,7 +117,7 @@ enum class PinLoginStatus {
 
 data class PinLoginRequest(
     val pin: String,
-    val employeeId: UUID
+    val employeeId: EmployeeId
 )
 
 data class PinLoginResponse(

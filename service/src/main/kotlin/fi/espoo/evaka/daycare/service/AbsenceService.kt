@@ -237,10 +237,10 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
     //language=SQL
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by_employee_id)
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
         VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
         ON CONFLICT (child_id, date, care_type)
-            DO UPDATE SET absence_type = :absenceType, modified_by_employee_id = :modifiedBy, modified_at = now()
+            DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = now()
         """.trimIndent()
 
     val batch = prepareBatch(sql)

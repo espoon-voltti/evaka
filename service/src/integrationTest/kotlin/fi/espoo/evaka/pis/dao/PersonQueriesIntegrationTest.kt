@@ -15,10 +15,10 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate

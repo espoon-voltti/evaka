@@ -8,9 +8,9 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.getGuardianChildIds
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson

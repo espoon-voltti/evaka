@@ -5,7 +5,6 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -20,6 +19,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
