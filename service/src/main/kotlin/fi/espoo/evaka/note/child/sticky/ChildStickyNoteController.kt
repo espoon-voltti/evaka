@@ -8,6 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -32,6 +35,8 @@ class ChildStickyNoteController(
         Audit.ChildStickyNoteCreate.log(childId)
         ac.requirePermissionFor(user, Action.Child.CREATE_STICKY_NOTE, childId)
 
+        validateExpiration(body.expires)
+
         return db.transaction { it.createChildStickyNote(childId, body) }
     }
 
@@ -44,6 +49,8 @@ class ChildStickyNoteController(
     ): ChildStickyNote {
         Audit.ChildStickyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.ChildStickyNote.UPDATE, noteId)
+
+        validateExpiration(body.expires)
 
         return db.transaction { it.updateChildStickyNote(noteId, body) }
     }
@@ -58,5 +65,15 @@ class ChildStickyNoteController(
         ac.requirePermissionFor(user, Action.ChildStickyNote.DELETE, noteId)
 
         return db.transaction { it.deleteChildStickyNote(noteId) }
+    }
+
+    private fun validateExpiration(expires: LocalDate) {
+        val validRange = FiniteDateRange(
+            LocalDate.now(),
+            LocalDate.now().plusDays(7)
+        )
+        if (!validRange.includes(expires)) {
+            throw BadRequest("Expiration date was invalid")
+        }
     }
 }

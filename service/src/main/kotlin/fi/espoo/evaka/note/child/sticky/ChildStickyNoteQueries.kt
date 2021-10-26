@@ -16,9 +16,9 @@ import java.util.UUID
 fun Database.Read.getChildStickyNotesForChild(childId: UUID): List<ChildStickyNote> = createQuery(
     """
     SELECT id, child_id, note, modified_at, expires
-    FROM child_sticky_note csn
+    FROM child_sticky_note
     WHERE child_id = :childId
-    ORDER BY created
+    ORDER BY created DESC
     """.trimIndent()
 )
     .bind("childId", childId)
