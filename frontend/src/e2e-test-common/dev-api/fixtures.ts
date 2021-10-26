@@ -712,9 +712,11 @@ export const feeDecisionsFixture = (
   validDuring: DateRange = new DateRange(
     LocalDate.today().subYears(1),
     LocalDate.today().addYears(1)
-  )
+  ),
+  sentAt: Date | null = null,
+  id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'
 ): FeeDecision => ({
-  id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+  id,
   status,
   decisionType: 'NORMAL',
   validDuring,
@@ -740,7 +742,8 @@ export const feeDecisionsFixture = (
       feeAlterations: [],
       finalFee: 28900
     }
-  ]
+  ],
+  sentAt
 })
 
 export const voucherValueDecisionsFixture = (

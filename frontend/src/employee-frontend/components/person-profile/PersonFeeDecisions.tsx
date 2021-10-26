@@ -56,7 +56,7 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
 
   const renderFeeDecisions = () =>
     feeDecisions.isSuccess
-      ? _.orderBy(feeDecisions.value, ['createdAt'], ['desc']).map(
+      ? _.orderBy(feeDecisions.value, ['sentAt', 'createdAt'], ['desc']).map(
           (feeDecision: FeeDecision) => {
             return (
               <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
@@ -68,7 +68,9 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
                 <Td>{formatCents(feeDecision.totalFee)}</Td>
                 <Td>{feeDecision.decisionNumber}</Td>
                 <DateTd>{formatDate(feeDecision.created)}</DateTd>
-                <DateTd>{formatDate(feeDecision.sentAt)}</DateTd>
+                <DateTd data-qa={`fee-decision-sent-at`}>
+                  {formatDate(feeDecision.sentAt)}
+                </DateTd>
                 <StatusTd>
                   {i18n.feeDecision.status[feeDecision.status]}
                 </StatusTd>
