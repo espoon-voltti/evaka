@@ -15,7 +15,7 @@ import java.util.UUID
 
 fun Database.Read.getGroupNotesForChild(childId: UUID): List<GroupNote> = createQuery(
     """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_at
+    SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
     FROM group_note gn
     WHERE group_id = (
         SELECT (
@@ -52,7 +52,7 @@ fun Database.Read.getGroupNotesForUnit(unitId: DaycareId): List<GroupNote> {
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> = createQuery(
     """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_at
+    SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
     FROM group_note gn
     WHERE group_id = ANY(:groupIds)
     """.trimIndent()
@@ -64,8 +64,8 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate(
         """
-INSERT INTO group_note (group_id, note)
-VALUES (:groupId, :note)
+INSERT INTO group_note (group_id, note, expires)
+VALUES (:groupId, :note, :expires)
 RETURNING id
         """.trimIndent()
     )
@@ -80,7 +80,8 @@ fun Database.Transaction.updateGroupNote(id: GroupNoteId, note: GroupNoteBody): 
     return createUpdate(
         """
 UPDATE group_note SET
-    note = :note, 
+    note = :note,
+    expires = :expires,
     modified_at = now()
 WHERE id = :id
 RETURNING *
@@ -94,7 +95,7 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {
-    createUpdate("DELETE from group_note WHERE id = :noteId")
+    createUpdate("DELETE FROM group_note WHERE id = :noteId")
         .bind("noteId", noteId)
         .execute()
 }

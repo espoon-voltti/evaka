@@ -83,6 +83,9 @@ enum class Audit(
     ChildImageDownload("evaka.child.image.download"),
     ChildImageUpload("evaka.child.image.upload"),
     ChildSensitiveInfoRead("evaka.child-sensitive-info.read"),
+    ChildStickyNoteCreate("evaka.child-sticky-note.create"),
+    ChildStickyNoteUpdate("evaka.child-sticky-note.update"),
+    ChildStickyNoteDelete("evaka.child-sticky-note.delete"),
     ChildVasuDocumentsRead("evaka.child.vasu-documents.read"),
     CitizenLogin("evaka.citizen.login", securityEvent = true, securityLevel = "high"),
     @Deprecated("use ChildDailyNoteCreate or GroupNoteCreate")

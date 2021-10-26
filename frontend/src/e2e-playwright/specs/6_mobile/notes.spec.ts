@@ -33,6 +33,7 @@ import {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let childPage: MobileChildPage
@@ -124,7 +125,8 @@ describe('Child and group notes', () => {
 
   test('Child group note can be created', async () => {
     const groupNote: GroupNoteBody = {
-      note: 'Testiryhmäviesti'
+      note: 'Testiryhmäviesti',
+      expires: LocalDate.today().addDays(7)
     }
 
     await notePage.selectGroupTab()

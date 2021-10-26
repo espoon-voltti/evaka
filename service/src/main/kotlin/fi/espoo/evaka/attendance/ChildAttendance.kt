@@ -7,6 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
+import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
@@ -68,6 +69,7 @@ data class Child(
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: ChildDailyNote?,
+    val stickyNotes: List<ChildStickyNote>,
     val imageUrl: String?,
     val reservations: List<AttendanceReservation>
 ) {

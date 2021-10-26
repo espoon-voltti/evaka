@@ -45,6 +45,8 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
+import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
+import fi.espoo.evaka.note.child.sticky.createChildStickyNote
 import fi.espoo.evaka.note.group.GroupNoteBody
 import fi.espoo.evaka.note.group.createGroupNote
 import fi.espoo.evaka.pairing.Pairing
@@ -71,6 +73,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -684,6 +687,20 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     ): ChildDailyNoteId {
         return db.transaction {
             it.createChildDailyNote(
+                childId = childId,
+                note = body
+            )
+        }
+    }
+
+    @PostMapping("/children/{childId}/child-sticky-notes")
+    fun postChildStickyNote(
+        db: Database.Connection,
+        @PathVariable childId: UUID,
+        @RequestBody body: ChildStickyNoteBody
+    ): ChildStickyNoteId {
+        return db.transaction {
+            it.createChildStickyNote(
                 childId = childId,
                 note = body
             )

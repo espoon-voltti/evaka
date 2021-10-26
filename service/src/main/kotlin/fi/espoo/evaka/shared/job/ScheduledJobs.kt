@@ -13,7 +13,7 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
-import fi.espoo.evaka.note.child.daily.deleteExpiredChildDailyNotes
+import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.placement.deletePlacementPlans
@@ -41,7 +41,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
     FreezeVoucherValueReports(ScheduledJobs::freezeVoucherValueReports),
     KoskiUpdate(ScheduledJobs::koskiUpdate),
     RemoveOldAsyncJobs(ScheduledJobs::removeOldAsyncJobs),
-    RemoveOldDaycareDailyNotes(ScheduledJobs::removeOldDaycareDailyNotes),
+    RemoveOldDaycareDailyNotes(ScheduledJobs::removeExpiredNotes),
     RemoveOldDraftApplications(ScheduledJobs::removeOldDraftApplications),
     SendPendingDecisionReminderEmails(ScheduledJobs::sendPendingDecisionReminderEmails),
     VardaUpdate(ScheduledJobs::vardaUpdate),
@@ -159,8 +159,8 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
         db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
     }
 
-    fun removeOldDaycareDailyNotes(db: Database.Connection) {
-        db.transaction { it.deleteExpiredChildDailyNotes(HelsinkiDateTime.now()) }
+    fun removeExpiredNotes(db: Database.Connection) {
+        db.transaction { it.deleteExpiredNotes(HelsinkiDateTime.now()) }
     }
 
     fun removeOldAsyncJobs(db: Database.Connection) {

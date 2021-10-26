@@ -20,15 +20,19 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { UUID } from 'lib-common/types'
 import { UpdateStateFn } from 'lib-common/form-state'
+import LocalDate from 'lib-common/local-date'
 
 type GroupNoteFormData = GroupNoteBody
 
 const initialFormData = (note: GroupNote | null): GroupNoteFormData => {
-  return note ? { ...note } : { note: '' }
+  return note
+    ? { ...note }
+    : { note: '', expires: LocalDate.today().addDays(7) }
 }
 
 const formDataToRequestBody = (form: GroupNoteFormData): GroupNoteBody => ({
-  note: form.note
+  note: form.note,
+  expires: form.expires
 })
 
 interface Props {

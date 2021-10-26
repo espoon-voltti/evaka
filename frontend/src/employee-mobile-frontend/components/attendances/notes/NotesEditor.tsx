@@ -55,6 +55,7 @@ import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { ChipWrapper, TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
+import LocalDate from 'lib-common/local-date'
 
 type ChildDailyNoteFormData = Omit<ChildDailyNoteBody, 'sleepingMinutes'> & {
   sleepingHours: number | null
@@ -107,8 +108,9 @@ const childDailyNoteIsEmpty = (dailyNote: ChildDailyNoteFormData) =>
   !dailyNote.note &&
   !dailyNote.feedingNote
 
-const groupNoteToFormData = ({ note }: GroupNote): GroupNoteBody => ({
-  note
+const groupNoteToFormData = ({ note, expires }: GroupNote): GroupNoteBody => ({
+  note,
+  expires
 })
 
 export default React.memo(function NotesEditor() {
@@ -141,7 +143,8 @@ export default React.memo(function NotesEditor() {
   })
 
   const [groupNote, setGroupNote] = useState<GroupNoteBody>({
-    note: ''
+    note: '',
+    expires: LocalDate.today().addDays(7)
   })
 
   type NoteType = 'NOTE' | 'GROUP_NOTE'
