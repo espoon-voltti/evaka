@@ -17,6 +17,9 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNote
+import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
+import fi.espoo.evaka.note.child.sticky.createChildStickyNote
+import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.resetDatabase
@@ -330,6 +333,42 @@ class ScheduledJobsTest : FullApplicationTest() {
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.WAITING_CONFIRMATION, applicationStatus)
+    }
+
+    @Test
+    fun removeExpiredStickyNotes() {
+        // expired note
+        db.transaction { tx ->
+            tx.createChildStickyNote(
+                childId = testChild_1.id,
+                note = ChildStickyNoteBody(
+                    note = "",
+                    expires = LocalDate.now().minusDays(1)
+                )
+            )
+        }
+
+        val validNoteId = db.transaction { tx ->
+            tx.createChildStickyNote(
+                childId = testChild_1.id,
+                note = ChildStickyNoteBody(
+                    note = "",
+                    expires = LocalDate.now()
+                )
+            )
+        }
+
+        db.read {
+            val notesBeforeCleanup = it.getChildStickyNotesForChild(testChild_1.id)
+            assertEquals(2, notesBeforeCleanup.size)
+        }
+        scheduledJobs.removeExpiredNotes(db)
+
+        db.read {
+            val notesAfterCleanup = it.getChildStickyNotesForChild(testChild_1.id)
+            assertEquals(1, notesAfterCleanup.size)
+            assertEquals(validNoteId, notesAfterCleanup.first().id)
+        }
     }
 
     @Test
