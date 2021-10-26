@@ -103,7 +103,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </tr>
         <tr>
             <td></td>
-            <td th:text="#{text.table.finalFee}"></td>
+            <td th:switch="${part.siblingDiscount}">
+                <span th:case="0" th:text="#{text.table.finalFee}"></span>
+                <span th:case="*" th:text="#{text.table.finalFeeWithSiblingDiscount(${part.siblingDiscount})}"></span>
+            </td>
             <td class="text-right" th:text="${part.finalFeeFormatted}"></td>
         </tr>
         </tbody>
