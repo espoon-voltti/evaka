@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
+import { memo, useState } from 'lib-common/memo'
 import { desktopMin } from 'lib-components/breakpoints'
 import CityLogo from './CityLogo'
 import EvakaLogo from './EvakaLogo'
@@ -18,7 +19,7 @@ import {
   PedagogicalDocumentsState
 } from '../pedagogical-documents/state'
 
-export default React.memo(function Header() {
+export default memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const user = useUser()
 

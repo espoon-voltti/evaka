@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { memo } from 'lib-common/memo'
 import { desktopMin } from 'lib-components/breakpoints'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -28,10 +29,10 @@ interface Props {
   unreadPedagogicalDocuments: number
 }
 
-export default React.memo(function DesktopNav({
+export default memo<Props>(function DesktopNav({
   unreadMessagesCount,
   unreadPedagogicalDocuments
-}: Props) {
+}) {
   const user = useUser()
   const t = useTranslation()
 
@@ -161,7 +162,7 @@ export const CircledChar = styled.div`
   border-radius: 100%;
 `
 
-const LanguageMenu = React.memo(function LanguageMenu() {
+const LanguageMenu = memo(function LanguageMenu() {
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
@@ -198,7 +199,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
   )
 })
 
-const UserMenu = React.memo(function UserMenu() {
+const UserMenu = memo(function UserMenu() {
   const t = useTranslation()
   const user = useUser()
   const [open, setOpen] = useState(false)

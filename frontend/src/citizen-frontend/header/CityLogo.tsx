@@ -4,11 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { memo } from 'lib-common/memo'
 import { desktopMin } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 import { cityLogo } from 'lib-customizations/citizen'
 
-export default React.memo(function Logo() {
+export default memo(function Logo() {
   return (
     <Container>
       <Img src={cityLogo.src} alt={cityLogo.alt} data-qa="header-city-logo" />

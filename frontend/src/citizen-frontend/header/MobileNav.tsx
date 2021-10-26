@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useCallback } from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faLockAlt, faSignIn, faSignOut, faTimes } from 'lib-icons'
+import { memo, useCallback } from 'lib-common/memo'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -19,27 +20,24 @@ import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
 
-type Props = {
+interface Props {
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
   unreadPedagogicalDocumentsCount: number
 }
 
-export default React.memo(function MobileNav({
+export default memo<Props>(function MobileNav({
   showMenu,
   setShowMenu,
   unreadMessagesCount,
   unreadPedagogicalDocumentsCount
-}: Props) {
+}) {
   const user = useUser()
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
-  const toggleMenu = useCallback(
-    () => setShowMenu((show) => !show),
-    [setShowMenu]
-  )
-  const close = useCallback(() => setShowMenu(false), [setShowMenu])
+  const toggleMenu = useCallback(() => setShowMenu((show) => !show), [])
+  const close = () => setShowMenu(false)
 
   return (
     <Container ref={ref} data-qa="mobile-nav">
@@ -125,11 +123,9 @@ const MenuContainer = styled.div`
   flex-direction: column;
 `
 
-const LanguageMenu = React.memo(function LanguageMenu({
-  close
-}: {
+const LanguageMenu = memo<{
   close: () => void
-}) {
+}>(function LanguageMenu({ close }) {
   const [lang, setLang] = useLang()
 
   return (
@@ -180,14 +176,14 @@ const LangButton = styled.button<{ active: boolean }>`
     props.active ? colors.greyscale.white : 'transparent'};
 `
 
-const Navigation = React.memo(function Navigation({
-  close,
-  unreadMessagesCount,
-  unreadPedagogicalDocumentsCount
-}: {
+const Navigation = memo<{
   close: () => void
   unreadMessagesCount: number
   unreadPedagogicalDocumentsCount: number
+}>(function Navigation({
+  close,
+  unreadMessagesCount,
+  unreadPedagogicalDocumentsCount
 }) {
   const t = useTranslation()
   const user = useUser()

@@ -4,9 +4,10 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { memo } from 'lib-common/memo'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 
-export default React.memo(function Logo() {
+export default memo(function Logo() {
   return (
     <Container>
       <svg
