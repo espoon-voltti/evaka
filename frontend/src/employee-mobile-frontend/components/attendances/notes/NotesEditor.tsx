@@ -27,12 +27,19 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2, H3, Label } from 'lib-components/typography'
+import { H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, {
+  Fragment,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import {
@@ -253,6 +260,21 @@ export default React.memo(function NotesEditor() {
     )
   }
 
+  function WithNoteInfo({ children }: { children: ReactNode }) {
+    return (
+      <ExpandingInfo
+        info={
+          <InfoText noMargin>
+            {i18n.attendances.notes.noteInfo.join('\n\n')}
+          </InfoText>
+        }
+        ariaLabel={i18n.common.openExpandingInfo}
+      >
+        {children}
+      </ExpandingInfo>
+    )
+  }
+
   interface NoteTypeTabProps {
     type: NoteType
     children?: React.ReactNode
@@ -352,9 +374,11 @@ export default React.memo(function NotesEditor() {
                     </FixedSpaceRow>
                   )}
 
-                  <H2 primary noMargin>
-                    {i18n.attendances.notes.note}
-                  </H2>
+                  <WithNoteInfo>
+                    <H2 primary noMargin>
+                      {i18n.attendances.notes.note}
+                    </H2>
+                  </WithNoteInfo>
 
                   <TextArea
                     value={dailyNote.note || ''}
@@ -505,9 +529,11 @@ export default React.memo(function NotesEditor() {
                     </FixedSpaceRow>
                   )}
 
-                  <H2 primary noMargin>
-                    {i18n.attendances.notes.groupNote}
-                  </H2>
+                  <WithNoteInfo>
+                    <H2 primary noMargin>
+                      {i18n.attendances.notes.groupNote}
+                    </H2>
+                  </WithNoteInfo>
 
                   <TextArea
                     value={groupNote?.note ?? ''}
@@ -626,6 +652,10 @@ const TopRow = styled.div`
 
 const TabTitle = styled.span`
   margin-right: ${defaultMargins.xxs};
+`
+
+const InfoText = styled(P)`
+  white-space: pre-line;
 `
 
 const StickyActionContainer = styled.section`
