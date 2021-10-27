@@ -109,6 +109,18 @@ class MessageController(
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
 
+    @GetMapping("/mobile/unread/{unitId}")
+    fun getUnreadMessagesMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+    ): Set<UnreadCountByAccount> {
+        Audit.MessagingUnreadMessagesRead.log()
+        return db.read { tx ->
+            tx.getFakeUser(unitId).let { tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(it)) }
+        }
+    }
+
     @GetMapping("/unread")
     fun getUnreadMessages(
         db: Database.Connection,

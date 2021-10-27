@@ -29,11 +29,12 @@ export async function getMessagingAccounts(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getUnreadCounts(): Promise<
-  Result<UnreadCountByAccount[]>
-> {
+// todo unitId not needed after we implement proper authentication mechanism
+export async function getUnreadCounts(
+  unitId: UUID
+): Promise<Result<UnreadCountByAccount[]>> {
   return client
-    .get<JsonOf<UnreadCountByAccount[]>>('/messages/unread')
+    .get<JsonOf<UnreadCountByAccount[]>>(`/messages/mobile/unread/${unitId}`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

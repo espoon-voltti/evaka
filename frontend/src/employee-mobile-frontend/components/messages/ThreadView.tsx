@@ -147,6 +147,7 @@ const TitleRow = styled.div`
 
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
+  margin-right: ${defaultMargins.m};
 `
 
 const SentDate = styled.div`

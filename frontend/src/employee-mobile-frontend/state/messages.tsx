@@ -31,6 +31,7 @@ import {
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { UserContext } from './user'
 import { UUID } from 'lib-common/types'
+import { UnitContext } from './unit'
 
 const PAGE_SIZE = 20
 
@@ -119,6 +120,9 @@ export const MessageContextProvider = React.memo(
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
     const { loggedIn } = useContext(UserContext)
+    const { unitInfoResponse } = useContext(UnitContext)
+
+    const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
     const [nestedAccounts, setNestedMessagingAccounts] = useState<
       Result<NestedMessageAccount[]>
@@ -168,8 +172,8 @@ export const MessageContextProvider = React.memo(
     )
 
     useEffect(() => {
-      loggedIn ? loadUnreadCounts() : null
-    }, [loadUnreadCounts, loggedIn])
+      loggedIn && unitId ? loadUnreadCounts(unitId) : null
+    }, [loadUnreadCounts, loggedIn, unitId])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>

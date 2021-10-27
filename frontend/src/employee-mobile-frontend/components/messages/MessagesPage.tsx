@@ -16,7 +16,6 @@ import BottomNavBar from '../common/BottomNavbar'
 import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { HeaderContainer, MessagePreview } from './MessagePreview'
-
 export default function MessagesPage() {
   const history = useHistory()
   const { unitId, groupId: groupIdOrAll } = useParams<{
@@ -71,7 +70,10 @@ export default function MessagesPage() {
               receivedMessages.value.map((thread) => (
                 <MessagePreview
                   thread={thread}
-                  hasUnreadMessages={false}
+                  hasUnreadMessages={thread.messages.some(
+                    (item) =>
+                      !item.readAt && item.sender.id !== selectedAccount?.id
+                  )}
                   onClick={() => {
                     selectThread(thread)
                   }}
