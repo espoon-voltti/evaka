@@ -121,12 +121,17 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
 
 fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDate) = createQuery(
     """
-    SELECT 
-        sa.arrived,
-        sa.departed
+    SELECT sa.arrived, sa.departed
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
     WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:dayStart, :dayEnd)
+    
+    UNION 
+    
+    SELECT sae.arrived, sae.departed
+    FROM staff_attendance_external sae
+    JOIN daycare_group dg ON dg.id = sae.group_id
+    WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:dayStart, :dayEnd)
     """.trimIndent()
 )
     .bind("unitId", unitId)

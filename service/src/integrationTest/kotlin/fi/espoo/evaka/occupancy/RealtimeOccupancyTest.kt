@@ -7,6 +7,10 @@ package fi.espoo.evaka.occupancy
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attendance.ExternalStaffArrival
+import fi.espoo.evaka.attendance.ExternalStaffDeparture
+import fi.espoo.evaka.attendance.markExternalStaffArrival
+import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
@@ -70,11 +74,20 @@ class RealtimeOccupancyTest : FullApplicationTest() {
                 .saveAnd {
                     addRealtimeAttendance().inGroup(groupId).arriving(LocalTime.of(7, 0)).departing(LocalTime.of(16, 45)).save()
                 }
-                .addEmployee()
-                .withScopedRole(UserRole.SPECIAL_EDUCATION_TEACHER, testDaycare.id)
-                .saveAnd {
-                    addRealtimeAttendance().inGroup(groupId).arriving(LocalTime.of(10, 0)).departing(LocalTime.of(18, 0)).save()
-                }
+
+            val extAttendanceId = tx.markExternalStaffArrival(
+                ExternalStaffArrival(
+                    "Matti",
+                    groupId,
+                    HelsinkiDateTime.of(date, LocalTime.of(10, 0))
+                )
+            )
+            tx.markExternalStaffDeparture(
+                ExternalStaffDeparture(
+                    extAttendanceId,
+                    HelsinkiDateTime.of(date, LocalTime.of(18, 0))
+                )
+            )
         }
 
         val child1Capacity = 1.75
