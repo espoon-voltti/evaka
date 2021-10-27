@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
@@ -22,6 +22,11 @@ export default React.memo(function ApplicationFormClub({
   terms
 }: ApplicationFormProps) {
   const applicationType = 'CLUB'
+
+  const preferredStartDate = useMemo(
+    () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),
+    [formData.serviceNeed.preferredStartDate]
+  )
 
   return (
     <FixedSpaceColumn spacing="s">
@@ -65,9 +70,7 @@ export default React.memo(function ApplicationFormClub({
         }
         applicationType={applicationType}
         preparatory={false}
-        preferredStartDate={LocalDate.parseFiOrNull(
-          formData.serviceNeed.preferredStartDate
-        )}
+        preferredStartDate={preferredStartDate}
         errors={errors.unitPreference}
         verificationRequested={verificationRequested}
         shiftCare={formData.serviceNeed.shiftCare}

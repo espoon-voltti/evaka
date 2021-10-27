@@ -17,7 +17,7 @@ import { headerHeightDesktop } from '../header/const'
 import { MessageContext } from './state'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
-import { renderResultRaw } from 'citizen-frontend/async-rendering'
+import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
 
 const FullHeightContainer = styled(Container)`
@@ -44,42 +44,47 @@ export default React.memo(function MessagesPage() {
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
   const t = useTranslation()
-  const [receivers] = useApiState(getReceivers, t.messages.staffAnnotation)
+  const [receivers] = useApiState(
+    () => getReceivers(t.messages.staffAnnotation),
+    [t.messages.staffAnnotation]
+  )
 
   return (
     <FullHeightContainer>
-      {renderResultRaw(combine(accountId, receivers), ([id, receivers]) => (
-        <>
-          <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-            <ThreadList
-              accountId={id}
-              setEditorVisible={setEditorVisible}
-              newMessageButtonEnabled={!editorVisible}
-            />
-            {selectedThread ? (
-              <ThreadView accountId={id} thread={selectedThread} />
-            ) : (
-              <EmptyThreadView inboxEmpty={threads.length == 0} />
+      <UnwrapResult result={combine(accountId, receivers)}>
+        {([id, receivers]) => (
+          <>
+            <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+              <ThreadList
+                accountId={id}
+                setEditorVisible={setEditorVisible}
+                newMessageButtonEnabled={!editorVisible}
+              />
+              {selectedThread ? (
+                <ThreadView accountId={id} thread={selectedThread} />
+              ) : (
+                <EmptyThreadView inboxEmpty={threads.length == 0} />
+              )}
+            </StyledFlex>
+            {editorVisible && (
+              <MessageEditor
+                receiverOptions={receivers}
+                onSend={(message) =>
+                  sendMessage(message).then((result) => {
+                    if (result.isSuccess) {
+                      refreshThreads()
+                    } else {
+                      setDisplaySendError(true)
+                    }
+                  })
+                }
+                onClose={() => setEditorVisible(false)}
+                displaySendError={displaySendError}
+              />
             )}
-          </StyledFlex>
-          {editorVisible && (
-            <MessageEditor
-              receiverOptions={receivers}
-              onSend={(message) =>
-                sendMessage(message).then((result) => {
-                  if (result.isSuccess) {
-                    refreshThreads()
-                  } else {
-                    setDisplaySendError(true)
-                  }
-                })
-              }
-              onClose={() => setEditorVisible(false)}
-              displaySendError={displaySendError}
-            />
-          )}
-        </>
-      ))}
+          </>
+        )}
+      </UnwrapResult>
     </FullHeightContainer>
   )
 })

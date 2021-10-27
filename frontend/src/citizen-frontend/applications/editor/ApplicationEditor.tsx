@@ -397,7 +397,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const [apiData] = useApiState(getApplication, applicationId)
+  const [apiData] = useApiState(
+    () => getApplication(applicationId),
+    [applicationId]
+  )
 
   useTitle(
     t,

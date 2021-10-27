@@ -20,7 +20,10 @@ export default React.memo(function ApplicationReadView() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const user = useUser()
-  const [apiData] = useApiState(getApplication, applicationId)
+  const [apiData] = useApiState(
+    () => getApplication(applicationId),
+    [applicationId]
+  )
 
   useTitle(
     t,

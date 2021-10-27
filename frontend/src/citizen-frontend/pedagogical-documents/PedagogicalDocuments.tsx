@@ -28,7 +28,10 @@ import { renderResult } from '../async-rendering'
 
 export default function PedagogicalDocuments() {
   const t = useTranslation()
-  const [pedagogicalDocuments, loadData] = useApiState(getPedagogicalDocuments)
+  const [pedagogicalDocuments, loadData] = useApiState(
+    getPedagogicalDocuments,
+    []
+  )
 
   const { refreshUnreadPedagogicalDocumentsCount } =
     useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
@@ -251,8 +254,8 @@ export default function PedagogicalDocuments() {
       <Container>
         <Gap size="s" />
         {renderResult(pedagogicalDocuments, (items) => (
-            <PedagogicalDocumentsDisplay items={items} />
-        )}
+          <PedagogicalDocumentsDisplay items={items} />
+        ))}
       </Container>
     </>
   )

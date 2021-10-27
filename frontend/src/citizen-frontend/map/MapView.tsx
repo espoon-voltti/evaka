@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useCallback, useMemo, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
 import { Result, Success } from 'lib-common/api'
@@ -55,6 +55,30 @@ const MapFullscreenContainer = React.memo(function MapFullscreenContainer({
   )
 })
 
+async function fetchUnitsWithDistances(
+  selectedAddress: MapAddress | null,
+  filteredUnits: Result<PublicUnit[]>
+) {
+  if (selectedAddress && filteredUnits.isSuccess) {
+    const units = filteredUnits.value
+
+    const unitsWithStraightDistance = units.map<UnitWithStraightDistance>(
+      (unit) => ({
+        ...unit,
+        straightDistance: unit.location
+          ? calcStraightDistance(unit.location, selectedAddress.coordinates)
+          : null
+      })
+    )
+    return await queryDistances(
+      selectedAddress.coordinates,
+      unitsWithStraightDistance
+    )
+  } else {
+    return Success.of([])
+  }
+}
+
 export default React.memo(function MapView() {
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
@@ -70,34 +94,17 @@ export default React.memo(function MapView() {
   const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
-  const [allUnits] = useApiState(fetchUnits, careType)
+  const [allUnits] = useApiState(() => fetchUnits(careType), [careType])
 
   const filteredUnits = useMemo<Result<PublicUnit[]>>(
     () => filterUnits(allUnits, careType, languages, providerTypes, shiftCare),
     [allUnits, careType, languages, providerTypes, shiftCare]
   )
 
-  const fetchUnitsWithDistances = useCallback(async () => {
-    if (selectedAddress && filteredUnits.isSuccess) {
-      const units = filteredUnits.value
-
-      const unitsWithStraightDistance = units.map<UnitWithStraightDistance>(
-        (unit) => ({
-          ...unit,
-          straightDistance: unit.location
-            ? calcStraightDistance(unit.location, selectedAddress.coordinates)
-            : null
-        })
-      )
-      return await queryDistances(
-        selectedAddress.coordinates,
-        unitsWithStraightDistance
-      )
-    } else {
-      return Success.of([])
-    }
-  }, [selectedAddress, filteredUnits])
-  const [unitsWithDistances] = useApiState(fetchUnitsWithDistances)
+  const [unitsWithDistances] = useApiState(
+    () => fetchUnitsWithDistances(selectedAddress, filteredUnits),
+    [selectedAddress, filteredUnits]
+  )
 
   useTitle(t, t.map.title)
 

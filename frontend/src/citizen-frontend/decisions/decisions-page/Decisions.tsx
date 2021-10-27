@@ -18,7 +18,7 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
-  const [applicationDecisions] = useApiState(getDecisions)
+  const [applicationDecisions] = useApiState(getDecisions, [])
 
   useTitle(t, t.decisions.title)
 

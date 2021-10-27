@@ -18,7 +18,8 @@ import { renderResult } from '../async-rendering'
 export default React.memo(function Applications() {
   const t = useTranslation()
   const [guardianApplications, loadGuardianApplications] = useApiState(
-    getGuardianApplications
+    getGuardianApplications,
+    []
   )
 
   useTitle(t, t.applicationsList.title)

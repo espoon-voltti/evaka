@@ -110,9 +110,8 @@ export default function IncomeStatements() {
 
   const [page, setPage] = useState(1)
   const [incomeStatements, fetchIncomeStatements] = useApiState(
-    getIncomeStatements,
-    page,
-    10
+    () => getIncomeStatements(page, 10),
+    [page]
   )
 
   const [deletionState, setDeletionState] = useState<DeletionState>({

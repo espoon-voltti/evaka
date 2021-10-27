@@ -29,8 +29,8 @@ export default React.memo(function DecisionResponseList() {
   const router = useHistory()
 
   const [decisionsRequest, loadDecisions] = useApiState(
-    getApplicationDecisions,
-    applicationId
+    () => getApplicationDecisions(applicationId),
+    [applicationId]
   )
   const [
     displayDecisionWithNoResponseWarning,

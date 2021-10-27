@@ -43,7 +43,10 @@ export default React.memo(function IncomeStatementView({
   const { incomeStatementId } = match.params
   const t = useTranslation()
   const history = useHistory()
-  const [result] = useApiState(getIncomeStatement, incomeStatementId)
+  const [result] = useApiState(
+    () => getIncomeStatement(incomeStatementId),
+    [incomeStatementId]
+  )
 
   const handleEdit = () => {
     history.push('edit')

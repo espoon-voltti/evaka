@@ -39,6 +39,14 @@ const Input = (props: InputProps) => (
   <components.Input {...props} isHidden={false} />
 )
 
+async function fetchAddressOptions(input: string) {
+  if (input.length > 0) {
+    return await queryAutocomplete(input)
+  } else {
+    return Success.of([])
+  }
+}
+
 export default React.memo(function SearchInput({
   allUnits,
   selectedAddress,
@@ -49,14 +57,10 @@ export default React.memo(function SearchInput({
   const [inputString, setInputString] = useState('')
   const debouncedInputString = useDebounce(inputString, 500)
 
-  const fetchAddressOptions = useCallback(async () => {
-    if (debouncedInputString.length > 0) {
-      return await queryAutocomplete(debouncedInputString)
-    } else {
-      return Success.of([])
-    }
-  }, [debouncedInputString])
-  const [addressOptions] = useApiState(fetchAddressOptions)
+  const [addressOptions] = useApiState(
+    () => fetchAddressOptions(debouncedInputString),
+    [debouncedInputString]
+  )
 
   const getUnitOptions = useCallback(() => {
     if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []
@@ -190,10 +194,12 @@ export default React.memo(function SearchInput({
 
 const OptionWrapper = styled.div`
   cursor: pointer;
+
   &:hover,
   &.focused {
     background-color: ${colors.blues.lighter};
   }
+
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
   margin-bottom: ${defaultMargins.xs};
 `

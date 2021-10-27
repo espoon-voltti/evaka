@@ -24,8 +24,7 @@ import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
 import ActionPickerModal from './ActionPickerModal'
-import { renderResultRaw } from 'citizen-frontend/async-rendering'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { UnwrapResult } from 'citizen-frontend/async-rendering'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
@@ -41,7 +40,7 @@ export default React.memo(function CalendarPage() {
   const location = useLocation()
   const user = useUser()
 
-  const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange)
+  const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
     'pickAction' | 'reservations' | 'absences'
   >()
@@ -85,10 +84,8 @@ export default React.memo(function CalendarPage() {
           openAbsenceModal={() => setOpenModal('absences')}
         />
       ) : null}
-      {renderResultRaw(data, (response, isReloading) =>
-        isReloading ? (
-          <SpinnerSegment />
-        ) : (
+      <UnwrapResult result={data}>
+        {(response) => (
           <>
             <MobileOnly>
               <ContentArea
@@ -139,8 +136,8 @@ export default React.memo(function CalendarPage() {
               />
             )}
           </>
-        )
-      )}
+        )}
+      </UnwrapResult>
       <Footer />
     </>
   )

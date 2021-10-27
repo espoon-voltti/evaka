@@ -21,12 +21,19 @@ import { queryDistance } from './api'
 import { formatDistance } from './distances'
 import { routeLinkRootUrl } from 'lib-customizations/citizen'
 import { CareType } from 'lib-common/generated/enums'
+import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 
 type Props = {
   unit: PublicUnit
   onClose: () => void
   selectedAddress: MapAddress | null
 }
+
+const getDistance = (
+  a: Coordinate | undefined | null,
+  b: Coordinate | undefined | null
+): Promise<Result<number | null>> =>
+  a && b ? queryDistance(a, b) : Promise.resolve(Success.of(null))
 
 export default React.memo(function UnitDetailsPanel({
   unit,
@@ -36,14 +43,10 @@ export default React.memo(function UnitDetailsPanel({
   const t = useTranslation()
   const [lang] = useLang()
 
-  const getDistance = useCallback(
-    (): Promise<Result<number | null>> =>
-      selectedAddress?.coordinates && unit.location
-        ? queryDistance(selectedAddress.coordinates, unit.location)
-        : Promise.resolve(Success.of(null)),
+  const [distance] = useApiState(
+    () => getDistance(selectedAddress?.coordinates, unit.location),
     [selectedAddress?.coordinates, unit.location]
   )
-  const [distance] = useApiState(getDistance)
 
   const formatCareType = (type: CareType) => {
     switch (type) {
