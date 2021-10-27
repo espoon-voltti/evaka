@@ -12,7 +12,7 @@ declare module 'tough-cookie' {
       now?: Date
       ignoreError?: boolean
       // Missing from @types/tough-cookie@4.0.0
-      // Could be defined as: "none" | "lax" | "strict" but
+      // Could be defined as: "none" | "lax" | "strict" but
       // Cookie.sameSite is defined as: string
       sameSiteContext?: string
     }
