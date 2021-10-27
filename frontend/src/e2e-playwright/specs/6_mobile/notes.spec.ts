@@ -25,6 +25,7 @@ import {
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
 import { newBrowserContext } from '../../browser'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -128,7 +129,7 @@ describe('Child and group notes', () => {
     await childPage.assertNotesExist()
     await childPage.openNotes()
     await notePage.selectTab('group')
-    await notePage.assertGroupNote(groupNote)
+    await notePage.assertStickyNote(groupNote)
   })
 
   test('Sticky notes can be created', async () => {
@@ -150,7 +151,8 @@ describe('Child and group notes', () => {
     await childPage.openNotes()
     await notePage.selectTab('sticky')
 
-    await notePage.assertGroupNote(note, 0)
-    await notePage.assertGroupNote(note2, 1)
+    await notePage.assertStickyNote(note, 0)
+    await notePage.assertStickyNoteExpires(LocalDate.today().addDays(7), 0)
+    await notePage.assertStickyNote(note2, 1)
   })
 })

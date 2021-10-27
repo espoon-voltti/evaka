@@ -8,7 +8,8 @@ import {
   ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
 import { Page } from 'playwright'
-import { waitUntilEqual } from '../../utils'
+import LocalDate from 'lib-common/local-date'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
@@ -17,7 +18,7 @@ export default class MobileNotePage {
 
   #note = {
     dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
-    groupNoteInput: this.page.locator('[data-qa="sticky-note-input"]'),
+    stickyNoteInput: this.page.locator('[data-qa="sticky-note-input"]'),
     stickyNote: this.page.locator('[data-qa="sticky-note"]'),
     sleepingTimeHours: this.page.locator(
       '[data-qa="sleeping-time-hours-input"]'
@@ -39,11 +40,27 @@ export default class MobileNotePage {
   }
 
   async fillStickyNote(note: string) {
-    await this.#note.groupNoteInput.type(note)
+    await this.#note.stickyNoteInput.type(note)
   }
 
   async saveStickyNote() {
     await this.page.locator(`[data-qa="sticky-note-save"]`).click()
+  }
+
+  async assertStickyNote(expected: string, nth = 0) {
+    await waitUntilEqual(
+      () => this.#note.stickyNote.nth(nth).locator('p').textContent(),
+      expected
+    )
+  }
+  async assertStickyNoteExpires(date: LocalDate, nth = 0) {
+    await waitUntilTrue(() =>
+      this.#note.stickyNote
+        .nth(nth)
+        .locator('[data-qa="sticky-note-expires"]')
+        .textContent()
+        .then((t) => !!t?.includes(date.format()))
+    )
   }
 
   async fillNote(dailyNote: ChildDailyNoteBody) {
@@ -69,12 +86,6 @@ export default class MobileNotePage {
 
   async saveChildDailyNote() {
     await this.#createNoteButton.click()
-  }
-  async assertGroupNote(expected: string, nth = 0) {
-    await waitUntilEqual(
-      () => this.#note.stickyNote.nth(nth).locator('p').textContent(),
-      expected
-    )
   }
 
   async assertNote(expected: ChildDailyNoteBody) {
