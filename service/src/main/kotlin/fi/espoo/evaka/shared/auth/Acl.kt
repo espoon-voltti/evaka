@@ -243,7 +243,7 @@ WHERE employee_id = :userId AND p.id = :pairingId
 SELECT role
 FROM pedagogical_document pd
 JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE pd.employee_id = :userId AND pd.id = :documentId
+WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
                     """.trimIndent()
                 )
                     .bind("userId", user.id)
