@@ -23,7 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
 import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
@@ -170,26 +170,24 @@ export default React.memo(function DayView({
                   (editableReservation || data.reservations?.length) ? (
                     <FixedSpaceColumn>
                       <FixedSpaceRow alignItems="center">
-                        <InputField
-                          type="time"
+                        <TimeInput
                           onChange={editorStateSetter(child.id, 0, 'startTime')}
                           value={childState[0].startTime}
                           info={errorToInputInfo(
                             childState[0].errors.startTime,
                             i18n.validationErrors
                           )}
-                          readonly={saving}
+                          placeholder={i18n.calendar.reservationModal.start}
                         />
                         <span>–</span>
-                        <InputField
-                          type="time"
+                        <TimeInput
                           onChange={editorStateSetter(child.id, 0, 'endTime')}
                           value={childState[0].endTime}
                           info={errorToInputInfo(
                             childState[0].errors.endTime,
                             i18n.validationErrors
                           )}
-                          readonly={saving}
+                          placeholder={i18n.calendar.reservationModal.end}
                         />
                         {data[1] || !child.inShiftCareUnit ? null : (
                           <IconButton
@@ -200,8 +198,7 @@ export default React.memo(function DayView({
                       </FixedSpaceRow>
                       {data[1] ? (
                         <FixedSpaceRow alignItems="center">
-                          <InputField
-                            type="time"
+                          <TimeInput
                             onChange={editorStateSetter(
                               child.id,
                               1,
@@ -212,18 +209,17 @@ export default React.memo(function DayView({
                               childState[1].errors.startTime,
                               i18n.validationErrors
                             )}
-                            readonly={saving}
+                            placeholder={i18n.calendar.reservationModal.start}
                           />
                           <span>–</span>
-                          <InputField
-                            type="time"
+                          <TimeInput
                             onChange={editorStateSetter(child.id, 1, 'endTime')}
                             value={childState[1].endTime}
                             info={errorToInputInfo(
                               childState[1].errors.endTime,
                               i18n.validationErrors
                             )}
-                            readonly={saving}
+                            placeholder={i18n.calendar.reservationModal.end}
                           />
                           <IconButton
                             icon={faTrash}

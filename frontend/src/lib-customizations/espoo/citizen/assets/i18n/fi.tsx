@@ -201,7 +201,9 @@ export default {
         DAILY: 'Päivittäin',
         WEEKLY: 'Viikoittain',
         IRREGULAR: 'Epäsäännöllinen'
-      }
+      },
+      start: 'Alkaa',
+      end: 'Päättyy'
     },
     absenceModal: {
       title: 'Ilmoita poissaolo',
