@@ -325,7 +325,14 @@ class DevApi(
 
     @PostMapping("/fee-decisions")
     fun createFeeDecisions(db: Database.Connection, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
-        db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(decisions)
+            decisions.forEach { fd ->
+                if (fd.sentAt != null) {
+                    tx.updateFeeDecisionSentAt(fd)
+                }
+            }
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -899,6 +906,15 @@ INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient
 """
     )
 }
+
+fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) = createUpdate(
+    """
+UPDATE fee_decision SET sent_at = :sentAt WHERE id = :id    
+    """.trimIndent()
+)
+    .bind("id", feeDecision.id)
+    .bind("sentAt", feeDecision.sentAt)
+    .execute()
 
 data class DevCareArea(
     val id: AreaId = AreaId(UUID.randomUUID()),

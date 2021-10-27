@@ -78,6 +78,7 @@ export interface FeeDecision {
       finalFee: number
     }
   ]
+  sentAt?: Date | null
 }
 
 export interface VoucherValueDecision {
