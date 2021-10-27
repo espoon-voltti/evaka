@@ -154,7 +154,7 @@ export type InputInfo = {
   status?: InfoStatus
 }
 
-interface TextInputProps extends BaseProps {
+export interface TextInputProps extends BaseProps {
   value: string
   onChange?: (value: string) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
