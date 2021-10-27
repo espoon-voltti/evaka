@@ -28,7 +28,8 @@ export default React.memo(function ChildButtons({
 }: Props) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
-  const noteFound = child.dailyNote !== null || !!groupNote
+  const noteFound =
+    child.dailyNote !== null || child.stickyNotes.length > 0 || !!groupNote
   return (
     <IconWrapper>
       <FixedSpaceRow

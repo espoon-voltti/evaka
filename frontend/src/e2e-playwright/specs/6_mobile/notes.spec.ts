@@ -2,6 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  ChildDailyNoteBody,
+  ChildStickyNoteBody,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -20,20 +26,15 @@ import {
   Fixture,
   uuidv4
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
-import MobileListPage from '../../pages/mobile/list-page'
-import MobileChildPage from '../../pages/mobile/child-page'
-import { pairMobileDevice } from '../../utils/mobile'
 import {
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
+import { newBrowserContext } from '../../browser'
+import MobileChildPage from '../../pages/mobile/child-page'
+import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
-import {
-  ChildDailyNoteBody,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import { pairMobileDevice } from '../../utils/mobile'
 
 let page: Page
 let childPage: MobileChildPage
@@ -136,5 +137,31 @@ describe('Child and group notes', () => {
     await childPage.openNotes()
     await notePage.selectTab('group')
     await notePage.assertGroupNote(groupNote)
+  })
+
+  test('Sticky notes can be created', async () => {
+    const note: ChildStickyNoteBody = {
+      note: 'tahmea viesti',
+      expires: LocalDate.today()
+    }
+    const note2 = { ...note, note: 'erittäin tahmea viesti' }
+
+    async function fillNote(note: ChildStickyNoteBody) {
+      await notePage.selectTab('sticky')
+      await notePage.fillStickyNote(note)
+      await notePage.saveStickyNote()
+    }
+
+    await fillNote(note)
+
+    await childPage.openNotes()
+
+    await fillNote(note2)
+    await childPage.assertNotesExist()
+    await childPage.openNotes()
+    await notePage.selectTab('sticky')
+
+    await notePage.assertGroupNote(note, 0)
+    await notePage.assertGroupNote(note2, 1)
   })
 })
