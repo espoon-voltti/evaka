@@ -8,16 +8,14 @@ import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Combobox, { getItemLabel } from 'lib-components/atoms/form/Combobox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Dimmed, H2, Label, P } from 'lib-components/typography'
+import { Dimmed, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { range } from 'lodash'
 import React, {
   useCallback,
   useContext,
@@ -33,32 +31,7 @@ import { InlineAsyncButton } from '../components'
 
 export type StickyNoteBody = { note: string; expires: LocalDate }
 type StickyNote = StickyNoteBody & { id: UUID }
-
-type ValidityOption = { date: LocalDate; label: string }
-type NoteUnderEdit = { id?: UUID; note: string; validity: ValidityOption }
-
-const localDateToValidityOption = (date: LocalDate): ValidityOption => ({
-  date,
-  label: date.format('EEEE dd.MM.yyyy')
-})
-
-const generateNextSevenDays = (): ValidityOption[] =>
-  range(1, 8)
-    .map((n) => LocalDate.today().addDays(n))
-    .map(localDateToValidityOption)
-
-const noteUnderEditToStickyNoteBody = ({
-  validity: { date: expires },
-  note
-}: NoteUnderEdit): StickyNoteBody => ({ note, expires })
-
-const stickyNoteToNoteUnderEdit = ({
-  expires,
-  ...rest
-}: StickyNote): NoteUnderEdit => ({
-  ...rest,
-  validity: localDateToValidityOption(expires)
-})
+type NoteUnderEdit = StickyNoteBody & { id?: UUID }
 
 const ValidTo = styled(Dimmed)`
   font-style: italic;
@@ -137,13 +110,9 @@ export default React.memo(function StickyNoteTab({
     textAreaRef.current.focus()
   }, [])
 
-  const validityOptions = useMemo(() => generateNextSevenDays(), [])
-  const emptyNote = useMemo<NoteUnderEdit>(
-    () => ({
-      note: '',
-      validity: validityOptions[validityOptions.length - 1]
-    }),
-    [validityOptions]
+  const emptyNote = useMemo(
+    () => ({ note: '', expires: LocalDate.today().addDays(7) }),
+    []
   )
   const [note, setNote] = useState<NoteUnderEdit>(emptyNote)
 
@@ -159,14 +128,14 @@ export default React.memo(function StickyNoteTab({
   )
   const editNote = useCallback(
     (n: StickyNote) => {
-      setNote(stickyNoteToNoteUnderEdit(n))
+      setNote(n)
       scrollToFormAndFocus()
     },
     [scrollToFormAndFocus]
   )
   const saveNote = useCallback(
     () =>
-      onSave(noteUnderEditToStickyNoteBody(note), note.id).then((res) =>
+      onSave(note, note.id).then((res) =>
         res.map(() => {
           clearNote()
           reloadAttendances()
@@ -176,9 +145,6 @@ export default React.memo(function StickyNoteTab({
     [onSave, note, clearNote, reloadAttendances, history]
   )
 
-  const onValidityChange = useCallback((validity: ValidityOption | null) => {
-    validity ? setNote((old) => ({ ...old, validity })) : null
-  }, [])
   const onTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) =>
       setNote((old) => ({ ...old, note: e.target.value })),
@@ -201,16 +167,6 @@ export default React.memo(function StickyNoteTab({
             data-qa="sticky-note-input"
           />
         </FixedSpaceColumn>
-
-        <Gap />
-
-        <Label>{i18n.common.validity}</Label>
-        <Combobox
-          items={validityOptions}
-          selectedItem={note.validity}
-          onChange={onValidityChange}
-          getItemLabel={getItemLabel}
-        />
 
         <Gap />
 

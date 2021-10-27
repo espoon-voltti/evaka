@@ -2,15 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { waitUntilEqual } from '../../utils'
 import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
-  ChildDailyNoteReminder,
-  ChildStickyNoteBody,
-  GroupNoteBody
+  ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
+import { Page } from 'playwright'
+import { waitUntilEqual } from '../../utils'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
@@ -40,8 +38,8 @@ export default class MobileNotePage {
     await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
-  async fillStickyNote({ note }: GroupNoteBody | ChildStickyNoteBody) {
-    if (note) await this.#note.groupNoteInput.type(note)
+  async fillStickyNote(note: string) {
+    await this.#note.groupNoteInput.type(note)
   }
 
   async saveStickyNote() {
@@ -72,10 +70,10 @@ export default class MobileNotePage {
   async saveChildDailyNote() {
     await this.#createNoteButton.click()
   }
-  async assertGroupNote(expected: GroupNoteBody, nth = 0) {
+  async assertGroupNote(expected: string, nth = 0) {
     await waitUntilEqual(
       () => this.#note.stickyNote.nth(nth).locator('p').textContent(),
-      expected.note || ''
+      expected
     )
   }
 

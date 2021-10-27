@@ -2,12 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ChildDailyNoteBody,
-  ChildStickyNoteBody,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import { Page } from 'playwright'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -125,10 +120,7 @@ describe('Child and group notes', () => {
   })
 
   test('Child group note can be created', async () => {
-    const groupNote: GroupNoteBody = {
-      note: 'Testiryhmäviesti',
-      expires: LocalDate.today().addDays(7)
-    }
+    const groupNote = 'Testiryhmäviesti'
 
     await notePage.selectTab('group')
     await notePage.fillStickyNote(groupNote)
@@ -140,13 +132,10 @@ describe('Child and group notes', () => {
   })
 
   test('Sticky notes can be created', async () => {
-    const note: ChildStickyNoteBody = {
-      note: 'tahmea viesti',
-      expires: LocalDate.today()
-    }
-    const note2 = { ...note, note: 'erittäin tahmea viesti' }
+    const note = 'tahmea viesti'
+    const note2 = 'erittäin tahmea viesti'
 
-    async function fillNote(note: ChildStickyNoteBody) {
+    async function fillNote(note: string) {
       await notePage.selectTab('sticky')
       await notePage.fillStickyNote(note)
       await notePage.saveStickyNote()
