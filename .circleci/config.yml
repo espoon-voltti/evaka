@@ -10,6 +10,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.4.4
   owasp: entur/owasp@0.0.16
+  jira: circleci/jira@1.3.1
 
 parameters:
   workspace_root:
@@ -745,7 +746,6 @@ commands:
               exit 1
             }
 
-  # Must be the last step in a job
   skip_when_forked:
     description: "Halt job when forked repository"
     steps:
@@ -753,6 +753,17 @@ commands:
           name: Check can we Slack
           command: |
             if test -n "$CIRCLE_PR_NUMBER"; then # CIRCLE_PR_* only available in forked pull requests
+              circleci-agent step halt
+            fi
+
+  skip_when_not_bash:
+    description: "Halt job when bash is not present"
+    steps:
+      - run:
+          name: Check do we have bash
+          command: |
+            if ! command -v bash; then
+              echo "bash could not be found"
               circleci-agent step halt
             fi
 
@@ -782,6 +793,8 @@ commands:
                 }
               ]
             }
+      - skip_when_not_bash
+      - jira/notify
 
 jobs:
   # MISC JOBS
@@ -833,7 +846,7 @@ jobs:
       - restore_repo
       - run:
           name: Install dependencies
-          command: apk add curl jq git
+          command: apk add --no-cache curl jq git
       - run:
           name: Lint shell scripts
           command: |
@@ -855,7 +868,6 @@ jobs:
               exit 1
             }
       - run:
-          when: on_fail
           name: Install dependencies
           command: apk add curl jq
       - notify_slack
@@ -1008,9 +1020,14 @@ jobs:
     parameters:
       target_env:
         type: string
+      target_env_type:
+        type: string
     steps:
       - deploy_services:
           env: << parameters.target_env >>
+      - jira/notify:
+          environment_type: << parameters.target_env_type >>
+          job_type: deployment
       - notify_slack
 
   frontend_install:
@@ -1031,6 +1048,11 @@ jobs:
     steps:
       - deploy_frontend:
           target_env: << parameters.target_env >>
+      - notify_slack
+
+  deploy:
+    executor: aws_core_executor
+    steps:
       - notify_slack
 
   proxy_build_and_push_image:
@@ -1597,19 +1619,35 @@ workflows:
             - frontend_install
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - jira-connection # TODO: remove
 
       - services_deploy:
           <<: *aws_contexts
-          name: services_deploy_<< matrix.target_env >>
+          name: services_deploy_dev
           requires:
             - clone_infra_repo
           filters:
             branches:
-              only: master
-          matrix:
-            parameters:
-              target_env: [dev, test]
+              only:
+                - master
+                - jira-connection # TODO: remove
+          target_env: dev
+          target_env_type: development
+
+      - services_deploy:
+          <<: *aws_contexts
+          name: services_deploy_test
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only:
+                - master
+                - jira-connection # TODO: remove
+          target_env: test
+          target_env_type: testing
 
       - frontend_install:
           <<: *aws_contexts
@@ -1638,10 +1676,34 @@ workflows:
             - clone_infra_repo
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - jira-connection # TODO: remove
           matrix:
             parameters:
               target_env: [dev, test]
+
+      - deploy:
+          <<: *aws_contexts
+          name: deploy_dev
+          requires:
+            - frontend_deploy_dev
+            - services_deploy_dev
+          post-steps:
+            - jira/notify:
+                environment_type: development
+                job_type: deployment
+
+      - deploy:
+          <<: *aws_contexts
+          name: deploy_test
+          requires:
+            - frontend_deploy_test
+            - services_deploy_test
+          post-steps:
+            - jira/notify:
+                environment_type: testing
+                job_type: deployment
 
   cleanup_frontends:
     triggers:
