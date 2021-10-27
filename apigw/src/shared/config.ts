@@ -63,7 +63,8 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
   try {
     return parser(value)
   } catch (err) {
-    throw new Error(`${err.message}: ${key}=${value}`)
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`${message}: ${key}=${value}`)
   }
 }
 
@@ -78,7 +79,8 @@ function envArray<T>(
   try {
     return values.map(parser)
   } catch (err) {
-    throw new Error(`${err.message}: ${key}=${value}`)
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`${message}: ${key}=${value}`)
   }
 }
 
