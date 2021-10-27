@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 import { defaultMargins } from 'lib-components/white-space'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -17,13 +17,9 @@ import useTitle from '../useTitle'
 import { headerHeightDesktop } from '../header/const'
 import UnitSearchPanel from '../map/UnitSearchPanel'
 import MapBox from '../map/MapBox'
-import { mapViewBreakpoint, MobileMode } from '../map/const'
-import {
-  calcStraightDistance,
-  UnitWithDistance,
-  UnitWithStraightDistance
-} from '../map/distances'
-import { fetchUnits, queryDistances } from '../map/api'
+import { mapViewBreakpoint, MobileMode } from './const'
+import { calcStraightDistance, UnitWithStraightDistance } from './distances'
+import { fetchUnits, queryDistances } from './api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useUser } from 'citizen-frontend/auth'
@@ -74,26 +70,14 @@ export default React.memo(function MapView() {
   const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
-  const [unitsResult, setUnitsResult] = useState<Result<PublicUnit[]>>(
-    Loading.of()
-  )
-  const loadUnits = useRestApi(fetchUnits, setUnitsResult)
-  useEffect(() => loadUnits(careType), [careType, loadUnits])
+  const [allUnits] = useApiState(fetchUnits, careType)
 
-  const [filteredUnits, setFilteredUnits] = useState<Result<PublicUnit[]>>(
-    filterUnits(unitsResult, careType, languages, providerTypes, shiftCare)
+  const filteredUnits = useMemo<Result<PublicUnit[]>>(
+    () => filterUnits(allUnits, careType, languages, providerTypes, shiftCare),
+    [allUnits, careType, languages, providerTypes, shiftCare]
   )
-  useEffect(() => {
-    setFilteredUnits(
-      filterUnits(unitsResult, careType, languages, providerTypes, shiftCare)
-    )
-  }, [unitsResult, careType, languages, providerTypes, shiftCare])
 
-  const [unitsWithDistances, setUnitsWithDistances] = useState<
-    Result<UnitWithDistance[]>
-  >(Success.of([]))
-  const loadDistance = useRestApi(queryDistances, setUnitsWithDistances)
-  useEffect(() => {
+  const fetchUnitsWithDistances = useCallback(async () => {
     if (selectedAddress && filteredUnits.isSuccess) {
       const units = filteredUnits.value
 
@@ -105,12 +89,15 @@ export default React.memo(function MapView() {
             : null
         })
       )
-
-      loadDistance(selectedAddress.coordinates, unitsWithStraightDistance)
+      return await queryDistances(
+        selectedAddress.coordinates,
+        unitsWithStraightDistance
+      )
     } else {
-      setUnitsWithDistances(Success.of([]))
+      return Success.of([])
     }
-  }, [loadDistance, selectedAddress, filteredUnits])
+  }, [selectedAddress, filteredUnits])
+  const [unitsWithDistances] = useApiState(fetchUnitsWithDistances)
 
   useTitle(t, t.map.title)
 
@@ -130,7 +117,7 @@ export default React.memo(function MapView() {
           />
         ) : (
           <UnitSearchPanel
-            allUnits={unitsResult}
+            allUnits={allUnits}
             filteredUnits={filteredUnits}
             unitsWithDistances={unitsWithDistances}
             careType={careType}
@@ -171,58 +158,51 @@ const filterUnits = (
   languages: UnitLanguage[],
   providerTypes: ProviderTypeOption[],
   shiftCare: boolean
-): Result<PublicUnit[]> => {
-  if (unitsResult.isLoading) return Loading.of()
-  if (unitsResult.isFailure)
-    return Failure.of({
-      message: unitsResult.message,
-      statusCode: unitsResult.statusCode
-    })
-
-  const filteredUnits = unitsResult.value
-    .filter((u) =>
-      careType === 'DAYCARE'
-        ? u.type.includes('CENTRE') ||
-          u.type.includes('FAMILY') ||
-          u.type.includes('GROUP_FAMILY')
-        : careType === 'CLUB'
-        ? u.type.includes('CLUB')
-        : careType === 'PRESCHOOL'
-        ? u.type.includes('PRESCHOOL') ||
-          u.type.includes('PREPARATORY_EDUCATION')
-        : false
-    )
-    .filter(
-      (u) =>
-        languages.length == 0 ||
-        (!(u.language === 'fi' && !languages.includes('fi')) &&
-          !(u.language === 'sv' && !languages.includes('sv')))
-    )
-    .filter(
-      (u) =>
-        providerTypes.length == 0 ||
-        (!(
-          (u.providerType === 'MUNICIPAL' ||
-            u.providerType === 'MUNICIPAL_SCHOOL') &&
-          !providerTypes.includes('MUNICIPAL')
-        ) &&
-          !(
-            u.providerType === 'PURCHASED' &&
-            !providerTypes.includes('PURCHASED')
+): Result<PublicUnit[]> =>
+  unitsResult.map((value) => {
+    const filteredUnits = value
+      .filter((u) =>
+        careType === 'DAYCARE'
+          ? u.type.includes('CENTRE') ||
+            u.type.includes('FAMILY') ||
+            u.type.includes('GROUP_FAMILY')
+          : careType === 'CLUB'
+          ? u.type.includes('CLUB')
+          : careType === 'PRESCHOOL'
+          ? u.type.includes('PRESCHOOL') ||
+            u.type.includes('PREPARATORY_EDUCATION')
+          : false
+      )
+      .filter(
+        (u) =>
+          languages.length == 0 ||
+          (!(u.language === 'fi' && !languages.includes('fi')) &&
+            !(u.language === 'sv' && !languages.includes('sv')))
+      )
+      .filter(
+        (u) =>
+          providerTypes.length == 0 ||
+          (!(
+            (u.providerType === 'MUNICIPAL' ||
+              u.providerType === 'MUNICIPAL_SCHOOL') &&
+            !providerTypes.includes('MUNICIPAL')
           ) &&
-          !(
-            u.providerType === 'PRIVATE' && !providerTypes.includes('PRIVATE')
-          ) &&
-          !(
-            u.providerType === 'PRIVATE_SERVICE_VOUCHER' &&
-            !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
-          ))
-    )
-    .filter((u) => !shiftCare || u.roundTheClock)
+            !(
+              u.providerType === 'PURCHASED' &&
+              !providerTypes.includes('PURCHASED')
+            ) &&
+            !(
+              u.providerType === 'PRIVATE' && !providerTypes.includes('PRIVATE')
+            ) &&
+            !(
+              u.providerType === 'PRIVATE_SERVICE_VOUCHER' &&
+              !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
+            ))
+      )
+      .filter((u) => !shiftCare || u.roundTheClock)
 
-  const sortedUnits = _.sortBy(filteredUnits, (u) => u.name)
-  return Success.of(sortedUnits)
-}
+    return _.sortBy(filteredUnits, (u) => u.name)
+  })
 
 const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
@@ -253,6 +233,7 @@ const FlexContainer = styled(AdaptiveFlex)`
         display: none;
       }
     }
+
     &.mobile-mode-list {
       .map-box {
         display: none;

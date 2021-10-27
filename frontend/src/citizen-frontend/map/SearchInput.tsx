@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import ReactSelect, {
   components,
@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import {
@@ -23,7 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fasMapMarkerAlt } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
-import { queryAutocomplete } from '../map/api'
+import { queryAutocomplete } from './api'
 import { MapAddress } from './MapView'
 import { useTranslation } from '../localization'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -49,17 +49,14 @@ export default React.memo(function SearchInput({
   const [inputString, setInputString] = useState('')
   const debouncedInputString = useDebounce(inputString, 500)
 
-  const [addressOptions, setAddressOptions] = useState<Result<MapAddress[]>>(
-    Success.of([])
-  )
-  const loadOptions = useRestApi(queryAutocomplete, setAddressOptions)
-  useEffect(() => {
+  const fetchAddressOptions = useCallback(async () => {
     if (debouncedInputString.length > 0) {
-      loadOptions(debouncedInputString)
+      return await queryAutocomplete(debouncedInputString)
     } else {
-      setAddressOptions(Success.of([]))
+      return Success.of([])
     }
-  }, [debouncedInputString, loadOptions])
+  }, [debouncedInputString])
+  const [addressOptions] = useApiState(fetchAddressOptions)
 
   const getUnitOptions = useCallback(() => {
     if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []

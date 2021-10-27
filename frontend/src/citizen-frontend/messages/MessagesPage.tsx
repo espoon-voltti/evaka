@@ -2,13 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
 import { getReceivers, sendMessage } from './api'
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
@@ -19,7 +17,8 @@ import { headerHeightDesktop } from '../header/const'
 import { MessageContext } from './state'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
-import { renderResult } from 'citizen-frontend/async-rendering'
+import { renderResultRaw } from 'citizen-frontend/async-rendering'
+import { combine } from 'lib-common/api'
 
 const FullHeightContainer = styled(Container)`
   height: calc(100vh - ${headerHeightDesktop}px);
@@ -44,50 +43,43 @@ export default React.memo(function MessagesPage() {
   }, [accountId, loadAccount])
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
-  const [receivers, setReceivers] = useState<Result<MessageAccount[]>>(
-    Loading.of()
-  )
   const t = useTranslation()
-  const loadReceivers = useRestApi(getReceivers, setReceivers)
-
-  useEffect(() => {
-    loadReceivers(t.messages.staffAnnotation)
-  }, [loadReceivers, t.messages.staffAnnotation])
+  const [receivers] = useApiState(getReceivers, t.messages.staffAnnotation)
 
   return (
     <FullHeightContainer>
-      <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-        {renderResult(accountId, (id) => (
-          <>
+      {renderResultRaw(combine(accountId, receivers), ([id, receivers]) => (
+        <>
+          <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
             <ThreadList
               accountId={id}
               setEditorVisible={setEditorVisible}
-              newMessageButtonEnabled={receivers.isSuccess && !editorVisible}
+              newMessageButtonEnabled={!editorVisible}
             />
             {selectedThread ? (
               <ThreadView accountId={id} thread={selectedThread} />
             ) : (
               <EmptyThreadView inboxEmpty={threads.length == 0} />
             )}
-          </>
-        ))}
-      </StyledFlex>
-      {editorVisible && receivers.isSuccess && (
-        <MessageEditor
-          receiverOptions={receivers.value}
-          onSend={(message) =>
-            sendMessage(message).then((result) => {
-              if (result.isSuccess) {
-                refreshThreads()
-              } else {
-                setDisplaySendError(true)
+          </StyledFlex>
+          {editorVisible && (
+            <MessageEditor
+              receiverOptions={receivers}
+              onSend={(message) =>
+                sendMessage(message).then((result) => {
+                  if (result.isSuccess) {
+                    refreshThreads()
+                  } else {
+                    setDisplaySendError(true)
+                  }
+                })
               }
-            })
-          }
-          onClose={() => setEditorVisible(false)}
-          displaySendError={displaySendError}
-        />
-      )}
+              onClose={() => setEditorVisible(false)}
+              displaySendError={displaySendError}
+            />
+          )}
+        </>
+      ))}
     </FullHeightContainer>
   )
 })

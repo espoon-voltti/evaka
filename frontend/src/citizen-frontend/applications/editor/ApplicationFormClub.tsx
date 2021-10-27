@@ -11,7 +11,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import LocalDate from 'lib-common/local-date'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
+import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormClub({
   apiData,
@@ -39,17 +39,13 @@ export default React.memo(function ApplicationFormClub({
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  serviceNeed: {
-                    ...old?.serviceNeed,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            serviceNeed: {
+              ...old.serviceNeed,
+              ...data
+            }
+          }))
         }
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
@@ -59,17 +55,13 @@ export default React.memo(function ApplicationFormClub({
       <UnitPreferenceSection
         formData={formData.unitPreference}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  unitPreference: {
-                    ...old?.unitPreference,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            unitPreference: {
+              ...old.unitPreference,
+              ...data
+            }
+          }))
         }
         applicationType={applicationType}
         preparatory={false}
@@ -85,17 +77,13 @@ export default React.memo(function ApplicationFormClub({
         type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  contactInfo: {
-                    ...old?.contactInfo,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            contactInfo: {
+              ...old.contactInfo,
+              ...data
+            }
+          }))
         }
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
@@ -112,17 +100,13 @@ export default React.memo(function ApplicationFormClub({
       <AdditionalDetailsSection
         formData={formData.additionalDetails}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  additionalDetails: {
-                    ...old?.additionalDetails,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            additionalDetails: {
+              ...old.additionalDetails,
+              ...data
+            }
+          }))
         }
         errors={errors.additionalDetails}
         verificationRequested={verificationRequested}

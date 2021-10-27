@@ -4,11 +4,8 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   getApplication,
   getClubTerms,
@@ -16,7 +13,7 @@ import {
   saveApplicationDraft,
   sendApplication,
   updateApplication
-} from '../../applications/api'
+} from '../api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { useTranslation } from '../../localization'
 import { useUser } from '../../auth'
@@ -31,7 +28,7 @@ import {
   applicationHasErrors,
   Term,
   validateApplication
-} from '../../applications/editor/validations'
+} from './validations'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -47,6 +44,8 @@ import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
 import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
 import Footer from '../../Footer'
 import useTitle from '../../useTitle'
+import { UUID } from 'lib-common/types'
+import { renderResult } from '../../async-rendering'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
@@ -396,16 +395,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 })
 
 export default React.memo(function ApplicationEditor() {
-  const { applicationId } = useParams<{ applicationId: string }>()
+  const { applicationId } = useParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
-    Loading.of()
-  )
-
-  const loadApplication = useRestApi(getApplication, setApiData)
-  useEffect(() => {
-    loadApplication(applicationId)
-  }, [applicationId, loadApplication])
+  const [apiData] = useApiState(getApplication, applicationId)
 
   useTitle(
     t,
@@ -417,11 +409,9 @@ export default React.memo(function ApplicationEditor() {
   return (
     <>
       <Container>
-        {apiData.isLoading && <SpinnerSegment />}
-        {apiData.isFailure && <ErrorSegment />}
-        {apiData.isSuccess && (
-          <ApplicationEditorContent apiData={apiData.value} />
-        )}
+        {renderResult(apiData, (value) => (
+          <ApplicationEditorContent apiData={value} />
+        ))}
       </Container>
       <Footer />
     </>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ContentArea } from 'lib-components/layout/Container'
 import Footer from '../Footer'
@@ -10,57 +10,50 @@ import CalendarListView from './CalendarListView'
 import CalendarGridView from './CalendarGridView'
 import { getReservations } from './api'
 import LocalDate from 'lib-common/local-date'
-import { Loading, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   DailyReservationData,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { useTranslation } from '../localization'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUser } from '../auth'
 import ReservationModal from './ReservationModal'
 import AbsenceModal from './AbsenceModal'
 import DayView from './DayView'
-
 import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import { Gap } from 'lib-components/white-space'
-import _ from 'lodash'
 import ActionPickerModal from './ActionPickerModal'
-import { UnwrapResult } from 'citizen-frontend/async-rendering'
+import { renderResultRaw } from 'citizen-frontend/async-rendering'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+
+async function getReservationsDefaultRange(): Promise<
+  Result<ReservationsResponse>
+> {
+  return await getReservations(
+    LocalDate.today().subMonths(1).startOfMonth().startOfWeek(),
+    LocalDate.today().addYears(1).lastDayOfMonth()
+  )
+}
 
 export default React.memo(function CalendarPage() {
   const history = useHistory()
   const location = useLocation()
-  const i18n = useTranslation()
   const user = useUser()
 
-  const [data, setData] = useState<Result<ReservationsResponse>>(Loading.of())
+  const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange)
   const [openModal, setOpenModal] = useState<
     'pickAction' | 'reservations' | 'absences'
   >()
 
-  const loadData = useRestApi(getReservations, setData)
-  const loadDefaultRange = useCallback(
-    () =>
-      loadData(
-        LocalDate.today().subMonths(1).startOfMonth().startOfWeek(),
-        LocalDate.today().addYears(1).lastDayOfMonth()
-      ),
-    [loadData]
-  )
-
-  useEffect(loadDefaultRange, [loadDefaultRange])
-
   const dateParam = new URLSearchParams(location.search).get('day')
   const selectedDate = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
   const selectDate = useCallback(
-    (date: LocalDate) =>
-      void history.replace(`calendar?day=${date.formatIso()}`),
+    (date: LocalDate) => history.replace(`calendar?day=${date.formatIso()}`),
     [history]
   )
   const closeDayView = useCallback(
-    () => void history.replace('/calendar'),
+    () => history.replace('/calendar'),
     [history]
   )
 
@@ -92,11 +85,10 @@ export default React.memo(function CalendarPage() {
           openAbsenceModal={() => setOpenModal('absences')}
         />
       ) : null}
-      <UnwrapResult
-        result={data}
-        failure={() => <div>{i18n.common.errors.genericGetError}</div>}
-      >
-        {(response) => (
+      {renderResultRaw(data, (response, isReloading) =>
+        isReloading ? (
+          <SpinnerSegment />
+        ) : (
           <>
             <MobileOnly>
               <ContentArea
@@ -147,8 +139,8 @@ export default React.memo(function CalendarPage() {
               />
             )}
           </>
-        )}
-      </UnwrapResult>
+        )
+      )}
       <Footer />
     </>
   )

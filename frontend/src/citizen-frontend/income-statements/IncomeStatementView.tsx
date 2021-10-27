@@ -16,7 +16,7 @@ import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { OverlayContext } from '../overlay/state'
 import { getIncomeStatement } from './api'
 import {
@@ -24,10 +24,8 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income,
-  IncomeStatement
+  Income
 } from 'lib-common/api-types/incomeStatement'
-import { Loading, Result } from 'lib-common/api'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
@@ -45,15 +43,7 @@ export default React.memo(function IncomeStatementView({
   const { incomeStatementId } = match.params
   const t = useTranslation()
   const history = useHistory()
-  const [result, setResult] = React.useState<Result<IncomeStatement>>(
-    Loading.of()
-  )
-
-  const loadIncomeStatement = useRestApi(getIncomeStatement, setResult)
-
-  React.useEffect(() => {
-    loadIncomeStatement(incomeStatementId)
-  }, [loadIncomeStatement, incomeStatementId])
+  const [result] = useApiState(getIncomeStatement, incomeStatementId)
 
   const handleEdit = () => {
     history.push('edit')

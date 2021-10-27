@@ -2,35 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
-import { Loading, Result } from 'lib-common/api'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getApplication } from '../../applications/api'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { getApplication } from '../api'
 import Container from 'lib-components/layout/Container'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useUser } from '../../auth'
 import { useTranslation } from '../../localization'
 import Footer from '../../Footer'
 import useTitle from '../../useTitle'
 import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
+import { renderResult } from '../../async-rendering'
+import { UUID } from 'lib-common/types'
 
 export default React.memo(function ApplicationReadView() {
-  const { applicationId } = useParams<{ applicationId: string }>()
+  const { applicationId } = useParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const user = useUser()
-
-  const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
-    Loading.of()
-  )
-
-  const loadApplication = useRestApi(getApplication, setApiData)
-  useEffect(() => {
-    loadApplication(applicationId)
-  }, [applicationId, loadApplication])
+  const [apiData] = useApiState(getApplication, applicationId)
 
   useTitle(
     t,
@@ -42,14 +32,12 @@ export default React.memo(function ApplicationReadView() {
   return (
     <>
       <Container>
-        {apiData.isLoading && <SpinnerSegment />}
-        {apiData.isFailure && <ErrorSegment />}
-        {apiData.isSuccess && (
+        {renderResult(apiData, (value) => (
           <ApplicationReadViewContents
-            application={apiData.value}
-            formData={apiDataToFormData(apiData.value, user)}
+            application={value}
+            formData={apiDataToFormData(value, user)}
           />
-        )}
+        ))}
       </Container>
       <Footer />
     </>
