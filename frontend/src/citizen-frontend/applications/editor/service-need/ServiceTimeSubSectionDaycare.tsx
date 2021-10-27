@@ -65,10 +65,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   )
 
   const updateServiceNeed = (partTime: boolean) => {
+    let serviceNeedOption = formData.serviceNeedOption
+    if (partTime && partTimeOptions.length > 0) {
+      serviceNeedOption = partTimeOptions[0]
+    } else if (!partTime && fullTimeOptions.length > 0) {
+      serviceNeedOption = fullTimeOptions[0]
+    }
     updateFormData({
       partTime,
-      serviceNeedOption:
-        formData.serviceNeedOption !== null ? fullTimeOptions[0] : null
+      serviceNeedOption
     })
   }
 
@@ -125,7 +130,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             })
           }
         />
-        {partTimeOptions.length > 0 && formData.partTime && (
+        {formData.partTime && partTimeOptions.length > 0 && (
           <SubRadios>
             <FixedSpaceColumn spacing={'xs'}>
               {partTimeOptions.map((opt) => (
@@ -147,7 +152,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           data-qa={'partTime-input-false'}
           onChange={() => updateServiceNeed(false)}
         />
-        {fullTimeOptions.length > 0 && !formData.partTime && (
+        {!formData.partTime && fullTimeOptions.length > 0 && (
           <SubRadios>
             <FixedSpaceColumn spacing={'xs'}>
               {fullTimeOptions.map((opt) => (

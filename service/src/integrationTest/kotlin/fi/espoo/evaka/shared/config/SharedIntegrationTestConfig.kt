@@ -167,5 +167,8 @@ class SharedIntegrationTestConfig {
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun featureFlags(): FeatureFlags = FeatureFlags.defaults()
+    fun featureFlags(): FeatureFlags = FeatureFlags(
+        valueDecisionCapacityFactorEnabled = false,
+        daycareApplicationServiceNeedOptionsEnabled = false
+    )
 }

@@ -202,12 +202,18 @@ export default React.memo(function ApplicationEditView({
   }
 
   const updateServiceNeed = (partTime: boolean) => {
+    let serviceNeedOption = serviceNeed?.serviceNeedOption
+    if (partTime && partTimeOptions.length > 0) {
+      serviceNeedOption = partTimeOptions[0]
+    } else if (!partTime && fullTimeOptions.length > 0) {
+      serviceNeedOption = fullTimeOptions[0]
+    }
     setApplication(
       flow(
         set('form.preferences.serviceNeed.partTime', partTime),
         set(
           'form.preferences.serviceNeed.serviceNeedOption',
-          serviceNeed?.serviceNeedOption ? partTimeOptions[0] : null
+          serviceNeedOption
         )
       )
     )
@@ -283,7 +289,7 @@ export default React.memo(function ApplicationEditView({
                         updateServiceNeed(true)
                       }}
                     />
-                    {serviceNeed.serviceNeedOption !== null &&
+                    {partTimeOptions.length > 0 &&
                       serviceNeed.partTime && (
                         <SubRadios>
                           <FixedSpaceColumn spacing={'xs'}>
@@ -322,8 +328,7 @@ export default React.memo(function ApplicationEditView({
                         )
                       }}
                     />
-                    {serviceNeed.serviceNeedOption !== null &&
-                      !serviceNeed.partTime && (
+                    {!serviceNeed.partTime && fullTimeOptions.length > 0 && (
                         <SubRadios>
                           <FixedSpaceColumn spacing={'xs'}>
                             {fullTimeOptions.map((opt) => (

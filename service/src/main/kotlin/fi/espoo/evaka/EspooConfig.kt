@@ -63,7 +63,7 @@ class EspooConfig {
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun featureFlags(): FeatureFlags = FeatureFlags.defaults().copy(
+    fun featureFlags(): FeatureFlags = FeatureFlags(
         valueDecisionCapacityFactorEnabled = false,
         daycareApplicationServiceNeedOptionsEnabled = false
     )
