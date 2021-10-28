@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/note'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -35,7 +35,6 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import React, {
   Fragment,
-  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -269,21 +268,6 @@ export default React.memo(function NotesEditor() {
     )
   }
 
-  function WithNoteInfo({ children }: { children: ReactNode }) {
-    return (
-      <ExpandingInfo
-        info={
-          <InfoText noMargin>
-            {i18n.attendances.notes.noteInfo.join('\n\n')}
-          </InfoText>
-        }
-        ariaLabel={i18n.common.openExpandingInfo}
-      >
-        {children}
-      </ExpandingInfo>
-    )
-  }
-
   const goBackWithConfirm = useCallback(() => {
     if (dirty) {
       setUiMode('confirmExit')
@@ -313,22 +297,28 @@ export default React.memo(function NotesEditor() {
           <>
             <ContentArea shadow opaque paddingHorizontal="s">
               <FixedSpaceColumn spacing="m">
-                {dailyNoteId && (
-                  <FixedSpaceRow fullWidth justifyContent="flex-end">
-                    <InlineButton
+                <FixedSpaceRow fullWidth justifyContent="space-between">
+                  <ExpandingInfo
+                    info={
+                      <InfoText noMargin>
+                        {i18n.attendances.notes.noteInfo.join('\n\n')}
+                      </InfoText>
+                    }
+                    ariaLabel={i18n.common.openExpandingInfo}
+                  >
+                    <H2 primary noMargin>
+                      {i18n.attendances.notes.note}
+                    </H2>
+                  </ExpandingInfo>
+                  {dailyNoteId && (
+                    <ResponsiveInlineButton
                       onClick={() => setUiMode('confirmDelete')}
                       text={i18n.common.clear}
                       icon={faTrash}
                       data-qa="open-delete-dialog-btn"
                     />
-                  </FixedSpaceRow>
-                )}
-
-                <WithNoteInfo>
-                  <H2 primary noMargin>
-                    {i18n.attendances.notes.note}
-                  </H2>
-                </WithNoteInfo>
+                  )}
+                </FixedSpaceRow>
 
                 <TextArea
                   value={dailyNote.note || ''}
