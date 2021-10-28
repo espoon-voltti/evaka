@@ -1334,7 +1334,7 @@ workflows:
           filters:
             branches:
               only: /pull\/[0-9]+/
-          name: check_licenses_form
+          name: check_licenses_fork
           requires:
             - checkout_repo
 
