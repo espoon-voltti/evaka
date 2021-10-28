@@ -172,18 +172,20 @@ internal fun generateDraftInvoice(
 
     val rows = rowStubs
         .groupBy { (_, stub) -> stub.child }
-        .values.flatMap { mergePeriods(it) }
-        .flatMap { (period, rowStub) ->
-            val placementUnit = rowStub.placement.unit
-            val codes = daycareCodes[placementUnit]
-                ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
-            toInvoiceRows(
-                period,
-                rowStub,
-                codes,
-                operationalDays,
-                absences.filter { it.childId == rowStub.child.id }
-            )
+        .flatMap { (_, childStubs) ->
+            mergePeriods(childStubs).fold(listOf<InvoiceRow>()) { existingRows, (period, rowStub) ->
+                val placementUnit = rowStub.placement.unit
+                val codes = daycareCodes[placementUnit]
+                    ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
+                existingRows + toInvoiceRows(
+                    period,
+                    existingRows.map { DateRange(it.periodStart, it.periodEnd) },
+                    rowStub,
+                    codes,
+                    operationalDays,
+                    absences.filter { it.childId == rowStub.child.id }
+                )
+            }
         }
         .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
         .filter { row -> row.price() != 0 }
@@ -214,6 +216,7 @@ internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: Int):
 
 internal fun toInvoiceRows(
     period: DateRange,
+    processedPeriods: List<DateRange>,
     invoiceRowStub: InvoiceRowStub,
     codes: DaycareCodes,
     operationalDays: OperationalDays,
@@ -224,6 +227,7 @@ internal fun toInvoiceRows(
     return when (placement) {
         is PermanentPlacement -> toPermanentPlacementInvoiceRows(
             period,
+            processedPeriods,
             child,
             placement,
             price,
@@ -274,6 +278,7 @@ private fun toTemporaryPlacementInvoiceRows(
 
 private fun toPermanentPlacementInvoiceRows(
     period: DateRange,
+    processedPeriods: List<DateRange>,
     child: PersonData.WithDateOfBirth,
     placement: PermanentPlacement,
     price: Int,
@@ -288,7 +293,6 @@ private fun toPermanentPlacementInvoiceRows(
             operationalDays.generalCase.filter { day -> period.includes(day) }
         }
 
-        val unitDays = unitOperationalDays.filter { day -> period.includes(day) }
         val weeks = operationalDays.fullMonth.fold(listOf<List<LocalDate>>()) { weeks, date ->
             if (weeks.isEmpty()) listOf(listOf(date))
             else {
@@ -298,7 +302,13 @@ private fun toPermanentPlacementInvoiceRows(
         }
 
         weeks.flatMap { week ->
-            week.filter { unitDays.contains(it) }.take(operationalDays.generalCase.intersect(week).size)
+            val operationalWeekDays = week.filter { unitOperationalDays.contains(it) }
+            val (alreadyProcessedDays, daysLeftToProcess) = operationalWeekDays.partition { day ->
+                processedPeriods.any { it.includes(day) }
+            }
+            daysLeftToProcess
+                .filter { period.includes(it) }
+                .take(maxOf(0, operationalDays.generalCase.intersect(week).size - alreadyProcessedDays.size))
         }
     }
     if (relevantDays.isEmpty()) return listOf()

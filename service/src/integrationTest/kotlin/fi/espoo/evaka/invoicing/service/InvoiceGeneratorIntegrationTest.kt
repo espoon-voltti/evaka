@@ -1868,6 +1868,77 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `invoice generation placement is to a round the clock unit and itchanges in the middle of the month`() {
+        val firstPeriod = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14))
+        val secondPeriod = DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31))
+        val period = firstPeriod.copy(end = secondPeriod.end)
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                firstPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id!!,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
+                )
+            ),
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                secondPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id!!,
+                        placementType = PlacementType.DAYCARE_PART_TIME,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(decisions)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(8, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(12168, invoiceRow.price())
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(11, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(16731, invoiceRow.price())
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1, invoiceRow.unitPrice)
+                assertEquals(1, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation for round the clock unit with a force majeure absence during the week`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
