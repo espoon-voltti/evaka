@@ -5,3 +5,5 @@
 export const modalZIndex = 40
 
 export const errorModalZIndex = modalZIndex * 2
+
+export const spinnerOverlayZIndex = modalZIndex / 2

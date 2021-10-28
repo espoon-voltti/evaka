@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { transparentize } from 'polished'
 import { defaultMargins, SpacingSize } from '../../white-space'
+import { spinnerOverlayZIndex } from '../../layout/z-helpers'
 
 const spinnerSize = '50px'
 
@@ -67,7 +68,7 @@ const SpinnerOverlayRoot = styled.div`
   bottom: 0;
   background-color: white;
   opacity: 0.8;
-  z-index: 100;
+  z-index: ${spinnerOverlayZIndex};
   display: flex;
   align-items: center;
   justify-content: center;
