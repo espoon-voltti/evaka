@@ -1695,7 +1695,8 @@ const en: Translations = {
       date: 'Date',
       document: 'Document',
       description: 'Description'
-    }
+    },
+    toggleExpandText: 'Show or hide the text'
   }
 }
 
