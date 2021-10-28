@@ -341,6 +341,7 @@ function useEditState(
 
                   const oppositeField =
                     field === 'startTime' ? 'endTime' : 'startTime'
+                  const oppositeValue = timeRange[oppositeField]
 
                   return {
                     ...timeRange,
@@ -348,16 +349,13 @@ function useEditState(
                     errors: {
                       ...timeRange.errors,
                       [field]:
-                        value === '' &&
-                        timeRange[
-                          field === 'startTime' ? 'endTime' : 'startTime'
-                        ] !== ''
+                        value === '' && oppositeValue !== ''
                           ? 'required'
                           : regexp(value, TIME_REGEXP, 'timeFormat'),
                       [oppositeField]:
-                        value !== '' && timeRange[oppositeField] === ''
+                        oppositeValue === '' && value !== ''
                           ? 'required'
-                          : regexp(value, TIME_REGEXP, 'timeFormat')
+                          : regexp(oppositeValue, TIME_REGEXP, 'timeFormat')
                     }
                   }
                 })
