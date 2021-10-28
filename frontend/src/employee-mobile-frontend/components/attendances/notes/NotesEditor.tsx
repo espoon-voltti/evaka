@@ -489,7 +489,7 @@ export default React.memo(function NotesEditor() {
     const tabs = [
       {
         type: 'NOTE' as const,
-        title: i18n.common.child,
+        title: i18n.attendances.notes.day,
         noteCount: dailyNoteId ? 1 : 0
       },
       {

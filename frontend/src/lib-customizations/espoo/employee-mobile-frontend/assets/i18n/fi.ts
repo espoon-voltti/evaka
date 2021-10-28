@@ -161,6 +161,7 @@ export const fi = {
       variableTimesShort: 'Sop.aika vaihtelee'
     },
     notes: {
+      day: 'Päivä',
       dailyNotes: 'Muistiinpanot',
       addNew: 'Lisää uusi',
       labels: {
@@ -202,8 +203,7 @@ export const fi = {
       otherThings: 'Muut asiat',
       noteInfo: [
         'Muistiinpanoihin ei merkitä terveystietoihin tai salassapidettäviin asioihin liittyviä tietoja.',
-        'Lapsi-välilehden muistiinpanot säilytetään 16 tuntia ja Huom! -välilehden merkinnät viikon ajan luomis-/päivityshetkestä lukien. Tämän jälkeen ne poistetaan automaattisesti.',
-        'Ryhmän muistiinpanot ovat voimassa toistaiseksi.'
+        'Päivä-välilehden muistiinpanot säilytetään vähintään 16 tuntia luomis-/päivityshetkestä lukien, jonka jälkeen ne poistetaan automaattisesti.'
       ],
       childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
