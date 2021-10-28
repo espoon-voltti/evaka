@@ -14,6 +14,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Button from 'lib-components/atoms/buttons/Button'
 import { Line } from 'react-chartjs-2'
 import colors from 'lib-customizations/common'
+import { ChartOptions } from 'chart.js'
 
 export default React.memo(function AIPage() {
   const [status, setStatus] = useState<Result<Status>>(Loading.of())
@@ -141,33 +142,29 @@ interface Generation {
   cost: number
 }
 
-function getGraphOptions() {
+function getGraphOptions(): ChartOptions<'line'> {
   return {
     scales: {
-      xAxes: [
-        {
-          type: 'linear',
-          ticks: {
-            min: 1,
-            suggestedMax: 200
+      xAxis: {
+        type: 'linear',
+        min: 1,
+        suggestedMax: 200
+      },
+      yAxis: {
+        min: 0,
+        max: 1.3,
+        ticks: {
+          maxTicksLimit: 10,
+          callback: function (value) {
+            return `${String(100 * Number(value))} %`
           }
         }
-      ],
-      yAxes: [
-        {
-          ticks: {
-            min: 0,
-            max: 1.3,
-            maxTicksLimit: 10,
-            callback: function (value: unknown) {
-              return `${String(100 * Number(value))} %`
-            }
-          }
-        }
-      ]
+      }
     },
-    legend: {
-      display: true
+    plugins: {
+      legend: {
+        display: true
+      }
     }
   }
 }

@@ -8,13 +8,13 @@ import { defaults, Line } from 'react-chartjs-2'
 import { OccupancyResponse } from '../../../../api/unit'
 import colors from 'lib-customizations/common'
 import { formatDate } from 'lib-common/date'
+import { ChartOptions } from 'chart.js'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-defaults.global.animation = false
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-defaults.global.defaultFontFamily = '"Open Sans", "Arial", sans-serif'
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-defaults.global.defaultFontColor = colors.greyscale.darkest
+defaults.animation = false
+defaults.font = {
+  family: '"Open Sans", "Arial", sans-serif'
+}
+defaults.color = colors.greyscale.darkest
 
 type DatePoint = { x: Date; y: number | null | undefined }
 
@@ -44,60 +44,49 @@ function getGraphData(occupancies: OccupancyResponse) {
   return data
 }
 
-function getGraphOptions(startDate: Date, endDate: Date) {
+function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
   return {
     scales: {
-      xAxes: [
-        {
-          type: 'time',
-          ticks: {
-            min: startDate,
-            max: endDate
+      xAxis: {
+        type: 'time',
+        min: startDate.getDate(),
+        max: endDate.getDate(),
+        time: {
+          displayFormats: {
+            day: 'd.M'
           },
-          time: {
-            displayFormats: {
-              day: 'd.M'
-            },
-            minUnit: 'day'
-          },
-          adapters: {
-            date: {
-              locale: fi
-            }
-          }
-        }
-      ],
-      yAxes: [
-        {
-          ticks: {
-            min: 0,
-            maxTicksLimit: 5,
-            callback: function (value: unknown) {
-              return `${String(value)} %`
-            }
-          }
-        }
-      ]
-    },
-    legend: {
-      display: false
-    },
-    tooltips: {
-      callbacks: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        title: function (tooltipItems: unknown, data: any) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          const tooltipItem = (tooltipItems as any[])[0]
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const date =
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].x
-          return formatDate(date)
+          minUnit: 'day'
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        label: function (tooltipItem: any) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          return `${String(tooltipItem.yLabel)} %`
+        adapters: {
+          date: {
+            locale: fi
+          }
+        }
+      },
+      yAxis: {
+        min: 0,
+        ticks: {
+          maxTicksLimit: 5,
+          callback: function (value: unknown) {
+            return `${String(value)} %`
+          }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          title: function (tooltipItems) {
+            const tooltipItem = tooltipItems[0]
+            const date = new Date(tooltipItem.parsed.x)
+            return formatDate(date)
+          },
+          label: function (tooltipItem) {
+            return `${String(tooltipItem.parsed.y)} %`
+          }
         }
       }
     }

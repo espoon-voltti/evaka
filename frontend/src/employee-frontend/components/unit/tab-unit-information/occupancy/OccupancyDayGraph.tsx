@@ -10,6 +10,7 @@ import colors from 'lib-customizations/common'
 import { formatTime } from 'lib-common/date'
 import { ceil } from 'lodash'
 import { useTranslation } from '../../../../state/i18n'
+import { ChartOptions } from 'chart.js'
 
 type DatePoint = { x: Date; y: number | null }
 
@@ -25,55 +26,46 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
     y: p.occupancyRatio !== null ? p.occupancyRatio * 100 : null
   }))
 
-  const graphOptions = {
+  const graphOptions: ChartOptions<'line'> = {
     scales: {
-      xAxes: [
-        {
-          type: 'time',
-          time: {
-            displayFormats: {
-              hour: 'HH:00'
-            },
-            minUnit: 'hour'
+      xAxis: {
+        type: 'time',
+        time: {
+          displayFormats: {
+            hour: 'HH:00'
           },
-          adapters: {
-            date: {
-              locale: fi
-            }
-          }
-        }
-      ],
-      yAxes: [
-        {
-          ticks: {
-            min: 0,
-            maxTicksLimit: 5,
-            callback: function (value: unknown) {
-              return `${String(value)} %`
-            }
-          }
-        }
-      ]
-    },
-    legend: {
-      display: false
-    },
-    tooltips: {
-      callbacks: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        title: function (tooltipItems: unknown, data: any) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          const tooltipItem = (tooltipItems as any[])[0]
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const date =
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].x
-          return formatTime(date)
+          minUnit: 'hour'
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        label: function (tooltipItem: any) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          return `${String(ceil(tooltipItem.yLabel * 100) / 100)} %`
+        adapters: {
+          date: {
+            locale: fi
+          }
+        }
+      },
+      yAxis: {
+        min: 0,
+        ticks: {
+          maxTicksLimit: 5,
+          callback: function (value) {
+            return `${String(value)} %`
+          }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          title: function (tooltipItems) {
+            const tooltipItem = tooltipItems[0]
+            const date = new Date(tooltipItem.parsed.x)
+            return formatTime(date)
+          },
+          label: function (tooltipItem) {
+            return `${String(ceil(tooltipItem.parsed.y * 100) / 100)} %`
+          }
         }
       }
     }
@@ -88,7 +80,6 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
               label: i18n.unit.occupancy.subtitles.realized,
               data: graphData,
               spanGaps: true,
-              steppedLine: true,
               stepped: 'after',
               fill: false,
               pointBackgroundColor: colors.accents.green,

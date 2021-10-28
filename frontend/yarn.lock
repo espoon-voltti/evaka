@@ -4325,41 +4325,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:^2.9.4":
-  version: 2.9.4
-  resolution: "chart.js@npm:2.9.4"
-  dependencies:
-    chartjs-color: ^2.1.0
-    moment: ^2.10.2
-  checksum: cbdc7abe2fa65e4838848e68b035ae6048ebcc512b9057d7cdb6d361e728400d39e3fde75e0b4da815ab43f7890c31787d8f80d4e6ab75a3e80fc75b47cd173c
+"chart.js@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "chart.js@npm:3.6.0"
+  checksum: c5d372cb5249d668993a3ddc455b86d5504aa8c34815daa3782fc63d23b62551bcfb06c1c87934b1c88996f9aa922d707bb1e69874c0d3af7dfede7c11ba3c90
   languageName: node
   linkType: hard
 
-"chartjs-adapter-date-fns@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "chartjs-adapter-date-fns@npm:1.0.0"
+"chartjs-adapter-date-fns@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "chartjs-adapter-date-fns@npm:2.0.0"
   peerDependencies:
-    chart.js: ">= 2.8.0 < 3"
-  checksum: bbf05cc2d9765f86d2281a028706b2f7c3d2ac65ba11b45e98c8fe7b40e029372bb15356493a934bba8e054888c581e019740005b00f52ab05be88e8e348fa16
-  languageName: node
-  linkType: hard
-
-"chartjs-color-string@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "chartjs-color-string@npm:0.6.0"
-  dependencies:
-    color-name: ^1.0.0
-  checksum: 2355bc8e9514b779d0dc057c5ee6707e8166f270531c27287a399d6bfeb0d891b00a6f6c20e764453a062de0de8b298b11d3850fc94c323df66efb4720ece4c7
-  languageName: node
-  linkType: hard
-
-"chartjs-color@npm:^2.1.0":
-  version: 2.4.1
-  resolution: "chartjs-color@npm:2.4.1"
-  dependencies:
-    chartjs-color-string: ^0.6.0
-    color-convert: ^1.9.3
-  checksum: 254d7b2f103980417703331c49fba18877ac797fd9056d79f0d566dc4fd8d41f91b7f63d4b19602462b91110bee2fe0c9fd57266ce871e498ac1c25742fffb11
+    chart.js: ^3.0.0
+  checksum: 08ee2f99da4a15434e28da733cb0489fe94012ac1a493fbf01d660bcf17df3bb28ce767939c2881b67b3bbefe1a7ffe70dcea4cbd860ab6c2c670d90816e8176
   languageName: node
   linkType: hard
 
@@ -4550,7 +4528,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
+"color-convert@npm:^1.9.0":
   version: 1.9.3
   resolution: "color-convert@npm:1.9.3"
   dependencies:
@@ -4575,7 +4553,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-name@npm:^1.0.0, color-name@npm:~1.1.4":
+"color-name@npm:~1.1.4":
   version: 1.1.4
   resolution: "color-name@npm:1.1.4"
   checksum: b0445859521eb4021cd0fb0cc1a75cecf67fceecae89b63f62b201cca8d345baf8b952c966862a9d9a2632987d4f6581f0ec8d957dfacece86f0a7919316f610
@@ -5919,8 +5897,8 @@ __metadata:
     axios: ^0.24.0
     babel-loader: ^8.2.3
     babel-plugin-styled-components: ^1.13.3
-    chart.js: ^2.9.4
-    chartjs-adapter-date-fns: ^1.0.0
+    chart.js: ^3.6.0
+    chartjs-adapter-date-fns: ^2.0.0
     classnames: ^2.3.1
     compute-scroll-into-view: ^1.0.17
     core-js: ^3.19.0
@@ -5960,7 +5938,7 @@ __metadata:
     prettier: ^2.3.2
     react: ^17.0.2
     react-autosize-textarea: ^7.1.0
-    react-chartjs-2: ^2.11.2
+    react-chartjs-2: ^3.3.0
     react-csv: ^2.0.3
     react-datepicker: ^2.10.1
     react-day-picker: 7.4.10
@@ -8835,7 +8813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.6.1 || ^4.16.1, lodash@npm:^4.14.0, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
+"lodash@npm:4.6.1 || ^4.16.1, lodash@npm:^4.14.0, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -9200,7 +9178,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:^2.10.2, moment@npm:^2.10.3, moment@npm:^2.14.1":
+"moment@npm:^2.10.3, moment@npm:^2.14.1":
   version: 2.29.1
   resolution: "moment@npm:2.29.1"
   checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
@@ -10817,17 +10795,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-chartjs-2@npm:^2.11.2":
-  version: 2.11.2
-  resolution: "react-chartjs-2@npm:2.11.2"
-  dependencies:
-    lodash: ^4.17.19
-    prop-types: ^15.7.2
+"react-chartjs-2@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "react-chartjs-2@npm:3.3.0"
   peerDependencies:
-    chart.js: ^2.3
-    react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-    react-dom: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 874ddc9ebdd620ac2692e307dfa848d540cc84beed56910a92b8630abcc286f9b8682aba87c8635d969943586adabe5b8222adf3a7bff041d15a9698f17caa4a
+    chart.js: ^3.5.0
+    react: ^16.8.0 || ^17.0.0
+  checksum: ad8b1324a89b1bf7b7bef3f5a09b2abb12d0624105c00616ef95fabe3346457e01846c92b0aa24bfc9f52c5362ae83c37cffc9ce8b2dd7113f9fd0228e248f9c
   languageName: node
   linkType: hard
 
