@@ -202,7 +202,8 @@ class PDFService(
             val serviceNeedDescription: String,
             val feeAlterations: List<FeeAlterationPdfPart>,
             val finalFeeFormatted: String,
-            val feeFormatted: String
+            val feeFormatted: String,
+            val siblingDiscount: Int
         )
 
         val (decision, lang) = data
@@ -241,7 +242,8 @@ class PDFService(
                         FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
                     },
                     formatCents(it.finalFee)!!,
-                    formatCents(it.fee)!!
+                    formatCents(it.fee)!!,
+                    it.siblingDiscount
                 )
             },
             "sendAddress" to sendAddress,
