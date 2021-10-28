@@ -82,13 +82,16 @@ export class Failure<T> {
     return new Failure(p.message, p.statusCode, p.errorCode)
   }
 
-  static fromError<T>(e: Error): Failure<T> {
+  static fromError<T>(e: unknown): Failure<T> {
     if (axios.isAxiosError(e)) {
       const response: AxiosResponse<{ errorCode?: string }> | undefined =
         e.response
       return new Failure(e.message, response?.status, response?.data.errorCode)
+    } else if (e instanceof Error) {
+      return new Failure(e.message)
+    } else {
+      return new Failure(String(e))
     }
-    return new Failure(e.message)
   }
 
   chain<A>(_f: (v: T) => Result<A>): Result<A> {

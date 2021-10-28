@@ -54,16 +54,17 @@ import {
 } from 'lib-common/generated/api-types/note'
 
 export class DevApiError extends BaseError {
-  constructor(cause: Error) {
-    let message: string
+  constructor(cause: unknown) {
     if (axios.isAxiosError(cause)) {
-      message = `${cause.message}: ${formatRequest(
+      const message = `${cause.message}: ${formatRequest(
         cause.config
       )}\n${formatResponse(cause.response)}`
+      super(message, cause)
+    } else if (cause instanceof Error) {
+      super('Dev API error', cause)
     } else {
-      message = 'Dev API error'
+      super('Dev API error')
     }
-    super(message, cause)
   }
 }
 
