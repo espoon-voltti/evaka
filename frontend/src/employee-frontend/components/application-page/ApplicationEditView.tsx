@@ -211,10 +211,7 @@ export default React.memo(function ApplicationEditView({
     setApplication(
       flow(
         set('form.preferences.serviceNeed.partTime', partTime),
-        set(
-          'form.preferences.serviceNeed.serviceNeedOption',
-          serviceNeedOption
-        )
+        set('form.preferences.serviceNeed.serviceNeedOption', serviceNeedOption)
       )
     )
   }
@@ -289,30 +286,29 @@ export default React.memo(function ApplicationEditView({
                         updateServiceNeed(true)
                       }}
                     />
-                    {partTimeOptions.length > 0 &&
-                      serviceNeed.partTime && (
-                        <SubRadios>
-                          <FixedSpaceColumn spacing={'xs'}>
-                            {partTimeOptions.map((opt) => (
-                              <Radio
-                                key={opt.id}
-                                label={opt.name}
-                                checked={
-                                  serviceNeed.serviceNeedOption?.id === opt.id
-                                }
-                                onChange={() => {
-                                  setApplication(
-                                    set(
-                                      'form.preferences.serviceNeed.serviceNeedOption',
-                                      opt
-                                    )
+                    {partTimeOptions.length > 0 && serviceNeed.partTime && (
+                      <SubRadios>
+                        <FixedSpaceColumn spacing={'xs'}>
+                          {partTimeOptions.map((opt) => (
+                            <Radio
+                              key={opt.id}
+                              label={opt.name}
+                              checked={
+                                serviceNeed.serviceNeedOption?.id === opt.id
+                              }
+                              onChange={() => {
+                                setApplication(
+                                  set(
+                                    'form.preferences.serviceNeed.serviceNeedOption',
+                                    opt
                                   )
-                                }}
-                              />
-                            ))}
-                          </FixedSpaceColumn>
-                        </SubRadios>
-                      )}
+                                )
+                              }}
+                            />
+                          ))}
+                        </FixedSpaceColumn>
+                      </SubRadios>
+                    )}
                     <Radio
                       label={i18n.application.serviceNeed.fullTime}
                       checked={serviceNeed.partTime === false}
@@ -329,28 +325,28 @@ export default React.memo(function ApplicationEditView({
                       }}
                     />
                     {!serviceNeed.partTime && fullTimeOptions.length > 0 && (
-                        <SubRadios>
-                          <FixedSpaceColumn spacing={'xs'}>
-                            {fullTimeOptions.map((opt) => (
-                              <Radio
-                                key={opt.id}
-                                label={opt.name}
-                                checked={
-                                  serviceNeed.serviceNeedOption?.id === opt.id
-                                }
-                                onChange={() => {
-                                  setApplication(
-                                    set(
-                                      'form.preferences.serviceNeed.serviceNeedOption',
-                                      opt
-                                    )
+                      <SubRadios>
+                        <FixedSpaceColumn spacing={'xs'}>
+                          {fullTimeOptions.map((opt) => (
+                            <Radio
+                              key={opt.id}
+                              label={opt.name}
+                              checked={
+                                serviceNeed.serviceNeedOption?.id === opt.id
+                              }
+                              onChange={() => {
+                                setApplication(
+                                  set(
+                                    'form.preferences.serviceNeed.serviceNeedOption',
+                                    opt
                                   )
-                                }}
-                              />
-                            ))}
-                          </FixedSpaceColumn>
-                        </SubRadios>
-                      )}
+                                )
+                              }}
+                            />
+                          ))}
+                        </FixedSpaceColumn>
+                      </SubRadios>
+                    )}
                   </FixedSpaceColumn>
                 </>
               )}
