@@ -2,24 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { waitUntilEqual } from '../../utils'
 import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
-  ChildDailyNoteReminder,
-  GroupNoteBody
+  ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
+import { Page } from 'playwright'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
 
-  #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
-  #groupTab = this.page.locator('[data-qa="tab-group-note"]')
+  #stickyNote = {
+    note: this.page.locator('[data-qa="sticky-note"]'),
+    newNoteBtn: this.page.locator('[data-qa="sticky-note-new"]'),
+    editBtn: this.page.locator('[data-qa="sticky-note-edit"]'),
+    removeBtn: this.page.locator('[data-qa="sticky-note-remove"]'),
+    saveBtn: this.page.locator('[data-qa="sticky-note-save"]'),
+    input: this.page.locator('[data-qa="sticky-note-input"]')
+  }
 
+  #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
   #note = {
     dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
-    groupNote: this.page.locator('[data-qa="daily-note-group-note-input"]'),
     sleepingTimeHours: this.page.locator(
       '[data-qa="sleeping-time-hours-input"]'
     ),
@@ -35,12 +41,41 @@ export default class MobileNotePage {
       this.page.locator(`[data-qa="reminders-${reminder}"]`)
   }
 
-  async selectGroupTab() {
-    await this.#groupTab.click()
+  async selectTab(tab: 'note' | 'group' | 'sticky') {
+    await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
-  async fillGroupNote(groupNote: GroupNoteBody) {
-    if (groupNote.note) await this.#note.groupNote.type(groupNote.note)
+  async createStickyNote(note: string) {
+    await this.#stickyNote.newNoteBtn.click()
+    await this.#stickyNote.input.type(note)
+    await this.#stickyNote.saveBtn.click()
+  }
+
+  async editStickyNote(text: string, nth: number) {
+    await this.#stickyNote.editBtn.nth(nth).click()
+    await this.#stickyNote.input.selectText()
+    await this.#stickyNote.input.type(text)
+    await this.#stickyNote.saveBtn.click()
+  }
+
+  async removeStickyNote(nth = 0) {
+    await this.#stickyNote.removeBtn.nth(nth).click()
+  }
+
+  async assertStickyNote(expected: string, nth = 0) {
+    await waitUntilEqual(
+      () => this.#stickyNote.note.nth(nth).locator('p').textContent(),
+      expected
+    )
+  }
+  async assertStickyNoteExpires(date: LocalDate, nth = 0) {
+    await waitUntilTrue(() =>
+      this.#stickyNote.note
+        .nth(nth)
+        .locator('[data-qa="sticky-note-expires"]')
+        .textContent()
+        .then((t) => !!t?.includes(date.format()))
+    )
   }
 
   async fillNote(dailyNote: ChildDailyNoteBody) {
@@ -64,14 +99,8 @@ export default class MobileNotePage {
     }
   }
 
-  async saveNote() {
+  async saveChildDailyNote() {
     await this.#createNoteButton.click()
-  }
-  async assertGroupNote(expected: GroupNoteBody) {
-    await waitUntilEqual(
-      () => this.#note.groupNote.inputValue(),
-      expected.note || ''
-    )
   }
 
   async assertNote(expected: ChildDailyNoteBody) {

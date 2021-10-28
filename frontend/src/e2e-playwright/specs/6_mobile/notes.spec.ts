@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -20,20 +22,15 @@ import {
   Fixture,
   uuidv4
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
-import MobileListPage from '../../pages/mobile/list-page'
-import MobileChildPage from '../../pages/mobile/child-page'
-import { pairMobileDevice } from '../../utils/mobile'
 import {
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
+import { newBrowserContext } from '../../browser'
+import MobileChildPage from '../../pages/mobile/child-page'
+import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
-import {
-  ChildDailyNoteBody,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import { pairMobileDevice } from '../../utils/mobile'
 
 let page: Page
 let childPage: MobileChildPage
@@ -107,7 +104,7 @@ afterEach(async () => {
 
 describe('Child and group notes', () => {
   test('Child daily note can be created', async () => {
-    const daycareDailyNote: ChildDailyNoteBody = {
+    const childDailyNote: ChildDailyNoteBody = {
       note: 'Testiviesti',
       feedingNote: 'MEDIUM',
       sleepingMinutes: 65,
@@ -116,25 +113,38 @@ describe('Child and group notes', () => {
       reminderNote: 'Näki painajaisia'
     }
 
-    await notePage.fillNote(daycareDailyNote)
-    await notePage.saveNote()
+    await notePage.fillNote(childDailyNote)
+    await notePage.saveChildDailyNote()
     await childPage.assertNotesExist()
     await childPage.openNotes()
-    await notePage.assertNote(daycareDailyNote)
+    await notePage.assertNote(childDailyNote)
   })
 
   test('Child group note can be created', async () => {
-    const groupNote: GroupNoteBody = {
-      note: 'Testiryhmäviesti',
-      expires: LocalDate.today().addDays(7)
-    }
+    const groupNote = 'Testiryhmäviesti'
 
-    await notePage.selectGroupTab()
-    await notePage.fillGroupNote(groupNote)
-    await notePage.saveNote()
-    await childPage.assertNotesExist()
-    await childPage.openNotes()
-    await notePage.selectGroupTab()
-    await notePage.assertGroupNote(groupNote)
+    await notePage.selectTab('group')
+    await notePage.createStickyNote(groupNote)
+    await notePage.assertStickyNote(groupNote)
+  })
+
+  test('Sticky notes can be created, edited and removed', async () => {
+    const note = 'tahmea viesti'
+    const note2 = 'erittäin tahmea viesti'
+
+    await notePage.selectTab('sticky')
+
+    await notePage.createStickyNote(note)
+    await notePage.createStickyNote(note2)
+
+    await notePage.assertStickyNote(note, 0)
+    await notePage.assertStickyNoteExpires(LocalDate.today().addDays(7), 0)
+    await notePage.assertStickyNote(note2, 1)
+
+    await notePage.editStickyNote('Foobar', 1)
+    await notePage.assertStickyNote('Foobar', 1)
+
+    await notePage.removeStickyNote(0)
+    await notePage.assertStickyNote('Foobar', 0)
   })
 })

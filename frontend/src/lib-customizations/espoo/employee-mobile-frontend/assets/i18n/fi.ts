@@ -52,6 +52,7 @@ export const fi = {
     remove: 'Poista',
     doNotRemove: 'Älä poista',
     clear: 'Tyhjennä',
+    edit: 'Muokkaa',
     save: 'Tallenna',
     doNotSave: 'Älä tallenna',
     starts: 'Alkaa',
@@ -70,7 +71,10 @@ export const fi = {
     validation: {
       dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`
     },
-    openExpandingInfo: 'Avaa lisätietokenttä'
+    openExpandingInfo: 'Avaa lisätietokenttä',
+    nb: 'Huom',
+    validity: 'Voimassaolo',
+    validTo: (date: string) => `Voimassa ${date} saakka`
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
@@ -157,7 +161,9 @@ export const fi = {
       variableTimesShort: 'Sop.aika vaihtelee'
     },
     notes: {
+      day: 'Päivä',
       dailyNotes: 'Muistiinpanot',
+      addNew: 'Lisää uusi',
       labels: {
         note: 'Päivän tapahtumia',
         feedingNote: 'Lapsi söi tänään',
@@ -182,6 +188,7 @@ export const fi = {
       },
       placeholders: {
         note: 'Leikkejä, onnistumisia, iloja, opittuja asioita',
+        childStickyNote: 'Kirjoita uusi muistiinpano henkilökunnalle',
         groupNote: 'Kirjoita koko ryhmää koskeva muistiinpano',
         reminderNote: 'Muuta muistettavaa (esim. aurinkovoide)',
         hours: 'tunnit',
@@ -196,9 +203,9 @@ export const fi = {
       otherThings: 'Muut asiat',
       noteInfo: [
         'Muistiinpanoihin ei merkitä terveystietoihin tai salassapidettäviin asioihin liittyviä tietoja.',
-        'Lapsi-välilehden muistiinpanot säilytetään 16 tuntia ja Huom! -välilehden merkinnät viikon ajan luomis-/päivityshetkestä lukien. Tämän jälkeen ne poistetaan automaattisesti.',
-        'Ryhmän muistiinpanot ovat voimassa toistaiseksi.'
-      ]
+        'Päivä-välilehden muistiinpanot säilytetään vähintään 16 tuntia luomis-/päivityshetkestä lukien, jonka jälkeen ne poistetaan automaattisesti.'
+      ],
+      childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
     absenceTitle: 'Poissaolomerkintä',
     pin: {

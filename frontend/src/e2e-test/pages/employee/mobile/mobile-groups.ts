@@ -23,7 +23,7 @@ export default class MobileGroupsPage {
     '[data-qa="link-child-daycare-daily-note"]'
   )
 
-  readonly groupNoteTab = Selector('[data-qa="tab-group-note"]')
+  readonly groupNoteTab = Selector('[data-qa="tab-GROUP"]')
 
   readonly childSensitiveInfoLink = Selector(
     '[data-qa="link-child-sensitive-info"]'

@@ -47,9 +47,7 @@ export default class ChildPage {
     '[data-qa="reminder-note-input"]'
   )
 
-  readonly dailyNoteGroupNoteInput = Selector(
-    '[data-qa="daily-note-group-note-input"]'
-  )
+  readonly stickyNote = Selector('[data-qa="sticky-note-note"]')
 
   readonly markAbsentRadio = (absenceType: AbsenceType) =>
     Selector(`[data-qa="mark-absent-${absenceType}"]`)

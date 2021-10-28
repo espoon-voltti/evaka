@@ -28,7 +28,7 @@ import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
-import NotesEditor from './components/attendances/notes/NotesEditor'
+import ChildNotes from './components/attendances/notes/ChildNotes'
 import StaffPage from './components/staff/StaffPage'
 import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
 import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
@@ -146,7 +146,7 @@ function ChildAttendanceRouter() {
           path={`${path}/:childId/mark-departed`}
           component={MarkDeparted}
         />
-        <Route exact path={`${path}/:childId/note`} component={NotesEditor} />
+        <Route exact path={`${path}/:childId/note`} component={ChildNotes} />
         <Route exact path={`${path}/:childId/pin`} component={PinLogin} />
         <Redirect to={`${path}/list/coming`} />
       </Switch>

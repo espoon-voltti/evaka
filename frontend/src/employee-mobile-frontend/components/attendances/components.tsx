@@ -27,6 +27,12 @@ export const WideAsyncButton = styled(AsyncButton)`
 export const InlineWideAsyncButton = styled(WideAsyncButton)`
   border: none;
 `
+export const InlineAsyncButton = styled(AsyncButton)`
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  border: none;
+`
 
 export const Flex = styled.div`
   @media screen and (max-width: 1023px) {
