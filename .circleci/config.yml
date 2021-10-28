@@ -54,17 +54,17 @@ aliases:
 
   - &default_contexts
     context:
-      - voltti-slack
-      - voltti-dockerhub
+      - voltti-slackx
+      - voltti-dockerhubx
   - &aws_contexts
     context:
-      - voltti-slack
-      - org-global
+      - voltti-slackx
+      - org-globalx
   - &aws_docker_contexts
     context:
-      - voltti-dockerhub
-      - voltti-slack
-      - org-global
+      - voltti-dockerhubx
+      - voltti-slackx
+      - org-globalx
 
   - &default_config
     working_directory: << pipeline.parameters.workspace_root >>
@@ -1490,9 +1490,9 @@ workflows:
 
       - proxy_build_and_push_image:
           context:
-            - org-global
-            - voltti-dockerhub
-            - voltti-slack
+            - org-globalx
+            - voltti-dockerhubx
+            - voltti-slackx
           requires:
             - checkout_repo
           filters:
