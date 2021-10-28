@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.dateNow
 import org.springframework.stereotype.Service
@@ -184,5 +185,5 @@ private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
         """.trimIndent()
     )
         .bind("id", documentId)
-        .execute()
+        .updateExactlyOne()
 }
