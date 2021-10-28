@@ -47,7 +47,6 @@ export default class ChildPage {
     '[data-qa="reminder-note-input"]'
   )
 
-  readonly stickyNoteInput = Selector('[data-qa="sticky-note-input"]')
   readonly stickyNote = Selector('[data-qa="sticky-note-note"]')
 
   readonly markAbsentRadio = (absenceType: AbsenceType) =>

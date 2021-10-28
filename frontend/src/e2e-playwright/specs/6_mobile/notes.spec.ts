@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -25,7 +26,6 @@ import {
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
-import LocalDate from 'lib-common/local-date'
 import { newBrowserContext } from '../../browser'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -124,35 +124,27 @@ describe('Child and group notes', () => {
     const groupNote = 'Testiryhmäviesti'
 
     await notePage.selectTab('group')
-    await notePage.fillStickyNote(groupNote)
-    await notePage.saveStickyNote()
-    await childPage.assertNotesExist()
-    await childPage.openNotes()
-    await notePage.selectTab('group')
+    await notePage.createStickyNote(groupNote)
     await notePage.assertStickyNote(groupNote)
   })
 
-  test('Sticky notes can be created', async () => {
+  test('Sticky notes can be created, edited and removed', async () => {
     const note = 'tahmea viesti'
     const note2 = 'erittäin tahmea viesti'
 
-    async function fillNote(note: string) {
-      await notePage.selectTab('sticky')
-      await notePage.fillStickyNote(note)
-      await notePage.saveStickyNote()
-    }
-
-    await fillNote(note)
-
-    await childPage.openNotes()
-
-    await fillNote(note2)
-    await childPage.assertNotesExist()
-    await childPage.openNotes()
     await notePage.selectTab('sticky')
+
+    await notePage.createStickyNote(note)
+    await notePage.createStickyNote(note2)
 
     await notePage.assertStickyNote(note, 0)
     await notePage.assertStickyNoteExpires(LocalDate.today().addDays(7), 0)
     await notePage.assertStickyNote(note2, 1)
+
+    await notePage.editStickyNote('Foobar', 1)
+    await notePage.assertStickyNote('Foobar', 1)
+
+    await notePage.removeStickyNote(0)
+    await notePage.assertStickyNote('Foobar', 0)
   })
 })

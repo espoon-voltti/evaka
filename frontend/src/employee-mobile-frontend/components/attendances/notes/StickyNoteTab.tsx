@@ -49,6 +49,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
 
         <FixedSpaceRow justifyContent="flex-end">
           <InlineButton
+            data-qa="sticky-note-new"
             disabled={addingNewNote}
             onClick={() => setAddingNewNote(true)}
             text={i18n.attendances.notes.addNew}

@@ -7,19 +7,25 @@ import {
   ChildDailyNoteLevel,
   ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
-import { Page } from 'playwright'
 import LocalDate from 'lib-common/local-date'
+import { Page } from 'playwright'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
 
-  #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
+  #stickyNote = {
+    note: this.page.locator('[data-qa="sticky-note"]'),
+    newNoteBtn: this.page.locator('[data-qa="sticky-note-new"]'),
+    editBtn: this.page.locator('[data-qa="sticky-note-edit"]'),
+    removeBtn: this.page.locator('[data-qa="sticky-note-remove"]'),
+    saveBtn: this.page.locator('[data-qa="sticky-note-save"]'),
+    input: this.page.locator('[data-qa="sticky-note-input"]')
+  }
 
+  #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
   #note = {
     dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
-    stickyNoteInput: this.page.locator('[data-qa="sticky-note-input"]'),
-    stickyNote: this.page.locator('[data-qa="sticky-note"]'),
     sleepingTimeHours: this.page.locator(
       '[data-qa="sleeping-time-hours-input"]'
     ),
@@ -39,23 +45,32 @@ export default class MobileNotePage {
     await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
-  async fillStickyNote(note: string) {
-    await this.#note.stickyNoteInput.type(note)
+  async createStickyNote(note: string) {
+    await this.#stickyNote.newNoteBtn.click()
+    await this.#stickyNote.input.type(note)
+    await this.#stickyNote.saveBtn.click()
   }
 
-  async saveStickyNote() {
-    await this.page.locator(`[data-qa="sticky-note-save"]`).click()
+  async editStickyNote(text: string, nth: number) {
+    await this.#stickyNote.editBtn.nth(nth).click()
+    await this.#stickyNote.input.selectText()
+    await this.#stickyNote.input.type(text)
+    await this.#stickyNote.saveBtn.click()
+  }
+
+  async removeStickyNote(nth = 0) {
+    await this.#stickyNote.removeBtn.nth(nth).click()
   }
 
   async assertStickyNote(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#note.stickyNote.nth(nth).locator('p').textContent(),
+      () => this.#stickyNote.note.nth(nth).locator('p').textContent(),
       expected
     )
   }
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {
     await waitUntilTrue(() =>
-      this.#note.stickyNote
+      this.#stickyNote.note
         .nth(nth)
         .locator('[data-qa="sticky-note-expires"]')
         .textContent()

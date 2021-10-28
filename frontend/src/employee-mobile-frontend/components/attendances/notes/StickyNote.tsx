@@ -122,10 +122,12 @@ export const StickyNote = React.memo(function StickyNote({
         ) : (
           <>
             <InlineButton
+              data-qa="sticky-note-edit"
               onClick={() => setEditing(true)}
               text={i18n.common.edit}
             />
             <InlineAsyncButton
+              data-qa="sticky-note-remove"
               onClick={removeNote}
               onSuccess={reloadAttendances}
               text={i18n.common.remove}
