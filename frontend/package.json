@@ -69,7 +69,7 @@
     "react-select": "^3.0.8",
     "react-spring": "^8.0.27",
     "react-tooltip": "^4.2.21",
-    "seamless-scroll-polyfill": "1.2.4",
+    "seamless-scroll-polyfill": "2.1.5",
     "styled-components": "5.3.3",
     "tslib": "^2.3.1"
   },
