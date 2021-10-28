@@ -2785,15 +2785,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-image-crop@npm:^8.1.3":
-  version: 8.1.3
-  resolution: "@types/react-image-crop@npm:8.1.3"
-  dependencies:
-    "@types/react": "*"
-  checksum: ada9c48f09d8facf430969cb0e69e626dac2262439467b7eceaf32e1dc91164804479017d962dc65d04618cd6c6acc39253b740da66341a7ea2fbf7a8ad2d95d
-  languageName: node
-  linkType: hard
-
 "@types/react-router-dom@npm:^5.3.2":
   version: 5.3.2
   resolution: "@types/react-router-dom@npm:5.3.2"
@@ -5920,7 +5911,6 @@ __metadata:
     "@types/react-csv": ^1.1.2
     "@types/react-datepicker": 2.11.1
     "@types/react-dom": ^17.0.10
-    "@types/react-image-crop": ^8.1.3
     "@types/react-router-dom": ^5.3.2
     "@types/react-select": 3.0.22
     "@types/styled-components": ^5.1.15
@@ -5976,7 +5966,7 @@ __metadata:
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
     react-focus-lock: 2.5.2
-    react-image-crop: ^8.6.12
+    react-image-crop: ^9.0.4
     react-leaflet: ^3.2.2
     react-router-dom: ^5.3.0
     react-select: ^3.0.8
@@ -10915,15 +10905,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-image-crop@npm:^8.6.12":
-  version: 8.6.12
-  resolution: "react-image-crop@npm:8.6.12"
+"react-image-crop@npm:^9.0.4":
+  version: 9.0.4
+  resolution: "react-image-crop@npm:9.0.4"
   dependencies:
     clsx: ^1.1.1
-    prop-types: ^15.7.2
   peerDependencies:
     react: ">=16.13.1"
-  checksum: 8f06f8e7ca5ad0fe589c083115b2f160e3f1b2623776211a43767d14570966cd410c7bca42a4aaeee0316a815957a008810b58c93ea2bcc6f9caf99ee5e21f24
+  checksum: 59e9812269f3bfe69f5195504463d8b0b8726f7a628f7a14db88673b6a1bf081a56eb5fba2a2dd55775eecc45e8f39a7610ab60b7a60eee6fcf3b86e1d303b74
   languageName: node
   linkType: hard
 
