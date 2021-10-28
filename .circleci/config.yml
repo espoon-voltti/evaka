@@ -807,7 +807,6 @@ jobs:
     steps:
       - checkout
       - store_repo
-      - notify_slack
 
   fetch_private_dependencies:
     executor: aws_core_executor
@@ -1316,8 +1315,7 @@ workflows:
 
   build_test_and_deploy:
     jobs:
-      - checkout_repo:
-          <<: *default_contexts
+      - checkout_repo
       - fetch_private_dependencies:
           filters:
             branches:
@@ -1326,15 +1324,47 @@ workflows:
           requires:
             - checkout_repo
       - check_licenses:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
+          <<: *default_contexts
+          requires:
+            - checkout_repo
+      - check_licenses:
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          name: check_licenses_form
+          requires:
+            - checkout_repo
+
+      - lint_scripts:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *default_contexts
           requires:
             - checkout_repo
       - lint_scripts:
+          name: lint_scripts_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
+          requires:
+            - checkout_repo
+
+      - build_base_image:
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
           <<: *default_contexts
           requires:
             - checkout_repo
       - build_base_image:
-          <<: *default_contexts
+          name: build_base_image_fork
+          filters:
+            branches:
+              only: /pull\/[0-9]+/
           requires:
             - checkout_repo
 
@@ -1362,7 +1392,7 @@ workflows:
           name: apigw_build_and_push_image_fork
           executor: apigw_executor
           requires:
-            - build_base_image
+            - build_base_image_fork
             - apigw_build_and_test_fork
           filters:
             branches:
@@ -1511,7 +1541,7 @@ workflows:
           name: service_build_and_push_image_fork
           executor: nodejs_executor
           requires:
-            - build_base_image
+            - build_base_image_fork
             - service_build_fork
           filters:
             branches:
@@ -1569,7 +1599,7 @@ workflows:
           name: message_service_build_and_push_image_fork
           executor: nodejs_executor
           requires:
-            - build_base_image
+            - build_base_image_fork
             - message_service_test_fork
             - message_service_integration_test_fork
           filters:
