@@ -10,10 +10,11 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
 import { EditedNote, Note } from './notes'
-import { StickyNote } from './StickyNote'
+import { StaticStickyNote } from './StaticStickyNote'
+import { StickyNoteEditor } from './StickyNoteEditor'
 
 interface StickyNoteTabProps {
   title: string
@@ -37,7 +38,10 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
   onRemove
 }: StickyNoteTabProps) {
   const { i18n } = useTranslation()
-  const [addingNewNote, setAddingNewNote] = useState(false)
+  const [editing, setEditing] = useState<UUID | 'new'>()
+  const onCancelEdit = useCallback(() => setEditing(undefined), [])
+  const setNoteToEdit = useCallback((id: UUID) => () => setEditing(id), [])
+
   return (
     <>
       <ContentArea opaque paddingHorizontal="s">
@@ -50,34 +54,41 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
         <FixedSpaceRow justifyContent="flex-end">
           <InlineButton
             data-qa="sticky-note-new"
-            disabled={addingNewNote}
-            onClick={() => setAddingNewNote(true)}
+            disabled={!!editing}
+            onClick={() => setEditing('new')}
             text={i18n.attendances.notes.addNew}
           />
         </FixedSpaceRow>
       </ContentArea>
 
-      {addingNewNote && (
-        <StickyNote
-          editing
+      {editing === 'new' && (
+        <StickyNoteEditor
           note={newNote()}
-          onCancel={() => setAddingNewNote(false)}
+          onCancelEdit={onCancelEdit}
           onSave={onSave}
-          onRemove={onRemove}
           placeholder={placeholder}
         />
       )}
 
-      {notes.map((note) => (
-        <StickyNote
-          editing={false}
-          key={note.id}
-          note={note}
-          placeholder={placeholder}
-          onSave={onSave}
-          onRemove={onRemove}
-        />
-      ))}
+      {notes.map((note) =>
+        editing === note.id ? (
+          <StickyNoteEditor
+            key={note.id}
+            note={note}
+            onCancelEdit={onCancelEdit}
+            placeholder={placeholder}
+            onSave={onSave}
+          />
+        ) : (
+          <StaticStickyNote
+            key={note.id}
+            note={note}
+            onRemove={onRemove}
+            editable={!editing}
+            onEdit={setNoteToEdit(note.id)}
+          />
+        )
+      )}
     </>
   )
 })
