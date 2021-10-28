@@ -3,33 +3,78 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Result } from 'lib-common/api'
-import React from 'react'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import React, { useMemo } from 'react'
+import {
+  LoadableContent,
+  SpinnerSegment
+} from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+
+export type RenderResultFn<T> = (
+  value: T,
+  isReloading: boolean
+) => React.ReactElement | null
 
 export interface UnwrapResultProps<T> {
   result: Result<T>
   loading?: () => React.ReactElement | null
   failure?: () => React.ReactElement | null
-  children?: (value: T) => React.ReactElement | null
+  children?: RenderResultFn<T>
 }
 
-interface GenericUnwrapResultOpts<T> extends UnwrapResultProps<T> {
-  failureMessage: string
-}
+export function makeHelpers(useFailureMessage: () => string) {
+  function UnwrapResult<T>({
+    result,
+    loading,
+    failure,
+    children
+  }: UnwrapResultProps<T>) {
+    const failureMessage = useFailureMessage()
+    return useMemo(() => {
+      if (
+        result.isLoading ||
+        (result.isSuccess &&
+          result.isReloading &&
+          (!children || children.length === 1))
+      ) {
+        return loading?.() ?? <SpinnerSegment />
+      }
+      if (result.isFailure) {
+        return failure?.() ?? <ErrorSegment title={failureMessage} />
+      }
+      if (!children) {
+        return null
+      }
+      return children(result.value, result.isReloading)
+    }, [failureMessage, result, loading, failure, children])
+  }
 
-export function genericUnwrapResult<T>({
-  result,
-  loading,
-  failure,
-  children,
-  failureMessage
-}: GenericUnwrapResultOpts<T>) {
-  if (result.isLoading) {
-    return loading?.() ?? <SpinnerSegment />
+  interface RenderResultProps<T> {
+    result: Result<T>
+    renderer: RenderResultFn<T>
   }
-  if (result.isFailure) {
-    return failure?.() ?? <ErrorSegment title={failureMessage} />
+
+  function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
+    const failureMessage = useFailureMessage()
+    return useMemo(
+      () => (
+        <LoadableContent
+          loading={result.isLoading || (result.isSuccess && result.isReloading)}
+        >
+          {result.isFailure ? (
+            <ErrorSegment title={failureMessage} />
+          ) : result.isSuccess ? (
+            renderer(result.value, result.isReloading)
+          ) : null}
+        </LoadableContent>
+      ),
+      [result, renderer, failureMessage]
+    )
   }
-  return children ? children(result.value) : null
+
+  function renderResult<T>(result: Result<T>, renderer: RenderResultFn<T>) {
+    return <RenderResult result={result} renderer={renderer} />
+  }
+
+  return { UnwrapResult, renderResult }
 }

@@ -2,25 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Result } from 'lib-common/api'
 import {
-  genericUnwrapResult,
+  makeHelpers,
+  RenderResultFn,
   UnwrapResultProps
 } from 'lib-components/async-rendering'
 import { useTranslation } from './localization'
 
-export function UnwrapResult<T>(props: UnwrapResultProps<T>) {
-  const t = useTranslation()
-  return genericUnwrapResult({
-    ...props,
-    failureMessage: t.common.errors.genericGetError
-  })
+function useFailureMessage() {
+  return useTranslation().common.errors.genericGetError
 }
 
-export function renderResult<T>(
-  result: Result<T>,
-  renderer: (value: T) => React.ReactElement | null
-) {
-  return <UnwrapResult result={result}>{renderer}</UnwrapResult>
-}
+const { UnwrapResult, renderResult } = makeHelpers(useFailureMessage)
+export type { UnwrapResultProps, RenderResultFn }
+export { UnwrapResult, renderResult }

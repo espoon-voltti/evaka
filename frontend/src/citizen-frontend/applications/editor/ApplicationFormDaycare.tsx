@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
@@ -48,6 +48,11 @@ export default React.memo(function ApplicationFormDaycare({
       setServiceNeedOptions(Success.of([]))
     }
   }, [setServiceNeedOptions, loadServiceNeedOptions])
+
+  const preferredStartDate = useMemo(
+    () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),
+    [formData.serviceNeed.preferredStartDate]
+  )
 
   return (
     <>
@@ -107,9 +112,7 @@ export default React.memo(function ApplicationFormDaycare({
             }
             applicationType={applicationType}
             preparatory={false}
-            preferredStartDate={LocalDate.parseFiOrNull(
-              formData.serviceNeed.preferredStartDate
-            )}
+            preferredStartDate={preferredStartDate}
             errors={errors.unitPreference}
             verificationRequested={verificationRequested}
             shiftCare={formData.serviceNeed.shiftCare}

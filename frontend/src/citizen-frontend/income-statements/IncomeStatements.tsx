@@ -2,17 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Paged, Result } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import Pagination from 'lib-components/Pagination'
@@ -109,19 +108,11 @@ export default function IncomeStatements() {
   const history = useHistory()
   const { setErrorMessage } = useContext(OverlayContext)
 
-  const [incomeStatements, setIncomeStatements] = useState<
-    Result<Paged<IncomeStatement>>
-  >(Loading.of())
-
-  const loadData = useRestApi(getIncomeStatements, setIncomeStatements)
   const [page, setPage] = useState(1)
-
-  const fetchIncomeStatements = useCallback(
-    () => loadData(page, 10),
-    [loadData, page]
+  const [incomeStatements, fetchIncomeStatements] = useApiState(
+    () => getIncomeStatements(page, 10),
+    [page]
   )
-
-  useEffect(fetchIncomeStatements, [fetchIncomeStatements])
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'

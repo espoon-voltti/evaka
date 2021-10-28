@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
@@ -11,7 +11,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import LocalDate from 'lib-common/local-date'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
+import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormClub({
   apiData,
@@ -22,6 +22,11 @@ export default React.memo(function ApplicationFormClub({
   terms
 }: ApplicationFormProps) {
   const applicationType = 'CLUB'
+
+  const preferredStartDate = useMemo(
+    () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),
+    [formData.serviceNeed.preferredStartDate]
+  )
 
   return (
     <FixedSpaceColumn spacing="s">
@@ -39,17 +44,13 @@ export default React.memo(function ApplicationFormClub({
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  serviceNeed: {
-                    ...old?.serviceNeed,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            serviceNeed: {
+              ...old.serviceNeed,
+              ...data
+            }
+          }))
         }
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
@@ -59,23 +60,17 @@ export default React.memo(function ApplicationFormClub({
       <UnitPreferenceSection
         formData={formData.unitPreference}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  unitPreference: {
-                    ...old?.unitPreference,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            unitPreference: {
+              ...old.unitPreference,
+              ...data
+            }
+          }))
         }
         applicationType={applicationType}
         preparatory={false}
-        preferredStartDate={LocalDate.parseFiOrNull(
-          formData.serviceNeed.preferredStartDate
-        )}
+        preferredStartDate={preferredStartDate}
         errors={errors.unitPreference}
         verificationRequested={verificationRequested}
         shiftCare={formData.serviceNeed.shiftCare}
@@ -85,17 +80,13 @@ export default React.memo(function ApplicationFormClub({
         type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  contactInfo: {
-                    ...old?.contactInfo,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            contactInfo: {
+              ...old.contactInfo,
+              ...data
+            }
+          }))
         }
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
@@ -112,17 +103,13 @@ export default React.memo(function ApplicationFormClub({
       <AdditionalDetailsSection
         formData={formData.additionalDetails}
         updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  additionalDetails: {
-                    ...old?.additionalDetails,
-                    ...data
-                  }
-                }
-              : old
-          )
+          setFormData((old) => ({
+            ...old,
+            additionalDetails: {
+              ...old.additionalDetails,
+              ...data
+            }
+          }))
         }
         errors={errors.additionalDetails}
         verificationRequested={verificationRequested}

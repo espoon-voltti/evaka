@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { addDays, isSaturday, isSunday } from 'date-fns'
-import { Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { Result, Success } from 'lib-common/api'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { H2, Label } from 'lib-components/typography'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -14,19 +14,26 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
-import { mapViewBreakpoint } from '../map/const'
+import { mapViewBreakpoint } from './const'
 import { useLang, useTranslation } from '../localization'
-import { MapAddress } from '../map/MapView'
-import { queryDistance } from '../map/api'
-import { formatDistance } from '../map/distances'
+import { MapAddress } from './MapView'
+import { queryDistance } from './api'
+import { formatDistance } from './distances'
 import { routeLinkRootUrl } from 'lib-customizations/citizen'
 import { CareType } from 'lib-common/generated/enums'
+import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 
 type Props = {
   unit: PublicUnit
   onClose: () => void
   selectedAddress: MapAddress | null
 }
+
+const getDistance = (
+  a: Coordinate | undefined | null,
+  b: Coordinate | undefined | null
+): Promise<Result<number | null>> =>
+  a && b ? queryDistance(a, b) : Promise.resolve(Success.of(null))
 
 export default React.memo(function UnitDetailsPanel({
   unit,
@@ -36,15 +43,10 @@ export default React.memo(function UnitDetailsPanel({
   const t = useTranslation()
   const [lang] = useLang()
 
-  const [distance, setDistance] = useState<Result<number> | null>(null)
-  const loadDistance = useRestApi(queryDistance, setDistance)
-  useEffect(() => {
-    if (selectedAddress && unit.location) {
-      loadDistance(selectedAddress.coordinates, unit.location)
-    } else {
-      setDistance(null)
-    }
-  }, [unit, selectedAddress, loadDistance])
+  const [distance] = useApiState(
+    () => getDistance(selectedAddress?.coordinates, unit.location),
+    [selectedAddress?.coordinates, unit.location]
+  )
 
   const formatCareType = (type: CareType) => {
     switch (type) {
@@ -216,6 +218,7 @@ const Area = styled(ContentArea)`
   .mobile-tabs {
     display: none;
   }
+
   @media (max-width: ${mapViewBreakpoint}) {
     .mobile-tabs {
       display: block !important;

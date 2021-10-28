@@ -2,20 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { getApplicationDecisions } from '../../decisions/api'
 import { UUID } from 'lib-common/types'
-import { Loading, Result } from 'lib-common/api'
 import { Decision } from '../../decisions/types'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import { H1, P } from 'lib-components/typography'
 import { useTranslation } from '../../localization'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faChevronLeft, faExclamation } from 'lib-icons'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -24,22 +21,21 @@ import { decisionOrderComparator } from '../../decisions/shared'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Footer from '../../Footer'
 import useTitle from '../../useTitle'
+import { renderResult } from '../../async-rendering'
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const router = useHistory()
 
-  const [decisionsRequest, setDecisionsRequest] = useState<Result<Decision[]>>(
-    Loading.of()
+  const [decisionsRequest, loadDecisions] = useApiState(
+    () => getApplicationDecisions(applicationId),
+    [applicationId]
   )
   const [
     displayDecisionWithNoResponseWarning,
     setDisplayDecisionWithNoResponseWarning
   ] = useState<boolean>(false)
-
-  const loadDecisions = useRestApi(getApplicationDecisions, setDecisionsRequest)
-  useEffect(() => loadDecisions(applicationId), [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitle(t, t.decisions.title)
 
@@ -72,13 +68,7 @@ export default React.memo(function DecisionResponseList() {
         <Gap size="s" />
         <ContentArea opaque>
           <H1>{t.decisions.title}</H1>
-          {decisionsRequest.isLoading && <SpinnerSegment />}
-          {decisionsRequest.isFailure && (
-            <ErrorSegment
-              title={t.decisions.applicationDecisions.errors.pageLoadError}
-            />
-          )}
-          {decisionsRequest.isSuccess && (
+          {renderResult(decisionsRequest, (decisionsRequest) => (
             <div>
               <P width="800px">{t.decisions.applicationDecisions.summary}</P>
               {unconfirmedDecisionsCount > 0 ? (
@@ -90,32 +80,27 @@ export default React.memo(function DecisionResponseList() {
                 />
               ) : null}
               <Gap size="L" />
-              {decisionsRequest.value
+              {decisionsRequest
                 .sort(decisionOrderComparator)
                 .map((decision, i) => (
                   <React.Fragment key={decision.id}>
                     <DecisionResponse
                       decision={decision}
-                      blocked={isDecisionBlocked(
-                        decision,
-                        decisionsRequest.value
-                      )}
+                      blocked={isDecisionBlocked(decision, decisionsRequest)}
                       rejectCascade={isRejectCascaded(
                         decision,
-                        decisionsRequest.value
+                        decisionsRequest
                       )}
-                      refreshDecisionList={() => {
-                        loadDecisions(applicationId)
-                      }}
+                      refreshDecisionList={loadDecisions}
                       handleReturnToPreviousPage={handleReturnToPreviousPage}
                     />
-                    {i < decisionsRequest.value.length - 1 ? (
+                    {i < decisionsRequest.length - 1 ? (
                       <HorizontalLine />
                     ) : null}
                   </React.Fragment>
                 ))}
             </div>
-          )}
+          ))}
           <Gap size="m" />
         </ContentArea>
         {displayDecisionWithNoResponseWarning && (

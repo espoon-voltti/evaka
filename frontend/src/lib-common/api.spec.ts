@@ -15,6 +15,7 @@ import {
 
 describe('combine', () => {
   const success = Success.of(1)
+  const reloading = success.reloading()
   const loading = Loading.of<number>()
   const failure = Failure.of({ message: 'foo' })
 
@@ -26,9 +27,9 @@ describe('combine', () => {
     ]
     tests.forEach((test) => {
       const { isLoading, isFailure, isSuccess } = combine(...test)
-      expect(isLoading).toEqual(true)
-      expect(isFailure).toEqual(false)
-      expect(isSuccess).toEqual(false)
+      expect(isLoading).toBe(true)
+      expect(isFailure).toBe(false)
+      expect(isSuccess).toBe(false)
     })
   })
 
@@ -40,9 +41,24 @@ describe('combine', () => {
     ]
     tests.forEach((test) => {
       const { isLoading, isFailure, isSuccess } = combine(...test)
-      expect(isLoading).toEqual(false)
-      expect(isFailure).toEqual(true)
-      expect(isSuccess).toEqual(false)
+      expect(isLoading).toBe(false)
+      expect(isFailure).toBe(true)
+      expect(isSuccess).toBe(false)
+    })
+  })
+
+  it('is reloading when at least one is reloading', () => {
+    const tests: [Result<unknown>, Result<unknown>, Result<unknown>][] = [
+      [success, success, reloading],
+      [reloading, success, success],
+      [reloading, success, reloading],
+      [reloading, reloading, reloading]
+    ]
+    tests.forEach((test) => {
+      const result = combine(...test)
+      expect(result.isLoading).toBe(false)
+      expect(result.isFailure).toBe(false)
+      expect(result.isSuccess && result.isReloading).toBe(true)
     })
   })
 })
@@ -51,6 +67,7 @@ describe('mapAll', () => {
   const success = Success.of('yippee')
   const loading = Loading.of<string>()
   const failure = Failure.of<string>({ message: 'foo' })
+  const reloading = success.reloading()
   const mapper = {
     loading() {
       return 'loading'
@@ -58,8 +75,8 @@ describe('mapAll', () => {
     failure() {
       return 'failure'
     },
-    success(v: string) {
-      return v
+    success(v: string, isReloading: boolean) {
+      return v + (isReloading ? ' (reloading)' : '')
     }
   }
 
@@ -67,6 +84,7 @@ describe('mapAll', () => {
     expect(loading.mapAll(mapper)).toEqual('loading')
     expect(failure.mapAll(mapper)).toEqual('failure')
     expect(success.mapAll(mapper)).toEqual('yippee')
+    expect(reloading.mapAll(mapper)).toEqual('yippee (reloading)')
   })
 })
 
@@ -80,6 +98,7 @@ describe('utils/async', () => {
       const wrapped = withStaleCancellation(happyFunction)
 
       let state: Result<string> = Loading.of()
+
       function setState(value: Result<string> | Cancelled) {
         if (!isCancelled(value)) {
           state = value

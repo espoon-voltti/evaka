@@ -5,13 +5,13 @@
 import { useEffect } from 'react'
 import { Translations } from 'lib-customizations/citizen'
 
-export default function useTitle(
-  t: Translations,
-  title: string,
-  deps: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
-) {
+export default function useTitle(t: Translations, title: string) {
+  const effectiveTitle = title ? `${t.common.title} | ${title}` : t.common.title
+  const fallbackTitle = t.common.title
   return useEffect(() => {
-    document.title = title ? `${t.common.title} | ${title}` : t.common.title
-    return () => void (document.title = t.common.title)
-  }, deps) // eslint-disable-line react-hooks/exhaustive-deps
+    document.title = effectiveTitle
+    return () => {
+      document.title = fallbackTitle
+    }
+  }, [effectiveTitle, fallbackTitle])
 }

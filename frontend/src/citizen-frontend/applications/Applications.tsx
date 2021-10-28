@@ -3,35 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useTranslation } from '../localization'
-import React, { useEffect, useState } from 'react'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import React, { Fragment } from 'react'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { getGuardianApplications } from './api'
 import { Gap } from 'lib-components/white-space'
 import { H1 } from 'lib-components/typography'
 import _ from 'lodash'
 import ChildApplicationsBlock from '../applications/ChildApplicationsBlock'
-import { ApplicationsOfChild } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Footer from '../Footer'
 import useTitle from '../useTitle'
+import { renderResult } from '../async-rendering'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
-  const [guardianApplications, setGuardianApplications] = useState<
-    Result<ApplicationsOfChild[]>
-  >(Loading.of())
-
-  const loadGuardianApplications = useRestApi(
+  const [guardianApplications, loadGuardianApplications] = useApiState(
     getGuardianApplications,
-    setGuardianApplications
+    []
   )
-
-  useEffect(() => {
-    loadGuardianApplications()
-  }, [loadGuardianApplications])
 
   useTitle(t, t.applicationsList.title)
 
@@ -45,24 +34,25 @@ export default React.memo(function Applications() {
         </ContentArea>
         <Gap size="s" />
 
-        {guardianApplications.isLoading && <SpinnerSegment />}
-        {guardianApplications.isFailure && (
-          <ErrorSegment title={t.applicationsList.pageLoadError} />
-        )}
-        {guardianApplications.isSuccess &&
-          _.sortBy(guardianApplications.value, (a) => a.childName).map(
-            (childApplications) => (
-              <React.Fragment key={childApplications.childId}>
-                <ChildApplicationsBlock
-                  childId={childApplications.childId}
-                  childName={childApplications.childName}
-                  applicationSummaries={childApplications.applicationSummaries}
-                  reload={loadGuardianApplications}
-                />
-                <Gap size="s" />
-              </React.Fragment>
-            )
-          )}
+        {renderResult(guardianApplications, (guardianApplications) => (
+          <>
+            {_.sortBy(guardianApplications, (a) => a.childName).map(
+              (childApplications) => (
+                <Fragment key={childApplications.childId}>
+                  <ChildApplicationsBlock
+                    childId={childApplications.childId}
+                    childName={childApplications.childName}
+                    applicationSummaries={
+                      childApplications.applicationSummaries
+                    }
+                    reload={loadGuardianApplications}
+                  />
+                  <Gap size="s" />
+                </Fragment>
+              )
+            )}
+          </>
+        ))}
       </Container>
       <Footer />
     </>

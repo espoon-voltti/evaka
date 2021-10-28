@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { transparentize } from 'polished'
 import { defaultMargins, SpacingSize } from '../../white-space'
+import { spinnerOverlayZIndex } from '../../layout/z-helpers'
 
 const spinnerSize = '50px'
 
@@ -15,8 +16,8 @@ export const Spinner = styled.div<{ zIndex?: number }>`
   height: ${spinnerSize};
   ${({ zIndex }) => (zIndex ? `z-index: ${zIndex};` : '')}
 
-  border: 5px solid
-    ${({ theme: { colors } }) => transparentize(0.8, colors.main.primary)};
+  border: 5px solid ${({ theme: { colors } }) =>
+    transparentize(0.8, colors.main.primary)};
   border-left-color: ${({ theme: { colors } }) => colors.main.primary};
   animation: spin 1.1s infinite linear;
 
@@ -39,6 +40,7 @@ export const Spinner = styled.div<{ zIndex?: number }>`
 interface SpinnerWrapperProps {
   size: string
 }
+
 const SpinnerWrapper = styled.div<SpinnerWrapperProps>`
   margin: ${(p) => p.size} 0;
   display: flex;
@@ -55,6 +57,47 @@ export function SpinnerSegment({ size = 'm' }: SpinnerSegmentProps) {
     <SpinnerWrapper size={defaultMargins[size]}>
       <Spinner />
     </SpinnerWrapper>
+  )
+}
+
+const SpinnerOverlayRoot = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: white;
+  opacity: 0.8;
+  z-index: ${spinnerOverlayZIndex};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export function SpinnerOverlay() {
+  return (
+    <SpinnerOverlayRoot>
+      <Spinner />
+    </SpinnerOverlayRoot>
+  )
+}
+
+const Relative = styled.div`
+  position: relative;
+`
+
+export function LoadableContent({
+  loading,
+  children
+}: {
+  loading: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <Relative>
+      {loading && <SpinnerOverlay />}
+      {children}
+    </Relative>
   )
 }
 

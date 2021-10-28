@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import ReactSelect, {
   components,
@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import {
@@ -23,7 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fasMapMarkerAlt } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
-import { queryAutocomplete } from '../map/api'
+import { queryAutocomplete } from './api'
 import { MapAddress } from './MapView'
 import { useTranslation } from '../localization'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -39,6 +39,14 @@ const Input = (props: InputProps) => (
   <components.Input {...props} isHidden={false} />
 )
 
+async function fetchAddressOptions(input: string) {
+  if (input.length > 0) {
+    return await queryAutocomplete(input)
+  } else {
+    return Success.of([])
+  }
+}
+
 export default React.memo(function SearchInput({
   allUnits,
   selectedAddress,
@@ -49,17 +57,10 @@ export default React.memo(function SearchInput({
   const [inputString, setInputString] = useState('')
   const debouncedInputString = useDebounce(inputString, 500)
 
-  const [addressOptions, setAddressOptions] = useState<Result<MapAddress[]>>(
-    Success.of([])
+  const [addressOptions] = useApiState(
+    () => fetchAddressOptions(debouncedInputString),
+    [debouncedInputString]
   )
-  const loadOptions = useRestApi(queryAutocomplete, setAddressOptions)
-  useEffect(() => {
-    if (debouncedInputString.length > 0) {
-      loadOptions(debouncedInputString)
-    } else {
-      setAddressOptions(Success.of([]))
-    }
-  }, [debouncedInputString, loadOptions])
 
   const getUnitOptions = useCallback(() => {
     if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []
@@ -193,10 +194,12 @@ export default React.memo(function SearchInput({
 
 const OptionWrapper = styled.div`
   cursor: pointer;
+
   &:hover,
   &.focused {
     background-color: ${colors.blues.lighter};
   }
+
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
   margin-bottom: ${defaultMargins.xs};
 `

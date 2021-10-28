@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
@@ -23,6 +23,11 @@ export default React.memo(function ApplicationFormPreschool({
   terms
 }: ApplicationFormProps) {
   const applicationType = 'PRESCHOOL'
+
+  const preferredStartDate = useMemo(
+    () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),
+    [formData.serviceNeed.preferredStartDate]
+  )
 
   return (
     <FixedSpaceColumn spacing="s">
@@ -74,9 +79,7 @@ export default React.memo(function ApplicationFormPreschool({
         }
         applicationType={applicationType}
         preparatory={formData.serviceNeed.preparatory}
-        preferredStartDate={LocalDate.parseFiOrNull(
-          formData.serviceNeed.preferredStartDate
-        )}
+        preferredStartDate={preferredStartDate}
         errors={errors.unitPreference}
         verificationRequested={verificationRequested}
         shiftCare={formData.serviceNeed.shiftCare}

@@ -3,22 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1 } from 'lib-components/typography'
-import { Loading, Result } from 'lib-common/api'
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import LocalDate from 'lib-common/local-date'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { getAttachmentBlob } from '../attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { OverlayContext } from '../overlay/state'
-import { faArrowDown } from 'lib-icons'
+import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 import styled from 'styled-components'
 import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -26,14 +23,15 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { faChevronDown, faChevronUp } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { renderResult } from '../async-rendering'
 
 export default function PedagogicalDocuments() {
   const t = useTranslation()
-  const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
-    Result<PedagogicalDocumentCitizen[]>
-  >(Loading.of())
+  const [pedagogicalDocuments, loadData] = useApiState(
+    getPedagogicalDocuments,
+    []
+  )
 
   const { refreshUnreadPedagogicalDocumentsCount } =
     useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
@@ -42,9 +40,6 @@ export default function PedagogicalDocuments() {
     refreshUnreadPedagogicalDocumentsCount,
     pedagogicalDocuments
   ])
-
-  const loadData = useRestApi(getPedagogicalDocuments, setPedagogicalDocuments)
-  useEffect(loadData, [loadData])
 
   const { setErrorMessage } = useContext(OverlayContext)
 
@@ -258,17 +253,9 @@ export default function PedagogicalDocuments() {
     <>
       <Container>
         <Gap size="s" />
-        {pedagogicalDocuments.mapAll({
-          loading() {
-            return <SpinnerSegment />
-          },
-          failure() {
-            return <ErrorSegment />
-          },
-          success(items) {
-            return <PedagogicalDocumentsDisplay items={items} />
-          }
-        })}
+        {renderResult(pedagogicalDocuments, (items) => (
+          <PedagogicalDocumentsDisplay items={items} />
+        ))}
       </Container>
     </>
   )
