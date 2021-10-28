@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/pedagogical-document")
 class PedagogicalDocumentController(
     private val accessControl: AccessControl,
+    private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService
 ) {
     @PostMapping
     fun createPedagogicalDocument(
@@ -38,7 +39,11 @@ class PedagogicalDocumentController(
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        return db.transaction { it.createDocument(user, body) }
+        return db.transaction { tx ->
+            val document = tx.createDocument(user, body)
+            pedagogicalDocumentNotificationService.scheduleSendingNotifications(tx, document.id, document.childId)
+            document
+        }
     }
 
     @PutMapping("/{documentId}")

@@ -2,24 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging
+package fi.espoo.evaka.pedagogicaldocument
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -39,16 +41,15 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
+class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
-    private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
-    private val testPersonEn = DevPerson(email = "en@example.com", language = "en")
-    private val testPersonNoEmail = DevPerson(email = null, language = "fi")
+    private val testGuardianFi = DevPerson(email = "fi@example.com", language = "fi")
+    private val testGuardianSv = DevPerson(email = "sv@example.com", language = "sv")
+    private val testHeadOfChild = DevPerson(email = "head@example.com", language = "en")
 
-    private val testPersons = listOf(testPersonFi, testPersonSv, testPersonEn, testPersonNoEmail)
+    private val testPersons = listOf(testGuardianFi, testGuardianSv, testHeadOfChild)
     private val testAddresses = testPersons.mapNotNull { it.email }
 
     private val employeeId: UUID = UUID.randomUUID()
@@ -89,9 +90,15 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
 
             testPersons.forEach {
                 tx.insertTestPerson(it)
-                tx.insertGuardian(it.id, testChild_1.id)
-                tx.createPersonMessageAccount(it.id)
             }
+            tx.insertGuardian(testGuardianFi.id, testChild_1.id)
+            tx.insertGuardian(testGuardianSv.id, testChild_1.id)
+            tx.createParentship(
+                testChild_1.id,
+                testHeadOfChild.id,
+                LocalDate.now().minusYears(1),
+                LocalDate.now().plusYears(1)
+            )
 
             tx.insertTestEmployee(DevEmployee(id = employeeId))
             tx.upsertEmployeeMessageAccount(employeeId)
@@ -102,18 +109,10 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `notifications are sent to citizens`() {
-        val employeeAccount = db.read { it.getEmployeeMessageAccountIds(employeeId).first() }
-        val personAccounts = db.read { tx ->
-            testPersons.map {
-                tx.getCitizenMessageAccount(it.id)
-            }
-        }
-
-        postNewThread(
-            sender = employeeAccount,
-            recipients = personAccounts,
+    fun `notifications are sent to guardians (and heads)`() {
+        postNewDocument(
             user = employee,
+            childId = testChild_1.id
         )
         asyncJobRunner.runPendingJobsSync()
 
@@ -121,32 +120,39 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             testAddresses.toSet(),
             MockEmailClient.emails.map { it.toAddress }.toSet()
         )
-        assertEquals("Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka [null]", getEmailFor(testPersonFi).subject)
-        assertEquals("Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>", getEmailFor(testPersonSv).fromAddress)
-        assertEquals("Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>", getEmailFor(testPersonEn).fromAddress)
+        assertEquals(
+            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka [null]",
+            getEmailFor(testGuardianFi).subject
+        )
+        assertEquals("Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>", getEmailFor(testGuardianSv).fromAddress)
     }
 
-    private fun postNewThread(
-        sender: MessageAccountId,
-        recipients: List<MessageAccountId>,
-        user: AuthenticatedUser.Employee,
-    ) {
-        val (_, response) = http.post("/messages/$sender")
-            .jsonBody(
-                objectMapper.writeValueAsString(
-                    MessageController.PostMessageBody(
-                        title = "Juhannus",
-                        content = "Juhannus tulee pian",
-                        type = MessageType.MESSAGE,
-                        recipientAccountIds = recipients.toSet(),
-                        recipientNames = listOf()
-                    )
-                )
-            )
-            .asUser(user)
-            .response()
-        assertTrue(response.isSuccessful)
+    @Test
+    fun `sending of notifications are tracked in the database`() {
+        val doc = postNewDocument(
+            user = employee,
+            childId = testChild_1.id
+        )
+        asyncJobRunner.runPendingJobsSync()
+
+        db.transaction {
+            it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :docId").bind("docId", doc.id)
+                .map { row ->
+                    assertTrue(row.mapColumn("email_sent"))
+                }
+        }
     }
+
+    private fun postNewDocument(
+        user: AuthenticatedUser.Employee,
+        childId: UUID
+    ) = objectMapper.readValue<PedagogicalDocument>(
+        http.post("/pedagogical-document")
+            .jsonBody("""{"childId": "$childId", "description": "foobar"}""")
+            .asUser(user)
+            .responseString()
+            .third.get()
+    )
 
     private fun getEmailFor(person: DevPerson): MockEmail {
         val address = person.email ?: throw Error("$person has no email")

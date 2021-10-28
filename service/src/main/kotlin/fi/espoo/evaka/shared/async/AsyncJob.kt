@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
@@ -49,6 +50,7 @@ data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
         AsyncJob.RunScheduledJob::class -> listOf("RUN_SCHEDULED_JOB")
         AsyncJob.NotifyFeeThresholdsUpdated::class -> listOf("FEE_THRESHOLDS_UPDATED")
         AsyncJob.GenerateFinanceDecisions::class -> listOf("GENERATE_FINANCE_DECISIONS")
+        AsyncJob.SendPedagogicalDocumentNotificationEmail::class -> listOf("SEND_NEW_PEDAGOGICAL_DOCUMENT_NOTIFICATION")
         else -> emptyList()
     }
 
@@ -162,6 +164,10 @@ sealed interface AsyncJob : AsyncJobPayload {
             data class Adult(val adultId: UUID) : Person()
             data class Child(val childId: UUID) : Person()
         }
+    }
+
+    data class SendPedagogicalDocumentNotificationEmail(val pedagogicalDocumentId: PedagogicalDocumentId, val recipientEmail: String, val language: Language) : AsyncJob {
+        override val user: AuthenticatedUser? = null
     }
 }
 
