@@ -288,8 +288,8 @@ const en: Translations = {
           early childhood education service counselling (tel. 09 816 31000). If
           you wish to cancel an application you have submitted, please send an
           email to early childhood education service counselling (
-          <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
-            varhaiskasvatuksen.palveluohjaus@espoo.fi
+          <a href="mailto:vaka.palveluohjaus@espoo.fi">
+            vaka.palveluohjaus@espoo.fi
           </a>
           ).
         </P>
