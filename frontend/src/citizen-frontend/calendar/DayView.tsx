@@ -155,7 +155,7 @@ export default React.memo(function DayView({
         <Gap size="s" />
         {childrenWithReservations.map(
           ({ child, editableReservation, data }, childIndex) => {
-            const { data: childState } = editorState[childIndex]
+            const childState = editorState[childIndex]?.data
 
             return (
               <Fragment key={child.id}>
@@ -167,6 +167,7 @@ export default React.memo(function DayView({
                 <Grid>
                   <Label>{i18n.calendar.reservation}</Label>
                   {editing &&
+                  childState &&
                   (editableReservation || data.reservations?.length) ? (
                     <FixedSpaceColumn>
                       <FixedSpaceRow alignItems="center">
