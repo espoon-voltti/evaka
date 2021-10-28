@@ -151,6 +151,7 @@ type ParagraphProps = {
   noMargin?: boolean
   centered?: boolean
   width?: string
+  preserveWhiteSpace?: boolean
 }
 
 export const P = styled.p<ParagraphProps>`
@@ -158,6 +159,7 @@ export const P = styled.p<ParagraphProps>`
   max-width: ${(p) => p.width || '960px'};
   ${(p) =>
     p.noMargin ? `margin: 0` : `margin-block: ${p.fitted ? `0` : '1.5em'}`};
+  ${(p) => (p.preserveWhiteSpace ? 'white-space: pre-line' : '')};
 
   strong {
     font-weight: ${fontWeights.semibold};

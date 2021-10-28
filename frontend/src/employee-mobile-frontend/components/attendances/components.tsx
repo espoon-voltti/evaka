@@ -30,6 +30,7 @@ export const InlineWideAsyncButton = styled(WideAsyncButton)`
 export const InlineAsyncButton = styled(AsyncButton)`
   padding: 0;
   min-width: 0;
+  min-height: 0;
   border: none;
 `
 

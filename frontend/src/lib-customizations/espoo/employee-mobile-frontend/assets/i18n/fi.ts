@@ -162,6 +162,7 @@ export const fi = {
     },
     notes: {
       dailyNotes: 'Muistiinpanot',
+      addNew: 'Lisää uusi',
       labels: {
         note: 'Päivän tapahtumia',
         feedingNote: 'Lapsi söi tänään',

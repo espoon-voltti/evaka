@@ -11,11 +11,8 @@ import {
   childDailyNoteLevelValues,
   childDailyNoteReminderValues,
   ChildStickyNote,
-  ChildStickyNoteBody,
-  GroupNote,
-  GroupNoteBody
+  GroupNote
 } from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -49,21 +46,16 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import {
   deleteChildDailyNote,
-  deleteChildStickyNote,
-  deleteGroupNote,
   postChildDailyNote,
-  postChildStickyNote,
-  postGroupNote,
-  putChildDailyNote,
-  putChildStickyNote,
-  putGroupNote
+  putChildDailyNote
 } from '../../../api/notes'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { ChipWrapper, TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
-import StickyNoteTab from './StickyNoteTab'
+import { ChildStickyNotesTab } from './ChildStickyNotesTab'
+import { GroupNotesTab } from './GroupNotesTab'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
 
@@ -300,27 +292,12 @@ export default React.memo(function NotesEditor() {
     }
   }, [dirty, history])
 
-  const onRemoveChildStickyNote = useCallback(
-    (id: UUID) => deleteChildStickyNote(id),
-    []
-  )
-  const onSaveChildStickyNote = useCallback(
-    (body: ChildStickyNoteBody, id?: UUID) =>
-      id ? putChildStickyNote(id, body) : postChildStickyNote(childId, body),
-    [childId]
-  )
-  const memoizedChildStickyNotes = useMemo<ChildStickyNote[]>(
+  const stickyNotes = useMemo<ChildStickyNote[]>(
     () => childResult.map((c) => c.stickyNotes).getOrElse([]),
     [childResult]
   )
 
-  const onRemoveGroupNote = useCallback((id: UUID) => deleteGroupNote(id), [])
-  const onSaveGroupNote = useCallback(
-    (body: GroupNoteBody, id?: UUID) =>
-      id ? putGroupNote(id, body) : postGroupNote(groupId, body),
-    [groupId]
-  )
-  const memoizedGroupNotes = useMemo<GroupNote[]>(
+  const groupNotes = useMemo<GroupNote[]>(
     () => attendanceResponse.map((v) => v.groupNotes).getOrElse([]),
     [attendanceResponse]
   )
@@ -328,15 +305,9 @@ export default React.memo(function NotesEditor() {
   function renderTabContent(): React.ReactNode {
     switch (selectedTab) {
       case 'STICKY':
-        return (
-          <StickyNoteTab
-            title={i18n.attendances.notes.childStickyNotes}
-            placeholder={i18n.attendances.notes.placeholders.childStickyNote}
-            onSave={onSaveChildStickyNote}
-            onRemove={onRemoveChildStickyNote}
-            notes={memoizedChildStickyNotes}
-          />
-        )
+        return <ChildStickyNotesTab childId={childId} notes={stickyNotes} />
+      case 'GROUP':
+        return <GroupNotesTab groupId={groupId} notes={groupNotes} />
       case 'NOTE':
         return (
           <>
@@ -511,16 +482,6 @@ export default React.memo(function NotesEditor() {
             </StickyActionContainer>
           </>
         )
-      case 'GROUP':
-        return (
-          <StickyNoteTab
-            title={i18n.attendances.notes.groupNote}
-            placeholder={i18n.attendances.notes.placeholders.groupNote}
-            onSave={onSaveGroupNote}
-            onRemove={onRemoveGroupNote}
-            notes={memoizedGroupNotes}
-          />
-        )
     }
   }
 
@@ -534,12 +495,12 @@ export default React.memo(function NotesEditor() {
       {
         type: 'STICKY' as const,
         title: `${i18n.common.nb}!`,
-        noteCount: memoizedChildStickyNotes.length
+        noteCount: stickyNotes.length
       },
       {
         type: 'GROUP' as const,
         title: i18n.common.group,
-        noteCount: memoizedGroupNotes.length
+        noteCount: groupNotes.length
       }
     ]
 
@@ -553,13 +514,7 @@ export default React.memo(function NotesEditor() {
         noteCount={noteCount}
       />
     ))
-  }, [
-    dailyNoteId,
-    i18n,
-    memoizedChildStickyNotes.length,
-    memoizedGroupNotes.length,
-    selectedTab
-  ])
+  }, [dailyNoteId, i18n, stickyNotes.length, groupNotes.length, selectedTab])
 
   return renderResult(childResult, (child) => {
     return (
