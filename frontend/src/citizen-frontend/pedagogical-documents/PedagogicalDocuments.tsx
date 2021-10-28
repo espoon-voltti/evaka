@@ -164,14 +164,14 @@ export default function PedagogicalDocuments() {
               <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
               <p>{t.pedagogicalDocuments.description}</p>
             </PaddedDiv>
-            <PedagogicalDocumentsList items={items} />
+            {items.length > 0 && <PedagogicalDocumentsList items={items} />}
           </ContentArea>
         </Mobile>
         <Desktop>
           <ContentArea opaque paddingVertical="L">
             <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
             <p>{t.pedagogicalDocuments.description}</p>
-            <PedagogicalDocumentsTable items={items} />
+            {items.length > 0 && <PedagogicalDocumentsTable items={items} />}
           </ContentArea>
         </Desktop>
       </>
@@ -266,9 +266,7 @@ export default function PedagogicalDocuments() {
             return <ErrorSegment />
           },
           success(items) {
-            return (
-              items.length > 0 && <PedagogicalDocumentsDisplay items={items} />
-            )
+            return <PedagogicalDocumentsDisplay items={items} />
           }
         })}
       </Container>
