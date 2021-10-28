@@ -5962,7 +5962,7 @@ __metadata:
     lib-icons: "link:src/lib-icons"
     lodash: ^4.17.21
     make-error-cause: ^2.3.0
-    playwright: ^1.16.1
+    playwright: ^1.16.2
     polished: ^4.1.3
     postcss: ^8.3.11
     postcss-loader: ^6.2.0
@@ -10050,9 +10050,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:=1.16.1":
-  version: 1.16.1
-  resolution: "playwright-core@npm:1.16.1"
+"playwright-core@npm:=1.16.2":
+  version: 1.16.2
+  resolution: "playwright-core@npm:1.16.2"
   dependencies:
     commander: ^8.2.0
     debug: ^4.1.1
@@ -10072,18 +10072,18 @@ __metadata:
     yazl: ^2.5.1
   bin:
     playwright: cli.js
-  checksum: b3b84898c9eaa14a13bf20cda5a4558eb9440c64129913dc998da9db4e60f2f3f331ee8609a987685f4fee6b47a7e4a4f8ba11edc52d0b1d1e19760501b80b4b
+  checksum: 97007554d42cf6ae48beb0883891951a72014d767107183526214df369cea12ddc84ae9f5c80c4c21e074176983ca1a411f3bd1119d9813341fc11f5c1228803
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.16.1":
-  version: 1.16.1
-  resolution: "playwright@npm:1.16.1"
+"playwright@npm:^1.16.2":
+  version: 1.16.2
+  resolution: "playwright@npm:1.16.2"
   dependencies:
-    playwright-core: =1.16.1
+    playwright-core: =1.16.2
   bin:
     playwright: cli.js
-  checksum: ecce40e705ade64fef653b14891b32f4418fa334c400438b94ea57befb4c99046a4078000f0ca8cb22b7d6690cb9b4d86c9c101f6d209ee18cf6c4938815e4d3
+  checksum: fa2a35684f650456ae9862150c426810252cc300b3042eff666990eb5156d0ae55a36fda0acbc5d222b7479eefa0ea12f7d7ebd74002a15ca9401157c6281ebd
   languageName: node
   linkType: hard
 
