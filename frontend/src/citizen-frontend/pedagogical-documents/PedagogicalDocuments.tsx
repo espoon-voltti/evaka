@@ -152,6 +152,14 @@ export default function PedagogicalDocuments() {
   }: {
     items: PedagogicalDocumentCitizen[]
   }) => {
+    const moreThanOneChild =
+      items.reduce(
+        (childIds, doc) =>
+          childIds.includes(doc.childId)
+            ? childIds
+            : [...childIds, doc.childId],
+        [] as string[]
+      ).length > 1
     return (
       <>
         <Mobile>
@@ -160,14 +168,24 @@ export default function PedagogicalDocuments() {
               <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
               <p>{t.pedagogicalDocuments.description}</p>
             </PaddedDiv>
-            {items.length > 0 && <PedagogicalDocumentsList items={items} />}
+            {items.length > 0 && (
+              <PedagogicalDocumentsList
+                items={items}
+                showChildrenNames={moreThanOneChild}
+              />
+            )}
           </ContentArea>
         </Mobile>
         <Desktop>
           <ContentArea opaque paddingVertical="L">
             <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
             <p>{t.pedagogicalDocuments.description}</p>
-            {items.length > 0 && <PedagogicalDocumentsTable items={items} />}
+            {items.length > 0 && (
+              <PedagogicalDocumentsTable
+                items={items}
+                showChildrenNames={moreThanOneChild}
+              />
+            )}
           </ContentArea>
         </Desktop>
       </>
@@ -175,15 +193,22 @@ export default function PedagogicalDocuments() {
   }
 
   const PedagogicalDocumentsList = ({
-    items
+    items,
+    showChildrenNames
   }: {
     items: PedagogicalDocumentCitizen[]
+    showChildrenNames: boolean
   }) => {
     return (
       <>
         {items.map((item) => (
           <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
-            <div>{LocalDate.fromSystemTzDate(item.created).format()}</div>
+            <ListItemHead>
+              <span>{LocalDate.fromSystemTzDate(item.created).format()}</span>
+              {showChildrenNames && (
+                <span>{item.childPreferredName || item.childFirstName}</span>
+              )}
+            </ListItemHead>
             <ItemDescription
               item={item}
               clampLines={1}
@@ -204,15 +229,18 @@ export default function PedagogicalDocuments() {
   }
 
   const PedagogicalDocumentsTable = ({
-    items
+    items,
+    showChildrenNames
   }: {
     items: PedagogicalDocumentCitizen[]
+    showChildrenNames: boolean
   }) => {
     return (
       <Table>
         <Thead>
           <Tr>
             <Th>{t.pedagogicalDocuments.table.date}</Th>
+            {showChildrenNames && <Th>{t.pedagogicalDocuments.table.child}</Th>}
             <Th>{t.pedagogicalDocuments.table.description}</Th>
             <Th>{t.pedagogicalDocuments.table.document}</Th>
             <Th />
@@ -224,6 +252,11 @@ export default function PedagogicalDocuments() {
               <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                 {LocalDate.fromSystemTzDate(item.created).format()}
               </DateTd>
+              {showChildrenNames && (
+                <Td data-qa={`pedagogical-document-child-name-${item.id}`}>
+                  <div>{item.childPreferredName || item.childFirstName}</div>
+                </Td>
+              )}
               <DescriptionTd>
                 <ItemDescription
                   item={item}
@@ -320,6 +353,13 @@ const ListItem = styled(FixedSpaceColumn)`
   & > div {
     font-weight: ${(props: { documentIsRead: boolean }) =>
       props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+  }
+`
+
+const ListItemHead = styled.div`
+  display: flex;
+  & > :first-child {
+    flex: 1;
   }
 `
 

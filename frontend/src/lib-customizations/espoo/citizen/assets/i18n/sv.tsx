@@ -1647,11 +1647,12 @@ const sv: Translations = {
     }
   },
   pedagogicalDocuments: {
-    title: 'Kasvu ja oppiminen',
+    title: 'Tillväxt och inlärning',
     description:
-      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
+      'Hit samlas dokument och bilder angående barnets/barnens tillväxt och inlärning.',
     table: {
       date: 'Datum',
+      child: 'Barn',
       document: 'Dokument',
       description: 'Beskrivning'
     },

@@ -70,11 +70,15 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonI
                 a.id attachment_id,
                 a.name attachment_name,
                 a.content_type attachment_content_type,
-                pdr.read_at is not null is_read
+                pdr.read_at is not null is_read,
+                chp.first_name,
+                ch.preferred_name
             FROM pedagogical_document pd
             JOIN guardian g ON pd.child_id = g.child_id
             LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
+            LEFT JOIN person chp ON chp.id = pd.child_id
+            LEFT JOIN child ch ON ch.id = pd.child_id
             WHERE g.guardian_id = :guardian_id
             AND (pd.description IS NOT NULL OR a.id IS NOT NULL)
             ORDER BY pd.created DESC
@@ -141,7 +145,9 @@ data class PedagogicalDocumentCitizen(
     val description: String?,
     val attachment: Attachment?,
     val created: HelsinkiDateTime,
-    val isRead: Boolean
+    val isRead: Boolean,
+    val childFirstName: String,
+    val childPreferredName: String?
 )
 
 fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
@@ -158,6 +164,9 @@ fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
             contentType = row.mapColumn("attachment_content_type"),
         ) else null,
         created = row.mapColumn("created"),
-        isRead = row.mapColumn("is_read")
+        isRead = row.mapColumn("is_read"),
+        childFirstName = row.mapColumn("first_name"),
+        childPreferredName = row.mapColumn("preferred_name")
+
     )
 }

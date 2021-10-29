@@ -1628,6 +1628,7 @@ export default {
       'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
       date: 'Päivämäärä',
+      child: 'Lapsi',
       document: 'Dokumentti',
       description: 'Kuvaus'
     },

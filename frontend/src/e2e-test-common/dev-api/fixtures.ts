@@ -30,6 +30,7 @@ import {
 } from './types'
 import {
   insertCareAreaFixtures,
+  insertChildFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
   insertDecisionFixtures,
@@ -1048,6 +1049,10 @@ export class Fixture {
       voucherValueDescriptionSv: `Test service need option ${id}`
     })
   }
+
+  static child(id: string): ChildBuilder {
+    return new ChildBuilder({ id })
+  }
 }
 
 export class DaycareBuilder {
@@ -1338,5 +1343,31 @@ export class ServiceNeedBuilder {
   // Note: shallow copy
   copy(): ServiceNeedBuilder {
     return new ServiceNeedBuilder({ ...this.data })
+  }
+}
+
+export class ChildBuilder {
+  data: Child
+
+  constructor(data: Child) {
+    this.data = data
+  }
+
+  with(value: Partial<Child>): ChildBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<ChildBuilder> {
+    await insertChildFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): ChildBuilder {
+    return new ChildBuilder({ ...this.data })
   }
 }

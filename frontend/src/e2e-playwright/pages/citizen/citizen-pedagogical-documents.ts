@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { waitUntilEqual, waitUntilFalse } from '../../utils'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 
 export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}
 
   readonly #date = (id: string) =>
     this.page.locator(`[data-qa="pedagogical-document-date-${id}"]`)
+  readonly #childName = (id: string) =>
+    this.page.locator(`[data-qa="pedagogical-document-child-name-${id}"]`)
   readonly #description = (id: string) =>
     this.page.locator(`[data-qa="pedagogical-document-description-${id}"]`)
   readonly #downloadAttachment = (id: string) =>
@@ -45,5 +47,17 @@ export default class CitizenPedagogicalDocumentsPage {
 
   async downloadAttachment(id: string) {
     await this.#downloadAttachment(id).click()
+  }
+
+  async assertChildNameIsNotShown(id: string) {
+    await waitUntilFalse(() => this.#childName(id).isVisible())
+  }
+
+  async assertChildNameIsShown(id: string) {
+    await waitUntilTrue(() => this.#childName(id).isVisible())
+  }
+
+  async assertChildNameIs(id: string, expectedName: string) {
+    await waitUntilEqual(() => this.#childName(id).innerText(), expectedName)
   }
 }
