@@ -223,6 +223,7 @@ WHERE employee_id = :userId
                 UserRole.UNIT_SUPERVISOR,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
+            settings = user.isAdmin,
             unitFeatures = user.hasOneOfRoles(UserRole.ADMIN),
             units = user.hasOneOfRoles(
                 UserRole.ADMIN,

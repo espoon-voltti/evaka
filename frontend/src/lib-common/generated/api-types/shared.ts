@@ -54,6 +54,7 @@ export interface EmployeeFeatures {
   pedagogicalDocuments: boolean
   personSearch: boolean
   reports: boolean
+  settings: boolean
   unitFeatures: boolean
   units: boolean
   vasuTemplates: boolean

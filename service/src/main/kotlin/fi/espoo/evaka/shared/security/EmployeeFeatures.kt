@@ -12,6 +12,7 @@ data class EmployeeFeatures(
     val messages: Boolean,
     val personSearch: Boolean,
     val reports: Boolean,
+    val settings: Boolean,
     val unitFeatures: Boolean,
     val units: Boolean,
     val vasuTemplates: Boolean,

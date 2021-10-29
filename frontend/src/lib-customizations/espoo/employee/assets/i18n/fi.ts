@@ -2896,6 +2896,22 @@ export const fi = {
       TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
     }
   },
+  settings: {
+    title: 'Asetukset',
+    key: 'Asetus',
+    value: 'Arvo',
+    options: {
+      DECISION_MAKER_NAME: {
+        title: 'Päätöksentekijän nimi',
+        description: 'Varhaiskasvatus- ja palvelusetelipäätökselle tuleva nimi'
+      },
+      DECISION_MAKER_TITLE: {
+        title: 'Päätöksentekijän titteli',
+        description:
+          'Varhaiskasvatus- ja palvelusetelipäätökselle tuleva titteli'
+      }
+    }
+  },
   unitFeatures: {
     title: 'Toimintojen avaukset'
   },

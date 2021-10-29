@@ -19,6 +19,8 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.setting.SettingType
+import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -70,6 +72,7 @@ class DecisionService(
         user: AuthenticatedUser,
         decisionId: DecisionId
     ) {
+        val settings = tx.getSettings()
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val decisionLanguage = determineDecisionLanguage(decision, tx)
         val application = tx.fetchApplicationDetails(decision.applicationId)
@@ -81,7 +84,7 @@ class DecisionService(
         val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val guardianDecisionLocation = createAndUploadDecision(
-            decision, application, guardian, child, decisionLanguage, unitManager
+            settings, decision, application, guardian, child, decisionLanguage, unitManager
         )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
@@ -93,7 +96,7 @@ class DecisionService(
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
             val otherGuardianDecisionLocation = createAndUploadDecision(
-                decision, application, otherGuardian, child, decisionLanguage, unitManager
+                settings, decision, application, otherGuardian, child, decisionLanguage, unitManager
             )
             tx.updateDecisionOtherGuardianDocumentKey(
                 decisionId,
@@ -103,6 +106,7 @@ class DecisionService(
     }
 
     private fun createAndUploadDecision(
+        settings: Map<SettingType, String>,
         decision: Decision,
         application: ApplicationDetails,
         guardian: PersonDTO,
@@ -114,6 +118,7 @@ class DecisionService(
             messageProvider,
             templateProvider,
             pdfService,
+            settings,
             decision,
             guardian,
             child,
@@ -291,6 +296,7 @@ fun createDecisionPdf(
     messageProvider: IMessageProvider,
     templateProvider: ITemplateProvider,
     pdfService: PDFService,
+    settings: Map<SettingType, String>,
     decision: Decision,
     guardian: PersonDTO,
     child: PersonDTO,
@@ -306,6 +312,7 @@ fun createDecisionPdf(
     val pages = generateDecisionPages(
         template,
         lang,
+        settings,
         decision,
         child,
         guardian,
@@ -321,6 +328,7 @@ fun createDecisionPdf(
 private fun generateDecisionPages(
     template: String,
     lang: String,
+    settings: Map<SettingType, String>,
     decision: Decision,
     child: PersonDTO,
     guardian: PersonDTO,
@@ -354,6 +362,8 @@ private fun generateDecisionPages(
                     else -> null
                 } ?: decision.unit.name
             )
+            setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
+            setVariable("decisionMakerTitle", settings[SettingType.DECISION_MAKER_TITLE])
         }
     )
 }
