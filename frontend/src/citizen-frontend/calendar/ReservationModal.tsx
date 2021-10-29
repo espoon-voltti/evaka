@@ -22,7 +22,7 @@ import DatePicker, {
 import { UUID } from 'lib-common/types'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
 import {

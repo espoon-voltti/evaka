@@ -36,7 +36,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { UnitProviderType } from 'lib-customizations/types'
 import { UUID } from 'lib-common/types'

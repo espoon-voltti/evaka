@@ -25,7 +25,7 @@ import LocalDate from 'lib-common/local-date'
 import { distinct } from '../../utils'
 import { faFileAlt } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 
 interface DisplayFilters {
   careArea: string

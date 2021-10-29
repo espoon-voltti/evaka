@@ -12,7 +12,7 @@ import React, {
 import _ from 'lodash'
 import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from 'lib-common/form-state'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'

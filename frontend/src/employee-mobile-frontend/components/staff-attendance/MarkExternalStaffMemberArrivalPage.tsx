@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

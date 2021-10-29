@@ -36,7 +36,7 @@ import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { UserContext } from '../../state/user'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

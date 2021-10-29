@@ -11,7 +11,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faTrash } from 'lib-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
