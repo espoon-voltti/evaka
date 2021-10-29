@@ -5,7 +5,12 @@
 import { Result } from 'lib-common/api'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
+import { EditedNote } from 'lib-components/employee/notes/notes'
 import React, { useCallback, useContext, useMemo } from 'react'
+import {
+  StickyNoteTab,
+  StickyNoteTabLabels
+} from 'lib-components/employee/notes/StickyNoteTab'
 import {
   deleteChildStickyNote,
   postChildStickyNote,
@@ -14,8 +19,6 @@ import {
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { getStickyNoteTabLabels } from './labels'
-import { EditedNote } from './notes'
-import { StickyNoteTab, StickyNoteTabLabels } from './StickyNoteTab'
 
 interface Props {
   childId: UUID

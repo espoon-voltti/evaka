@@ -11,8 +11,8 @@ import { Dimmed, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
-import { InlineAsyncButton } from '../components'
 import { Note } from './notes'
+import { InlineAsyncButton } from './InlineAsyncButton'
 
 const ValidTo = styled(Dimmed)`
   font-style: italic;

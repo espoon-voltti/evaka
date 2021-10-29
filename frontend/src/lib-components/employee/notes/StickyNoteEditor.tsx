@@ -10,7 +10,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useState } from 'react'
-import { InlineAsyncButton } from '../components'
+import { InlineAsyncButton } from './InlineAsyncButton'
 import { EditedNote, Note } from './notes'
 
 export interface EditorLabels {

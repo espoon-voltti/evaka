@@ -38,7 +38,7 @@ import {
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { ChipWrapper } from '../../mobile/components'
-import { ChildDailyNoteFormData } from './notes'
+import { ChildDailyNoteFormData } from './daily-note'
 
 const Time = styled.div`
   display: flex;

@@ -12,7 +12,7 @@ import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useState } from 'react'
 import { EditedNote, Note } from './notes'
-import { StaticStickyNote, StaticLabels } from './StaticStickyNote'
+import { StaticLabels, StaticStickyNote } from './StaticStickyNote'
 import { EditorLabels, StickyNoteEditor } from './StickyNoteEditor'
 
 export interface StickyNoteTabLabels {

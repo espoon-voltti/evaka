@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Translations } from 'lib-customizations/employeeMobile'
-import { StickyNoteTabLabels } from './StickyNoteTab'
+import { StickyNoteTabLabels } from 'lib-components/employee/notes/StickyNoteTab'
 
 export const getStickyNoteTabLabels = (
   i18n: Translations
