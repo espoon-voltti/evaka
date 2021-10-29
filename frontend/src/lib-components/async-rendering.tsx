@@ -57,17 +57,18 @@ export function makeHelpers(useFailureMessage: () => string) {
   function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
     const failureMessage = useFailureMessage()
     return useMemo(
-      () => (
-        <LoadableContent
-          loading={result.isLoading || (result.isSuccess && result.isReloading)}
-        >
-          {result.isFailure ? (
-            <ErrorSegment title={failureMessage} />
-          ) : result.isSuccess ? (
-            renderer(result.value, result.isReloading)
-          ) : null}
-        </LoadableContent>
-      ),
+      () =>
+        result.isLoading ? (
+          <SpinnerSegment />
+        ) : (
+          <LoadableContent loading={result.isSuccess && result.isReloading}>
+            {result.isFailure ? (
+              <ErrorSegment title={failureMessage} />
+            ) : result.isSuccess ? (
+              renderer(result.value, result.isReloading)
+            ) : null}
+          </LoadableContent>
+        ),
       [result, renderer, failureMessage]
     )
   }

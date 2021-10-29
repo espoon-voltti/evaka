@@ -66,6 +66,7 @@ const SpinnerOverlayRoot = styled.div`
   right: 0;
   left: 0;
   bottom: 0;
+  min-height: 80px;
   background-color: white;
   opacity: 0.8;
   z-index: ${spinnerOverlayZIndex};
