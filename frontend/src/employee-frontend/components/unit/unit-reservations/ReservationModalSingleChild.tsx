@@ -12,7 +12,7 @@ import DatePicker, {
 } from 'lib-components/molecules/date-picker/DatePicker'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'

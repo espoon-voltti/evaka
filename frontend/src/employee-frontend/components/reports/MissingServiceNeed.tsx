@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'

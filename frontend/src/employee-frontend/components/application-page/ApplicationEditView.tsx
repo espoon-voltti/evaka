@@ -41,7 +41,7 @@ import { flow, set } from 'lodash/fp'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   deleteAttachment,
   getAttachmentBlob,

@@ -43,7 +43,7 @@ import { CareArea } from '../../types/unit'
 import { Label, LabelText } from './styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { applicationTypes } from 'lib-customizations/employee'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { ApplicationType } from 'lib-common/generated/enums'
 
 interface Props {

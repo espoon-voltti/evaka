@@ -23,7 +23,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 
 interface DisplayFilters {
   careArea: string

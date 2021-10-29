@@ -25,7 +25,7 @@ import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../common/styled/containers'
 import _ from 'lodash'
 import { distinct } from '../../utils'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

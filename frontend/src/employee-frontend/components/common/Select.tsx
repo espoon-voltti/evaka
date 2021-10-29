@@ -4,7 +4,9 @@
 
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import Combobox, { ComboboxProps } from 'lib-components/atoms/form/Combobox'
+import Combobox, {
+  ComboboxProps
+} from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 
 export interface SelectOption {
