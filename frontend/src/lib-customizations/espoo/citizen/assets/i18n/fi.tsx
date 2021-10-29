@@ -1627,6 +1627,7 @@ export default {
       date: 'Päivämäärä',
       document: 'Dokumentti',
       description: 'Kuvaus'
-    }
+    },
+    toggleExpandText: 'Näytä tai piilota teksti'
   }
 }

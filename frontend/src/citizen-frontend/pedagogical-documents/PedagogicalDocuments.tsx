@@ -136,10 +136,11 @@ export default function PedagogicalDocuments() {
           {item.description}
         </ExpandableText>
         {shouldShowExpandButton && (
-          <ExpandButton
+          <IconButton
             onClick={toggleExpanded}
             data-qa={`${dataQa}-button`}
             icon={expanded ? faChevronUp : faChevronDown}
+            altText={t.pedagogicalDocuments.toggleExpandText}
           />
         )}
       </FixedSpaceRow>
@@ -334,10 +335,4 @@ const ExpandableText = styled.span<ExpandableTextProps>`
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${(props) =>
     props.expanded ? 'none' : props.clampLines};
-`
-
-const ExpandButton = styled(IconButton)`
-  &:focus {
-    border: none;
-  }
 `

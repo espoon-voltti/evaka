@@ -1651,7 +1651,8 @@ const sv: Translations = {
       date: 'Datum',
       document: 'Dokument',
       description: 'Beskrivning'
-    }
+    },
+    toggleExpandText: 'Visa eller göm texten'
   }
 }
 
