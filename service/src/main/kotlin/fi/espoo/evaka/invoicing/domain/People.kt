@@ -64,4 +64,8 @@ data class FridgeFamily(
     val children: List<PersonData.WithDateOfBirth>,
     val period: DateRange,
     val fridgeSiblings: List<PersonData.WithDateOfBirth>
-)
+) {
+    fun getSize(): Int {
+        return 1 + (if (partner != null) 1 else 0) + children.size + fridgeSiblings.size
+    }
+}

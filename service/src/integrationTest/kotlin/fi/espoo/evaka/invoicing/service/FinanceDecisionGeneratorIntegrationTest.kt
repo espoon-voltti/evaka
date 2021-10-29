@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
@@ -89,7 +90,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)
@@ -127,7 +128,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: DaycareId): PlacementId {
+    private fun insertPlacement(childId: UUID, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
