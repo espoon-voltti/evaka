@@ -2,17 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Result } from 'lib-common/api'
 import { GroupNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import {
   deleteGroupNote,
   postGroupNote,
   putGroupNote
 } from '../../../api/notes'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
+import { getStickyNoteTabLabels } from './labels'
 import { EditedNote } from './notes'
-import { StickyNoteTab } from './StickyNoteTab'
+import { StickyNoteTab, StickyNoteTabLabels } from './StickyNoteTab'
 
 interface Props {
   groupId: UUID
@@ -24,18 +27,34 @@ export const GroupNotesTab = React.memo(function GroupNotesTab({
   notes
 }: Props) {
   const { i18n } = useTranslation()
+
+  const { reloadAttendances } = useContext(ChildAttendanceContext)
+  const reloadOnSuccess = useCallback(
+    (res: Result<unknown>) => res.map(() => reloadAttendances()),
+    [reloadAttendances]
+  )
   const onSave = useCallback(
     ({ id, ...body }: EditedNote) =>
-      id ? putGroupNote(id, body) : postGroupNote(groupId, body),
-    [groupId]
+      (id ? putGroupNote(id, body) : postGroupNote(groupId, body)).then(
+        reloadOnSuccess
+      ),
+    [groupId, reloadOnSuccess]
   )
+  const onRemove = useCallback(
+    (id) => deleteGroupNote(id).then(reloadOnSuccess),
+    [reloadOnSuccess]
+  )
+  const labels = useMemo<StickyNoteTabLabels>(
+    () => getStickyNoteTabLabels(i18n),
+    [i18n]
+  )
+
   return (
     <StickyNoteTab
       notes={notes}
       onSave={onSave}
-      onRemove={deleteGroupNote}
-      title={i18n.attendances.notes.groupNote}
-      placeholder={i18n.attendances.notes.placeholders.groupNote}
+      onRemove={onRemove}
+      labels={labels}
     />
   )
 })
