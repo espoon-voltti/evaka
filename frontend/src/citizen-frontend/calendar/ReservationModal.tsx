@@ -14,7 +14,7 @@ import { useLang, useTranslation } from '../localization'
 import { postReservations } from './api'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import LocalDate from 'lib-common/local-date'
 import DatePicker, {
   DatePickerSpacer
@@ -410,9 +410,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
     <>
       {props.label}
       <FixedSpaceRow alignItems="center">
-        <InputField
+        <TimeInput
           value={timeRange.startTime ?? ''}
-          type="time"
           onChange={(value) => {
             const updatedRange = {
               startTime: value,
@@ -428,6 +427,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!props.showAllErrors}
+          placeholder={i18n.calendar.reservationModal.start}
           data-qa={
             props.dataQaPrefix
               ? `${props.dataQaPrefix}-start-time-0`
@@ -435,9 +435,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           }
         />
         <span>–</span>
-        <InputField
+        <TimeInput
           value={timeRange.endTime ?? ''}
-          type="time"
           onChange={(value) => {
             const updatedRange = {
               startTime: timeRange.startTime ?? '',
@@ -453,6 +452,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!props.showAllErrors}
+          placeholder={i18n.calendar.reservationModal.end}
           data-qa={
             props.dataQaPrefix ? `${props.dataQaPrefix}-end-time-0` : undefined
           }
@@ -478,9 +478,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
         <>
           <div />
           <FixedSpaceRow alignItems="center">
-            <InputField
+            <TimeInput
               value={extraTimeRange.startTime ?? ''}
-              type="time"
               onChange={(value) =>
                 props.updateTimes([
                   timeRange,
@@ -495,6 +494,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
                 i18n.validationErrors
               )}
               hideErrorsBeforeTouched={!props.showAllErrors}
+              placeholder={i18n.calendar.reservationModal.start}
               data-qa={
                 props.dataQaPrefix
                   ? `${props.dataQaPrefix}-start-time-1`
@@ -502,9 +502,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
               }
             />
             <span>–</span>
-            <InputField
+            <TimeInput
               value={extraTimeRange.endTime ?? ''}
-              type="time"
               onChange={(value) =>
                 props.updateTimes([
                   timeRange,
@@ -519,6 +518,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
                 i18n.validationErrors
               )}
               hideErrorsBeforeTouched={!props.showAllErrors}
+              placeholder={i18n.calendar.reservationModal.end}
               data-qa={
                 props.dataQaPrefix
                   ? `${props.dataQaPrefix}-end-time-1`

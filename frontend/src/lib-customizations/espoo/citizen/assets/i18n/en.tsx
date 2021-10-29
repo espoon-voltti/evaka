@@ -202,7 +202,9 @@ const en: Translations = {
         DAILY: 'Daily',
         WEEKLY: 'Weekly',
         IRREGULAR: 'Irregular'
-      }
+      },
+      start: 'Start',
+      end: 'End'
     },
     absenceModal: {
       title: 'Report absence',

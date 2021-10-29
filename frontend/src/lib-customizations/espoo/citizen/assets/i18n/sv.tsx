@@ -202,7 +202,9 @@ const sv: Translations = {
         DAILY: 'Dagligen',
         WEEKLY: 'Veckovis',
         IRREGULAR: 'Irreguljär'
-      }
+      },
+      start: 'Börjar',
+      end: 'Slutar'
     },
     absenceModal: {
       title: 'Anmäl frånvaro',
