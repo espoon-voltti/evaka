@@ -26,7 +26,7 @@ import {
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { renderResult } from '../async-rendering'
 
-export default function PedagogicalDocuments() {
+export default React.memo(function PedagogicalDocuments() {
   const t = useTranslation()
   const [pedagogicalDocuments, loadData] = useApiState(
     getPedagogicalDocuments,
@@ -57,13 +57,13 @@ export default function PedagogicalDocuments() {
     void markPedagogicalDocumentRead(doc.id).then(loadData)
   }
 
-  const Attachment = ({
+  const Attachment = React.memo(function Attachment({
     item,
     dataQa
   }: {
     item: PedagogicalDocumentCitizen
     dataQa: string
-  }) => {
+  }) {
     return (
       <>
         {item && item.attachment && (
@@ -80,34 +80,36 @@ export default function PedagogicalDocuments() {
         )}
       </>
     )
-  }
+  })
 
-  const AttachmentDownloadButton = ({
-    item,
-    dataQa
-  }: {
-    item: PedagogicalDocumentCitizen
-    dataQa: string
-  }) => {
-    return (
-      <>
-        {item.attachment && (
-          <FileDownloadButton
-            key={item.attachment.id}
-            file={item.attachment}
-            fileFetchFn={getAttachmentBlob}
-            afterFetch={() => onRead(item)}
-            onFileUnavailable={onAttachmentUnavailable}
-            icon={faArrowDown}
-            data-qa={dataQa}
-            text={t.fileDownload.download}
-          />
-        )}
-      </>
-    )
-  }
+  const AttachmentDownloadButton = React.memo(
+    function AttachmentDownloadButton({
+      item,
+      dataQa
+    }: {
+      item: PedagogicalDocumentCitizen
+      dataQa: string
+    }) {
+      return (
+        <>
+          {item.attachment && (
+            <FileDownloadButton
+              key={item.attachment.id}
+              file={item.attachment}
+              fileFetchFn={getAttachmentBlob}
+              afterFetch={() => onRead(item)}
+              onFileUnavailable={onAttachmentUnavailable}
+              icon={faArrowDown}
+              data-qa={dataQa}
+              text={t.fileDownload.download}
+            />
+          )}
+        </>
+      )
+    }
+  )
 
-  const ItemDescription = ({
+  const ItemDescription = React.memo(function ItemDescription({
     item,
     clampLines,
     dataQa
@@ -115,7 +117,7 @@ export default function PedagogicalDocuments() {
     item: PedagogicalDocumentCitizen
     clampLines: number
     dataQa: string
-  }) => {
+  }) {
     const [expanded, setExpanded] = useState(false)
 
     const toggleExpanded = () => {
@@ -145,143 +147,151 @@ export default function PedagogicalDocuments() {
         )}
       </FixedSpaceRow>
     )
-  }
+  })
 
-  const PedagogicalDocumentsDisplay = ({
-    items
-  }: {
-    items: PedagogicalDocumentCitizen[]
-  }) => {
-    const moreThanOneChild =
-      items.reduce(
-        (childIds, doc) =>
-          childIds.includes(doc.childId)
-            ? childIds
-            : [...childIds, doc.childId],
-        [] as string[]
-      ).length > 1
-    return (
-      <>
-        <Mobile>
-          <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
-            <PaddedDiv>
+  const PedagogicalDocumentsDisplay = React.memo(
+    function PedagogicalDocumentsDisplay({
+      items
+    }: {
+      items: PedagogicalDocumentCitizen[]
+    }) {
+      const moreThanOneChild =
+        items.reduce(
+          (childIds, doc) =>
+            childIds.includes(doc.childId)
+              ? childIds
+              : [...childIds, doc.childId],
+          [] as string[]
+        ).length > 1
+      return (
+        <>
+          <Mobile>
+            <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
+              <PaddedDiv>
+                <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
+                <p>{t.pedagogicalDocuments.description}</p>
+              </PaddedDiv>
+              {items.length > 0 && (
+                <PedagogicalDocumentsList
+                  items={items}
+                  showChildrenNames={moreThanOneChild}
+                />
+              )}
+            </ContentArea>
+          </Mobile>
+          <Desktop>
+            <ContentArea opaque paddingVertical="L">
               <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
               <p>{t.pedagogicalDocuments.description}</p>
-            </PaddedDiv>
-            {items.length > 0 && (
-              <PedagogicalDocumentsList
-                items={items}
-                showChildrenNames={moreThanOneChild}
-              />
-            )}
-          </ContentArea>
-        </Mobile>
-        <Desktop>
-          <ContentArea opaque paddingVertical="L">
-            <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
-            <p>{t.pedagogicalDocuments.description}</p>
-            {items.length > 0 && (
-              <PedagogicalDocumentsTable
-                items={items}
-                showChildrenNames={moreThanOneChild}
-              />
-            )}
-          </ContentArea>
-        </Desktop>
-      </>
-    )
-  }
-
-  const PedagogicalDocumentsList = ({
-    items,
-    showChildrenNames
-  }: {
-    items: PedagogicalDocumentCitizen[]
-    showChildrenNames: boolean
-  }) => {
-    return (
-      <>
-        {items.map((item) => (
-          <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
-            <ListItemHead>
-              <span>{LocalDate.fromSystemTzDate(item.created).format()}</span>
-              {showChildrenNames && (
-                <span>{item.childPreferredName || item.childFirstName}</span>
+              {items.length > 0 && (
+                <PedagogicalDocumentsTable
+                  items={items}
+                  showChildrenNames={moreThanOneChild}
+                />
               )}
-            </ListItemHead>
-            <ItemDescription
-              item={item}
-              clampLines={1}
-              dataQa={`pedagogical-document-list-description-${item.id}`}
-            />
-            <Attachment
-              item={item}
-              dataQa={`pedagogical-document-list-attachment-${item.id}`}
-            />
-            <AttachmentDownloadButton
-              item={item}
-              dataQa={`pedagogical-document-list-attachment-download-${item.id}`}
-            />
-          </ListItem>
-        ))}
-      </>
-    )
-  }
+            </ContentArea>
+          </Desktop>
+        </>
+      )
+    }
+  )
 
-  const PedagogicalDocumentsTable = ({
-    items,
-    showChildrenNames
-  }: {
-    items: PedagogicalDocumentCitizen[]
-    showChildrenNames: boolean
-  }) => {
-    return (
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>{t.pedagogicalDocuments.table.date}</Th>
-            {showChildrenNames && <Th>{t.pedagogicalDocuments.table.child}</Th>}
-            <Th>{t.pedagogicalDocuments.table.description}</Th>
-            <Th>{t.pedagogicalDocuments.table.document}</Th>
-            <Th />
-          </Tr>
-        </Thead>
-        <Tbody>
+  const PedagogicalDocumentsList = React.memo(
+    function PedagogicalDocumentsList({
+      items,
+      showChildrenNames
+    }: {
+      items: PedagogicalDocumentCitizen[]
+      showChildrenNames: boolean
+    }) {
+      return (
+        <>
           {items.map((item) => (
-            <ItemTr key={item.id} documentIsRead={item.isRead}>
-              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
-                {LocalDate.fromSystemTzDate(item.created).format()}
-              </DateTd>
-              {showChildrenNames && (
-                <Td data-qa={`pedagogical-document-child-name-${item.id}`}>
-                  <div>{item.childPreferredName || item.childFirstName}</div>
-                </Td>
-              )}
-              <DescriptionTd>
-                <ItemDescription
-                  item={item}
-                  clampLines={3}
-                  dataQa={`pedagogical-document-description-${item.id}`}
-                />
-              </DescriptionTd>
-              <NameTd>
-                <Attachment
-                  item={item}
-                  dataQa={`pedagogical-document-attachment-${item.id}`}
-                />
-              </NameTd>
-              <ActionsTd>
-                <AttachmentDownloadButton
-                  item={item}
-                  dataQa={`pedagogical-document-attachment-download-${item.id}`}
-                />
-              </ActionsTd>
-            </ItemTr>
+            <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
+              <ListItemHead>
+                <span>{LocalDate.fromSystemTzDate(item.created).format()}</span>
+                {showChildrenNames && (
+                  <span>{item.childPreferredName || item.childFirstName}</span>
+                )}
+              </ListItemHead>
+              <ItemDescription
+                item={item}
+                clampLines={1}
+                dataQa={`pedagogical-document-list-description-${item.id}`}
+              />
+              <Attachment
+                item={item}
+                dataQa={`pedagogical-document-list-attachment-${item.id}`}
+              />
+              <AttachmentDownloadButton
+                item={item}
+                dataQa={`pedagogical-document-list-attachment-download-${item.id}`}
+              />
+            </ListItem>
           ))}
-        </Tbody>
-      </Table>
-    )
-  }
+        </>
+      )
+    }
+  )
+
+  const PedagogicalDocumentsTable = React.memo(
+    function PedagogicalDocumentsTable({
+      items,
+      showChildrenNames
+    }: {
+      items: PedagogicalDocumentCitizen[]
+      showChildrenNames: boolean
+    }) {
+      return (
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>{t.pedagogicalDocuments.table.date}</Th>
+              {showChildrenNames && (
+                <Th>{t.pedagogicalDocuments.table.child}</Th>
+              )}
+              <Th>{t.pedagogicalDocuments.table.description}</Th>
+              <Th>{t.pedagogicalDocuments.table.document}</Th>
+              <Th />
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items.map((item) => (
+              <ItemTr key={item.id} documentIsRead={item.isRead}>
+                <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
+                  {LocalDate.fromSystemTzDate(item.created).format()}
+                </DateTd>
+                {showChildrenNames && (
+                  <Td data-qa={`pedagogical-document-child-name-${item.id}`}>
+                    <div>{item.childPreferredName || item.childFirstName}</div>
+                  </Td>
+                )}
+                <DescriptionTd>
+                  <ItemDescription
+                    item={item}
+                    clampLines={3}
+                    dataQa={`pedagogical-document-description-${item.id}`}
+                  />
+                </DescriptionTd>
+                <NameTd>
+                  <Attachment
+                    item={item}
+                    dataQa={`pedagogical-document-attachment-${item.id}`}
+                  />
+                </NameTd>
+                <ActionsTd>
+                  <AttachmentDownloadButton
+                    item={item}
+                    dataQa={`pedagogical-document-attachment-download-${item.id}`}
+                  />
+                </ActionsTd>
+              </ItemTr>
+            ))}
+          </Tbody>
+        </Table>
+      )
+    }
+  )
 
   return (
     <>
@@ -293,7 +303,7 @@ export default function PedagogicalDocuments() {
       </Container>
     </>
   )
-}
+})
 
 const ItemTr = styled(Tr)`
   font-weight: ${(props: { documentIsRead: boolean }) =>
