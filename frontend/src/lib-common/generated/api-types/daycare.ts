@@ -176,7 +176,6 @@ export interface Daycare {
   name: string
   openingDate: LocalDate | null
   operationDays: number[]
-  ophOrganizationOid: string | null
   ophOrganizerOid: string | null
   ophUnitOid: string | null
   phone: string | null
@@ -240,7 +239,6 @@ export interface DaycareFields {
   name: string
   openingDate: LocalDate | null
   operationDays: number[] | null
-  ophOrganizationOid: string | null
   ophOrganizerOid: string | null
   ophUnitOid: string | null
   phone: string | null

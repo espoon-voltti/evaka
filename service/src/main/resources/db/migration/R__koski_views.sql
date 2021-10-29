@@ -32,7 +32,7 @@ $$ LANGUAGE SQL STABLE;
 CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    oph_unit_oid text, oph_organization_oid text, oph_organizer_oid text,
+    oph_unit_oid text, oph_organizer_oid text,
     full_range daterange, placement_ranges daterange[], all_placements_in_past bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
     extended_compulsory_education daterange, transport_benefit daterange,
@@ -43,7 +43,6 @@ TABLE (
         p.unit_id,
         p.type,
         d.oph_unit_oid,
-        d.oph_organization_oid,
         d.oph_organizer_oid,
         full_range,
         placement_ranges,
@@ -122,14 +121,13 @@ TABLE (
     WHERE d.upload_to_koski IS TRUE
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organization_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
 $$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    oph_unit_oid text, oph_organization_oid text, oph_organizer_oid text,
+    oph_unit_oid text, oph_organizer_oid text,
     void_date date
 ) AS $$
     SELECT
@@ -137,7 +135,6 @@ TABLE (
         ksr.unit_id,
         ksr.type,
         d.oph_unit_oid,
-        d.oph_organization_oid,
         d.oph_organizer_oid,
         ksr.void_date
     FROM koski_study_right ksr
@@ -151,6 +148,5 @@ TABLE (
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND d.upload_to_koski IS TRUE
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organization_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
 $$ LANGUAGE SQL STABLE;

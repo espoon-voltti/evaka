@@ -160,6 +160,7 @@ V159__child_sticky_notes.sql
 V160__person_disable_ssn.sql
 V161__pedagogical_documents_email_notification.sql
 V162__settings.sql
+V163__remove_daycare_organization_oid.sql
 V163__service_worker_note.sql
 V164__evaka_user.sql
 V165__evaka_user_data.sql
