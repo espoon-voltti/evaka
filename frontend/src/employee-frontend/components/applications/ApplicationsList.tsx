@@ -2,9 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { faCheck, faPaperclip, faTimes } from 'lib-icons'
+import {
+  faCheck,
+  faCommentAlt,
+  faPaperclip,
+  fasCommentAltLines,
+  faTimes,
+  faTrash
+} from 'lib-icons'
 import { Paged } from 'lib-common/api'
 import {
   Table,
@@ -16,7 +23,6 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
-import { ApplicationListSummary } from '../../types/application'
 import { SearchOrder } from '../../types'
 import Pagination from 'lib-components/Pagination'
 import colors, { blueColors } from 'lib-customizations/common'
@@ -28,7 +34,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H1 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { formatDate } from 'lib-common/date'
 import ApplicationActions from '../../components/applications/ApplicationActions'
@@ -40,9 +46,16 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { careTypesFromPlacementType } from '../common/CareTypeLabel'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
-import { hasRole } from '../../utils/roles'
+import { hasRole, RequireRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { UUID } from 'lib-common/types'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { updateServiceWorkerNote } from '../../api/applications'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -106,7 +119,7 @@ const StatusColorTd = styled(Td)<{ color: string }>`
 `
 
 interface Props {
-  applicationsResult: Paged<ApplicationListSummary>
+  applicationsResult: Paged<ApplicationSummary>
   currentPage: number
   setPage: (page: number) => void
   sortBy: SortByApplications
@@ -137,6 +150,9 @@ const ApplicationsList = React.memo(function Applications({
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'FINANCE_ADMIN') ||
     hasRole(roles, 'ADMIN')
+
+  const [editedNote, setEditedNote] = useState<UUID | null>(null)
+  const [editedNoteText, setEditedNoteText] = useState<string>('')
 
   const isSorted = (column: SortByApplications) =>
     sortBy === column ? sortDirection : undefined
@@ -174,7 +190,7 @@ const ApplicationsList = React.memo(function Applications({
     return true
   }
 
-  const getAccentColor = (application: ApplicationListSummary) => {
+  const getAccentColor = (application: ApplicationSummary) => {
     if (
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
@@ -194,7 +210,7 @@ const ApplicationsList = React.memo(function Applications({
     return colors.accents.water
   }
 
-  const dateOfBirthInfo = (application: ApplicationListSummary) => {
+  const dateOfBirthInfo = (application: ApplicationSummary) => {
     const startDateOrDueDate =
       application.startDate && application.dueDate
         ? application.startDate.isAfter(application.dueDate)
@@ -381,6 +397,33 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </FixedSpaceRow>
       </Td>
+
+      <RequireRole oneOf={['SERVICE_WORKER']}>
+        <Td>
+          <Tooltip
+            tooltip={
+              application.serviceWorkerNote ? (
+                <span>{application.serviceWorkerNote}</span>
+              ) : (
+                <i>Lisää muistiinpano</i>
+              )
+            }
+          >
+            <IconButton
+              icon={
+                application.serviceWorkerNote
+                  ? fasCommentAltLines
+                  : faCommentAlt
+              }
+              onClick={(e) => {
+                e.stopPropagation()
+                setEditedNoteText(application.serviceWorkerNote)
+                setEditedNote(application.id)
+              }}
+            />
+          </Tooltip>
+        </Td>
+      </RequireRole>
       <Td>
         {enableApplicationActions && (
           <ApplicationActions
@@ -468,6 +511,9 @@ const ApplicationsList = React.memo(function Applications({
               >
                 {i18n.applications.list.status}
               </SortableTh>
+              <RequireRole oneOf={['SERVICE_WORKER']}>
+                <Th>{i18n.applications.list.note}</Th>
+              </RequireRole>
               <Th>
                 {showCheckboxes ? (
                   <CheckAllContainer>
@@ -487,6 +533,39 @@ const ApplicationsList = React.memo(function Applications({
         </Table>
         <ActionBar reloadApplications={reloadApplications} fullWidth />
       </div>
+
+      {editedNote && (
+        <AsyncFormModal
+          title={'Palveluohjauksen huomio'}
+          resolve={{
+            action: async () =>
+              updateServiceWorkerNote(editedNote, editedNoteText),
+            label: i18n.common.save,
+            onSuccess: () => {
+              setEditedNote(null)
+              reloadApplications()
+            }
+          }}
+          reject={{
+            action: () => setEditedNote(null),
+            label: i18n.common.cancel
+          }}
+        >
+          <AlignRight>
+            <InlineButton
+              onClick={() => setEditedNoteText('')}
+              text={i18n.common.clear}
+              icon={faTrash}
+              disabled={!editedNoteText}
+            />
+          </AlignRight>
+          <Gap />
+          <TextArea
+            value={editedNoteText}
+            onChange={(e) => setEditedNoteText(e.target.value)}
+          />
+        </AsyncFormModal>
+      )}
     </div>
   )
 })
@@ -500,4 +579,10 @@ const CheckAllContainer = styled.div`
 
 const CurrentUnit = styled.p`
   font-style: italic;
+`
+
+const AlignRight = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 `

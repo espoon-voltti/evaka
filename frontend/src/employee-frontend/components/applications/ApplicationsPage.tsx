@@ -5,10 +5,7 @@
 import React, { useCallback, useEffect, useState, useContext } from 'react'
 import { Paged, Result } from 'lib-common/api'
 import { getApplications } from '../../api/applications'
-import {
-  ApplicationListSummary,
-  ApplicationSearchParams
-} from '../../types/application'
+import { ApplicationSearchParams } from '../../types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SortByApplications } from '../../types/application'
 import { SearchOrder } from '../../types'
@@ -22,6 +19,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 const PaddedDiv = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.L};
@@ -56,7 +54,7 @@ function ApplicationsPage() {
   } = useContext(ApplicationUIContext)
 
   const onApplicationsResponse = useCallback(
-    (result: Result<Paged<ApplicationListSummary>>) => {
+    (result: Result<Paged<ApplicationSummary>>) => {
       setApplicationsResult(result)
 
       // ensure current page is within range

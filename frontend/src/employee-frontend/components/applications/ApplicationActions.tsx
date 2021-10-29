@@ -17,13 +17,13 @@ import {
   setVerified,
   withdrawPlacementProposal
 } from '../../api/applications'
-import { ApplicationListSummary } from '../../types/application'
 import { ApplicationSummaryStatusOptions } from '../common/Filters'
 import ActionMenu from '../../components/applications/ActionsMenu'
 import PrimaryAction from '../../components/applications/PrimaryAction'
 import styled from 'styled-components'
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import { UIContext } from '../../state/ui'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export type Action = {
   id: string
@@ -35,7 +35,7 @@ export type Action = {
 }
 
 type Props = {
-  application: ApplicationListSummary
+  application: ApplicationSummary
   reloadApplications: () => void
 }
 

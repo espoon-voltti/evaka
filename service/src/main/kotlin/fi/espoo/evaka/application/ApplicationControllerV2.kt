@@ -187,6 +187,8 @@ class ApplicationControllerV2(
             throw Forbidden("application search not allowed for any unit")
         }
 
+        val canReadServiceWorkerNotes = accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
+
         return db.read { tx ->
             tx.fetchApplicationSummaries(
                 user = user,
@@ -209,7 +211,8 @@ class ApplicationControllerV2(
                 transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
                 voucherApplications = body.voucherApplications,
                 authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
-                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed
+                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
+                canReadServiceWorkerNotes = canReadServiceWorkerNotes
             )
         }.let { ResponseEntity.ok(it) }
     }

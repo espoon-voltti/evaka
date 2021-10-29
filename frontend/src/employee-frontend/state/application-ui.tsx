@@ -25,8 +25,8 @@ import {
 } from '../components/common/Filters'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { CareArea } from '../types/unit'
-import { ApplicationListSummary } from '../types/application'
 import { UUID } from 'lib-common/types'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 // Nothing in here yet. Filters will be added here in next PR.
 
@@ -34,8 +34,8 @@ import { UUID } from 'lib-common/types'
 // when needed if it still belongs in context.
 
 interface UIState {
-  applicationsResult: Result<Paged<ApplicationListSummary>>
-  setApplicationsResult: (result: Result<Paged<ApplicationListSummary>>) => void
+  applicationsResult: Result<Paged<ApplicationSummary>>
+  setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
   area: string[]
   setArea: (areas: string[]) => void
   availableAreas: Result<CareArea[]>
@@ -132,7 +132,7 @@ export const ApplicationUIContextProvider = React.memo(
     children: JSX.Element
   }) {
     const [applicationsResult, setApplicationsResult] = useState<
-      Result<Paged<ApplicationListSummary>>
+      Result<Paged<ApplicationSummary>>
     >(Loading.of())
     const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(

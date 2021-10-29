@@ -177,8 +177,8 @@ export interface ApplicationSummary {
   attachmentCount: number
   checkedByAdmin: boolean
   currentPlacementUnit: PreferredUnit | null
-  dateOfBirth: string | null
-  dueDate: string | null
+  dateOfBirth: LocalDate | null
+  dueDate: LocalDate | null
   duplicateApplication: boolean
   extendedCare: boolean
   firstName: string
@@ -190,9 +190,10 @@ export interface ApplicationSummary {
   placementType: PlacementType
   preferredUnits: PreferredUnit[]
   serviceNeed: ServiceNeedOption | null
+  serviceWorkerNote: string
   siblingBasis: boolean
   socialSecurityNumber: string | null
-  startDate: string | null
+  startDate: LocalDate | null
   status: ApplicationStatus
   transferApplication: boolean
   type: ApplicationType

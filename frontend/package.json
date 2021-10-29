@@ -246,9 +246,12 @@
       "@typescript-eslint/no-floating-promises": "error",
       "react/prop-types": 0,
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": ["warn", {
-        "additionalHooks": "(useApiState)"
-      }]
+      "react-hooks/exhaustive-deps": [
+        "warn",
+        {
+          "additionalHooks": "(useApiState)"
+        }
+      ]
     }
   }
 }

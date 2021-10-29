@@ -24,6 +24,7 @@ import {
   faChild,
   faClock,
   faCoins,
+  faCommentAlt,
   faCopy,
   faDatabase,
   faDiagnoses,
@@ -100,6 +101,8 @@ import {
   // @ts-ignore
 } from '@fortawesome/pro-regular-svg-icons'
 
+import { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-svg-icons'
+
 import {
   faCaretUp as fasCaretUp,
   faCaretDown as fasCaretDown,
@@ -140,6 +143,7 @@ const icons: IconSet = {
   faChild,
   faClock,
   faCoins,
+  faCommentAlt,
   faCopy,
   faDatabase,
   faDiagnoses,
@@ -208,6 +212,7 @@ const icons: IconSet = {
   fasCheckCircle,
   fasChevronDown,
   fasChevronUp,
+  fasCommentAltLines,
   fasExclamationTriangle,
   fasInfo,
   fasMapMarkerAlt,
