@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { formatTime, isValidTime } from 'lib-common/date'
-import Loader from 'lib-components/atoms/Loader'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -18,11 +17,10 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { Result, Loading } from 'lib-common/api'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { combine } from 'lib-common/api'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
-import { AbsenceThreshold } from 'lib-common/generated/api-types/attendance'
+import { ChildAttendance } from 'lib-common/generated/api-types/attendance'
 import { TallContentArea } from '../../mobile/components'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import {
@@ -30,7 +28,7 @@ import {
   getChildDeparture,
   postDeparture
 } from '../../../api/attendances'
-import { useTranslation } from '../../../state/i18n'
+import { Translations, useTranslation } from '../../../state/i18n'
 import { AbsentFrom } from '../AbsentFrom'
 import DailyNote from '../notes/DailyNote'
 import { isBefore, parse } from 'date-fns'
@@ -42,6 +40,32 @@ import {
   DailyNotes
 } from '../components'
 import { AbsenceType } from '../../../types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../../async-rendering'
+
+function validateTime(
+  i18n: Translations,
+  time: string,
+  attendance: ChildAttendance | null | undefined
+): string | undefined {
+  if (!attendance) return undefined
+
+  if (!isValidTime(time)) {
+    return i18n.attendances.timeError
+  }
+
+  try {
+    const parsedTime = parse(time, 'HH:mm', new Date())
+
+    if (isBefore(parsedTime, attendance.arrived)) {
+      return `${i18n.attendances.arrived} ${formatTime(attendance.arrived)}`
+    }
+  } catch (e) {
+    return i18n.attendances.timeError
+  }
+
+  return undefined
+}
 
 export default React.memo(function MarkDeparted() {
   const history = useHistory()
@@ -51,193 +75,192 @@ export default React.memo(function MarkDeparted() {
     ChildAttendanceContext
   )
 
-  const [time, setTime] = useState<string>(formatTime(new Date()))
-  const [childDepartureInfo, setChildDepartureInfo] = useState<
-    Result<AbsenceThreshold[]>
-  >(Loading.of())
-  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
-  >(undefined)
-
   const { childId, unitId, groupId } = useParams<{
     unitId: string
     childId: string
     groupId: string
   }>()
 
-  const child = attendanceResponse
-    .map((response) => response.children.find((ac) => ac.id === childId))
-    .getOrElse(undefined)
+  const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [childDepartureInfo] = useApiState(
+    () => getChildDeparture(unitId, childId),
+    [childId, unitId]
+  )
 
-  const groupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
+  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
+    AbsenceType | undefined
+  >(undefined)
 
-  function markDeparted() {
-    return childDeparts(unitId, childId, time)
-  }
+  const child = useMemo(
+    () =>
+      attendanceResponse.map((response) =>
+        response.children.find((ac) => ac.id === childId)
+      ),
+    [attendanceResponse, childId]
+  )
 
-  function markDepartedWithAbsence(absenceType: AbsenceType) {
-    return postDeparture(unitId, childId, absenceType, time)
-  }
+  const groupNote = useMemo(
+    () =>
+      attendanceResponse.map((response) =>
+        response.groupNotes.find((g) => g.groupId === groupId)
+      ),
+    [attendanceResponse, groupId]
+  )
 
-  function validateTime() {
-    if (!child?.attendance) return
+  const absentFrom = useMemo(
+    () =>
+      childDepartureInfo.map((thresholds) =>
+        thresholds
+          .filter((threshold) => time <= threshold.time)
+          .map(({ type }) => type)
+      ),
+    [childDepartureInfo, time]
+  )
 
-    if (!isValidTime(time)) {
-      return i18n.attendances.timeError
-    }
+  const timeError = useMemo(
+    () => child.map((child) => validateTime(i18n, time, child?.attendance)),
+    [child, i18n, time]
+  )
 
-    try {
-      const parsedTime = parse(time, 'HH:mm', new Date())
+  const markDeparted = useCallback(
+    () => childDeparts(unitId, childId, time),
+    [unitId, childId, time]
+  )
 
-      if (isBefore(parsedTime, child.attendance.arrived)) {
-        return `${i18n.attendances.arrived} ${formatTime(
-          child.attendance.arrived
-        )}`
-      }
-    } catch (e) {
-      return i18n.attendances.timeError
-    }
-
-    return
-  }
-
-  const timeError = validateTime()
-
-  useEffect(() => {
-    void getChildDeparture(unitId, childId).then(setChildDepartureInfo)
-  }, [unitId, childId, setChildDepartureInfo])
-
-  const absentFrom = childDepartureInfo.map((thresholds) =>
-    thresholds
-      .filter((threshold) => time <= threshold.time)
-      .map(({ type }) => type)
+  const markDepartedWithAbsence = useCallback(
+    (absenceType: AbsenceType) =>
+      postDeparture(unitId, childId, absenceType, time),
+    [unitId, childId, time]
   )
 
   return (
-    <>
-      {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isFailure && <ErrorSegment />}
-      {attendanceResponse.isSuccess && (
-        <TallContentArea
-          opaque={false}
-          paddingHorizontal={'zero'}
-          paddingVertical={'zero'}
-        >
-          <div>
-            <BackButtonInline
-              onClick={() => history.goBack()}
-              icon={faArrowLeft}
-              text={
-                child
-                  ? `${child.firstName} ${child.lastName}`
-                  : i18n.common.back
-              }
-            />
-          </div>
-          <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'m'}
-          >
-            <TimeWrapper>
-              <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
-              <InputField
-                onChange={setTime}
-                value={time}
-                width="s"
-                type="time"
-                data-qa="set-time"
-                info={
-                  timeError ? { text: timeError, status: 'warning' } : undefined
+    <TallContentArea
+      opaque={false}
+      paddingHorizontal={'zero'}
+      paddingVertical={'zero'}
+    >
+      {renderResult(
+        combine(child, groupNote, absentFrom, timeError),
+        ([child, groupNote, absentFrom, timeError]) => (
+          <>
+            <div>
+              <BackButtonInline
+                onClick={() => history.goBack()}
+                icon={faArrowLeft}
+                text={
+                  child
+                    ? `${child.firstName} ${child.lastName}`
+                    : i18n.common.back
                 }
               />
-            </TimeWrapper>
-            {child && absentFrom.isSuccess && absentFrom.value.length > 0 ? (
-              <FixedSpaceColumn>
-                <AbsentFrom child={child} absentFrom={absentFrom.value} />
-                <AbsenceSelector
-                  selectedAbsenceType={selectedAbsenceType}
-                  setSelectedAbsenceType={setSelectedAbsenceType}
+            </div>
+            <ContentArea
+              shadow
+              opaque={true}
+              paddingHorizontal={'s'}
+              paddingVertical={'m'}
+            >
+              <TimeWrapper>
+                <CustomTitle>
+                  {i18n.attendances.actions.markDeparted}
+                </CustomTitle>
+                <InputField
+                  onChange={setTime}
+                  value={time}
+                  width="s"
+                  type="time"
+                  data-qa="set-time"
+                  info={
+                    timeError
+                      ? { text: timeError, status: 'warning' }
+                      : undefined
+                  }
                 />
-                <Actions data-qa={'absence-actions'}>
+              </TimeWrapper>
+              {child && absentFrom.length > 0 ? (
+                <FixedSpaceColumn>
+                  <AbsentFrom child={child} absentFrom={absentFrom} />
+                  <AbsenceSelector
+                    selectedAbsenceType={selectedAbsenceType}
+                    setSelectedAbsenceType={setSelectedAbsenceType}
+                  />
+                  <Actions data-qa={'absence-actions'}>
+                    <FixedSpaceRow fullWidth>
+                      <Button
+                        text={i18n.common.cancel}
+                        onClick={() => history.goBack()}
+                      />
+                      {selectedAbsenceType && !timeError ? (
+                        <AsyncButton
+                          primary
+                          text={i18n.common.confirm}
+                          onClick={() =>
+                            markDepartedWithAbsence(selectedAbsenceType)
+                          }
+                          onSuccess={() => {
+                            reloadAttendances()
+                            history.goBack()
+                          }}
+                          data-qa="mark-departed-with-absence-btn"
+                        />
+                      ) : (
+                        <Button
+                          primary
+                          text={i18n.common.confirm}
+                          disabled={true}
+                        />
+                      )}
+                    </FixedSpaceRow>
+                  </Actions>
+                </FixedSpaceColumn>
+              ) : (
+                <Actions data-qa={'non-absence-actions'}>
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
                       onClick={() => history.goBack()}
                     />
-                    {selectedAbsenceType && !timeError ? (
-                      <AsyncButton
-                        primary
-                        text={i18n.common.confirm}
-                        onClick={() =>
-                          markDepartedWithAbsence(selectedAbsenceType)
-                        }
-                        onSuccess={() => {
-                          reloadAttendances()
-                          history.goBack()
-                        }}
-                        data-qa="mark-departed-with-absence-btn"
-                      />
-                    ) : (
-                      <Button
-                        primary
-                        text={i18n.common.confirm}
-                        disabled={true}
-                      />
-                    )}
+                    <AsyncButton
+                      primary
+                      text={i18n.common.confirm}
+                      onClick={() => markDeparted()}
+                      onSuccess={() => {
+                        reloadAttendances()
+                        history.go(-2)
+                      }}
+                      data-qa="mark-departed-btn"
+                      disabled={timeError !== undefined}
+                    />
                   </FixedSpaceRow>
                 </Actions>
-              </FixedSpaceColumn>
-            ) : (
-              <Actions data-qa={'non-absence-actions'}>
-                <FixedSpaceRow fullWidth>
-                  <Button
-                    text={i18n.common.cancel}
-                    onClick={() => history.goBack()}
+              )}
+            </ContentArea>
+            <Gap size={'s'} />
+            <ContentArea
+              shadow
+              opaque={true}
+              paddingHorizontal={'s'}
+              paddingVertical={'s'}
+              blue
+            >
+              <DailyNotes>
+                <span>
+                  <RoundIcon
+                    content={farStickyNote}
+                    color={colors.blues.medium}
+                    size={'m'}
                   />
-                  <AsyncButton
-                    primary
-                    text={i18n.common.confirm}
-                    onClick={() => markDeparted()}
-                    onSuccess={() => {
-                      reloadAttendances()
-                      history.go(-2)
-                    }}
-                    data-qa="mark-departed-btn"
-                    disabled={timeError !== undefined}
-                  />
-                </FixedSpaceRow>
-              </Actions>
-            )}
-          </ContentArea>
-          <Gap size={'s'} />
-          <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'s'}
-            blue
-          >
-            <DailyNotes>
-              <span>
-                <RoundIcon
-                  content={farStickyNote}
-                  color={colors.blues.medium}
-                  size={'m'}
+                </span>
+                <DailyNote
+                  child={child ? child : undefined}
+                  groupNote={groupNote ? groupNote : undefined}
                 />
-              </span>
-              <DailyNote
-                child={child ? child : undefined}
-                groupNote={groupNote ? groupNote : undefined}
-              />
-            </DailyNotes>
-          </ContentArea>
-        </TallContentArea>
+              </DailyNotes>
+            </ContentArea>
+          </>
+        )
       )}
-    </>
+    </TallContentArea>
   )
 })
 

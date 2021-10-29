@@ -38,7 +38,6 @@ import { theme } from 'lib-customizations/common'
 import StaffMemberPage from './components/staff-attendance/StaffMemberPage'
 import StaffMarkArrivedPage from './components/staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './components/staff-attendance/StaffMarkDepartedPage'
-import { StaffContextProvider } from './state/staff'
 import { UnitContextProvider } from './state/unit'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 
@@ -158,12 +157,10 @@ function StaffRouter() {
   const { path } = useRouteMatch()
 
   return (
-    <StaffContextProvider>
-      <Switch>
-        <Route exact path={path} component={StaffPage} />
-        <Redirect to={path} />
-      </Switch>
-    </StaffContextProvider>
+    <Switch>
+      <Route exact path={path} component={StaffPage} />
+      <Redirect to={path} />
+    </Switch>
   )
 }
 

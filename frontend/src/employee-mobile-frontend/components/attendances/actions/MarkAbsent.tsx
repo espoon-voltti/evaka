@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
-import Loader from 'lib-components/atoms/Loader'
 import { Gap } from 'lib-components/white-space'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -17,7 +16,6 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 
 import { TallContentArea } from '../../mobile/components'
@@ -28,11 +26,13 @@ import DailyNote from '../notes/DailyNote'
 import { AbsenceType } from '../../../types'
 import AbsenceSelector from '../AbsenceSelector'
 import {
-  CustomTitle,
   Actions,
-  DailyNotes,
-  BackButtonInline
+  BackButtonInline,
+  CustomTitle,
+  DailyNotes
 } from '../components'
+import { combine } from 'lib-common/api'
+import { renderResult } from '../../async-rendering'
 
 export default React.memo(function MarkAbsent() {
   const history = useHistory()
@@ -52,28 +52,36 @@ export default React.memo(function MarkAbsent() {
     childId: string
   }>()
 
-  async function postAbsence(absenceType: AbsenceType) {
-    return postFullDayAbsence(unitId, childId, absenceType)
-  }
+  const postAbsence = useCallback(
+    (absenceType: AbsenceType) =>
+      postFullDayAbsence(unitId, childId, absenceType),
+    [childId, unitId]
+  )
 
-  const child =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.children.find((ac) => ac.id === childId)
+  const child = useMemo(
+    () =>
+      attendanceResponse.map((attendance) =>
+        attendance.children.find((ac) => ac.id === childId)
+      ),
+    [attendanceResponse, childId]
+  )
 
-  const groupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
+  const groupNote = useMemo(
+    () =>
+      attendanceResponse.map((attendance) =>
+        attendance.groupNotes.find((g) => g.groupId === groupId)
+      ),
+    [attendanceResponse, groupId]
+  )
 
   return (
-    <>
-      {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isFailure && <ErrorSegment />}
-      {attendanceResponse.isSuccess && (
-        <TallContentArea
-          opaque={false}
-          paddingHorizontal={'zero'}
-          paddingVertical={'zero'}
-        >
+    <TallContentArea
+      opaque={false}
+      paddingHorizontal={'zero'}
+      paddingVertical={'zero'}
+    >
+      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+        <>
           <BackButtonInline
             onClick={() => history.goBack()}
             icon={faArrowLeft}
@@ -143,9 +151,9 @@ export default React.memo(function MarkAbsent() {
               />
             </DailyNotes>
           </ContentArea>
-        </TallContentArea>
-      )}
-    </>
+        </>
+      ))}
+    </TallContentArea>
   )
 })
 

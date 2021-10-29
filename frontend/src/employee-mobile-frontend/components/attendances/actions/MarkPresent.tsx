@@ -2,13 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
-import Loader from 'lib-components/atoms/Loader'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -17,16 +15,16 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
-
 import { TallContentArea } from '../../mobile/components'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { childArrivesPOST } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import DailyNote from '../notes/DailyNote'
 import { Actions, BackButtonInline } from '../components'
+import { renderResult } from '../../async-rendering'
+import { combine } from 'lib-common/api'
 
 export default React.memo(function MarkPresent() {
   const history = useHistory()
@@ -44,28 +42,35 @@ export default React.memo(function MarkPresent() {
     groupId: string
   }>()
 
-  function childArrives() {
-    return childArrivesPOST(unitId, childId, time)
-  }
+  const childArrives = useCallback(
+    () => childArrivesPOST(unitId, childId, time),
+    [childId, time, unitId]
+  )
 
-  const child =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.children.find((ac) => ac.id === childId)
+  const child = useMemo(
+    () =>
+      attendanceResponse.map((response) =>
+        response.children.find((ac) => ac.id === childId)
+      ),
+    [attendanceResponse, childId]
+  )
 
-  const groupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.groupNotes.find((g) => g.groupId === groupId)
+  const groupNote = useMemo(
+    () =>
+      attendanceResponse.map((response) =>
+        response.groupNotes.find((g) => g.groupId === groupId)
+      ),
+    [attendanceResponse, groupId]
+  )
 
   return (
-    <>
-      {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isFailure && <ErrorSegment />}
-      {attendanceResponse.isSuccess && (
-        <TallContentArea
-          opaque={false}
-          paddingHorizontal={'zero'}
-          paddingVertical={'zero'}
-        >
+    <TallContentArea
+      opaque={false}
+      paddingHorizontal={'zero'}
+      paddingVertical={'zero'}
+    >
+      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+        <>
           <div>
             <BackButtonInline
               onClick={() => history.goBack()}
@@ -136,9 +141,9 @@ export default React.memo(function MarkPresent() {
               />
             </DailyNotes>
           </ContentArea>
-        </TallContentArea>
-      )}
-    </>
+        </>
+      ))}
+    </TallContentArea>
   )
 })
 

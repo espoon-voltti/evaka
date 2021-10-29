@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -30,7 +30,7 @@ export interface Props {
   onConfirm: (value: StaffAttendanceUpdate) => Promise<Result<void>>
 }
 
-export default function StaffAttendanceEditor({
+export default React.memo(function StaffAttendanceEditor({
   groupId,
   date,
   count,
@@ -48,10 +48,10 @@ export default function StaffAttendanceEditor({
   const editable = groupId !== undefined
   const changed = staff !== count || staffOther !== countOther
 
-  function reset() {
+  const reset = useCallback(() => {
     setStaff(count)
     setStaffOther(countOther)
-  }
+  }, [count, countOther])
 
   return (
     <>
@@ -136,7 +136,7 @@ export default function StaffAttendanceEditor({
       </FixedSpaceRow>
     </>
   )
-}
+})
 
 const inc = (value: number, setValue: (newValue: number) => void) => (): void =>
   setValue(value + 0.5)

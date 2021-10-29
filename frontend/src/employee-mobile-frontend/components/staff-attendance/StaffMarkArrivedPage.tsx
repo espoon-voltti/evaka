@@ -16,7 +16,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { postStaffArrival } from '../../api/realtimeStaffAttendances'
@@ -45,8 +45,12 @@ export default React.memo(function StaffMarkArrivedPage() {
     StaffAttendanceContext
   )
 
-  const staffMember = staffAttendanceResponse.map((res) =>
-    res.staff.find((s) => s.employeeId === employeeId)
+  const staffMember = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) =>
+        res.staff.find((s) => s.employeeId === employeeId)
+      ),
+    [employeeId, staffAttendanceResponse]
   )
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
@@ -57,17 +61,20 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
-  const groupOptions =
-    groupId === 'all'
-      ? combine(staffMember, unitInfoResponse).map(
-          ([staffMember, unitInfoResponse]) => {
-            const groupIds = staffMember?.groupIds ?? []
-            return unitInfoResponse.groups
-              .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
-              .map((g) => ({ value: g.id, label: g.name }))
-          }
-        )
-      : Success.of([])
+  const groupOptions = useMemo(
+    () =>
+      groupId === 'all'
+        ? combine(staffMember, unitInfoResponse).map(
+            ([staffMember, unitInfoResponse]) => {
+              const groupIds = staffMember?.groupIds ?? []
+              return unitInfoResponse.groups
+                .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
+                .map((g) => ({ value: g.id, label: g.name }))
+            }
+          )
+        : Success.of([]),
+    [groupId, staffMember, unitInfoResponse]
+  )
 
   useEffect(() => {
     if (
@@ -81,6 +88,18 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
 
+  const backButtonText = useMemo(
+    () =>
+      staffMember
+        .map((staffMember) =>
+          staffMember
+            ? `${staffMember.firstName} ${staffMember.lastName}`
+            : i18n.common.back
+        )
+        .getOrElse(i18n.common.back),
+    [i18n.common.back, staffMember]
+  )
+
   return (
     <TallContentArea
       opaque={false}
@@ -91,11 +110,7 @@ export default React.memo(function StaffMarkArrivedPage() {
         <BackButtonInline
           onClick={() => history.goBack()}
           icon={faArrowLeft}
-          text={
-            staffMember.isSuccess && staffMember.value
-              ? `${staffMember.value.firstName} ${staffMember.value.lastName}`
-              : i18n.common.back
-          }
+          text={backButtonText}
         />
       </div>
       <ContentArea

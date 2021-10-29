@@ -5,31 +5,30 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
-import { faComments, faChild, faPen } from 'lib-icons'
+import { faChild, faComments, faPen } from 'lib-icons'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
-import { GroupNote } from 'lib-common/generated/api-types/note'
 
 interface Props {
   unitId: UUID
   groupId: UUID
   child: Child
-  groupNote: GroupNote | null | undefined
+  hasGroupNote: boolean
 }
 
 export default React.memo(function ChildButtons({
   unitId,
   groupId,
   child,
-  groupNote
+  hasGroupNote
 }: Props) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
   const noteFound =
-    child.dailyNote !== null || child.stickyNotes.length > 0 || !!groupNote
+    child.dailyNote !== null || child.stickyNotes.length > 0 || hasGroupNote
   return (
     <IconWrapper>
       <FixedSpaceRow

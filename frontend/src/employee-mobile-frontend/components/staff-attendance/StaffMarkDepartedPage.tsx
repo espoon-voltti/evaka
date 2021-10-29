@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import { isAfter, parse } from 'date-fns'
 import { combine } from 'lib-common/api'
@@ -48,26 +48,42 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [time, setTime] = useState<string>(formatTime(new Date()))
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
-  const staffMember = staffAttendanceResponse.map((res) =>
-    res.staff.find((s) => s.employeeId === employeeId)
+  const staffInfo = useMemo(
+    () =>
+      unitInfoResponse.map((res) => {
+        const staffInfo = res.staff.find((s) => s.id === employeeId)
+        const pinSet = staffInfo?.pinSet ?? true
+        const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+        return { pinSet, pinLocked }
+      }),
+    [employeeId, errorCode, unitInfoResponse]
   )
-  if (staffMember.isSuccess && staffMember.value === undefined)
-    return (
-      <Redirect to={`/units/${unitId}/groups/${groupId}/staff-attendance`} />
-    )
 
-  const activeAttendanceId = staffMember.map((s) =>
-    s?.latestCurrentDayAttendance &&
-    s.latestCurrentDayAttendance.departed === null
-      ? s.latestCurrentDayAttendance.id
-      : undefined
+  const memberAttendance = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) => {
+        const staffMember = res.staff.find((s) => s.employeeId === employeeId)
+        const attendanceId =
+          staffMember?.latestCurrentDayAttendance &&
+          staffMember.latestCurrentDayAttendance.departed === null
+            ? staffMember.latestCurrentDayAttendance.id
+            : undefined
+        return { staffMember, attendanceId }
+      }),
+    [employeeId, staffAttendanceResponse]
   )
-  if (activeAttendanceId.isSuccess && activeAttendanceId.value === undefined)
-    return (
-      <Redirect
-        to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
-      />
-    )
+
+  const backButtonText = useMemo(
+    () =>
+      memberAttendance
+        .map(({ staffMember }) =>
+          staffMember
+            ? `${staffMember.firstName} ${staffMember.lastName}`
+            : i18n.common.back
+        )
+        .getOrElse(i18n.common.back),
+    [memberAttendance, i18n.common.back]
+  )
 
   const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
 
@@ -81,11 +97,7 @@ export default React.memo(function StaffMarkDepartedPage() {
         <BackButtonInline
           onClick={() => history.goBack()}
           icon={faArrowLeft}
-          text={
-            staffMember.isSuccess && staffMember.value
-              ? `${staffMember.value.firstName} ${staffMember.value.lastName}`
-              : i18n.common.back
-          }
+          text={backButtonText}
         />
       </div>
       <ContentArea
@@ -95,18 +107,22 @@ export default React.memo(function StaffMarkDepartedPage() {
         paddingVertical={'m'}
       >
         {renderResult(
-          combine(unitInfoResponse, staffMember, activeAttendanceId),
-          ([unitInfo, staffMember, attendanceId]) => {
-            if (staffMember === undefined)
+          combine(staffInfo, memberAttendance),
+          ([{ pinSet, pinLocked }, { staffMember, attendanceId }]) => {
+            if (staffMember === undefined) {
               return (
-                <ErrorSegment
-                  title={i18n.attendances.staff.errors.employeeNotFound}
+                <Redirect
+                  to={`/units/${unitId}/groups/${groupId}/staff-attendance`}
                 />
               )
-
-            const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
-            const pinSet = staffInfo?.pinSet ?? true
-            const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+            }
+            if (attendanceId === undefined) {
+              return (
+                <Redirect
+                  to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
+                />
+              )
+            }
 
             return (
               <>
@@ -154,38 +170,36 @@ export default React.memo(function StaffMarkDepartedPage() {
                       text={i18n.common.cancel}
                       onClick={() => history.goBack()}
                     />
-                    {attendanceId && (
-                      <AsyncButton
-                        primary
-                        text={i18n.common.confirm}
-                        disabled={
-                          pinLocked ||
-                          !pinSet ||
-                          !isValidTime(time) ||
-                          timeInFuture ||
-                          pinCode.join('').trim().length < 4
-                        }
-                        onClick={() =>
-                          postStaffDeparture(attendanceId, {
-                            time,
-                            pinCode: pinCode.join('')
-                          }).then((res) => {
-                            if (res.isFailure) {
-                              setErrorCode(res.errorCode)
-                              if (res.errorCode === 'WRONG_PIN') {
-                                setPinCode(EMPTY_PIN)
-                              }
+                    <AsyncButton
+                      primary
+                      text={i18n.common.confirm}
+                      disabled={
+                        pinLocked ||
+                        !pinSet ||
+                        !isValidTime(time) ||
+                        timeInFuture ||
+                        pinCode.join('').trim().length < 4
+                      }
+                      onClick={() =>
+                        postStaffDeparture(attendanceId, {
+                          time,
+                          pinCode: pinCode.join('')
+                        }).then((res) => {
+                          if (res.isFailure) {
+                            setErrorCode(res.errorCode)
+                            if (res.errorCode === 'WRONG_PIN') {
+                              setPinCode(EMPTY_PIN)
                             }
-                            return res
-                          })
-                        }
-                        onSuccess={() => {
-                          reloadStaffAttendance()
-                          history.go(-1)
-                        }}
-                        data-qa="mark-departed-btn"
-                      />
-                    )}
+                          }
+                          return res
+                        })
+                      }
+                      onSuccess={() => {
+                        reloadStaffAttendance()
+                        history.go(-1)
+                      }}
+                      data-qa="mark-departed-btn"
+                    />
                   </FixedSpaceRow>
                 </Actions>
               </>

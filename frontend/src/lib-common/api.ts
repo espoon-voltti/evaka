@@ -179,7 +179,14 @@ export function map<A, B, C, D>(
   cr: Result<C>,
   fn: (a: A, b: B, c: C) => D
 ): Result<D>
-export function map<A, B, C, D>(...args: unknown[]): Result<unknown> {
+export function map<A, B, C, D, E>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>,
+  dr: Result<D>,
+  fn: (a: A, b: B, c: C, d: D) => E
+): Result<D>
+export function map<A, B, C, D, E>(...args: unknown[]): Result<unknown> {
   switch (args.length) {
     case 3: {
       const [ar, br, fn] = args as [Result<A>, Result<B>, (a: A, b: B) => C]
@@ -196,6 +203,17 @@ export function map<A, B, C, D>(...args: unknown[]): Result<unknown> {
       const f = (a: A) => (b: B) => (c: C) => fn(a, b, c)
       return cr.apply(br.apply(ar.map(f)))
     }
+    case 5: {
+      const [ar, br, cr, dr, fn] = args as [
+        Result<A>,
+        Result<B>,
+        Result<C>,
+        Result<D>,
+        (a: A, b: B, c: C, d: D) => E
+      ]
+      const f = (a: A) => (b: B) => (c: C) => (d: D) => fn(a, b, c, d)
+      return dr.apply(cr.apply(br.apply(ar.map(f))))
+    }
   }
   throw new Error('not reached')
 }
@@ -206,7 +224,13 @@ export function combine<A, B, C>(
   br: Result<B>,
   cr: Result<C>
 ): Result<[A, B, C]>
-export function combine<A, B, C>(...args: unknown[]): Result<unknown> {
+export function combine<A, B, C, D>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>,
+  dr: Result<D>
+): Result<[A, B, C, D]>
+export function combine<A, B, C, D>(...args: unknown[]): Result<unknown> {
   switch (args.length) {
     case 2: {
       const [ar, br] = args as [Result<A>, Result<B>]
@@ -215,6 +239,15 @@ export function combine<A, B, C>(...args: unknown[]): Result<unknown> {
     case 3: {
       const [ar, br, cr] = args as [Result<A>, Result<B>, Result<C>]
       return map(ar, br, cr, (a, b, c): [A, B, C] => [a, b, c])
+    }
+    case 4: {
+      const [ar, br, cr, dr] = args as [
+        Result<A>,
+        Result<B>,
+        Result<C>,
+        Result<D>
+      ]
+      return map(ar, br, cr, dr, (a, b, c, d): [A, B, C, D] => [a, b, c, d])
     }
   }
   throw new Error('not reached')

@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useMemo,
-  useState,
-  createContext,
-  useEffect,
-  useCallback
-} from 'react'
+import React, { createContext, useEffect, useMemo, useState } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { getMobileUnitInfo } from '../api/unit'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
@@ -42,22 +36,14 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
 }) {
   const { unitId } = useParams<{ unitId: UUID }>()
 
-  const [unitInfoResponse, setUnitInfoResponse] = useState<Result<UnitInfo>>(
-    defaultState.unitInfoResponse
+  const [unitInfoResponse, reloadUnitInfo] = useApiState(
+    () => getMobileUnitInfo(unitId),
+    [unitId]
   )
 
   const [showPresent, setShowPresent] = useState<boolean>(
     defaultState.showPresent
   )
-
-  const loadUnitInfo = useRestApi(getMobileUnitInfo, setUnitInfoResponse)
-
-  const reloadUnitInfo = useCallback(
-    () => loadUnitInfo(unitId),
-    [loadUnitInfo, unitId]
-  )
-
-  useEffect(reloadUnitInfo, [reloadUnitInfo])
 
   useEffect(
     () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
