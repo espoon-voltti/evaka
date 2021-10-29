@@ -29,6 +29,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { UUID } from 'lib-common/types'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { P } from 'lib-components/typography'
 
 interface ChildDailyNoteFormData
   extends Omit<ChildDailyNoteBody, 'sleepingMinutes'> {
@@ -85,7 +86,7 @@ interface Props {
   reload: () => void
 }
 
-export default React.memo(function DaycareDailyNoteModal({
+export default React.memo(function ChildDailyNoteModal({
   note,
   childId,
   childFirstName,
@@ -315,7 +316,11 @@ export default React.memo(function DaycareDailyNoteModal({
               <div className="bold">
                 {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
               </div>
-              <p data-qa={'group-note'}>{groupNotes[0].note}</p>
+              {groupNotes.map((groupNote) => (
+                <P key={groupNote.id} data-qa="group-note">
+                  {groupNote.note}
+                </P>
+              ))}
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>
