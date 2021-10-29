@@ -56,13 +56,15 @@ type Props = {
     reason?: PlacementPlanRejectReason,
     otherReason?: string
   ) => undefined | void
+  loadUnitData: () => void
 }
 
 export default React.memo(function PlacementProposalRow({
   placementPlan,
   confirmationState,
   submitting,
-  onChange
+  onChange,
+  loadUnitData
 }: Props) {
   const { i18n } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
@@ -79,6 +81,7 @@ export default React.memo(function PlacementProposalRow({
               if (reason != null) {
                 onChange('REJECTED', reason, otherReason)
                 setModalOpen(false)
+                void loadUnitData()
               }
             },
             label: i18n.common.confirm,

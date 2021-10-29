@@ -155,6 +155,7 @@ export default React.memo(function PlacementProposals({
                 onChange={(state, reason, otherReason) =>
                   sendConfirmation(p.applicationId, state, reason, otherReason)
                 }
+                loadUnitData={loadUnitData}
               />
             ))}
           </Tbody>
