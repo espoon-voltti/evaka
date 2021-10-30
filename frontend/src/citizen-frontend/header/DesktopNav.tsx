@@ -15,7 +15,7 @@ import {
   faSignOut
 } from 'lib-icons'
 import React, { useCallback, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { featureFlags } from 'lib-customizations/employee'
 import { fontWeights } from 'lib-components/typography'
@@ -200,6 +200,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 
 const UserMenu = React.memo(function UserMenu() {
   const t = useTranslation()
+  const history = useHistory()
   const user = useUser()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
@@ -218,7 +219,10 @@ const UserMenu = React.memo(function UserMenu() {
           <DropDownItem
             selected={window.location.pathname.includes('/income')}
             data-qa={'user-menu-income'}
-            onClick={() => (location.href = '/income')}
+            onClick={() => {
+              setOpen(false)
+              history.push('/income')
+            }}
           >
             {t.header.nav.income}
           </DropDownItem>
