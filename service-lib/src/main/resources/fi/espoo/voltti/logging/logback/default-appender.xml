@@ -24,6 +24,7 @@ Default appender logback configuration provided for import
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <logLevel><fieldName>logLevel</fieldName></logLevel>
+                <loggerName><fieldName>loggerName</fieldName></loggerName>
                 <message><fieldName>message</fieldName></message>
                 <stackTrace>
                     <fieldName>stackTrace</fieldName>
