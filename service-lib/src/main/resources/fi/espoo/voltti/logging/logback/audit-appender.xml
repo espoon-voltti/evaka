@@ -29,7 +29,7 @@ Audit appender logback configuration provided for import
             <fieldNames>
                 <level>[ignore]</level>
                 <levelValue>[ignore]</levelValue>
-                <logger>[ignore]</logger>
+                <logger>loggerName</logger>
                 <message>description</message>
                 <thread>[ignore]</thread>
                 <timestamp>@timestamp</timestamp>

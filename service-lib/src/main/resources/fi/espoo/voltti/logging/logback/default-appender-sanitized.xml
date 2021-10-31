@@ -32,6 +32,7 @@ Sanitized default appender logback configuration provided for import
       </jsonGeneratorDecorator>
       <providers>
         <logLevel><fieldName>logLevel</fieldName></logLevel>
+        <loggerName><fieldName>loggerName</fieldName></loggerName>
         <throwableClassName><fieldName>exception</fieldName></throwableClassName>
         <timestamp>
           <fieldName>@timestamp</fieldName>

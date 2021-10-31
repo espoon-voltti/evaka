@@ -29,7 +29,7 @@ VTJ query appender logback configuration provided for import
             <fieldNames>
                 <level>[ignore]</level>
                 <levelValue>[ignore]</levelValue>
-                <logger>[ignore]</logger>
+                <logger>loggerName</logger>
                 <thread>[ignore]</thread>
                 <timestamp>@timestamp</timestamp>
                 <version>[ignore]</version>
