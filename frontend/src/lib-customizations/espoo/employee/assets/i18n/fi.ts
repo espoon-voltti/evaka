@@ -1603,6 +1603,7 @@ export const fi = {
         header: 'Päivän muistiinpanot',
         groupNoteHeader: 'Päivän muistiinpano koko ryhmälle',
         notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
+        stickyNotesHeader: 'Huomioitavaa',
         groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
         notesHint: 'Mitä tänään opin, leikin, oivalsin.',
         feedingHeader: 'Lapsi söi tänään',

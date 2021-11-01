@@ -257,8 +257,6 @@ function Group({
       const childNote = notes.childDailyNotes.find(
         (note) => note.childId === placement.child.id
       )
-      const groupNote =
-        notes.groupNotes.length > 0 ? notes.groupNotes[0] : undefined
       return (
         <Tooltip
           data-qa={`daycare-daily-note-hover-${placement.child.id}`}
@@ -295,12 +293,24 @@ function Group({
                   }
                 </h5>
                 <p>{childNote.reminderNote}</p>
-                {groupNote && (
+                {notes.childStickyNotes.length > 0 && (
+                  <>
+                    <h5>
+                      {i18n.unit.groups.daycareDailyNote.stickyNotesHeader}
+                    </h5>
+                    {notes.childStickyNotes.map((stickyNote) => (
+                      <p key={stickyNote.id}>{stickyNote.note}</p>
+                    ))}
+                  </>
+                )}
+                {notes.groupNotes.length > 0 && (
                   <>
                     <h5>
                       {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
                     </h5>
-                    <p>{groupNote.note}</p>
+                    {notes.groupNotes.map((groupNote) => (
+                      <p key={groupNote.id}>{groupNote.note}</p>
+                    ))}
                   </>
                 )}
               </div>
@@ -310,7 +320,7 @@ function Group({
           }
         >
           <RoundIcon
-            active={childNote != null || groupNote != null}
+            active={childNote != null || notes.childStickyNotes.length > 0}
             data-qa={`daycare-daily-note-icon-${placement.child.id}`}
             content={faStickyNote}
             color={colors.blues.primary}
