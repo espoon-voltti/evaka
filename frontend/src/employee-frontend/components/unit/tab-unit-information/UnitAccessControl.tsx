@@ -81,6 +81,7 @@ const RowButtons = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+
   & > * {
     margin-left: 10px;
   }
@@ -631,6 +632,7 @@ function UnitAccessControl({
         clearUiMode()
       }
     }
+
     return (
       <InfoModal
         iconColour={'blue'}
@@ -671,22 +673,26 @@ function UnitAccessControl({
         {loading && <Loader />}
         {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
         {!failed && !loading && unitSupervisors && (
-          <AclTable
-            rows={unitSupervisors}
-            onDeleteAclRow={(employeeId) =>
-              openRemoveModal({
-                employeeId,
-                removeFn: removeDaycareAclSupervisor
-              })
-            }
-            deletePermitted={permittedActions.has('DELETE_ACL_UNIT_SUPERVISOR')}
-          />
-        )}
-        {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
-          <AddAcl
-            employees={candidateEmployees}
-            onAddAclRow={addUnitSupervisor}
-          />
+          <>
+            <AclTable
+              rows={unitSupervisors}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclSupervisor
+                })
+              }
+              deletePermitted={permittedActions.has(
+                'DELETE_ACL_UNIT_SUPERVISOR'
+              )}
+            />
+            {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
+              <AddAcl
+                employees={candidateEmployees}
+                onAddAclRow={addUnitSupervisor}
+              />
+            )}
+          </>
         )}
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-set">
@@ -694,24 +700,26 @@ function UnitAccessControl({
         {loading && <Loader />}
         {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
         {!failed && !loading && specialEducationTeachers && (
-          <AclTable
-            rows={specialEducationTeachers}
-            onDeleteAclRow={(employeeId) =>
-              openRemoveModal({
-                employeeId,
-                removeFn: removeDaycareAclSpecialEducationTeacher
-              })
-            }
-            deletePermitted={permittedActions.has(
-              'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+          <>
+            <AclTable
+              rows={specialEducationTeachers}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclSpecialEducationTeacher
+                })
+              }
+              deletePermitted={permittedActions.has(
+                'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+              )}
+            />
+            {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
+              <AddAcl
+                employees={candidateEmployees}
+                onAddAclRow={addSpecialEducationTeacher}
+              />
             )}
-          />
-        )}
-        {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
-          <AddAcl
-            employees={candidateEmployees}
-            onAddAclRow={addSpecialEducationTeacher}
-          />
+          </>
         )}
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-staff">
@@ -719,22 +727,24 @@ function UnitAccessControl({
         {loading && <Loader />}
         {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
         {!failed && !loading && staff && (
-          <AclTable
-            rows={staff}
-            onDeleteAclRow={(employeeId) =>
-              openRemoveModal({
-                employeeId,
-                removeFn: removeDaycareAclStaff
-              })
-            }
-            unitGroups={groups}
-            onChangeAclGroups={updateStaffGroupAcls}
-            editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
-            deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
-          />
-        )}
-        {permittedActions.has('INSERT_ACL_STAFF') && (
-          <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
+          <>
+            <AclTable
+              rows={staff}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclStaff
+                })
+              }
+              unitGroups={groups}
+              onChangeAclGroups={updateStaffGroupAcls}
+              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+            />
+            {permittedActions.has('INSERT_ACL_STAFF') && (
+              <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
+            )}
+          </>
         )}
       </ContentArea>
       {mobileEnabled && (
