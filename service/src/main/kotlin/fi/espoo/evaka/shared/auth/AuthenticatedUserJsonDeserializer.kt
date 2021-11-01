@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import java.util.UUID
 
 class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
-    private data class AllFields(val type: AuthenticatedUserType, val id: UUID?, val globalRoles: Set<UserRole> = emptySet(), val allScopedRoles: Set<UserRole> = emptySet())
+    private data class AllFields(val type: AuthenticatedUserType, val id: UUID?, val globalRoles: Set<UserRole> = emptySet(), val allScopedRoles: Set<UserRole> = emptySet(), val employeeId: UUID?)
 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
@@ -18,7 +18,7 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
             AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(user.id!!)
             AuthenticatedUserType.citizen_weak -> AuthenticatedUser.WeakCitizen(user.id!!)
             AuthenticatedUserType.employee -> AuthenticatedUser.Employee(user.id!!, user.globalRoles + user.allScopedRoles)
-            AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(user.id!!)
+            AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(user.id!!, user.employeeId)
             AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
         }
     }

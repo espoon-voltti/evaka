@@ -28,6 +28,7 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
             }
             is AuthenticatedUser.MobileDevice -> {
                 gen.writeObjectField("id", value.id.toString())
+                value.employeeId?.let { gen.writeObjectField("employeeId", value.employeeId.toString()) }
             }
             is AuthenticatedUser.SystemInternalUser -> {}
         }.exhaust()

@@ -51,7 +51,7 @@ sealed class AuthenticatedUser : RoleContainer {
         override val type = AuthenticatedUserType.employee
     }
 
-    data class MobileDevice(override val id: UUID) : AuthenticatedUser() {
+    data class MobileDevice(override val id: UUID, val employeeId: UUID? = null) : AuthenticatedUser() {
         override val roles: Set<UserRole> = emptySet()
         override val type = AuthenticatedUserType.mobile
     }
