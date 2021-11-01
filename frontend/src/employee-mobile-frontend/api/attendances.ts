@@ -12,7 +12,8 @@ import {
   AbsenceThreshold,
   AttendanceResponse,
   Child,
-  ChildResult, ChildResultStatus
+  ChildResult,
+  ChildResultStatus
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.google.common.hash.HashCode
 import com.google.common.hash.Hashing
 import fi.espoo.evaka.pis.EmployeeUser
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
@@ -51,7 +52,7 @@ sealed class AuthenticatedUser : RoleContainer {
         override val type = AuthenticatedUserType.employee
     }
 
-    data class MobileDevice(override val id: UUID, val employeeId: UUID? = null) : AuthenticatedUser() {
+    data class MobileDevice(override val id: UUID, val employeeId: EmployeeId? = null) : AuthenticatedUser() {
         override val roles: Set<UserRole> = emptySet()
         override val type = AuthenticatedUserType.mobile
     }

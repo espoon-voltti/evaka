@@ -109,7 +109,6 @@ function internalApiRouter() {
   }
 
   router.post('/auth/mobile', mobileDeviceSession)
-  router.post('/auth/pin-login', pinLoginRequestHandler)
 
   router.get(
     '/auth/status',
@@ -121,6 +120,8 @@ function internalApiRouter() {
   router.all('/public/*', createProxy())
   router.use(requireAuthentication)
   router.use(csrf)
+  router.post('/auth/pin-login', pinLoginRequestHandler(redisClient))
+
   router.post(
     '/attachments/applications/:applicationId',
     createProxy({ multipart: true })

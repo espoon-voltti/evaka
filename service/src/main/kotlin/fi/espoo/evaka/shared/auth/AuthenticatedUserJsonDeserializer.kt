@@ -7,10 +7,11 @@ package fi.espoo.evaka.shared.auth
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
+import fi.espoo.evaka.shared.EmployeeId
 import java.util.UUID
 
 class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
-    private data class AllFields(val type: AuthenticatedUserType, val id: UUID?, val globalRoles: Set<UserRole> = emptySet(), val allScopedRoles: Set<UserRole> = emptySet(), val employeeId: UUID?)
+    private data class AllFields(val type: AuthenticatedUserType, val id: UUID?, val globalRoles: Set<UserRole> = emptySet(), val allScopedRoles: Set<UserRole> = emptySet(), val employeeId: EmployeeId?)
 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)

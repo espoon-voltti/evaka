@@ -8,6 +8,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
+import fi.espoo.evaka.shared.EmployeeId
 import java.time.Clock
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -19,7 +20,7 @@ private val tokenExpiration = Duration.ofHours(1)
 
 fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { subject ->
     val id = UUID.fromString(subject)
-    val employeeId = this.claims["employee_id"]?.asString()?.let(UUID::fromString)
+    val employeeId: EmployeeId? = this.claims["evaka_employee_id"]?.asString()?.let(UUID::fromString)?.let(::EmployeeId)
     val type = this.claims["evaka_type"]?.asString()?.let(AuthenticatedUserType::valueOf)
     val roles = (this.claims["scope"]?.asString() ?: "")
         .let {

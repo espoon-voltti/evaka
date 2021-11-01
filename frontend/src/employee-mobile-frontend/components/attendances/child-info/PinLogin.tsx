@@ -31,7 +31,10 @@ import { ChildResult, Staff } from 'lib-common/generated/api-types/attendance'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { renderResult, UnwrapResult } from '../../async-rendering'
 import { TallContentArea } from '../../mobile/components'
-import { getChildSensitiveInformation } from '../../../api/attendances'
+import {
+  getChildSensitiveInformation,
+  pinLogin
+} from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
@@ -73,6 +76,8 @@ export default React.memo(function PinLogin() {
 
   const fetchChildSensitiveInfo = useCallback(() => {
     if (selectedStaff) {
+      const status = pinLogin(selectedStaff.id, selectedPin.join(''))
+      console.log('DDEBUG: PIN login', status)
       loadChildSensitiveInfo(childId, selectedStaff.id, selectedPin.join(''))
     }
   }, [childId, loadChildSensitiveInfo, selectedPin, selectedStaff])

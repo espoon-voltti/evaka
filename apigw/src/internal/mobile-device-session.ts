@@ -16,6 +16,8 @@ import {
 } from '../shared/service-client'
 import { useSecureCookies } from '../shared/config'
 import { fromCallback } from '../shared/promise-utils'
+import { RedisClient } from 'redis'
+import {v4 as uuid} from 'uuid'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -92,11 +94,14 @@ export const devApiE2ESignup = toRequestHandler(async (req, res) => {
   }
 })
 
-export const pinLoginRequestHandler = toRequestHandler(async (req, res) => {
-  const employeeId = assertStringProp(req.body, 'employeeId')
-  const pin = assertStringProp(req.body, 'pin')
-  console.log(`DEBUG: login ${employeeId} with ${pin}`)
-  const status = await employeePinLogin(req)
-  console.log('DEBUG: response', status)
-  res.status(204).send(status)
-})
+export const pinLoginRequestHandler = (redisClient: RedisClient) =>
+  toRequestHandler(async (req, res) => {
+    const employeeId = assertStringProp(req.body, 'employeeId')
+    const pin = assertStringProp(req.body, 'pin')
+    console.log(`DEBUG: login ${employeeId} with ${pin}`)
+    console.log(`DDEBUG:${req.user}`)
+    const status = await employeePinLogin(req)
+    const token = uuid()
+    console.log(`DDEBUG: ${status} ${token} ${redisClient}`)
+    res.status(204).send(status)
+  })

@@ -87,10 +87,10 @@ class MobileDevicesController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/system/pin-login")
+    @PostMapping("/mobile-devices/pin-login")
     fun pinLogin(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         @RequestBody pinLoginRequest: PinLoginRequest
     ): ResponseEntity<PinLoginResponse> {
         val result = db.transaction { tx ->
@@ -116,10 +116,10 @@ enum class PinLoginStatus {
 }
 
 data class PinLoginRequest(
-        val pin: String,
-        val employeeId: UUID
+    val pin: String,
+    val employeeId: UUID
 )
 
 data class PinLoginResponse(
-        val status: PinLoginStatus
+    val status: PinLoginStatus
 )

@@ -165,7 +165,7 @@ class EmployeeController {
 data class PinCode(val pin: String)
 
 data class SearchEmployeeRequest(
-        val page: Int?,
-        val pageSize: Int?,
-        val searchTerm: String?,
+    val page: Int?,
+    val pageSize: Int?,
+    val searchTerm: String?,
 )
