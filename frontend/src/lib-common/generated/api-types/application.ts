@@ -545,7 +545,9 @@ export interface ServiceNeed {
 */
 export interface ServiceNeedOption {
   id: UUID
-  name: string
+  nameEn: string
+  nameFi: string
+  nameSv: string
 }
 
 /**

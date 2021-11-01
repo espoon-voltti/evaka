@@ -61,7 +61,7 @@ function ServiceNeeds({ placement, reload }: Props) {
             opt.validPlacementType === placementType && !opt.defaultOption
         )
         .map((opt) => ({
-          label: opt.name,
+          label: opt.nameFi,
           value: opt.id
         }))
     : []

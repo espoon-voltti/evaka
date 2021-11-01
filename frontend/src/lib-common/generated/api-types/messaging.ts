@@ -159,7 +159,7 @@ export interface Recipient {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.ReplyToMessageBody
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ReplyToMessageBody
 */
 export interface ReplyToMessageBody {
   content: string
@@ -167,7 +167,7 @@ export interface ReplyToMessageBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ReplyToMessageBody
+* Generated from fi.espoo.evaka.messaging.MessageController.ReplyToMessageBody
 */
 export interface ReplyToMessageBody {
   content: string

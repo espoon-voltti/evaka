@@ -26,7 +26,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/generated/api-types/serviceneed'
 import { UnitProviderType } from 'lib-customizations/types'
 import {
   AbsenceType,
@@ -299,6 +299,10 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
     ...serviceNeed,
     startDate: LocalDate.parseIso(serviceNeed.startDate),
     endDate: LocalDate.parseIso(serviceNeed.endDate),
+    option: {
+      ...serviceNeed.option,
+      updated: new Date(serviceNeed.option.updated)
+    },
     confirmed:
       serviceNeed.confirmed != null
         ? {
@@ -396,6 +400,12 @@ function mapApplicationsJson(
 ): ApplicationUnitSummary {
   return {
     ...data,
+    serviceNeed: data.serviceNeed
+      ? {
+          ...data.serviceNeed,
+          updated: new Date(data.serviceNeed.updated)
+        }
+      : null,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     preferredStartDate: LocalDate.parseIso(data.preferredStartDate)
   }

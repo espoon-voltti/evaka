@@ -19,7 +19,7 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../../localization'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,

@@ -25,7 +25,7 @@ import {
   deserializePublicUnit,
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ApplicationType, PlacementType } from 'lib-common/generated/enums'
 
 export type ApplicationUnitType =

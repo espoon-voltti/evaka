@@ -30,7 +30,7 @@ export default React.memo(function ServiceNeedPartTime({ formData }: Props) {
         </span>
       )}
       {formData.serviceNeed.serviceNeedOption !== null && (
-        <span>{formData.serviceNeed.serviceNeedOption.name}</span>
+        <span>{formData.serviceNeed.serviceNeedOption.nameFi}</span>
       )}
       {featureFlags.daycareApplication.dailyTimesEnabled && (
         <>

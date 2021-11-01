@@ -25,7 +25,7 @@ fun Database.Read.getServiceNeedsByChild(
         """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name as option_name, sno.updated as option_updated,
+            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
@@ -50,7 +50,7 @@ fun Database.Read.getServiceNeedsByUnit(
         """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name as option_name, sno.updated AS option_updated,
+            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
@@ -72,7 +72,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     val sql = """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name as option_name, sno.updated AS option_updated,
+            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
@@ -173,7 +173,7 @@ fun Database.Read.getOverlappingServiceNeeds(
     val sql = """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name as option_name, sno.updated as option_updated,
+            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
@@ -207,7 +207,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<Placement
     val sql = """
         SELECT
             id,
-            name,
+            name_fi, name_sv, name_en,
             valid_placement_type
         FROM service_need_option
         WHERE default_option IS FALSE AND valid_placement_type = ANY(:placementTypes::placement_type[])

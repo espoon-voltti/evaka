@@ -54,7 +54,9 @@ export interface ServiceNeedOption {
   feeDescriptionFi: string
   feeDescriptionSv: string
   id: UUID
-  name: string
+  nameEn: string
+  nameFi: string
+  nameSv: string
   occupancyCoefficient: number
   partDay: boolean
   partWeek: boolean
@@ -70,7 +72,9 @@ export interface ServiceNeedOption {
 */
 export interface ServiceNeedOptionPublicInfo {
   id: UUID
-  name: string
+  nameEn: string
+  nameFi: string
+  nameSv: string
   validPlacementType: PlacementType
 }
 
@@ -79,7 +83,9 @@ export interface ServiceNeedOptionPublicInfo {
 */
 export interface ServiceNeedOptionSummary {
   id: UUID
-  name: string
+  nameEn: string
+  nameFi: string
+  nameSv: string
   updated: Date
 }
 

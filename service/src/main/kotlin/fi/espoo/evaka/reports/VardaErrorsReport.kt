@@ -38,7 +38,7 @@ SELECT
     vsn.evaka_service_need_id AS service_need_id,
     sn.start_date as service_need_start_date,
     sn.end_date as service_need_end_date,
-    sno.name as service_need_option_name,
+    sno.name_fi as service_need_option_name,
     vsn.evaka_child_id AS child_id,
     vsn.updated,
     vsn.errors

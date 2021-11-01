@@ -80,7 +80,7 @@ function TabApplications() {
                     }
                     label={
                       row.serviceNeed !== null
-                        ? row.serviceNeed.name
+                        ? row.serviceNeed.nameFi
                         : i18n.placement.type[row.requestedPlacementType]
                     }
                   />
