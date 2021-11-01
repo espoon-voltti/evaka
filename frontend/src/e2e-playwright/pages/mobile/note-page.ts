@@ -45,8 +45,11 @@ export default class MobileNotePage {
     await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
-  async createStickyNote(note: string) {
+  async initNewStickyNote() {
     await this.#stickyNote.newNoteBtn.click()
+  }
+
+  async typeAndSaveStickyNote(note: string) {
     await this.#stickyNote.input.type(note)
     await this.#stickyNote.saveBtn.click()
   }

@@ -145,29 +145,25 @@ test('Child daycare daily note indicators are shown on group view and can be edi
 
   await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
   await t
-    .expect(unitPage.daycareDailyNoteModal.noteInput.value)
+    .expect(unitPage.notesModal.noteInput.value)
     .eql(daycareDailyNote.note)
-    .expect(unitPage.daycareDailyNoteModal.sleepingHoursInput.value)
+    .expect(unitPage.notesModal.sleepingHoursInput.value)
     .eql(hours)
-    .expect(unitPage.daycareDailyNoteModal.sleepingMinutesInput.value)
+    .expect(unitPage.notesModal.sleepingMinutesInput.value)
     .eql(minutes)
-    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
+    .expect(unitPage.notesModal.reminderNoteInput.value)
     .eql(daycareDailyNote.reminderNote)
 
-  await t.typeText(
-    unitPage.daycareDailyNoteModal.reminderNoteInput,
-    'aardvark',
-    { replace: true }
-  )
-  await t.click(unitPage.daycareDailyNoteModal.submit)
+  await t.typeText(unitPage.notesModal.reminderNoteInput, 'aardvark', {
+    replace: true
+  })
+  await t.click(unitPage.notesModal.submit)
 
   await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
-  await t
-    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
-    .eql('aardvark')
+  await t.expect(unitPage.notesModal.reminderNoteInput.value).eql('aardvark')
 })
 
-test('Group daycare daily notes can be written and are shown on child notes', async (t) => {
+test('Group daycare daily notes can be written and are shown on group notes tab', async (t) => {
   const childId = enduserChildFixtureJari.id
   const daycareDailyNote: ChildDailyNoteBody = {
     note: 'Toinen viesti',
@@ -187,49 +183,41 @@ test('Group daycare daily notes can be written and are shown on child notes', as
   await t.click(unitPage.group(daycareGroup.data.id))
   await t.click(unitPage.groupDaycareDailyNoteLink)
 
-  await t.typeText(
-    unitPage.daycareDailyNoteModal.groupNoteInput,
-    'Ryhmälle viesti',
-    { replace: true }
-  )
-  await t.click(unitPage.daycareDailyNoteModal.submit)
+  await t.typeText(unitPage.stickyNote.input, 'Ryhmälle viesti', {
+    replace: true
+  })
+  await t.click(unitPage.stickyNote.save)
+  await t.click(unitPage.notesModal.close)
 
   await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
-  await t
-    .expect(unitPage.daycareDailyNoteModal.childGroupNote.textContent)
-    .eql('Ryhmälle viesti')
-
-  await t.click(unitPage.daycareDailyNoteModal.cancel)
+  await t.click(unitPage.notesModal.tab('group'))
+  await t.expect(unitPage.stickyNote.note.textContent).eql('Ryhmälle viesti')
+  await t.click(unitPage.notesModal.close)
 
   await t.click(
     unitPage.childDaycareDailyNoteIcon(enduserChildFixtureKaarina.id)
   )
-  await t
-    .expect(unitPage.daycareDailyNoteModal.childGroupNote.textContent)
-    .eql('Ryhmälle viesti')
+  // group tab should be immediately visible
+  await t.expect(unitPage.stickyNote.note.textContent).eql('Ryhmälle viesti')
 
   // Delete group note
-  await t.click(unitPage.daycareDailyNoteModal.cancel)
+  await t.click(unitPage.notesModal.close)
   await t.click(unitPage.groupDaycareDailyNoteLink)
-  await t.click(unitPage.daycareDailyNoteModal.delete)
+  await t.click(unitPage.stickyNote.delete)
+  await t.click(unitPage.notesModal.close)
 
   await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t.click(unitPage.notesModal.tab('group'))
   await t
-    .expect(
-      unitPage.daycareDailyNoteModal.childGroupNote.with({ timeout: 2000 })
-        .visible
-    )
+    .expect(unitPage.stickyNote.note.with({ timeout: 1000 }).visible)
     .notOk()
 
-  await t.click(unitPage.daycareDailyNoteModal.cancel)
+  await t.click(unitPage.notesModal.close)
 
   await t.click(
     unitPage.childDaycareDailyNoteIcon(enduserChildFixtureKaarina.id)
   )
   await t
-    .expect(
-      unitPage.daycareDailyNoteModal.childGroupNote.with({ timeout: 2000 })
-        .visible
-    )
+    .expect(unitPage.stickyNote.note.with({ timeout: 1000 }).visible)
     .notOk()
 })

@@ -41,8 +41,10 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
   onSave,
   onRemove
 }: StickyNoteTabProps) {
-  const [editing, setEditing] = useState<UUID | 'new'>()
-  const onCancelEdit = useCallback(() => setEditing(undefined), [])
+  const [editing, setEditing] = useState<UUID | 'new' | null>(
+    notes.length === 0 ? 'new' : null
+  )
+  const onCancelEdit = useCallback(() => setEditing(null), [])
   const setNoteToEdit = useCallback((id: UUID) => () => setEditing(id), [])
 
   return (
@@ -57,7 +59,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
         <FixedSpaceRow justifyContent="flex-end">
           <InlineButton
             data-qa="sticky-note-new"
-            disabled={!!editing}
+            disabled={editing !== null}
             onClick={() => setEditing('new')}
             text={labels.addNew}
           />

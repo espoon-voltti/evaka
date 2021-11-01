@@ -124,7 +124,7 @@ describe('Child and group notes', () => {
     const groupNote = 'Testiryhmäviesti'
 
     await notePage.selectTab('group')
-    await notePage.createStickyNote(groupNote)
+    await notePage.typeAndSaveStickyNote(groupNote)
     await notePage.assertStickyNote(groupNote)
   })
 
@@ -134,8 +134,11 @@ describe('Child and group notes', () => {
 
     await notePage.selectTab('sticky')
 
-    await notePage.createStickyNote(note)
-    await notePage.createStickyNote(note2)
+    await notePage.typeAndSaveStickyNote(note)
+    await notePage.assertStickyNote(note)
+
+    await notePage.initNewStickyNote()
+    await notePage.typeAndSaveStickyNote(note2)
 
     await notePage.assertStickyNote(note, 0)
     await notePage.assertStickyNoteExpires(LocalDate.today().addDays(7), 0)

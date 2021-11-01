@@ -41,6 +41,7 @@ export const fi = {
     clear: 'Tyhjennä',
     create: 'Luo',
     remove: 'Poista',
+    clear: 'Tyhjennä',
     cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',
@@ -142,6 +143,7 @@ export const fi = {
     code: 'Koodi',
     ready: 'Valmis',
     page: 'Sivu',
+    group: 'Ryhmä',
     fileDownloadError: {
       modalHeader: 'Tiedoston käsittely on kesken',
       modalMessage:
@@ -161,7 +163,9 @@ export const fi = {
         'Lauantai',
         'Sunnuntai'
       ]
-    }
+    },
+    nb: 'Huom',
+    validTo: (date: string) => `Voimassa ${date} saakka`
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -1600,12 +1604,12 @@ export const fi = {
       deleteGroup: 'Poista ryhmä',
       update: 'Muokkaa tietoja',
       daycareDailyNote: {
-        header: 'Päivän muistiinpanot',
-        groupNoteHeader: 'Päivän muistiinpano koko ryhmälle',
-        notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
-        stickyNotesHeader: 'Huomioitavaa',
-        groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
-        notesHint: 'Mitä tänään opin, leikin, oivalsin.',
+        dailyNote: 'Päivän muistiinpanot',
+        header: 'Tänään koettua ja opittua',
+        groupNotesHeader: 'Muistiinpano koko ryhmälle',
+        stickyNotesHeader: 'Huomioitavaa lähipäivinä',
+        notesHint: 'Leikkejä, onnistumisia, iloja, opittuja asioita',
+        otherThings: 'Muut asiat',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
         sleepingHoursHint: 'tunnit',

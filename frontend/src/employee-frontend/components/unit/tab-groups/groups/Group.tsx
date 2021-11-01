@@ -2,17 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as _ from 'lodash'
-import { useTranslation } from '../../../../state/i18n'
+import { Loading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import {
-  DaycareGroupPlacementDetailed,
-  DaycareGroupWithPlacements,
-  Stats,
-  Unit
-} from '../../../../types/unit'
+  ChildDailyNote,
+  NotesByGroupResponse
+} from 'lib-common/generated/api-types/note'
+import { UUID } from 'lib-common/types'
+import { formatPercentage } from 'lib-common/utils/number'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { fontWeights, H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -26,52 +37,40 @@ import {
   faTrash,
   faUndo
 } from 'lib-icons'
+import * as _ from 'lodash'
+import React, { useContext, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import { updateBackupCare } from '../../../../api/child/backup-care'
+import { getNotesByGroup } from '../../../../api/daycare-notes'
 import {
   deleteGroup,
   deleteGroupPlacement,
   OccupancyResponse
 } from '../../../../api/unit'
-import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
 } from '../../../../components/common/CareTypeLabel'
-import styled from 'styled-components'
-import colors from 'lib-customizations/common'
-import { capitalizeFirstLetter, formatName } from '../../../../utils'
-import { StatusIconContainer } from '../../../common/StatusIconContainer'
-import { UnitBackupCare } from '../../../../types/child'
-import { updateBackupCare } from '../../../../api/child/backup-care'
-import { formatPercentage } from 'lib-common/utils/number'
-import { DataList } from '../../../common/DataList'
-import { Gap } from 'lib-components/white-space'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { fontWeights, H3 } from 'lib-components/typography'
-import { UnitFilters } from '../../../../utils/UnitFilters'
-import { rangesOverlap } from '../../../../utils/date'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import { UIContext } from '../../../../state/ui'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
-import { isPartDayPlacement } from '../../../../utils/placements'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { featureFlags } from 'lib-customizations/employee'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UUID } from 'lib-common/types'
-import { requireRole } from '../../../../utils/roles'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
-import { Action } from 'lib-common/generated/action'
+import { UnitBackupCare } from '../../../../types/child'
 import {
-  ChildDailyNote,
-  NotesByGroupResponse
-} from 'lib-common/generated/api-types/note'
+  DaycareGroupPlacementDetailed,
+  DaycareGroupWithPlacements,
+  Stats,
+  Unit
+} from '../../../../types/unit'
+import { capitalizeFirstLetter, formatName } from '../../../../utils'
+import { rangesOverlap } from '../../../../utils/date'
+import { isPartDayPlacement } from '../../../../utils/placements'
+import { requireRole } from '../../../../utils/roles'
+import { UnitFilters } from '../../../../utils/UnitFilters'
 import { renderResult } from '../../../async-rendering'
-import { getNotesByGroup } from '../../../../api/daycare-notes'
-import ChildDailyNoteModal from '../daycare-daily-notes/ChildDailyNoteModal'
-import GroupNoteModal from '../daycare-daily-notes/GroupNoteModal'
+import { DataList } from '../../../common/DataList'
+import { StatusIconContainer } from '../../../common/StatusIconContainer'
+import { NotesModal } from '../notes/NotesModal'
 
 interface Props {
   unit: Unit
@@ -129,13 +128,6 @@ function getChildMinMaxHeadcounts(
     : undefined
 }
 
-interface ChildDailyNoteAndChildInfo {
-  note: ChildDailyNote | null
-  childId: UUID
-  childFirstName: string
-  childLastName: string
-}
-
 function Group({
   unit,
   filters,
@@ -154,9 +146,10 @@ function Group({
   const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [dailyNoteUnderEdit, setDailyNoteUnderEdit] =
-    useState<ChildDailyNoteAndChildInfo | null>(null)
+  const { uiMode, toggleUiMode } = useContext(UIContext)
+
+  const [notesModal, setNotesModal] =
+    useState<{ childId?: UUID; groupId: UUID }>()
   const [notesResponse, setNotesResponse] = useState<
     Result<NotesByGroupResponse>
   >(Loading.of())
@@ -265,7 +258,6 @@ function Group({
             childNote ? (
               <div>
                 <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
-                <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
                 <p>{childNote.note}</p>
                 <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
                 <p>
@@ -325,15 +317,9 @@ function Group({
             content={faStickyNote}
             color={colors.blues.primary}
             size="m"
-            onClick={() => {
-              setDailyNoteUnderEdit({
-                note: childNote || null,
-                childId: placement.child.id,
-                childFirstName: placement.child.firstName || '',
-                childLastName: placement.child.lastName || ''
-              })
-              toggleUiMode(`child-daily-note-edit-${group.id}`)
-            }}
+            onClick={() =>
+              setNotesModal({ groupId: group.id, childId: placement.child.id })
+            }
           />
         </Tooltip>
       )
@@ -349,29 +335,12 @@ function Group({
       {uiMode === `update-group-${group.id}` && (
         <GroupUpdateModal group={group} reload={reload} />
       )}
-      {uiMode === `child-daily-note-edit-${group.id}` &&
-        dailyNoteUnderEdit &&
-        notesResponse.isSuccess && (
-          <ChildDailyNoteModal
-            note={dailyNoteUnderEdit.note}
-            childId={dailyNoteUnderEdit.childId}
-            childFirstName={dailyNoteUnderEdit.childFirstName}
-            childLastName={dailyNoteUnderEdit.childLastName}
-            groupNotes={notesResponse.value.groupNotes}
-            onClose={() => clearUiMode()}
-            reload={() => loadNotes(group.id)}
-          />
-        )}
-      {uiMode === `group-note-edit-${group.id}` && notesResponse.isSuccess && (
-        <GroupNoteModal
-          groupNote={
-            notesResponse.value.groupNotes.length > 0
-              ? notesResponse.value.groupNotes[0]
-              : null
-          }
-          groupId={group.id}
-          onClose={() => clearUiMode()}
+      {notesModal && (
+        <NotesModal
+          {...notesModal}
+          notesByGroup={notesResponse}
           reload={() => loadNotes(group.id)}
+          onClose={() => setNotesModal(undefined)}
         />
       )}
       <TitleBar>
@@ -516,7 +485,7 @@ function Group({
                             position="top"
                             tooltip={
                               <span>
-                                {i18n.unit.groups.daycareDailyNote.header}
+                                {i18n.unit.groups.daycareDailyNote.dailyNote}
                               </span>
                             }
                           >
@@ -713,9 +682,7 @@ function Group({
                           : i18n.unit.groups.daycareDailyNote
                               .groupNoteModalAddLink
                       }
-                      onClick={() => {
-                        toggleUiMode(`group-note-edit-${group.id}`)
-                      }}
+                      onClick={() => setNotesModal({ groupId: group.id })}
                       data-qa="btn-create-group-note"
                     />
                   </GroupNoteLinkContainer>
