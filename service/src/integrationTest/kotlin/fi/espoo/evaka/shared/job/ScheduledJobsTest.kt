@@ -239,7 +239,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a preschool daycare transfer application for a child with a preschool placement is cancelled`() {
+    fun `a preschool daycare transfer application for a child with a preschool placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId =
             createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate, preschoolDaycare = true)
@@ -249,7 +249,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
-        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
     }
 
     @Test

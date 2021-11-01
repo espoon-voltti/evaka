@@ -914,8 +914,7 @@ AND NOT EXISTS (
         AND f.latest
         AND (CASE
             WHEN f.document->>'type' = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
-            WHEN f.document->>'type' = 'PRESCHOOL' AND NOT (f.document->>'connectedDaycare')::boolean THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
-            WHEN f.document->>'type' = 'PRESCHOOL' AND (f.document->>'connectedDaycare')::boolean THEN NOT p.type = ANY(:notPreschoolDaycarePlacements::placement_type[])
+            WHEN f.document->>'type' = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
             WHEN f.document->>'type' = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
         END)
         AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
@@ -947,21 +946,6 @@ RETURNING id
             PlacementType.DAYCARE_PART_TIME,
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
             PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            PlacementType.TEMPORARY_DAYCARE,
-            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            PlacementType.SCHOOL_SHIFT_CARE
-        )
-    )
-    .bind(
-        "notPreschoolDaycarePlacements",
-        arrayOf(
-            PlacementType.CLUB,
-            PlacementType.DAYCARE,
-            PlacementType.DAYCARE_PART_TIME,
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            PlacementType.PRESCHOOL,
-            PlacementType.PREPARATORY,
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             PlacementType.SCHOOL_SHIFT_CARE
