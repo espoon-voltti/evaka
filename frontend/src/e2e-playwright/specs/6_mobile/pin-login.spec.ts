@@ -177,6 +177,7 @@ describe('Mobile PIN login', () => {
     ])
 
     await listPage.selectChild(child.id)
+
     await childPage.openSensitiveInfoWithPinCode(
       `${employee.data.lastName} ${employee.data.firstName}`,
       pin

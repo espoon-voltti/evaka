@@ -203,3 +203,27 @@ export async function getUserDetails(req: express.Request, personId: string) {
   })
   return data
 }
+
+export interface EmployeePinLoginRequest {
+  employeeId: UUID
+  pin: string
+}
+
+export interface EmployeePinLoginResponse {
+  status: string
+}
+
+export async function employeePinLogin(
+  req: express.Request
+): Promise<EmployeePinLoginResponse> {
+  const { data } = await client.post<EmployeePinLoginResponse>(
+    `/mobile-devices/pin-login`,
+    req.body,
+    {
+      headers: {
+        ...createServiceRequestHeaders(req)
+      }
+    }
+  )
+  return data
+}

@@ -12,7 +12,8 @@ import {
   AbsenceThreshold,
   AttendanceResponse,
   Child,
-  ChildResult
+  ChildResult,
+  ChildResultStatus
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -268,4 +269,22 @@ function deserializeAttendanceResponse(
       }))
     }
   }
+}
+
+export interface PinLoginResult {
+  status: ChildResultStatus
+}
+
+export async function pinLogin(
+  employeeId: string,
+  pin: string
+): Promise<Result<ChildResultStatus>> {
+  return client
+    .post<JsonOf<ChildResultStatus>>(`/auth/pin-login`, {
+      employeeId,
+      pin
+    })
+    .then((res) => res.data)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }

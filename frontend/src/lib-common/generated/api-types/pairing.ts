@@ -54,6 +54,30 @@ export interface PairingStatusRes {
 }
 
 /**
+* Generated from fi.espoo.evaka.pairing.PinLoginRequest
+*/
+export interface PinLoginRequest {
+  employeeId: UUID
+  pin: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.PinLoginResponse
+*/
+export interface PinLoginResponse {
+  status: PinLoginStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.PinLoginStatus
+*/
+export type PinLoginStatus = 
+  | 'SUCCESS'
+  | 'WRONG_PIN'
+  | 'PIN_LOCKED'
+  | 'NOT_FOUND'
+
+/**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingChallengeReq
 */
 export interface PostPairingChallengeReq {

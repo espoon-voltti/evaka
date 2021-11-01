@@ -53,6 +53,7 @@ declare module 'express-session' {
   interface SessionData {
     idpProvider?: string | null
     logoutToken?: LogoutToken
+    employeeIdToken?: string
   }
 }
 

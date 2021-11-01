@@ -49,7 +49,11 @@ function createJwtToken(user: SamlUser): string {
     case 'CITIZEN_WEAK':
       return createJwt({ ...common, evaka_type: 'citizen_weak' })
     case 'MOBILE':
-      return createJwt({ ...common, evaka_type: 'mobile' })
+      return createJwt({
+        ...common,
+        evaka_employee_id: user.mobileEmployeeId,
+        evaka_type: 'mobile'
+      })
     case 'SYSTEM':
       return createJwt({ ...common, evaka_type: 'system' })
     case 'EMPLOYEE': {

@@ -26,10 +26,13 @@ import createSamlRouter from '../shared/routes/auth/saml'
 import csp from '../shared/routes/csp'
 import session, { refreshLogoutToken } from '../shared/session'
 import mobileDeviceSession, {
+  checkMobileEmployeeIdToken,
   devApiE2ESignup,
+  pinLoginRequestHandler,
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
+import AsyncRedisClient from '../shared/async-redis-client'
 
 const app = express()
 const redisClient = createRedisClient()
@@ -108,6 +111,7 @@ function internalApiRouter() {
   }
 
   router.post('/auth/mobile', mobileDeviceSession)
+
   router.get(
     '/auth/status',
     refreshMobileSession,
@@ -118,6 +122,11 @@ function internalApiRouter() {
   router.all('/public/*', createProxy())
   router.use(requireAuthentication)
   router.use(csrf)
+  router.post(
+    '/auth/pin-login',
+    pinLoginRequestHandler(new AsyncRedisClient(redisClient))
+  )
+  router.use(checkMobileEmployeeIdToken(new AsyncRedisClient(redisClient)))
   router.post(
     '/attachments/applications/:applicationId',
     createProxy({ multipart: true })

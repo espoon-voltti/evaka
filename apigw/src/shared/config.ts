@@ -139,6 +139,9 @@ export const httpPort = {
 export const sessionTimeoutMinutes =
   env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
 
+export const pinSessionTimeoutSeconds =
+  env('PIN_SESSION_TIMEOUT_SECONDS', parseInteger) ?? 10 * 60
+
 export const enableDevApi =
   env('ENABLE_DEV_API', parseBoolean) ??
   ifNodeEnv(['local', 'test'], true) ??
