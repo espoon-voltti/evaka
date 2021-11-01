@@ -14,10 +14,10 @@ import {
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client'
-import { useSecureCookies } from '../shared/config'
+import { useSecureCookies, pinSessionTimeoutSeconds } from '../shared/config'
 import { fromCallback } from '../shared/promise-utils'
-import { RedisClient } from 'redis'
-import {v4 as uuid} from 'uuid'
+import { v4 as uuid } from 'uuid'
+import AsyncRedisClient from '../shared/async-redis-client'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -94,14 +94,39 @@ export const devApiE2ESignup = toRequestHandler(async (req, res) => {
   }
 })
 
-export const pinLoginRequestHandler = (redisClient: RedisClient) =>
+const toMobileEmployeeIdKey = (token: string) => `mobile-employee-id:${token}`
+
+export const pinLoginRequestHandler = (redisClient: AsyncRedisClient) =>
   toRequestHandler(async (req, res) => {
+    if (req.user?.userType !== 'MOBILE') return
+
     const employeeId = assertStringProp(req.body, 'employeeId')
-    const pin = assertStringProp(req.body, 'pin')
-    console.log(`DEBUG: login ${employeeId} with ${pin}`)
-    console.log(`DDEBUG:${req.user}`)
     const status = await employeePinLogin(req)
+
     const token = uuid()
-    console.log(`DDEBUG: ${status} ${token} ${redisClient}`)
-    res.status(204).send(status)
+    await redisClient.set(
+      toMobileEmployeeIdKey(token),
+      employeeId,
+      'EX',
+      pinSessionTimeoutSeconds
+    )
+
+    req.session.employeeIdToken = token
+    res.status(200).send(status)
+  })
+
+export const checkMobileEmployeeIdToken = (redisClient: AsyncRedisClient) =>
+  toMiddleware(async (req) => {
+    if (req.user?.userType !== 'MOBILE') return
+
+    if (req.user && req.session.employeeIdToken) {
+      await redisClient.expire(
+        toMobileEmployeeIdKey(req.session.employeeIdToken),
+        pinSessionTimeoutSeconds
+      )
+      const employeeId = await redisClient.get(
+        toMobileEmployeeIdKey(req.session.employeeIdToken)
+      )
+      if (employeeId) req.user.mobileEmployeeId = employeeId
+    }
   })

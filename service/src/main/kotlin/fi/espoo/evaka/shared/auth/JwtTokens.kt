@@ -49,7 +49,7 @@ fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = 
     }
     .also {
         if (this is AuthenticatedUser.MobileDevice && employeeId != null) {
-            it.withClaim("employee_id", employeeId.toString())
+            it.withClaim("evaka_employee_id", employeeId.toString())
         }
     }
 

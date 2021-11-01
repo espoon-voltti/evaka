@@ -55,4 +55,5 @@ export interface SamlUser {
   nameQualifier?: string
   spNameQualifier?: string
   sessionIndex?: string
+  mobileEmployeeId?: string
 }
