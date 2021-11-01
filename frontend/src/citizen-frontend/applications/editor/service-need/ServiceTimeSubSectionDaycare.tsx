@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
@@ -64,24 +64,18 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     [serviceNeedOptions]
   )
 
-  useEffect(() => {
-    if (
-      featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-      formData.serviceNeedOption === null
-    ) {
-      updateFormData({
-        serviceNeedOption: formData.partTime
-          ? partTimeOptions[0] ?? null
-          : fullTimeOptions[0] ?? null
-      })
+  const updateServiceNeed = (partTime: boolean) => {
+    let serviceNeedOption = formData.serviceNeedOption
+    if (partTime && partTimeOptions.length > 0) {
+      serviceNeedOption = partTimeOptions[0]
+    } else if (!partTime && fullTimeOptions.length > 0) {
+      serviceNeedOption = fullTimeOptions[0]
     }
-  }, [
-    partTimeOptions,
-    fullTimeOptions,
-    formData.serviceNeedOption,
-    formData.partTime,
-    updateFormData
-  ])
+    updateFormData({
+      partTime,
+      serviceNeedOption
+    })
+  }
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -136,50 +130,43 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             })
           }
         />
-        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-          formData.partTime && (
-            <SubRadios>
-              <FixedSpaceColumn spacing={'xs'}>
-                {partTimeOptions.map((opt) => (
-                  <Radio
-                    key={opt.id}
-                    label={opt.name}
-                    checked={formData.serviceNeedOption?.id === opt.id}
-                    onChange={() => updateFormData({ serviceNeedOption: opt })}
-                    data-qa={`part-time-option-${opt.id}`}
-                  />
-                ))}
-              </FixedSpaceColumn>
-            </SubRadios>
-          )}
+        {formData.partTime && partTimeOptions.length > 0 && (
+          <SubRadios>
+            <FixedSpaceColumn spacing={'xs'}>
+              {partTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={opt.name}
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`part-time-option-${opt.id}`}
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
         <Radio
           id={`service-need-part-time-false`}
           label={t.applications.editor.serviceNeed.partTime.false}
           checked={!formData.partTime}
           data-qa={'partTime-input-false'}
-          onChange={() =>
-            updateFormData({
-              partTime: false,
-              serviceNeedOption: fullTimeOptions[0] ?? null
-            })
-          }
+          onChange={() => updateServiceNeed(false)}
         />
-        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
-          !formData.partTime && (
-            <SubRadios>
-              <FixedSpaceColumn spacing={'xs'}>
-                {fullTimeOptions.map((opt) => (
-                  <Radio
-                    key={opt.id}
-                    label={opt.name}
-                    checked={formData.serviceNeedOption?.id === opt.id}
-                    onChange={() => updateFormData({ serviceNeedOption: opt })}
-                    data-qa={`full-time-option-${opt.id}`}
-                  />
-                ))}
-              </FixedSpaceColumn>
-            </SubRadios>
-          )}
+        {!formData.partTime && fullTimeOptions.length > 0 && (
+          <SubRadios>
+            <FixedSpaceColumn spacing={'xs'}>
+              {fullTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={opt.name}
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`full-time-option-${opt.id}`}
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
       </FixedSpaceColumn>
     )
   }

@@ -20,7 +20,7 @@ export default React.memo(function ServiceNeedPartTime({ formData }: Props) {
       <Label>
         {t.applications.editor.verification.serviceNeed.dailyTime.partTime}
       </Label>
-      {!featureFlags.daycareApplication.serviceNeedOptionsEnabled && (
+      {formData.serviceNeed.serviceNeedOption == null && (
         <span>
           {formData.serviceNeed.partTime
             ? t.applications.editor.verification.serviceNeed.dailyTime
@@ -29,8 +29,8 @@ export default React.memo(function ServiceNeedPartTime({ formData }: Props) {
                 .withoutPartTime}
         </span>
       )}
-      {featureFlags.daycareApplication.serviceNeedOptionsEnabled && (
-        <span>{formData.serviceNeed.serviceNeedOption?.name}</span>
+      {formData.serviceNeed.serviceNeedOption !== null && (
+        <span>{formData.serviceNeed.serviceNeedOption.name}</span>
       )}
       {featureFlags.daycareApplication.dailyTimesEnabled && (
         <>

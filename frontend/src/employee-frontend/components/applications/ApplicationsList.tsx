@@ -43,7 +43,6 @@ import { UserContext } from '../../state/user'
 import { hasRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
-import { featureFlags } from 'lib-customizations/employee'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -265,8 +264,8 @@ const ApplicationsList = React.memo(function Applications({
         <PlacementCircle
           type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
           label={
-            featureFlags.daycareApplication.serviceNeedOptionsEnabled
-              ? application?.serviceNeed?.name ?? ''
+            application.serviceNeed !== null
+              ? application.serviceNeed.name
               : i18n.placement.type[application.placementType]
           }
         />

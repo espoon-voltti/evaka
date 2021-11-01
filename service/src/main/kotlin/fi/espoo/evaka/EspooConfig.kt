@@ -64,7 +64,8 @@ class EspooConfig {
 
     @Bean
     fun featureFlags(): FeatureFlags = FeatureFlags(
-        valueDecisionCapacityFactorEnabled = false
+        valueDecisionCapacityFactorEnabled = false,
+        daycareApplicationServiceNeedOptionsEnabled = false
     )
 }
 

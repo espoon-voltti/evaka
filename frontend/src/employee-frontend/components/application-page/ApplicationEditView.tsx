@@ -201,6 +201,21 @@ export default React.memo(function ApplicationEditView({
       : undefined
   }
 
+  const updateServiceNeed = (partTime: boolean) => {
+    let serviceNeedOption = serviceNeed?.serviceNeedOption
+    if (partTime && partTimeOptions.length > 0) {
+      serviceNeedOption = partTimeOptions[0]
+    } else if (!partTime && fullTimeOptions.length > 0) {
+      serviceNeedOption = fullTimeOptions[0]
+    }
+    setApplication(
+      flow(
+        set('form.preferences.serviceNeed.partTime', partTime),
+        set('form.preferences.serviceNeed.serviceNeedOption', serviceNeedOption)
+      )
+    )
+  }
+
   return (
     <div data-qa="application-edit-view">
       <ApplicationTitle application={application} />
@@ -268,42 +283,32 @@ export default React.memo(function ApplicationEditView({
                       label={i18n.application.serviceNeed.partTime}
                       checked={serviceNeed.partTime === true}
                       onChange={() => {
-                        setApplication(
-                          flow(
-                            set('form.preferences.serviceNeed.partTime', true),
-                            set(
-                              'form.preferences.serviceNeed.serviceNeedOption',
-                              partTimeOptions[0] ?? null
-                            )
-                          )
-                        )
+                        updateServiceNeed(true)
                       }}
                     />
-                    {featureFlags.daycareApplication
-                      .serviceNeedOptionsEnabled &&
-                      serviceNeed.partTime && (
-                        <SubRadios>
-                          <FixedSpaceColumn spacing={'xs'}>
-                            {partTimeOptions.map((opt) => (
-                              <Radio
-                                key={opt.id}
-                                label={opt.name}
-                                checked={
-                                  serviceNeed.serviceNeedOption?.id === opt.id
-                                }
-                                onChange={() => {
-                                  setApplication(
-                                    set(
-                                      'form.preferences.serviceNeed.serviceNeedOption',
-                                      opt
-                                    )
+                    {partTimeOptions.length > 0 && serviceNeed.partTime && (
+                      <SubRadios>
+                        <FixedSpaceColumn spacing={'xs'}>
+                          {partTimeOptions.map((opt) => (
+                            <Radio
+                              key={opt.id}
+                              label={opt.name}
+                              checked={
+                                serviceNeed.serviceNeedOption?.id === opt.id
+                              }
+                              onChange={() => {
+                                setApplication(
+                                  set(
+                                    'form.preferences.serviceNeed.serviceNeedOption',
+                                    opt
                                   )
-                                }}
-                              />
-                            ))}
-                          </FixedSpaceColumn>
-                        </SubRadios>
-                      )}
+                                )
+                              }}
+                            />
+                          ))}
+                        </FixedSpaceColumn>
+                      </SubRadios>
+                    )}
                     <Radio
                       label={i18n.application.serviceNeed.fullTime}
                       checked={serviceNeed.partTime === false}
@@ -319,31 +324,29 @@ export default React.memo(function ApplicationEditView({
                         )
                       }}
                     />
-                    {featureFlags.daycareApplication
-                      .serviceNeedOptionsEnabled &&
-                      !serviceNeed.partTime && (
-                        <SubRadios>
-                          <FixedSpaceColumn spacing={'xs'}>
-                            {fullTimeOptions.map((opt) => (
-                              <Radio
-                                key={opt.id}
-                                label={opt.name}
-                                checked={
-                                  serviceNeed.serviceNeedOption?.id === opt.id
-                                }
-                                onChange={() => {
-                                  setApplication(
-                                    set(
-                                      'form.preferences.serviceNeed.serviceNeedOption',
-                                      opt
-                                    )
+                    {!serviceNeed.partTime && fullTimeOptions.length > 0 && (
+                      <SubRadios>
+                        <FixedSpaceColumn spacing={'xs'}>
+                          {fullTimeOptions.map((opt) => (
+                            <Radio
+                              key={opt.id}
+                              label={opt.name}
+                              checked={
+                                serviceNeed.serviceNeedOption?.id === opt.id
+                              }
+                              onChange={() => {
+                                setApplication(
+                                  set(
+                                    'form.preferences.serviceNeed.serviceNeedOption',
+                                    opt
                                   )
-                                }}
-                              />
-                            ))}
-                          </FixedSpaceColumn>
-                        </SubRadios>
-                      )}
+                                )
+                              }}
+                            />
+                          ))}
+                        </FixedSpaceColumn>
+                      </SubRadios>
+                    )}
                   </FixedSpaceColumn>
                 </>
               )}

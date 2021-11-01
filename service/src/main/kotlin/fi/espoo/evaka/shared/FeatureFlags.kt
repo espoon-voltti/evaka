@@ -6,10 +6,5 @@ package fi.espoo.evaka.shared
 
 data class FeatureFlags(
     val valueDecisionCapacityFactorEnabled: Boolean,
-) {
-    companion object {
-        fun defaults() = FeatureFlags(
-            valueDecisionCapacityFactorEnabled = true
-        )
-    }
-}
+    val daycareApplicationServiceNeedOptionsEnabled: Boolean
+)
