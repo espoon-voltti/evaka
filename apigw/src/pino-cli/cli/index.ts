@@ -207,11 +207,21 @@ const stdoutStream = process.stdout
 const writeObjToStdoutAsJson = (obj: any): boolean =>
   stdoutStream.write(JSON.stringify(obj) + '\n')
 
-const errorPayload = (e: Error, message?: string): ErrorLog => ({
-  exception: e.constructor.name,
-  message: e.message || message || 'An error occurred',
-  stackTrace: e.stack || ''
-})
+const errorPayload = (e: unknown, message?: string): ErrorLog => {
+  if (e instanceof Error) {
+    return {
+      exception: e.constructor.name,
+      message: e.message || message || 'An error occurred',
+      stackTrace: e.stack || ''
+    }
+  } else {
+    return {
+      exception: '',
+      message: String(e),
+      stackTrace: ''
+    }
+  }
+}
 
 const parser = (input: string) => {
   try {

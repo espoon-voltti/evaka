@@ -190,7 +190,7 @@ export default React.memo(function FeeThresholdsEditor({
             const maxFeeError =
               'errors' in validationResult &&
               validationResult.errors[`maxFee${n}`]
-                ? validationResult.errors[`maxFee${n}` as `maxFee${typeof n}`]
+                ? validationResult.errors[`maxFee${n}` as const]
                 : undefined
 
             const maxFeeErrorInputInfo = maxFeeError
@@ -203,11 +203,7 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={
-                      editorState[
-                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                      ]
-                    }
+                    value={editorState[`minIncomeThreshold${n}` as const]}
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,
@@ -216,9 +212,8 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'€'}
                     info={
-                      validationErrorInfo(
-                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                      ) ?? maxFeeErrorInputInfo
+                      validationErrorInfo(`minIncomeThreshold${n}` as const) ??
+                      maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`min-income-threshold-${n}`}
@@ -227,11 +222,7 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={
-                      editorState[
-                        `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                      ]
-                    }
+                    value={editorState[`incomeMultiplier${n}` as const]}
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,
@@ -240,9 +231,8 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'%'}
                     info={
-                      validationErrorInfo(
-                        `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                      ) ?? maxFeeErrorInputInfo
+                      validationErrorInfo(`incomeMultiplier${n}` as const) ??
+                      maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`income-multiplier-${n}`}
@@ -251,11 +241,7 @@ export default React.memo(function FeeThresholdsEditor({
                 <Td>
                   <InputField
                     width="s"
-                    value={
-                      editorState[
-                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                      ]
-                    }
+                    value={editorState[`maxIncomeThreshold${n}` as const]}
                     onChange={(value) =>
                       setEditorState((previousState) => ({
                         ...previousState,
@@ -264,9 +250,8 @@ export default React.memo(function FeeThresholdsEditor({
                     }
                     symbol={'€'}
                     info={
-                      validationErrorInfo(
-                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                      ) ?? maxFeeErrorInputInfo
+                      validationErrorInfo(`maxIncomeThreshold${n}` as const) ??
+                      maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
                     data-qa={`max-income-threshold-${n}`}

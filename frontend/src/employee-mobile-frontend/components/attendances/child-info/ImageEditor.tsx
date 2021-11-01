@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useEffect, useRef, useState } from 'react'
-import ReactCrop from 'react-image-crop'
+import ReactCrop, { Crop } from 'react-image-crop'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -18,7 +18,7 @@ import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../state/i18n'
 
-const defaultCrop: ReactCrop.Crop = {
+const defaultCrop: Partial<Crop> = {
   unit: '%',
   width: 80,
   x: 10,
@@ -37,10 +37,8 @@ export default React.memo(function ImageEditor({
   onReturn
 }: Props) {
   const { i18n } = useTranslation()
-  const [crop, setCrop] = useState<ReactCrop.Crop>(defaultCrop)
-  const [completedCrop, setCompletedCrop] = useState<ReactCrop.Crop | null>(
-    null
-  )
+  const [crop, setCrop] = useState<Partial<Crop>>(defaultCrop)
+  const [completedCrop, setCompletedCrop] = useState<Crop | null>(null)
   const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null)
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const [submitting, setSubmitting] = useState(false)

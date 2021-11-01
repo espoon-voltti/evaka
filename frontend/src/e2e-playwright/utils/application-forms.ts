@@ -49,11 +49,9 @@ export const sections = [
 
 export type Section = typeof sections[number]
 
-export type FormInput = Partial<
-  {
-    [K in Section]: Partial<ApplicationFormData[K]>
-  }
->
+export type FormInput = Partial<{
+  [K in Section]: Partial<ApplicationFormData[K]>
+}>
 
 export const minimalDaycareForm: {
   form: FormInput

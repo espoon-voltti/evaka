@@ -63,7 +63,8 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
   try {
     return parser(value)
   } catch (err) {
-    throw new Error(`${err.message}: ${key}=${value}`)
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`${message}: ${key}=${value}`)
   }
 }
 
@@ -78,7 +79,8 @@ function envArray<T>(
   try {
     return values.map(parser)
   } catch (err) {
-    throw new Error(`${err.message}: ${key}=${value}`)
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`${message}: ${key}=${value}`)
   }
 }
 
@@ -260,36 +262,35 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
     }
   : undefined
 
-export const evakaCustomerSamlConfig:
-  | EvakaSamlConfig
-  | undefined = evakaCustomerCallbackUrl
-  ? {
-      callbackUrl: required(evakaCustomerCallbackUrl),
-      entryPoint: required(
-        process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-          )
-      ),
-      logoutUrl: required(
-        process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-          )
-      ),
-      issuer: required(
-        process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
-          ifNodeEnv(['local', 'test'], 'evaka-customer')
-      ),
-      publicCert: required(
-        process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
-      ),
-      privateCert: required(
-        process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-      )
-    }
-  : undefined
+export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
+  evakaCustomerCallbackUrl
+    ? {
+        callbackUrl: required(evakaCustomerCallbackUrl),
+        entryPoint: required(
+          process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+            ifNodeEnv(
+              ['local', 'test'],
+              'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+            )
+        ),
+        logoutUrl: required(
+          process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+            ifNodeEnv(
+              ['local', 'test'],
+              'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+            )
+        ),
+        issuer: required(
+          process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
+            ifNodeEnv(['local', 'test'], 'evaka-customer')
+        ),
+        publicCert: required(
+          process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
+            ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
+        ),
+        privateCert: required(
+          process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
+            ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+        )
+      }
+    : undefined

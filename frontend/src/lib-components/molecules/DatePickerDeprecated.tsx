@@ -147,11 +147,7 @@ interface DatePickerClearableProps extends CommonProps {
 
 const defaultProps: Partial<ReactDatePickerProps> = {
   popperPlacement: 'bottom',
-  popperModifiers: {
-    preventOverflow: {
-      enabled: true
-    }
-  },
+  popperModifiers: [{ name: 'preventOverflow' }],
   showMonthDropdown: true,
   showYearDropdown: true
 }
@@ -187,10 +183,8 @@ export function DatePickerDeprecated({
         minDate={minDate?.toSystemTzDate()}
         maxDate={maxDate?.toSystemTzDate()}
         onChange={(newDate) => {
-          const date = newDate
-            ? LocalDate.fromSystemTzDate(newDate)
-            : LocalDate.today()
-          onChange(date)
+          const date = Array.isArray(newDate) ? newDate[0] : newDate
+          onChange(date ? LocalDate.fromSystemTzDate(date) : LocalDate.today())
         }}
         onFocus={onFocus}
         disabled={disabled}
@@ -235,10 +229,11 @@ export function DatePickerClearableDeprecated({
         maxDate={maxDate?.toSystemTzDate()}
         strictParsing
         onChange={(newDate) => {
-          if (!newDate) {
+          const date = Array.isArray(newDate) ? newDate[0] : newDate
+          if (!date) {
             onCleared()
           } else {
-            onChange(LocalDate.fromSystemTzDate(newDate))
+            onChange(LocalDate.fromSystemTzDate(date))
           }
         }}
         onFocus={onFocus}

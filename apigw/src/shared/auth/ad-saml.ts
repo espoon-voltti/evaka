@@ -135,7 +135,7 @@ export default function createAdStrategy(
       config,
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile((profile as any) as AdProfile)
+        verifyProfile(profile as any as AdProfile)
           .then((user) => done(null, user))
           .catch(done)
       }

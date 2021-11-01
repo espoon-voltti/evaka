@@ -53,7 +53,7 @@ export default function createKeycloakSamlStrategy(
     config,
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      verifyKeycloakProfile((profile as any) as KeycloakProfile)
+      verifyKeycloakProfile(profile as any as KeycloakProfile)
         .then((user) => done(null, user))
         .catch(done)
     }

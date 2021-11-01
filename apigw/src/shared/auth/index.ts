@@ -52,7 +52,7 @@ function createJwtToken(user: SamlUser): string {
       return createJwt({ ...common, evaka_type: 'mobile' })
     case 'SYSTEM':
       return createJwt({ ...common, evaka_type: 'system' })
-    case 'EMPLOYEE':
+    case 'EMPLOYEE': {
       const roles =
         user.roles ?? concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
       return createJwt({
@@ -62,6 +62,7 @@ function createJwtToken(user: SamlUser): string {
           .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
           .join(' ')
       })
+    }
     default:
       throw new Error(`Unsupported user type ${type}`)
   }

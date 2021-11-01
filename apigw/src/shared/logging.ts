@@ -176,13 +176,13 @@ export function userIdHashReqSerializer(req: UserPinoRequest): UserPinoRequest {
   return req
 }
 
-export const reqSerializer = (reqSerializers: PinoReqSerializer[]) => (
-  req: PinoRequest
-) => reqSerializers.reduce((acc, serializer) => serializer(acc), req)
+export const reqSerializer =
+  (reqSerializers: PinoReqSerializer[]) => (req: PinoRequest) =>
+    reqSerializers.reduce((acc, serializer) => serializer(acc), req)
 
-export const resSerializer = (resSerializers: PinoResSerializer[]) => (
-  res: PinoResponse
-) => resSerializers.reduce((acc, serializer) => serializer(acc), res)
+export const resSerializer =
+  (resSerializers: PinoResSerializer[]) => (res: PinoResponse) =>
+    resSerializers.reduce((acc, serializer) => serializer(acc), res)
 
 /**
  * A request serializer for pino-http which enriches the req object with the path and the query string
