@@ -265,7 +265,7 @@ const ApplicationsList = React.memo(function Applications({
           type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
           label={
             application.serviceNeed !== null
-              ? application.serviceNeed.name
+              ? application.serviceNeed.nameFi
               : i18n.placement.type[application.placementType]
           }
         />

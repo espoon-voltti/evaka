@@ -11,8 +11,7 @@ import {
   AssistanceNeed,
   ChildBackupCare,
   Placement,
-  ServiceNeed,
-  ServiceNeedOption
+  ServiceNeed
 } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
@@ -21,6 +20,7 @@ import { ApplicationSummary } from '../types/application'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 export interface ChildState {
   person: Result<PersonDetails>

@@ -181,7 +181,9 @@ class ApplicationStateService(
                     serviceNeedOption = defaultServiceNeedOption?.let {
                         ServiceNeedOption(
                             id = it.id.raw,
-                            name = it.name
+                            nameFi = it.nameFi,
+                            nameSv = it.nameSv,
+                            nameEn = it.nameEn
                         )
                     }
                 )

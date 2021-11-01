@@ -45,7 +45,9 @@ data class ServiceNeedChildRange(
 
 data class ServiceNeedOptionSummary(
     val id: ServiceNeedOptionId,
-    val name: String,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
     val updated: Instant
 )
 
@@ -59,13 +61,17 @@ data class ServiceNeedConfirmation(
 
 data class ServiceNeedOptionPublicInfo(
     val id: ServiceNeedOptionId,
-    val name: String,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
     val validPlacementType: PlacementType
 )
 
 data class ServiceNeedOption(
     val id: ServiceNeedOptionId,
-    val name: String,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
     val validPlacementType: PlacementType,
     val defaultOption: Boolean,
     val feeCoefficient: BigDecimal,

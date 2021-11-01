@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentType
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -1978,7 +1979,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Test
     fun `daycare with unknown service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(UUID.randomUUID(), "unknown service need option")
+        val serviceNeedOption = ServiceNeedOption(UUID.randomUUID(), "unknown service need option", "unknown service need option", "unknown service need option")
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->
@@ -2003,7 +2004,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Test
     fun `daycare with known service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id.raw, snPreschoolDaycare45.name)
+        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id.raw, snPreschoolDaycare45.nameFi, snPreschoolDaycare45.nameSv, snPreschoolDaycare45.nameEn)
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->

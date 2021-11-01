@@ -9,7 +9,7 @@ import {
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
-import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/enums'
 
 export type ServiceNeedFormData = {
@@ -27,7 +27,7 @@ export type ServiceNeedFormData = {
   urgencyAttachments: ApplicationAttachment[]
   wasOnClubCare: boolean
   wasOnDaycare: boolean
-  serviceNeedOption: ServiceNeedOptionSummary | null
+  serviceNeedOption: ServiceNeedOption | null
 }
 
 export type UnitPreferenceFormData = {

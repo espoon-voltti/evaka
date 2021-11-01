@@ -11,7 +11,7 @@ import {
   ApplicationAttachment,
   ApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/generated/api-types/serviceneed'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import {
   ApplicationOrigin,

@@ -67,6 +67,12 @@ export const deserializeApplicationSummary = (
 ): ApplicationListSummary => ({
   ...json,
   dateOfBirth: LocalDate.parseNullableIso(json.dateOfBirth),
+  serviceNeed: json.serviceNeed
+    ? {
+        ...json.serviceNeed,
+        updated: new Date(json.serviceNeed.updated)
+      }
+    : null,
   dueDate: LocalDate.parseNullableIso(json.dueDate),
   startDate: LocalDate.parseNullableIso(json.startDate)
 })

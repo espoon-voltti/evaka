@@ -61,6 +61,10 @@ export async function getPlacements(
           ...sn,
           startDate: LocalDate.parseIso(sn.startDate),
           endDate: LocalDate.parseIso(sn.endDate),
+          option: {
+            ...sn.option,
+            updated: new Date(sn.option.updated)
+          },
           confirmed:
             sn.confirmed != null
               ? {

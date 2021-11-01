@@ -54,7 +54,7 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { featureFlags } from 'lib-customizations/citizen'
 import { AttachmentType } from 'lib-common/generated/enums'
 
@@ -292,7 +292,7 @@ export default React.memo(function ApplicationEditView({
                           {partTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
-                              label={opt.name}
+                              label={opt.nameFi}
                               checked={
                                 serviceNeed.serviceNeedOption?.id === opt.id
                               }
@@ -330,7 +330,7 @@ export default React.memo(function ApplicationEditView({
                           {fullTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
-                              label={opt.name}
+                              label={opt.nameFi}
                               checked={
                                 serviceNeed.serviceNeedOption?.id === opt.id
                               }

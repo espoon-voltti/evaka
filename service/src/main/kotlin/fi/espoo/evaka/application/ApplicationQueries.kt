@@ -252,7 +252,9 @@ fun Database.Read.fetchApplicationSummaries(
             f.document,
             f.document ->> 'type' as type,
             f.document -> 'serviceNeedOption' ->> 'id' as serviceNeedId,
-            f.document -> 'serviceNeedOption' ->> 'name' as serviceNeedName,
+            f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
+            f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
+            f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
             a.duedate,
             f.document ->> 'preferredStartDate' as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
@@ -354,7 +356,12 @@ fun Database.Read.fetchApplicationSummaries(
                     type = row.mapColumn("type"),
                     placementType = mapRequestedPlacementType(row, "document"),
                     serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
-                        ServiceNeedOption(UUID.fromString(it), row.mapColumn("serviceNeedName"))
+                        ServiceNeedOption(
+                            UUID.fromString(it),
+                            row.mapColumn("serviceNeedNameFi"),
+                            row.mapColumn("serviceNeedNameSv"),
+                            row.mapColumn("serviceNeedNameEn")
+                        )
                     },
                     dueDate = row.mapColumn("duedate"),
                     startDate = row.mapColumn("preferredStartDate"),
@@ -655,7 +662,9 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
             a.id,
             f.document ->> 'type' AS type,
             f.document -> 'serviceNeedOption' ->> 'id' AS serviceNeedId,
-            f.document -> 'serviceNeedOption' ->> 'name' AS serviceNeedName,
+            f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
+            f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
+            f.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
             f.document,
             (f.document ->> 'preferredStartDate')::date as preferred_start_date,
             (array_position((
@@ -696,7 +705,12 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                 guardianEmail = row.mapColumn("guardian_email"),
                 requestedPlacementType = mapRequestedPlacementType(row, "document"),
                 serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
-                    ServiceNeedOption(UUID.fromString(it), row.mapColumn("serviceNeedName"))
+                    ServiceNeedOption(
+                        UUID.fromString(it),
+                        row.mapColumn("serviceNeedNameFi"),
+                        row.mapColumn("serviceNeedNameSv"),
+                        row.mapColumn("serviceNeedNameEn")
+                    )
                 },
                 preferredStartDate = row.mapColumn("preferred_start_date"),
                 preferenceOrder = row.mapColumn("preference_order"),

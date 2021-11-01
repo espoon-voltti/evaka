@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

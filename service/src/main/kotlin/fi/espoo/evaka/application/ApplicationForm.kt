@@ -157,7 +157,9 @@ data class ApplicationForm(
                         partTime = v0.partTime,
                         serviceNeedOption = if (v0.serviceNeedOption != null) ServiceNeedOption(
                             id = v0.serviceNeedOption.id,
-                            name = v0.serviceNeedOption.name
+                            nameFi = v0.serviceNeedOption.nameFi,
+                            nameSv = v0.serviceNeedOption.nameSv,
+                            nameEn = v0.serviceNeedOption.nameEn
                         ) else null
                     ).takeIf { v0.type == ApplicationType.DAYCARE || v0.connectedDaycare == true },
                     siblingBasis = SiblingBasis(
@@ -434,5 +436,7 @@ data class ClubDetails(
 
 data class ServiceNeedOption(
     val id: UUID,
-    val name: String
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String
 )

@@ -9,7 +9,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import Radio from 'lib-components/atoms/form/Radio'
-import { useTranslation } from '../../../localization'
+import { useLang, useTranslation } from '../../../localization'
 import { H3, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
@@ -46,6 +46,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   verificationRequested,
   serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
+  const [lang] = useLang()
   const t = useTranslation()
   const { applicationId } = useParams<{ applicationId: string }>()
 
@@ -136,7 +137,12 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               {partTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
-                  label={opt.name}
+                  label={
+                    (lang === 'fi' && opt.nameFi) ||
+                    (lang === 'sv' && opt.nameSv) ||
+                    (lang === 'en' && opt.nameEn) ||
+                    opt.id
+                  }
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`part-time-option-${opt.id}`}
@@ -158,7 +164,12 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               {fullTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
-                  label={opt.name}
+                  label={
+                    (lang === 'fi' && opt.nameFi) ||
+                    (lang === 'sv' && opt.nameSv) ||
+                    (lang === 'en' && opt.nameEn) ||
+                    opt.id
+                  }
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`full-time-option-${opt.id}`}
