@@ -101,6 +101,8 @@ import {
   // @ts-ignore
 } from '@fortawesome/pro-regular-svg-icons'
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-svg-icons'
 
 import {
