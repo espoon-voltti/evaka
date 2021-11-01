@@ -51,7 +51,7 @@ data class TSMapping(
 )
 
 val kotlinCollectionClasses = listOf(
-    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class
+    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class, Map::class
 )
 
 val classesToUnwrap = kotlinCollectionClasses + listOf(

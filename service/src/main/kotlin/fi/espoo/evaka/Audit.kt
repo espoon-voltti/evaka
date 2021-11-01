@@ -240,6 +240,8 @@ enum class Audit(
     RawReportRead("evaka.raw-report.read"),
     ServiceNeedOptionsRead("evaka.service-need-options.read"),
     ServiceNeedReportRead("evaka.service-need-report.read"),
+    SettingsRead("evaka.settings.read"),
+    SettingsUpdate("evaka.settings.update"),
     UnitStaffAttendanceRead("evaka.unit-staff-attendance.read"),
     StaffAttendanceArrivalCreate("evaka.staff-attendance.arrival.create"),
     StaffAttendanceArrivalExternalCreate("evaka.staff-attendance.arrival-external.create"),

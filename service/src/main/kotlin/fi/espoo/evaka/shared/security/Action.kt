@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
@@ -57,6 +58,8 @@ sealed interface Action {
 
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
+
+        UPDATE_SETTINGS(ADMIN),
 
         READ_UNIT_FEATURES()
         ;

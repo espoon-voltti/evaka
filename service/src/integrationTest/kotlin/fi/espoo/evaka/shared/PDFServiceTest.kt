@@ -14,6 +14,7 @@ import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -72,6 +73,7 @@ private val voucherDecision = daycareDecision.copy(
     )
 )
 
+private val settings = mapOf<SettingType, String>()
 private val child = PersonDTO(
     testChild_1.id,
     ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
@@ -157,6 +159,7 @@ class PDFServiceTest {
                 EvakaMessageProvider(),
                 EvakaTemplateProvider(),
                 pdfService,
+                settings,
                 decision,
                 guardian,
                 child,
