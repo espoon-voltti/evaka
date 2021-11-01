@@ -2,16 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useMemo,
-  useState,
-  createContext,
-  useCallback,
-  useEffect
-} from 'react'
+import React, { createContext, useEffect, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
@@ -40,21 +34,10 @@ export const StaffAttendanceContextProvider = React.memo(
   }) {
     const { unitId } = useParams<{ unitId: UUID }>()
 
-    const [staffAttendanceResponse, setStaffAttendanceResponse] = useState<
-      Result<StaffAttendanceResponse>
-    >(Loading.of())
-
-    const loadStaffAttendance = useRestApi(
-      getUnitStaffAttendances,
-      setStaffAttendanceResponse
+    const [staffAttendanceResponse, reloadStaffAttendance] = useApiState(
+      () => getUnitStaffAttendances(unitId),
+      [unitId]
     )
-
-    const reloadStaffAttendance = useCallback(
-      () => loadStaffAttendance(unitId),
-      [loadStaffAttendance, unitId]
-    )
-
-    useEffect(reloadStaffAttendance, [reloadStaffAttendance])
 
     useEffect(
       () =>

@@ -89,11 +89,15 @@ export default React.memo(function ChildNotes() {
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
-  const childResult: Result<Child> = attendanceResponse
-    .map((v) => v.children.find((c) => c.id === childId))
-    .chain((c) =>
-      c ? Success.of(c) : Failure.of({ message: 'Child not found' })
-    )
+  const childResult: Result<Child> = useMemo(
+    () =>
+      attendanceResponse
+        .map((v) => v.children.find((c) => c.id === childId))
+        .chain((c) =>
+          c ? Success.of(c) : Failure.of({ message: 'Child not found' })
+        ),
+    [attendanceResponse, childId]
+  )
 
   const dailyNote = useMemo(
     () =>

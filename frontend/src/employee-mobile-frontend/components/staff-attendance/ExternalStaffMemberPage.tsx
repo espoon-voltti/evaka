@@ -8,12 +8,12 @@ import InputField from 'lib-components/atoms/form/InputField'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { postExternalStaffDeparture } from '../../api/realtimeStaffAttendances'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
-import { renderResult } from '../async-rendering'
+import { UnwrapResult } from '../async-rendering'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { TimeInfo } from './components/staff-components'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -30,57 +30,63 @@ export default React.memo(function ExternalStaffMemberPage() {
     StaffAttendanceContext
   )
 
-  const attendance = staffAttendanceResponse.map((res) =>
-    res.extraAttendances.find((s) => s.id === attendanceId)
+  const attendance = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) =>
+        res.extraAttendances.find((s) => s.id === attendanceId)
+      ),
+    [attendanceId, staffAttendanceResponse]
   )
 
   const [time, setTime] = useState(formatTime(new Date()))
 
   return (
     <StaffMemberPageContainer>
-      {renderResult(attendance, (ext) =>
-        !ext ? (
-          <ErrorSegment
-            title={i18n.attendances.staff.errors.employeeNotFound}
-          />
-        ) : (
-          <>
-            <EmployeeCardBackground staff={toStaff(ext)} />
-            <FixedSpaceColumn>
-              <TimeInfo>
-                <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                {formatTime(ext.arrived)}
-              </TimeInfo>
+      <UnwrapResult result={attendance}>
+        {(ext) =>
+          !ext ? (
+            <ErrorSegment
+              title={i18n.attendances.staff.errors.employeeNotFound}
+            />
+          ) : (
+            <>
+              <EmployeeCardBackground staff={toStaff(ext)} />
+              <FixedSpaceColumn>
+                <TimeInfo>
+                  <Label>{i18n.attendances.arrivalTime}</Label>{' '}
+                  {formatTime(ext.arrived)}
+                </TimeInfo>
 
-              <TimeInfo>
-                <Label htmlFor="time-input">
-                  {i18n.attendances.departureTime}
-                </Label>
-                <InputField
-                  id="time-input"
-                  type="time"
-                  width="s"
-                  value={time}
-                  onChange={(val) => setTime(val)}
+                <TimeInfo>
+                  <Label htmlFor="time-input">
+                    {i18n.attendances.departureTime}
+                  </Label>
+                  <InputField
+                    id="time-input"
+                    type="time"
+                    width="s"
+                    value={time}
+                    onChange={(val) => setTime(val)}
+                  />
+                </TimeInfo>
+
+                <AsyncButton
+                  primary
+                  text={i18n.attendances.actions.markDeparted}
+                  data-qa="mark-departed-link"
+                  onClick={() =>
+                    postExternalStaffDeparture({ attendanceId, time })
+                  }
+                  onSuccess={() => {
+                    reloadStaffAttendance()
+                    history.goBack()
+                  }}
                 />
-              </TimeInfo>
-
-              <AsyncButton
-                primary
-                text={i18n.attendances.actions.markDeparted}
-                data-qa="mark-departed-link"
-                onClick={() =>
-                  postExternalStaffDeparture({ attendanceId, time })
-                }
-                onSuccess={() => {
-                  reloadStaffAttendance()
-                  history.goBack()
-                }}
-              />
-            </FixedSpaceColumn>
-          </>
-        )
-      )}
+              </FixedSpaceColumn>
+            </>
+          )
+        }
+      </UnwrapResult>
     </StaffMemberPageContainer>
   )
 })
