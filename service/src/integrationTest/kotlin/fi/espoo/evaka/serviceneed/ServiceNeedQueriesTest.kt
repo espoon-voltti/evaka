@@ -22,5 +22,4 @@ class ServiceNeedQueriesTest : PureJdbiTest() {
     fun getServiceNeedOptionPublicInfos() {
         assertThat(db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList()) }).isEmpty()
     }
-
 }

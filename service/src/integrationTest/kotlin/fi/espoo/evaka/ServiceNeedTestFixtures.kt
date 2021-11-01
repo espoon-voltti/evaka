@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka
 
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.placement.PlacementType
