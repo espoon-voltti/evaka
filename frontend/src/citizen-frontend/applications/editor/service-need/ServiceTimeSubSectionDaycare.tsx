@@ -11,7 +11,7 @@ import {
 import Radio from 'lib-components/atoms/form/Radio'
 import { useTranslation } from '../../../localization'
 import { H3, Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Gap } from 'lib-components/white-space'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { Result } from 'lib-common/api'
@@ -196,13 +196,11 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               <Label htmlFor={'daily-time-starts'}>
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
-              <InputField
+              <TimeInput
                 id={'daily-time-starts'}
-                type={'time'}
                 value={formData.startTime}
                 data-qa={'startTime-input'}
                 onChange={(value) => updateFormData({ startTime: value })}
-                width={'s'}
                 info={errorToInputInfo(errors.startTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
               />
@@ -214,13 +212,11 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               <Label htmlFor={'daily-time-ends'}>
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
-              <InputField
+              <TimeInput
                 id={'daily-time-ends'}
-                type={'time'}
                 value={formData.endTime}
                 data-qa={'endTime-input'}
                 onChange={(value) => updateFormData({ endTime: value })}
-                width={'s'}
                 info={errorToInputInfo(errors.endTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
               />
