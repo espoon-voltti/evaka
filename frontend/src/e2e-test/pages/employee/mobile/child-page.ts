@@ -73,7 +73,7 @@ export default class ChildPage {
       .eql(`${childFixture.firstName} ${childFixture.lastName}`)
 
     await t.click(this.markPresentLink)
-    await t.typeText(this.setTimeInput, time)
+    await t.typeText(this.setTimeInput, time, { replace: true })
     await t.click(this.markPresentBtn)
   }
 
@@ -93,7 +93,7 @@ export default class ChildPage {
       .eql(`${childFixture.firstName} ${childFixture.lastName}`)
 
     await t.click(this.markDepartedLink)
-    await t.typeText(this.setTimeInput, time)
+    await t.typeText(this.setTimeInput, time, { replace: true })
     await t.click(this.markDepartedBtn)
   }
 
@@ -153,7 +153,7 @@ export default class ChildPage {
       .eql(`${childFixture.firstName} ${childFixture.lastName}`)
 
     await t.click(this.markDepartedLink)
-    await t.typeText(this.setTimeInput, time)
+    await t.typeText(this.setTimeInput, time, { replace: true })
 
     await t.click(this.markAbsentRadio('SICKLEAVE'))
     await t.click(this.markDepartedWithAbsenceBtn)

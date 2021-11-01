@@ -9,20 +9,20 @@ import { faArrowLeft, farStickyNote } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { Gap } from 'lib-components/white-space'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
+
 import { TallContentArea } from '../../mobile/components'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { childArrivesPOST } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import DailyNote from '../notes/DailyNote'
-import { Actions, BackButtonInline } from '../components'
+import { Actions, BackButtonInline, TimeWrapper } from '../components'
 import { renderResult } from '../../async-rendering'
 import { combine } from 'lib-common/api'
 
@@ -90,13 +90,7 @@ export default React.memo(function MarkPresent() {
           >
             <TimeWrapper>
               <CustomTitle>{i18n.attendances.actions.markPresent}</CustomTitle>
-              <InputField
-                onChange={setTime}
-                value={time}
-                width="s"
-                type="time"
-                data-qa="set-time"
-              />
+              <TimeInput onChange={setTime} value={time} data-qa="set-time" />
             </TimeWrapper>
             <Gap size={'xs'} />
             <Actions>
@@ -146,24 +140,6 @@ export default React.memo(function MarkPresent() {
     </TallContentArea>
   )
 })
-
-const TimeWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 20px;
-  color: ${colors.blues.dark};
-  font-weight: ${fontWeights.semibold};
-
-  input {
-    font-size: 60px;
-    width: 100%;
-    color: ${colors.blues.dark};
-    font-family: Montserrat, sans-serif;
-    font-weight: ${fontWeights.light};
-    border-bottom: none;
-  }
-`
 
 const CustomTitle = styled(Title)`
   margin-top: 0;

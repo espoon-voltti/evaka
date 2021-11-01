@@ -5,6 +5,7 @@
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import Combobox from 'lib-components/atoms/form/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -82,11 +83,9 @@ export default function MarkExternalStaffMemberArrivalPage() {
         <HorizontalLine />
         <ListGrid>
           <Label>{i18n.attendances.arrivalTime}</Label>
-          <InputField
-            type="time"
+          <TimeInput
             value={form.arrived}
             onChange={(arrived) => setForm((old) => ({ ...old, arrived }))}
-            width="s"
             data-qa="input-arrived"
           />
 

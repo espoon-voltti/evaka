@@ -36,7 +36,7 @@ import {
 import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Radio from 'lib-components/atoms/form/Radio'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { NullableValues } from '../../types'
@@ -563,10 +563,9 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
 }: TimeRangeInputProps) {
   return (
     <>
-      <InputField
+      <TimeInput
         value={value.start}
         onChange={(start) => onChange({ ...value, start })}
-        type="time"
         required
         data-qa={`${dataQaPrefix}-start`}
         info={
@@ -578,13 +577,11 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
             : undefined
         }
         hideErrorsBeforeTouched
-        width="s"
       />
       <span> - </span>
-      <InputField
+      <TimeInput
         value={value.end}
         onChange={(end) => onChange({ ...value, end })}
-        type="time"
         required
         data-qa={`${dataQaPrefix}-end`}
         info={
@@ -596,7 +593,6 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
             : undefined
         }
         hideErrorsBeforeTouched
-        width="s"
       />
     </>
   )

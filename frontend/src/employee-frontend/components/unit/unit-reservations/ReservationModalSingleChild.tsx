@@ -5,7 +5,7 @@
 import React, { Fragment, useMemo, useState } from 'react'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, Label } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import LocalDate from 'lib-common/local-date'
 import DatePicker, {
   DatePickerSpacer
@@ -366,9 +366,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
     <>
       {props.label}
       <FixedSpaceRow alignItems="center">
-        <InputField
+        <TimeInput
           value={timeRange.startTime ?? ''}
-          type="time"
           onChange={(value) => {
             const updatedRange = {
               startTime: value,
@@ -386,9 +385,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           hideErrorsBeforeTouched={!props.showAllErrors}
         />
         <span>–</span>
-        <InputField
+        <TimeInput
           value={timeRange.endTime ?? ''}
-          type="time"
           onChange={(value) => {
             const updatedRange = {
               startTime: timeRange.startTime ?? '',
@@ -426,9 +424,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
         <>
           <div />
           <FixedSpaceRow alignItems="center">
-            <InputField
+            <TimeInput
               value={extraTimeRange.startTime ?? ''}
-              type="time"
               onChange={(value) =>
                 props.updateTimes([
                   timeRange,
@@ -445,9 +442,8 @@ const TimeInputs = React.memo(function TimeInputs(props: {
               hideErrorsBeforeTouched={!props.showAllErrors}
             />
             <span>–</span>
-            <InputField
+            <TimeInput
               value={extraTimeRange.endTime ?? ''}
-              type="time"
               onChange={(value) =>
                 props.updateTimes([
                   timeRange,
@@ -501,13 +497,13 @@ function validateForm(
       startTime:
         time.startTime === ''
           ? time.endTime !== ''
-            ? 'required'
+            ? 'timeRequired'
             : undefined
           : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
       endTime:
         time.endTime === ''
           ? time.startTime !== ''
-            ? 'required'
+            ? 'timeRequired'
             : undefined
           : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
     }))
@@ -520,13 +516,13 @@ function validateForm(
             startTime:
               time.startTime === ''
                 ? time.endTime !== ''
-                  ? 'required'
+                  ? 'timeRequired'
                   : undefined
                 : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
             endTime:
               time.endTime === ''
                 ? time.startTime !== ''
-                  ? 'required'
+                  ? 'timeRequired'
                   : undefined
                 : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
           }))
@@ -543,13 +539,13 @@ function validateForm(
               startTime:
                 time.startTime === ''
                   ? time.endTime !== ''
-                    ? 'required'
+                    ? 'timeRequired'
                     : undefined
                   : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
               endTime:
                 time.endTime === ''
                   ? time.startTime !== ''
-                    ? 'required'
+                    ? 'timeRequired'
                     : undefined
                   : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
             }))

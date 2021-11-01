@@ -73,6 +73,7 @@ export default class ChildAttendancePage {
 
   // time format: "09:46"
   async setTime(time: string) {
+    await this.#setTimeInput.click()
     await this.#setTimeInput.type(time)
   }
 }

@@ -8,7 +8,7 @@ import { formatTime, isValidTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
@@ -153,11 +153,9 @@ export default React.memo(function StaffMarkArrivedPage() {
                 <Gap />
                 <TimeWrapper>
                   <Label>{i18n.attendances.arrivalTime}</Label>
-                  <InputField
+                  <TimeInput
                     onChange={setTime}
                     value={time}
-                    width="s"
-                    type="time"
                     data-qa="set-time"
                     info={
                       timeInFuture

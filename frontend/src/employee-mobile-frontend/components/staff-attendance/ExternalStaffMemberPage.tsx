@@ -4,7 +4,7 @@
 
 import { formatTime } from 'lib-common/date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
@@ -61,10 +61,8 @@ export default React.memo(function ExternalStaffMemberPage() {
                   <Label htmlFor="time-input">
                     {i18n.attendances.departureTime}
                   </Label>
-                  <InputField
+                  <TimeInput
                     id="time-input"
-                    type="time"
-                    width="s"
                     value={time}
                     onChange={(val) => setTime(val)}
                   />

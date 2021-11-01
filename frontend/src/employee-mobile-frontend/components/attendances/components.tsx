@@ -117,3 +117,20 @@ export const BackButtonInline = styled(InlineButton)`
   width: calc(100vw - 16px);
   display: flex;
 `
+
+export const TimeWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 20px;
+  color: ${colors.blues.dark};
+  font-weight: ${fontWeights.semibold};
+
+  input {
+    font-size: 60px;
+    color: ${colors.blues.dark};
+    font-family: Montserrat, sans-serif;
+    font-weight: ${fontWeights.light};
+    border-bottom: none;
+  }
+`
