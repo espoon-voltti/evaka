@@ -405,7 +405,7 @@ const ApplicationsList = React.memo(function Applications({
               application.serviceWorkerNote ? (
                 <span>{application.serviceWorkerNote}</span>
               ) : (
-                <i>Lisää muistiinpano</i>
+                <i>{i18n.applications.list.addNote}</i>
               )
             }
           >
@@ -536,7 +536,7 @@ const ApplicationsList = React.memo(function Applications({
 
       {editedNote && (
         <AsyncFormModal
-          title={'Palveluohjauksen huomio'}
+          title={i18n.applications.list.serviceWorkerNote}
           resolve={{
             action: async () =>
               updateServiceWorkerNote(editedNote, editedNoteText),

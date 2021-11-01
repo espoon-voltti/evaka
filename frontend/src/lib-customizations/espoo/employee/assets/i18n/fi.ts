@@ -254,7 +254,9 @@ export const fi = {
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
       morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa',
-      currentUnit: 'Nyk.'
+      currentUnit: 'Nyk.',
+      addNote: 'Lisää muistiinpano',
+      serviceWorkerNote: 'Palveluohjauksen huomio'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
