@@ -10,13 +10,17 @@ import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
+import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
+import fi.espoo.evaka.pis.markEmployeeLastLogin
+import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployee
+import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -160,7 +164,39 @@ class EmployeeController {
             getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
         }.let { ResponseEntity.ok(it) }
     }
+
+    @PostMapping("/pin-login")
+    fun pinLogin(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody pinLoginRequest: PinLoginRequest
+    ): ResponseEntity<PinLoginStatus> {
+        val result = db.transaction { tx ->
+            if (tx.employeePinIsCorrect(pinLoginRequest.employeeId, pinLoginRequest.pin)) {
+                tx.markEmployeeLastLogin(pinLoginRequest.employeeId)
+                tx.resetEmployeePinFailureCount(pinLoginRequest.employeeId)
+                PinLoginStatus.SUCCESS
+            } else {
+                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(pinLoginRequest.employeeId)) {
+                    PinLoginStatus.PIN_LOCKED
+                } else {
+                    PinLoginStatus.WRONG_PIN
+                }
+            }
+        }
+
+        return ResponseEntity.ok(result)
+    }
 }
+
+enum class PinLoginStatus {
+    SUCCESS, WRONG_PIN, PIN_LOCKED, NOT_FOUND
+}
+
+data class PinLoginRequest(
+    val pin: String,
+    val employeeId: UUID
+)
 
 data class PinCode(val pin: String)
 
