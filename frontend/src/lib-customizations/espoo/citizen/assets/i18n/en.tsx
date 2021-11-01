@@ -1677,7 +1677,8 @@ const en: Translations = {
     dateTooEarly: 'Pick a later date',
     dateTooLate: 'Pick an earlier date',
     preferredStartDate: 'Invalid preferred start date',
-    timeFormat: 'Valid time format is hh:mm',
+    timeFormat: 'Check',
+    timeRequired: 'Required',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match'
   },

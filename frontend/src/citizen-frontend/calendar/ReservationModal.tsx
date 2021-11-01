@@ -571,13 +571,13 @@ function validateForm(
       startTime:
         time.startTime === ''
           ? time.endTime !== ''
-            ? 'required'
+            ? 'timeRequired'
             : undefined
           : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
       endTime:
         time.endTime === ''
           ? time.startTime !== ''
-            ? 'required'
+            ? 'timeRequired'
             : undefined
           : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
     }))
@@ -590,13 +590,13 @@ function validateForm(
             startTime:
               time.startTime === ''
                 ? time.endTime !== ''
-                  ? 'required'
+                  ? 'timeRequired'
                   : undefined
                 : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
             endTime:
               time.endTime === ''
                 ? time.startTime !== ''
-                  ? 'required'
+                  ? 'timeRequired'
                   : undefined
                 : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
           }))
@@ -613,13 +613,13 @@ function validateForm(
               startTime:
                 time.startTime === ''
                   ? time.endTime !== ''
-                    ? 'required'
+                    ? 'timeRequired'
                     : undefined
                   : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
               endTime:
                 time.endTime === ''
                   ? time.startTime !== ''
-                    ? 'required'
+                    ? 'timeRequired'
                     : undefined
                   : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
             }))
