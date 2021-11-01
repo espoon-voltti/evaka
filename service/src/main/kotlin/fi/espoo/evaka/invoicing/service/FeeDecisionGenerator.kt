@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
@@ -47,33 +48,29 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    children: List<PersonData.WithDateOfBirth>,
-    fridgeSiblings: List<PersonData.WithDateOfBirth>,
+    families: List<FridgeFamily>
 ) {
-    val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size + fridgeSiblings.size
-    val prices = getFeeThresholds(from)
-    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, listOfNotNull(headOfFamily.id, partner?.id), from)
-    val feeAlterations =
-        getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+    val children = families.flatMap { it.children }
+    val fridgeSiblings = families.flatMap { it.fridgeSiblings }
 
-    val placements = getPaidPlacements(from, children)
-    val fridgeSiblingPlacements = getPaidPlacements(from, fridgeSiblings)
+    val prices = getFeeThresholds(from)
+    val partnerIds = families.mapNotNull { it.partner?.id }
+    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, partnerIds + headOfFamily.id, from)
+    val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+
+    val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
 
-    val newDrafts =
-        generateFeeDecisions(
-            from,
-            headOfFamily,
-            partner,
-            familySize,
-            placements,
-            fridgeSiblingPlacements,
-            prices,
-            incomes,
-            feeAlterations,
-            invoicedUnits
-        )
+    val newDrafts = generateFeeDecisions(
+        from,
+        headOfFamily,
+        families,
+        placements,
+        prices,
+        incomes,
+        feeAlterations,
+        invoicedUnits
+    )
 
     lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
 
@@ -97,24 +94,24 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 private fun generateFeeDecisions(
     from: LocalDate,
     headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    familySize: Int,
-    fridgeChildPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
-    fridgeSiblingPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
+    families: List<FridgeFamily>,
+    allPlacements: Map<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     invoicedUnits: List<DaycareId>
 ): List<FeeDecision> {
-    val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
+    val periods = families.map { it.period } +
+        incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.validDuring } +
-        fridgeChildPlacements.flatMap { (_, placements) ->
-            placements.map { it.first }
-        } +
+        allPlacements.flatMap { (_, placements) -> placements.map { it.first } } +
         feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
     return asDistinctPeriods(periods, DateRange(from, null))
-        .map { period ->
+        .mapNotNull { period ->
+            val family = families.find { it.period.overlaps(period) }
+                ?: return@mapNotNull null
+
             val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate fee decision")
 
@@ -122,30 +119,37 @@ private fun generateFeeDecisions(
                 .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
-            val partnerIncome =
-                partner?.let {
-                    incomes
-                        .find {
-                            partner.id == it.personId && DateRange(
-                                it.validFrom,
-                                it.validTo
-                            ).contains(period)
-                        }
-                        ?.toDecisionIncome()
+            val partnerIncome = family.partner?.let { partner ->
+                incomes
+                    .find {
+                        partner.id == it.personId && DateRange(
+                            it.validFrom,
+                            it.validTo
+                        ).contains(period)
+                    }
+                    ?.toDecisionIncome()
+            }
+
+            val validPlacements = (family.children + family.fridgeSiblings)
+                .mapNotNull { child ->
+                    val childPlacements = allPlacements[child] ?: listOf()
+                    val validPlacement = childPlacements.find { (dateRange, _) ->
+                        dateRange.contains(period)
+                    }
+                    validPlacement?.let { (_, placement) -> child to placement }
                 }
 
-            val validPlacements = (fridgeChildPlacements + fridgeSiblingPlacements)
-                .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
-                .filter { (_, placement) -> placement != null }
-                .map { (child, placement) -> child to placement!! }
-
             val children = if (validPlacements.isNotEmpty()) {
-                val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+                val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+                val baseFee = calculateBaseFee(price, family.getSize(), familyIncomes)
 
-                val baseFee = calculateBaseFee(price, familySize, familyIncomes)
                 validPlacements
                     .sortedByDescending { (child, _) -> child.dateOfBirth }
                     .mapIndexed { index, (child, placement) ->
+                        if (!family.children.contains(child)) {
+                            return@mapIndexed null
+                        }
+
                         val placedIntoInvoicedUnit = invoicedUnits.any { unit -> unit == placement.unitId }
                         if (!placedIntoInvoicedUnit) {
                             return@mapIndexed null
@@ -180,7 +184,8 @@ private fun generateFeeDecisions(
                             feeAlterationsWithEffects,
                             finalFee
                         )
-                    }.filterNotNull().filter { feeDecisionChild -> fridgeChildPlacements.map { it.first.id }.contains(feeDecisionChild.child.id) }
+                    }
+                    .filterNotNull()
             } else {
                 listOf()
             }
@@ -191,11 +196,11 @@ private fun generateFeeDecisions(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamily = headOfFamily,
-                partner = partner,
+                partner = family.partner,
                 headOfFamilyIncome = income,
                 partnerIncome = partnerIncome,
-                familySize = familySize,
-                feeThresholds = price.getFeeDecisionThresholds(familySize),
+                familySize = family.getSize(),
+                feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                 children = children.sortedBy { it.siblingDiscount }
             )
         }

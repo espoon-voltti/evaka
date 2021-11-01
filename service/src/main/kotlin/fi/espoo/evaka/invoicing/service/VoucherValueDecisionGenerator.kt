@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
@@ -50,28 +51,26 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     child: PersonData.WithDateOfBirth,
-    headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    allChildren: List<PersonData.WithDateOfBirth>
+    families: List<FridgeFamily>
 ) {
-    val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
+    val children = families.flatMap { it.children }
+    val fridgeSiblings = families.flatMap { it.fridgeSiblings }
+
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
-    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val adults = families.flatMap { listOfNotNull(it.headOfFamily.id, it.partner?.id) }
+    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, adults, from)
     val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
-    val feeAlterations =
-        getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
+    val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
-    val placements = getPaidPlacements(from, allChildren)
+    val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
 
     val newDrafts =
         generateNewValueDecisions(
             from,
             child,
-            headOfFamily,
-            partner,
-            familySize,
+            families,
             placements,
             prices,
             voucherValues,
@@ -103,10 +102,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 private fun generateNewValueDecisions(
     from: LocalDate,
     voucherChild: PersonData.WithDateOfBirth,
-    headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
+    families: List<FridgeFamily>,
+    allPlacements: Map<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
     voucherValues: List<VoucherValue>,
     incomes: List<Income>,
@@ -114,7 +111,8 @@ private fun generateNewValueDecisions(
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
-    val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
+    val periods = families.map { it.period } +
+        incomes.map { DateRange(it.validFrom, it.validTo) } +
         capacityFactors.map { it.dateRange } +
         prices.map { it.validDuring } +
         allPlacements.flatMap { (child, placements) ->
@@ -127,6 +125,9 @@ private fun generateNewValueDecisions(
 
     return asDistinctPeriods(periods, DateRange(from, null))
         .mapNotNull { period ->
+            val family = families.find { it.period.overlaps(period) }
+                ?: return@mapNotNull null
+
             val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
@@ -134,40 +135,43 @@ private fun generateNewValueDecisions(
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
-                .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
+                .find { family.headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
-            val partnerIncome =
-                partner?.let {
-                    incomes
-                        .find {
-                            partner.id == it.personId && DateRange(
-                                it.validFrom,
-                                it.validTo
-                            ).contains(period)
-                        }
-                        ?.toDecisionIncome()
-                }
+            val partnerIncome = family.partner?.let { partner ->
+                incomes
+                    .find {
+                        partner.id == it.personId && DateRange(
+                            it.validFrom,
+                            it.validTo
+                        ).contains(period)
+                    }
+                    ?.toDecisionIncome()
+            }
 
             val capacityFactor =
                 capacityFactors.find { it.dateRange.contains(period) }?.capacityFactor
                     ?: BigDecimal("1.00")
 
-            val periodPlacements = allPlacements
-                .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
-                .filter { (_, placement) -> placement != null }
-                .map { (child, placement) -> child to placement!! }
+            val validPlacements = (family.children + family.fridgeSiblings)
+                .mapNotNull { child ->
+                    val childPlacements = allPlacements[child] ?: listOf()
+                    val validPlacement = childPlacements.find { (dateRange, _) ->
+                        dateRange.contains(period)
+                    }
+                    validPlacement?.let { (_, placement) -> child to placement }
+                }
 
-            val voucherChildPlacement = periodPlacements.find { (child, _) -> child == voucherChild }?.second
+            val voucherChildPlacement = validPlacements.find { (child, _) -> child == voucherChild }?.second
 
             voucherChildPlacement
                 // Skip the placement if it's not into a service voucher unit
                 ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unitId } }
                 ?.let { placement ->
-                    val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
+                    val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+                    val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes)
 
-                    val siblingIndex = periodPlacements
+                    val siblingIndex = validPlacements
                         .sortedByDescending { (child, _) -> child.dateOfBirth }
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
@@ -188,12 +192,12 @@ private fun generateNewValueDecisions(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
                         decisionType = VoucherValueDecisionType.NORMAL,
-                        headOfFamily = headOfFamily,
-                        partner = partner,
+                        headOfFamily = family.headOfFamily,
+                        partner = family.partner,
                         headOfFamilyIncome = income,
                         partnerIncome = partnerIncome,
-                        familySize = familySize,
-                        feeThresholds = price.getFeeDecisionThresholds(familySize),
+                        familySize = family.getSize(),
+                        feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                         validFrom = period.start,
                         validTo = period.end,
                         child = voucherChild,
