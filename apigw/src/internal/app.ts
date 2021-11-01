@@ -27,6 +27,7 @@ import csp from '../shared/routes/csp'
 import session, { refreshLogoutToken } from '../shared/session'
 import mobileDeviceSession, {
   devApiE2ESignup,
+  pinLoginRequestHandler,
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
@@ -108,6 +109,8 @@ function internalApiRouter() {
   }
 
   router.post('/auth/mobile', mobileDeviceSession)
+  router.post('/auth/pin-login', pinLoginRequestHandler)
+
   router.get(
     '/auth/status',
     refreshMobileSession,

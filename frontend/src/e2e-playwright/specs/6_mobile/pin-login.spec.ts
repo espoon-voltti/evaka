@@ -105,7 +105,7 @@ afterEach(async () => {
 })
 
 describe('Mobile PIN login', () => {
-  test('User can login with PIN and see child sensitive info', async () => {
+  test.only('User can login with PIN and see child sensitive info', async () => {
     const childAdditionalInfo: Child = {
       id: child.id,
       allergies: 'Allergies',
@@ -177,6 +177,9 @@ describe('Mobile PIN login', () => {
     ])
 
     await listPage.selectChild(child.id)
+
+    await page.pause()
+
     await childPage.openSensitiveInfoWithPinCode(
       `${employee.data.lastName} ${employee.data.firstName}`,
       pin

@@ -5,6 +5,10 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.markEmployeeLastLogin
+import fi.espoo.evaka.pis.resetEmployeePinFailureCount
+import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -15,10 +19,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class MobileDevicesController(
@@ -80,4 +86,40 @@ class MobileDevicesController(
         db.transaction { it.softDeleteDevice(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/system/pin-login")
+    fun pinLogin(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody pinLoginRequest: PinLoginRequest
+    ): ResponseEntity<PinLoginResponse> {
+        val result = db.transaction { tx ->
+            if (tx.employeePinIsCorrect(pinLoginRequest.employeeId, pinLoginRequest.pin)) {
+                tx.markEmployeeLastLogin(pinLoginRequest.employeeId)
+                tx.resetEmployeePinFailureCount(pinLoginRequest.employeeId)
+                PinLoginStatus.SUCCESS
+            } else {
+                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(pinLoginRequest.employeeId)) {
+                    PinLoginStatus.PIN_LOCKED
+                } else {
+                    PinLoginStatus.WRONG_PIN
+                }
+            }
+        }
+
+        return ResponseEntity.ok(PinLoginResponse(status = result))
+    }
 }
+
+enum class PinLoginStatus {
+    SUCCESS, WRONG_PIN, PIN_LOCKED, NOT_FOUND
+}
+
+data class PinLoginRequest(
+        val pin: String,
+        val employeeId: UUID
+)
+
+data class PinLoginResponse(
+        val status: PinLoginStatus
+)

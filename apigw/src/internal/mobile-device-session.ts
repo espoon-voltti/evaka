@@ -9,6 +9,7 @@ import {
   toRequestHandler
 } from '../shared/express'
 import {
+  employeePinLogin,
   identifyMobileDevice,
   MobileDeviceIdentity,
   validatePairing
@@ -89,4 +90,13 @@ export const devApiE2ESignup = toRequestHandler(async (req, res) => {
   } else {
     res.sendStatus(404)
   }
+})
+
+export const pinLoginRequestHandler = toRequestHandler(async (req, res) => {
+  const employeeId = assertStringProp(req.body, 'employeeId')
+  const pin = assertStringProp(req.body, 'pin')
+  console.log(`DEBUG: login ${employeeId} with ${pin}`)
+  const status = await employeePinLogin(req)
+  console.log('DEBUG: response', status)
+  res.status(204).send(status)
 })
