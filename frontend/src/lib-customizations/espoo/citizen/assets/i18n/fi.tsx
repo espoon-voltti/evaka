@@ -289,8 +289,8 @@ export default {
           ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816
           31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä
           sähköpostilla varhaiskasvatuksen palveluohjaukseen{' '}
-          <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
-            varhaiskasvatuksen.palveluohjaus@espoo.fi
+          <a href="mailto:vaka.palveluohjaus@espoo.fi">
+            vaka.palveluohjaus@espoo.fi
           </a>
           .
         </P>

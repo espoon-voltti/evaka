@@ -194,13 +194,13 @@ class EvakaEmailMessageProvider() : IEmailMessageProvider {
             In this case, the <strong>minimum application period is two (2) weeks</strong> and it begins from the date on which the required document was received. When applying for <strong>round-the-clock or evening care</strong>, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. <strong>Your application will only be processed as an application for round-the-clock care after you have provided the required documents</strong>.
             </p>
             <p>
-            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a> (please note that the connection is not encrypted).
+            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to <a href="mailto:vaka.palveluohjaus@espoo.fi">vaka.palveluohjaus@espoo.fi</a> (please note that the connection is not encrypted).
             </p>
             <p>
             When applying for a <strong>transfer</strong> to a different <strong>municipal early childhood education unit</strong>, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
             </p>
             <p>
-            Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a> (please note that the connection is not encrypted).
+            Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to <a href="mailto:vaka.palveluohjaus@espoo.fi">vaka.palveluohjaus@espoo.fi</a> (please note that the connection is not encrypted).
             </p>
         """.trimIndent()
     }
@@ -267,11 +267,11 @@ class EvakaEmailMessageProvider() : IEmailMessageProvider {
 
             In this case, the minimum application period is two (2) weeks and it begins from the date on which the required document was received. When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.
 
-            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to varhaiskasvatuksen.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
+            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to vaka.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
 
             When applying for a transfer to a different municipal early childhood education unit, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
 
-            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to varhaiskasvatuksen.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
+            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to vaka.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
         """.trimIndent()
     }
 
