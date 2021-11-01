@@ -168,7 +168,7 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun featureFlags(): FeatureFlags = FeatureFlags(
-        valueDecisionCapacityFactorEnabled = false,
+        valueDecisionCapacityFactorEnabled = true,
         daycareApplicationServiceNeedOptionsEnabled = false
     )
 }
