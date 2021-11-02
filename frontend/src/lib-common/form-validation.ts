@@ -24,6 +24,7 @@ export type ErrorKey =
   | 'dateTooEarly'
   | 'dateTooLate'
   | 'timeFormat'
+  | 'timeRequired'
   | 'unitNotSelected'
   | 'preferredStartDate'
   | 'emailsDoNotMatch'

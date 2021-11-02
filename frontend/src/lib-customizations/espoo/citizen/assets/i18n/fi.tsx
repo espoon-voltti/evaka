@@ -1609,7 +1609,8 @@ export default {
     dateTooEarly: 'Valitse myöhäisempi päivä',
     dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
-    timeFormat: 'Anna muodossa hh:mm',
+    timeFormat: 'Tarkista',
+    timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
   },

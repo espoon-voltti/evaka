@@ -1633,7 +1633,8 @@ const sv: Translations = {
     dateTooEarly: 'Välj ett senare datum',
     dateTooLate: 'Välj ett tidigare datum',
     preferredStartDate: 'Ogiltigt datum',
-    timeFormat: 'Ange i format hh:mm',
+    timeFormat: 'Kolla',
+    timeRequired: 'Nödvändig',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika'
   },

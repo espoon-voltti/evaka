@@ -146,14 +146,14 @@ export const validateApplication = (
         (apiData.type === 'DAYCARE' &&
           featureFlags.daycareApplication.dailyTimesEnabled) ||
         (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
-          ? required(form.serviceNeed.startTime) ||
+          ? required(form.serviceNeed.startTime, 'timeRequired') ||
             regexp(form.serviceNeed.startTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       endTime:
         (apiData.type === 'DAYCARE' &&
           featureFlags.daycareApplication.dailyTimesEnabled) ||
         (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
-          ? required(form.serviceNeed.endTime) ||
+          ? required(form.serviceNeed.endTime, 'timeRequired') ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       assistanceDescription: form.serviceNeed.assistanceNeeded

@@ -13,6 +13,7 @@ interface Props
     | 'placeholder'
     | 'hideErrorsBeforeTouched'
     | 'info'
+    | 'id'
     | 'name'
     | 'required'
     | 'inputRef'
@@ -40,7 +41,6 @@ export default React.memo(function TimeInput({
       onChange={onChangeWithAutocomplete}
       type="text"
       inputMode="numeric"
-      width="s"
       onFocus={onFocus}
     />
   )
@@ -51,5 +51,5 @@ function onFocus(event: React.FocusEvent<HTMLInputElement>) {
 }
 
 const ShorterInput = styled(InputField)`
-  width: 80px;
+  width: calc(3em + 24px);
 `

@@ -9,7 +9,7 @@ import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import InputField from 'lib-components/atoms/form/InputField'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -144,11 +144,9 @@ export default React.memo(function StaffMarkDepartedPage() {
                 <Gap />
                 <TimeWrapper>
                   <Label>{i18n.attendances.departureTime}</Label>
-                  <InputField
+                  <TimeInput
                     onChange={setTime}
                     value={time}
-                    width="s"
-                    type="time"
                     data-qa="set-time"
                     info={
                       timeInFuture
