@@ -33,7 +33,7 @@ class ChildImageController(
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun putImage(
-        db: Database.Connection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestPart("file") file: MultipartFile
@@ -42,14 +42,14 @@ class ChildImageController(
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
-        replaceImage(db, documentClient, bucket, childId, file)
+        db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file) }
 
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/children/{childId}/image")
     fun deleteImage(
-        db: Database.Connection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
@@ -57,20 +57,20 @@ class ChildImageController(
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
-        removeImage(db, documentClient, bucket, childId)
+        db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
 
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/child-images/{imageId}")
     fun getImage(
-        db: Database.Connection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable imageId: UUID
     ): ResponseEntity<InputStreamResource> {
         Audit.ChildImageDownload.log(targetId = imageId)
 
-        val image = db.read { it.getChildImage(imageId) }
+        val image = db.connect { dbc -> dbc.read { it.getChildImage(imageId) } }
         acl.getRolesForChild(user, image.childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
