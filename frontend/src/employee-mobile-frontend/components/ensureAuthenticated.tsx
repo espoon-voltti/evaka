@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FullScreenDimmedSpinner } from 'lib-components/molecules/FullScreenDimmedSpinner'
 import React, { ComponentType, useContext } from 'react'
 import { Redirect } from 'react-router-dom'
-import { FullScreenDimmedSpinner } from 'lib-components/molecules/FullScreenDimmedSpinner'
 import { UserContext } from '../state/user'
 
 export default function ensureAuthenticated<P>(Component: ComponentType<P>) {
@@ -15,10 +15,9 @@ export default function ensureAuthenticated<P>(Component: ComponentType<P>) {
       return <Redirect to="" />
     }
 
-    const showSpinner = user.isLoading || (user.isSuccess && user.isReloading)
     return (
       <>
-        {showSpinner && <FullScreenDimmedSpinner />}
+        {user.isLoading && <FullScreenDimmedSpinner />}
         <Component {...props} />
       </>
     )
