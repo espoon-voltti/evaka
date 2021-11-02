@@ -10,10 +10,6 @@ export default function ensureAuthenticated<P>(Component: ComponentType<P>) {
   return function Authenticated(props: P) {
     const { loggedIn } = useContext(UserContext)
 
-    if (!loggedIn) {
-      return <Redirect to="" />
-    }
-
-    return <Component {...props} />
+    return loggedIn ? <Component {...props} /> : <Redirect to="" />
   }
 }

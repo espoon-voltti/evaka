@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Failure, Result, Success } from 'lib-common/api'
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 
@@ -29,6 +30,9 @@ export interface AuthStatus {
   roles?: AdRole[]
 }
 
-export async function getAuthStatus(): Promise<AuthStatus> {
-  return client.get<JsonOf<AuthStatus>>('/auth/status').then((res) => res.data)
+export async function getAuthStatus(): Promise<Result<AuthStatus>> {
+  return client
+    .get<JsonOf<AuthStatus>>('/auth/status')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
