@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 
 export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}
@@ -30,7 +30,7 @@ export default class CitizenPedagogicalDocumentsPage {
   }
 
   async assertUnreadPedagogicalDocumentIndicatorIsNotShown() {
-    await waitUntilFalse(() => this.#unreadDocumentCount.isVisible())
+    await this.#unreadDocumentCount.waitFor({ state: 'hidden' })
   }
 
   async assertPedagogicalDocumentExists(
@@ -50,11 +50,11 @@ export default class CitizenPedagogicalDocumentsPage {
   }
 
   async assertChildNameIsNotShown(id: string) {
-    await waitUntilFalse(() => this.#childName(id).isVisible())
+    await this.#childName(id).waitFor({ state: 'hidden' })
   }
 
   async assertChildNameIsShown(id: string) {
-    await waitUntilTrue(() => this.#childName(id).isVisible())
+    await this.#childName(id).waitFor({ state: 'visible' })
   }
 
   async assertChildNameIs(id: string, expectedName: string) {
