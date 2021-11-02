@@ -89,7 +89,7 @@ export default React.memo(function ImageEditor({
         }
       },
       'image/jpeg',
-      1
+      0.7
     )
   }
 
