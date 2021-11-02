@@ -29,12 +29,12 @@ import { Translations, useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import { ChildDailyNoteForm } from './ChildDailyNoteForm'
 
-const getLabels = (i18n: Translations, title: string) => ({
-  addNew: i18n.common.add,
+const getLabels = (i18n: Translations, title: string, placeholder: string) => ({
+  addNew: i18n.common.addNew,
   editor: {
     cancel: i18n.common.cancel,
-    placeholder: '',
-    save: i18n.common.save
+    save: i18n.common.save,
+    placeholder
   },
   static: {
     edit: i18n.common.edit,
@@ -133,11 +133,21 @@ export const NotesModal = React.memo(function NotesModal({
   )
 
   const stickyNoteLabels = useMemo(
-    () => getLabels(i18n, i18n.unit.groups.daycareDailyNote.stickyNotesHeader),
+    () =>
+      getLabels(
+        i18n,
+        i18n.unit.groups.daycareDailyNote.stickyNotesHeader,
+        i18n.unit.groups.daycareDailyNote.childStickyNoteHint
+      ),
     [i18n]
   )
   const groupNoteLabels = useMemo(
-    () => getLabels(i18n, i18n.unit.groups.daycareDailyNote.groupNotesHeader),
+    () =>
+      getLabels(
+        i18n,
+        i18n.unit.groups.daycareDailyNote.groupNotesHeader,
+        i18n.unit.groups.daycareDailyNote.groupNoteHint
+      ),
     [i18n]
   )
   const reloadAndClose = useCallback(() => {

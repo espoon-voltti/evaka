@@ -38,10 +38,10 @@ export const fi = {
     loadingFailed: 'Tietojen haku epäonnistui',
     edit: 'Muokkaa',
     add: 'Lisää',
+    addNew: 'Lisää uusi',
     clear: 'Tyhjennä',
     create: 'Luo',
     remove: 'Poista',
-    clear: 'Tyhjennä',
     cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',
@@ -1608,7 +1608,10 @@ export const fi = {
         header: 'Tänään koettua ja opittua',
         groupNotesHeader: 'Muistiinpano koko ryhmälle',
         stickyNotesHeader: 'Huomioitavaa lähipäivinä',
-        notesHint: 'Leikkejä, onnistumisia, iloja, opittuja asioita',
+        notesHint:
+          'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään. (Ei terveystietoja tai salassapidettäviä tietoja).',
+        childStickyNoteHint:
+          'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
         otherThings: 'Muut asiat',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
@@ -1619,7 +1622,7 @@ export const fi = {
         reminderHeader: 'Muistettavia asioita',
         otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
         groupNoteModalAddLink: 'Päivän muistiinpano koko ryhmälle',
-        groupNoteHint: 'Kirjoita muistiinpano ja ajankohta',
+        groupNoteHint: 'Koko ryhmää koskeva muistiinpano',
         groupNoteModalModifyLink:
           'Muokkaa tai poista muistiinpano koko ryhmälle',
         edit: 'Lisää päivän muistiinpano',
