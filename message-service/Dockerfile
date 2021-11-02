@@ -6,16 +6,21 @@ FROM evaka-base:latest
 
 USER root
 RUN set -eux \
-    && apt-get update && apt-get -y --no-install-recommends install \
+ && apt-get update && apt-get -y --no-install-recommends install \
        curl \
        openjdk-11-jre-headless \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
+
+ARG DD_JAVA_AGENT_VERSION="0.89.0"
+ARG DD_JAVA_AGENT_SHA256="432c110ddd4b8d769bce394b9df62fe5c627e9d1fb30250fb2af9c034569abb3"
+
+RUN curl -sSfo /opt/dd-java-agent.jar "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_JAVA_AGENT_VERSION}/dd-java-agent-${DD_JAVA_AGENT_VERSION}.jar" \
+ && echo "${DD_JAVA_AGENT_SHA256}  /opt/dd-java-agent.jar" | sha256sum -c -
 
 USER evaka
 WORKDIR /home/evaka
 
 COPY --chown=evaka:evaka "entrypoint.sh" "entrypoint.sh"
-RUN chmod +x "entrypoint.sh"
 COPY --chown=evaka:evaka "target/org/" "org/"
 COPY --chown=evaka:evaka "target/META-INF" "META-INF/"
 COPY --chown=evaka:evaka "target/BOOT-INF/lib" "BOOT-INF/lib/"
