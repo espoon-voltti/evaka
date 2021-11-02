@@ -22,9 +22,8 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2, H3, Label, P } from 'lib-components/typography'
+import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation, faTrash } from 'lib-icons'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
@@ -54,10 +53,6 @@ const Time = styled.div`
       position: relative;
     }
   }
-`
-
-const InfoText = styled(P)`
-  white-space: pre-line;
 `
 
 const StickyActionContainer = styled.section`
@@ -223,18 +218,9 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
       <ContentArea shadow opaque paddingHorizontal="s">
         <FixedSpaceColumn spacing="m">
           <FixedSpaceRow fullWidth justifyContent="space-between">
-            <ExpandingInfo
-              info={
-                <InfoText noMargin>
-                  {i18n.attendances.notes.noteInfo.join('\n\n')}
-                </InfoText>
-              }
-              ariaLabel={i18n.common.openExpandingInfo}
-            >
-              <H2 primary noMargin>
-                {i18n.attendances.notes.note}
-              </H2>
-            </ExpandingInfo>
+            <H2 primary noMargin>
+              {i18n.attendances.notes.note}
+            </H2>
             {dailyNoteId && (
               <ResponsiveInlineButton
                 onClick={() => setUiMode('confirmDelete')}
