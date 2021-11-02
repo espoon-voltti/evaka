@@ -74,7 +74,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tr>
             <td th:text="#{decision.coPayment}"></td>
             <td class="text-right">
-                <strong th:text="|-${coPayment}|"></strong>
+                <strong th:text="${coPayment}"></strong>
             </td>
         </tr>
 
@@ -134,7 +134,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <div class="page">
 
-    <div th:utext="#{decision.legalInstructions}"></div>
+    <div th:unless="${isReliefDecision}" th:utext="#{decision.legalInstructions}"></div>
+    <div th:if="${isReliefDecision}" th:utext="#{decision.relief.legalInstructions}"></div>
 
     <div class="decision-details-container">
         <p>

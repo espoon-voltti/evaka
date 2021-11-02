@@ -32,6 +32,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.abs
 
 class Template(val value: String)
 class Page(val template: Template, val context: Context)
@@ -166,7 +167,7 @@ class PDFService(
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
             "feeAlterations" to decision.feeAlterations.map { fa ->
-                FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
+                FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(abs(fa.effect))!!)
             },
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
