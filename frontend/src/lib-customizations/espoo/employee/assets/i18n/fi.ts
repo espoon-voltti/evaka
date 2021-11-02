@@ -38,6 +38,7 @@ export const fi = {
     loadingFailed: 'Tietojen haku epäonnistui',
     edit: 'Muokkaa',
     add: 'Lisää',
+    addNew: 'Lisää uusi',
     clear: 'Tyhjennä',
     create: 'Luo',
     remove: 'Poista',
@@ -142,6 +143,7 @@ export const fi = {
     code: 'Koodi',
     ready: 'Valmis',
     page: 'Sivu',
+    group: 'Ryhmä',
     fileDownloadError: {
       modalHeader: 'Tiedoston käsittely on kesken',
       modalMessage:
@@ -161,7 +163,9 @@ export const fi = {
         'Lauantai',
         'Sunnuntai'
       ]
-    }
+    },
+    nb: 'Huom',
+    validTo: (date: string) => `Voimassa ${date} saakka`
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -1600,11 +1604,15 @@ export const fi = {
       deleteGroup: 'Poista ryhmä',
       update: 'Muokkaa tietoja',
       daycareDailyNote: {
-        header: 'Päivän muistiinpanot',
-        groupNoteHeader: 'Päivän muistiinpano koko ryhmälle',
-        notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
-        groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
-        notesHint: 'Mitä tänään opin, leikin, oivalsin.',
+        dailyNote: 'Päivän muistiinpanot',
+        header: 'Tänään koettua ja opittua',
+        groupNotesHeader: 'Muistiinpano koko ryhmälle',
+        stickyNotesHeader: 'Huomioitavaa lähipäivinä',
+        notesHint:
+          'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään. (Ei terveystietoja tai salassapidettäviä tietoja).',
+        childStickyNoteHint:
+          'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
+        otherThings: 'Muut asiat',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
         sleepingHoursHint: 'tunnit',
@@ -1614,7 +1622,7 @@ export const fi = {
         reminderHeader: 'Muistettavia asioita',
         otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
         groupNoteModalAddLink: 'Päivän muistiinpano koko ryhmälle',
-        groupNoteHint: 'Kirjoita muistiinpano ja ajankohta',
+        groupNoteHint: 'Koko ryhmää koskeva muistiinpano',
         groupNoteModalModifyLink:
           'Muokkaa tai poista muistiinpano koko ryhmälle',
         edit: 'Lisää päivän muistiinpano',

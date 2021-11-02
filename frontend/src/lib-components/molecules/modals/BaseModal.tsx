@@ -91,7 +91,10 @@ const CloseButton = styled(IconButton)`
   color: ${({ theme }) => theme.colors.greyscale.dark};
 `
 
-const ModalContainer = styled.div<{ mobileFullScreen?: boolean }>`
+const ModalContainer = styled.div<{
+  mobileFullScreen?: boolean
+  noPadding?: boolean
+}>`
   position: relative;
   width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
   max-height: calc(100vh - 2 * ${defaultMargins.s});
@@ -99,15 +102,15 @@ const ModalContainer = styled.div<{ mobileFullScreen?: boolean }>`
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
-  padding-left: ${defaultMargins.XXL};
-  padding-right: ${defaultMargins.XXL};
+  ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.XXL}`)};
+  ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.XXL}`)};
   margin-left: ${defaultMargins.xxs};
   margin-right: ${defaultMargins.xxs};
   overflow-y: auto;
 
   @media (max-width: ${tabletMin}) {
-    padding-left: ${defaultMargins.s};
-    padding-right: ${defaultMargins.s};
+    ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.s}`)};
+    ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.s}`)};
     margin-left: ${defaultMargins.s};
     margin-right: ${defaultMargins.s};
 
@@ -173,3 +176,35 @@ const ModalTitle = styled.div`
     margin-top: ${defaultMargins.L};
   }
 `
+
+const StaticallyPositionedModal = styled(ModalWrapper)`
+  justify-content: flex-start;
+  padding-top: ${defaultMargins.X4L};
+`
+
+type PlainModalProps = Pick<
+  ModalBaseProps,
+  'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children'
+>
+
+export const PlainModal = React.memo(function PlainModal(
+  props: PlainModalProps
+) {
+  return (
+    <ModalBackground>
+      <StaticallyPositionedModal
+        className={props.className}
+        zIndex={props.zIndex}
+        data-qa={props['data-qa']}
+      >
+        <ModalContainer
+          noPadding
+          mobileFullScreen={props.mobileFullScreen}
+          data-qa="modal"
+        >
+          {props.children}
+        </ModalContainer>
+      </StaticallyPositionedModal>
+    </ModalBackground>
+  )
+})

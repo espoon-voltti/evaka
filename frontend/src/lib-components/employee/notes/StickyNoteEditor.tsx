@@ -9,51 +9,44 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
-import React, { useCallback, useContext, useState } from 'react'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
-import { useTranslation } from '../../../state/i18n'
-import { InlineAsyncButton } from '../components'
+import React, { useCallback, useState } from 'react'
+import { InlineAsyncButton } from './InlineAsyncButton'
 import { EditedNote, Note } from './notes'
+
+export interface EditorLabels {
+  cancel: string
+  save: string
+  placeholder: string
+}
 
 interface Props {
   note: Note
-  placeholder: string
   onSave: (note: EditedNote) => Promise<Result<unknown>>
   onCancelEdit: () => void
+  labels: EditorLabels
 }
 
 export const StickyNoteEditor = React.memo(function StickyNoteEditor({
   note,
   onCancelEdit,
   onSave,
-  placeholder
+  labels
 }: Props) {
-  const { i18n } = useTranslation()
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
-
   const [text, setText] = useState(note.note)
   const onTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value),
     []
   )
 
-  const reloadOnSuccess = useCallback(
-    (res: Result<unknown>) => res.map(() => reloadAttendances()),
-    [reloadAttendances]
-  )
   const saveNote = useCallback(
     () =>
       onSave({
         id: note.id,
         note: text,
         expires: LocalDate.today().addDays(7)
-      }).then(reloadOnSuccess),
-    [onSave, note.id, text, reloadOnSuccess]
+      }),
+    [note.id, onSave, text]
   )
-  const cancel = useCallback(() => {
-    setText(note.note)
-    onCancelEdit()
-  }, [note.note, onCancelEdit])
 
   return (
     <ContentArea opaque paddingHorizontal="s" data-qa="sticky-note">
@@ -61,17 +54,17 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
         autoFocus
         value={text}
         onChange={onTextChange}
-        placeholder={placeholder}
+        placeholder={labels.placeholder}
         data-qa="sticky-note-input"
       />
       <Gap size="xs" />
       <FixedSpaceRow justifyContent="flex-end">
-        <InlineButton onClick={cancel} text={i18n.common.cancel} />
+        <InlineButton onClick={onCancelEdit} text={labels.cancel} />
         <InlineAsyncButton
           data-qa="sticky-note-save"
-          text={i18n.common.save}
+          text={labels.save}
           onClick={saveNote}
-          onSuccess={cancel}
+          onSuccess={onCancelEdit}
           disabled={!text}
         />
       </FixedSpaceRow>

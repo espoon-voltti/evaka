@@ -25,9 +25,9 @@ import { renderResult } from '../../async-rendering'
 import { TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
+import { ChildDailyNoteFormData } from './daily-note'
 import { DailyNotesTab } from './DailyNotesTab'
 import { GroupNotesTab } from './GroupNotesTab'
-import { ChildDailyNoteFormData } from './notes'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
 

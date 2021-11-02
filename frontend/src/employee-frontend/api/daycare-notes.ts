@@ -5,6 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   ChildDailyNoteBody,
+  ChildStickyNoteBody,
   GroupNoteBody,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
@@ -93,6 +94,36 @@ export async function putChildDailyNote(
 
 export async function deleteChildDailyNote(id: UUID): Promise<Result<void>> {
   const url = `/child-daily-notes/${id}`
+  return client
+    .delete(url)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postChildStickyNote(
+  childId: UUID,
+  body: ChildStickyNoteBody
+): Promise<Result<void>> {
+  const url = `/children/${childId}/child-sticky-notes`
+  return client
+    .post(url, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function putChildStickyNote(
+  id: UUID,
+  body: ChildStickyNoteBody
+): Promise<Result<void>> {
+  const url = `/child-sticky-notes/${id}`
+  return client
+    .put(url, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteChildStickyNote(id: UUID): Promise<Result<void>> {
+  const url = `/child-sticky-notes/${id}`
   return client
     .delete(url)
     .then(() => Success.of())

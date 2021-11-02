@@ -11,14 +11,19 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useState } from 'react'
-import { useTranslation } from '../../../state/i18n'
 import { EditedNote, Note } from './notes'
-import { StaticStickyNote } from './StaticStickyNote'
-import { StickyNoteEditor } from './StickyNoteEditor'
+import { StaticLabels, StaticStickyNote } from './StaticStickyNote'
+import { EditorLabels, StickyNoteEditor } from './StickyNoteEditor'
+
+export interface StickyNoteTabLabels {
+  title: string
+  addNew: string
+  editor: EditorLabels
+  static: StaticLabels
+}
 
 interface StickyNoteTabProps {
-  title: string
-  placeholder: string
+  labels: StickyNoteTabLabels
   notes: Note[]
   onSave: (note: EditedNote) => Promise<Result<unknown>>
   onRemove: (id: UUID) => Promise<Result<unknown>>
@@ -31,22 +36,22 @@ const newNote = () => ({
 })
 
 export const StickyNoteTab = React.memo(function StickyNoteTab({
-  title,
-  placeholder,
+  labels,
   notes,
   onSave,
   onRemove
 }: StickyNoteTabProps) {
-  const { i18n } = useTranslation()
-  const [editing, setEditing] = useState<UUID | 'new'>()
-  const onCancelEdit = useCallback(() => setEditing(undefined), [])
+  const [editing, setEditing] = useState<UUID | 'new' | null>(
+    notes.length === 0 ? 'new' : null
+  )
+  const onCancelEdit = useCallback(() => setEditing(null), [])
   const setNoteToEdit = useCallback((id: UUID) => () => setEditing(id), [])
 
   return (
     <>
       <ContentArea opaque paddingHorizontal="s">
         <H2 primary noMargin>
-          {title}
+          {labels.title}
         </H2>
 
         <Gap size="xs" />
@@ -54,9 +59,9 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
         <FixedSpaceRow justifyContent="flex-end">
           <InlineButton
             data-qa="sticky-note-new"
-            disabled={!!editing}
+            disabled={editing !== null}
             onClick={() => setEditing('new')}
-            text={i18n.attendances.notes.addNew}
+            text={labels.addNew}
           />
         </FixedSpaceRow>
       </ContentArea>
@@ -66,7 +71,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
           note={newNote()}
           onCancelEdit={onCancelEdit}
           onSave={onSave}
-          placeholder={placeholder}
+          labels={labels.editor}
         />
       )}
 
@@ -76,7 +81,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
             key={note.id}
             note={note}
             onCancelEdit={onCancelEdit}
-            placeholder={placeholder}
+            labels={labels.editor}
             onSave={onSave}
           />
         ) : (
@@ -86,6 +91,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
             onRemove={onRemove}
             editable={!editing}
             onEdit={setNoteToEdit(note.id)}
+            labels={labels.static}
           />
         )
       )}

@@ -187,9 +187,10 @@ export const fi = {
         LAUNDRY: 'Repussa pyykkiä'
       },
       placeholders: {
-        note: 'Leikkejä, onnistumisia, iloja, opittuja asioita',
-        childStickyNote: 'Kirjoita uusi muistiinpano henkilökunnalle',
-        groupNote: 'Kirjoita koko ryhmää koskeva muistiinpano',
+        note: 'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään. (Ei terveystietoja tai salassapidettäviä tietoja).',
+        childStickyNote:
+          'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
+        groupNote: 'Koko ryhmää koskeva muistiinpano',
         reminderNote: 'Muuta muistettavaa (esim. aurinkovoide)',
         hours: 'tunnit',
         minutes: 'minuutit'
@@ -201,10 +202,6 @@ export const fi = {
       groupNote: 'Ryhmän muistiinpanot',
       note: 'Tänään koettua ja opittua',
       otherThings: 'Muut asiat',
-      noteInfo: [
-        'Muistiinpanoihin ei merkitä terveystietoihin tai salassapidettäviin asioihin liittyviä tietoja.',
-        'Päivä-välilehden muistiinpanot säilytetään vähintään 16 tuntia luomis-/päivityshetkestä lukien, jonka jälkeen ne poistetaan automaattisesti.'
-      ],
       childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
     absenceTitle: 'Poissaolomerkintä',

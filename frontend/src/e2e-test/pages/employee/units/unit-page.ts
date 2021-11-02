@@ -27,16 +27,24 @@ export default class UnitPage {
   readonly childDaycareDailyNoteIcon = (childId: string) =>
     Selector(`[data-qa="daycare-daily-note-icon-${childId}"]`)
 
-  readonly daycareDailyNoteModal = {
+  readonly notesModal = {
     noteInput: Selector('[data-qa="note-input"]'),
     sleepingHoursInput: Selector('[data-qa="sleeping-hours-input"]'),
     sleepingMinutesInput: Selector('[data-qa="sleeping-minutes-input"]'),
     reminderNoteInput: Selector('[data-qa="reminder-note-input"]'),
-    submit: Selector('[data-qa="modal-okBtn"]'),
-    cancel: Selector('[data-qa="modal-cancelBtn"]'),
-    delete: Selector('[data-qa="btn-delete-note"]'),
-    groupNoteInput: Selector('[data-qa="group-note-input"]'),
-    childGroupNote: Selector('[data-qa="group-note"]')
+    submit: Selector('[data-qa="btn-submit"]'),
+    cancel: Selector('[data-qa="btn-cancel"]'),
+    delete: Selector('[data-qa="btn-delete"]'),
+    close: Selector('[data-qa="modal-close"]'),
+    tab: (tab: 'child' | 'sticky' | 'group') =>
+      Selector(`[data-qa="tab-${tab}"]`)
+  }
+
+  readonly stickyNote = {
+    input: Selector('[data-qa="sticky-note-input"]'),
+    save: Selector('[data-qa="sticky-note-save"]'),
+    delete: Selector('[data-qa="sticky-note-remove"]'),
+    note: Selector('[data-qa="sticky-note-note"]')
   }
 
   readonly groupDaycareDailyNoteLink = Selector(
