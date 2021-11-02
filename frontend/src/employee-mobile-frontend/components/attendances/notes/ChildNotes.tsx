@@ -120,8 +120,11 @@ export default React.memo(function ChildNotes() {
   )
 
   const groupNotes = useMemo<GroupNote[]>(
-    () => attendanceResponse.map((v) => v.groupNotes).getOrElse([]),
-    [attendanceResponse]
+    () =>
+      attendanceResponse
+        .map((v) => v.groupNotes.filter((n) => n.groupId === groupId))
+        .getOrElse([]),
+    [attendanceResponse, groupId]
   )
 
   const noteTabs = useMemo(() => {
