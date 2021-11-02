@@ -30,6 +30,7 @@ export interface IconSet {
   faClock: IconDefinition
   faCoins: IconDefinition
   faCopy: IconDefinition
+  faCommentAlt: IconDefinition
   faComments: IconDefinition
   faDatabase: IconDefinition
   faDiagnoses: IconDefinition
@@ -99,6 +100,7 @@ export interface IconSet {
   fasCheckCircle: IconDefinition
   fasChevronDown: IconDefinition
   fasChevronUp: IconDefinition
+  fasCommentAltLines: IconDefinition
   fasExclamationTriangle: IconDefinition
   fasInfo: IconDefinition
   fasMapMarkerAlt: IconDefinition
@@ -136,6 +138,7 @@ export const faChevronRight = iconSet.faChevronRight
 export const faChevronUp = iconSet.faChevronUp
 export const faChild = iconSet.faChild
 export const faClock = iconSet.faClock
+export const faCommentAlt = iconSet.faCommentAlt
 export const faCoins = iconSet.faCoins
 export const faCopy = iconSet.faCopy
 export const faComments = iconSet.faComments
@@ -207,6 +210,7 @@ export const fasCaretUp = iconSet.fasCaretUp
 export const fasCaretDown = iconSet.fasCaretDown
 export const fasCaretLeft = iconSet.fasCaretLeft
 export const fasCaretRight = iconSet.fasCaretRight
+export const fasCommentAltLines = iconSet.fasCommentAltLines
 export const fasExclamationTriangle = iconSet.fasExclamationTriangle
 export const fasInfo = iconSet.fasInfo
 export const fasMapMarkerAlt = iconSet.fasMapMarkerAlt

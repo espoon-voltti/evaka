@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -95,6 +96,13 @@ LEFT JOIN employee e2 ON n.updated_by = e2.id
         .bind("id", id)
         .mapTo<ApplicationNote>()
         .first()
+}
+
+fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) {
+    return createUpdate("UPDATE application SET service_worker_note = :content WHERE id = :id")
+        .bind("id", id)
+        .bind("content", content)
+        .updateExactlyOne()
 }
 
 fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) {

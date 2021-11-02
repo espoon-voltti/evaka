@@ -168,7 +168,8 @@ fun Database.Read.fetchApplicationSummaries(
     transferApplications: TransferApplicationFilter,
     voucherApplications: VoucherApplicationFilter?,
     authorizedUnitsForApplicationsWithoutAssistanceNeed: AclAuthorization,
-    authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization
+    authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization,
+    canReadServiceWorkerNotes: Boolean
 ): Paged<ApplicationSummary> {
     val params = mapOf(
         "page" to page,
@@ -261,6 +262,7 @@ fun Database.Read.fetchApplicationSummaries(
             a.transferapplication,
             a.additionaldaycareapplication,
             a.checkedbyadmin,
+            a.service_worker_note,
             (
                 COALESCE((f.document -> 'additionalDetails' ->> 'dietType'), '') != '' OR
                 COALESCE((f.document -> 'additionalDetails' ->> 'otherInfo'), '') != '' OR
@@ -350,14 +352,14 @@ fun Database.Read.fetchApplicationSummaries(
                     firstName = row.mapColumn("first_name"),
                     lastName = row.mapColumn("last_name"),
                     socialSecurityNumber = row.mapColumn("social_security_number"),
-                    dateOfBirth = row.mapColumn("date_of_birth"),
+                    dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
                     type = row.mapColumn("type"),
                     placementType = mapRequestedPlacementType(row, "document"),
                     serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
                         ServiceNeedOption(UUID.fromString(it), row.mapColumn("serviceNeedName"))
                     },
-                    dueDate = row.mapColumn("duedate"),
-                    startDate = row.mapColumn("preferredStartDate"),
+                    dueDate = row.mapColumn<String?>("duedate")?.let { LocalDate.parse(it) },
+                    startDate = row.mapColumn<String?>("preferredStartDate")?.let { LocalDate.parse(it) },
                     preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
                         PreferredUnit(
                             id = DaycareId(UUID.fromString(it)),
@@ -368,6 +370,7 @@ fun Database.Read.fetchApplicationSummaries(
                     checkedByAdmin = row.mapColumn("checkedbyadmin"),
                     status = row.mapColumn("application_status"),
                     additionalInfo = row.mapColumn("additionalInfo"),
+                    serviceWorkerNote = if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
                     siblingBasis = row.mapColumn("siblingBasis"),
                     assistanceNeed = row.mapColumn("assistanceNeed"),
                     wasOnClubCare = row.mapColumn("wasOnClubCare"),

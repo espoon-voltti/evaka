@@ -17,10 +17,10 @@ import {
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
-import { ApplicationSummary } from '../types/application'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export interface ChildState {
   person: Result<PersonDetails>
@@ -47,8 +47,8 @@ export interface ChildState {
   setBackupCares: (request: Result<ChildBackupCare[]>) => void
   guardians: Result<PersonDetails[]>
   setGuardians: (request: Result<PersonDetails[]>) => void
-  applications: Result<ApplicationSummary[]>
-  setApplications: (r: Result<ApplicationSummary[]>) => void
+  applications: Result<PersonApplicationSummary[]>
+  setApplications: (r: Result<PersonApplicationSummary[]>) => void
   recipients: Result<Recipient[]>
   setRecipients: (r: Result<Recipient[]>) => void
   vasus: Result<VasuDocumentSummary[]>
@@ -136,7 +136,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     defaultState.guardians
   )
   const [applications, setApplications] = useState<
-    Result<ApplicationSummary[]>
+    Result<PersonApplicationSummary[]>
   >(defaultState.applications)
   const [vasus, setVasus] = useState<Result<VasuDocumentSummary[]>>(
     defaultState.vasus

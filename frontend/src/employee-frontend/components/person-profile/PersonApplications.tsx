@@ -16,10 +16,10 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
-import { ApplicationSummary } from '../../types/application'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { UUID } from 'lib-common/types'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 interface Props {
   id: UUID
@@ -46,7 +46,7 @@ const PersonApplications = React.memo(function PersonApplications({
           applications.value,
           ['preferredStartDate', 'preferredUnitName'],
           ['desc', 'desc']
-        ).map((application: ApplicationSummary) => {
+        ).map((application: PersonApplicationSummary) => {
           return (
             <Tr
               key={`${application.applicationId}`}
@@ -58,12 +58,12 @@ const PersonApplications = React.memo(function PersonApplications({
                 </Link>
               </NameTd>
               <Td data-qa="application-preferred-unit-id">
-                <Link to={`/units/${application.preferredUnitId}`}>
+                <Link to={`/units/${application.preferredUnitId ?? ''}`}>
                   {application.preferredUnitName}
                 </Link>
               </Td>
               <DateTd data-qa="application-start-date">
-                {application.preferredStartDate.format()}
+                {application.preferredStartDate?.format()}
               </DateTd>
               <DateTd data-qa="application-sent-date">
                 {application.sentDate?.format()}
@@ -124,7 +124,7 @@ const PersonApplications = React.memo(function PersonApplications({
 
 export default PersonApplications
 
-export function inferApplicationType(application: ApplicationSummary) {
+export function inferApplicationType(application: PersonApplicationSummary) {
   const baseType = application.type.toUpperCase()
   if (baseType !== 'PRESCHOOL') return baseType
   else if (application.connectedDaycare && !application.preparatoryEducation) {

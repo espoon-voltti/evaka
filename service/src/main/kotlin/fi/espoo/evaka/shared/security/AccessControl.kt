@@ -260,6 +260,10 @@ WHERE employee_id = :userId
         assertPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions)
     }
 
+    fun hasPermissionFor(user: AuthenticatedUser, action: Action.Global): Boolean {
+        return hasPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions)
+    }
+
     fun getPermittedRoles(action: Action.Global): Set<UserRole> {
         return UserRole.values()
             .filter { permittedRoleActions.globalActions(it).contains(action) }

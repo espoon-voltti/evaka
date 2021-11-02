@@ -4,7 +4,6 @@
 
 import { SearchOrder } from '../types'
 import {
-  ApplicationListSummary,
   ApplicationNote,
   ApplicationResponse,
   ApplicationSearchParams,
@@ -31,6 +30,7 @@ import {
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { ApplicationType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export async function getApplication(
   id: UUID
@@ -63,8 +63,8 @@ export async function getApplication(
 }
 
 export const deserializeApplicationSummary = (
-  json: JsonOf<ApplicationListSummary>
-): ApplicationListSummary => ({
+  json: JsonOf<ApplicationSummary>
+): ApplicationSummary => ({
   ...json,
   dateOfBirth: LocalDate.parseNullableIso(json.dateOfBirth),
   dueDate: LocalDate.parseNullableIso(json.dueDate),
@@ -77,9 +77,9 @@ export async function getApplications(
   sortBy: SortByApplications,
   sortDir: SearchOrder,
   params: ApplicationSearchParams
-): Promise<Result<Paged<ApplicationListSummary>>> {
+): Promise<Result<Paged<ApplicationSummary>>> {
   return client
-    .post<JsonOf<Paged<ApplicationListSummary>>>('v2/applications/search', {
+    .post<JsonOf<Paged<ApplicationSummary>>>('v2/applications/search', {
       page: page,
       pageSize,
       sortBy,
@@ -343,6 +343,15 @@ export async function updateNote(id: UUID, text: string): Promise<void> {
 
 export async function deleteNote(id: UUID): Promise<void> {
   return client.delete(`/note/${id}`)
+}
+
+export async function updateServiceWorkerNote(
+  applicationId: UUID,
+  text: string
+): Promise<void> {
+  return client.put(`/note/service-worker/application/${applicationId}`, {
+    text
+  })
 }
 
 export async function getClubTerms(): Promise<Result<ClubTerm[]>> {

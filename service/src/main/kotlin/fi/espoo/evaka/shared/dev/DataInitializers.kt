@@ -45,8 +45,6 @@ import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.qualifier.QualifiedType
-import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
 import java.sql.Timestamp
@@ -334,7 +332,13 @@ VALUES (:applicationId, :revision, :document, TRUE)
     )
         .bind("applicationId", applicationId)
         .bind("revision", revision)
-        .bindByType("document", document, QualifiedType.of(document.javaClass).with(Json::class.java))
+        .bind(
+            "document",
+            PGobject().apply {
+                type = "jsonb"
+                value = objectMapper().writeValueAsString(document)
+            }
+        )
         .execute()
 }
 
@@ -356,7 +360,13 @@ VALUES (:applicationId, :revision, :document, TRUE)
     )
         .bind("applicationId", applicationId)
         .bind("revision", revision)
-        .bindByType("document", document, QualifiedType.of(document.javaClass).with(Json::class.java))
+        .bind(
+            "document",
+            PGobject().apply {
+                type = "jsonb"
+                value = objectMapper().writeValueAsString(document)
+            }
+        )
         .execute()
 }
 

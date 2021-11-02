@@ -90,6 +90,21 @@ class NoteController(private val accessControl: AccessControl) {
         }
         return ResponseEntity.noContent().build()
     }
+
+    @PutMapping("/service-worker/application/{applicationId}")
+    fun updateServiceWorkerNote(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: ApplicationId,
+        @RequestBody note: NoteRequest
+    ) {
+        Audit.ServiceWorkerNoteUpdate.log(targetId = applicationId)
+        accessControl.requirePermissionFor(user, Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES)
+
+        db.transaction { tx ->
+            tx.updateServiceWorkerApplicationNote(applicationId, note.text)
+        }
+    }
 }
 
 data class NoteRequest(

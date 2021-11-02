@@ -85,11 +85,13 @@ import {
   faUserMinus,
   faUsers,
   faComments,
+  faCommentAlt,
   faTruck,
   faPhone,
   faCalendarTimes
 } from '@fortawesome/free-solid-svg-icons'
 import {
+  faCommentAlt as farCommentAlt,
   faFileAlt as farFileAlt,
   faMap as farMap,
   faStickyNote as farStickyNote,
@@ -119,6 +121,7 @@ const icons: IconSet = {
   faChild,
   faClock,
   faCoins,
+  faCommentAlt: farCommentAlt,
   faCopy,
   faDatabase,
   faDiagnoses,
@@ -188,6 +191,7 @@ const icons: IconSet = {
   fasCheckCircle: faCheckCircle,
   fasChevronDown: faChevronDown,
   fasChevronUp: faChevronUp,
+  fasCommentAltLines: faCommentAlt,
   fasExclamationTriangle: faExclamationTriangle,
   fasInfo: faInfo,
   fasMapMarkerAlt: faMapMarkerAlt,

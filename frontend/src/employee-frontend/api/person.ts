@@ -12,7 +12,6 @@ import {
 } from '../types/person'
 import { SearchOrder } from '../types'
 import { client } from './client'
-import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -23,6 +22,7 @@ import {
 } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export async function getPerson(id: UUID): Promise<Result<PersonJSON>> {
   return client
@@ -133,15 +133,17 @@ export async function findByNameOrAddress(
 
 export async function getGuardianApplicationSummaries(
   guardianId: UUID
-): Promise<Result<ApplicationSummary[]>> {
+): Promise<Result<PersonApplicationSummary[]>> {
   return client
-    .get<JsonOf<ApplicationSummary[]>>(
+    .get<JsonOf<PersonApplicationSummary[]>>(
       `/v2/applications/by-guardian/${guardianId}`
     )
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        preferredStartDate: LocalDate.parseIso(data.preferredStartDate),
+        preferredStartDate: data.preferredStartDate
+          ? LocalDate.parseIso(data.preferredStartDate)
+          : null,
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )
@@ -151,13 +153,17 @@ export async function getGuardianApplicationSummaries(
 
 export async function getChildApplicationSummaries(
   childId: UUID
-): Promise<Result<ApplicationSummary[]>> {
+): Promise<Result<PersonApplicationSummary[]>> {
   return client
-    .get<JsonOf<ApplicationSummary[]>>(`/v2/applications/by-child/${childId}`)
+    .get<JsonOf<PersonApplicationSummary[]>>(
+      `/v2/applications/by-child/${childId}`
+    )
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        preferredStartDate: LocalDate.parseIso(data.preferredStartDate),
+        preferredStartDate: data.preferredStartDate
+          ? LocalDate.parseIso(data.preferredStartDate)
+          : null,
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )

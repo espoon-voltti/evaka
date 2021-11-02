@@ -8,13 +8,13 @@ import { PersonWithChildren, PersonDetails } from '../types/person'
 import { Parentship, Partnership } from '../types/fridge'
 import { Income } from '../types/income'
 import { Loading, Paged, Result } from 'lib-common/api'
-import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { Action } from 'lib-common/generated/action'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export interface PersonState {
   person: Result<PersonDetails>
@@ -23,7 +23,7 @@ export interface PersonState {
   partnerships: Result<Partnership[]>
   incomes: Result<Income[]>
   incomeStatements: Result<Paged<IncomeStatement>>
-  applications: Result<ApplicationSummary[]>
+  applications: Result<PersonApplicationSummary[]>
   dependants: Result<PersonWithChildren[]>
   decisions: Result<Decision[]>
   family: Result<FamilyOverview>
@@ -34,7 +34,7 @@ export interface PersonState {
   setPartnerships: (request: Result<Partnership[]>) => void
   setIncomes: (r: Result<Income[]>) => void
   setIncomeStatements: (r: Result<Paged<IncomeStatement>>) => void
-  setApplications: (r: Result<ApplicationSummary[]>) => void
+  setApplications: (r: Result<PersonApplicationSummary[]>) => void
   setDependants: (r: Result<PersonWithChildren[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
   setFamily: (r: Result<FamilyOverview>) => void

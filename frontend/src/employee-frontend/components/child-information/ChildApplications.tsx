@@ -11,7 +11,6 @@ import { Loading } from 'lib-common/api'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getChildApplicationSummaries } from '../../api/person'
-import { ApplicationSummary } from '../../types/application'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ChildContext } from '../../state'
@@ -23,6 +22,7 @@ import { inferApplicationType } from '../person-profile/PersonApplications'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { UUID } from 'lib-common/types'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 interface Props {
   id: UUID
@@ -57,7 +57,7 @@ const ChildApplications = React.memo(function ChildApplications({
         applications.value,
         ['preferredStartDate', 'preferredUnitName'],
         ['desc', 'desc']
-      ).map((application: ApplicationSummary) => {
+      ).map((application: PersonApplicationSummary) => {
         return (
           <Tr
             key={`${application.applicationId}`}
@@ -69,12 +69,12 @@ const ChildApplications = React.memo(function ChildApplications({
               </Link>
             </NameTd>
             <Td data-qa="application-preferred-unit-id">
-              <Link to={`/units/${application.preferredUnitId}`}>
+              <Link to={`/units/${application.preferredUnitId ?? ''}`}>
                 {application.preferredUnitName}
               </Link>
             </Td>
             <DateTd data-qa="application-start-date">
-              {application.preferredStartDate.format()}
+              {application.preferredStartDate?.format()}
             </DateTd>
             <DateTd data-qa="application-sent-date">
               {application.sentDate?.format()}

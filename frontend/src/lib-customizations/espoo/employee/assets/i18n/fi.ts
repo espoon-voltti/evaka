@@ -38,6 +38,7 @@ export const fi = {
     loadingFailed: 'Tietojen haku epäonnistui',
     edit: 'Muokkaa',
     add: 'Lisää',
+    clear: 'Tyhjennä',
     create: 'Luo',
     remove: 'Poista',
     cancel: 'Peruuta',
@@ -249,10 +250,13 @@ export const fi = {
       startDate: 'Aloitus',
       unit: 'Yksikkö',
       status: 'Tila',
+      note: 'Huom',
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
       morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa',
-      currentUnit: 'Nyk.'
+      currentUnit: 'Nyk.',
+      addNote: 'Lisää muistiinpano',
+      serviceWorkerNote: 'Palveluohjauksen huomio'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
