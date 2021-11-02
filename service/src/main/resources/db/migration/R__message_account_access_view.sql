@@ -11,7 +11,7 @@ CREATE VIEW message_account_access_view(employee_id, account_id) AS (
     SELECT acl.employee_id, acc.id as account_id
     FROM message_account acc
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id
-        JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = 'UNIT_SUPERVISOR'
+        JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND (acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER')
     WHERE acc.active = TRUE
 
     UNION

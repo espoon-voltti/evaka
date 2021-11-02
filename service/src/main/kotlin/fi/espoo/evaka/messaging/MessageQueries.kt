@@ -399,7 +399,7 @@ pilot_placement_ids AS (
     ON pl.unit_id = d.id
     WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
 ),
-supervisors AS (
+personal_account_owners AS (
     SELECT DISTINCT e.id AS id
     FROM pilot_placement_ids
     JOIN placement plt
@@ -410,7 +410,7 @@ supervisors AS (
     ON acl.daycare_id = d.id
     JOIN employee e
     ON acl.employee_id = e.id
-    WHERE acl.role = 'UNIT_SUPERVISOR'
+    WHERE acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER'
 ),
 groups AS (
     SELECT DISTINCT gplt.daycare_group_id AS id
@@ -423,9 +423,9 @@ SELECT
     msg.id AS id,
     msg_name.account_name AS name,
     'PERSONAL' AS type
-FROM supervisors
+FROM personal_account_owners
 JOIN employee e
-ON e.id = supervisors.id
+ON e.id = personal_account_owners.id
 JOIN message_account msg
 ON e.id = msg.employee_id
 JOIN message_account_name_view msg_name
