@@ -4,16 +4,23 @@
 
 import React, { ComponentType, useContext } from 'react'
 import { Redirect } from 'react-router-dom'
+import { FullScreenDimmedSpinner } from 'lib-components/molecules/FullScreenDimmedSpinner'
 import { UserContext } from '../state/user'
 
 export default function ensureAuthenticated<P>(Component: ComponentType<P>) {
   return function Authenticated(props: P) {
-    const { loggedIn } = useContext(UserContext)
+    const { loggedIn, user } = useContext(UserContext)
 
     if (!loggedIn) {
       return <Redirect to="" />
     }
 
-    return <Component {...props} />
+    const showSpinner = user.isLoading || (user.isSuccess && user.isReloading)
+    return (
+      <>
+        {showSpinner && <FullScreenDimmedSpinner />}
+        <Component {...props} />
+      </>
+    )
   }
 }

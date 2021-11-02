@@ -3,51 +3,43 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { useCallback, useEffect, useState } from 'react'
+import { ErrorPage } from 'lib-components/molecules/ErrorPage'
+import { theme } from 'lib-customizations/common'
+import React from 'react'
 import {
   BrowserRouter as Router,
+  Redirect,
   Route,
   Switch,
-  Redirect,
   useRouteMatch
 } from 'react-router-dom'
-import { idleTracker } from 'lib-common/utils/idleTracker'
-import { ErrorPage } from 'lib-components/molecules/ErrorPage'
-import ensureAuthenticated from './components/ensureAuthenticated'
-import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
-import { ChildAttendanceContextProvider } from './state/child-attendance'
-import { I18nContextProvider, useTranslation } from './state/i18n'
-import { UserContextProvider } from './state/user'
-import MobileLander from './components/mobile/MobileLander'
-import PairingWizard from './components/mobile/PairingWizard'
-import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
-import AttendanceChildPage from './components/attendances/child-info/ChildInfo'
-import { getAuthStatus, AuthStatus } from './api/auth'
-import { client } from './api/client'
-import MarkPresent from './components/attendances/actions/MarkPresent'
-import MarkDeparted from './components/attendances/actions/MarkDeparted'
+import { ThemeProvider } from 'styled-components'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
-import ChildNotes from './components/attendances/notes/ChildNotes'
-import StaffPage from './components/staff/StaffPage'
-import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
-import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
+import MarkDeparted from './components/attendances/actions/MarkDeparted'
+import MarkPresent from './components/attendances/actions/MarkPresent'
+import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
+import AttendanceChildPage from './components/attendances/child-info/ChildInfo'
 import PinLogin from './components/attendances/child-info/PinLogin'
-import { ThemeProvider } from 'styled-components'
-import { theme } from 'lib-customizations/common'
-import StaffMemberPage from './components/staff-attendance/StaffMemberPage'
+import ChildNotes from './components/attendances/notes/ChildNotes'
+import ensureAuthenticated from './components/ensureAuthenticated'
+import MobileLander from './components/mobile/MobileLander'
+import PairingWizard from './components/mobile/PairingWizard'
+import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
+import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
+import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './components/staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './components/staff-attendance/StaffMarkDepartedPage'
-import { UnitContextProvider } from './state/unit'
+import StaffMemberPage from './components/staff-attendance/StaffMemberPage'
+import StaffPage from './components/staff/StaffPage'
+import { ChildAttendanceContextProvider } from './state/child-attendance'
+import { I18nContextProvider, useTranslation } from './state/i18n'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
+import { UnitContextProvider } from './state/unit'
+import { UserContextProvider } from './state/user'
 
 export default function App() {
   const { i18n } = useTranslation()
-  const [authStatus, refreshAuthStatus] = useAuthState()
-
-  if (authStatus === undefined) {
-    return null
-  }
 
   return (
     <I18nContextProvider>
@@ -57,10 +49,7 @@ export default function App() {
             <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
           )}
         >
-          <UserContextProvider
-            user={authStatus?.user}
-            refreshAuthStatus={refreshAuthStatus}
-          >
+          <UserContextProvider>
             <Router basename="/employee/mobile">
               <Switch>
                 <Route exact path="/landing" component={MobileLander} />
@@ -69,7 +58,7 @@ export default function App() {
                   path="/units/:unitId"
                   component={ensureAuthenticated(UnitRouter)}
                 />
-                <Route component={RedirectToMainPage} />
+                <Redirect to="/landing" />
               </Switch>
             </Router>
           </UserContextProvider>
@@ -196,33 +185,4 @@ function StaffAttendanceRouter() {
       </Switch>
     </StaffAttendanceContextProvider>
   )
-}
-
-const RedirectToMainPage = React.memo(function RedirectToMainPage() {
-  return <Redirect to="/landing" />
-})
-
-function useAuthState(): [AuthStatus | undefined, () => Promise<void>] {
-  const [authStatus, setAuthStatus] = useState<AuthStatus>()
-
-  useEffect(() => {
-    void getAuthStatus().then(setAuthStatus)
-  }, [])
-
-  useEffect(() => {
-    return idleTracker(
-      client,
-      () => {
-        void getAuthStatus().then(setAuthStatus)
-      },
-      { thresholdInMinutes: 20 }
-    )
-  }, [])
-
-  const refreshAuthStatus = useCallback(
-    () => getAuthStatus().then(setAuthStatus),
-    [setAuthStatus]
-  )
-
-  return [authStatus, refreshAuthStatus]
 }

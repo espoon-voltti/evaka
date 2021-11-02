@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
-import { useContext } from 'react'
+import { P } from 'lib-components/typography'
+import React, { useContext } from 'react'
 import { Redirect } from 'react-router-dom'
 import styled from 'styled-components'
-
-import { P } from 'lib-components/typography'
+import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import EvakaLogo from '../../assets/EvakaLogo.svg'
+import { renderResult } from '../async-rendering'
 import { FullHeightContainer, WideLinkButton } from './components'
 
 const Top = styled.div``
@@ -25,16 +24,12 @@ export default React.memo(function MobileLander() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
 
-  if (user?.unitId) {
-    return (
+  return renderResult(user, (u) =>
+    u?.unitId ? (
       <Redirect
-        to={`/units/${user.unitId}/groups/all/child-attendance/list/coming`}
+        to={`/units/${u.unitId}/groups/all/child-attendance/list/coming`}
       />
-    )
-  }
-
-  return (
-    <Fragment>
+    ) : (
       <FullHeightContainer spaced>
         <Top>
           <Img src={EvakaLogo} />
@@ -50,6 +45,6 @@ export default React.memo(function MobileLander() {
           </WideLinkButton>
         </Bottom>
       </FullHeightContainer>
-    </Fragment>
+    )
   )
 })
