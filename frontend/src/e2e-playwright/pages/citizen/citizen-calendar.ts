@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { Checkbox, Combobox, RawTextInput } from 'e2e-playwright/utils/element'
+import { Checkbox, RawTextInput } from 'e2e-playwright/utils/element'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
@@ -22,7 +22,7 @@ export default class CitizenCalendarPage {
     new Checkbox(this.page, `[data-qa="child-${childId}"]`)
   #startDateInput = new RawTextInput(this.page, '[data-qa="start-date"]')
   #endDateInput = new RawTextInput(this.page, '[data-qa="end-date"]')
-  #repetitionCombobox = new Combobox(this.page, '[data-qa="repetition"]')
+  #repetitionSelect = this.page.locator('[data-qa="repetition"] select')
   #dailyStartTimeInput = new RawTextInput(
     this.page,
     '[data-qa="daily-start-time-0"]'
@@ -87,8 +87,7 @@ export default class CitizenCalendarPage {
     await this.#startDateInput.clear()
     await this.#startDateInput.type(dateRange.start.format())
     await this.#endDateInput.type(dateRange.end.format())
-    await this.#repetitionCombobox.fill('Viikoittain')
-    await this.#repetitionCombobox.findItem('Viikoittain').click()
+    await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
     await weeklyTimes.reduce(async (promise, { startTime, endTime }, index) => {
       await promise
       await this.#weeklyStartTimeInputs[index].type(startTime)

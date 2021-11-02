@@ -22,7 +22,7 @@ import DatePicker, {
 import { UUID } from 'lib-common/types'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
 import {
@@ -205,13 +205,12 @@ export default React.memo(function ReservationModal({
 
       <H2>{i18n.calendar.reservationModal.repetition}</H2>
       <Label>{i18n.common.select}</Label>
-      <Combobox<Repetition>
+      <Select<Repetition>
         items={['DAILY', 'WEEKLY', 'IRREGULAR']}
         selectedItem={formData.repetition}
         onChange={(value) => {
           if (value) updateForm({ repetition: value })
         }}
-        clearable={false}
         getItemLabel={(item) =>
           i18n.calendar.reservationModal.repetitions[item]
         }
