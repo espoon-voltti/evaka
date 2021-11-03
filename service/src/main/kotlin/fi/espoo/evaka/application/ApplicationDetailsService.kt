@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.application
 
-import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 import java.util.UUID
@@ -17,7 +15,6 @@ fun Database.Read.applicationFlags(application: ApplicationDetails): Application
         childId = application.childId,
         formType = application.type,
         startDate = application.form.preferences.preferredStartDate ?: LocalDate.now(),
-        preferredUnits = application.form.preferences.preferredUnits.map { it.id },
         connectedDaycare = application.form.preferences.serviceNeed != null
     )
 }
@@ -26,7 +23,6 @@ fun Database.Read.applicationFlags(
     childId: UUID,
     formType: ApplicationType,
     startDate: LocalDate,
-    preferredUnits: List<DaycareId>,
     connectedDaycare: Boolean
 ): ApplicationFlags {
     return when (formType) {
@@ -56,8 +52,11 @@ fun Database.Read.applicationFlags(
                     ).contains(it.type)
                 }
 
-            val isAdditionalDaycareApplication =
-                isAdditionalDaycareApplication(connectedDaycare, preferredUnits, existingPlacements)
+            val isAdditionalDaycareApplication = connectedDaycare &&
+                existingPlacements.isNotEmpty() &&
+                existingPlacements.none {
+                    it.type == PlacementType.PRESCHOOL_DAYCARE || it.type == PlacementType.PREPARATORY_DAYCARE
+                }
 
             val isTransferApplication = !isAdditionalDaycareApplication && existingPlacements.isNotEmpty()
 
@@ -67,25 +66,6 @@ fun Database.Read.applicationFlags(
             )
         }
     }
-}
-
-fun isAdditionalDaycareApplication(
-    connectedDaycare: Boolean,
-    preferredUnits: List<DaycareId>,
-    existingPreschoolPlacements: List<Placement>
-): Boolean {
-    if (!connectedDaycare) {
-        return false
-    }
-
-    return preferredUnits.size == 1 &&
-        existingPreschoolPlacements.none {
-            listOf(
-                PlacementType.PRESCHOOL_DAYCARE,
-                PlacementType.PREPARATORY_DAYCARE
-            ).contains(it.type)
-        } &&
-        existingPreschoolPlacements.any { it.unitId == preferredUnits[0] }
 }
 
 data class ApplicationFlags(
