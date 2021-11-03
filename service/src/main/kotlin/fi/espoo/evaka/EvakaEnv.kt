@@ -185,7 +185,7 @@ data class BucketEnv(
     }
 }
 
-data class KoskiEnv(val url: String, val sourceSystem: String, val user: String, val secret: Sensitive<String>) {
+data class KoskiEnv(val url: String, val sourceSystem: String, val user: String, val secret: Sensitive<String>, val ophOrganizerOid: String) {
     companion object {
         fun fromEnvironment(env: Environment) = KoskiEnv(
             url = env.lookup("evaka.integration.koski.url", "fi.espoo.integration.koski.url"),
@@ -194,7 +194,8 @@ data class KoskiEnv(val url: String, val sourceSystem: String, val user: String,
                 "fi.espoo.integration.koski.source_system"
             ),
             user = env.lookup("evaka.integration.koski.user", "fi.espoo.integration.koski.user"),
-            secret = Sensitive(env.lookup("evaka.integration.koski.secret", "fi.espoo.integration.koski.secret"))
+            secret = Sensitive(env.lookup("evaka.integration.koski.secret", "fi.espoo.integration.koski.secret")),
+            ophOrganizerOid = env.lookup("evaka.oph.organizer_oid")
         )
     }
 }
