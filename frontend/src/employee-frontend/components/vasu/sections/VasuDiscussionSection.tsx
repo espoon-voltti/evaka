@@ -17,6 +17,7 @@ interface Props {
   content: VasuDiscussionContent
   setContent: Dispatch<SetStateAction<VasuDiscussionContent>>
 }
+
 export function EditableVasuDiscussionSection({
   sectionIndex,
   content,
@@ -59,11 +60,8 @@ export function EditableVasuDiscussionSection({
       </Label>
       <TextArea
         value={content.participants}
-        onChange={(e) =>
-          setContent((prev) => ({
-            ...prev,
-            participants: e.target.value
-          }))
+        onChange={(value) =>
+          setContent((prev) => ({ ...prev, participants: value }))
         }
       />
 
@@ -74,10 +72,10 @@ export function EditableVasuDiscussionSection({
       </Label>
       <TextArea
         value={content.guardianViewsAndCollaboration}
-        onChange={(e) =>
+        onChange={(value) =>
           setContent((prev) => ({
             ...prev,
-            guardianViewsAndCollaboration: e.target.value
+            guardianViewsAndCollaboration: value
           }))
         }
       />

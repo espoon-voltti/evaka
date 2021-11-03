@@ -560,10 +560,7 @@ const ApplicationsList = React.memo(function Applications({
             />
           </AlignRight>
           <Gap />
-          <TextArea
-            value={editedNoteText}
-            onChange={(e) => setEditedNoteText(e.target.value)}
-          />
+          <TextArea value={editedNoteText} onChange={setEditedNoteText} />
         </AsyncFormModal>
       )}
     </div>

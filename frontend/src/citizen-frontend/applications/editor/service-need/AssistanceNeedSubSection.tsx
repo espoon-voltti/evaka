@@ -79,8 +79,8 @@ export default React.memo(function AssistanceNeedSubSection({
           <NarrowTextArea
             value={formData.assistanceDescription}
             data-qa={'assistanceDescription-input'}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              updateFormData({ assistanceDescription: e.target.value })
+            onChange={(value) =>
+              updateFormData({ assistanceDescription: value })
             }
             placeholder={
               t.applications.editor.serviceNeed.assistanceNeedPlaceholder

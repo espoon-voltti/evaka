@@ -125,9 +125,7 @@ export default React.memo(function FeeAlterationEditor({
               value: (
                 <TextArea
                   value={edited.notes}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setEdited({ ...edited, notes: e.target.value })
-                  }
+                  onChange={(value) => setEdited({ ...edited, notes: value })}
                   data-qa="fee-alteration-notes-input"
                 />
               )

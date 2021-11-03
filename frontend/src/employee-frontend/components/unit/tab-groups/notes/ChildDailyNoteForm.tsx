@@ -154,9 +154,7 @@ export const ChildDailyNoteForm = React.memo(function ChildDailyNoteForm({
         <TextArea
           value={form.note || ''}
           placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            updateForm({ note: e.target.value })
-          }
+          onChange={(value) => updateForm({ note: value })}
           data-qa="note-input"
         />
 
@@ -275,9 +273,7 @@ export const ChildDailyNoteForm = React.memo(function ChildDailyNoteForm({
             i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader
           }
           value={form.reminderNote || ''}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            updateForm({ reminderNote: e.target.value })
-          }
+          onChange={(value) => updateForm({ reminderNote: value })}
           data-qa="reminder-note-input"
         />
         <FixedSpaceRow justifyContent="space-around">

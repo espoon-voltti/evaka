@@ -46,9 +46,7 @@ export default React.memo(function AdditionalDetailsSection({
         <NarrowTextArea
           value={formData.otherInfo}
           data-qa={'otherInfo-input'}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            updateFormData({ otherInfo: e.target.value })
-          }
+          onChange={(value) => updateFormData({ otherInfo: value })}
           placeholder={
             t.applications.editor.additionalDetails.otherInfoPlaceholder
           }
@@ -70,9 +68,7 @@ export default React.memo(function AdditionalDetailsSection({
             <NarrowTextArea
               value={formData.diet}
               data-qa={'diet-input'}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                updateFormData({ diet: e.target.value })
-              }
+              onChange={(value) => updateFormData({ diet: value })}
               placeholder={
                 t.applications.editor.additionalDetails.dietPlaceholder
               }
@@ -93,9 +89,7 @@ export default React.memo(function AdditionalDetailsSection({
             <NarrowTextArea
               value={formData.allergies}
               data-qa={'allergies-input'}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                updateFormData({ allergies: e.target.value })
-              }
+              onChange={(value) => updateFormData({ allergies: value })}
               placeholder={
                 t.applications.editor.additionalDetails.allergiesPlaceholder
               }

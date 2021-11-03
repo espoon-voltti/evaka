@@ -955,7 +955,7 @@ function OtherInfo({
         <TextArea
           id="more-info"
           value={formData.otherInfo}
-          onChange={(e) => onChange({ ...formData, otherInfo: e.target.value })}
+          onChange={(value) => onChange({ ...formData, otherInfo: value })}
         />
       </FixedSpaceColumn>
     </ContentArea>

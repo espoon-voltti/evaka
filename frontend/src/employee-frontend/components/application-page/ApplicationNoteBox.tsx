@@ -220,9 +220,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           <>
             <TextArea
               value={text}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setText(e.target.value)
-              }
+              onChange={setText}
               placeholder={i18n.application.notes.placeholder}
               autoFocus
             />

@@ -49,6 +49,7 @@ const Time = styled.div`
 
   div:nth-child(2) {
     position: absolute;
+
     div:nth-child(2) {
       position: relative;
     }
@@ -233,7 +234,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
 
           <TextArea
             value={dailyNote.note || ''}
-            onChange={(e) => editNote({ note: e.target.value })}
+            onChange={(value) => editNote({ note: value })}
             placeholder={i18n.attendances.notes.placeholders.note}
             data-qa="daily-note-note-input"
           />
@@ -340,11 +341,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
               ))}
               <TextArea
                 value={dailyNote.reminderNote ?? ''}
-                onChange={(e) =>
-                  editNote({
-                    reminderNote: e.target.value
-                  })
-                }
+                onChange={(value) => editNote({ reminderNote: value })}
                 placeholder={i18n.attendances.notes.placeholders.reminderNote}
                 data-qa="reminder-note-input"
               />

@@ -314,9 +314,7 @@ function AssistanceNeedForm(props: Props) {
             value: (
               <TextArea
                 value={form.description}
-                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  updateFormState({ description: event.target.value })
-                }
+                onChange={(value) => updateFormState({ description: value })}
                 rows={textAreaRows(form.description)}
                 placeholder={
                   i18n.childInformation.assistanceNeed.fields

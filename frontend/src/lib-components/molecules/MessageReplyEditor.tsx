@@ -139,9 +139,7 @@ export function MessageReplyEditor({
           rows={4}
           placeholder={i18n.messagePlaceholder}
           value={replyContent}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            onUpdateContent(e.target.value)
-          }
+          onChange={(value) => onUpdateContent(value)}
           data-qa={'message-reply-content'}
         />
       </EditorRow>

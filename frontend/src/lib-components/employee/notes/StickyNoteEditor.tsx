@@ -33,10 +33,6 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
   labels
 }: Props) {
   const [text, setText] = useState(note.note)
-  const onTextChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value),
-    []
-  )
 
   const saveNote = useCallback(
     () =>
@@ -53,7 +49,7 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
       <TextArea
         autoFocus
         value={text}
-        onChange={onTextChange}
+        onChange={setText}
         placeholder={labels.placeholder}
         data-qa="sticky-note-input"
       />

@@ -129,13 +129,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   value: editing ? (
                     <TextAreaInput
                       value={form.preferredName || ''}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLTextAreaElement>
-                      ) =>
-                        setForm({
-                          ...form,
-                          preferredName: event.target.value
-                        })
+                      onChange={(value) =>
+                        setForm({ ...form, preferredName: value })
                       }
                       rows={textAreaRows(form.preferredName || '')}
                     />
@@ -150,13 +145,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   value: editing ? (
                     <TextAreaInput
                       value={form.additionalInfo}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLTextAreaElement>
-                      ) =>
-                        setForm({
-                          ...form,
-                          additionalInfo: event.target.value
-                        })
+                      onChange={(value) =>
+                        setForm({ ...form, additionalInfo: value })
                       }
                       rows={textAreaRows(form.additionalInfo)}
                     />
@@ -170,13 +160,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   value: editing ? (
                     <TextAreaInput
                       value={form.allergies}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLTextAreaElement>
-                      ) =>
-                        setForm({
-                          ...form,
-                          allergies: event.target.value
-                        })
+                      onChange={(value) =>
+                        setForm({ ...form, allergies: value })
                       }
                       rows={textAreaRows(form.allergies)}
                       maxLength={40}
@@ -191,14 +176,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   value: editing ? (
                     <TextAreaInput
                       value={form.diet}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLTextAreaElement>
-                      ) =>
-                        setForm({
-                          ...form,
-                          diet: event.target.value
-                        })
-                      }
+                      onChange={(value) => setForm({ ...form, diet: value })}
                       rows={textAreaRows(form.diet)}
                     />
                   ) : (
@@ -211,13 +189,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   value: editing ? (
                     <TextAreaInput
                       value={form.medication}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLTextAreaElement>
-                      ) =>
-                        setForm({
-                          ...form,
-                          medication: event.target.value
-                        })
+                      onChange={(value) =>
+                        setForm({ ...form, medication: value })
                       }
                       rows={textAreaRows(form.medication)}
                       data-qa="medication-input"
