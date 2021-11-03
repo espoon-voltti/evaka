@@ -163,7 +163,7 @@ data class EvakaServiceNeedInfoForVarda(
     val ophOrganizerOid: String?,
     val ophUnitOid: String?
 ) {
-    val providerTypeCode = VardaUnitProviderType.valueOf(providerType.toString()).vardaCode
+    private val providerTypeCode = VardaUnitProviderType.valueOf(providerType.toString()).vardaCode
 
     val asPeriod = DateRange(startDate, endDate)
 

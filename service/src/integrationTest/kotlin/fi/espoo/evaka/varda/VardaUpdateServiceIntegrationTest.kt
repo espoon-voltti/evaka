@@ -44,6 +44,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testExternalPurchasedDaycare
 import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
@@ -859,6 +860,18 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         updateChildData(db, vardaClient, feeDecisionMinDate)
         assertVardaServiceNeedIds(snId, 1, 1)
+    }
+
+    @Test
+    fun `getEvakaServiceNeedInfoForVarda handles extrnal purchased`() {
+        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testExternalPurchasedDaycare.id)
+
+        val result = db.read { it.getEvakaServiceNeedInfoForVarda(snId) }
+
+        assertEquals("jm02", result.toVardaDecisionForChild("", "").jarjestamismuoto_koodi)
     }
 
     @Test

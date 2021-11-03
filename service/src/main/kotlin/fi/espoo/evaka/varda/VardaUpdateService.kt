@@ -157,7 +157,7 @@ fun handleNewEvakaServiceNeed(
     evakaServiceNeedId: ServiceNeedId,
     feeDecisionMinDate: LocalDate
 ) {
-    logger.info("VardaUpdate: creating new service need from $evakaServiceNeedId")
+    logger.info("VardaUpdate: creating a new service need from $evakaServiceNeedId")
     val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
     val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
     addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
@@ -182,6 +182,7 @@ private fun addServiceNeedDataToVarda(
     feeDecisionMinDate: LocalDate
 ) {
     try {
+        logger.info("VardaUpdate: adding service need ${evakaServiceNeed.id}")
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
         // Service need should have fee data if unit is invoiced by evaka, and if so, if service need is in effect after evaka started invoicing
@@ -215,7 +216,7 @@ private fun addServiceNeedDataToVarda(
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
         }
     } catch (e: Exception) {
-        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.localizedMessage}")
+        val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
         error(errors)
     }

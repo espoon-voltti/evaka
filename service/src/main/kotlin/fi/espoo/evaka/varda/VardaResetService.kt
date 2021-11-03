@@ -104,7 +104,7 @@ private fun resetVardaChild(db: Database.Connection, client: VardaClient, childI
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
             logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")
         } catch (e: Exception) {
-            logger.warn("VardaUpdate: failed to reset child $childId: ${e.localizedMessage}")
+            logger.warn("VardaUpdate: failed to reset child $childId: ${e.message}")
         }
     }
 }
