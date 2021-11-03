@@ -197,7 +197,7 @@ test('Group daycare daily notes can be written and are shown on group notes tab'
   await t.click(
     unitPage.childDaycareDailyNoteIcon(enduserChildFixtureKaarina.id)
   )
-  // group tab should be immediately visible
+  await t.click(unitPage.notesModal.tab('group'))
   await t.expect(unitPage.stickyNote.note.textContent).eql('Ryhmälle viesti')
 
   // Delete group note
