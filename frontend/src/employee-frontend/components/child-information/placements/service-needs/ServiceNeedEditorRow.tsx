@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { faExclamation } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -21,10 +21,11 @@ import {
 } from '../../../../api/child/service-needs'
 import { UUID } from 'lib-common/types'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails
-  options: DropdownOption[]
+  options: ServiceNeedOption[]
   initialForm: FormData
   onSuccess: () => void
   onCancel: () => void
@@ -51,6 +52,8 @@ function ServiceNeedEditorRow({
     form.endDate &&
     form.optionId &&
     !form.endDate.isBefore(form.startDate)
+
+  const optionIds = useMemo(() => options.map(({ id }) => id), [options])
 
   const onSubmit = () => {
     const startDate = form.startDate
@@ -130,10 +133,15 @@ function ServiceNeedEditorRow({
           </FixedSpaceRow>
         </StyledTd>
         <StyledTd>
-          <SimpleSelect
-            options={options}
-            value={form.optionId}
-            onChange={(e) => setForm({ ...form, optionId: e.target.value })}
+          <Select
+            items={optionIds}
+            selectedItem={form.optionId}
+            getItemLabel={(optionId) =>
+              options.find(({ id }) => id === optionId)?.nameFi ?? ''
+            }
+            onChange={(optionId) =>
+              setForm({ ...form, optionId: optionId ?? undefined })
+            }
             placeholder={t.optionPlaceholder}
           />
         </StyledTd>
@@ -187,11 +195,6 @@ interface FormData {
   endDate: LocalDate | undefined
   optionId: UUID | undefined
   shiftCare: boolean
-}
-
-interface DropdownOption {
-  label: string
-  value: string
 }
 
 const StyledTd = styled(Td)`

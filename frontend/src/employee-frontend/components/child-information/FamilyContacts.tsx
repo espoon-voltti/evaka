@@ -21,7 +21,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -49,7 +49,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
   const loadContacts = useRestApi(getFamilyContacts, setResult)
   useEffect(() => loadContacts(id), [id, loadContacts])
 
-  const contactPriorityOptions: { label: string; value: string }[] = result
+  const contactPriorityOptions = result
     .map((contacts) => {
       const ordinals = contacts
         .map((contact) => contact.priority)
@@ -61,7 +61,6 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
       return minMax > 1 ? range(1, minMax + 1) : [1]
     })
     .getOrElse([1])
-    .map((v: number) => ({ label: String(v), value: String(v) }))
 
   function onCancel() {
     loadContacts(id)
@@ -225,16 +224,14 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                   </Td>
                   <Td>
                     {row.role !== 'LOCAL_SIBLING' ? (
-                      <SimpleSelect
-                        value={String(row.priority)}
-                        options={contactPriorityOptions}
-                        onChange={(event) => {
+                      <Select
+                        selectedItem={row.priority}
+                        items={contactPriorityOptions}
+                        onChange={(value) => {
                           void updateFamilyContacts({
                             childId: id,
                             contactPersonId: row.id,
-                            priority: event.target.value
-                              ? Number(event.target.value)
-                              : undefined
+                            priority: value ? Number(value) : undefined
                           }).then(() => {
                             loadContacts(id)
                           })

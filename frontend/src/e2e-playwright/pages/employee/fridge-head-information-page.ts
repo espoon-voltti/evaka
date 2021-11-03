@@ -68,7 +68,7 @@ export class IncomesSection {
   }
 
   #coefficientSelect = (type: string) =>
-    this.page.locator(`[data-qa="income-coefficient-select-${type}"]`)
+    this.page.locator(`[data-qa="income-coefficient-select-${type}"] select`)
 
   async chooseCoefficient(type: string, coefficient: string) {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })

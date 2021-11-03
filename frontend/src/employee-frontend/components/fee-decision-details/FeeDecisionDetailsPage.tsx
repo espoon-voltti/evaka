@@ -19,6 +19,7 @@ import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import colors from 'lib-customizations/common'
+import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};
@@ -36,7 +37,8 @@ export default React.memo(function FeeDecisionDetailsPage() {
     Loading.of()
   )
   const [modified, setModified] = useState<boolean>(false)
-  const [newDecisionType, setNewDecisionType] = useState<string>('')
+  const [newDecisionType, setNewDecisionType] =
+    useState<FeeDecisionType>('NORMAL')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
   const loadDecision = () => getFeeDecision(id).then((dec) => setDecision(dec))
@@ -55,7 +57,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
     }
   }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const changeDecisionType = (type: string) => {
+  const changeDecisionType = (type: FeeDecisionType) => {
     if (decision.isSuccess) {
       setNewDecisionType(type)
       decision.value.decisionType === type

@@ -5,32 +5,31 @@
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 import InputField from 'lib-components/atoms/form/InputField'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import colors from 'lib-customizations/common'
 import {
-  FeeAlterationType,
+  feeAlterationTypes,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   edited: PartialFeeAlteration
   setEdited: Dispatch<SetStateAction<PartialFeeAlteration>>
-  typeOptions: Array<{ label: string; value: string }>
 }
 
 export default React.memo(function FeeAlterationRowInput({
   edited,
-  setEdited,
-  typeOptions
+  setEdited
 }: Props) {
+  const { i18n } = useTranslation()
   return (
     <>
-      <SimpleSelect
-        value={edited.type}
-        options={typeOptions}
-        onChange={(e) =>
-          setEdited({ ...edited, type: e.target.value as FeeAlterationType })
-        }
+      <Select
+        selectedItem={edited.type}
+        items={[...feeAlterationTypes]}
+        getItemLabel={(type) => i18n.childInformation.feeAlteration.types[type]}
+        onChange={(type) => type && setEdited({ ...edited, type })}
       />
       <AmountInput
         type="number"
