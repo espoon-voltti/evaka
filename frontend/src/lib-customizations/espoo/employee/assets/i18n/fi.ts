@@ -2015,6 +2015,7 @@ export const fi = {
     sentAt: 'Arvopäätös lähetetty',
     pdfLabel: 'Arvopäätös PDF',
     decisionHandlerName: 'Päätöksen käsittelijä',
+    relief: 'Arvopäätöksen huojennus',
     downloadPdf: 'Lataa PDF',
     pdfInProgress:
       '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',

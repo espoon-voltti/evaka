@@ -53,17 +53,14 @@ function ServiceNeeds({ placement, reload }: Props) {
 
   const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
 
-  const options = serviceNeedOptions.isSuccess
-    ? serviceNeedOptions.value
-        .filter(
-          (opt) =>
-            opt.validPlacementType === placementType && !opt.defaultOption
-        )
-        .map((opt) => ({
-          label: opt.name,
-          value: opt.id
-        }))
-    : []
+  const options = serviceNeedOptions
+    .map((options) =>
+      options.filter(
+        (option) =>
+          option.validPlacementType === placementType && !option.defaultOption
+      )
+    )
+    .getOrElse([])
 
   const placementHasNonDefaultServiceNeedOptions =
     serviceNeedOptions.isSuccess &&

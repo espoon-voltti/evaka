@@ -13,8 +13,7 @@ import { useTranslation } from '../../state/i18n'
 import { formatDate } from 'lib-common/date'
 import {
   VoucherValueDecisionStatus,
-  PersonDetailed,
-  FeeDecisionType
+  PersonDetailed
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '../../components/common/WarningLabel'
@@ -34,9 +33,9 @@ type Props = {
   documentKey: string | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
-  decisionType: FeeDecisionType
+  decisionType: VoucherValueDecisionType
   changeDecisionType: (type: VoucherValueDecisionType) => void
-  newDecisionType: string
+  newDecisionType: VoucherValueDecisionType
 }
 
 export default React.memo(function VoucherValueDecisionHeading({
@@ -75,7 +74,7 @@ export default React.memo(function VoucherValueDecisionHeading({
         type={'VALUE_DECISION'}
       />
     ) : (
-      i18n.feeDecision.type[decisionType]
+      i18n.valueDecision.type[decisionType]
     )
 
   return (
@@ -106,7 +105,7 @@ export default React.memo(function VoucherValueDecisionHeading({
             value: `${validFrom.format()} - ${validTo?.format() ?? ''}`
           },
           {
-            label: i18n.feeDecision.relief,
+            label: i18n.valueDecision.relief,
             value: reliefValue
           },
           ...(sentAt

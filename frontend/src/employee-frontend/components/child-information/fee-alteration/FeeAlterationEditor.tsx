@@ -15,7 +15,6 @@ import FeeAlterationRowInput from './FeeAlterationRowInput'
 import { useTranslation } from '../../../state/i18n'
 import {
   FeeAlteration,
-  feeAlterationTypes,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
 import { UUID } from 'lib-common/types'
@@ -90,10 +89,6 @@ export default React.memo(function FeeAlterationEditor({
                   <FeeAlterationRowInput
                     edited={edited}
                     setEdited={setEdited}
-                    typeOptions={feeAlterationTypes.map((type) => ({
-                      value: type,
-                      label: i18n.childInformation.feeAlteration.types[type]
-                    }))}
                   />
                 </FixedSpaceRow>
               )

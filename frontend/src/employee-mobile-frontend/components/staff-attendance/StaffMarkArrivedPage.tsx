@@ -9,7 +9,7 @@ import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -69,7 +69,7 @@ export default React.memo(function StaffMarkArrivedPage() {
               const groupIds = staffMember?.groupIds ?? []
               return unitInfoResponse.groups
                 .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
-                .map((g) => ({ value: g.id, label: g.name }))
+                .map(({ id }) => id)
             }
           )
         : Success.of([]),
@@ -82,7 +82,7 @@ export default React.memo(function StaffMarkArrivedPage() {
       groupOptions.isSuccess &&
       groupOptions.value.length === 1
     ) {
-      setAttendanceGroup(groupOptions.value[0].value)
+      setAttendanceGroup(groupOptions.value[0])
     }
   }, [attendanceGroup, groupOptions])
 
@@ -168,19 +168,27 @@ export default React.memo(function StaffMarkArrivedPage() {
                         : undefined
                     }
                   />
-                  {renderResult(groupOptions, (groupOptions) =>
-                    groupOptions.length > 1 ? (
-                      <>
-                        <Gap />
-                        <Label>{i18n.common.group}</Label>
-                        <SimpleSelect
-                          value={attendanceGroup}
-                          placeholder={i18n.attendances.chooseGroup}
-                          options={groupOptions}
-                          onChange={(e) => setAttendanceGroup(e.target.value)}
-                        />
-                      </>
-                    ) : null
+                  {renderResult(
+                    combine(groupOptions, unitInfoResponse),
+                    ([groupOptions, { groups }]) =>
+                      groupOptions.length > 1 ? (
+                        <>
+                          <Gap />
+                          <Label>{i18n.common.group}</Label>
+                          <Select
+                            selectedItem={attendanceGroup}
+                            items={groupOptions}
+                            getItemLabel={(item) =>
+                              groups.find((group) => group.id === item)?.name ??
+                              ''
+                            }
+                            placeholder={i18n.attendances.chooseGroup}
+                            onChange={(group) =>
+                              setAttendanceGroup(group ?? undefined)
+                            }
+                          />
+                        </>
+                      ) : null
                   )}
                   <Gap />
                 </TimeWrapper>
