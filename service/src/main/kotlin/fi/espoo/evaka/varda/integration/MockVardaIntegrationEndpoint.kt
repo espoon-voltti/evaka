@@ -11,7 +11,6 @@ import fi.espoo.evaka.varda.VardaFeeData
 import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaUnitRequest
-import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -102,22 +101,6 @@ class MockVardaIntegrationEndpoint {
         }
         units.replace(id, unit)
         ResponseEntity.ok(getMockUnitResponse(id))
-    }
-
-    @PutMapping("/v1/vakajarjestajat/{vardaId}")
-    fun updateOrganizer(
-        @PathVariable("vardaId") vardaId: Long?,
-        @RequestBody body: VardaUpdateOrganizer,
-        @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /vakajarjestaja/$vardaId received body: $body" }
-        val id = if (vardaId == null) {
-            organizerId = organizerId.inc()
-            organizerId
-        } else {
-            vardaId
-        }
-        ResponseEntity.ok(getMockOrganizerResponse(id))
     }
 
     @PostMapping("/v1/henkilot/")

@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.insertTestVardaOrganizer
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -39,7 +38,6 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
             tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
             tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
             tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
-            tx.insertTestVardaOrganizer()
         }
 
         mockEndpoint.cleanUp()
@@ -98,7 +96,7 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateUnits() {
-        updateUnits(db, vardaClient, vardaOrganizerName)
+        updateUnits(db, vardaClient, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
     }
 }
 

@@ -23,7 +23,9 @@ evaka:
   s3mock:
     url: "http://localhost:9876"
   oph:
+    municipality_code: "049"
     organizer_oid: "1.2.246.562.10.90008375488"
+    organizer_id: "299"
 
 spring:
   profiles:

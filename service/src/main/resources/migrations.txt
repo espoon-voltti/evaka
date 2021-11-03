@@ -160,7 +160,6 @@ V159__child_sticky_notes.sql
 V160__person_disable_ssn.sql
 V161__pedagogical_documents_email_notification.sql
 V162__settings.sql
-V163__remove_daycare_organization_oid.sql
 V163__service_worker_note.sql
 V164__evaka_user.sql
 V165__evaka_user_data.sql
@@ -170,3 +169,4 @@ V168__varda_reset_child_timestamps.sql
 V169__ensure_mobile_devices.sql
 V170__vasu_and_pedadoc_feature_flag.sql
 V171__service_need_option_name_localization.sql
+V172__remove_daycare_organization_oid.sql

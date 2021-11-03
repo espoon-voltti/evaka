@@ -33,6 +33,7 @@ class VardaResetService(
     private val evakaEnv: EvakaEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
+    private val municipalOrganizerOid = evakaEnv.ophOrganizerOid
 
     init {
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
@@ -57,7 +58,7 @@ class VardaResetService(
 
     fun resetVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.ResetVardaChild) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
-        resetVardaChild(db, client, msg.childId, feeDecisionMinDate)
+        resetVardaChild(db, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
     }
 
     fun deleteVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.DeleteVardaChild) {
@@ -92,14 +93,14 @@ class VardaResetService(
     }
 }
 
-private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate) {
+private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
             val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
             logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
             childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
                 logger.info("VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})")
-                handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate)
+                handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate, municipalOrganizerOid)
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
             logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")

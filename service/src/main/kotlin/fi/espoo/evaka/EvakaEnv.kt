@@ -28,6 +28,9 @@ data class EvakaEnv(
     val maxAttachmentsPerUser: Int,
     val httpClientCertificateCheck: Boolean,
     val fiveYearsOldDaycareEnabled: Boolean,
+    val ophOrganizerOid: String,
+    val ophOrganizerId: String,
+    val ophMunicipalityCode: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -52,6 +55,9 @@ data class EvakaEnv(
                     "evaka.five_years_old_daycare.enabled",
                     "fi.espoo.evaka.five_years_old_daycare.enabled"
                 ) ?: true,
+                ophOrganizerOid = env.lookup("evaka.oph.organizer_oid"),
+                ophMunicipalityCode = env.lookup("evaka.oph.municipality_code"),
+                ophOrganizerId = env.lookup("evaka.oph.organizer_id")
             )
         }
     }

@@ -402,7 +402,6 @@ val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth,
 val allDaycares = setOf(testDaycare, testDaycare2)
 
 fun Database.Transaction.insertGeneralTestFixtures() {
-    insertTestVardaOrganizer()
     insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
     insertTestCareArea(
         DevCareArea(
@@ -711,28 +710,6 @@ INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_ord
 """
 
     createUpdate(sql).execute()
-}
-
-fun Database.Transaction.insertTestVardaOrganizer() {
-    //language=SQL
-    val sql =
-        """
-            INSERT INTO varda_organizer (organizer, email, phone, varda_organizer_id, varda_organizer_oid, url, municipality_code)
-            VALUES (:organizer, :email, :phone, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
-        """.trimIndent()
-
-    createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "organizer" to "Espoo",
-                "email" to "test@espoo.fi",
-                "phone" to "+358000000000",
-                "varda_organizer_id" to 1233,
-                "varda_organizer_oid" to defaultMunicipalOrganizerOid,
-                "url" to "http://path.to.organizer",
-                "municipality_code" to "049"
-            )
-        ).execute()
 }
 
 fun Database.Transaction.insertApplication(

@@ -899,7 +899,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
         getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
-            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate)
+            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate, municipalOrganizerOid)
         }
     }
 

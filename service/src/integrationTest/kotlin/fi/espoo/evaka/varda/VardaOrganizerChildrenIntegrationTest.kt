@@ -44,7 +44,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
             insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
         }
 
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, defaultMunicipalOrganizerOid, "")
+        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, defaultMunicipalOrganizerOid, "", municipalOrganizerOid)
         assertEquals(vardaChildId, result)
 
         assertEquals(0, mockEndpoint.people.values.size)
@@ -58,7 +58,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
             insertVardaOrganizerChild(it, childId, 31415L, 31415, "3.1.4.1.5", defaultMunicipalOrganizerOid)
         }
 
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "")
+        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", municipalOrganizerOid)
         assertEquals(1L, result)
 
         assertEquals(0, mockEndpoint.people.values.size)
@@ -68,7 +68,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `getOrCreateVardaChildByOrganizer creates child & person when neither exists`() {
         val childId = ChildId(testChild_1.id)
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "")
+        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", municipalOrganizerOid)
         assertEquals(1L, result)
 
         db.transaction {
@@ -108,7 +108,8 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
                 vardaClient,
                 childId,
                 "otherOrganizerOid",
-                ""
+                "",
+                municipalOrganizerOid
             )
         }
 
@@ -130,7 +131,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "")
+        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", municipalOrganizerOid)
 
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
@@ -150,7 +151,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "")
+        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", municipalOrganizerOid)
 
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
