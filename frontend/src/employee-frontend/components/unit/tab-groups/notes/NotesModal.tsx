@@ -122,15 +122,7 @@ export const NotesModal = React.memo(function NotesModal({
   )
 
   type TabType = 'child' | 'sticky' | 'group'
-  const [tab, setTab] = useState<TabType>(
-    counts.child > 0
-      ? 'child'
-      : counts.sticky > 0
-      ? 'sticky'
-      : !childId || counts.group > 0
-      ? 'group'
-      : 'child'
-  )
+  const [tab, setTab] = useState<TabType>(childId ? 'child' : 'group')
 
   const stickyNoteLabels = useMemo(
     () =>
