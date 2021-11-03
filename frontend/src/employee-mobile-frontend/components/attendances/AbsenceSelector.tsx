@@ -6,9 +6,8 @@ import React, { Fragment } from 'react'
 
 import { useTranslation } from '../../state/i18n'
 import { AbsenceType, AbsenceTypes } from '../../types'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
-import { ChipWrapper } from '../mobile/components'
 
 interface Props {
   selectedAbsenceType: AbsenceType | undefined

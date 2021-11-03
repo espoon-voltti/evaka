@@ -73,6 +73,7 @@ export const ChildStickyNotesTab = React.memo(function ChildStickyNotesTab({
       onSave={onSave}
       onRemove={onRemove}
       labels={labels}
+      smallerHeading
     />
   )
 })

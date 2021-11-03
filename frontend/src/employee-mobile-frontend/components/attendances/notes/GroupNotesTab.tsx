@@ -72,6 +72,7 @@ export const GroupNotesTab = React.memo(function GroupNotesTab({
       onSave={onSave}
       onRemove={onRemove}
       labels={labels}
+      smallerHeading
     />
   )
 })

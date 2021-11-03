@@ -62,7 +62,7 @@ import {
   Stats,
   Unit
 } from '../../../../types/unit'
-import { capitalizeFirstLetter, formatName } from '../../../../utils'
+import { capitalizeFirstLetter, formatPersonName } from '../../../../utils'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'
@@ -128,6 +128,8 @@ function getChildMinMaxHeadcounts(
     : undefined
 }
 
+type IdAndName = { id: UUID; name: string }
+
 function Group({
   unit,
   filters,
@@ -149,7 +151,7 @@ function Group({
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [notesModal, setNotesModal] =
-    useState<{ childId?: UUID; groupId: UUID }>()
+    useState<{ child?: IdAndName; group: IdAndName }>()
   const [notesResponse, setNotesResponse] = useState<
     Result<NotesByGroupResponse>
   >(Loading.of())
@@ -318,7 +320,13 @@ function Group({
             color={colors.blues.primary}
             size="m"
             onClick={() =>
-              setNotesModal({ groupId: group.id, childId: placement.child.id })
+              setNotesModal({
+                group: { id: group.id, name: group.name },
+                child: {
+                  id: placement.child.id,
+                  name: formatPersonName(placement.child, i18n)
+                }
+              })
             }
           />
         </Tooltip>
@@ -548,12 +556,7 @@ function Group({
                           )}
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
-                            {formatName(
-                              placement.child.firstName,
-                              placement.child.lastName,
-                              i18n,
-                              true
-                            )}
+                            {formatPersonName(placement.child, i18n, true)}
                           </Link>
                         </Td>
                         <Td data-qa="child-dob">
@@ -676,13 +679,13 @@ function Group({
                           : faStickyNote
                       }
                       text={
-                        notesResponse.value.groupNotes.length > 0
-                          ? i18n.unit.groups.daycareDailyNote
-                              .groupNoteModalModifyLink
-                          : i18n.unit.groups.daycareDailyNote
-                              .groupNoteModalAddLink
+                        i18n.unit.groups.daycareDailyNote.groupNoteModalLink
                       }
-                      onClick={() => setNotesModal({ groupId: group.id })}
+                      onClick={() =>
+                        setNotesModal({
+                          group: { id: group.id, name: group.name }
+                        })
+                      }
                       data-qa="btn-create-group-note"
                     />
                   </GroupNoteLinkContainer>

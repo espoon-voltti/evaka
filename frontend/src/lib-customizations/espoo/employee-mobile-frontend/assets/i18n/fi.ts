@@ -169,7 +169,7 @@ export const fi = {
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',
-        groupNotesHeader: 'Muistiinpano koko ryhmälle'
+        groupNotesHeader: 'Koko ryhmän muistiinpano'
       },
       sleepingValues: {
         GOOD: 'Hyvin',
@@ -187,7 +187,7 @@ export const fi = {
         LAUNDRY: 'Repussa pyykkiä'
       },
       placeholders: {
-        note: 'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään. (Ei terveystietoja tai salassapidettäviä tietoja).',
+        note: 'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
         childStickyNote:
           'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
         groupNote: 'Koko ryhmää koskeva muistiinpano',

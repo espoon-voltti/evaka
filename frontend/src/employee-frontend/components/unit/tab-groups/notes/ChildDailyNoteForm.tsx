@@ -6,24 +6,26 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ChildDailyNote,
   ChildDailyNoteBody,
-  ChildDailyNoteReminder
+  childDailyNoteLevelValues,
+  ChildDailyNoteReminder,
+  childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H2, H3 } from 'lib-components/typography'
+import { H1, H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
-import React, { useCallback, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 import {
   deleteChildDailyNote,
   postChildDailyNote,
@@ -79,14 +81,18 @@ const formDataToRequestBody = (
 interface Props {
   note: ChildDailyNote | null
   childId: UUID
+  childName: string
   onSuccess: () => void
   onCancel: () => void
+  onRemove: () => void
 }
 
 export const ChildDailyNoteForm = React.memo(function ChildDailyNoteForm({
   note,
   childId,
+  childName,
   onCancel,
+  onRemove,
   onSuccess
 }: Props) {
   const { i18n } = useTranslation()
@@ -120,162 +126,150 @@ export const ChildDailyNoteForm = React.memo(function ChildDailyNoteForm({
   }, [childId, form, note, onSuccess])
 
   const [deleting, setDeleting] = useState(false)
-  const deleteNote = useCallback(() => {
+  const clearNote = useCallback(() => {
     if (!note?.id) {
       return Promise.reject()
     }
     setDeleting(true)
     return deleteChildDailyNote(note.id)
-      .then((res) => res.map(() => onSuccess()))
+      .then((res) => res.map(() => onRemove()))
       .finally(() => setDeleting(false))
-  }, [note, onSuccess])
+  }, [note, onRemove])
 
   return (
     <>
-      <FixedSpaceRow fullWidth justifyContent="space-between" spacing="s">
-        <H2 primary noMargin>
-          {i18n.unit.groups.daycareDailyNote.header}
-        </H2>
+      <H1 primary noMargin>
+        {i18n.unit.groups.daycareDailyNote.header}
+      </H1>
+      <Gap size="xs" />
+      <H3 primary noMargin>
+        {childName}
+      </H3>
 
-        {note && (
-          <ResponsiveInlineButton
-            icon={faTrash}
-            onClick={deleteNote}
-            disabled={deleting || submitting}
-            text={i18n.common.clear}
-            data-qa="btn-delete"
-          />
-        )}
-      </FixedSpaceRow>
+      <Gap size="L" />
 
-      <Gap />
-
-      <FixedSpaceColumn alignItems="left" fullWidth spacing="L">
+      <FixedSpaceColumn alignItems="left" fullWidth spacing="m">
         <TextArea
-          value={form.note || ''}
+          autoFocus
+          value={form.note}
+          onChange={(note) => updateForm({ note })}
           placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
-          onChange={(value) => updateForm({ note: value })}
           data-qa="note-input"
         />
 
-        <H3 primary noMargin>
-          {i18n.unit.groups.daycareDailyNote.otherThings}
-        </H3>
-
-        <FixedSpaceColumn>
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.feedingHeader}
-          </div>
-          <Radio
-            checked={form.feedingNote == 'GOOD'}
-            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
-            onChange={() => updateForm({ feedingNote: 'GOOD' })}
-            data-qa="feeding-level-good"
-          />
-          <Radio
-            checked={form.feedingNote == 'MEDIUM'}
-            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
-            onChange={() => updateForm({ feedingNote: 'MEDIUM' })}
-            data-qa="feeding-level-medium"
-          />
-          <Radio
-            checked={form.feedingNote == 'NONE'}
-            label={i18n.unit.groups.daycareDailyNote.level.NONE}
-            onChange={() => updateForm({ feedingNote: 'NONE' })}
-            data-qa="feeding-level-none"
-          />
-        </FixedSpaceColumn>
-
-        <FixedSpaceColumn>
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.sleepingHeader}
-          </div>
-          <Radio
-            checked={form.sleepingNote == 'GOOD'}
-            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
-            onChange={() => updateForm({ sleepingNote: 'GOOD' })}
-            data-qa="sleeping-level-good"
-          />
-          <Radio
-            checked={form.sleepingNote == 'MEDIUM'}
-            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
-            onChange={() => updateForm({ sleepingNote: 'MEDIUM' })}
-            data-qa="sleeping-level-medium"
-          />
-          <Radio
-            checked={form.sleepingNote == 'NONE'}
-            label={i18n.unit.groups.daycareDailyNote.level.NONE}
-            onChange={() => updateForm({ sleepingNote: 'NONE' })}
-            data-qa="sleeping-level-none"
-          />
-        </FixedSpaceColumn>
-
-        <FixedSpaceRow fullWidth justifyContent="flex-start" spacing="s">
-          <InputField
-            type="number"
-            placeholder={i18n.unit.groups.daycareDailyNote.sleepingHoursHint}
-            value={form.sleepingHours || ''}
-            onChange={(value) => updateForm({ sleepingHours: value })}
-            data-qa="sleeping-hours-input"
-          />
-          <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
-          <InputField
-            type="number"
-            placeholder={i18n.unit.groups.daycareDailyNote.sleepingMinutesHint}
-            value={form.sleepingMinutes || ''}
-            onChange={(value) => updateForm({ sleepingMinutes: value })}
-            data-qa="sleeping-minutes-input"
-            info={
-              Number(form.sleepingMinutes) > 59
-                ? {
-                    text: i18n.common.error.minutes,
-                    status: 'warning'
-                  }
-                : undefined
-            }
-          />
-          <span>{i18n.unit.groups.daycareDailyNote.sleepingMinutes}</span>
+        <FixedSpaceRow fullWidth justifyContent="space-between" spacing="s">
+          <H2 noMargin>{i18n.unit.groups.daycareDailyNote.otherThings}</H2>
+          {note && (
+            <ResponsiveInlineButton
+              icon={faTrash}
+              onClick={clearNote}
+              disabled={deleting || submitting}
+              text={i18n.common.clear}
+              data-qa="btn-delete"
+            />
+          )}
         </FixedSpaceRow>
 
-        <FixedSpaceColumn>
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.reminderHeader}
-          </div>
-          <Checkbox
-            label={i18n.unit.groups.daycareDailyNote.reminderType.DIAPERS}
-            checked={
-              form.reminders.some((reminder) => reminder == 'DIAPERS') || false
-            }
-            onChange={() => toggleReminder('DIAPERS')}
-            data-qa="checkbox-diapers"
-          />
-          <Checkbox
-            label={i18n.unit.groups.daycareDailyNote.reminderType.CLOTHES}
-            checked={
-              form.reminders.some((reminder) => reminder == 'CLOTHES') || false
-            }
-            onChange={() => toggleReminder('CLOTHES')}
-            data-qa="checkbox-clothes"
-          />
-          <Checkbox
-            label={i18n.unit.groups.daycareDailyNote.reminderType.LAUNDRY}
-            checked={
-              form.reminders.some((reminder) => reminder == 'LAUNDRY') || false
-            }
-            onChange={() => toggleReminder('LAUNDRY')}
-            data-qa="checkbox-laundry"
-          />
+        <FixedSpaceColumn spacing="s">
+          <Label>{i18n.unit.groups.daycareDailyNote.feedingHeader}</Label>
+          <ChipWrapper noMargin>
+            {childDailyNoteLevelValues.map((level) => (
+              <Fragment key={level}>
+                <ChoiceChip
+                  text={i18n.unit.groups.daycareDailyNote.level[level]}
+                  selected={form.feedingNote === level}
+                  onChange={() =>
+                    updateForm({
+                      feedingNote: form.feedingNote === level ? null : level
+                    })
+                  }
+                  data-qa={`feeding-level-${level.toLowerCase()}`}
+                />
+                <Gap horizontal size="xxs" />
+              </Fragment>
+            ))}
+          </ChipWrapper>
         </FixedSpaceColumn>
 
-        <TextArea
-          type="text"
-          placeholder={
-            i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader
-          }
-          value={form.reminderNote || ''}
-          onChange={(value) => updateForm({ reminderNote: value })}
-          data-qa="reminder-note-input"
-        />
+        <FixedSpaceColumn spacing="s">
+          <Label>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</Label>
+          <ChipWrapper noMargin>
+            {childDailyNoteLevelValues.map((level) => (
+              <Fragment key={level}>
+                <ChoiceChip
+                  text={i18n.unit.groups.daycareDailyNote.level[level]}
+                  selected={form.sleepingNote === level}
+                  onChange={() =>
+                    updateForm({
+                      sleepingNote: form.sleepingNote === level ? null : level
+                    })
+                  }
+                  data-qa={`sleeping-level-${level.toLowerCase()}`}
+                />
+                <Gap horizontal size="xxs" />
+              </Fragment>
+            ))}
+          </ChipWrapper>
+
+          <FixedSpaceRow
+            justifyContent="flex-start"
+            spacing="s"
+            alignItems="baseline"
+          >
+            <InputField
+              type="number"
+              width="s"
+              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHoursHint}
+              value={form.sleepingHours || ''}
+              onChange={(sleepingHours) => updateForm({ sleepingHours })}
+              data-qa="sleeping-hours-input"
+            />
+            <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
+            <InputField
+              type="number"
+              width="s"
+              placeholder={
+                i18n.unit.groups.daycareDailyNote.sleepingMinutesHint
+              }
+              value={form.sleepingMinutes || ''}
+              onChange={(sleepingMinutes) => updateForm({ sleepingMinutes })}
+              data-qa="sleeping-minutes-input"
+              info={
+                Number(form.sleepingMinutes) > 59
+                  ? {
+                      text: i18n.common.error.minutes,
+                      status: 'warning'
+                    }
+                  : undefined
+              }
+            />
+            <span>{i18n.unit.groups.daycareDailyNote.sleepingMinutes}</span>
+          </FixedSpaceRow>
+        </FixedSpaceColumn>
+
+        <FixedSpaceColumn spacing="s">
+          <Label>{i18n.unit.groups.daycareDailyNote.reminderHeader}</Label>
+          <FixedSpaceColumn spacing="xs">
+            {childDailyNoteReminderValues.map((reminder) => (
+              <Checkbox
+                key={reminder}
+                label={i18n.unit.groups.daycareDailyNote.reminderType[reminder]}
+                onChange={() => toggleReminder(reminder)}
+                checked={form.reminders.includes(reminder)}
+                data-qa={`checkbox-${reminder}`}
+              />
+            ))}
+            <TextArea
+              type="text"
+              placeholder={
+                i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader
+              }
+              value={form.reminderNote}
+              onChange={(reminderNote) => updateForm({ reminderNote })}
+              data-qa="reminder-note-input"
+            />
+          </FixedSpaceColumn>
+        </FixedSpaceColumn>
         <FixedSpaceRow justifyContent="space-around">
           <Button
             onClick={onCancel}

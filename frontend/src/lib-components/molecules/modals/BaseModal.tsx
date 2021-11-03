@@ -179,7 +179,7 @@ const ModalTitle = styled.div`
 
 const StaticallyPositionedModal = styled(ModalWrapper)`
   justify-content: flex-start;
-  padding-top: ${defaultMargins.X4L};
+  padding-top: ${defaultMargins.XL};
 `
 
 type PlainModalProps = Pick<

@@ -4,12 +4,11 @@
 
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import colors from 'lib-customizations/common'
-import { ChipWrapper } from '../mobile/components'
 import { UnitContext } from '../../state/unit'
 import { UUID } from 'lib-common/types'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'

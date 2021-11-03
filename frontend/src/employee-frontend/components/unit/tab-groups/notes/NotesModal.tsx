@@ -79,16 +79,16 @@ const Tab = styled.div<{ active?: boolean }>`
 `
 
 interface Props {
-  groupId: UUID
-  childId?: UUID
+  group: { id: UUID; name: string }
+  child?: { id: UUID; name: string }
   notesByGroup: Result<NotesByGroupResponse>
   reload: () => void
   onClose: () => void
 }
 
 export const NotesModal = React.memo(function NotesModal({
-  childId,
-  groupId,
+  child,
+  group,
   notesByGroup,
   onClose,
   reload
@@ -99,14 +99,14 @@ export const NotesModal = React.memo(function NotesModal({
     () =>
       notesByGroup.map((v) => ({
         groupNotes: v.groupNotes,
-        childDailyNotes: childId
-          ? v.childDailyNotes.filter((note) => note.childId === childId)
+        childDailyNotes: child?.id
+          ? v.childDailyNotes.filter((note) => note.childId === child.id)
           : [],
-        childStickyNotes: childId
-          ? v.childStickyNotes.filter((note) => note.childId === childId)
+        childStickyNotes: child?.id
+          ? v.childStickyNotes.filter((note) => note.childId === child.id)
           : []
       })),
-    [childId, notesByGroup]
+    [child, notesByGroup]
   )
 
   const counts = useMemo(
@@ -122,7 +122,7 @@ export const NotesModal = React.memo(function NotesModal({
   )
 
   type TabType = 'child' | 'sticky' | 'group'
-  const [tab, setTab] = useState<TabType>(childId ? 'child' : 'group')
+  const [tab, setTab] = useState<TabType>(child ? 'child' : 'group')
 
   const stickyNoteLabels = useMemo(
     () =>
@@ -153,10 +153,10 @@ export const NotesModal = React.memo(function NotesModal({
   )
   const saveGroupNote = useCallback(
     ({ id, ...body }: EditedNote) =>
-      (id ? putGroupNote(id, body) : postGroupNote(groupId, body)).then(
+      (id ? putGroupNote(id, body) : postGroupNote(group.id, body)).then(
         reloadOnSuccess
       ),
-    [groupId, reloadOnSuccess]
+    [group.id, reloadOnSuccess]
   )
   const removeGroupNote = useCallback(
     (id) => deleteGroupNote(id).then(reloadOnSuccess),
@@ -164,15 +164,15 @@ export const NotesModal = React.memo(function NotesModal({
   )
   const saveStickyNote = useCallback(
     ({ id, ...body }: EditedNote) => {
-      if (!childId) {
+      if (!child?.id) {
         return Promise.reject('invalid usage: childId was not provided')
       }
       const promise = id
         ? putChildStickyNote(id, body)
-        : postChildStickyNote(childId, body)
+        : postChildStickyNote(child.id, body)
       return promise.then(reloadOnSuccess)
     },
-    [childId, reloadOnSuccess]
+    [child, reloadOnSuccess]
   )
   const removeStickyNote = useCallback(
     (id) => deleteChildStickyNote(id).then(reloadOnSuccess),
@@ -182,7 +182,7 @@ export const NotesModal = React.memo(function NotesModal({
   const tabs = useMemo(
     () =>
       [
-        ...(childId
+        ...(child
           ? [
               {
                 type: 'child' as const,
@@ -221,7 +221,7 @@ export const NotesModal = React.memo(function NotesModal({
           )}
         </Tab>
       )),
-    [childId, i18n, tab, counts]
+    [child, i18n, tab, counts]
   )
 
   return (
@@ -237,19 +237,22 @@ export const NotesModal = React.memo(function NotesModal({
         notes,
         ({ childStickyNotes, groupNotes, childDailyNotes }) => (
           <>
-            {tab === 'child' && childId && (
+            {tab === 'child' && child && (
               <ContentArea opaque={false} paddingHorizontal="s">
                 <ChildDailyNoteForm
                   note={childDailyNotes[0] ?? null}
-                  childId={childId}
+                  childId={child.id}
+                  childName={child.name}
                   onCancel={onClose}
                   onSuccess={reloadAndClose}
+                  onRemove={reload}
                 />
               </ContentArea>
             )}
-            {tab === 'sticky' && (
+            {tab === 'sticky' && child && (
               <StickyNoteTab
                 labels={stickyNoteLabels}
+                subHeading={child.name}
                 notes={childStickyNotes}
                 onSave={saveStickyNote}
                 onRemove={removeStickyNote}
@@ -258,6 +261,7 @@ export const NotesModal = React.memo(function NotesModal({
             {tab === 'group' && (
               <StickyNoteTab
                 labels={groupNoteLabels}
+                subHeading={group.name}
                 notes={groupNotes}
                 onSave={saveGroupNote}
                 onRemove={removeGroupNote}

@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
-import styled from 'styled-components'
-import { readableColor } from 'polished'
-import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import { faCheck } from 'lib-icons'
+import { readableColor } from 'polished'
+import React, { useCallback } from 'react'
+import styled from 'styled-components'
+import { tabletMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
-import { tabletMin } from '../breakpoints'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
@@ -182,4 +182,17 @@ const IconWrapper = styled.div`
 
   font-size: 24px;
   color: ${({ theme: { colors } }) => colors.greyscale.white};
+`
+
+export const ChipWrapper = styled.div<{ noMargin?: boolean }>`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  ${(p) =>
+    p.noMargin
+      ? ''
+      : `> div {
+    margin-bottom: ${defaultMargins.s};
+  }`};
 `
