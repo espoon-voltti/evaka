@@ -159,9 +159,7 @@ fun handleNewEvakaServiceNeed(
 ) {
     logger.info("VardaUpdate: creating a new service need from $evakaServiceNeedId")
     val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
-    logger.info("VardaUpdate: got service need $evakaServiceNeedId which was updated ${evakaServiceNeed.serviceNeedUpdated}")
     val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
-    logger.info("VardaUpdate: service need $evakaServiceNeedId converted to varda service need")
     addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
     logger.info("VardaUpdate: successfully created new service need from $evakaServiceNeedId")
 }
