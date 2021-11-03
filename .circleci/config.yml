@@ -20,7 +20,7 @@ parameters:
     default: bullseye-slim-7154b3803f7bf5064ec9ccc299554e07f12d7ee6
   nodejs_image:
     type: string
-    default: cimg/node:14.15
+    default: cimg/node:16.13
   ecr:
     type: string
     default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
