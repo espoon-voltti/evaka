@@ -107,7 +107,7 @@ interface Props {
   i18n: Labels
 }
 
-export function MessageReplyEditor({
+export const MessageReplyEditor = React.memo(function MessageReplyEditor({
   i18n,
   onSubmit,
   onUpdateContent,
@@ -156,4 +156,4 @@ export function MessageReplyEditor({
       </EditorRow>
     </>
   )
-}
+})

@@ -21,7 +21,7 @@ interface Props {
   initialMonth?: LocalDate
 }
 
-function DatePickerDay({
+export default React.memo(function DatePickerDay({
   handleDayClick,
   inputValue,
   locale,
@@ -66,6 +66,4 @@ function DatePickerDay({
       initialMonth={convertToDate(inputValue) ?? initialMonth?.toSystemTzDate()}
     />
   )
-}
-
-export default DatePickerDay
+})

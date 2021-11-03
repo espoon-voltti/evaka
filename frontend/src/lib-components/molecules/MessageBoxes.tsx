@@ -62,7 +62,7 @@ export interface MessageBoxProps {
   'data-qa'?: string
 }
 
-export function MessageBox({
+export const MessageBox = React.memo(function MessageBox({
   title,
   message,
   icon,
@@ -97,7 +97,7 @@ export function MessageBox({
       </div>
     </MessageBoxContainer>
   )
-}
+})
 
 interface InfoBoxProps {
   title?: string
@@ -109,7 +109,7 @@ interface InfoBoxProps {
   'data-qa'?: string
 }
 
-export function InfoBox({
+export const InfoBox = React.memo(function InfoBox({
   title,
   message,
   icon,
@@ -136,7 +136,7 @@ export function InfoBox({
       data-qa={props['data-qa']}
     />
   )
-}
+})
 
 interface AlertBoxProps {
   title?: string
@@ -147,7 +147,7 @@ interface AlertBoxProps {
   'data-qa'?: string
 }
 
-export function AlertBox({
+export const AlertBox = React.memo(function AlertBox({
   title,
   message,
   wide,
@@ -170,4 +170,4 @@ export function AlertBox({
       data-qa={props['data-qa']}
     />
   )
-}
+})

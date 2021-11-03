@@ -17,7 +17,7 @@ const ResponsiveText = styled.span<{ breakpoint: string }>`
   }
 `
 
-function ResponsiveInlineButton({
+export default React.memo(function ResponsiveInlineButton({
   breakpoint = tabletMin,
   text,
   ...props
@@ -28,6 +28,4 @@ function ResponsiveInlineButton({
       {...props}
     />
   )
-}
-
-export default ResponsiveInlineButton
+})

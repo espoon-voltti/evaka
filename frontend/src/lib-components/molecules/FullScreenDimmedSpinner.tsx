@@ -19,7 +19,7 @@ const FullScreenCentered = styled.div`
   align-items: center;
 `
 
-export function FullScreenDimmedSpinner() {
+export default React.memo(function FullScreenDimmedSpinner() {
   return (
     <ModalBackground zIndex={modalZIndex}>
       <FullScreenCentered>
@@ -27,4 +27,4 @@ export function FullScreenDimmedSpinner() {
       </FullScreenCentered>
     </ModalBackground>
   )
-}
+})

@@ -28,7 +28,12 @@ interface Props {
   label: string
 }
 
-const Pagination = ({ pages = 0, currentPage, setPage, label }: Props) => {
+export default React.memo(function Pagination({
+  pages = 0,
+  currentPage,
+  setPage,
+  label
+}: Props) {
   const firstPage = 1
   const lastPage = pages
 
@@ -89,6 +94,4 @@ const Pagination = ({ pages = 0, currentPage, setPage, label }: Props) => {
       )}
     </div>
   )
-}
-
-export default Pagination
+})

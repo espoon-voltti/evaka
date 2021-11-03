@@ -26,7 +26,7 @@ interface Props {
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
 const DATE_FORMAT = /^(\d){1,2}\.(\d){1,2}\.(\d{4})$/
 
-function DatePickerInput({
+export default React.memo(function DatePickerInput({
   date,
   setDate,
   info,
@@ -79,7 +79,7 @@ function DatePickerInput({
       <DatePickerDescription id={ariaId} locale={locale} />
     </>
   )
-}
+})
 
 const StyledP = styled.p`
   border: 0;
@@ -92,7 +92,7 @@ const StyledP = styled.p`
   position: absolute;
 `
 
-function DatePickerDescription({
+const DatePickerDescription = React.memo(function DatePickerDescription({
   id,
   locale
 }: {
@@ -120,6 +120,4 @@ function DatePickerDescription({
       )}
     </>
   )
-}
-
-export default DatePickerInput
+})

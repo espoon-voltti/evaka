@@ -70,7 +70,7 @@ export interface InlineButtonProps extends BaseProps {
   iconRight?: boolean
 }
 
-function InlineButton({
+export default React.memo(function InlineButton({
   className,
   'data-qa': dataQa,
   onClick,
@@ -105,6 +105,4 @@ function InlineButton({
       )}
     </StyledButton>
   )
-}
-
-export default InlineButton
+})

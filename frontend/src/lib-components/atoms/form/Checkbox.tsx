@@ -38,6 +38,7 @@ const Wrapper = styled.div`
       border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
       background-color: ${({ theme: { colors } }) => colors.main.primaryHover};
     }
+
     input:not(:checked) {
       border-color: ${({ theme: { colors } }) => colors.greyscale.darkest};
     }
@@ -63,6 +64,7 @@ const CheckboxInput = styled.input`
   margin: 0;
 
   background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+
   &:checked {
     border-color: ${({ theme: { colors } }) => colors.main.primary};
     background-color: ${({ theme: { colors } }) => colors.main.primary};
@@ -119,7 +121,7 @@ interface CheckboxProps extends CommonProps {
   disabled?: boolean
 }
 
-function Checkbox({
+export default React.memo(function Checkbox({
   checked,
   label,
   hiddenLabel,
@@ -160,6 +162,4 @@ function Checkbox({
       {!hiddenLabel && <label>{label}</label>}
     </Wrapper>
   )
-}
-
-export default Checkbox
+})

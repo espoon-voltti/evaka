@@ -84,7 +84,7 @@ interface ButtonProps extends BaseProps {
   'data-qa'?: string
 }
 
-function Button({
+export default React.memo(function Button({
   className,
   'data-qa': dataQa,
   onClick,
@@ -121,6 +121,4 @@ function Button({
       {'children' in props ? props.children : props.text}
     </StyledButton>
   )
-}
-
-export default Button
+})

@@ -28,6 +28,7 @@ const Root = styled.div`
   &.active {
     border-color: ${({ theme: { colors } }) => colors.main.primaryActive};
   }
+
   &.full-width {
     width: 100%;
     max-width: initial;
@@ -38,9 +39,11 @@ const InputWrapper = styled.div`
   display: flex;
   align-items: center;
   border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
+
   &.active {
     border-color: transparent;
   }
+
   border-radius: ${borderRadius};
   background-color: white;
 `
@@ -58,9 +61,11 @@ const Menu = styled.div`
   top: 10px;
   margin: 0;
   padding: 0;
+
   &.closed {
     display: none;
   }
+
   border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   border-radius: ${borderRadius};
   background-color: white;
@@ -75,12 +80,15 @@ const MenuItemWrapper = styled.li`
 
 const MenuItem = styled.div`
   padding: 8px 10px;
+
   &.highlighted {
     background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
   }
+
   &.clickable {
     cursor: pointer;
   }
+
   white-space: pre-line;
 `
 
@@ -90,6 +98,7 @@ const Input = styled.input`
   flex: 1 1 auto;
   border: 0;
   outline: 0;
+
   &:read-only {
     color: ${({ theme: { colors } }) => colors.greyscale.dark};
   }
@@ -103,12 +112,15 @@ const Separator = styled.div`
 
 const Button = styled.button`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
+
   &:hover {
     color: ${({ theme: { colors } }) => colors.main.primaryHover};
   }
+
   &:active {
     color: ${({ theme: { colors } }) => colors.main.primaryActive};
   }
+
   &:disabled {
     color: ${({ theme: { colors } }) => colors.greyscale.dark};
     cursor: not-allowed;
@@ -172,7 +184,7 @@ function ensureElementIsInView(element: HTMLElement) {
   })
 }
 
-export default function Combobox<T>(props: ComboboxProps<T>) {
+function Combobox<T>(props: ComboboxProps<T>) {
   const {
     id,
     items,
@@ -385,3 +397,5 @@ export default function Combobox<T>(props: ComboboxProps<T>) {
     </Root>
   )
 }
+
+export default React.memo(Combobox) as typeof Combobox

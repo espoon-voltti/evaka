@@ -60,7 +60,7 @@ type DatePickerProps = {
   initialMonth?: LocalDate
 }
 
-function DatePicker({
+export default React.memo(function DatePicker({
   date,
   onChange,
   onFocus = () => undefined,
@@ -197,9 +197,7 @@ function DatePicker({
       ) : null}
     </DatePickerWrapper>
   )
-}
-
-export default DatePicker
+})
 
 export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
   return <DateInputSpacer>–</DateInputSpacer>

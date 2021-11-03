@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import { ErrorPage } from 'lib-components/molecules/ErrorPage'
+import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { AuthContext } from './auth/state'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { theme } from 'lib-customizations/common'

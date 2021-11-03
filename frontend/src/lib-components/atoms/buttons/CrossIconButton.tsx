@@ -36,7 +36,7 @@ interface CrossIconButtonProps extends BaseProps {
   active: boolean
 }
 
-function CrossIconButton({
+export default React.memo(function CrossIconButton({
   className,
   'data-qa': dataQa,
   onClick,
@@ -52,6 +52,4 @@ function CrossIconButton({
       <FontAwesomeIcon icon={faTimes} />
     </StyledButton>
   )
-}
-
-export default CrossIconButton
+})

@@ -56,7 +56,7 @@ interface Props {
   inputRef?: RefObject<HTMLInputElement>
 }
 
-export function PinInput({
+export const PinInput = React.memo(function PinInput({
   pin,
   onPinChange,
   info,
@@ -122,4 +122,4 @@ export function PinInput({
       )}
     </Centered>
   )
-}
+})

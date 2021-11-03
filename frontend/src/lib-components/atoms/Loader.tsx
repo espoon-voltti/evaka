@@ -52,12 +52,10 @@ const Wrapper = styled.div`
   align-items: center;
 `
 
-function Loader() {
+export default React.memo(function Loader() {
   return (
     <Wrapper>
       <Spinner />
     </Wrapper>
   )
-}
-
-export default Loader
+})

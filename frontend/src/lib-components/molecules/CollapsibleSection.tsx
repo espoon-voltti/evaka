@@ -15,6 +15,7 @@ import { BaseProps } from '../utils'
 const Wrapper = styled.div`
   width: 100%;
   margin-bottom: ${defaultMargins.XL};
+
   &.fitted {
     margin-bottom: 0;
   }
@@ -25,6 +26,7 @@ const Row = styled.div`
   align-items: center;
   color: ${({ theme: { colors } }) => colors.greyscale.medium};
   margin-bottom: ${defaultMargins.m};
+
   &.fitted {
     margin-bottom: 0;
   }
@@ -76,7 +78,7 @@ type CollapsibleSectionProps = BaseProps & {
   'data-qa'?: string
 }
 
-function CollapsibleSection({
+export default React.memo(function CollapsibleSection({
   title,
   icon,
   children,
@@ -119,6 +121,4 @@ function CollapsibleSection({
       <Content className={classNames({ collapsed })}>{children}</Content>
     </Wrapper>
   )
-}
-
-export default CollapsibleSection
+})

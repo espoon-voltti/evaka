@@ -94,7 +94,7 @@ export interface AddButtonProps extends BaseProps {
   icon?: IconDefinition
 }
 
-function AddButton({
+const AddButton = React.memo(function AddButton({
   className,
   'data-qa': dataQa,
   text,
@@ -124,19 +124,21 @@ function AddButton({
       )}
     </StyledButton>
   )
-}
+})
 
 const FlexRowRight = styled.div`
   display: flex;
   justify-content: flex-end;
 `
 
-export function AddButtonRow(props: AddButtonProps) {
+export const AddButtonRow = React.memo(function AddButtonRow(
+  props: AddButtonProps
+) {
   return (
     <FlexRowRight>
       <AddButton flipped {...props} />
     </FlexRowRight>
   )
-}
+})
 
 export default AddButton

@@ -59,32 +59,36 @@ const IconContainer = styled.div<IconContainerProps>`
     font-size: 8px;
     ${diameter(16)}
   }
+
   &.s {
     font-size: 12px;
     ${diameter(20)}
   }
+
   &.m {
     font-size: 16px;
-    ${diameter(24)}
 
+    ${diameter(24)}
     span.text {
       font-family: Montserrat, sans-serif;
       font-weight: ${fontWeights.bold};
     }
   }
+
   &.l {
     font-size: 18px;
     ${diameter(34)}
   }
-  &.xl {
-    font-size: 44px;
-    ${diameter(64)}
 
+  &.xl {
     @media (max-width: ${tabletMin}) {
       font-size: 28px;
       ${diameter(56)};
     }
+    font-size: 44px;
+    ${diameter(64)}
   }
+
   &.xxl {
     font-size: 80px;
     ${diameter(128)}
@@ -109,7 +113,7 @@ type RoundIconProps = BaseProps & {
   number?: number
 }
 
-function RoundIcon({
+const RoundIcon = React.memo(function RoundIcon({
   content,
   color,
   size,
@@ -178,7 +182,7 @@ function RoundIcon({
       )}
     </IconContainer>
   )
-}
+})
 
 type WithLabelProps = RoundIconProps & {
   label: string

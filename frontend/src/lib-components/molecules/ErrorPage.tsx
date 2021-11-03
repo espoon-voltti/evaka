@@ -26,7 +26,7 @@ interface Props {
   labels: Labels
 }
 
-export function ErrorPage({
+export default React.memo(function ErrorPage({
   basePath,
   labels: { reload, text, title }
 }: Props) {
@@ -44,4 +44,4 @@ export function ErrorPage({
       </Container>
     </main>
   )
-}
+})

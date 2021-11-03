@@ -61,7 +61,7 @@ type ExpandingInfoProps = {
   'data-qa'?: string
 }
 
-export default function ExpandingInfo({
+export default React.memo(function ExpandingInfo({
   children,
   info,
   ariaLabel,
@@ -92,7 +92,7 @@ export default function ExpandingInfo({
       )}
     </span>
   )
-}
+})
 
 export const InfoButton = React.memo(function InfoButton({
   onClick,

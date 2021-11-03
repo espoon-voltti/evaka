@@ -106,13 +106,13 @@ const CustomButton = styled.button`
   font-weight: ${fontWeights.bold};
 `
 
-export const SortableTh = ({
+export const SortableTh = React.memo(function SortableTh({
   children,
   onClick,
   sorted,
   sticky,
   top
-}: SortableProps) => {
+}: SortableProps) {
   const {
     colors: { greyscale }
   } = useTheme()
@@ -136,4 +136,4 @@ export const SortableTh = ({
       </CustomButton>
     </Th>
   )
-}
+})

@@ -106,13 +106,14 @@ const StyledButton = styled.button<ButtonProps>`
 
   &.disabled {
     cursor: not-allowed;
+
     .icon-wrapper {
       color: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 `
 
-interface IconButtonProps extends BaseProps {
+export interface IconButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   icon: IconDefinition
   altText?: string
@@ -123,7 +124,7 @@ interface IconButtonProps extends BaseProps {
   'data-qa'?: string
 }
 
-function IconButton({
+export default React.memo(function IconButton({
   className,
   'data-qa': dataQa,
   icon,
@@ -151,6 +152,4 @@ function IconButton({
       </div>
     </StyledButton>
   )
-}
-
-export default IconButton
+})
