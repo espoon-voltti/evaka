@@ -1018,10 +1018,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.14.6":
-  version: 14.14.20
-  resolution: "@types/node@npm:14.14.20"
-  checksum: ec19a950a1999423c4233e9edf9b1c3e110b8f1aec987d833c2ee080b2a56efc7a91a5ceaef8e77f9b78ddb2d3da08884fc0817d290895768ad2faecbbdffd6c
+"@types/node@npm:*, @types/node@npm:^16.11.6":
+  version: 16.11.6
+  resolution: "@types/node@npm:16.11.6"
+  checksum: 6e19634766ff589d3d2f361c2196b671f8f133cdadc5ad347a621c360d8994b6c4fbccfb2ad9c60c588c593831a96497c9c6b77d2b7e91be723384b94f6368e7
   languageName: node
   linkType: hard
 
@@ -2927,7 +2927,7 @@ __metadata:
     "@types/jest": ^27.0.2
     "@types/jsonwebtoken": ^8.5.5
     "@types/lodash": ^4.14.176
-    "@types/node": ^14.17.32
+    "@types/node": ^16.11.6
     "@types/node-forge": ^0.10.9
     "@types/passport": ^1.0.4
     "@types/pino": ^6.3.3
