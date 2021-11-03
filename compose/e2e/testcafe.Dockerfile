@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG NODE_VERSION=14.15
+ARG NODE_VERSION=16.13
 
 FROM cimg/node:${NODE_VERSION}-browsers
 

@@ -35,7 +35,7 @@ Please note that all the dependencies should be installed as
 current user. Do not use elevated privileges, e.g. sudo to install
 packages.
 
-- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version 14.15+
+- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version 16.13+
   - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
 - [JDK](https://openjdk.java.net/projects/jdk/11/) – Java Development

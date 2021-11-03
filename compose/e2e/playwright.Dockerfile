@@ -10,7 +10,7 @@ RUN rm /etc/apt/sources.list.d/nodesource.list
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash \
  && . "$HOME/.nvm/nvm.sh" \
- && nvm install 14.15
+ && nvm install 16.13
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
  && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
