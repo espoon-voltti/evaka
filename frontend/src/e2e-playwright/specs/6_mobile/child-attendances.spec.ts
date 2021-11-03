@@ -49,18 +49,12 @@ beforeEach(async () => {
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   childAttendancePage = new ChildAttendancePage(page)
-
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    fixtures.daycareFixture.id
-  )
-  await page.goto(mobileSignupUrl)
 })
 afterEach(async () => {
   await page.close()
 })
 
-const createPlacement = async (
+const createPlacementAndReload = async (
   placementType: PlacementType
 ): Promise<DaycarePlacement> => {
   const daycarePlacementFixture = createDaycarePlacementFixture(
@@ -78,10 +72,16 @@ const createPlacement = async (
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
+  const mobileSignupUrl = await pairMobileDevice(
+    employee.data.id!, // eslint-disable-line
+    fixtures.daycareFixture.id
+  )
+  await page.goto(mobileSignupUrl)
+
   return daycarePlacementFixture
 }
 
-const checkAbsenceTypeSelectionButtonsExistance = async (
+const checkAbsenceTypeSelectionButtonsExistence = async (
   absenceTypeButtonsExpectedToBeShown: boolean,
   arrivalTime = '08:15',
   departureTime = '16:00'
@@ -112,42 +112,44 @@ const checkAbsenceTypeSelectionButtonsExistance = async (
 
 describe('Child mobile attendances', () => {
   test('Child a full day in daycare placement is not required to mark absence types', async () => {
-    await createPlacement('DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '16:00')
+    await createPlacementAndReload('DAYCARE')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
   })
 
   test('Child a part day in daycare placement is not required to mark absence types', async () => {
-    await createPlacement('DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '11:00')
+    await createPlacementAndReload('DAYCARE')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
   })
 
   test('Child a full day in preschool placement is not required to mark absence types', async () => {
-    await createPlacement('PRESCHOOL')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '16:00')
+    await createPlacementAndReload('PRESCHOOL')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
   })
 
   test('Child a part day in preschool placement is not required to mark absence types', async () => {
-    await createPlacement('PRESCHOOL')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '11:00')
+    await createPlacementAndReload('PRESCHOOL')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
   })
 
   test('Child a full day in preschool daycare placement is not required to mark absence types', async () => {
-    await createPlacement('PRESCHOOL_DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '16:00')
+    await createPlacementAndReload('PRESCHOOL_DAYCARE')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
   })
 
   test('Child a part day in preschool daycare placement is not required to mark absence types', async () => {
-    await createPlacement('PRESCHOOL_DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '11:00')
+    await createPlacementAndReload('PRESCHOOL_DAYCARE')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
   })
 
   test('Child a part day in 5yo daycare placement is not required to mark absence types if there is no paid service need set', async () => {
-    await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
-    await checkAbsenceTypeSelectionButtonsExistance(false, '08:00', '11:00')
+    await createPlacementAndReload('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
+    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
   })
 
   test('Child a part day in 5yo daycare placement is required to mark absence types if there is paid service need set', async () => {
-    const placement = await createPlacement('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
+    const placement = await createPlacementAndReload(
+      'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
+    )
     const sno = await Fixture.serviceNeedOption()
       .with({
         validPlacementType: 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
@@ -166,6 +168,6 @@ describe('Child mobile attendances', () => {
       })
       .save()
 
-    await checkAbsenceTypeSelectionButtonsExistance(true, '08:00', '11:00')
+    await checkAbsenceTypeSelectionButtonsExistence(true, '08:00', '11:00')
   })
 })
