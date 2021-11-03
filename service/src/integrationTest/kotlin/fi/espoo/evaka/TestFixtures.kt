@@ -106,6 +106,14 @@ val testPurchasedDaycare =
         language = "fi"
     )
 
+val testExternalPurchasedDaycare = UnitData.Detailed(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test External Purchased Daycare",
+    areaId = testAreaId,
+    areaName = "Private Area",
+    language = "fi"
+)
+
 val testVoucherDaycare =
     UnitData.Detailed(
         id = DaycareId(UUID.randomUUID()),
@@ -442,6 +450,16 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             id = testPurchasedDaycare.id,
             name = testPurchasedDaycare.name,
             providerType = ProviderType.PURCHASED,
+            ophOrganizerOid = defaultPurchasedOrganizerOid,
+            invoicedByMunicipality = false
+        )
+    )
+    insertTestDaycare(
+        DevDaycare(
+            areaId = testExternalPurchasedDaycare.areaId,
+            id = testExternalPurchasedDaycare.id,
+            name = testExternalPurchasedDaycare.name,
+            providerType = ProviderType.EXTERNAL_PURCHASED,
             ophOrganizerOid = defaultPurchasedOrganizerOid,
             invoicedByMunicipality = false
         )
