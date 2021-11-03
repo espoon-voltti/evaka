@@ -91,5 +91,68 @@ describe('Citizen pedagogical documents', () => {
         pd.data.description
       )
     })
+
+    test('Childrens names are not shown if only documents for one child exist', async () => {
+      const pd = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          description: 'e2e test description'
+        })
+        .save()
+
+      await header.selectTab('pedagogical-documents')
+
+      await pedagogicalDocumentsPage.assertChildNameIsNotShown(pd.data.id)
+    })
+
+    test('Childrens names are shown if documents for more than one child exist', async () => {
+      const pd = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          description: 'e2e test description'
+        })
+        .save()
+      const pd2 = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          description: 'e2e test description too'
+        })
+        .save()
+
+      await header.selectTab('pedagogical-documents')
+
+      await pedagogicalDocumentsPage.assertChildNameIsShown(pd.data.id)
+      await pedagogicalDocumentsPage.assertChildNameIsShown(pd2.data.id)
+    })
+
+    test('Childrens preferred names are shown if known', async () => {
+      const pd = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          description: 'e2e test description'
+        })
+        .save()
+      await Fixture.child(fixtures.enduserChildFixtureJari.id)
+        .with({
+          preferredName: 'Jari'
+        })
+        .save()
+      const pd2 = await Fixture.pedagogicalDocument()
+        .with({
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          description: 'e2e test description too'
+        })
+        .save()
+
+      await header.selectTab('pedagogical-documents')
+
+      // Jari has a preferred name
+      await pedagogicalDocumentsPage.assertChildNameIs(pd.data.id, 'Jari')
+      // Kaarina does not have any preferred name
+      await pedagogicalDocumentsPage.assertChildNameIs(
+        pd2.data.id,
+        'Kaarina Veera Nelli'
+      )
+    })
   })
 })

@@ -18,7 +18,7 @@ export const Table = styled.table`
   background-color: ${({ theme: { colors } }) => colors.greyscale.white};
   color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   width: 100%;
-  border-collapse: separate;
+  border-collapse: collapse;
 `
 
 interface ThProps {

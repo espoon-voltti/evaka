@@ -1691,11 +1691,12 @@ const en: Translations = {
     }
   },
   pedagogicalDocuments: {
-    title: 'Kasvu ja oppiminen',
+    title: 'Growth and learning',
     description:
-      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
+      'Documents and photos relating to the growth and learning of the child are gathered on this page.',
     table: {
       date: 'Date',
+      child: 'Child',
       document: 'Document',
       description: 'Description'
     },
