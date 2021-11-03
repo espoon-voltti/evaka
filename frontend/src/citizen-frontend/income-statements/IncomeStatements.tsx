@@ -32,7 +32,11 @@ const Buttons = styled.div`
   justify-content: flex-end;
 `
 
-function IncomeStatementsTable({
+function getLink(id: UUID, mode: 'view' | 'edit') {
+  return `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
+}
+
+const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   items,
   onRemoveIncomeStatement
 }: {
@@ -42,10 +46,10 @@ function IncomeStatementsTable({
   const t = useTranslation()
   const history = useHistory()
 
-  const getLink = (id: UUID, mode: 'view' | 'edit') =>
-    `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
-
-  const onEdit = (id: UUID) => () => history.push(getLink(id, 'edit'))
+  const onEdit = useCallback(
+    (id: UUID) => () => history.push(getLink(id, 'edit')),
+    [history]
+  )
 
   return (
     <Table>
@@ -92,7 +96,7 @@ function IncomeStatementsTable({
       </Tbody>
     </Table>
   )
-}
+})
 
 type DeletionState =
   | {
@@ -103,7 +107,7 @@ type DeletionState =
       rowToDelete: UUID
     }
 
-export default function IncomeStatements() {
+export default React.memo(function IncomeStatements() {
   const t = useTranslation()
   const history = useHistory()
   const { setErrorMessage } = useContext(OverlayContext)
@@ -197,4 +201,4 @@ export default function IncomeStatements() {
       <Footer />
     </>
   )
-}
+})

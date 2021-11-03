@@ -28,10 +28,6 @@ interface EditorState {
   formData: Form.IncomeStatementForm
 }
 
-function isValidStartDate(otherStartDates: LocalDate[]) {
-  return (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date))
-}
-
 async function initializeEditorState(
   id: UUID | undefined
 ): Promise<Result<EditorState>> {
@@ -54,7 +50,7 @@ async function initializeEditorState(
   )
 }
 
-export default function IncomeStatementEditor({
+export default React.memo(function IncomeStatementEditor({
   history,
   match
 }: RouteComponentProps<{ incomeStatementId: string }>) {
@@ -76,15 +72,16 @@ export default function IncomeStatementEditor({
 
   const form = useRef<IncomeStatementFormAPI | null>(null)
 
-  return renderResult(state, (state) => {
-    const { id, formData, startDates } = state
-
-    const updateFormData = (
-      fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm
-    ): void =>
+  const updateFormData = useCallback(
+    (fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm): void =>
       setState((prev) =>
         prev.map((state) => ({ ...state, formData: fn(state.formData) }))
-      )
+      ),
+    []
+  )
+
+  return renderResult(state, (state) => {
+    const { id, formData, startDates } = state
 
     const save = (cancel: () => Promise<void>) => {
       const validatedData = formData ? fromBody(formData) : undefined
@@ -106,7 +103,7 @@ export default function IncomeStatementEditor({
         incomeStatementId={id}
         formData={formData}
         showFormErrors={showFormErrors}
-        isValidStartDate={isValidStartDate(startDates)}
+        otherStartDates={startDates}
         onChange={updateFormData}
         onSave={save}
         onSuccess={navigateToList}
@@ -115,4 +112,4 @@ export default function IncomeStatementEditor({
       />
     )
   })
-}
+})
