@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -14,6 +13,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

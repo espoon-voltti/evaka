@@ -269,8 +269,8 @@ fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reserva
 private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
-        INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by_guardian_id, created_by_employee_id)
-        SELECT :childId, :start, :end, NULL, :userId
+        INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by)
+        SELECT :childId, :start, :end, :userId
         FROM placement pl
         LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
         JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id)

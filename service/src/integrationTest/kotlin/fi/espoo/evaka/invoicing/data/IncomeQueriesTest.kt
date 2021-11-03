@@ -11,9 +11,9 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.testAdult_1

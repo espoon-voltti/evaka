@@ -181,12 +181,11 @@ class AttachmentsController(
         val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insertAttachment(
+                user,
                 id,
                 name,
                 contentType,
                 attachTo,
-                uploadedByPerson = user.id.takeIf { user.isEndUser },
-                uploadedByEmployee = user.id.takeUnless { user.isEndUser },
                 type = type
             )
             documentClient.upload(

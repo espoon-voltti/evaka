@@ -92,9 +92,9 @@ fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, upda
 fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, id: IncomeId): Income? {
     return createQuery(
         """
-        SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
+        SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN employee ON income.updated_by = employee.id
+        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE income.id = :id
         """.trimIndent()
     )
@@ -111,9 +111,9 @@ fun Database.Read.getIncomesForPerson(
 ): List<Income> {
     val sql =
         """
-        SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
+        SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN employee ON income.updated_by = employee.id
+        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE person_id = :personId
         AND (:validAt::timestamp IS NULL OR tsrange(valid_from, valid_to) @> :validAt::timestamp)
         ORDER BY valid_from DESC
@@ -134,9 +134,9 @@ fun Database.Read.getIncomesFrom(
 ): List<Income> {
     val sql =
         """
-        SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
+        SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN employee ON income.updated_by = employee.id
+        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE
             person_id = ANY(:personIds)
             AND (valid_to IS NULL OR valid_to >= :from)
@@ -187,7 +187,7 @@ fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) =
         validTo = rs.getDate("valid_to")?.toLocalDate(),
         notes = rs.getString("notes"),
         updatedAt = rs.getTimestamp("updated_at").toInstant(),
-        updatedBy = (rs.getString("updated_by_employee")),
+        updatedBy = rs.getString("updated_by_name"),
         applicationId = rs.getNullableUUID("application_id")?.let(::ApplicationId),
     )
 }

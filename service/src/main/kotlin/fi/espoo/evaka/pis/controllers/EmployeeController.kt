@@ -18,6 +18,7 @@ import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -53,9 +54,9 @@ class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Employee> {
+    fun getEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
-        if (user.id != id) {
+        if (user.id != id.raw) {
             user.requireOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.SERVICE_WORKER,
@@ -114,7 +115,7 @@ class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { it.deleteEmployee(id) }

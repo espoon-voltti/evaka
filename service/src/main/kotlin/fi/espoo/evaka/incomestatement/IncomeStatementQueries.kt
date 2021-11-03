@@ -68,10 +68,11 @@ SELECT
         'contentType', content_type,
         'uploadedByEmployee', uploaded_by_employee
       )), '[]'::jsonb) FROM (
-        SELECT id, name, content_type, uploaded_by_employee IS NOT NULL AS uploaded_by_employee
+        SELECT a.id, a.name, content_type, eu.type = 'EMPLOYEE' AS uploaded_by_employee
         FROM attachment a
+        JOIN evaka_user eu ON a.uploaded_by = eu.id
         WHERE a.income_statement_id = ist.id 
-        ${if (excludeEmployeeAttachments) "AND uploaded_by_employee IS NULL" else ""}
+        ${if (excludeEmployeeAttachments) "AND eu.type != 'EMPLOYEE'" else ""}
         ORDER BY a.created
     ) s) AS attachments,
    COUNT(*) OVER () AS count

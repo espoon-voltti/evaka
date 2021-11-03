@@ -11,13 +11,16 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.EmployeeFeatures
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.security.upsertCitizenUser
+import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -45,6 +48,7 @@ class SystemController(private val personService: PersonService, private val acc
                 )?.let { CitizenUser(PersonId(it.id)) }
                 ?: error("No person found with ssn")
             tx.markPersonLastLogin(citizen.id)
+            tx.upsertCitizenUser(citizen.id)
             citizen
         }.also {
             Audit.CitizenLogin.log(targetId = listOf(request.socialSecurityNumber, request.lastName, request.firstName), objectId = it.id)
@@ -67,6 +71,7 @@ class SystemController(private val personService: PersonService, private val acc
                     allScopedRoles = emptySet()
                 )
             it.markEmployeeLastLogin(employee.id)
+            it.upsertEmployeeUser(employee.id)
             employee
         }.also {
             Audit.EmployeeLogin.log(targetId = listOf(request.externalId, request.lastName, request.firstName, request.email), objectId = it.id)
@@ -78,7 +83,7 @@ class SystemController(private val personService: PersonService, private val acc
         db: Database.Connection,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
-        id: UUID
+        id: EmployeeId
     ): EmployeeUserResponse? {
         Audit.EmployeeGetOrCreate.log(targetId = id)
         return db.read { tx ->
@@ -101,9 +106,13 @@ class SystemController(private val personService: PersonService, private val acc
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
         token: UUID
-    ): ResponseEntity<MobileDeviceIdentity> {
+    ): MobileDeviceIdentity {
         Audit.MobileDevicesRead.log(targetId = token)
-        return ResponseEntity.ok(db.read { it.getDeviceByToken(token) })
+        return db.transaction { tx ->
+            val device = tx.getDeviceByToken(token)
+            tx.upsertMobileDeviceUser(device.id)
+            device
+        }
     }
 
     @ExcludeCodeGen
@@ -125,7 +134,7 @@ class SystemController(private val personService: PersonService, private val acc
     )
 
     data class EmployeeUserResponse(
-        val id: UUID,
+        val id: EmployeeId,
         val firstName: String,
         val lastName: String,
         val globalRoles: Set<UserRole> = setOf(),

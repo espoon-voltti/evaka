@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.integration.VardaTokenProvider

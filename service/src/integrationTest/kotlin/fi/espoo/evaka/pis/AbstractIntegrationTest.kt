@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll

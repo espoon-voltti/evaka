@@ -6,10 +6,10 @@ package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.utils.helsinkiZone
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.getTestDataSource
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration

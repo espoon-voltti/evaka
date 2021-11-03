@@ -8,6 +8,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.lookup
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
@@ -83,7 +84,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
             ?.andExpect(vtjRequestType(PERUSSANOMA3))
             ?.andRespond(withSoapEnvelope(perussanoma3Response))
 
-        val query = VTJQuery(requestingUserId = requestingUser.id, type = PERUSSANOMA3, ssn = "020501A999T")
+        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = PERUSSANOMA3, ssn = "020501A999T")
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -110,7 +111,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
             ?.andExpect(vtjRequestType(HUOLTAJA_HUOLLETTAVA))
             ?.andRespond(withSoapEnvelope(huoltajaHuollettavatResponse))
 
-        val query = VTJQuery(requestingUserId = requestingUser.id, type = HUOLTAJA_HUOLLETTAVA, ssn = "020190-9521")
+        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = "020190-9521")
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -129,7 +130,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
         mockServer?.expect(validPayload(schemaResource))
             ?.andExpect(vtjRequestType(HUOLLETTAVA_HUOLTAJAT))
             ?.andRespond(withSoapEnvelope(huollettavaHuoltajaResponse))
-        val query = VTJQuery(requestingUserId = requestingUser.id, type = HUOLLETTAVA_HUOLTAJAT, ssn = "311211A9527")
+        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = HUOLLETTAVA_HUOLTAJAT, ssn = "311211A9527")
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -152,7 +153,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
         val expectedSSN = "020501A999T"
         val expectedUnderageSSNs = listOf("090702A9996")
 
-        val query = VTJQuery(requestingUserId = requestingUser.id, type = ASUKASMAARA, ssn = expectedSSN)
+        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = ASUKASMAARA, ssn = expectedSSN)
         val response = vtjClientService.query(query)
 
         val result = ResidentCountExample.residentCountFromHenkilo(response!!)
@@ -167,7 +168,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
     }
 
     private val requestingUser = Employee(
-        id = NIL_ID,
+        id = EmployeeId(NIL_ID),
         firstName = "Integration",
         lastName = "Test",
         email = "integration-test@example.org",

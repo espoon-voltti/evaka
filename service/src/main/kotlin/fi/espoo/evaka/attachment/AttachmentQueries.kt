@@ -20,12 +20,11 @@ import java.lang.IllegalArgumentException
 import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
+    user: AuthenticatedUser,
     id: AttachmentId,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
-    uploadedByPerson: UUID?,
-    uploadedByEmployee: UUID?,
     type: AttachmentType?
 ) {
     data class AttachmentParentColumn(
@@ -38,8 +37,8 @@ fun Database.Transaction.insertAttachment(
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, pedagogical_document_id, uploaded_by_person, uploaded_by_employee, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :pedagogicalDocumentId, :uploadedByPerson, :uploadedByEmployee, :type)
+        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, pedagogical_document_id, uploaded_by, type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :pedagogicalDocumentId, :userId, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -56,8 +55,7 @@ fun Database.Transaction.insertAttachment(
                 is AttachmentParent.PedagogicalDocument -> AttachmentParentColumn(pedagogicalDocumentId = attachTo.pedagogicalDocumentId)
             }
         )
-        .bind("uploadedByPerson", uploadedByPerson)
-        .bind("uploadedByEmployee", uploadedByEmployee)
+        .bind("userId", user.id)
         .bind("type", type ?: "")
         .execute()
 }
@@ -65,7 +63,7 @@ fun Database.Transaction.insertAttachment(
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .createQuery(
         """
-        SELECT id, name, content_type, uploaded_by_employee, uploaded_by_person, application_id, income_statement_id, message_draft_id, message_content_id, pedagogical_document_id
+        SELECT id, name, content_type, uploaded_by, application_id, income_statement_id, message_draft_id, message_content_id, pedagogical_document_id
         FROM attachment
         WHERE id = :id
         """
@@ -100,7 +98,7 @@ fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: Authenticate
         SELECT EXISTS 
             (SELECT 1 FROM attachment 
              WHERE id = :attachmentId 
-             AND uploaded_by_person = :personId)
+             AND uploaded_by = :personId)
         """.trimIndent()
 
     return this.createQuery(sql)
@@ -115,8 +113,9 @@ fun Database.Read.wasUploadedByAnyEmployee(attachmentId: AttachmentId): Boolean 
         """
         SELECT EXISTS
             (SELECT 1 FROM attachment
-             WHERE id = :attachmentId
-             AND uploaded_by_employee IS NOT NULL)
+             JOIN evaka_user ON uploaded_by = evaka_user.id
+             WHERE attachment.id = :attachmentId
+             AND evaka_user.type = 'EMPLOYEE')
         """.trimIndent()
 
     return this.createQuery(sql)
@@ -141,7 +140,7 @@ fun Database.Transaction.deleteAttachmentsByApplicationAndType(
             DELETE FROM attachment 
             WHERE application_id = :applicationId 
             AND type = :type 
-            AND (uploaded_by_employee = :userId OR uploaded_by_person = :userId)
+            AND uploaded_by = :userId
             RETURNING id
         """.trimIndent()
     )
@@ -162,7 +161,7 @@ fun Database.Transaction.associateAttachments(
         UPDATE attachment SET income_statement_id = :incomeStatementId
         WHERE id = ANY(:attachmentIds)
           AND income_statement_id IS NULL and application_id IS NULL
-          AND uploaded_by_person = :personId
+          AND uploaded_by = :personId
         """.trimIndent()
     )
         .bind("incomeStatementId", incomeStatementId)
@@ -183,7 +182,7 @@ fun Database.Transaction.dissociateAllPersonsAttachments(
         """
         UPDATE attachment SET income_statement_id = NULL
         WHERE income_statement_id = :incomeStatementId
-          AND uploaded_by_person = :personId
+          AND uploaded_by = :personId
         """.trimIndent()
     )
         .bind("incomeStatementId", incomeStatementId)
@@ -197,7 +196,7 @@ fun Database.Read.userUnparentedAttachmentCount(userId: UUID): Int {
         SELECT COUNT(*) FROM attachment
         WHERE application_id IS NULL
           AND income_statement_id IS NULL
-          AND uploaded_by_person = :userId
+          AND uploaded_by = :userId
         """
     )
         .bind("userId", userId)
@@ -206,7 +205,7 @@ fun Database.Read.userUnparentedAttachmentCount(userId: UUID): Int {
 }
 
 fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, userId: UUID): Int {
-    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE application_id = :applicationId AND uploaded_by_person = :userId")
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE application_id = :applicationId AND uploaded_by = :userId")
         .bind("applicationId", applicationId)
         .bind("userId", userId)
         .mapTo<Int>()
@@ -214,7 +213,7 @@ fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, u
 }
 
 fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: UUID): Int {
-    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by_person = :userId")
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by = :userId")
         .bind("incomeStatementId", incomeStatementId)
         .bind("userId", userId)
         .mapTo<Int>()
@@ -222,7 +221,7 @@ fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeSt
 }
 
 fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: PedagogicalDocumentId, userId: UUID): Int {
-    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE pedagogical_document_id = :pedagogicalDocumentId AND uploaded_by_person = :userId")
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE pedagogical_document_id = :pedagogicalDocumentId AND uploaded_by = :userId")
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .bind("userId", userId)
         .mapTo<Int>()

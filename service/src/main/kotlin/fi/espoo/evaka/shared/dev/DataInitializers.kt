@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.ParentshipId
@@ -36,10 +37,12 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
@@ -66,6 +69,7 @@ fun Database.Transaction.runDevScript(devScriptName: String) {
 
 fun Database.Transaction.resetDatabase() {
     execute("SELECT reset_database()")
+    execute("INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')")
 }
 
 fun Database.Transaction.ensureDevData() {
@@ -157,6 +161,8 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, n
         VALUES (:id, :name, 'Yksikkö', null, null);
 
         INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
+
+        INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (:id, 'MOBILE_DEVICE', :id, :name);
         """.trimIndent()
 
     createUpdate(sql)
@@ -173,7 +179,7 @@ INSERT INTO employee (id, first_name, last_name, email, external_id, roles, last
 VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
 RETURNING id
 """
-)
+).also { upsertEmployeeUser(EmployeeId(it)) }
 
 fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = insertTestDataRow(
     device,
@@ -755,12 +761,12 @@ fun Database.Transaction.insertTestAbsence(
     date: LocalDate,
     careType: AbsenceCareType,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
-    modifiedBy: String = "Someone"
+    modifiedBy: UUID = AuthenticatedUser.SystemInternalUser.id
 ) {
     //language=sql
     val sql =
         """
-        INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by_deprecated)
+        INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by)
         VALUES (:id, :childId, :date, :careType, :absenceType, :modifiedBy)
         """.trimIndent()
     createUpdate(sql)

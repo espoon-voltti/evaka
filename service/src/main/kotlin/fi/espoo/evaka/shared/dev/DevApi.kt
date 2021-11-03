@@ -76,6 +76,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -101,6 +102,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -794,12 +796,11 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         return db.transaction { tx ->
             val id = UUID.randomUUID()
             tx.insertAttachment(
+                AuthenticatedUser.Employee(employeeId, emptySet()),
                 AttachmentId(id),
                 file.name,
                 file.contentType ?: "image/jpeg",
                 AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
-                uploadedByPerson = null,
-                uploadedByEmployee = employeeId,
                 type = null
             )
             documentClient.upload(
@@ -861,6 +862,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
         """.trimIndent()
 
     createUpdate(sql).bind("id", fakeAdmin.id).execute()
+    upsertEmployeeUser(EmployeeId(fakeAdmin.id))
 }
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {

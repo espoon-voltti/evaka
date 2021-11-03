@@ -543,7 +543,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
 }
 
 fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
-    val attachmentWhereClause = if (includeCitizenAttachmentsOnly) "WHERE uploaded_by_person IS NOT NULL" else ""
+    val attachmentWhereClause = if (includeCitizenAttachmentsOnly) "WHERE eu.type = 'CITIZEN'" else ""
     //language=sql
     val sql =
         """
@@ -575,8 +575,19 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
         LEFT JOIN (
-            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type, 'updated', updated, 'receivedAt', received_at, 'type', type, 'uploadedByEmployee', uploaded_by_employee, 'uploadedByPerson', uploaded_by_person)) json
-            FROM attachment $attachmentWhereClause
+            SELECT application_id, jsonb_agg(jsonb_build_object(
+                'id', attachment.id,
+                'name', attachment.name,
+                'contentType', content_type,
+                'updated', updated,
+                'receivedAt', received_at,
+                'type', attachment.type,
+                'uploadedByEmployee', (CASE eu.type WHEN 'EMPLOYEE' THEN eu.id END),
+                'uploadedByPerson', (CASE eu.type WHEN 'CITIZEN' THEN eu.id END)
+            )) json
+            FROM attachment
+            JOIN evaka_user eu ON attachment.uploaded_by = eu.id
+            $attachmentWhereClause
             GROUP BY application_id
         ) att ON a.id = att.application_id
         WHERE a.id = :id
@@ -975,7 +986,17 @@ RETURNING id
     .toList()
 
 fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<ApplicationAttachment> =
-    createQuery("SELECT id, name, content_type, updated, received_at, type, uploaded_by_employee, uploaded_by_person FROM attachment WHERE application_id = :applicationId")
+    createQuery(
+        """
+SELECT
+    attachment.id, attachment.name, content_type, updated, received_at, attachment.type,
+    (CASE evaka_user.type WHEN 'EMPLOYEE' THEN evaka_user.id END) AS uploaded_by_employee,
+    (CASE evaka_user.type WHEN 'CITIZEN' THEN evaka_user.id END) AS uploaded_by_person
+FROM attachment
+JOIN evaka_user ON attachment.uploaded_by = evaka_user.id
+WHERE application_id = :applicationId
+"""
+    )
         .bind("applicationId", applicationId)
         .mapTo<ApplicationAttachment>()
         .toList()
@@ -983,8 +1004,12 @@ fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<
 fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery(
         """
-SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type, attachment.uploaded_by_employee, attachment.uploaded_by_person
+SELECT
+    attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type,
+    (CASE evaka_user.type WHEN 'EMPLOYEE' THEN evaka_user.id END) AS uploaded_by_employee,
+    (CASE evaka_user.type WHEN 'CITIZEN' THEN evaka_user.id END) AS uploaded_by_person
 FROM attachment
+JOIN evaka_user ON attachment.uploaded_by = evaka_user.id
 JOIN application ON application.id = attachment.application_id
 JOIN placement_plan ON placement_plan.application_id = application.id
 JOIN daycare ON daycare.id = placement_plan.unit_id

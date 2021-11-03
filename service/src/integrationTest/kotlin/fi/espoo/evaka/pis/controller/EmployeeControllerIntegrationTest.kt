@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.controllers.EmployeeController
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import org.junit.jupiter.api.Test
@@ -93,7 +94,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
-        id = UUID.randomUUID()
+        id = EmployeeId(UUID.randomUUID())
     )
 
     val employee2 = Employee(
@@ -103,6 +104,6 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
-        id = UUID.randomUUID()
+        id = EmployeeId(UUID.randomUUID())
     )
 }

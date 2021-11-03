@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -20,6 +19,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAreaId
