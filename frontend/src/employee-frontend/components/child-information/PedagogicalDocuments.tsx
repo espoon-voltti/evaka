@@ -130,7 +130,14 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       paddingVertical="L"
       data-qa="pedagogical-documents-collapsible"
     >
-      <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
+      <RequireRole
+        oneOf={[
+          'ADMIN',
+          'UNIT_SUPERVISOR',
+          'STAFF',
+          'SPECIAL_EDUCATION_TEACHER'
+        ]}
+      >
         <AddButtonRow
           text={i18n.childInformation.pedagogicalDocument.create}
           onClick={() => createNewDocument()}
