@@ -8,6 +8,9 @@ import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React from 'react'
 
+const yes = 'Kyllä'
+const no = 'Ei'
+
 export default {
   common: {
     title: 'Varhaiskasvatus',
@@ -21,8 +24,9 @@ export default {
     delete: 'Poista',
     edit: 'Muokkaa',
     add: 'Lisää',
-    yes: 'Kyllä',
-    no: 'Ei',
+    yes,
+    no,
+    yesno: (value: boolean): string => (value ? yes : no),
     select: 'Valitse',
     page: 'Sivu',
     unit: {

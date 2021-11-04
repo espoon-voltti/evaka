@@ -7,7 +7,7 @@ import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { Translations, useTranslation } from '../localization'
+import { useTranslation } from '../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -90,7 +90,6 @@ const IncomeInfo = React.memo(function IncomeInfo({
   incomeStatement: Income
 }) {
   const t = useTranslation()
-  const yesno = useYesNo(t)
   return (
     <>
       {incomeStatement.gross && (
@@ -109,11 +108,11 @@ const IncomeInfo = React.memo(function IncomeInfo({
       <H2>{t.income.view.otherInfoTitle}</H2>
       <Row
         label={t.income.view.student}
-        value={yesno(incomeStatement.student)}
+        value={t.common.yesno(incomeStatement.student)}
       />
       <Row
         label={t.income.view.alimonyPayer}
-        value={yesno(incomeStatement.alimonyPayer)}
+        value={t.common.yesno(incomeStatement.alimonyPayer)}
       />
       <Row
         label={t.income.view.otherInfo}
@@ -200,7 +199,6 @@ const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
   entrepreneur: Entrepreneur
 }) {
   const t = useTranslation()
-  const yesno = useYesNo(t)
 
   return (
     <>
@@ -219,11 +217,11 @@ const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
       />
       <Row
         label={t.income.view.spouseWorksInCompany}
-        value={yesno(entrepreneur.spouseWorksInCompany)}
+        value={t.common.yesno(entrepreneur.spouseWorksInCompany)}
       />
       <Row
         label={t.income.view.startupGrant}
-        value={yesno(entrepreneur.startupGrant)}
+        value={t.common.yesno(entrepreneur.startupGrant)}
       />
       {entrepreneur.checkupConsent && (
         <Row
@@ -400,15 +398,6 @@ const Row = React.memo(function Row({
     </>
   )
 })
-
-function useYesNo(t: Translations) {
-  return useCallback(
-    (value: boolean): string => {
-      return value ? t.common.yes : t.common.no
-    },
-    [t.common.yes, t.common.no]
-  )
-}
 
 const LabelColumn = styled(Label)`
   flex: 0 0 auto;

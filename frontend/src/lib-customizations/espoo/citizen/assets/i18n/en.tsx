@@ -9,6 +9,9 @@ import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Gap } from 'lib-components/white-space'
 
+const yes = 'Yes'
+const no = 'No'
+
 const en: Translations = {
   common: {
     title: 'Early childhood education',
@@ -22,8 +25,9 @@ const en: Translations = {
     delete: 'Remove',
     edit: 'Edit',
     add: 'Add',
-    yes: 'Yes',
-    no: 'No',
+    yes,
+    no,
+    yesno: (value: boolean): string => (value ? yes : no),
     select: 'Select',
     page: 'Page',
     unit: {
