@@ -10,8 +10,8 @@ import { captureTextualDownload } from 'e2e-playwright/browser'
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
-  readonly #month = new Combobox(this.page, '[data-qa="select-month"]')
-  readonly #year = new Combobox(this.page, '[data-qa="select-year"]')
+  readonly #month = this.page.locator('[data-qa="select-month"] select')
+  readonly #year = this.page.locator('[data-qa="select-year"] select')
   readonly #area = new Combobox(this.page, '[data-qa="select-area"]')
 
   readonly #downloadCsvLink = new RawElement(
@@ -24,13 +24,11 @@ export default class ReportsPage {
   }
 
   async selectMonth(month: 'Tammikuu') {
-    await this.#month.fill(month)
-    await this.#month.findItem(month).click()
+    await this.#month.selectOption({ label: month.toLowerCase() })
   }
 
   async selectYear(year: number) {
-    await this.#year.fill(year.toString())
-    await this.#year.findItem(year.toString()).click()
+    await this.#year.selectOption({ value: String(year) })
   }
 
   async selectArea(area: string) {

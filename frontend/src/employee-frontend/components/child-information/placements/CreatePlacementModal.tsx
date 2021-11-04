@@ -18,7 +18,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { createPlacement } from '../../../api/child/placements'
 import { getDaycares } from '../../../api/unit'
-import Select from '../../../components/common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Unit } from '../../../types/unit'
@@ -133,22 +133,17 @@ function CreatePlacementModal({ childId, reload }: Props) {
           <div className="bold">{i18n.childInformation.placements.type}</div>
 
           <Select
-            items={placementTypes.map((type) => ({
-              value: type,
-              label: i18n.placement.type[type]
-            }))}
-            selectedItem={{
-              value: form.type,
-              label: i18n.placement.type[form.type]
-            }}
-            onChange={(value) =>
-              value
+            items={placementTypes}
+            selectedItem={form.type}
+            onChange={(type) =>
+              type
                 ? setForm({
                     ...form,
-                    type: value.value as PlacementType
+                    type
                   })
                 : undefined
             }
+            getItemLabel={(type) => i18n.placement.type[type]}
           />
         </section>
 

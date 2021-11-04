@@ -11,7 +11,6 @@ import {
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { SelectOption } from '../common/Select'
 import { UserContext } from '../../state/user'
 import { Loading, Paged, Result } from 'lib-common/api'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
@@ -36,6 +35,7 @@ import {
 } from './api'
 import { AccountView } from './types-view'
 import { UUID } from 'lib-common/types'
+import { ReactSelectOption } from './SelectorNode'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
@@ -47,8 +47,8 @@ export interface MessagesState {
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   setSelectedAccount: (view: AccountView) => void
-  selectedUnit: SelectOption | undefined
-  setSelectedUnit: (unit: SelectOption) => void
+  selectedUnit: ReactSelectOption | undefined
+  setSelectedUnit: (unit: ReactSelectOption) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -111,7 +111,9 @@ const appendMessageAndMoveThreadToTopOfList =
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
+    const [selectedUnit, setSelectedUnit] = useState<
+      ReactSelectOption | undefined
+    >()
     const { loggedIn } = useContext(UserContext)
 
     const [nestedAccounts, setNestedMessagingAccounts] = useState<

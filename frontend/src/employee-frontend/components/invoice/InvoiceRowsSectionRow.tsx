@@ -10,7 +10,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import InputField from 'lib-components/atoms/form/InputField'
-import Select, { SelectOption } from '../common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
@@ -58,22 +58,10 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const productOpts: SelectOption[] = invoiceCodes
-    .map((codes) =>
-      codes.products.map((product) => ({
-        value: product,
-        label: i18n.product[product] ?? product
-      }))
-    )
-    .getOrElse([])
+  const productOpts = invoiceCodes.map((codes) => codes.products).getOrElse([])
 
-  const subCostCenterOpts: SelectOption[] = invoiceCodes
-    .map((codes) =>
-      codes.subCostCenters.map((subCostCenter) => ({
-        value: subCostCenter,
-        label: subCostCenter
-      }))
-    )
+  const subCostCenterOpts = invoiceCodes
+    .map((codes) => codes.subCostCenters)
     .getOrElse([])
 
   const costCenterValueIsValid =
@@ -85,16 +73,12 @@ function InvoiceRowSectionRow({
     <Tr data-qa="invoice-details-invoice-row">
       <Td>
         {editable ? (
-          <ProductSelect
+          <Select
             name="product"
-            placeholder=" "
-            selectedItem={
-              productOpts.find((elem) => elem.value === product) ?? null
-            }
+            selectedItem={product}
             items={productOpts}
-            onChange={(value) =>
-              value ? update({ product: value.value as Product }) : undefined
-            }
+            onChange={(product) => (product ? update({ product }) : undefined)}
+            getItemLabel={(product) => i18n.product[product] ?? product}
             data-qa="select-product"
           />
         ) : (
@@ -136,17 +120,12 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <SubCostCenterSelect
+          <Select
             name="subCostCenter"
-            placeholder=" "
-            selectedItem={
-              subCostCenterOpts.find((elem) => elem.value == subCostCenter) ??
-              null
-            }
+            placeholder=""
+            selectedItem={subCostCenter}
             items={subCostCenterOpts}
-            onChange={(value) =>
-              value ? update({ subCostCenter: value.value }) : undefined
-            }
+            onChange={(subCostCenter) => update({ subCostCenter })}
             data-qa="select-sub-cost-center"
           />
         ) : (
@@ -207,14 +186,6 @@ function InvoiceRowSectionRow({
     </Tr>
   )
 }
-
-const ProductSelect = styled(Select)`
-  min-width: 280px;
-`
-
-const SubCostCenterSelect = styled(Select)`
-  min-width: 80px;
-`
 
 const DeleteButton = styled(IconButton)`
   margin: 6px 0;

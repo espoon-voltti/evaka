@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
-import { fi } from 'date-fns/locale'
 
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import { Loading, Result, Success } from 'lib-common/api'
@@ -25,11 +24,12 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
-import { SelectOption } from '../common/Select'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { FlexRow } from '../common/styled/containers'
+import { range } from 'lodash'
+import LocalDate from 'lib-common/local-date'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -39,28 +39,12 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function monthOptions(): SelectOption[] {
-  const monthOptions = []
-  for (let i = 1; i <= 12; i++) {
-    monthOptions.push({
-      value: i.toString(),
-      label: String(fi.localize?.month(i - 1))
-    })
-  }
-  return monthOptions
-}
-
-function yearOptions(): SelectOption[] {
-  const currentYear = new Date().getFullYear()
-  const yearOptions = []
-  for (let year = currentYear + 2; year > currentYear - 5; year--) {
-    yearOptions.push({
-      value: year.toString(),
-      label: year.toString()
-    })
-  }
-  return yearOptions
-}
+const monthOptions = range(1, 13)
+const yearOptions = range(
+  LocalDate.today().year + 2,
+  LocalDate.today().year - 5,
+  -1
+)
 
 function getDisplayDates(
   year: number,
@@ -225,9 +209,6 @@ function Occupancies() {
 
   const includeGroups = filters.type.startsWith('GROUP_')
 
-  const months = monthOptions()
-  const years = yearOptions()
-
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -238,35 +219,25 @@ function Occupancies() {
           <FlexRow>
             <Wrapper>
               <Combobox
-                items={months}
-                selectedItem={
-                  months.find(
-                    (opt) => opt.value === filters.month.toString()
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const month = parseInt(value.value)
+                items={monthOptions}
+                selectedItem={filters.month}
+                onChange={(month) => {
+                  if (month !== null) {
                     setFilters({ ...filters, month })
                   }
                 }}
-                getItemLabel={(item) => item.label}
+                getItemLabel={(month) => i18n.datePicker.months[month - 1]}
               />
             </Wrapper>
             <Wrapper>
               <Combobox
-                items={years}
-                selectedItem={
-                  years.find((opt) => opt.value === filters.year.toString()) ??
-                  null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const year = parseInt(value.value)
+                items={yearOptions}
+                selectedItem={filters.year}
+                onChange={(year) => {
+                  if (year !== null) {
                     setFilters({ ...filters, year })
                   }
                 }}
-                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>

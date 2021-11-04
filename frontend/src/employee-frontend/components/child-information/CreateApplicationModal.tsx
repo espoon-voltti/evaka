@@ -22,7 +22,7 @@ import {
   DbPersonSearch as PersonSearch,
   VtjPersonSearch
 } from '../../components/common/PersonSearch'
-import Select, { SelectOption } from '../../components/common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -36,9 +36,9 @@ type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 const personToSelectOption = (
   { firstName, id, lastName }: PersonDetails,
   i18n: Translations
-): SelectOption => ({
-  label: formatName(firstName, lastName, i18n),
-  value: id
+) => ({
+  name: formatName(firstName, lastName, i18n),
+  id: id
 })
 
 interface CreateApplicationModalProps {
@@ -57,7 +57,7 @@ function CreateApplicationModal({
   const [personType, setPersonType] = useState<PersonType>(
     guardians.length > 0 ? 'GUARDIAN' : 'DB_SEARCH'
   )
-  const [guardian, setGuardian] = useState<SelectOption | null>(
+  const [guardian, setGuardian] = useState(
     guardians.length > 0 ? personToSelectOption(guardians[0], i18n) : null
   )
   const [personId, setPersonId] = useState<UUID | undefined>(undefined)
@@ -119,7 +119,7 @@ function CreateApplicationModal({
         ? () =>
             createPaperApplication({
               ...commonBody,
-              guardianId: guardian?.value ?? ''
+              guardianId: guardian?.id ?? ''
             })
         : personType === 'DB_SEARCH'
         ? () =>
@@ -200,7 +200,9 @@ function CreateApplicationModal({
                     selectedItem={guardian}
                     onFocus={() => setPersonType('GUARDIAN')}
                     data-qa="select-guardian"
-                    getItemDataQa={({ label }) => `guardian-${label}`}
+                    getItemValue={({ id }) => id}
+                    getItemLabel={({ name }) => name}
+                    getItemDataQa={({ name }) => `guardian-${name}`}
                   />
                 </div>
               </div>
@@ -254,17 +256,10 @@ function CreateApplicationModal({
           <Label>{i18nView.applicationType}</Label>
           <div>
             <Select
-              items={applicationTypes.map((type) => ({
-                value: type,
-                label: i18nView.applicationTypes[type]
-              }))}
-              onChange={(value) =>
-                value ? setType(value.value as ApplicationType) : undefined
-              }
-              selectedItem={{
-                value: type,
-                label: i18nView.applicationTypes[type]
-              }}
+              items={applicationTypes}
+              onChange={(value) => (value ? setType(value) : undefined)}
+              selectedItem={type}
+              getItemLabel={(type) => i18nView.applicationTypes[type]}
             />
           </div>
         </div>
