@@ -16,7 +16,7 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
-import Select from '../common/Select'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
@@ -174,10 +174,11 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
           </AccountHeader>
           {unitSelectionEnabled && (
             <UnitSelection>
-              <Select
+              <Combobox
                 items={unitOptions}
                 onChange={(val) => (val ? setSelectedUnit(val) : undefined)}
                 selectedItem={selectedUnit ?? null}
+                getItemLabel={(val) => val.label}
               />
             </UnitSelection>
           )}

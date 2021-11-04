@@ -34,7 +34,7 @@ import {
   getAttachmentBlob,
   saveMessageAttachment
 } from '../../api/attachments'
-import Select, { SelectOption } from '../../components/common/Select'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { useTranslation } from '../../state/i18n'
 import {
   deselectAll,
@@ -43,6 +43,7 @@ import {
   getSelectedBottomElements,
   getSelectorName,
   getSubTree,
+  ReactSelectOption,
   SelectorNode,
   updateSelector
 } from './SelectorNode'
@@ -50,7 +51,7 @@ import { isNestedGroupMessageAccount } from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
-  sender: SelectOption
+  sender: ReactSelectOption
   recipientAccountIds: UUID[]
   attachments: Attachment[]
 }
@@ -73,7 +74,7 @@ const emptyMessage = {
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: SelectOption
+  sender: ReactSelectOption
 ): Message =>
   draft
     ? { ...draft, sender, recipientAccountIds: [] }
@@ -89,9 +90,9 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
   )
 
 interface Props {
-  defaultSender: SelectOption
+  defaultSender: ReactSelectOption
   nestedAccounts: NestedMessageAccount[]
-  selectedUnit: SelectOption
+  selectedUnit: ReactSelectOption
   availableReceivers: SelectorNode
   onSend: (accountId: UUID, msg: PostMessageBody) => void
   onClose: (didChanges: boolean) => void
@@ -146,14 +147,17 @@ export default React.memo(function MessageEditor({
     [contentTouched, message, setDraft]
   )
 
-  const updateReceiverTree = useCallback((newSelection: SelectOption[]) => {
-    setReceiverTree((old) =>
-      createReceiverTree(
-        old,
-        newSelection.map((s) => s.value)
+  const updateReceiverTree = useCallback(
+    (newSelection: ReactSelectOption[]) => {
+      setReceiverTree((old) =>
+        createReceiverTree(
+          old,
+          newSelection.map((s) => s.value)
+        )
       )
-    )
-  }, [])
+    },
+    []
+  )
 
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
@@ -317,12 +321,13 @@ export default React.memo(function MessageEditor({
       <ScrollableFormArea>
         <Bold>{i18n.messages.messageEditor.sender}</Bold>
         <Gap size={'xs'} />
-        <Select
+        <Combobox
           items={senderOptions}
           onChange={(sender) =>
             sender ? updateMessage({ sender }) : undefined
           }
           selectedItem={message.sender}
+          getItemLabel={(sender) => sender.label}
           data-qa="select-sender"
           fullWidth
         />

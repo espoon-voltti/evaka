@@ -7,7 +7,7 @@ import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faChild, faExchange } from 'lib-icons'
-import Select, { SelectOption } from '../../../../components/common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { formatName } from '../../../../utils'
 import { UnitBackupCare } from '../../../../types/child'
 import { DaycareGroup } from '../../../../types/unit'
@@ -33,9 +33,9 @@ export default React.memo(function BackupCareGroupModal({
     .filter((group) => !group.startDate.isAfter(period.end))
     .filter((group) => !group.endDate || !group.endDate.isBefore(period.start))
 
-  const [group, setGroup] = useState<SelectOption | null>(
+  const [group, setGroup] = useState(
     backupCare.group?.id && openGroups[0]
-      ? { label: openGroups[0].name, value: openGroups[0].id }
+      ? { name: openGroups[0].name, id: openGroups[0].id }
       : null
   )
 
@@ -44,7 +44,7 @@ export default React.memo(function BackupCareGroupModal({
 
     void updateBackupCare(backupCare.id, {
       period,
-      groupId: group.value
+      groupId: group.id
     }).then((res) => {
       if (res.isFailure) {
         clearUiMode()
@@ -89,12 +89,11 @@ export default React.memo(function BackupCareGroupModal({
       <section>
         <div className="bold">{i18n.unit.placements.modal.group}</div>
         <Select
-          items={openGroups.map((group) => ({
-            value: group.id,
-            label: group.name
-          }))}
+          items={openGroups}
           onChange={setGroup}
           selectedItem={group}
+          getItemValue={({ id }) => id}
+          getItemLabel={({ name }) => name}
         />
       </section>
       <section>

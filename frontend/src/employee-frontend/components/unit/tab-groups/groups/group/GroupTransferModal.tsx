@@ -11,7 +11,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faExchange } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { transferGroup } from '../../../../../api/unit'
-import Select, { SelectOption } from '../../../../../components/common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
 import {
@@ -28,7 +28,7 @@ interface Props {
 
 interface GroupPlacementForm {
   startDate: LocalDate
-  group: SelectOption | null
+  group: DaycareGroup | null
   errors: string[]
 }
 
@@ -54,12 +54,7 @@ export default React.memo(function GroupTransferModal({
 
   const initialFormState = {
     startDate: minDate,
-    group: placement.groupId
-      ? {
-          value: placement.groupId,
-          label: groups.find((g) => g.id === placement.groupId)?.name ?? '??'
-        }
-      : null,
+    group: groups.find(({ id }) => id === placement.groupId) ?? null,
     errors: []
   }
   const [form, setForm] = useState<GroupPlacementForm>(initialFormState)
@@ -69,7 +64,7 @@ export default React.memo(function GroupTransferModal({
     if (!form.group) {
       errors.push(i18n.unit.placements.modal.errors.noGroup)
     } else {
-      const group = openGroups.find((g) => g.id == form.group?.value)
+      const group = openGroups.find((g) => g.id === form.group?.id)
       if (group) {
         if (form.startDate.isBefore(group.startDate))
           errors.push(i18n.unit.placements.modal.errors.groupNotStarted)
@@ -96,7 +91,7 @@ export default React.memo(function GroupTransferModal({
 
     void transferGroup(
       groupPlacementId || '',
-      form.group.value,
+      form.group.id,
       form.startDate
     ).then((res: Result<null>) => {
       if (res.isFailure) {
@@ -138,14 +133,12 @@ export default React.memo(function GroupTransferModal({
         <section>
           <div className="bold">{i18n.unit.placements.modal.group}</div>
           <Select
-            items={openGroups.map((group) => ({
-              value: group.id,
-              label: group.name
-            }))}
+            items={openGroups}
             onChange={(group) =>
               group ? assignFormValues({ group }) : undefined
             }
             selectedItem={form.group}
+            getItemLabel={(group) => group.name}
           />
         </section>
         <section>

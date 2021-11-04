@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { Combobox, RawElement } from 'e2e-playwright/utils/element'
+import { RawElement } from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { captureTextualDownload } from 'e2e-playwright/browser'
 
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
-  readonly #month = new Combobox(this.page, '[data-qa="select-month"]')
-  readonly #year = new Combobox(this.page, '[data-qa="select-year"]')
-  readonly #area = new Combobox(this.page, '[data-qa="select-area"]')
+  readonly #month = this.page.locator('[data-qa="select-month"] select')
+  readonly #year = this.page.locator('[data-qa="select-year"] select')
+  readonly #area = this.page.locator('[data-qa="select-area"] select')
 
   readonly #downloadCsvLink = new RawElement(
     this.page,
@@ -24,18 +24,15 @@ export default class ReportsPage {
   }
 
   async selectMonth(month: 'Tammikuu') {
-    await this.#month.fill(month)
-    await this.#month.findItem(month).click()
+    await this.#month.selectOption({ label: month.toLowerCase() })
   }
 
   async selectYear(year: number) {
-    await this.#year.fill(year.toString())
-    await this.#year.findItem(year.toString()).click()
+    await this.#year.selectOption({ label: String(year) })
   }
 
   async selectArea(area: string) {
-    await this.#area.fill(area)
-    await this.#area.findItem(area).click()
+    await this.#area.selectOption({ label: area })
   }
 
   async assertVoucherServiceProviderRowCount(expectedChildCount: number) {

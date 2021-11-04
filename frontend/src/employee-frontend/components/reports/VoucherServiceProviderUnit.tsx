@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fi } from 'date-fns/locale'
 import { Loading, Result } from 'lib-common/api'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
 import { H2, H3 } from 'lib-components/typography'
@@ -45,7 +44,6 @@ import {
 import { formatName } from '../../utils'
 import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
-import { SelectOption } from '../common/Select'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -107,19 +105,11 @@ const StyledTh = styled(Th)`
   white-space: nowrap;
 `
 
-const monthOptions: SelectOption[] = range(0, 12).map((num) => ({
-  value: String(num + 1),
-  label: String(fi.localize?.month(num))
-}))
+const monthOptions = range(1, 13)
 
 const minYear = new Date().getFullYear() - 4
 const maxYear = new Date().getFullYear()
-const yearOptions: SelectOption[] = range(maxYear, minYear - 1, -1).map(
-  (num) => ({
-    value: String(num),
-    label: String(num)
-  })
-)
+const yearOptions = range(maxYear, minYear - 1, -1)
 
 function VoucherServiceProviderUnit() {
   const location = useLocation()
@@ -193,41 +183,26 @@ function VoucherServiceProviderUnit() {
             {i18n.reports.voucherServiceProviderUnit.month}
           </FilterLabel>
           <FilterWrapper>
-            <Combobox
+            <Select
               items={monthOptions}
-              selectedItem={
-                monthOptions.find(
-                  ({ value }) => Number(value) === filters.month
-                ) ?? null
-              }
-              onChange={(option) =>
-                option
-                  ? setFilters({
-                      ...filters,
-                      month: Number(option.value)
-                    })
-                  : undefined
-              }
-              getItemLabel={(item) => item.label}
+              selectedItem={filters.month}
+              onChange={(month) => {
+                if (month !== null) {
+                  setFilters({ ...filters, month })
+                }
+              }}
+              getItemLabel={(month) => i18n.datePicker.months[month - 1]}
             />
           </FilterWrapper>
-          <FilterWrapper>
-            <Combobox
+          <FilterWrapper data-qa="select-year">
+            <Select
               items={yearOptions}
-              selectedItem={
-                yearOptions.find(
-                  ({ value }) => Number(value) === filters.year
-                ) ?? null
-              }
-              onChange={(option) =>
-                option
-                  ? setFilters({
-                      ...filters,
-                      year: Number(option.value)
-                    })
-                  : undefined
-              }
-              getItemLabel={(item) => item.label}
+              selectedItem={filters.year}
+              onChange={(year) => {
+                if (year !== null) {
+                  setFilters({ ...filters, year })
+                }
+              }}
             />
           </FilterWrapper>
         </FilterRow>
