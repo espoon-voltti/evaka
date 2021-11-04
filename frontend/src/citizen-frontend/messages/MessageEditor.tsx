@@ -6,7 +6,7 @@ import {
   CitizenMessageBody,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { useUser } from '../auth'
+import { useUser } from '../auth/state'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'

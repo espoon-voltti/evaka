@@ -15,7 +15,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { useUser } from '../auth'
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import {
   createApplication,

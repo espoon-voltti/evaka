@@ -17,11 +17,11 @@ export default function requireAuth<T>(
   WrappedComponent: React.ComponentType<RouteComponentProps<T>>,
   requireStrong = true
 ) {
-  return function WithRequireAuth(props: RouteComponentProps<T>) {
+  function WithRequireAuth(props: RouteComponentProps<T>) {
     const { user } = useContext(AuthContext)
 
-    return user ? (
-      requireStrong && user.userType === 'CITIZEN_WEAK' ? (
+    return user.isSuccess && user.value ? (
+      requireStrong && user.value.userType === 'CITIZEN_WEAK' ? (
         refreshRedirect(getLoginUri(props.location.pathname))
       ) : (
         <WrappedComponent {...props} />
@@ -32,4 +32,6 @@ export default function requireAuth<T>(
       refreshRedirect(getWeakLoginUri(props.location.pathname))
     )
   }
+
+  return React.memo(WithRequireAuth) as typeof WithRequireAuth
 }

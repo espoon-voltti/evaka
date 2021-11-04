@@ -16,7 +16,7 @@ import {
 } from '../api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { useTranslation } from '../../localization'
-import { useUser } from '../../auth'
+import { useUser } from '../../auth/state'
 import { OverlayContext } from '../../overlay/state'
 import {
   apiDataToFormData,

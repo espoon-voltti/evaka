@@ -11,7 +11,7 @@ import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
-import { useUser } from '../auth'
+import { useUser } from '../auth/state'
 import { MessageContext, MessagePageState } from '../messages/state'
 import {
   PedagogicalDocumentsContext,

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Applications from 'citizen-frontend/applications/Applications'
-import { useUser } from 'citizen-frontend/auth'
-import Decisions from 'citizen-frontend/decisions/decisions-page/Decisions'
-import { useTranslation } from 'citizen-frontend/localization'
-import MapView from 'citizen-frontend/map/MapView'
+import Applications from '../applications/Applications'
+import { useUser } from '../auth/state'
+import Decisions from '../decisions/decisions-page/Decisions'
+import { useTranslation } from '../localization'
+import MapView from '../map/MapView'
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import React from 'react'

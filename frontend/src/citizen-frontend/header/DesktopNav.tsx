@@ -18,7 +18,7 @@ import React, { useCallback, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-import { useUser } from '../auth'
+import { useUser } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 
