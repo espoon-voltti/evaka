@@ -13,7 +13,7 @@ import {
   Switch,
   useParams
 } from 'react-router-dom'
-import { ErrorPage } from 'lib-components/molecules/ErrorPage'
+import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
 import { AuthStatus, getAuthStatus } from './api/auth'

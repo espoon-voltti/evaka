@@ -10,7 +10,7 @@ type Props = {
   justify?: 'flex-start' | 'flex-end' | 'center'
 }
 
-export default styled.div<Props>`
+const ButtonContainer = styled.div<Props>`
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
@@ -37,3 +37,5 @@ export default styled.div<Props>`
     }
   }
 `
+
+export default ButtonContainer

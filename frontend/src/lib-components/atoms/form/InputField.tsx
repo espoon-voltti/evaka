@@ -186,7 +186,7 @@ export interface TextInputProps extends BaseProps {
   inputRef?: RefObject<HTMLInputElement>
 }
 
-function InputField({
+export default React.memo(function InputField({
   value,
   onChange,
   onFocus,
@@ -279,6 +279,4 @@ function InputField({
       )}
     </Wrapper>
   )
-}
-
-export default InputField
+})

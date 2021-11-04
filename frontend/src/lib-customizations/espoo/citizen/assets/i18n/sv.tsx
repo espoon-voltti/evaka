@@ -9,6 +9,9 @@ import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Gap } from 'lib-components/white-space'
 
+const yes = 'Ja'
+const no = 'Nej'
+
 const sv: Translations = {
   common: {
     title: 'Småbarnspedagogik',
@@ -22,8 +25,9 @@ const sv: Translations = {
     delete: 'Ta bort',
     edit: 'Redigera',
     add: 'Lägg till',
-    yes: 'Ja',
-    no: 'Nej',
+    yes,
+    no,
+    yesno: (value: boolean): string => (value ? yes : no),
     select: 'Utvalda',
     page: 'Sida',
     unit: {

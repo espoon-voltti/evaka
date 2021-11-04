@@ -17,6 +17,7 @@ interface Props {
   content: EvaluationDiscussionContent
   setContent: Dispatch<SetStateAction<EvaluationDiscussionContent>>
 }
+
 export function EditableEvaluationDiscussionSection({
   sectionIndex,
   content,
@@ -35,10 +36,10 @@ export function EditableEvaluationDiscussionSection({
       </Label>
       <TextArea
         value={content.evaluation}
-        onChange={(e) =>
+        onChange={(value) =>
           setContent((prev) => ({
             ...prev,
-            evaluation: e.target.value
+            evaluation: value
           }))
         }
       />
@@ -72,10 +73,10 @@ export function EditableEvaluationDiscussionSection({
       </Label>
       <TextArea
         value={content.participants}
-        onChange={(e) =>
+        onChange={(value) =>
           setContent((prev) => ({
             ...prev,
-            participants: e.target.value
+            participants: value
           }))
         }
       />
@@ -87,10 +88,10 @@ export function EditableEvaluationDiscussionSection({
       </Label>
       <TextArea
         value={content.guardianViewsAndCollaboration}
-        onChange={(e) =>
+        onChange={(value) =>
           setContent((prev) => ({
             ...prev,
-            guardianViewsAndCollaboration: e.target.value
+            guardianViewsAndCollaboration: value
           }))
         }
       />

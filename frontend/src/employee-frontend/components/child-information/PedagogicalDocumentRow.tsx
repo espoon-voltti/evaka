@@ -133,11 +133,8 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         {editMode ? (
           <TextArea
             value={pedagogicalDocument.description ?? ''}
-            onChange={(e) =>
-              setPedagogicalDocument((old) => ({
-                ...old,
-                description: e.target.value
-              }))
+            onChange={(value) =>
+              setPedagogicalDocument((old) => ({ ...old, description: value }))
             }
           />
         ) : (

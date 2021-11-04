@@ -28,7 +28,7 @@ interface MultiSelectProps<T> {
   'data-qa'?: string
 }
 
-export default function MultiSelect<T>({
+function MultiSelect<T>({
   value,
   options,
   getOptionId,
@@ -124,12 +124,16 @@ export default function MultiSelect<T>({
   )
 }
 
+export default React.memo(MultiSelect) as typeof MultiSelect
+
 const OptionWrapper = styled.div`
   cursor: pointer;
+
   &:hover,
   &.focused {
     background-color: ${({ theme: { colors } }) => colors.main.lighter};
   }
+
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
 `
 

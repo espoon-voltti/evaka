@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { Translations, useTranslation } from '../localization'
+import { useTranslation } from '../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -48,9 +48,9 @@ export default React.memo(function IncomeStatementView({
     [incomeStatementId]
   )
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     history.push('edit')
-  }
+  }, [history])
 
   return renderResult(result, (incomeStatement) => (
     <Container>
@@ -84,9 +84,12 @@ export default React.memo(function IncomeStatementView({
   ))
 })
 
-function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
+const IncomeInfo = React.memo(function IncomeInfo({
+  incomeStatement
+}: {
+  incomeStatement: Income
+}) {
   const t = useTranslation()
-  const yesno = makeYesNo(t)
   return (
     <>
       {incomeStatement.gross && (
@@ -105,11 +108,11 @@ function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
       <H2>{t.income.view.otherInfoTitle}</H2>
       <Row
         label={t.income.view.student}
-        value={yesno(incomeStatement.student)}
+        value={t.common.yesno(incomeStatement.student)}
       />
       <Row
         label={t.income.view.alimonyPayer}
-        value={yesno(incomeStatement.alimonyPayer)}
+        value={t.common.yesno(incomeStatement.alimonyPayer)}
       />
       <Row
         label={t.income.view.otherInfo}
@@ -119,9 +122,13 @@ function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
       <CitizenAttachments attachments={incomeStatement.attachments} />
     </>
   )
-}
+})
 
-function GrossIncome({ gross }: { gross: Gross }) {
+const GrossIncome = React.memo(function GrossIncome({
+  gross
+}: {
+  gross: Gross
+}) {
   const t = useTranslation()
   return (
     <>
@@ -161,9 +168,9 @@ function GrossIncome({ gross }: { gross: Gross }) {
       )}
     </>
   )
-}
+})
 
-function EstimatedIncome({
+const EstimatedIncome = React.memo(function EstimatedIncome({
   estimatedIncome
 }: {
   estimatedIncome: EstimatedIncome
@@ -184,11 +191,14 @@ function EstimatedIncome({
       </FixedSpaceColumn>
     </FixedSpaceRow>
   )
-}
+})
 
-function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
+const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
+  entrepreneur
+}: {
+  entrepreneur: Entrepreneur
+}) {
   const t = useTranslation()
-  const yesno = makeYesNo(t)
 
   return (
     <>
@@ -207,11 +217,11 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
       />
       <Row
         label={t.income.view.spouseWorksInCompany}
-        value={yesno(entrepreneur.spouseWorksInCompany)}
+        value={t.common.yesno(entrepreneur.spouseWorksInCompany)}
       />
       <Row
         label={t.income.view.startupGrant}
-        value={yesno(entrepreneur.startupGrant)}
+        value={t.common.yesno(entrepreneur.startupGrant)}
       />
       {entrepreneur.checkupConsent && (
         <Row
@@ -288,9 +298,13 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
       )}
     </>
   )
-}
+})
 
-function AccountantInfo({ accountant }: { accountant: Accountant }) {
+const AccountantInfo = React.memo(function AccountantInfo({
+  accountant
+}: {
+  accountant: Accountant
+}) {
   const t = useTranslation()
   return (
     <>
@@ -301,9 +315,13 @@ function AccountantInfo({ accountant }: { accountant: Accountant }) {
       <Row label={t.income.view.address} value={accountant.address} />
     </>
   )
-}
+})
 
-function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
+const CitizenAttachments = React.memo(function CitizenAttachments({
+  attachments
+}: {
+  attachments: Attachment[]
+}) {
   const t = useTranslation()
   return (
     <>
@@ -318,9 +336,13 @@ function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
       )}
     </>
   )
-}
+})
 
-function UploadedFiles({ files }: { files: Attachment[] }) {
+const UploadedFiles = React.memo(function UploadedFiles({
+  files
+}: {
+  files: Attachment[]
+}) {
   const { setErrorMessage } = useContext(OverlayContext)
   const t = useTranslation()
   const onFileUnavailable = () =>
@@ -343,7 +365,7 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
       ))}
     </FixedSpaceColumn>
   )
-}
+})
 
 const FileIcon = styled(FontAwesomeIcon)`
   color: ${(p) => p.theme.colors.main.primary};
@@ -357,7 +379,7 @@ const EditButtonContainer = styled.div`
   justify-content: flex-end;
 `
 
-function Row({
+const Row = React.memo(function Row({
   label,
   light,
   value
@@ -375,13 +397,7 @@ function Row({
       <Gap size="s" />
     </>
   )
-}
-
-function makeYesNo(t: Translations) {
-  return (value: boolean): string => {
-    return value ? t.common.yes : t.common.no
-  }
-}
+})
 
 const LabelColumn = styled(Label)`
   flex: 0 0 auto;

@@ -23,7 +23,7 @@ type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &
     | { close: () => void }
   )
 
-function InfoModal({ children, ...props }: Props) {
+export default React.memo(function InfoModal({ children, ...props }: Props) {
   return (
     <BaseModal
       {...props}
@@ -61,6 +61,4 @@ function InfoModal({ children, ...props }: Props) {
       )}
     </BaseModal>
   )
-}
-
-export default InfoModal
+})

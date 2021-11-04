@@ -40,7 +40,7 @@ interface ErrorSegmentProps {
   compact?: boolean
 }
 
-function ErrorSegment({
+export default React.memo(function ErrorSegment({
   title = 'Tietojen hakeminen ei onnistunut',
   info,
   compact
@@ -59,6 +59,4 @@ function ErrorSegment({
       )}
     </StyledSegment>
   )
-}
-
-export default ErrorSegment
+})

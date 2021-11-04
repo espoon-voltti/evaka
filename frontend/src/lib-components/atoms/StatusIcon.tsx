@@ -24,7 +24,9 @@ interface UnderRowStatusIconProps extends BaseProps {
   status?: InfoStatus
 }
 
-function UnderRowStatusIcon({ status }: UnderRowStatusIconProps) {
+export default React.memo(function UnderRowStatusIcon({
+  status
+}: UnderRowStatusIconProps) {
   const { colors } = useTheme()
   return (
     <StatusIcon>
@@ -39,6 +41,4 @@ function UnderRowStatusIcon({ status }: UnderRowStatusIconProps) {
       )}
     </StatusIcon>
   )
-}
-
-export default UnderRowStatusIcon
+})

@@ -17,7 +17,7 @@ const ResponsiveText = styled.span<{ breakpoint: string }>`
   }
 `
 
-function ResponsiveAddButton({
+export default React.memo(function ResponsiveAddButton({
   breakpoint = tabletMin,
   text,
   ...props
@@ -28,6 +28,4 @@ function ResponsiveAddButton({
       {...props}
     />
   )
-}
-
-export default ResponsiveAddButton
+})

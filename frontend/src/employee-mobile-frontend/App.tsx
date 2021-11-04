@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import { ErrorPage } from 'lib-components/molecules/ErrorPage'
+import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
 import React from 'react'
 import {

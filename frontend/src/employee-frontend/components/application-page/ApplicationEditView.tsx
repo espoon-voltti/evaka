@@ -505,10 +505,8 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.serviceNeed.assistanceDesc}</Label>
               <TextArea
                 value={child.assistanceDescription}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  setApplication(
-                    set('form.child.assistanceDescription', e.target.value)
-                  )
+                onChange={(value) => {
+                  setApplication(set('form.child.assistanceDescription', value))
                 }}
                 info={validationErrorInfo('form.child.assistanceDescription')}
                 required={true}
@@ -1096,8 +1094,8 @@ export default React.memo(function ApplicationEditView({
           <Label>{i18n.application.additionalInfo.applicationInfo}</Label>
           <TextArea
             value={otherInfo}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-              setApplication(set('form.otherInfo', e.target.value))
+            onChange={(value) => {
+              setApplication(set('form.otherInfo', value))
             }}
           />
 
@@ -1106,16 +1104,16 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.additionalInfo.allergies}</Label>
               <TextArea
                 value={child.allergies}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  setApplication(set('form.child.allergies', e.target.value))
+                onChange={(value) => {
+                  setApplication(set('form.child.allergies', value))
                 }}
               />
 
               <Label>{i18n.application.additionalInfo.diet}</Label>
               <TextArea
                 value={application.form.child.diet}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  setApplication(set('form.child.diet', e.target.value))
+                onChange={(value) => {
+                  setApplication(set('form.child.diet', value))
                 }}
               />
             </>

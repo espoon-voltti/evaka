@@ -107,7 +107,7 @@ type RadioProps = BaseProps & {
   id?: string
 } & ({ label: string } | { label: ReactNode; ariaLabel: string })
 
-function Radio({
+export default React.memo(function Radio({
   checked,
   onChange,
   name,
@@ -154,6 +154,4 @@ function Radio({
       <label htmlFor={id}>{props.label}</label>
     </Wrapper>
   )
-}
-
-export default Radio
+})

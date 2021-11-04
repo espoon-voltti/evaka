@@ -52,13 +52,15 @@ interface SpinnerSegmentProps {
   size?: SpacingSize
 }
 
-export function SpinnerSegment({ size = 'm' }: SpinnerSegmentProps) {
+export const SpinnerSegment = React.memo(function SpinnerSegment({
+  size = 'm'
+}: SpinnerSegmentProps) {
   return (
     <SpinnerWrapper size={defaultMargins[size]}>
       <Spinner />
     </SpinnerWrapper>
   )
-}
+})
 
 const SpinnerOverlayRoot = styled.div`
   position: absolute;
@@ -75,19 +77,19 @@ const SpinnerOverlayRoot = styled.div`
   justify-content: center;
 `
 
-export function SpinnerOverlay() {
+export const SpinnerOverlay = React.memo(function SpinnerOverlay() {
   return (
     <SpinnerOverlayRoot>
       <Spinner />
     </SpinnerOverlayRoot>
   )
-}
+})
 
 const Relative = styled.div`
   position: relative;
 `
 
-export function LoadableContent({
+export const LoadableContent = React.memo(function LoadableContent({
   loading,
   children
 }: {
@@ -100,6 +102,6 @@ export function LoadableContent({
       {children}
     </Relative>
   )
-}
+})
 
 export default Spinner

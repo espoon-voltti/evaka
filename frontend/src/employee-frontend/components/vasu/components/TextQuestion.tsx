@@ -25,7 +25,7 @@ export function TextQuestion({
       return <ValueOrNoRecord text={value} />
     }
     return multiline ? (
-      <TextArea value={value} onChange={(e) => onChange(e.target.value)} />
+      <TextArea value={value} onChange={onChange} />
     ) : (
       <div>
         <InputField value={value} onChange={onChange} width="L" />

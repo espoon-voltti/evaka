@@ -6,7 +6,7 @@ import React from 'react'
 import { H1, H2, H3, H4 } from '../typography'
 import { BaseProps } from '../utils'
 
-interface Props extends BaseProps {
+export interface TitleProps extends BaseProps {
   'data-qa'?: string
   size?: 1 | 2 | 3 | 4
   children: React.ReactNode
@@ -17,7 +17,7 @@ interface Props extends BaseProps {
   primary?: boolean
 }
 
-export default function Title({
+export default React.memo(function Title({
   'data-qa': dataQa,
   size = 1,
   children,
@@ -27,7 +27,7 @@ export default function Title({
   smaller,
   bold,
   primary
-}: Props) {
+}: TitleProps) {
   switch (size) {
     case 1:
       return (
@@ -90,4 +90,4 @@ export default function Title({
         </H4>
       )
   }
-}
+})

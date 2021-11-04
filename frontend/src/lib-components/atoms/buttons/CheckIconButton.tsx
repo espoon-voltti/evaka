@@ -36,7 +36,7 @@ interface CheckIconButtonProps extends BaseProps {
   active: boolean
 }
 
-function CheckIconButton({
+export default React.memo(function CheckIconButton({
   className,
   'data-qa': dataQa,
   onClick,
@@ -52,6 +52,4 @@ function CheckIconButton({
       <FontAwesomeIcon icon={faCheck} />
     </StyledButton>
   )
-}
-
-export default CheckIconButton
+})

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { RefObject, useState } from 'react'
+import React, { RefObject, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import TextareaAutosize from 'react-autosize-textarea'
@@ -12,7 +12,7 @@ import { InputFieldUnderRow, InputInfo, InputRow } from './InputField'
 
 interface TextAreaInputProps extends BaseProps {
   value: string
-  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onChange?: (value: string) => void
   onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
@@ -33,7 +33,7 @@ interface TextAreaInputProps extends BaseProps {
   inputRef?: RefObject<HTMLTextAreaElement>
 }
 
-export function TextArea({
+export default React.memo(function TextArea({
   value,
   onChange,
   onFocus,
@@ -61,12 +61,21 @@ export function TextArea({
   const infoText = hideError ? undefined : info?.text
   const infoStatus = hideError ? undefined : info?.status
 
+  const handleChange = useMemo(
+    () =>
+      onChange
+        ? (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            onChange(e.target.value)
+        : undefined,
+    [onChange]
+  )
+
   return (
     <div>
       <InputRow>
         <StyledTextArea
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
           onFocus={onFocus}
           onBlur={(e) => {
             setTouched(true)
@@ -98,7 +107,7 @@ export function TextArea({
       )}
     </div>
   )
-}
+})
 
 const StyledTextArea = styled(TextareaAutosize)`
   display: block;
@@ -127,6 +136,7 @@ const StyledTextArea = styled(TextareaAutosize)`
   box-shadow: none;
 
   outline: none;
+
   &:focus {
     border-width: 2px;
     border-style: solid;
@@ -137,6 +147,7 @@ const StyledTextArea = styled(TextareaAutosize)`
   &.warning {
     border-width: 2px;
     margin-bottom: -1px;
+
     &:focus {
       margin-bottom: -1px;
     }
@@ -144,6 +155,7 @@ const StyledTextArea = styled(TextareaAutosize)`
 
   &.success {
     border-bottom: 2px solid ${({ theme: { colors } }) => colors.accents.green};
+
     &:focus {
       border-color: ${({ theme: { colors } }) => colors.accents.green};
     }
@@ -151,9 +163,9 @@ const StyledTextArea = styled(TextareaAutosize)`
 
   &.warning {
     border-bottom: 2px solid ${({ theme: { colors } }) => colors.accents.orange};
+
     &:focus {
       border-color: ${({ theme: { colors } }) => colors.accents.orange};
     }
   }
 `
-export default TextArea

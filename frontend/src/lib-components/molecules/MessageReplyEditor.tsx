@@ -107,7 +107,7 @@ interface Props {
   i18n: Labels
 }
 
-export function MessageReplyEditor({
+export const MessageReplyEditor = React.memo(function MessageReplyEditor({
   i18n,
   onSubmit,
   onUpdateContent,
@@ -139,9 +139,7 @@ export function MessageReplyEditor({
           rows={4}
           placeholder={i18n.messagePlaceholder}
           value={replyContent}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            onUpdateContent(e.target.value)
-          }
+          onChange={(value) => onUpdateContent(value)}
           data-qa={'message-reply-content'}
         />
       </EditorRow>
@@ -158,4 +156,4 @@ export function MessageReplyEditor({
       </EditorRow>
     </>
   )
-}
+})
