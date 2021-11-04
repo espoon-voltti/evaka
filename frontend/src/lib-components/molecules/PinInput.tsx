@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import { range } from 'lodash'
 import React, { RefObject, useMemo, useRef } from 'react'
 import styled from 'styled-components'
-import {
+import InputField, {
   InputFieldUnderRow,
   InputInfo,
   StyledInput
@@ -121,5 +121,32 @@ export const PinInput = React.memo(function PinInput({
         </InputFieldUnderRow>
       )}
     </Centered>
+  )
+})
+
+interface PlainPinInputProps {
+  pin: string
+  onChange: (code: string) => void
+  info?: InputInfo
+  inputRef?: RefObject<HTMLInputElement>
+}
+export const PlainPinInput = React.memo(function PlainPinInput({
+  info,
+  inputRef,
+  onChange,
+  pin
+}: PlainPinInputProps) {
+  return (
+    <InputField
+      data-qa="pin-input"
+      type="password"
+      inputMode="numeric"
+      width="s"
+      maxLength={4}
+      onChange={onChange}
+      value={pin}
+      info={info}
+      inputRef={inputRef}
+    />
   )
 })
