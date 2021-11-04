@@ -119,14 +119,19 @@ export const checkMobileEmployeeIdToken = (redisClient: AsyncRedisClient) =>
   toMiddleware(async (req) => {
     if (req.user?.userType !== 'MOBILE') return
 
-    if (req.user && req.session.employeeIdToken) {
-      await redisClient.expire(
-        toMobileEmployeeIdKey(req.session.employeeIdToken),
-        pinSessionTimeoutSeconds
-      )
-      const employeeId = await redisClient.get(
-        toMobileEmployeeIdKey(req.session.employeeIdToken)
-      )
-      if (employeeId) req.user.mobileEmployeeId = employeeId
+    if (!req.session.employeeIdToken) {
+      req.user.mobileEmployeeId = undefined
+      return
+    }
+
+    const tokenKey = toMobileEmployeeIdKey(req.session.employeeIdToken)
+    const employeeId = await redisClient.get(tokenKey)
+    if (employeeId) {
+      // refresh session
+      await redisClient.expire(tokenKey, pinSessionTimeoutSeconds)
+      req.user.mobileEmployeeId = employeeId
+    } else {
+      req.user.mobileEmployeeId = undefined
+      req.session.employeeIdToken = undefined
     }
   })

@@ -112,6 +112,8 @@ function internalApiRouter() {
 
   router.post('/auth/mobile', mobileDeviceSession)
 
+  router.use(checkMobileEmployeeIdToken(new AsyncRedisClient(redisClient)))
+
   router.get(
     '/auth/status',
     refreshMobileSession,
@@ -126,7 +128,6 @@ function internalApiRouter() {
     '/auth/pin-login',
     pinLoginRequestHandler(new AsyncRedisClient(redisClient))
   )
-  router.use(checkMobileEmployeeIdToken(new AsyncRedisClient(redisClient)))
   router.post(
     '/attachments/applications/:applicationId',
     createProxy({ multipart: true })
