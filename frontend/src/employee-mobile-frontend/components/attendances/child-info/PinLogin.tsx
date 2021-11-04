@@ -2,6 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Result, Success } from 'lib-common/api'
+import { ChildResult, Staff } from 'lib-common/generated/api-types/attendance'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import { InputInfo } from 'lib-components/atoms/form/InputField'
+import Title from 'lib-components/atoms/Title'
+import { ContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { fontWeights } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
+import { sortBy } from 'lodash'
 import React, {
   useCallback,
   useContext,
@@ -13,33 +29,17 @@ import React, {
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { sortBy } from 'lodash'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { ContentArea } from 'lib-components/layout/Container'
-import { Result, Success } from 'lib-common/api'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Title from 'lib-components/atoms/Title'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Combobox from 'lib-components/atoms/form/Combobox'
-import { faArrowLeft, faArrowRight, faUserUnlock } from 'lib-icons'
-import { fontWeights } from 'lib-components/typography'
-import { ChildResult, Staff } from 'lib-common/generated/api-types/attendance'
-import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
+import { PlainPinInput } from 'lib-components/molecules/PinInput'
+import { getChildSensitiveInformation } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
+import { useTranslation } from '../../../state/i18n'
+import { UnitContext } from '../../../state/unit'
 import { renderResult, UnwrapResult } from '../../async-rendering'
 import { TallContentArea } from '../../mobile/components'
-import { getChildSensitiveInformation } from '../../../api/attendances'
-import { useTranslation } from '../../../state/i18n'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
-import ChildSensitiveInfo from './ChildSensitiveInfo'
-import PinLogout from './PinLogout'
-import useInactivityTimeout from './InactivityTimeout'
 import { BackButtonInline } from '../components'
-import { UnitContext } from '../../../state/unit'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import ChildSensitiveInfo from './ChildSensitiveInfo'
+import useInactivityTimeout from './InactivityTimeout'
+import PinLogout from './PinLogout'
 
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
@@ -59,7 +59,7 @@ export default React.memo(function PinLogin() {
     name: string
     id: string
   }>()
-  const [selectedPin, setSelectedPin] = useState(EMPTY_PIN)
+  const [pinCode, setPinCode] = useState('')
   const [loggingOut, setLoggingOut] = useState<boolean>(false)
 
   const [childSensitiveResult, setChildSensitiveResult] = useState<
@@ -73,9 +73,9 @@ export default React.memo(function PinLogin() {
 
   const fetchChildSensitiveInfo = useCallback(() => {
     if (selectedStaff) {
-      loadChildSensitiveInfo(childId, selectedStaff.id, selectedPin.join(''))
+      loadChildSensitiveInfo(childId, selectedStaff.id, pinCode)
     }
-  }, [childId, loadChildSensitiveInfo, selectedPin, selectedStaff])
+  }, [childId, loadChildSensitiveInfo, pinCode, selectedStaff])
 
   const pinInputRef = useRef<HTMLInputElement>(null)
   useLayoutEffect(() => {
@@ -128,7 +128,7 @@ export default React.memo(function PinLogin() {
   )
 
   const logout = useCallback(() => {
-    setSelectedPin(EMPTY_PIN)
+    setPinCode('')
     history.goBack()
   }, [history])
 
@@ -216,13 +216,13 @@ export default React.memo(function PinLogin() {
                       <>
                         <Key>{i18n.attendances.pin.pinCode}</Key>
                         <FixedSpaceRow spacing="m" alignItems="center">
-                          <PinInput
-                            onPinChange={setSelectedPin}
-                            pin={selectedPin}
+                          <PlainPinInput
+                            onChange={setPinCode}
+                            pin={pinCode}
                             info={inputInfo}
                             inputRef={pinInputRef}
                           />
-                          {selectedPin.join('').length === 4 && (
+                          {pinCode.length === 4 && (
                             <IconButton
                               icon={faArrowRight}
                               onClick={fetchChildSensitiveInfo}

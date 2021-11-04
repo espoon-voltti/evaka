@@ -5,7 +5,6 @@
 import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
 import { Combobox, RawElement } from 'e2e-playwright/utils/element'
 import { Child } from 'e2e-test-common/dev-api/types'
-import { range } from 'lodash'
 import { Page } from 'playwright'
 
 export default class MobileChildPage {
@@ -74,9 +73,7 @@ export default class MobileChildPage {
     await this.#sensitiveInfoLink.click()
     await this.#staffCombobox.fill(employeeName)
     await this.#staffCombobox.findItem(employeeName).click()
-    for (const i of range(0, employeePin.length)) {
-      await this.#pinInput.locator('input').nth(i).type(employeePin[i])
-    }
+    await this.#pinInput.type(employeePin)
     await this.#submitPin.click()
   }
 
