@@ -10,7 +10,14 @@ import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import {
   Message,
@@ -28,14 +35,12 @@ import { MessageTypeChip } from './MessageTypeChip'
 import { MessageType } from 'lib-common/generated/enums'
 import { View } from './types-view'
 import { UUID } from 'lib-common/types'
+import { faReply } from '@fortawesome/free-solid-svg-icons'
 
 const MessageContainer = styled.div`
   background-color: white;
   padding: ${defaultMargins.L};
-
-  & + & {
-    margin-top: ${defaultMargins.s};
-  }
+  margin-top: ${defaultMargins.s};
 
   h2 {
     margin: 0;
@@ -51,6 +56,23 @@ const TitleRow = styled.div`
     margin-top: ${defaultMargins.L};
   }
 `
+
+const StickyTitleRow = styled(TitleRow)`
+  position: sticky;
+  top: 0;
+  padding: 15px;
+  background: white;
+  max-height: 100px;
+`
+
+const StickyTitleRowTitle = styled(H2)`
+  top: 0;
+  padding: 15px;
+  background: white;
+  overflow: scroll;
+  max-height: 100px;
+`
+
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
 `
@@ -65,8 +87,6 @@ const MessageContent = styled.div`
 `
 
 function SingleMessage({
-  title,
-  type,
   message,
   index,
   onAttachmentUnavailable
@@ -79,11 +99,6 @@ function SingleMessage({
 }) {
   return (
     <MessageContainer>
-      {title && type && (
-        <TitleRow>
-          <H2>{title}</H2> <MessageTypeChip type={type} />
-        </TitleRow>
-      )}
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
@@ -122,6 +137,14 @@ const ScrollContainer = styled.div`
   overflow-y: auto;
 `
 
+const ReplyToThreadButton = styled(InlineButton)`
+  padding-left: 28px;
+`
+const AutoScrollPositionSpan = styled.span<{ top: string }>`
+  position: absolute;
+  top: ${(p) => p.top};
+`
+
 interface Props {
   accountId: UUID
   goBack: () => void
@@ -139,6 +162,13 @@ export function SingleThreadView({
   const { getReplyContent, sendReply, replyState, setReplyContent } =
     useContext(MessageContext)
   const { setErrorMessage } = useContext(UIContext)
+  const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
+  const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState<number>(0)
+  const stickyTitleRowRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setStickyTitleRowHeight(stickyTitleRowRef.current?.clientHeight || 0)
+  }, [setStickyTitleRowHeight, stickyTitleRowRef])
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(
@@ -146,6 +176,14 @@ export function SingleThreadView({
     [setReplyContent, threadId]
   )
   const { recipients, onToggleRecipient } = useRecipients(messages, accountId)
+
+  const autoScrollRef = useRef<HTMLSpanElement>(null)
+  const scrollToBottom = () => {
+    autoScrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, replyEditorVisible])
 
   const onSubmitReply = () =>
     sendReply({
@@ -192,29 +230,55 @@ export function SingleThreadView({
       </ContentArea>
       <Gap size="xs" />
       <ScrollContainer>
+        {title && type && (
+          <StickyTitleRow ref={stickyTitleRowRef}>
+            <StickyTitleRowTitle>{title}</StickyTitleRowTitle>{' '}
+            <MessageTypeChip type={type} />
+          </StickyTitleRow>
+        )}
         {messages.map((message, idx) => (
-          <SingleMessage
-            key={message.id}
-            message={message}
-            title={idx === 0 ? title : undefined}
-            type={idx === 0 ? type : undefined}
-            index={idx}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-          />
+          <React.Fragment key={`${message.id}-fragment`}>
+            {!replyEditorVisible && idx === messages.length - 1 && (
+              <div style={{ position: 'relative' }}>
+                <AutoScrollPositionSpan
+                  top={`-${stickyTitleRowHeight}px`}
+                  ref={autoScrollRef}
+                />
+              </div>
+            )}
+            <SingleMessage
+              key={message.id}
+              message={message}
+              index={idx}
+              onAttachmentUnavailable={onAttachmentUnavailable}
+            />
+          </React.Fragment>
         ))}
-        {canReply && view === 'RECEIVED' && (
+        {canReply && view == 'RECEIVED' && replyEditorVisible ? (
           <MessageContainer>
             <MessageReplyEditor
+              replyState={replyState}
+              onSubmit={onSubmitReply}
+              onUpdateContent={onUpdateContent}
               recipients={recipients}
               onToggleRecipient={onToggleRecipient}
               replyContent={replyContent}
-              onUpdateContent={onUpdateContent}
               i18n={editorLabels}
-              onSubmit={onSubmitReply}
-              replyState={replyState}
             />
           </MessageContainer>
+        ) : (
+          <>
+            <Gap size={'s'} />
+            <ReplyToThreadButton
+              icon={faReply}
+              onClick={() => setReplyEditorVisible(true)}
+              data-qa="message-reply-editor-btn"
+              text={i18n.messages.replyToThread}
+            />
+            <Gap size={'m'} />
+          </>
         )}
+        {replyEditorVisible && <span ref={autoScrollRef} />}
       </ScrollContainer>
     </ThreadContainer>
   )

@@ -2728,6 +2728,7 @@ export const fi = {
   messages: {
     inboxTitle: 'Viestit',
     emptyInbox: 'Tämä kansio on tyhjä',
+    replyToThread: 'Vastaa viestiin',
     unitList: {
       title: 'Yksiköt'
     },
