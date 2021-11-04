@@ -8,10 +8,10 @@ import passport from 'passport'
 import path from 'path'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
-import { adMock, gatewayRole, nodeEnv } from '../../../config'
+import { adMock, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
 import { getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
-import { logAuditEvent, logDebug } from '../../../logging'
+import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
 import { logoutExpress, saveLogoutToken } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
@@ -39,18 +39,21 @@ function getDefaultPageUrl(req: express.Request): string {
 
 function getRedirectUrl(req: express.Request): string {
   const relayState = req.body.RelayState || req.query.RelayState
-  // Trust relayState only if it's a abolute path
+
   if (typeof relayState === 'string' && path.isAbsolute(relayState)) {
-    try {
-      const dummyOrigin = 'http://evaka'
-      const url = new URL(relayState, dummyOrigin)
-      if (url.origin === dummyOrigin) {
-        return `${url.pathname}${url.search}${url.hash}`
+    if (evakaBaseUrl === 'local') {
+      return relayState
+    } else {
+      const baseUrl = evakaBaseUrl.replace(/\/$/, '')
+      const redirect = new URL(relayState, baseUrl)
+      if (redirect.origin == baseUrl) {
+        return redirect.href
       }
-    } catch (e) {
-      // fall back to default page
     }
   }
+
+  logError('Invalid RelayState for redirect', req)
+
   return getDefaultPageUrl(req)
 }
 

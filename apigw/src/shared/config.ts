@@ -97,6 +97,10 @@ export const jwtPrivateKey = required(
 )
 export const jwtKid = process.env.JWT_KID ?? `evaka-${gatewayRole || 'dev'}-gw`
 
+export const evakaBaseUrl = required(
+  process.env.EVAKA_BASE_URL ?? ifNodeEnv(['local', 'test'], 'local')
+)
+
 export const evakaServiceUrl = required(
   process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
