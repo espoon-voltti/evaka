@@ -34,7 +34,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
     <p th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${validFrom})}"></p>
 
-    <p th:utext="${placementUnit.name}" ></p>
+    <p th:text="${placementUnit.name}" ></p>
 
     <p th:if="${isReliefDecision}"
        th:text="#{text.relief.decision(${coPayment}, ${validFrom})}"></p>
