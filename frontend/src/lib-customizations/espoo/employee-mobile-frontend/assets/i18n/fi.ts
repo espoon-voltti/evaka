@@ -48,6 +48,7 @@ export const fi = {
     staff: 'Henkilökunta',
     messages: 'Viestit',
     back: 'Takaisin',
+    close: 'Sulje',
     hours: 'Tuntia',
     remove: 'Poista',
     doNotRemove: 'Älä poista',
@@ -205,21 +206,6 @@ export const fi = {
       childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
     absenceTitle: 'Poissaolomerkintä',
-    pin: {
-      header: 'Lukituksen avaaminen',
-      info: 'Anna PIN-koodi avataksesi lapsen tiedot',
-      selectStaff: 'Valitse käyttäjä',
-      staff: 'Käyttäjä',
-      noOptions: 'Ei vaihtoehtoja',
-      pinCode: 'PIN-koodi',
-      status: {
-        SUCCESS: 'Oikea PIN-koodi',
-        WRONG_PIN: 'Väärä PIN-koodi',
-        PIN_LOCKED: 'PIN-koodi on lukittu',
-        NOT_FOUND: 'Tuntematon käyttäjä'
-      },
-      logOut: 'Kirjaudu ulos'
-    },
     childInfo: {
       header: 'Lapsen tiedot',
       personalInfoHeader: 'Lapsen henkilötiedot',
@@ -278,6 +264,23 @@ export const fi = {
     notUpdated: 'Tietoja ei ole päivitetty',
     updatedToday: 'Tiedot päivitetty tänään',
     updated: 'Tiedot päivitetty'
+  },
+  pin: {
+    header: 'Lukituksen avaaminen',
+    info: 'Anna PIN-koodi avataksesi lapsen tiedot',
+    selectStaff: 'Valitse käyttäjä',
+    staff: 'Käyttäjä',
+    noOptions: 'Ei vaihtoehtoja',
+    pinCode: 'PIN-koodi',
+    status: {
+      SUCCESS: 'Oikea PIN-koodi',
+      WRONG_PIN: 'Väärä PIN-koodi',
+      PIN_LOCKED: 'PIN-koodi on lukittu',
+      NOT_FOUND: 'Tuntematon käyttäjä'
+    },
+    unknownError: 'Tuntematon virhe',
+    logOut: 'Kirjaudu ulos',
+    login: 'Kirjaudu'
   },
   mobile: {
     landerText1:

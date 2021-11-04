@@ -29,6 +29,7 @@ import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
   pinLoginRequestHandler,
+  pinLogoutRequestHandler,
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
@@ -127,6 +128,10 @@ function internalApiRouter() {
   router.post(
     '/auth/pin-login',
     pinLoginRequestHandler(new AsyncRedisClient(redisClient))
+  )
+  router.post(
+    '/auth/pin-logout',
+    pinLogoutRequestHandler(new AsyncRedisClient(redisClient))
   )
   router.post(
     '/attachments/applications/:applicationId',

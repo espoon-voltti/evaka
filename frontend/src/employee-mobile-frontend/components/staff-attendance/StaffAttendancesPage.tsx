@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import Button from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import Tabs from 'lib-components/molecules/Tabs'
+import { fontWeights } from 'lib-components/typography'
 import { faPlus } from 'lib-icons'
+import React, { useCallback, useContext, useMemo } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
+import { StaffAttendanceContext } from '../../state/staff-attendance'
+import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
 import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
-import { StaffAttendanceContext } from '../../state/staff-attendance'
-import TopBar from '../common/TopBar'
-import { UnitContext } from '../../state/unit'
-import { useHistory, useParams } from 'react-router-dom'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import Tabs from 'lib-components/molecules/Tabs'
-import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const Bold = styled.div`
   font-weight: ${fontWeights.semibold};
@@ -121,8 +121,8 @@ export default React.memo(function StaffAttendancesPage() {
 
   return renderResult(unitInfoResponse, (unit) => (
     <>
-      <TopBar
-        unitName={unit.name}
+      <TopBarWithGroupSelector
+        title={unit.name}
         selectedGroup={
           groupId === 'all'
             ? undefined

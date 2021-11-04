@@ -19,9 +19,10 @@ import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBef
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkPresent from './components/attendances/actions/MarkPresent'
 import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
-import AttendanceChildPage from './components/attendances/child-info/ChildInfo'
-import PinLogin from './components/attendances/child-info/PinLogin'
+import AttendanceChildPage from './components/attendances/child-info/AttendanceChildPage'
+import ChildSensitiveInfoPage from './components/attendances/child-info/ChildSensitiveInfoPage'
 import ChildNotes from './components/attendances/notes/ChildNotes'
+import requirePinAuth from './components/auth/requirePinAuth'
 import ensureAuthenticated from './components/ensureAuthenticated'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
@@ -137,7 +138,11 @@ function ChildAttendanceRouter() {
           component={MarkDeparted}
         />
         <Route exact path={`${path}/:childId/note`} component={ChildNotes} />
-        <Route exact path={`${path}/:childId/pin`} component={PinLogin} />
+        <Route
+          exact
+          path={`${path}/:childId/info`}
+          component={requirePinAuth(ChildSensitiveInfoPage)}
+        />
         <Redirect to={`${path}/list/coming`} />
       </Switch>
     </ChildAttendanceContextProvider>

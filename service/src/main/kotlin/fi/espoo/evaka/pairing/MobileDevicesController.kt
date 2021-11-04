@@ -6,6 +6,7 @@ package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.markEmployeeLastLogin
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
@@ -91,28 +92,24 @@ class MobileDevicesController(
     fun pinLogin(
         db: Database.Connection,
         user: AuthenticatedUser.MobileDevice,
-        @RequestBody pinLoginRequest: PinLoginRequest
-    ): ResponseEntity<PinLoginResponse> {
-        val result = db.transaction { tx ->
-            if (tx.employeePinIsCorrect(pinLoginRequest.employeeId, pinLoginRequest.pin)) {
-                tx.markEmployeeLastLogin(pinLoginRequest.employeeId)
-                tx.resetEmployeePinFailureCount(pinLoginRequest.employeeId)
-                PinLoginStatus.SUCCESS
+        @RequestBody params: PinLoginRequest
+    ): PinLoginResponse {
+        return db.transaction { tx ->
+            if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
+                tx.markEmployeeLastLogin(params.employeeId)
+                tx.resetEmployeePinFailureCount(params.employeeId)
+                tx.getEmployeeUser(params.employeeId)
+                    ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }
+                    ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
             } else {
-                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(pinLoginRequest.employeeId)) {
-                    PinLoginStatus.PIN_LOCKED
+                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {
+                    PinLoginResponse(PinLoginStatus.PIN_LOCKED)
                 } else {
-                    PinLoginStatus.WRONG_PIN
+                    PinLoginResponse(PinLoginStatus.WRONG_PIN)
                 }
             }
         }
-
-        return ResponseEntity.ok(PinLoginResponse(status = result))
     }
-}
-
-enum class PinLoginStatus {
-    SUCCESS, WRONG_PIN, PIN_LOCKED, NOT_FOUND
 }
 
 data class PinLoginRequest(
@@ -120,6 +117,16 @@ data class PinLoginRequest(
     val employeeId: EmployeeId
 )
 
+enum class PinLoginStatus {
+    SUCCESS, WRONG_PIN, PIN_LOCKED
+}
+
+data class Employee(
+    val firstName: String,
+    val lastName: String
+)
+
 data class PinLoginResponse(
-    val status: PinLoginStatus
+    val status: PinLoginStatus,
+    val employee: Employee? = null
 )

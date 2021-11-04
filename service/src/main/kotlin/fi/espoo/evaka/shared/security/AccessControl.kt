@@ -450,7 +450,18 @@ WHERE employee_id = :userId
         )
     }
 
+    private fun requirePinLogin(user: AuthenticatedUser) {
+        if (user is AuthenticatedUser.MobileDevice && user.employeeId == null) throw Forbidden(
+            "PIN login required",
+            "PIN_LOGIN_REQUIRED"
+        )
+    }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {
+        when (action) {
+            Action.Child.READ_SENSITIVE_INFO -> requirePinLogin(user)
+            else -> Unit
+        }
         assertPermission(
             user = user,
             getAclRoles = { acl.getRolesForChild(user, id).roles },

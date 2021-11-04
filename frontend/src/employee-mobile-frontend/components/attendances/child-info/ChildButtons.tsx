@@ -57,7 +57,7 @@ export default React.memo(function ChildButtons({
           />
         </Link>
         <Link
-          to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/pin`}
+          to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/info`}
           data-qa={'link-child-sensitive-info'}
         >
           <RoundIcon

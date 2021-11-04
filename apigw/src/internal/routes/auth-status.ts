@@ -22,7 +22,6 @@ export default toRequestHandler(async (req, res) => {
         await logoutExpress(req, res, 'employee')
         res.status(200).json({ loggedIn: false, apiVersion: appCommit })
       } else {
-        console.log('foo', user)
         const globalRoles = user.globalRoles ?? []
         const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
         const employeeId = user.mobileEmployeeId

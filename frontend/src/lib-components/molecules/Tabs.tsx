@@ -163,6 +163,7 @@ const TabButtonContainer = styled.button<TabContainerProps>`
 
 const TabTitle = styled.span<TabContainerProps>`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  ${({ $mobile }) => ($mobile ? `line-height: 16px;` : '')};
 
   &.active {
     font-weight: ${fontWeights.bold};

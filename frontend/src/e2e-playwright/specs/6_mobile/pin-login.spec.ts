@@ -199,11 +199,7 @@ describe('Mobile PIN login', () => {
       '9999'
     )
     await childPage.assertWrongPinError()
-    await childPage.goBack()
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      pin
-    )
+    await childPage.submitPin(pin)
     await childPage.assertSensitiveInfoIsShown(
       `${child.firstName} ${child.lastName}`
     )
@@ -218,7 +214,11 @@ describe('Mobile PIN login', () => {
     await childPage.assertSensitiveInfoIsShown(
       `${child.firstName} ${child.lastName}`
     )
+    await childPage.goBackFromSensitivePage()
     await childPage.goBack()
+    await childPage.logout()
+
+    await listPage.selectChild(child.id)
     await childPage.openSensitiveInfoWithPinCode(
       `${employee.data.lastName} ${employee.data.firstName}`,
       pin

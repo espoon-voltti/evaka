@@ -15,10 +15,6 @@ import styled from 'styled-components'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
 
-interface Props {
-  child: ChildSensitiveInformation | null
-}
-
 const Key = styled.span`
   font-weight: ${fontWeights.semibold};
   font-size: 16px;
@@ -62,6 +58,10 @@ const renderKeyValue = (
   ) : null
 }
 
+interface Props {
+  child: ChildSensitiveInformation
+}
+
 export default React.memo(function ChildSensitiveInfo({ child }: Props) {
   const { i18n } = useTranslation()
 
@@ -70,149 +70,136 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
   }
 
   return (
-    <>
-      {child && (
-        <FixedSpaceColumn spacing={'m'}>
-          <ContentArea
-            shadow
-            opaque
-            paddingHorizontal={'s'}
-            paddingVertical={'m'}
-          >
-            <FixedSpaceColumn alignItems={'center'} spacing={'m'}>
-              <Title>{i18n.attendances.childInfo.header}</Title>
-            </FixedSpaceColumn>
-          </ContentArea>
+    <FixedSpaceColumn spacing="m">
+      <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="m">
+        <FixedSpaceColumn alignItems="center" spacing="m">
+          <Title>{i18n.attendances.childInfo.header}</Title>
+        </FixedSpaceColumn>
+      </ContentArea>
 
-          <ContentArea shadow opaque>
-            <CollapsibleSection
-              title={i18n.attendances.childInfo.personalInfoHeader}
-            >
+      <ContentArea shadow opaque>
+        <CollapsibleSection
+          title={i18n.attendances.childInfo.personalInfoHeader}
+        >
+          <FixedSpaceColumn>
+            <KeyValue>
+              <Key>{i18n.attendances.childInfo.childName}</Key>
+              <span data-qa="child-info-name">{`${child.firstName} ${child.lastName}`}</span>
+            </KeyValue>
+
+            {renderKeyValue(
+              i18n.attendances.childInfo.preferredName,
+              child.preferredName,
+              'child-info-preferred-name'
+            )}
+
+            {renderKeyValue(
+              i18n.attendances.childInfo.address,
+              child.childAddress,
+              'child-info-child-address'
+            )}
+
+            {child.placementTypes && child.placementTypes.length > 0 && (
+              <KeyValue>
+                <Key>{i18n.attendances.childInfo.type}</Key>
+                <span>{placementTypesToText(child.placementTypes)}</span>
+              </KeyValue>
+            )}
+          </FixedSpaceColumn>
+        </CollapsibleSection>
+      </ContentArea>
+
+      <ContentArea shadow opaque>
+        <CollapsibleSection title={i18n.attendances.childInfo.allergiesHeader}>
+          <FixedSpaceColumn>
+            {renderKeyValue(
+              i18n.attendances.childInfo.allergies,
+              child.allergies,
+              'child-info-allergies'
+            )}
+
+            {renderKeyValue(
+              i18n.attendances.childInfo.diet,
+              child.diet,
+              'child-info-diet'
+            )}
+
+            {renderKeyValue(
+              i18n.attendances.childInfo.medication,
+              child.medication,
+              'child-info-medication'
+            )}
+          </FixedSpaceColumn>
+        </CollapsibleSection>
+      </ContentArea>
+
+      <ContentArea shadow opaque>
+        <CollapsibleSection
+          title={i18n.attendances.childInfo.contactInfoHeader}
+        >
+          {child.contacts?.map((contact, index) => (
+            <div key={contact.id}>
+              <Title size={4}>{`${i18n.attendances.childInfo.contact} ${
+                index + 1
+              }`}</Title>
               <FixedSpaceColumn>
                 <KeyValue>
-                  <Key>{i18n.attendances.childInfo.childName}</Key>
-                  <span
-                    data-qa={'child-info-name'}
-                  >{`${child.firstName} ${child.lastName}`}</span>
+                  <Key>{i18n.attendances.childInfo.name}</Key>
+                  <span data-qa={`child-info-contact${index + 1}-name`}>{`${
+                    contact.firstName || ''
+                  } ${contact.lastName || ''}`}</span>
                 </KeyValue>
 
                 {renderKeyValue(
-                  i18n.attendances.childInfo.preferredName,
-                  child.preferredName,
-                  'child-info-preferred-name'
+                  i18n.attendances.childInfo.phone,
+                  contact.phone,
+                  `child-info-contact${index + 1}-phone`,
+                  true
                 )}
 
                 {renderKeyValue(
-                  i18n.attendances.childInfo.address,
-                  child.childAddress,
-                  'child-info-child-address'
+                  i18n.attendances.childInfo.backupPhone,
+                  contact.backupPhone,
+                  `child-info-contact${index + 1}-backup-phone`,
+                  true
                 )}
 
-                {child.placementTypes && child.placementTypes.length > 0 && (
-                  <KeyValue>
-                    <Key>{i18n.attendances.childInfo.type}</Key>
-                    <span>{placementTypesToText(child.placementTypes)}</span>
-                  </KeyValue>
+                {renderKeyValue(
+                  i18n.attendances.childInfo.email,
+                  contact.email,
+                  `child-info-contact${index + 1}-email`
                 )}
+
+                <Divider />
               </FixedSpaceColumn>
-            </CollapsibleSection>
-          </ContentArea>
+            </div>
+          ))}
 
-          <ContentArea shadow opaque>
-            <CollapsibleSection
-              title={i18n.attendances.childInfo.allergiesHeader}
-            >
+          {child.backupPickups?.map((backupPickup, index) => (
+            <div key={backupPickup.id}>
+              <Title size={4}>
+                {`${i18n.attendances.childInfo.backupPickup} ${index + 1}`}
+              </Title>
               <FixedSpaceColumn>
                 {renderKeyValue(
-                  i18n.attendances.childInfo.allergies,
-                  child.allergies,
-                  'child-info-allergies'
+                  i18n.attendances.childInfo.backupPickupName,
+                  backupPickup.firstName,
+                  `child-info-backup-pickup${index + 1}-name`
                 )}
 
                 {renderKeyValue(
-                  i18n.attendances.childInfo.diet,
-                  child.diet,
-                  'child-info-diet'
+                  i18n.attendances.childInfo.phone,
+                  backupPickup.phone,
+                  `child-info-backup-pickup${index + 1}-phone`,
+                  true
                 )}
 
-                {renderKeyValue(
-                  i18n.attendances.childInfo.medication,
-                  child.medication,
-                  'child-info-medication'
-                )}
+                <Divider />
               </FixedSpaceColumn>
-            </CollapsibleSection>
-          </ContentArea>
-
-          <ContentArea shadow opaque>
-            <CollapsibleSection
-              title={i18n.attendances.childInfo.contactInfoHeader}
-            >
-              {child.contacts?.map((contact, index) => (
-                <div key={contact.id}>
-                  <Title size={4}>{`${i18n.attendances.childInfo.contact} ${
-                    index + 1
-                  }`}</Title>
-                  <FixedSpaceColumn>
-                    <KeyValue>
-                      <Key>{i18n.attendances.childInfo.name}</Key>
-                      <span data-qa={`child-info-contact${index + 1}-name`}>{`${
-                        contact.firstName || ''
-                      } ${contact.lastName || ''}`}</span>
-                    </KeyValue>
-
-                    {renderKeyValue(
-                      i18n.attendances.childInfo.phone,
-                      contact.phone,
-                      `child-info-contact${index + 1}-phone`,
-                      true
-                    )}
-
-                    {renderKeyValue(
-                      i18n.attendances.childInfo.backupPhone,
-                      contact.backupPhone,
-                      `child-info-contact${index + 1}-backup-phone`,
-                      true
-                    )}
-
-                    {renderKeyValue(
-                      i18n.attendances.childInfo.email,
-                      contact.email,
-                      `child-info-contact${index + 1}-email`
-                    )}
-
-                    <Divider />
-                  </FixedSpaceColumn>
-                </div>
-              ))}
-
-              {child.backupPickups?.map((backupPickup, index) => (
-                <div key={backupPickup.id}>
-                  <Title size={4}>
-                    {`${i18n.attendances.childInfo.backupPickup} ${index + 1}`}
-                  </Title>
-                  <FixedSpaceColumn>
-                    {renderKeyValue(
-                      i18n.attendances.childInfo.backupPickupName,
-                      backupPickup.firstName,
-                      `child-info-backup-pickup${index + 1}-name`
-                    )}
-
-                    {renderKeyValue(
-                      i18n.attendances.childInfo.phone,
-                      backupPickup.phone,
-                      `child-info-backup-pickup${index + 1}-phone`,
-                      true
-                    )}
-
-                    <Divider />
-                  </FixedSpaceColumn>
-                </div>
-              ))}
-            </CollapsibleSection>
-          </ContentArea>
-        </FixedSpaceColumn>
-      )}
-    </>
+            </div>
+          ))}
+        </CollapsibleSection>
+      </ContentArea>
+    </FixedSpaceColumn>
   )
 })

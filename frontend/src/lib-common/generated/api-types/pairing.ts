@@ -8,6 +8,14 @@
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.pairing.Employee
+*/
+export interface Employee {
+  firstName: string
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
@@ -65,6 +73,7 @@ export interface PinLoginRequest {
 * Generated from fi.espoo.evaka.pairing.PinLoginResponse
 */
 export interface PinLoginResponse {
+  employee: Employee | null
   status: PinLoginStatus
 }
 
@@ -75,7 +84,6 @@ export type PinLoginStatus =
   | 'SUCCESS'
   | 'WRONG_PIN'
   | 'PIN_LOCKED'
-  | 'NOT_FOUND'
 
 /**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingChallengeReq

@@ -98,6 +98,7 @@ import {
   faStickyNote as farStickyNote,
   faUser as farUser
 } from '@fortawesome/free-regular-svg-icons'
+import { faLockOpen } from '@fortawesome/free-solid-svg-icons/faLockOpen'
 import { IconSet } from '.'
 
 const icons: IconSet = {
@@ -153,6 +154,7 @@ const icons: IconSet = {
   faLink,
   faList,
   faLockAlt: faLock,
+  faLockOpenAlt: faLockOpen,
   faMapMarkerAlt,
   faMeh,
   faMoneyBillWave,

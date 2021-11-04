@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express, { CookieOptions } from 'express'
+import { v4 as uuid } from 'uuid'
+import AsyncRedisClient from '../shared/async-redis-client'
+import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config'
 import {
   assertStringProp,
   toMiddleware,
   toRequestHandler
 } from '../shared/express'
+import { fromCallback } from '../shared/promise-utils'
 import {
   employeePinLogin,
   identifyMobileDevice,
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client'
-import { useSecureCookies, pinSessionTimeoutSeconds } from '../shared/config'
-import { fromCallback } from '../shared/promise-utils'
-import { v4 as uuid } from 'uuid'
-import AsyncRedisClient from '../shared/async-redis-client'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -101,7 +101,7 @@ export const pinLoginRequestHandler = (redisClient: AsyncRedisClient) =>
     if (req.user?.userType !== 'MOBILE') return
 
     const employeeId = assertStringProp(req.body, 'employeeId')
-    const status = await employeePinLogin(req)
+    const response = await employeePinLogin(req)
 
     const token = uuid()
     await redisClient.set(
@@ -112,7 +112,19 @@ export const pinLoginRequestHandler = (redisClient: AsyncRedisClient) =>
     )
 
     req.session.employeeIdToken = token
-    res.status(200).send(status)
+    res.status(200).send(response)
+  })
+
+export const pinLogoutRequestHandler = (redisClient: AsyncRedisClient) =>
+  toRequestHandler(async (req, res) => {
+    const token = req.session.employeeIdToken
+    if (token) {
+      await redisClient.del(toMobileEmployeeIdKey(token))
+      req.session.employeeIdToken = undefined
+      if (req.user) req.user.mobileEmployeeId = undefined
+    }
+
+    res.sendStatus(204)
   })
 
 export const checkMobileEmployeeIdToken = (redisClient: AsyncRedisClient) =>
