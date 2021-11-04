@@ -51,6 +51,7 @@ const TitleRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: ${defaultMargins.xxs};
 
   & + & {
     margin-top: ${defaultMargins.L};
@@ -76,7 +77,7 @@ const StickyTitleRowTitle = styled(H2)`
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
 `
-const SentDate = styled.div`
+const InformationText = styled.div`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   color: ${colors.greyscale.dark};
@@ -101,9 +102,13 @@ function SingleMessage({
     <MessageContainer>
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
-        <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
+        <InformationText>
+          {formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}
+        </InformationText>
       </TitleRow>
-      <span>{message.recipients.map((r) => r.name).join(', ')}</span>
+      <InformationText>
+        {message.recipients.map((r) => r.name).join(', ')}
+      </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
         {message.content}
       </MessageContent>
