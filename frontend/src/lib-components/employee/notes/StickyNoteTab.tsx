@@ -8,12 +8,18 @@ import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H2 } from 'lib-components/typography'
+import { H1, H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useState } from 'react'
 import { EditedNote, Note } from './notes'
 import { StaticLabels, StaticStickyNote } from './StaticStickyNote'
 import { EditorLabels, StickyNoteEditor } from './StickyNoteEditor'
+
+const newNote = () => ({
+  id: '',
+  expires: LocalDate.today().addDays(7),
+  note: ''
+})
 
 export interface StickyNoteTabLabels {
   title: string
@@ -27,19 +33,17 @@ interface StickyNoteTabProps {
   notes: Note[]
   onSave: (note: EditedNote) => Promise<Result<unknown>>
   onRemove: (id: UUID) => Promise<Result<unknown>>
+  smallerHeading?: boolean
+  subHeading?: string
 }
-
-const newNote = () => ({
-  id: '',
-  expires: LocalDate.today().addDays(7),
-  note: ''
-})
 
 export const StickyNoteTab = React.memo(function StickyNoteTab({
   labels,
   notes,
   onSave,
-  onRemove
+  onRemove,
+  smallerHeading = false,
+  subHeading
 }: StickyNoteTabProps) {
   const [editing, setEditing] = useState<UUID | 'new' | null>(
     notes.length === 0 ? 'new' : null
@@ -47,14 +51,26 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
   const onCancelEdit = useCallback(() => setEditing(null), [])
   const setNoteToEdit = useCallback((id: UUID) => () => setEditing(id), [])
 
+  const headingProps = {
+    noMargin: true,
+    primary: true,
+    children: labels.title
+  }
   return (
     <>
       <ContentArea opaque paddingHorizontal="s">
-        <H2 primary noMargin>
-          {labels.title}
-        </H2>
+        {smallerHeading ? <H2 {...headingProps} /> : <H1 {...headingProps} />}
 
-        <Gap size="xs" />
+        {subHeading && (
+          <>
+            <Gap size="xs" />
+            <H3 primary noMargin>
+              {subHeading}
+            </H3>
+          </>
+        )}
+
+        <Gap size="s" />
 
         <FixedSpaceRow justifyContent="flex-end">
           <InlineButton

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MutableRefObject } from 'react'
 import { Translations } from 'lib-customizations/employee'
+import { MutableRefObject } from 'react'
 
 export const formatName = (
   maybeFirstName: string | null,
@@ -13,16 +13,20 @@ export const formatName = (
 ): string => {
   const firstName = maybeFirstName || i18n.common.noFirstName
   const lastName = maybeLastName || i18n.common.noLastName
-  const formattedName =
-    firstName && lastName
-      ? lastNameFirst
-        ? `${lastName} ${firstName}`
-        : `${firstName} ${lastName}`
-      : lastName
-      ? lastName
-      : firstName
-  return formattedName
+  return firstName && lastName
+    ? lastNameFirst
+      ? `${lastName} ${firstName}`
+      : `${firstName} ${lastName}`
+    : lastName
+    ? lastName
+    : firstName
 }
+
+export const formatPersonName = (
+  person: { firstName: string | null; lastName: string | null },
+  i18n: Translations,
+  lastNameFirst = false
+): string => formatName(person.firstName, person.lastName, i18n, lastNameFirst)
 
 export const capitalizeFirstLetter = (str: string | null): string => {
   if (!str || str.length === 0) return ''

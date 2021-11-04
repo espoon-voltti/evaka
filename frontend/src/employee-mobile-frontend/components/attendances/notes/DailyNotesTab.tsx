@@ -13,7 +13,7 @@ import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -36,7 +36,6 @@ import {
 } from '../../../api/notes'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
-import { ChipWrapper } from '../../mobile/components'
 import { ChildDailyNoteFormData } from './daily-note'
 
 const Time = styled.div`
@@ -245,7 +244,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
 
           <FixedSpaceColumn spacing="s">
             <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-            <ChipWrapper $noMargin>
+            <ChipWrapper noMargin>
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <ChoiceChip
@@ -266,7 +265,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="s">
             <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-            <ChipWrapper $noMargin>
+            <ChipWrapper noMargin>
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <ChoiceChip
