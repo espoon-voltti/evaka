@@ -107,6 +107,7 @@ interface BaseFeatureFlags {
   pedagogicalDocumentsEnabled: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
+  adminSettingsEnabled: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet
