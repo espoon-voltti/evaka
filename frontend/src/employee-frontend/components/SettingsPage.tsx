@@ -16,8 +16,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import React, { useEffect, useState } from 'react'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import React, { useCallback, useEffect, useState } from 'react'
 import { client } from '../api/client'
 import { renderResult } from './async-rendering'
 
@@ -49,7 +49,7 @@ export default React.memo(function SettingsPage() {
   const loadSettings = useRestApi(getSettings, setSettings)
   useEffect(loadSettings, [loadSettings])
 
-  const submit = async () => {
+  const submit = useCallback(async () => {
     if (!settings.isSuccess) return
 
     return await putSettings(
@@ -59,7 +59,18 @@ export default React.memo(function SettingsPage() {
           .filter(([_, value]) => value !== '')
       )
     )
-  }
+  }, [settings])
+
+  const onChange = useCallback(
+    (option: SettingType, value: string) =>
+      setSettings((prevState) =>
+        prevState.map((prev) => ({
+          ...prev,
+          [option]: value
+        }))
+      ),
+    []
+  )
 
   return (
     <Container verticalMargin={defaultMargins.L}>
@@ -75,34 +86,17 @@ export default React.memo(function SettingsPage() {
             </Thead>
             <Tbody>
               {options.map((option) => (
-                <Tr key={option}>
-                  <Td>
-                    <ExpandingInfo
-                      info={i18n.settings.options[option].description}
-                      ariaLabel={i18n.common.openExpandingInfo}
-                      fullWidth={true}
-                    >
-                      {i18n.settings.options[option].title}
-                    </ExpandingInfo>
-                  </Td>
-                  <Td>
-                    <InputField
-                      value={settings[option]}
-                      onChange={(value) =>
-                        setSettings((prevState) =>
-                          prevState.map((prevSettings) => ({
-                            ...prevSettings,
-                            [option]: value
-                          }))
-                        )
-                      }
-                    />
-                  </Td>
-                </Tr>
+                <SettingRow
+                  key={option}
+                  option={option}
+                  value={settings[option]}
+                  onChange={onChange}
+                />
               ))}
             </Tbody>
           </Table>
         ))}
+        <Gap size="s" />
         <AsyncButton
           primary
           text={i18n.common.save}
@@ -112,5 +106,37 @@ export default React.memo(function SettingsPage() {
         />
       </ContentArea>
     </Container>
+  )
+})
+
+const SettingRow = React.memo(function SettingRow({
+  option,
+  value,
+  onChange
+}: {
+  option: SettingType
+  value: string
+  onChange: (option: SettingType, value: string) => void
+}) {
+  const { i18n } = useTranslation()
+  const handleChange = useCallback(
+    (value: string) => onChange(option, value),
+    [onChange, option]
+  )
+  return (
+    <Tr>
+      <Td>
+        <ExpandingInfo
+          info={i18n.settings.options[option].description}
+          ariaLabel={i18n.common.openExpandingInfo}
+          fullWidth={true}
+        >
+          {i18n.settings.options[option].title}
+        </ExpandingInfo>
+      </Td>
+      <Td>
+        <InputField value={value} onChange={handleChange} />
+      </Td>
+    </Tr>
   )
 })

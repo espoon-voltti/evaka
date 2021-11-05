@@ -14,7 +14,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { cityLogo, featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import {
   Link,
   NavLink,
@@ -126,6 +126,12 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
 
+  const toggleUserPopup = useCallback(
+    () => setPopupVisible((prev) => !prev),
+    []
+  )
+  const closeUserPopup = useCallback(() => setPopupVisible(false), [])
+
   return (
     <StyledHeader
       data-qa="header"
@@ -143,7 +149,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
         <NavbarStart>
           {user.accessibleFeatures.applications && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               className="navbar-item is-tab"
               to="/applications"
               data-qa="applications-nav"
@@ -155,7 +161,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
           {user.accessibleFeatures.units && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               className="navbar-item is-tab"
               to="/units"
               data-qa="units-nav"
@@ -166,10 +172,10 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
           {user.accessibleFeatures.personSearch && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
-              className={`navbar-item is-tab ${
-                atCustomerInfo ? 'is-active' : ''
-              }`}
+              onClick={closeUserPopup}
+              className={classNames('navbar-item is-tab', {
+                'is-active': atCustomerInfo
+              })}
               to="/search"
               data-qa="search-nav"
             >
@@ -179,7 +185,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
           {user.accessibleFeatures.finance && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               className="navbar-item is-tab"
               to="/finance"
               data-qa="finance-nav"
@@ -190,7 +196,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
           {user.accessibleFeatures.reports && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               className="navbar-item is-tab"
               to="/reports"
               data-qa="reports-nav"
@@ -201,7 +207,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
           {user.accessibleFeatures.messages && (
             <NavbarLink
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               className="navbar-item is-tab"
               to="/messages"
               data-qa="messages-nav"
@@ -218,7 +224,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           <NavbarEnd>
             <InlineButton
               data-qa="username"
-              onClick={() => setPopupVisible(!popupVisible)}
+              onClick={toggleUserPopup}
               text={user.name}
               iconRight
               icon={popupVisible ? faChevronUp : faChevronDown}
@@ -232,7 +238,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             {user?.accessibleFeatures.employees && (
               <Link
                 to={`/employees`}
-                onClick={() => setPopupVisible(false)}
+                onClick={closeUserPopup}
                 data-qa="user-popup-employees"
               >
                 {i18n.employees.title}
@@ -242,7 +248,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               user?.accessibleFeatures.financeBasics && (
                 <Link
                   to="/finance/basics"
-                  onClick={() => setPopupVisible(false)}
+                  onClick={closeUserPopup}
                   data-qa="user-popup-finance-basics"
                 >
                   {i18n.financeBasics.title}
@@ -252,7 +258,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               user?.accessibleFeatures.vasuTemplates && (
                 <Link
                   to="/vasu-templates"
-                  onClick={() => setPopupVisible(false)}
+                  onClick={closeUserPopup}
                   data-qa="user-popup-vasu-templates"
                 >
                   {i18n.vasuTemplates.title}
@@ -261,7 +267,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             {user?.accessibleFeatures.settings && (
               <Link
                 to="/settings"
-                onClick={() => setPopupVisible(false)}
+                onClick={closeUserPopup}
                 data-qa="user-popup-settings"
               >
                 {i18n.settings.title}
@@ -270,7 +276,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             {user?.accessibleFeatures.unitFeatures && (
               <Link
                 to="/unit-features"
-                onClick={() => setPopupVisible(false)}
+                onClick={closeUserPopup}
                 data-qa="user-popup-unit-features"
               >
                 {i18n.unitFeatures.title}
@@ -278,7 +284,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             )}
             <Link
               to={`/pin-code`}
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
               data-qa="user-popup-pin-code"
             >
               {i18n.pinCode.link}
@@ -286,7 +292,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             <LogoutLink
               data-qa="logout-btn"
               href={logoutUrl}
-              onClick={() => setPopupVisible(false)}
+              onClick={closeUserPopup}
             >
               <LogoutText>{i18n.header.logout}</LogoutText>
               <FontAwesomeIcon icon={faSignOut} />
@@ -474,6 +480,7 @@ const StyledTitle = styled(Title)`
   @media screen and (max-width: 1023px) {
     display: none;
   }
+
   ::before {
     content: '|';
     color: #c4c4c4;
@@ -494,6 +501,7 @@ const Burger = styled.a`
   @media screen and (min-width: 1024px) {
     display: none;
   }
+
   span {
     background-color: currentColor;
     display: block;
@@ -506,12 +514,15 @@ const Burger = styled.a`
     transition-timing-function: ease-out;
     width: 16px;
   }
+
   span:nth-child(1) {
     top: calc(50% - 6px);
   }
+
   span:nth-child(2) {
     top: calc(50% - 1px);
   }
+
   span:nth-child(3) {
     top: calc(50% + 4px);
   }
@@ -535,6 +546,7 @@ function Header2({
   className
 }: Header2Props) {
   const [menuActive, setMenuActive] = useState(false)
+  const toggleMenu = useCallback(() => setMenuActive((prev) => !prev), [])
 
   return (
     <HeaderWrapper data-qa={dataQa} className={className}>
@@ -556,7 +568,7 @@ function Header2({
               })}
               aria-label="menu"
               aria-expanded={menuActive}
-              onClick={() => setMenuActive(!menuActive)}
+              onClick={toggleMenu}
             >
               <span aria-hidden="true"></span>
               <span aria-hidden="true"></span>
