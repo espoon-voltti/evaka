@@ -17,7 +17,10 @@ parameters:
     default: /home/circleci/repo
   builder_aws_version:
     type: string
-    default: bullseye-slim-7154b3803f7bf5064ec9ccc299554e07f12d7ee6
+    default: v0.1.0
+  builder_aws_type:
+    type: string
+    default: bullseye-slim
   nodejs_image:
     type: string
     default: cimg/node:16.13
@@ -45,9 +48,9 @@ aliases:
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202107-02
-  - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
-  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-core-<< pipeline.parameters.builder_aws_type >>
+  - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-docker-<< pipeline.parameters.builder_aws_type >>
+  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-terraform-<< pipeline.parameters.builder_aws_type >>
 
   - &default_contexts
     context:
