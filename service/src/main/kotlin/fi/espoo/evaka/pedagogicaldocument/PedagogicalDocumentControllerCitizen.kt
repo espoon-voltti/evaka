@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.AuthenticatedUserType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -34,7 +35,7 @@ class PedagogicalDocumentControllerCitizen(
         user: AuthenticatedUser
     ): List<PedagogicalDocumentCitizen> {
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
-        return db.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id)) }
+        return db.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type) }
     }
 
     @PostMapping("/{documentId}/mark-read")
@@ -58,7 +59,10 @@ class PedagogicalDocumentControllerCitizen(
     }
 }
 
-private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonId): List<PedagogicalDocumentCitizen> {
+private fun Database.Read.findPedagogicalDocumentsByGuardian(
+    guardianId: PersonId,
+    userType: AuthenticatedUserType
+): List<PedagogicalDocumentCitizen> {
     return this.createQuery(
         """
             SELECT 
@@ -85,7 +89,7 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(guardianId: PersonI
         """.trimIndent()
     )
         .bind("guardian_id", guardianId)
-        .map { row -> mapPedagogicalDocumentCitizen(row) }
+        .map { row -> mapPedagogicalDocumentCitizen(row, userType) }
         .filterNotNull()
 }
 
@@ -150,7 +154,7 @@ data class PedagogicalDocumentCitizen(
     val childPreferredName: String?
 )
 
-fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
+fun mapPedagogicalDocumentCitizen(row: RowView, userType: AuthenticatedUserType): PedagogicalDocumentCitizen? {
     val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
     val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
@@ -160,7 +164,7 @@ fun mapPedagogicalDocumentCitizen(row: RowView): PedagogicalDocumentCitizen? {
         description = row.mapColumn("description"),
         attachment = if (hasAttachment) Attachment(
             id = row.mapColumn("attachment_id"),
-            name = row.mapColumn("attachment_name"),
+            name = if (userType === AuthenticatedUserType.citizen_weak) "" else row.mapColumn("attachment_name"),
             contentType = row.mapColumn("attachment_content_type"),
         ) else null,
         created = row.mapColumn("created"),
