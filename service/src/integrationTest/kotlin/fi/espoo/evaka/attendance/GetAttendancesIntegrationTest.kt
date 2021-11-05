@@ -322,13 +322,40 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 departed = null
             )
         }
-        val child = expectOneChild(unitId, mobileUser2)
-        assertEquals(AttendanceStatus.PRESENT, child.status)
-        assertNotNull(child.attendance)
-        assertNull(child.attendance?.departed)
+        val childInBackup = expectOneChild(unitId, mobileUser2)
+        assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
+        assertNotNull(childInBackup.attendance)
+        assertNull(childInBackup.attendance?.departed)
 
-        val childAgain = fetchAttendances()
-        assertEquals(0, childAgain.children.size)
+        val childrenInPlacementUnit = fetchAttendances()
+        assertEquals(0, childrenInPlacementUnit.children.size)
+    }
+
+    @Test
+    fun `endless presence is visible even if placement ended`() {
+        val backupUnitId = testDaycare2.id
+        db.transaction {
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = backupUnitId,
+                groupId = groupId2,
+                startDate = LocalDate.now(europeHelsinki).minusDays(2),
+                endDate = LocalDate.now(europeHelsinki).minusDays(1)
+            )
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = backupUnitId,
+                arrived = HelsinkiDateTime.now().minusDays(2),
+                departed = null
+            )
+        }
+        val childInBackup = expectOneChild(backupUnitId, mobileUser2)
+        assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
+        assertNotNull(childInBackup.attendance)
+        assertNull(childInBackup.attendance?.departed)
+
+        val childInPlacementUnit = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, childInPlacementUnit.status)
     }
 
     private fun fetchUnitInfo(): UnitInfo {
