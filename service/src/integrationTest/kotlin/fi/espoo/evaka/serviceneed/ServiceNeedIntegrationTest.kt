@@ -71,7 +71,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 assertEquals(testDate(30), sn.endDate)
                 assertEquals(placementId, sn.placementId)
                 assertEquals(snDefaultDaycare.id, sn.option.id)
-                assertEquals(snDefaultDaycare.name, sn.option.name)
+                assertEquals(snDefaultDaycare.nameFi, sn.option.nameFi)
             }
         }
     }
@@ -160,7 +160,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 assertEquals(testDate(30), sn.endDate)
                 assertEquals(placementId, sn.placementId)
                 assertEquals(snDaycareFullDay35.id, sn.option.id)
-                assertEquals(snDaycareFullDay35.name, sn.option.name)
+                assertEquals(snDaycareFullDay35.nameFi, sn.option.nameFi)
             }
         }
     }

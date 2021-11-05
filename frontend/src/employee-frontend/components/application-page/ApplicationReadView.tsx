@@ -206,7 +206,7 @@ function ApplicationReadView({
                     </>
                   )}
                   {serviceNeed.serviceNeedOption !== null && (
-                    <span>{serviceNeed.serviceNeedOption.name}</span>
+                    <span>{serviceNeed.serviceNeedOption.nameFi}</span>
                   )}
                 </>
               )}

@@ -418,7 +418,9 @@ fun getMissingGroupPlacements(
                 'endDate', sn.end_date,
                 'option', jsonb_build_object(
                     'id', sno.id,
-                    'name', sno.name,
+                    'nameFi', sno.name_fi,
+                    'nameSv', sno.name_sv,
+                    'nameEn', sno.name_en,
                     'updated', date_part('epoch', sno.updated)
                 ),
                 'shiftCare', sn.shift_care,

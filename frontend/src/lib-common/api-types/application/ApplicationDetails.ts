@@ -5,7 +5,7 @@
 import { JsonOf } from '../../json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { ServiceNeedOptionSummary } from '../serviceNeed/common'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { Attachment } from '../attachment'
 import {
   ApplicationOrigin,
@@ -208,7 +208,7 @@ export interface ApplicationServiceNeed {
   endTime: string
   shiftCare: boolean
   partTime: boolean
-  serviceNeedOption: ServiceNeedOptionSummary | null
+  serviceNeedOption: ServiceNeedOption | null
 }
 
 export interface ApplicationClubDetails {

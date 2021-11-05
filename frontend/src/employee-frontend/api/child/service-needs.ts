@@ -4,10 +4,12 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../client'
-import { ServiceNeedOption } from '../../types/child'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import {
+  ServiceNeedOption,
+  ServiceNeedOptionPublicInfo
+} from 'lib-common/generated/api-types/serviceneed'
 import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
@@ -57,8 +59,17 @@ export async function getServiceNeedOptions(): Promise<
 > {
   return client
     .get<JsonOf<ServiceNeedOption[]>>('/service-needs/options')
-    .then((res) => Success.of(res.data))
+    .then((res) => Success.of(deserializeServiceNeedOptions(res.data)))
     .catch((e) => Failure.fromError(e))
+}
+
+const deserializeServiceNeedOptions = (
+  options: JsonOf<ServiceNeedOption[]>
+): ServiceNeedOption[] => {
+  return options.map((option) => ({
+    ...option,
+    updated: new Date(option.updated)
+  }))
 }
 
 export async function getServiceNeedOptionPublicInfos(

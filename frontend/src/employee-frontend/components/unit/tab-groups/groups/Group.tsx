@@ -593,7 +593,7 @@ function Group({
                                           )
                                         )
                                       )
-                                      .map((sn) => sn.option.name)
+                                      .map((sn) => sn.option.nameFi)
                                       .join(' / ')
                                   : i18n.placement.type[placement.type]
                               }

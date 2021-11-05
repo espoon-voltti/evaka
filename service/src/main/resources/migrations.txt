@@ -168,3 +168,4 @@ V167__evaka_user_indexes.sql
 V168__varda_reset_child_timestamps.sql
 V169__ensure_mobile_devices.sql
 V170__vasu_and_pedadoc_feature_flag.sql
+V171__service_need_option_name_localization.sql

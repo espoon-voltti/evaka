@@ -6,7 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroupPlacement } from './unit'
 import { AssistanceMeasure, UnitProviderType } from 'lib-customizations/types'
-import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { ServiceNeedOptionSummary } from 'lib-common/generated/api-types/serviceneed'
 import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
@@ -50,19 +50,6 @@ export interface AdditionalInformation {
   additionalInfo: string
   preferredName: string | null
   medication: string
-}
-
-export interface ServiceNeedOption {
-  id: UUID
-  name: string
-  validPlacementType: PlacementType
-  defaultOption: boolean
-  feeCoefficient: number
-  voucherValueCoefficient: number
-  occupancyCoefficient: number
-  daycareHoursPerWeek: number
-  partDay: boolean
-  partWeek: boolean
 }
 
 export interface ServiceNeed {

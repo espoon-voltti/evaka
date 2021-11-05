@@ -686,7 +686,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    MessageControllerCitizen.ReplyToMessageBody(
+                    ReplyToMessageBody(
                         content = content,
                         recipientAccountIds = recipientAccountIds
                     )
@@ -707,7 +707,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    MessageController.ReplyToMessageBody(
+                    ReplyToMessageBody(
                         content = content,
                         recipientAccountIds = recipientAccountIds
                     )

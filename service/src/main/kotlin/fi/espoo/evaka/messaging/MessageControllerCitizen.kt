@@ -98,8 +98,6 @@ class MessageControllerCitizen(
         return db.read { it.getCitizenReceivers(accountId) }
     }
 
-    data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<MessageAccountId>)
-
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
