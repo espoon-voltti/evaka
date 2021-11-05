@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { downloadBlobAsFile, openBlobInBrowser } from 'lib-common/utils/file'
+import { isIOS } from 'lib-common/utils/helpers'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -63,9 +64,19 @@ export default React.memo(function FileDownloadButton({
       throw new Error(result.message)
     }
 
-    if (openInBrowser)
+    if (openInBrowser || isIOS()) {
+      // iOS handles downloading files poorly from an UX point of view,
+      // so always open in browser
       openBlobInBrowser(file.name, file.contentType, result.value)
-    else downloadBlobAsFile(file.name, result.value)
+    } else {
+      downloadBlobAsFile(file.name, result.value)
+    }
+
+    if (isIOS()) {
+      // on iOS we need this timeout or else any requests done in the
+      // `afterFetch` function will fail.
+      return new Promise((resolve, _reject) => setTimeout(resolve, 100))
+    }
   }
 
   return (
