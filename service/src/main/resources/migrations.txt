@@ -166,3 +166,4 @@ V165__evaka_user_data.sql
 V166__evaka_user_absence.sql
 V167__evaka_user_indexes.sql
 V168__varda_reset_child_timestamps.sql
+V169__ensure_mobile_devices.sql
