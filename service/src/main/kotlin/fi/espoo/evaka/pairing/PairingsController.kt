@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -130,13 +131,15 @@ class PairingsController(
         db: Database.Connection,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
-    ): ResponseEntity<MobileDeviceIdentity> {
+    ): MobileDeviceIdentity {
         Audit.PairingValidation.log(targetId = id)
         db.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-        return db.transaction {
-            it.validatePairing(id, body.challengeKey, body.responseKey)
-        }.let { ResponseEntity.ok(it) }
+        return db.transaction { tx ->
+            tx.validatePairing(id, body.challengeKey, body.responseKey).also {
+                tx.upsertMobileDeviceUser(it.id)
+            }
+        }
     }
 
     /**
