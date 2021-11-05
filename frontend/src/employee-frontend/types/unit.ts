@@ -13,6 +13,7 @@ import {
 import { ServiceNeed } from './child'
 import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
+import { PilotFeature } from 'lib-common/generated/api-types/shared'
 
 export interface CareArea {
   id: UUID
@@ -35,8 +36,6 @@ interface FinanceDecisionHandler {
   firstName: string
   lastName: string
 }
-
-export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 
 export interface Unit {
   id: UUID

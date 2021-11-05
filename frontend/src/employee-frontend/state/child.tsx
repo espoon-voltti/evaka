@@ -10,7 +10,6 @@ import {
   AssistanceAction,
   AssistanceNeed,
   ChildBackupCare,
-  Placement,
   ServiceNeed,
   ServiceNeedOption
 } from '../types/child'
@@ -21,6 +20,7 @@ import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 export interface ChildState {
   person: Result<PersonDetails>
@@ -39,8 +39,8 @@ export interface ChildState {
   setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
   setFeeAlterations: (result: Result<FeeAlteration[]>) => void
-  placements: Result<Placement[]>
-  setPlacements: (request: Result<Placement[]>) => void
+  placements: Result<DaycarePlacementWithDetails[]>
+  setPlacements: (request: Result<DaycarePlacementWithDetails[]>) => void
   parentships: Result<Parentship[]>
   setParentships: (request: Result<Parentship[]>) => void
   backupCares: Result<ChildBackupCare[]>
@@ -123,9 +123,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [feeAlterations, setFeeAlterations] = useState<Result<FeeAlteration[]>>(
     defaultState.feeAlterations
   )
-  const [placements, setPlacements] = useState<Result<Placement[]>>(
-    defaultState.placements
-  )
+  const [placements, setPlacements] = useState<
+    Result<DaycarePlacementWithDetails[]>
+  >(defaultState.placements)
   const [parentships, setParentships] = useState<Result<Parentship[]>>(
     defaultState.parentships
   )

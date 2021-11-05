@@ -234,7 +234,6 @@ WHERE employee_id = :userId
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
-            pedagogicalDocuments = user.hasOneOfRoles(UserRole.ADMIN)
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
@@ -301,7 +300,14 @@ WHERE employee_id = :userId
     private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) =
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
-                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db -> db.read { it.isOwnApplication(user, id) } }
+                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db ->
+                    db.read {
+                        it.isOwnApplication(
+                            user,
+                            id
+                        )
+                    }
+                }
                 else -> false
             }
             is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, id)
@@ -344,17 +350,38 @@ WHERE employee_id = :userId
                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
                     Database(jdbi).connect { db -> db.read { it.isOwnAttachment(id, user) } }
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
+                    Database(jdbi).connect { db ->
+                        db.read {
+                            it.hasPermissionForAttachmentThroughMessageContent(
+                                user,
+                                id
+                            )
+                        }
+                    }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.citizenHasPermissionThroughPedagogicalDocument(user, id) } }
+                    Database(jdbi).connect { db ->
+                        db.read {
+                            it.citizenHasPermissionThroughPedagogicalDocument(
+                                user,
+                                id
+                            )
+                        }
+                    }
             }
             is AuthenticatedUser.WeakCitizen -> when (action) {
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
+                    Database(jdbi).connect { db ->
+                        db.read {
+                            it.hasPermissionForAttachmentThroughMessageContent(
+                                user,
+                                id
+                            )
+                        }
+                    }
                 Action.Attachment.READ_APPLICATION_ATTACHMENT,
                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
@@ -382,9 +409,23 @@ WHERE employee_id = :userId
                     ).connect { db -> db.read { it.wasUploadedByAnyEmployee(id) } }
                 Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
                 Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageDraft(user, id) } }
+                    Database(jdbi).connect { db ->
+                        db.read {
+                            it.hasPermissionForAttachmentThroughMessageDraft(
+                                user,
+                                id
+                            )
+                        }
+                    }
                 Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.hasPermissionForAttachmentThroughMessageContent(user, id) } }
+                    Database(jdbi).connect { db ->
+                        db.read {
+                            it.hasPermissionForAttachmentThroughMessageContent(
+                                user,
+                                id
+                            )
+                        }
+                    }
                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
                     this.pedagogicalAttachment.hasPermission(user, action, id)
@@ -443,7 +484,14 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
                 Action.PedagogicalDocument.READ -> {
-                    val hasPermission = Database(jdbi).connect { db -> db.read { it.citizenHasPermissionForPedagogicalDocument(user, id) } }
+                    val hasPermission = Database(jdbi).connect { db ->
+                        db.read {
+                            it.citizenHasPermissionForPedagogicalDocument(
+                                user,
+                                id
+                            )
+                        }
+                    }
                     if (!hasPermission) throw Forbidden("Permission denied")
                 }
                 else -> throw Forbidden("Permission denied")
@@ -506,7 +554,14 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Citizen -> false // drafts are employee-only
             is AuthenticatedUser.Employee -> when (action) {
-                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db -> db.read { it.hasPermissionForMessageDraft(user, id) } }
+                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db ->
+                    db.read {
+                        it.hasPermissionForMessageDraft(
+                            user,
+                            id
+                        )
+                    }
+                }
             }
             else -> false
         }
@@ -628,7 +683,9 @@ WHERE employee_id = :userId
         id: I
     ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
         if (hasPermissionThroughGlobalRole(user, action)) return true
-        return Database(jdbi).connect { db -> db.read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) } }
+        return Database(jdbi).connect { db ->
+            db.read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) }
+        }
     }
 
     private inline fun <reified A : Action.ScopedAction<I>, reified I> ActionConfig<A>.getRolesFor(

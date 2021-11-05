@@ -13,7 +13,6 @@ import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Placement } from '../../../../types/child'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import {
@@ -21,9 +20,10 @@ import {
   updateServiceNeed
 } from '../../../../api/child/service-needs'
 import { UUID } from 'lib-common/types'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 interface ServiceNeedCreateRowProps {
-  placement: Placement
+  placement: DaycarePlacementWithDetails
   options: DropdownOption[]
   initialForm: FormData
   onSuccess: () => void

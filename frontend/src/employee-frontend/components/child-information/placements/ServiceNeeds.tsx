@@ -12,7 +12,7 @@ import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
-import { ServiceNeed, Placement } from '../../../types/child'
+import { ServiceNeed } from '../../../types/child'
 import { ChildContext } from '../../../state'
 import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { DateRange } from '../../../utils/date'
@@ -21,9 +21,10 @@ import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
 import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 interface Props {
-  placement: Placement
+  placement: DaycarePlacementWithDetails
   reload: () => void
 }
 

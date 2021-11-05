@@ -12,7 +12,6 @@ import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 import { faUsers } from 'lib-icons'
 import React, { useContext, useEffect, useMemo } from 'react'
 import { Link, RouteComponentProps } from 'react-router-dom'
@@ -140,17 +139,11 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    ...(featureFlags.experimental?.vasu
-      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
-      : []),
-    ...(featureFlags?.pedagogicalDocumentsEnabled
-      ? [
-          {
-            component: 'pedagogicalDocuments' as keyof typeof components,
-            open: false
-          }
-        ]
-      : []),
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
@@ -178,49 +171,31 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'family-contacts', open: false },
-    ...(featureFlags.experimental?.vasu
-      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
-      : []),
-    ...(featureFlags?.pedagogicalDocumentsEnabled
-      ? [
-          {
-            component: 'pedagogicalDocuments' as keyof typeof components,
-            open: false
-          }
-        ]
-      : [])
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    ...(featureFlags.experimental?.vasu
-      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
-      : []),
-    ...(featureFlags?.pedagogicalDocumentsEnabled
-      ? [
-          {
-            component: 'pedagogicalDocuments' as keyof typeof components,
-            open: false
-          }
-        ]
-      : [])
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
-    ...(featureFlags.experimental?.vasu
-      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
-      : []),
-    ...(featureFlags?.pedagogicalDocumentsEnabled
-      ? [
-          {
-            component: 'pedagogicalDocuments' as keyof typeof components,
-            open: false
-          }
-        ]
-      : []),
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false }

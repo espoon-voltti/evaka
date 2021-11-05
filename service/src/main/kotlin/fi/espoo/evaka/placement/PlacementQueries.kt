@@ -12,8 +12,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -242,7 +244,7 @@ fun Database.Read.getDaycarePlacements(
         """
         SELECT
             pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id,
-            d.name AS daycare_name, d.provider_type, a.name AS area_name,
+            d.name AS daycare_name, d.provider_type, d.enabled_pilot_features, a.name AS area_name,
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
@@ -288,6 +290,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
             u.id AS unit_id,
             u.name AS unit_name,
             u.provider_type,
+            u.enabled_pilot_features,
             a.name AS area_name
         FROM placement p
         JOIN daycare u ON p.unit_id = u.id
@@ -495,7 +498,7 @@ fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
         .firstOrNull() != null
 }
 
-private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacement = { rs, _ ->
+private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacement = { rs, ctx ->
     DaycarePlacement(
         id = PlacementId(rs.getUUID("placement_id")),
         child = ChildBasics(
@@ -509,7 +512,8 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
             id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("unit_name"),
             area = rs.getString("area_name"),
-            providerType = rs.getEnum("provider_type")
+            providerType = rs.getEnum("provider_type"),
+            enabledPilotFeatures = ctx.mapColumn<Array<PilotFeature>>(rs, "enabled_pilot_features").toList()
         ),
         startDate = rs.getDate("placement_start").toLocalDate(),
         endDate = rs.getDate("placement_end").toLocalDate(),
@@ -517,7 +521,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
     )
 }
 
-private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, _ ->
+private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, ctx ->
     DaycarePlacementDetails(
         id = PlacementId(rs.getUUID("id")),
         child = ChildBasics(
@@ -531,7 +535,8 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
             id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("daycare_name"),
             area = rs.getString("area_name"),
-            providerType = rs.getEnum("provider_type")
+            providerType = rs.getEnum("provider_type"),
+            enabledPilotFeatures = ctx.mapColumn<Array<PilotFeature>>(rs, "enabled_pilot_features").toList()
         ),
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),

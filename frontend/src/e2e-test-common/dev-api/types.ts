@@ -13,13 +13,13 @@ import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
+import { PilotFeature } from 'lib-common/generated/api-types/shared'
 
 type ISODate = string
 type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
 export type Language = 'fi' | 'sv' | 'en'
-export type PilotFeature = 'MESSAGING' | 'MOBILE' | 'RESERVATIONS'
 
 export interface Coordinate {
   lat: number

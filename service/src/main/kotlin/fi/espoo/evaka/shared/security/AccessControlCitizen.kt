@@ -20,7 +20,8 @@ class AccessControlCitizen(private val jdbi: Jdbi) {
     fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {
         return CitizenFeatures(
             messages = tx.citizenHasAccessToMessaging(user.id),
-            reservations = tx.citizenHasAccessToReservations(user.id)
+            reservations = tx.citizenHasAccessToReservations(user.id),
+            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(user.id)
         )
     }
 
@@ -79,6 +80,20 @@ SELECT EXISTS (
     JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
+)
+        """.trimIndent()
+        return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
+    }
+
+    private fun Database.Read.citizenHasAccessToPedagogicalDocumentation(personId: UUID): Boolean {
+        // language=sql
+        val sql = """
+SELECT EXISTS (
+    SELECT 1
+    FROM guardian g
+    JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    JOIN daycare ON pl.unit_id = daycare.id
+    WHERE guardian_id = :personId AND 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()

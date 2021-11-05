@@ -10,5 +10,6 @@ import fi.espoo.evaka.ConstList
 enum class PilotFeature {
     MESSAGING,
     MOBILE,
-    RESERVATIONS
+    RESERVATIONS,
+    VASU_AND_PEDADOC
 }

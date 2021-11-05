@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -758,7 +759,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         firstName = testChild_2.firstName,
                         lastName = testChild_2.lastName
                     ),
-                    daycare = DaycareBasics(testDaycare2.id, testDaycare2.name, testDaycare2.areaName, ProviderType.MUNICIPAL),
+                    daycare = DaycareBasics(
+                        testDaycare2.id,
+                        testDaycare2.name,
+                        testDaycare2.areaName,
+                        ProviderType.MUNICIPAL,
+                        listOf(PilotFeature.MESSAGING)
+                    ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
@@ -834,7 +841,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         firstName = testChild_2.firstName,
                         lastName = testChild_2.lastName
                     ),
-                    daycare = DaycareBasics(testDaycare2.id, testDaycare2.name, testDaycare2.areaName, ProviderType.MUNICIPAL),
+                    daycare = DaycareBasics(
+                        testDaycare2.id,
+                        testDaycare2.name,
+                        testDaycare2.areaName,
+                        ProviderType.MUNICIPAL,
+                        listOf(PilotFeature.MESSAGING)
+                    ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,

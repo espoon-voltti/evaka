@@ -9,6 +9,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 export interface PlacementCreate {
   childId: UUID
@@ -38,18 +39,22 @@ export async function createPlacement(
 
 export async function getPlacements(
   childId: UUID
-): Promise<Result<Placement[]>> {
+): Promise<Result<DaycarePlacementWithDetails[]>> {
   const config = {
     params: {
       childId
     }
   }
   return client
-    .get<JsonOf<Placement[]>>('/placements', config)
+    .get<JsonOf<DaycarePlacementWithDetails[]>>('/placements', config)
     .then((res) => res.data)
     .then((data) =>
       data.map((p) => ({
         ...p,
+        child: {
+          ...p.child,
+          dateOfBirth: LocalDate.parseIso(p.child.dateOfBirth)
+        },
         startDate: LocalDate.parseIso(p.startDate),
         endDate: LocalDate.parseIso(p.endDate),
         groupPlacements: p.groupPlacements.map((gp) => ({
@@ -61,6 +66,11 @@ export async function getPlacements(
           ...sn,
           startDate: LocalDate.parseIso(sn.startDate),
           endDate: LocalDate.parseIso(sn.endDate),
+          option: {
+            ...sn.option,
+            updated: new Date(sn.updated)
+          },
+          updated: new Date(sn.updated),
           confirmed:
             sn.confirmed != null
               ? {

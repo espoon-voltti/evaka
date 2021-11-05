@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
@@ -570,5 +571,6 @@ data class DaycareBasics(
     val id: DaycareId,
     val name: String,
     val area: String,
-    val providerType: ProviderType
+    val providerType: ProviderType,
+    val enabledPilotFeatures: List<PilotFeature>
 )

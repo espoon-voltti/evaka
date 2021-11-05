@@ -254,16 +254,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.financeBasics.title}
                 </Link>
               )}
-            {featureFlags.experimental?.vasu &&
-              user?.accessibleFeatures.vasuTemplates && (
-                <Link
-                  to="/vasu-templates"
-                  onClick={closeUserPopup}
-                  data-qa="user-popup-vasu-templates"
-                >
-                  {i18n.vasuTemplates.title}
-                </Link>
-              )}
+            {user?.accessibleFeatures.vasuTemplates && (
+              <Link
+                to="/vasu-templates"
+                onClick={closeUserPopup}
+                data-qa="user-popup-vasu-templates"
+              >
+                {i18n.vasuTemplates.title}
+              </Link>
+            )}
             {featureFlags.adminSettingsEnabled &&
               user?.accessibleFeatures.settings && (
                 <Link
