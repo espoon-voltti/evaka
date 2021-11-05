@@ -159,15 +159,7 @@ export interface Recipient {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ReplyToMessageBody
-*/
-export interface ReplyToMessageBody {
-  content: string
-  recipientAccountIds: UUID[]
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.ReplyToMessageBody
+* Generated from fi.espoo.evaka.messaging.ReplyToMessageBody
 */
 export interface ReplyToMessageBody {
   content: string

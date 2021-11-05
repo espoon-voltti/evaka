@@ -29,6 +29,11 @@ import org.springframework.web.bind.annotation.RestController
 
 data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
 
+data class ReplyToMessageBody(
+    val content: String,
+    val recipientAccountIds: Set<MessageAccountId>,
+)
+
 @RestController
 @RequestMapping("/messages")
 class MessageController(
@@ -165,11 +170,6 @@ class MessageController(
         requireMessageAccountAccess(db, user, accountId)
         return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
-
-    data class ReplyToMessageBody(
-        val content: String,
-        val recipientAccountIds: Set<MessageAccountId>,
-    )
 
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
