@@ -271,7 +271,9 @@ class AttachmentsController(
         "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.oasis.opendocument.text"
+        "application/vnd.oasis.opendocument.text",
+        "application/x-tika-msoffice",
+        "application/x-tika-ooxml"
     )
 
     val pedagogicalDocumentAllowedAttacmentContentTypes = defaultAllowedAttachmentContentTypes + listOf(
