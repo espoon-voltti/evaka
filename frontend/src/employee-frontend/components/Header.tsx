@@ -264,15 +264,16 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.vasuTemplates.title}
                 </Link>
               )}
-            {user?.accessibleFeatures.settings && (
-              <Link
-                to="/settings"
-                onClick={closeUserPopup}
-                data-qa="user-popup-settings"
-              >
-                {i18n.settings.title}
-              </Link>
-            )}
+            {featureFlags.adminSettingsEnabled &&
+              user?.accessibleFeatures.settings && (
+                <Link
+                  to="/settings"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-settings"
+                >
+                  {i18n.settings.title}
+                </Link>
+              )}
             {user?.accessibleFeatures.unitFeatures && (
               <Link
                 to="/unit-features"

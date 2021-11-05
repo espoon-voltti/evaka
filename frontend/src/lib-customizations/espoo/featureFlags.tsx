@@ -24,6 +24,7 @@ const features: Features = {
     pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
+    adminSettingsEnabled: false,
     experimental: {
       ai: true,
       messageAttachments: true,
@@ -43,6 +44,7 @@ const features: Features = {
     pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
+    adminSettingsEnabled: false,
     experimental: {
       ai: true,
       messageAttachments: true,
@@ -62,6 +64,7 @@ const features: Features = {
     pedagogicalDocumentsEnabled: false,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
+    adminSettingsEnabled: false,
     experimental: {
       ai: false,
       messageAttachments: true,
