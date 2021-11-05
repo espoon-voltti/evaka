@@ -35,7 +35,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name
 
 fun Database.Transaction.upsertMobileDeviceUser(id: MobileDeviceId) = createUpdate(
     """
-INSERT INTO evaka_user (id, type, employee_id, name)
+INSERT INTO evaka_user (id, type, mobile_device_id, name)
 SELECT id, 'MOBILE_DEVICE', id, name
 FROM mobile_device
 WHERE id = :id
