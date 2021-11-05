@@ -54,7 +54,7 @@ FROM message_account acc
     JOIN message_account_name_view name_view ON name_view.id = acc.id
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
-    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND acl.role = 'UNIT_SUPERVISOR'
+    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND (acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER')
     LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
 WHERE acc.id = ANY(:accountIds)
 AND (

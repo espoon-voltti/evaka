@@ -239,7 +239,7 @@ WHERE employee_id = :userId
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
         return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
-            .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR)
+            .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
     fun requireGuardian(user: AuthenticatedUser, childIds: Set<UUID>) {
