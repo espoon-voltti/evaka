@@ -2567,7 +2567,7 @@ export const fi = {
       description:
         'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
       updated: 'Muokattu',
-      created: 'Luotu',
+      age: 'Ikä (päivää)',
       child: 'Lapsi',
       serviceNeed: 'Palveluntarve',
       error: 'Virhe'

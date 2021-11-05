@@ -37,6 +37,11 @@ function VardaErrors() {
     void getVardaErrorsReport(filters).then(setRows)
   }, [filters])
 
+  const ageInDays = (timestamp: Date): number => {
+    const diff = new Date().getTime() - timestamp.getTime()
+    return Math.round(diff / (1000 * 3600 * 24))
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -61,7 +66,7 @@ function VardaErrors() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.vardaErrors.created}</Th>
+                  <Th>{i18n.reports.vardaErrors.age}</Th>
                   <Th>{i18n.reports.vardaErrors.child}</Th>
                   <Th>{i18n.reports.vardaErrors.error}</Th>
                   <Th>{i18n.reports.vardaErrors.serviceNeed}</Th>
@@ -71,10 +76,7 @@ function VardaErrors() {
               <Tbody>
                 {rows.value.map((row: VardaErrorReportRow) => (
                   <Tr key={`${row.serviceNeedId}`}>
-                    <Td>
-                      {LocalDate.fromSystemTzDate(row.created).format()}{' '}
-                      {row.created.toLocaleTimeString()}
-                    </Td>
+                    <Td>{ageInDays(row.created)}</Td>
                     <Td>
                       <Link to={`/child-information/${row.childId}`}>
                         {row.childId}
