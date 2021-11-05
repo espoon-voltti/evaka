@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+---
+evaka:
+  oph:
+    municipality_code: "049"
+    organizer_oid: "1.2.246.562.10.90008375488"
+    organizer_id: "299"

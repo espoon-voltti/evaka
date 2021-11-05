@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
@@ -30,10 +31,11 @@ class VardaResetService(
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
     private val vardaEnv: VardaEnv,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
+    private val ophEnv: OphEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-    private val municipalOrganizerOid = evakaEnv.ophOrganizerOid
+    private val municipalOrganizerOid = ophEnv.ophOrganizerOid
 
     init {
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)

@@ -12,6 +12,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.MessageEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.VardaEnv
@@ -69,4 +70,7 @@ class EnvConfig {
 
     @Bean
     fun vtjXroadEnv(evakaEnv: EvakaEnv, env: Environment): VtjXroadEnv = VtjXroadEnv.fromEnvironment(env)
+
+    @Bean
+    fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
 }

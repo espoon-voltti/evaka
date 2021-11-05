@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -41,12 +42,13 @@ class VardaUpdateService(
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
     private val vardaEnv: VardaEnv,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
+    private val ophEnv: OphEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-    private val ophMunicipalityCode = evakaEnv.ophMunicipalityCode
-    private val ophMunicipalityOid = evakaEnv.ophOrganizerOid
-    private val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${evakaEnv.ophOrganizerId}/"
+    private val ophMunicipalityCode = ophEnv.ophMunicipalityCode
+    private val ophMunicipalityOid = ophEnv.ophOrganizerOid
+    private val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.ophOrganizerId}/"
 
     init {
         asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)

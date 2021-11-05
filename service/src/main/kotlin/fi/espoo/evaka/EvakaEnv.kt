@@ -27,10 +27,7 @@ data class EvakaEnv(
     val feeDecisionMinDate: LocalDate,
     val maxAttachmentsPerUser: Int,
     val httpClientCertificateCheck: Boolean,
-    val fiveYearsOldDaycareEnabled: Boolean,
-    val ophOrganizerOid: String,
-    val ophOrganizerId: String,
-    val ophMunicipalityCode: String
+    val fiveYearsOldDaycareEnabled: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -54,10 +51,7 @@ data class EvakaEnv(
                 fiveYearsOldDaycareEnabled = env.lookup(
                     "evaka.five_years_old_daycare.enabled",
                     "fi.espoo.evaka.five_years_old_daycare.enabled"
-                ) ?: true,
-                ophOrganizerOid = env.lookup("evaka.oph.organizer_oid"),
-                ophMunicipalityCode = env.lookup("evaka.oph.municipality_code"),
-                ophOrganizerId = env.lookup("evaka.oph.organizer_id")
+                ) ?: true
             )
         }
     }
@@ -191,7 +185,7 @@ data class BucketEnv(
     }
 }
 
-data class KoskiEnv(val url: String, val sourceSystem: String, val user: String, val secret: Sensitive<String>, val ophOrganizerOid: String) {
+data class KoskiEnv(val url: String, val sourceSystem: String, val user: String, val secret: Sensitive<String>) {
     companion object {
         fun fromEnvironment(env: Environment) = KoskiEnv(
             url = env.lookup("evaka.integration.koski.url", "fi.espoo.integration.koski.url"),
@@ -200,8 +194,7 @@ data class KoskiEnv(val url: String, val sourceSystem: String, val user: String,
                 "fi.espoo.integration.koski.source_system"
             ),
             user = env.lookup("evaka.integration.koski.user", "fi.espoo.integration.koski.user"),
-            secret = Sensitive(env.lookup("evaka.integration.koski.secret", "fi.espoo.integration.koski.secret")),
-            ophOrganizerOid = env.lookup("evaka.oph.organizer_oid")
+            secret = Sensitive(env.lookup("evaka.integration.koski.secret", "fi.espoo.integration.koski.secret"))
         )
     }
 }
@@ -366,6 +359,22 @@ data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
                 (job to settings)
             }
         )
+    }
+}
+
+data class OphEnv(
+    val ophOrganizerOid: String,
+    val ophOrganizerId: String,
+    val ophMunicipalityCode: String
+) {
+    companion object {
+        fun fromEnvironment(env: Environment): OphEnv {
+            return OphEnv(
+                ophOrganizerOid = env.lookup("evaka.oph.organizer_oid"),
+                ophMunicipalityCode = env.lookup("evaka.oph.municipality_code"),
+                ophOrganizerId = env.lookup("evaka.oph.organizer_id")
+            )
+        }
     }
 }
 

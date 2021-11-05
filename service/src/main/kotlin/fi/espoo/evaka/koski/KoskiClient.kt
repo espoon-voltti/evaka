@@ -19,6 +19,7 @@ import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -30,6 +31,7 @@ private val logger = KotlinLogging.logger { }
 
 class KoskiClient(
     private val env: KoskiEnv,
+    private val ophEnv: OphEnv,
     private val fuel: FuelManager,
     asyncJobRunner: AsyncJobRunner<AsyncJob>?
 ) {
@@ -49,7 +51,7 @@ class KoskiClient(
 
     fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
-        val data = tx.beginKoskiUpload(env.sourceSystem, env.ophOrganizerOid, msg.key, today)
+        val data = tx.beginKoskiUpload(env.sourceSystem, ophEnv.ophOrganizerOid, msg.key, today)
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
             return@transaction
