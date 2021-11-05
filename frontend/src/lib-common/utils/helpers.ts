@@ -31,3 +31,9 @@ export const isProduction = (): boolean => {
 
 export const isAutomatedTest =
   typeof window !== 'undefined' && 'evakaAutomatedTest' in window
+
+export const isIOS = () =>
+  ['iPad', 'iPhone', 'iPad Simulator', 'iPhone Simulator'].includes(
+    navigator.platform
+  ) ||
+  (navigator.userAgent.includes('Mac') && 'ontouchend' in document)

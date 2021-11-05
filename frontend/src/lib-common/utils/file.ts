@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { isIOS } from './helpers'
+
 function openLink(link: HTMLAnchorElement, url: string) {
   document.body.appendChild(link)
   link.click()
@@ -44,12 +46,12 @@ export const downloadBlobAsFile = (fileName: string, blobPart: BlobPart) => {
 }
 
 export const openBlobInBrowser = (
-  fileName: string,
+  _fileName: string,
   fileType: string,
   blobPart: BlobPart
 ) => {
   const url = URL.createObjectURL(new Blob([blobPart], { type: fileType }))
   const link = createLink(url)
-  link.target = '_blank'
+  link.target = isIOS() ? '_self' : '_blank'
   openLink(link, url)
 }
