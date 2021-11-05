@@ -468,7 +468,8 @@ export async function getVardaErrorsReport(
       Success.of(
         res.data.map((row) => ({
           ...row,
-          updated: new Date(row.updated)
+          updated: new Date(row.updated),
+          created: new Date(row.created)
         }))
       )
     )

@@ -362,5 +362,6 @@ export interface VardaErrorReportRow {
   serviceNeedOptionName: string
   childId: UUID
   updated: Date
+  created: Date
   errors: string[]
 }

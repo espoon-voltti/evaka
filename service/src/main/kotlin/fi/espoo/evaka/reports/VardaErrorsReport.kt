@@ -41,6 +41,7 @@ SELECT
     sno.name_fi as service_need_option_name,
     vsn.evaka_child_id AS child_id,
     vsn.updated,
+    vsn.created,
     vsn.errors
 FROM varda_service_need vsn
 JOIN service_need sn on vsn.evaka_service_need_id = sn.id
@@ -58,5 +59,6 @@ data class VardaErrorReportRow(
     val serviceNeedOptionName: String,
     val childId: UUID,
     val updated: HelsinkiDateTime,
+    val created: HelsinkiDateTime,
     val errors: List<String>
 )
