@@ -17,7 +17,6 @@ import {
 import React, { useCallback, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
-import { featureFlags } from 'lib-customizations/employee'
 import { fontWeights } from 'lib-components/typography'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
@@ -47,7 +46,7 @@ export default React.memo(function DesktopNav({
             <StyledNavLink to="/applying" data-qa="nav-applying">
               {t.header.nav.applying} {maybeLockElem}
             </StyledNavLink>
-            {featureFlags.pedagogicalDocumentsEnabled && (
+            {user.accessibleFeatures.pedagogicalDocumentation && (
               <StyledNavLink
                 to="/pedagogical-documents"
                 data-qa="nav-pedagogical-documents"

@@ -12,6 +12,7 @@ import { UUID } from '../../types'
 */
 export interface CitizenFeatures {
   messages: boolean
+  pedagogicalDocumentation: boolean
   reservations: boolean
 }
 
@@ -51,7 +52,6 @@ export interface EmployeeFeatures {
   finance: boolean
   financeBasics: boolean
   messages: boolean
-  pedagogicalDocuments: boolean
   personSearch: boolean
   reports: boolean
   settings: boolean
@@ -66,7 +66,8 @@ export interface EmployeeFeatures {
 export const pilotFeatures = [
   'MESSAGING',
   'MOBILE',
-  'RESERVATIONS'
+  'RESERVATIONS',
+  'VASU_AND_PEDADOC'
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]

@@ -12,7 +12,6 @@ import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from 'lib-components/breakpoints'
-import { featureFlags } from 'lib-customizations/employee'
 import { fontWeights } from 'lib-components/typography'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
@@ -210,7 +209,7 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
             {t.header.nav.income} {maybeLockElem}
           </StyledNavLink>
-          {featureFlags.pedagogicalDocumentsEnabled && (
+          {user.accessibleFeatures.pedagogicalDocumentation && (
             <StyledNavLink
               to="/pedagogical-documents"
               data-qa="nav-pedagogical-documents"

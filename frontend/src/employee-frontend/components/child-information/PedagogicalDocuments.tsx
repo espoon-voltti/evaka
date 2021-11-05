@@ -11,7 +11,6 @@ import * as _ from 'lodash'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { RequireRole } from '../../utils/roles'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import {
   createPedagogicalDocument,
@@ -35,8 +34,12 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { pedagogicalDocuments, setPedagogicalDocuments } =
-    useContext(ChildContext)
+  const {
+    pedagogicalDocuments,
+    setPedagogicalDocuments,
+    permittedActions,
+    placements
+  } = useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
@@ -119,6 +122,20 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       )
   }
 
+  if (
+    !permittedActions.has('READ_PEDAGOGICAL_DOCUMENTS') ||
+    placements
+      .map(
+        (ps) =>
+          !ps.some((placement) =>
+            placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
+          )
+      )
+      .getOrElse(true)
+  ) {
+    return null
+  }
+
   return (
     <CollapsibleContentArea
       title={
@@ -130,21 +147,14 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
       paddingVertical="L"
       data-qa="pedagogical-documents-collapsible"
     >
-      <RequireRole
-        oneOf={[
-          'ADMIN',
-          'UNIT_SUPERVISOR',
-          'STAFF',
-          'SPECIAL_EDUCATION_TEACHER'
-        ]}
-      >
+      {permittedActions.has('CREATE_PEDAGOGICAL_DOCUMENT') && (
         <AddButtonRow
           text={i18n.childInformation.pedagogicalDocument.create}
           onClick={() => createNewDocument()}
           data-qa="button-create-pedagogical-document"
           disabled={submitting}
         />
-      </RequireRole>
+      )}
 
       {pedagogicalDocuments.isLoading && <Loader />}
       {pedagogicalDocuments.isFailure && <div>{i18n.common.loadingFailed}</div>}

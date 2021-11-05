@@ -184,7 +184,8 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { vasus, setVasus } = useContext(ChildContext)
+  const { permittedActions, placements, vasus, setVasus } =
+    useContext(ChildContext)
   const history = useHistory()
 
   const [open, setOpen] = useState(startOpen)
@@ -252,6 +253,20 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
   const allowCreation = vasus
     .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
     .getOrElse(false)
+
+  if (
+    !permittedActions.has('READ_VASU_DOCUMENT') ||
+    placements
+      .map(
+        (ps) =>
+          !ps.some((placement) =>
+            placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
+          )
+      )
+      .getOrElse(true)
+  ) {
+    return null
+  }
 
   return (
     <div>

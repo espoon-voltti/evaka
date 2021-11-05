@@ -15,7 +15,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
-import { Placement } from '../../../types/child'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../../components/common/ToolbarAccordion'
@@ -34,11 +33,15 @@ import {
 } from '../../../api/child/placements'
 import { InputWarning } from '../../common/InputWarning'
 import ServiceNeeds from './ServiceNeeds'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 interface Props {
-  placement: Placement
+  placement: DaycarePlacementWithDetails
   onRefreshNeeded: () => void | undefined
-  checkOverlaps: (range: DateRange, placement: Placement) => boolean | undefined
+  checkOverlaps: (
+    range: DateRange,
+    placement: DaycarePlacementWithDetails
+  ) => boolean | undefined
 }
 
 const DataRow = styled.div`

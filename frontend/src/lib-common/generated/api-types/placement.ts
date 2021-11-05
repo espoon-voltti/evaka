@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
@@ -27,6 +28,7 @@ export interface ChildBasics {
 */
 export interface DaycareBasics {
   area: string
+  enabledPilotFeatures: PilotFeature[]
   id: UUID
   name: string
   providerType: ProviderType

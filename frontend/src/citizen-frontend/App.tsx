@@ -29,7 +29,6 @@ import { OverlayContextProvider } from './overlay/state'
 import IncomeStatements from './income-statements/IncomeStatements'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
-import { featureFlags } from 'lib-customizations/citizen'
 import Applying from './applying/Applying'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
@@ -116,13 +115,11 @@ export default function App() {
                           path="/calendar"
                           component={requireAuth(CalendarPage, false)}
                         />
-                        {featureFlags.pedagogicalDocumentsEnabled && (
-                          <Route
-                            exact
-                            path="/pedagogical-documents"
-                            component={requireAuth(PedagogicalDocuments)}
-                          />
-                        )}
+                        <Route
+                          exact
+                          path="/pedagogical-documents"
+                          component={requireAuth(PedagogicalDocuments)}
+                        />
                         <Route path="/">
                           <Redirect to="/applying/map" />
                         </Route>

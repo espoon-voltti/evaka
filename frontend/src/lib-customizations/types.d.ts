@@ -104,7 +104,6 @@ interface BaseFeatureFlags {
   groupsTableServiceNeedsEnabled: boolean
   evakaLogin: boolean
   financeBasicsPage: boolean
-  pedagogicalDocumentsEnabled: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
   adminSettingsEnabled: boolean
@@ -119,7 +118,6 @@ interface BaseFeatureFlags {
     ai?: boolean
     messageAttachments?: boolean
     realtimeStaffAttendance?: boolean
-    vasu?: boolean
   }
 }
 

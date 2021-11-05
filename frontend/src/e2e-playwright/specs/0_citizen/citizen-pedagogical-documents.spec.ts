@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
 import {
+  insertDaycarePlacementFixtures,
   insertPedagogicalDocumentAttachment,
   resetDatabase
 } from '../../../e2e-test-common/dev-api'
@@ -12,7 +13,11 @@ import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { enduserLogin } from '../../utils/user'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
-import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
+import {
+  createDaycarePlacementFixture,
+  Fixture,
+  uuidv4
+} from '../../../e2e-test-common/dev-api/fixtures'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -29,6 +34,14 @@ const testFilePath = `src/e2e-playwright/assets`
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+
+  await insertDaycarePlacementFixtures([
+    createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.daycareFixture.id
+    )
+  ])
 
   page = await (await newBrowserContext()).newPage()
   await enduserLogin(page)

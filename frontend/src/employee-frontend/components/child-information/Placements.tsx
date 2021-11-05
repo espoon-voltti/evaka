@@ -15,7 +15,6 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { getPlacements } from '../../api/child/placements'
 import { RequireRole } from '../../utils/roles'
 import { DateRange, rangesOverlap } from '../../utils/date'
-import { Placement } from '../../types/child'
 import { getServiceNeedOptions } from '../../api/child/service-needs'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import _ from 'lodash'
@@ -23,6 +22,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import { FlexRow } from '../common/styled/containers'
 import { UUID } from 'lib-common/types'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 
 interface Props {
   id: UUID
@@ -46,7 +46,10 @@ const Placements = React.memo(function Placements({ id, startOpen }: Props) {
   )
   useEffect(loadServiceNeedOptions, [loadServiceNeedOptions])
 
-  const checkOverlaps = (range: DateRange, placement: Placement): boolean =>
+  const checkOverlaps = (
+    range: DateRange,
+    placement: DaycarePlacementWithDetails
+  ): boolean =>
     placements
       .map(
         (ps) =>

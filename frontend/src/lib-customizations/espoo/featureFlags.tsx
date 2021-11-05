@@ -21,15 +21,13 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
-    pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     adminSettingsEnabled: false,
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
-      vasu: true
+      realtimeStaffAttendance: false
     }
   },
   staging: {
@@ -41,15 +39,13 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
-    pedagogicalDocumentsEnabled: true,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     adminSettingsEnabled: false,
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: true,
-      vasu: true
+      realtimeStaffAttendance: true
     }
   },
   prod: {
@@ -61,15 +57,13 @@ const features: Features = {
     groupsTableServiceNeedsEnabled: false,
     evakaLogin: true,
     financeBasicsPage: true,
-    pedagogicalDocumentsEnabled: false,
     preschoolEnabled: true,
     urgencyAttachmentsEnabled: true,
     adminSettingsEnabled: false,
     experimental: {
       ai: false,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
-      vasu: false
+      realtimeStaffAttendance: false
     }
   }
 }
