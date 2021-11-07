@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageReceiver,
+  MessageReceiversResponse
+} from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -177,3 +180,17 @@ export const getSubTree = (
   }
   return undefined
 }
+
+export const receiverAsSelectorNode = (r: MessageReceiver): SelectorNode => ({
+  selectorId: r.childId,
+  selected: false,
+  name: `${r.childFirstName} ${r.childLastName}`,
+  childNodes: r.receiverPersons.map(
+    ({ accountId, receiverFirstName, receiverLastName }) => ({
+      selectorId: accountId,
+      selected: false,
+      name: `${receiverFirstName} ${receiverLastName}`,
+      childNodes: []
+    })
+  )
+})

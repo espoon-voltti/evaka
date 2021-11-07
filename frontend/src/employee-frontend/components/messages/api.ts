@@ -16,17 +16,16 @@ import {
   ReplyToMessageBody,
   SentMessage,
   ThreadReply,
-  UnreadCountByAccount,
-  UpsertableDraftContent
+  UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
-import {
-  deserializeDraftContent,
-  deserializeReceiver,
-  deserializeSentMessage
-} from './types'
+import { deserializeDraftContent, deserializeSentMessage } from './types'
 import { UUID } from 'lib-common/types'
+import {
+  deserializeReceiver,
+  SaveDraftParams
+} from 'lib-components/employee/messages/types'
 
 export async function getReceivers(
   unitId: UUID
@@ -114,12 +113,6 @@ export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
     .post<UUID>(`/messages/${accountId}/drafts`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface SaveDraftParams {
-  accountId: UUID
-  draftId: UUID
-  content: UpsertableDraftContent
 }
 
 export async function saveDraft({

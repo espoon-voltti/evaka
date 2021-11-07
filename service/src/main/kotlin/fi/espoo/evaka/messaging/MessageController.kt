@@ -44,6 +44,7 @@ class MessageController(
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
+    // todo remove
     fun Database.Read.getFakeUser(unitId: DaycareId) = this.createQuery(
         """
             SELECT employee_id FROM daycare_acl_view
@@ -62,6 +63,7 @@ class MessageController(
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
     }
 
+    // todo remove
     @GetMapping("/mobile/my-accounts/{unitId}")
     fun getAccountsByDevice(
         db: Database.Connection,
@@ -72,6 +74,7 @@ class MessageController(
         return db.read { it.getEmployeeNestedMessageAccounts(fakeUserId) }
     }
 
+    // todo remove
     @GetMapping("/mobile/{accountId}/received")
     fun getReceivedMessagesByDevice(
         db: Database.Connection,
@@ -109,6 +112,8 @@ class MessageController(
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
 
+
+    // todo remove
     @GetMapping("/mobile/unread/{unitId}")
     fun getUnreadMessagesMobile(
         db: Database.Connection,
@@ -170,6 +175,32 @@ class MessageController(
         }
     }
 
+    // todo remove
+    @PostMapping("/mobile/{accountId}")
+    fun createMessageMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @RequestBody body: PostMessageBody,
+    ): List<MessageThreadId> {
+        val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
+
+        return db.transaction { tx ->
+            messageService.createMessageThreadsForRecipientGroups(
+                tx,
+                title = body.title,
+                content = body.content,
+                sender = accountId,
+                type = body.type,
+                recipientNames = body.recipientNames,
+                recipientGroups = groupedRecipients,
+                attachmentIds = body.attachmentIds,
+            ).also {
+                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+            }
+        }
+    }
+
     @GetMapping("/{accountId}/drafts")
     fun getDrafts(
         db: Database.Connection,
@@ -192,6 +223,16 @@ class MessageController(
         return db.transaction { it.initDraft(accountId) }
     }
 
+    // todo remove
+    @PostMapping("/mobile/{accountId}/drafts")
+    fun initDraftMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+    ): MessageDraftId {
+        return db.transaction { it.initDraft(accountId) }
+    }
+
     @PutMapping("/{accountId}/drafts/{draftId}")
     fun upsertDraft(
         db: Database.Connection,
@@ -202,6 +243,18 @@ class MessageController(
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
         requireMessageAccountAccess(db, user, accountId)
+        return db.transaction { it.upsertDraft(accountId, draftId, content) }
+    }
+
+    // todo remove
+    @PutMapping("/mobile/{accountId}/drafts/{draftId}")
+    fun upsertDraftMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable draftId: MessageDraftId,
+        @RequestBody content: UpsertableDraftContent,
+    ) {
         return db.transaction { it.upsertDraft(accountId, draftId, content) }
     }
 
@@ -217,11 +270,23 @@ class MessageController(
         return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
 
+    // todo remove
+    @DeleteMapping("/mobile/{accountId}/drafts/{draftId}")
+    fun deleteDraftMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable draftId: MessageDraftId,
+    ) {
+        return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
+    }
+
     data class ReplyToMessageBody(
         val content: String,
         val recipientAccountIds: Set<MessageAccountId>,
     )
 
+    // todo remove
     @PostMapping("/mobile/{accountId}/{messageId}/reply")
     fun replyToThreadMobile(
         db: Database.Connection,
@@ -259,6 +324,7 @@ class MessageController(
         )
     }
 
+    // todo remove
     @PutMapping("/mobile/{accountId}/threads/{threadId}/read")
     fun markThreadReadMobile(
         db: Database.Connection,
@@ -295,6 +361,16 @@ class MessageController(
             UserRole.SPECIAL_EDUCATION_TEACHER
         )
 
+        return db.read { it.getReceiversForNewMessage(user.id, unitId) }
+    }
+
+    // todo remove
+    @GetMapping("/mobile/receivers")
+    fun getReceiversForNewMessageMobile(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestParam unitId: DaycareId
+    ): List<MessageReceiversResponse> {
         return db.read { it.getReceiversForNewMessage(user.id, unitId) }
     }
 

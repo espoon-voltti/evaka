@@ -41,6 +41,8 @@ import { UnitContextProvider } from './state/unit'
 import { UserContextProvider } from './state/user'
 import MessagesPage from './components/messages/MessagesPage'
 import { MessageContextProvider } from './state/messages'
+import { featureFlags } from 'lib-customizations/employee'
+import MessageEditorPage from './components/messages/MessageEditorPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -99,7 +101,9 @@ function GroupRouter() {
         path={`${path}/staff-attendance`}
         component={StaffAttendanceRouter}
       />
-      <Route path={`${path}/messages`} component={MessagesRouter} />
+      {featureFlags.experimental?.mobileMessages && (
+        <Route path={`${path}/messages`} component={MessagesRouter} />
+      )}
     </Switch>
   )
 }
@@ -201,11 +205,16 @@ function MessagesRouter() {
   const { path } = useRouteMatch()
 
   return (
-      <MessageContextProvider>
-        <Switch>
-          <Route exact path={path} component={MessagesPage} />
-          <Redirect to={path} />
-        </Switch>
-      </MessageContextProvider>
+    <MessageContextProvider>
+      <Switch>
+        <Route exact path={path} component={MessagesPage} />
+        <Route
+          exact
+          path={`${path}/:childId/new-message`}
+          component={MessageEditorPage}
+        />
+        <Redirect to={path} />
+      </Switch>
+    </MessageContextProvider>
   )
 }

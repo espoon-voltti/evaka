@@ -37,12 +37,17 @@ export default React.memo(function ChildButtons({
         maxWidth={'56px'}
         justifyContent={'center'}
       >
-        <RoundIcon
-          content={faComments}
-          color={colors.greyscale.lighter}
-          size="XL"
-          label={i18n.common.messages}
-        />
+        <Link
+          to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
+          data-qa={'link-new-message'}
+        >
+          <RoundIcon
+            content={faComments}
+            color={colors.main.primary}
+            size="XL"
+            label={i18n.common.messages}
+          />
+        </Link>
         <Link
           to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
           data-qa={'link-child-daycare-daily-note'}

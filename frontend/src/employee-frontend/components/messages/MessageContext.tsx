@@ -34,7 +34,7 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { ReactSelectOption } from './SelectorNode'
+import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20

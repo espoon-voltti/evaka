@@ -10,13 +10,22 @@ import { defaultMargins } from 'lib-components/white-space'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { deleteDraft, postMessage } from './api'
+import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 import { MessageContext } from './MessageContext'
-import MessageEditor from './MessageEditor'
+import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import MessageList from './ThreadListContainer'
-import { deselectAll, SelectorNode } from './SelectorNode'
+import {
+  deselectAll,
+  SelectorNode
+} from 'lib-components/employee/messages/SelectorNode'
 import Sidebar from './Sidebar'
 import ReceiverSelection from './ReceiverSelection'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveMessageAttachment
+} from '../../api/attachments'
+import { featureFlags } from 'lib-customizations/employee'
 
 // TODO is fixed header height possible?
 // If not, replace with a stretching flex container with scrollable children
@@ -146,18 +155,31 @@ export default function MessagesPage() {
           selectedAccount &&
           selectedUnit && (
             <MessageEditor
+              availableReceivers={selectedReceivers}
+              attachmentsEnabled={
+                featureFlags.experimental?.messageAttachments ?? false
+              }
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              nestedAccounts={nestedAccounts.value}
-              selectedUnit={selectedUnit}
-              availableReceivers={selectedReceivers}
-              onSend={onSend}
-              sending={sending}
-              onDiscard={onDiscard}
-              onClose={onHide}
+              deleteAttachment={deleteAttachment}
               draftContent={selectedDraft}
+              getAttachmentBlob={getAttachmentBlob}
+              i18n={{
+                ...i18n.messages.messageEditor,
+                ...i18n.fileUpload,
+                ...i18n.common
+              }}
+              initDraftRaw={initDraft}
+              nestedAccounts={nestedAccounts.value}
+              onClose={onHide}
+              onDiscard={onDiscard}
+              onSend={onSend}
+              saveDraftRaw={saveDraft}
+              saveMessageAttachment={saveMessageAttachment}
+              selectedUnit={selectedUnit}
+              sending={sending}
             />
           )}
       </PanelContainer>

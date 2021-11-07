@@ -62,7 +62,7 @@ const isErrorCode = (code: string | undefined): code is FileUploadError =>
 const getErrorCode = (res: Failure<string>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
-interface FileUploadI18n {
+export interface FileUploadI18n {
   download: {
     modalHeader: string
     modalMessage: string

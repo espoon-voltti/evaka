@@ -7,7 +7,10 @@ import {
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { getReceivers } from './api'
-import { SelectorNode, unitAsSelectorNode } from './SelectorNode'
+import {
+  SelectorNode,
+  unitAsSelectorNode
+} from 'lib-components/employee/messages/SelectorNode'
 import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -20,10 +23,10 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
-import { isNestedGroupMessageAccount } from './types'
 import { messageBoxes } from './types-view'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { renderResult } from '../async-rendering'
+import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 
 const Container = styled.div`
   flex: 0 1 260px;

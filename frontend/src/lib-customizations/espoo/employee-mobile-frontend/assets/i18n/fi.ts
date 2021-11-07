@@ -55,6 +55,10 @@ export const fi = {
     clear: 'Tyhjennä',
     edit: 'Muokkaa',
     save: 'Tallenna',
+    saving: 'Tallennetaan',
+    saved: 'Tallennettu',
+    search: 'Hae',
+    noResults: 'Ei hakutuloksia',
     doNotSave: 'Älä tallenna',
     starts: 'Alkaa',
     ends: 'Päättyy',
@@ -286,7 +290,27 @@ export const fi = {
   },
   messages: {
     title: 'Viestit',
-    inputPlaceholder: 'Kirjoita...'
+    inputPlaceholder: 'Kirjoita...',
+    messageEditor: {
+      newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
+      to: {
+        label: 'Vastaanottaja',
+        placeholder: 'Valitse ryhmä',
+        noOptions: 'Ei ryhmiä'
+      },
+      type: {
+        label: 'Viestin tyyppi',
+        message: 'Viesti',
+        bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
+      },
+      sender: 'Lähettäjä',
+      receivers: 'Vastaanottajat',
+      title: 'Otsikko',
+      message: 'Viesti',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä',
+      sending: 'Lähetetään'
+    }
   },
   mobile: {
     landerText1:
@@ -322,5 +346,30 @@ export const fi = {
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  fileUpload: {
+    upload: {
+      loading: 'Ladataan...',
+      loaded: 'Ladattu',
+      error: {
+        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+        SERVER_ERROR: 'Lataus ei onnistunut'
+      },
+      input: {
+        title: 'Lisää liite',
+        text: [
+          'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+          'Tiedoston maksimikoko: 10MB.',
+          'Sallitut tiedostomuodot:',
+          'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+        ]
+      },
+      deleteFile: 'Poista tiedosto'
+    },
+    download: {
+      modalHeader: 'Tiedoston käsittely on kesken',
+      modalMessage:
+        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
+    }
   }
 }

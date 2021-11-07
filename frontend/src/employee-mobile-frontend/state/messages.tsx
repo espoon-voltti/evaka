@@ -32,6 +32,7 @@ import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { UserContext } from './user'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
+import { SelectOption } from 'lib-components/molecules/Select'
 
 const PAGE_SIZE = 20
 
@@ -61,6 +62,7 @@ export interface MessagesState {
   preselectAccount: () => void
   receivedMessages: Result<MessageThread[]>
   refreshMessages: (account?: UUID) => void
+  selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
@@ -82,6 +84,7 @@ const defaultState: MessagesState = {
   preselectAccount: () => undefined,
   receivedMessages: Loading.of(),
   refreshMessages: () => undefined,
+  selectedUnit: undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
@@ -123,6 +126,12 @@ export const MessageContextProvider = React.memo(
     const { unitInfoResponse } = useContext(UnitContext)
 
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
+    const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
+
+    useEffect(() => {
+      const unit = unitInfoResponse.getOrElse(undefined)
+      setSelectedUnit(unit && { value: unit.id, label: unit.name })
+    }, [unitInfoResponse])
 
     const [nestedAccounts, setNestedMessagingAccounts] = useState<
       Result<NestedMessageAccount[]>
@@ -279,6 +288,7 @@ export const MessageContextProvider = React.memo(
         setPages,
         receivedMessages,
         refreshMessages,
+        selectedUnit,
         selectThread,
         selectedThread,
         unreadCountsByAccount,
@@ -296,6 +306,7 @@ export const MessageContextProvider = React.memo(
         preselectAccount,
         receivedMessages,
         refreshMessages,
+        selectedUnit,
         selectedThread,
         selectThread,
         unreadCountsByAccount,

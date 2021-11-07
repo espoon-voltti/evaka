@@ -9,7 +9,7 @@ import {
   SelectorChange,
   SelectorNode,
   updateSelector
-} from './SelectorNode'
+} from 'lib-components/employee/messages/SelectorNode'
 import { useTranslation } from '../../state/i18n'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'

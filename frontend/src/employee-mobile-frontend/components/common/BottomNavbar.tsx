@@ -9,7 +9,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
@@ -93,13 +93,14 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   }>()
 
   const { unreadCountsByAccount, selectedAccount } = useContext(MessageContext)
+  const [unreadCount, setUnreadCount] = useState(0)
 
-  const getUnreadCount = useCallback(() => {
+  useEffect(() => {
     if (!unreadCountsByAccount.isSuccess || !selectedAccount) return
     const maybeAccount = unreadCountsByAccount.value.find(
       ({ accountId }) => accountId === selectedAccount.id
     )
-    return maybeAccount?.unreadCount
+    if (maybeAccount) setUnreadCount(maybeAccount.unreadCount)
   }, [unreadCountsByAccount, selectedAccount])
 
   return (
@@ -147,7 +148,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             }
           >
             <CustomIcon icon={faComments} selected={selected === 'messages'} />
-            {getUnreadCount() && <UnreadCount>{getUnreadCount()}</UnreadCount>}
+            {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
           </BottomText>
         </Button>
       </Root>
