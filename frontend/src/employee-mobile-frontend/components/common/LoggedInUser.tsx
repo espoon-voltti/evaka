@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { combine } from 'lib-common/api'
+import { Staff } from 'lib-common/generated/api-types/attendance'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faLockAlt, faLockOpenAlt } from 'lib-icons'
-import React, { useCallback, useContext, useMemo } from 'react'
+import { faLockOpenAlt } from 'lib-icons'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { combine } from 'lib-common/api'
-import { Staff } from 'lib-common/generated/api-types/attendance'
 import { pinLogout } from '../../api/auth'
 import { UnitContext } from '../../state/unit'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 
 const UserContainer = styled.div`
+  flex-basis: 60px;
   flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
@@ -49,10 +49,16 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
     [unitInfoResponse, user]
   )
 
-  const logout = useCallback(
-    () => pinLogout().then((res) => res.map(refreshAuthStatus)),
-    [refreshAuthStatus]
-  )
+  const [loggingOut, setLoggingOut] = useState(false)
+  const logout = useCallback(() => {
+    setLoggingOut(true)
+    return pinLogout().then((res) => {
+      setLoggingOut(false)
+      if (res.isSuccess) {
+        refreshAuthStatus()
+      }
+    })
+  }, [refreshAuthStatus])
 
   return (
     <UserContainer>
@@ -63,12 +69,11 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
             iconRight
             color={colors.greyscale.white}
             text={userName}
+            disabled={loggingOut}
             onClick={logout}
             data-qa="logout-btn"
           />
-        ) : (
-          <IconButton icon={faLockAlt} white />
-        )
+        ) : null
       )}
     </UserContainer>
   )
