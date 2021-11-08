@@ -79,7 +79,7 @@ data class ScheduledJobSettings(
                 schedule = JobSchedule.daily(LocalTime.of(7, 0))
             )
             ScheduledJob.FreezeVoucherValueReports -> ScheduledJobSettings(
-                enabled = false,
+                enabled = true,
                 schedule = JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
             )
             ScheduledJob.InactivePeopleCleanup -> ScheduledJobSettings(
