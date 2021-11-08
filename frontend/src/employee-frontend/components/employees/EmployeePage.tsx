@@ -80,7 +80,6 @@ export default function EmployeePage() {
                       })
                     }
                   }}
-                  disabled={role === 'ADMIN'}
                 />
               ))}
             </FixedSpaceColumn>
