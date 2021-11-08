@@ -14,7 +14,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Button from 'lib-components/atoms/buttons/Button'
 import { Line } from 'react-chartjs-2'
 import colors from 'lib-customizations/common'
-import { ChartOptions } from 'chart.js'
+import { ChartDataset, ChartOptions, ScatterDataPoint } from 'chart.js'
 
 export default React.memo(function AIPage() {
   const [status, setStatus] = useState<Result<Status>>(Loading.of())
@@ -37,7 +37,7 @@ export default React.memo(function AIPage() {
     return () => clearInterval(interval)
   }, [setStatus])
 
-  const datasets = [
+  const datasets: ChartDataset<'line', ScatterDataPoint[]>[] = [
     {
       label: 'childrenInFirstPreferencePercentage',
       data: status.isSuccess
@@ -46,7 +46,7 @@ export default React.memo(function AIPage() {
             y: g.value.childrenInFirstPreferencePercentage / 100
           }))
         : [],
-      steppedLine: false,
+      stepped: false,
       fill: false,
       pointBackgroundColor: colors.accents.red,
       borderColor: colors.accents.red
@@ -59,7 +59,7 @@ export default React.memo(function AIPage() {
             y: g.value.childrenInOneOfPreferencesPercentage / 100
           }))
         : [],
-      steppedLine: false,
+      stepped: false,
       fill: false,
       pointBackgroundColor: colors.accents.orange,
       borderColor: colors.accents.orange
@@ -72,7 +72,7 @@ export default React.memo(function AIPage() {
             y: g.value.maxCapacityPercentage / 100
           }))
         : [],
-      steppedLine: false,
+      stepped: false,
       fill: false,
       pointBackgroundColor: colors.brandEspoo.espooBlue,
       borderColor: colors.brandEspoo.espooBlue
@@ -145,12 +145,12 @@ interface Generation {
 function getGraphOptions(): ChartOptions<'line'> {
   return {
     scales: {
-      xAxis: {
+      x: {
         type: 'linear',
         min: 1,
         suggestedMax: 200
       },
-      yAxis: {
+      y: {
         min: 0,
         max: 1.3,
         ticks: {
