@@ -460,6 +460,7 @@ export type UnitType =
 */
 export interface VardaErrorReportRow {
   childId: UUID
+  created: Date
   errors: string[]
   serviceNeedEndDate: string
   serviceNeedId: UUID

@@ -41,10 +41,12 @@ SELECT
     sno.name_fi as service_need_option_name,
     vsn.evaka_child_id AS child_id,
     vsn.updated,
+    CASE WHEN vrc.reset_timestamp IS NULL THEN vrc.created ELSE vsn.created END AS created,
     vsn.errors
 FROM varda_service_need vsn
 JOIN service_need sn on vsn.evaka_service_need_id = sn.id
 JOIN service_need_option sno ON sn.option_id = sno.id
+LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
 WHERE vsn.updated > :errorsSince AND vsn.update_failed = true
     """.trimIndent()
 ).bind("errorsSince", errorsSince)
@@ -58,5 +60,6 @@ data class VardaErrorReportRow(
     val serviceNeedOptionName: String,
     val childId: UUID,
     val updated: HelsinkiDateTime,
+    val created: HelsinkiDateTime,
     val errors: List<String>
 )
