@@ -20,6 +20,8 @@ import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -67,6 +69,11 @@ class EspooConfig {
         valueDecisionCapacityFactorEnabled = false,
         daycareApplicationServiceNeedOptionsEnabled = false
     )
+
+    @Bean
+    fun tomcatCustomizer() = WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+        it.setDisableMBeanRegistry(false)
+    }
 }
 
 data class EspooEnv(val invoiceIntegrationEnabled: Boolean) {
