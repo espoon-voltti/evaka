@@ -1707,7 +1707,7 @@ const en: Translations = {
     toggleExpandText: 'Show or hide the text'
   },
   reloadNotification: {
-    title: 'New version of eVakasta is available',
+    title: 'New version of eVaka is available',
     buttonText: 'Reload page'
   }
 }
