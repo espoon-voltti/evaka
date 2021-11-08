@@ -4,16 +4,14 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
-import { AuthContext } from './auth/state'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { AuthContext, AuthContextProvider } from './auth/state'
 import { theme } from 'lib-customizations/common'
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useCallback, useContext } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
-import { Authentication } from './auth'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import requireAuth from './auth/requireAuth'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -32,6 +30,8 @@ import IncomeStatementView from './income-statements/IncomeStatementView'
 import Applying from './applying/Applying'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
+import { UnwrapResult } from './async-rendering'
+import CitizenReloadNotification from './CitizenReloadNotification'
 
 export default function App() {
   const i18n = useTranslation()
@@ -43,7 +43,7 @@ export default function App() {
           <ErrorBoundary
             fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
           >
-            <Authentication>
+            <AuthContextProvider>
               <OverlayContextProvider>
                 <MessageContextProvider>
                   <PedagogicalDocumentsContextProvider>
@@ -127,11 +127,12 @@ export default function App() {
                     </Main>
                     <GlobalInfoDialog />
                     <GlobalErrorDialog />
+                    <CitizenReloadNotification />
                     <LoginErrorModal translations={i18n.login.failedModal} />
                   </PedagogicalDocumentsContextProvider>
                 </MessageContextProvider>
               </OverlayContextProvider>
-            </Authentication>
+            </AuthContextProvider>
           </ErrorBoundary>
         </Localization>
       </ThemeProvider>
@@ -140,6 +141,11 @@ export default function App() {
 }
 
 function Main({ children }: { children: ReactNode }) {
-  const { loading: authStatusLoading } = useContext(AuthContext)
-  return <main>{authStatusLoading ? <SpinnerSegment /> : children}</main>
+  const { user } = useContext(AuthContext)
+  const render = useCallback(() => <>{children}</>, [children])
+  return (
+    <main>
+      <UnwrapResult result={user}>{render}</UnwrapResult>
+    </main>
+  )
 }

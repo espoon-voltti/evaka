@@ -10,6 +10,7 @@ import {
 } from '../../shared/service-client'
 import { logoutExpress } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
+import { appCommit } from '../../shared/config'
 
 export default toRequestHandler(async (req, res) => {
   const user = req.user
@@ -25,12 +26,13 @@ export default toRequestHandler(async (req, res) => {
           user: { id, name, unitId },
           globalRoles,
           allScopedRoles,
-          roles: [...globalRoles, ...allScopedRoles]
+          roles: [...globalRoles, ...allScopedRoles],
+          apiVersion: appCommit
         })
       } else {
         // device has been removed
         await logoutExpress(req, res, 'employee')
-        res.status(200).json({ loggedIn: false })
+        res.status(200).json({ loggedIn: false, apiVersion: appCommit })
       }
     } else {
       const {
@@ -58,10 +60,11 @@ export default toRequestHandler(async (req, res) => {
         user: { id, name, accessibleFeatures: accessibleFeatures ?? {} },
         globalRoles,
         allScopedRoles,
-        roles: [...globalRoles, ...allScopedRoles]
+        roles: [...globalRoles, ...allScopedRoles],
+        apiVersion: appCommit
       })
     }
   } else {
-    res.status(200).json({ loggedIn: false })
+    res.status(200).json({ loggedIn: false, apiVersion: appCommit })
   }
 })

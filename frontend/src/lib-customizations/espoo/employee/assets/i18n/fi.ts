@@ -2957,5 +2957,9 @@ export const fi = {
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
+  },
+  reloadNotification: {
+    title: 'Uusi versio eVakasta saatavilla',
+    buttonText: 'Lataa sivu uudelleen'
   }
 }

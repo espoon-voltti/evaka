@@ -309,5 +309,9 @@ export const fi = {
       },
       children: 'lapsia'
     }
+  },
+  reloadNotification: {
+    title: 'Uusi versio eVakasta saatavilla',
+    buttonText: 'Lataa sivu uudelleen'
   }
 }

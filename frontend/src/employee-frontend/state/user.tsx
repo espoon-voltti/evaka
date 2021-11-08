@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, createContext } from 'react'
-import { AdRole, User } from '../types'
+import { AdRole, User } from 'lib-common/api-types/employee-auth'
 
 export interface UserState {
   loggedIn: boolean

@@ -16,7 +16,7 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { useUser } from '../auth'
+import { useUser } from '../auth/state'
 import ReservationModal from './ReservationModal'
 import AbsenceModal from './AbsenceModal'
 import DayView from './DayView'

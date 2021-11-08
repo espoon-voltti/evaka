@@ -6,9 +6,14 @@ import React, {
   createContext,
   ReactNode,
   useContext,
-  useMemo,
-  useState
+  useEffect,
+  useMemo
 } from 'react'
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { client } from '../api-client'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { getAuthStatus } from './api'
+import { Loading, Result } from 'lib-common/api'
 
 export type Person = {
   id: string
@@ -30,45 +35,44 @@ export type User = Person & {
 }
 
 type AuthState = {
-  loading: boolean
-  setLoading: (loading: boolean) => void
-  user: User | undefined
-  setUser: (user: User | undefined) => void
+  apiVersion: string | undefined
+  user: Result<User | undefined>
+  refreshAuthStatus: () => void
 }
 
 const defaultState: AuthState = {
-  loading: true,
-  setLoading: () => undefined,
-  user: undefined,
-  setUser: () => undefined
+  apiVersion: undefined,
+  user: Loading.of(),
+  refreshAuthStatus: () => undefined
 }
 
 export const AuthContext = createContext<AuthState>(defaultState)
 
-export const AuthContextProvider = React.memo(
-  function AuthContextProvider(props: { children: ReactNode }) {
-    const [user, setUser] = useState<User | undefined>(defaultState.user)
-    const [loading, setLoading] = useState<boolean>(defaultState.loading)
+export const AuthContextProvider = React.memo(function AuthContextProvider({
+  children
+}: {
+  children: ReactNode
+}) {
+  const [authStatus, refreshAuthStatus] = useApiState(getAuthStatus, [])
 
-    const value = useMemo(
-      () => ({
-        user,
-        setUser,
-        loading,
-        setLoading
-      }),
-      [user, setUser, loading, setLoading]
-    )
+  useEffect(
+    () => idleTracker(client, refreshAuthStatus, { thresholdInMinutes: 20 }),
+    [refreshAuthStatus]
+  )
 
-    return (
-      <AuthContext.Provider value={value}>
-        {props.children}
-      </AuthContext.Provider>
-    )
-  }
-)
+  const value = useMemo(
+    () => ({
+      apiVersion: authStatus.map((a) => a.apiVersion).getOrElse(undefined),
+      user: authStatus.map((a) => (a.loggedIn ? a.user : undefined)),
+      refreshAuthStatus
+    }),
+    [authStatus, refreshAuthStatus]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+})
 
 export const useUser = (): User | undefined => {
   const authContext = useContext(AuthContext)
-  return authContext.user
+  return authContext.user.getOrElse(undefined)
 }

@@ -22,7 +22,7 @@ import { calcStraightDistance, UnitWithStraightDistance } from './distances'
 import { fetchUnits, queryDistances } from './api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
-import { useUser } from 'citizen-frontend/auth'
+import { useUser } from '../auth/state'
 
 export type MapAddress = {
   coordinates: Coordinate

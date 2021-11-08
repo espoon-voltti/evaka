@@ -72,6 +72,7 @@ export interface IconSet {
   faPlay: IconDefinition
   faPlus: IconDefinition
   faPlusCircle: IconDefinition
+  faRedo: IconDefinition
   faQuestion: IconDefinition
   faQuestionCircle: IconDefinition
   faSearch: IconDefinition
@@ -184,6 +185,7 @@ export const faPlus = iconSet.faPlus
 export const faPlusCircle = iconSet.faPlusCircle
 export const faQuestion = iconSet.faQuestion
 export const faQuestionCircle = iconSet.faQuestionCircle
+export const faRedo = iconSet.faRedo
 export const faSearch = iconSet.faSearch
 export const faSignIn = iconSet.faSignIn
 export const faSignOut = iconSet.faSignOut

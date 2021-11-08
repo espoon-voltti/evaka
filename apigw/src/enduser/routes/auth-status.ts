@@ -4,13 +4,14 @@
 
 import { getUserDetails } from '../../shared/service-client'
 import { toRequestHandler } from '../../shared/express'
+import { appCommit } from '../../shared/config'
 
 export default toRequestHandler(async (req, res) => {
   if (req.user) {
     const data = await getUserDetails(req, req.user.id)
     data.userType = req.user.userType
-    res.status(200).send({ loggedIn: true, user: data })
+    res.status(200).send({ loggedIn: true, user: data, apiVersion: appCommit })
   } else {
-    res.status(200).send({ loggedIn: false })
+    res.status(200).send({ loggedIn: false, apiVersion: appCommit })
   }
 })

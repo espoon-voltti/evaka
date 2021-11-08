@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GlobalRole, ScopedRole } from './index'
+import { GlobalRole, ScopedRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
 
 export interface Employee {

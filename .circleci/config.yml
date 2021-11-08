@@ -419,6 +419,7 @@ commands:
             if test -z "$CIRCLE_PR_NUMBER"; then
               export ICONS=pro
             fi
+            export APP_COMMIT="$CIRCLE_SHA1"
 
             yarn build
             ls -lRa ./dist/bundle
@@ -781,7 +782,6 @@ commands:
                 }
               ]
             }
-
 
 jobs:
   # MISC JOBS

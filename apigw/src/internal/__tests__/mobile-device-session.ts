@@ -8,6 +8,7 @@ import { mobileLongTermCookieName } from '../mobile-device-session'
 import { sessionCookie } from '../../shared/session'
 import { v4 as uuid } from 'uuid'
 import { UUID } from '../../shared/service-client'
+import { appCommit } from '../../shared/config'
 
 const pairingId = '009da566-19ca-432e-ad2d-3041481b5bae'
 const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
@@ -68,14 +69,14 @@ describe('Mobile device pairing process', () => {
     tester.nockScope.get(`/system/mobile-identity/${longTermToken}`).reply(404)
     const res = await tester.client.get('/api/internal/auth/status')
     tester.nockScope.done()
-    expect(res.data).toStrictEqual({ loggedIn: false })
+    expect(res.data).toStrictEqual({ loggedIn: false, apiVersion: appCommit })
     expect(await tester.getCookie(mobileLongTermCookieName)).toBeUndefined()
   })
   it("expires the session if /auth/status can't find the mobile device", async () => {
     await finishPairing()
     tester.nockScope.get(`/system/mobile-devices/${mobileDeviceId}`).reply(404)
     const res = await tester.client.get('/api/internal/auth/status')
-    expect(res.data).toStrictEqual({ loggedIn: false })
+    expect(res.data).toStrictEqual({ loggedIn: false, apiVersion: appCommit })
     expect(await tester.getCookie(sessionCookie('employee'))).toBeUndefined()
   })
 })

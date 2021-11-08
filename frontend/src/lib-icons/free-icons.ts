@@ -88,7 +88,8 @@ import {
   faCommentAlt,
   faTruck,
   faPhone,
-  faCalendarTimes
+  faCalendarTimes,
+  faRedo
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faCommentAlt as farCommentAlt,
@@ -165,6 +166,7 @@ const icons: IconSet = {
   faPlusCircle,
   faQuestion,
   faQuestionCircle,
+  faRedo,
   faSearch,
   faSignIn: faSignInAlt,
   faSignOut: faSignOutAlt,

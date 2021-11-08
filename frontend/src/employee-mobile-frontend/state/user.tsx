@@ -8,15 +8,17 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { createContext, useEffect, useMemo } from 'react'
 import { getAuthStatus } from '../api/auth'
 import { client } from '../api/client'
-import { User } from '../types'
+import { User } from 'lib-common/api-types/employee-auth'
 
 export interface UserState {
+  apiVersion: string | undefined
   loggedIn: boolean
   user: Result<User | null>
   refreshAuthStatus: () => void
 }
 
 export const UserContext = createContext<UserState>({
+  apiVersion: undefined,
   loggedIn: false,
   user: Loading.of(),
   refreshAuthStatus: () => null
@@ -36,6 +38,7 @@ export const UserContextProvider = React.memo(function UserContextProvider({
 
   const value = useMemo(
     () => ({
+      apiVersion: authStatus.map((a) => a.apiVersion).getOrElse(undefined),
       loggedIn: authStatus.map((a) => a.loggedIn).getOrElse(false),
       user: authStatus.map((a) => a.user ?? null),
       refreshAuthStatus

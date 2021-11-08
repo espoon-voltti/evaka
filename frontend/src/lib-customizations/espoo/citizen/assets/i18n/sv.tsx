@@ -1661,6 +1661,10 @@ const sv: Translations = {
       description: 'Beskrivning'
     },
     toggleExpandText: 'Visa eller göm texten'
+  },
+  reloadNotification: {
+    title: 'En ny version av eVaka är tillgänglig',
+    buttonText: 'Ladda om sidan'
   }
 }
 
