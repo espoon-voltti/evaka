@@ -6,14 +6,10 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Td, Tr } from 'lib-components/layout/Table'
-import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import EuroInput from '../../../../components/common/EuroInput'
 import { Translations } from '../../../../state/i18n'
-import {
-  incomeCoefficients,
-  IncomeCoefficient,
-  IncomeOption
-} from '../../../../types/income'
+import { incomeCoefficients, IncomeOption } from '../../../../types/income'
 import { formatCents } from 'lib-common/money'
 import { IncomeValueString } from '../IncomeTable'
 
@@ -30,11 +26,6 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
   state,
   onChange
 }: Props) {
-  const coefficientOptions = incomeCoefficients.map((id) => ({
-    value: id,
-    label: i18n.personProfile.income.details.incomeCoefficients[id]
-  }))
-
   return (
     <Tr key={type.value}>
       <Td>
@@ -55,13 +46,17 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
       <Td>
         {type.withCoefficient ? (
           onChange !== undefined ? (
-            <SimpleSelect
-              value={state.coefficient}
-              options={coefficientOptions}
-              onChange={(e) =>
+            <Select
+              selectedItem={state.coefficient}
+              items={[...incomeCoefficients]}
+              getItemLabel={(item) =>
+                i18n.personProfile.income.details.incomeCoefficients[item]
+              }
+              onChange={(coefficient) =>
+                coefficient &&
                 onChange(type, {
                   ...state,
-                  coefficient: e.target.value as IncomeCoefficient
+                  coefficient
                 })
               }
               data-qa={`income-coefficient-select-${type.value}`}

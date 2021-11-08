@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { fi } from 'date-fns/locale'
+import { range } from 'lodash'
 import { Loading, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -20,7 +20,6 @@ import {
 } from '../../api/reports'
 import { Translations, useTranslation } from '../../state/i18n'
 import { EndedPlacementsReportRow } from '../../types/reports'
-import { SelectOption } from '../common/Select'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
@@ -33,28 +32,12 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function monthOptions(): SelectOption[] {
-  const monthOptions = []
-  for (let i = 1; i <= 12; i++) {
-    monthOptions.push({
-      value: i.toString(),
-      label: String(fi.localize?.month(i - 1))
-    })
-  }
-  return monthOptions
-}
-
-function yearOptions(): SelectOption[] {
-  const currentYear = LocalDate.today().year
-  const yearOptions = []
-  for (let year = currentYear; year > currentYear - 5; year--) {
-    yearOptions.push({
-      value: year.toString(),
-      label: year.toString()
-    })
-  }
-  return yearOptions
-}
+const monthOptions = range(1, 13)
+const yearOptions = range(
+  LocalDate.today().year,
+  LocalDate.today().year - 4,
+  -1
+)
 
 function getFilename(i18n: Translations, year: number, month: number) {
   const time = LocalDate.of(year, month, 1).format('yyyy-MM')
@@ -87,38 +70,27 @@ function EndedPlacements() {
           <FlexRow>
             <Wrapper>
               <Combobox
-                items={monthOptions()}
-                selectedItem={
-                  monthOptions().find(
-                    ({ value }) => Number(value) === filters.month
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const month = parseInt(value.value)
+                items={monthOptions}
+                selectedItem={filters.month}
+                onChange={(month) => {
+                  if (month !== null) {
                     setFilters({ ...filters, month })
                   }
                 }}
                 placeholder={i18n.common.month}
-                getItemLabel={(item) => item.label}
+                getItemLabel={(month) => i18n.datePicker.months[month - 1]}
               />
             </Wrapper>
             <Wrapper>
               <Combobox
-                items={yearOptions()}
-                selectedItem={
-                  yearOptions().find(
-                    ({ value }) => Number(value) === filters.year
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const year = parseInt(value.value)
+                items={yearOptions}
+                selectedItem={filters.year}
+                onChange={(year) => {
+                  if (year !== null) {
                     setFilters({ ...filters, year })
                   }
                 }}
                 placeholder={i18n.common.year}
-                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>

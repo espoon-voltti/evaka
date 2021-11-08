@@ -3,49 +3,42 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCombobox, UseComboboxStateChange } from 'downshift'
-import React, {
-  FocusEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
+import computeScrollIntoView from 'compute-scroll-into-view'
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import computeScrollIntoView from 'compute-scroll-into-view'
 import classNames from 'classnames'
 import { SpinnerSegment } from '../state/Spinner'
+import { borderRadius, borderStyles, DropdownProps, Root } from './shared'
 
-const borderRadius = '2px'
-
-const Root = styled.div`
-  max-width: 500px;
-  border-radius: ${borderRadius};
-  border: 2px solid transparent;
-
-  &.active {
-    border-color: ${({ theme: { colors } }) => colors.main.primaryActive};
+export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
+  clearable?: boolean
+  filterItems?: (inputValue: string, items: T[]) => T[]
+  onInputChange?: (newValue: string) => void
+  getMenuItemLabel?: (item: T) => string
+  isLoading?: boolean
+  menuEmptyLabel?: string
+  children?: {
+    menuItem?: (props: MenuItemProps<T>) => React.ReactNode
+    menuEmptyItem?: (label: string) => React.ReactNode
   }
+  fullWidth?: boolean
+}
 
-  &.full-width {
-    width: 100%;
-    max-width: initial;
-  }
-`
+interface MenuItemProps<T> {
+  item: T
+  highlighted: boolean
+}
 
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
-
+  background-color: white;
+  ${borderStyles};
   &.active {
     border-color: transparent;
   }
-
-  border-radius: ${borderRadius};
-  background-color: white;
 `
 
 const MenuWrapper = styled.div`
@@ -132,38 +125,6 @@ const Button = styled.button`
   border: 0;
   flex: 0 0 auto;
 `
-
-export const getItemLabel = ({ label }: { label: string }) => label
-
-interface MenuItemProps<T> {
-  item: T
-  highlighted: boolean
-}
-
-export interface ComboboxProps<T> {
-  id?: string
-  items: T[]
-  selectedItem: T | null
-  onChange: (item: T | null) => void
-  clearable?: boolean
-  disabled?: boolean
-  placeholder?: string
-  filterItems?: (inputValue: string, items: T[]) => T[]
-  getItemLabel?: (item: T) => string
-  getItemDataQa?: (item: T) => string | undefined
-  getMenuItemLabel?: (item: T) => string
-  isLoading?: boolean
-  menuEmptyLabel?: string
-  name?: string
-  onFocus?: FocusEventHandler<HTMLInputElement>
-  onInputChange?: (newValue: string) => void
-  children?: {
-    menuItem?: (props: MenuItemProps<T>) => React.ReactNode
-    menuEmptyItem?: (label: string) => React.ReactNode
-  }
-  fullWidth?: boolean
-  'data-qa'?: string
-}
 
 function defaultGetItemLabel<T>(item: T) {
   return String(item)

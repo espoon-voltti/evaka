@@ -18,7 +18,7 @@ import { ChildrenInDifferentAddressReportRow } from '../../types/reports'
 import { getChildrenInDifferentAddressReport } from '../../api/reports'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { distinct } from '../../utils'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 
 interface DisplayFilters {
   careArea: string

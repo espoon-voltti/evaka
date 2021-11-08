@@ -32,7 +32,7 @@ import { useTranslation, Translations } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LabelValueList from '../../components/common/LabelValueList'
-import Select from '../../components/common/Select'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   DecisionDraft,
   DecisionDraftUpdate,
@@ -198,24 +198,12 @@ const Decision = memo(function Decision({
     void getDecisionUnits().then(setUnits)
   }, [setUnits])
 
-  const unitOptions = useMemo(
-    () =>
-      units
-        .map((us) =>
-          us.map(({ id, name }) => ({
-            value: id,
-            label: name
-          }))
-        )
-        .getOrElse([]),
-    [units]
-  )
+  const unitOptions = useMemo(() => units.getOrElse([]), [units])
 
   const onUnitSelect = useCallback(
     (value) => {
       if (decisionDraftGroup.isSuccess && units.isSuccess) {
-        const selected = units.value.find(({ id }) => id === value)
-        setSelectedUnit(selected ?? decisionDraftGroup.value.unit)
+        setSelectedUnit(value ?? decisionDraftGroup.value.unit)
       }
     },
     [decisionDraftGroup, units, setSelectedUnit]
@@ -357,21 +345,13 @@ const Decision = memo(function Decision({
                         value: (
                           <UnitSelectContainer>
                             {units.isSuccess && (
-                              <Select
+                              <Combobox
                                 onChange={(unit) =>
-                                  unit ? onUnitSelect(unit.value) : undefined
+                                  unit ? onUnitSelect(unit.id) : undefined
                                 }
                                 items={unitOptions}
-                                selectedItem={
-                                  units.value
-                                    .filter(
-                                      (elem) => selectedUnit.id === elem.id
-                                    )
-                                    .map((elem) => ({
-                                      label: elem.name,
-                                      value: elem.id
-                                    }))[0] ?? null
-                                }
+                                selectedItem={selectedUnit}
+                                getItemLabel={(unit) => unit.name}
                               />
                             )}
                             <WarningContainer

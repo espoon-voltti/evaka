@@ -19,7 +19,7 @@ import {
   MissingGroupPlacement
 } from '../../../../api/unit'
 import { updateBackupCare } from '../../../../api/child/backup-care'
-import Select from '../../../../components/common/Select'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { formatName } from '../../../../utils'
 import { DaycareGroup } from '../../../../types/unit'
@@ -188,25 +188,17 @@ export default React.memo(function GroupPlacementModal({
         <section>
           <Bold>{i18n.unit.placements.modal.group}</Bold>
           <Select
-            items={openGroups.map((group) => ({
-              value: group.id,
-              label: group.name
-            }))}
-            onChange={(value) =>
-              value
-                ? assignFormValues({
-                    groupId: value.value
-                  })
-                : undefined
+            items={openGroups}
+            onChange={(group) =>
+              assignFormValues({
+                groupId: group?.id ?? null
+              })
             }
             selectedItem={
-              openGroups
-                .map((group) => ({
-                  value: group.id,
-                  label: group.name
-                }))
-                .find(({ value }) => value === form.groupId) ?? null
+              openGroups.find(({ id }) => id === form.groupId) ?? null
             }
+            getItemValue={({ id }) => id}
+            getItemLabel={({ name }) => name}
             placeholder={i18n.common.select}
           />
         </section>

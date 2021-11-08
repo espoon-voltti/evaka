@@ -27,7 +27,7 @@ export interface SelectorChange {
   selected: boolean
 }
 
-interface ReactSelectOption {
+export interface ReactSelectOption {
   label: string
   value: string
 }

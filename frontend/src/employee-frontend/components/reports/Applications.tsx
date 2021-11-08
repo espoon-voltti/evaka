@@ -21,7 +21,7 @@ import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Gap } from 'lib-components/white-space'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 

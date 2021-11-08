@@ -11,7 +11,6 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import { H2 } from 'lib-components/typography'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { SelectOption } from '../common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
@@ -23,7 +22,6 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { formatDate } from 'lib-common/date'
-import { fi } from 'date-fns/locale'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -36,7 +34,7 @@ import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { UserContext } from '../../state/user'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -52,20 +50,12 @@ const LockedDate = styled(FixedSpaceRow)`
   margin-bottom: ${defaultMargins.xs};
 `
 
-const monthOptions: SelectOption[] = range(0, 12).map((num) => ({
-  value: String(num + 1),
-  label: String(fi.localize?.month(num))
-}))
+const monthOptions = range(1, 13)
 
 const minYear = new Date().getFullYear() - 4
 // Max year is next year if current date is in December and current year otherwise
 const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
-const yearOptions: SelectOption[] = range(maxYear, minYear - 1, -1).map(
-  (num) => ({
-    value: String(num),
-    label: String(num)
-  })
-)
+const yearOptions = range(maxYear, minYear - 1, -1)
 
 function getFilename(year: number, month: number, areaName: string) {
   const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
@@ -141,9 +131,6 @@ function VoucherServiceProviders() {
     ).then(setReport)
   }, [filters, allAreas])
 
-  const months = monthOptions
-  const years = yearOptions
-
   const mappedData = report
     .map((rs) =>
       rs.rows
@@ -170,36 +157,26 @@ function VoucherServiceProviders() {
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <FilterWrapper data-qa="select-month">
-              <Combobox
-                items={months}
-                selectedItem={
-                  months.find(
-                    (opt) => opt.value === filters.month.toString()
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const month = parseInt(value.value)
+              <Select
+                items={monthOptions}
+                selectedItem={filters.month}
+                onChange={(month) => {
+                  if (month !== null) {
                     setFilters({ ...filters, month })
                   }
                 }}
-                getItemLabel={(item) => item.label}
+                getItemLabel={(month) => i18n.datePicker.months[month - 1]}
               />
             </FilterWrapper>
             <FilterWrapper data-qa="select-year">
-              <Combobox
-                items={years}
-                selectedItem={
-                  years.find((opt) => opt.value === filters.year.toString()) ??
-                  null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const year = parseInt(value.value)
+              <Select
+                items={yearOptions}
+                selectedItem={filters.year}
+                onChange={(year) => {
+                  if (year !== null) {
                     setFilters({ ...filters, year })
                   }
                 }}
-                getItemLabel={(item) => item.label}
               />
             </FilterWrapper>
           </FlexRow>
@@ -209,7 +186,7 @@ function VoucherServiceProviders() {
             <FilterRow>
               <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
               <FilterWrapper data-qa="select-area">
-                <Combobox
+                <Select
                   items={areaOptions}
                   selectedItem={
                     areaOptions.find(({ id }) => id === filters.areaId) ?? null
@@ -217,7 +194,7 @@ function VoucherServiceProviders() {
                   onChange={(area) =>
                     setFilters({ ...filters, areaId: area?.id })
                   }
-                  placeholder={i18n.reports.common.careAreaName}
+                  getItemValue={({ id }) => id}
                   getItemLabel={({ name }) => name}
                 />
               </FilterWrapper>

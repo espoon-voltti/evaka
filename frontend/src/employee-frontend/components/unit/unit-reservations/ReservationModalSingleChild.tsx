@@ -12,7 +12,7 @@ import DatePicker, {
 } from 'lib-components/molecules/date-picker/DatePicker'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
@@ -164,13 +164,12 @@ export default React.memo(function ReservationModalSingleChild({
 
       <H2>{i18n.unit.attendanceReservations.reservationModal.repetition}</H2>
       <Label>{i18n.common.select}</Label>
-      <Combobox<Repetition>
+      <Select<Repetition>
         items={['DAILY', 'WEEKLY', 'IRREGULAR']}
         selectedItem={formData.repetition}
         onChange={(value) => {
           if (value) updateForm({ repetition: value })
         }}
-        clearable={false}
         getItemLabel={(item) =>
           i18n.unit.attendanceReservations.reservationModal.repetitions[item]
         }

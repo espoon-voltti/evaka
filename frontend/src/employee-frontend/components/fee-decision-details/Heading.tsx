@@ -12,15 +12,12 @@ import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdfUrl } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import {
-  FeeDecisionStatus,
-  FeeDecisionType,
-  PersonDetailed
-} from '../../types/invoicing'
+import { FeeDecisionStatus, PersonDetailed } from '../../types/invoicing'
 import colors from 'lib-customizations/common'
 import { formatDate } from 'lib-common/date'
 import { formatName } from '../../utils'
 import { TypeSelect } from './TypeSelect'
+import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 interface Props {
   id: string
@@ -34,8 +31,8 @@ interface Props {
   approvedBy: { firstName: string; lastName: string } | null
   documentKey: string | null
   decisionType: FeeDecisionType
-  changeDecisionType: (type: string) => void
-  newDecisionType: string
+  changeDecisionType: (type: FeeDecisionType) => void
+  newDecisionType: FeeDecisionType
 }
 
 function displayDecisionNumber(number: number) {
