@@ -26,12 +26,9 @@ export default class MobileChildPage {
 
   #saveNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
 
-  #logoutBtn = this.page.locator('[data-qa="logout-btn"]')
   #goBack = this.page.locator('[data-qa="back-btn"]')
   #goBackFromSensitivePage = this.page.locator('[data-qa="go-back"]')
-  #staffSelect = this.page.locator('[data-qa="select-staff"]')
-  #pinInput = this.page.locator('[data-qa="pin-input"]')
-  #pinInfo = this.page.locator('[data-qa="pin-input-info"]')
+
   #sensitiveInfo = {
     name: new RawElement(this.page, '[data-qa="child-info-name"]'),
     allergies: new RawElement(this.page, '[data-qa="child-info-allergies"]'),
@@ -71,23 +68,8 @@ export default class MobileChildPage {
     await this.#goBackFromSensitivePage.click()
   }
 
-  async submitPin(pin: string) {
-    await this.#pinInput.selectText()
-    await this.#pinInput.type(pin)
-    await this.page.keyboard.press('Enter')
-  }
-
-  async openSensitiveInfoWithPinCode(
-    employeeName: string,
-    employeePin: string
-  ) {
+  async openSensitiveInfo() {
     await this.#sensitiveInfoLink.click()
-    await this.#staffSelect.selectOption({ label: employeeName })
-    await this.submitPin(employeePin)
-  }
-
-  async assertWrongPinError() {
-    await waitUntilEqual(() => this.#pinInfo.innerText(), 'Väärä PIN-koodi')
   }
 
   async assertSensitiveInfoIsShown(name: string) {
@@ -160,9 +142,5 @@ export default class MobileChildPage {
 
   async assertNotesExist() {
     await waitUntilVisible(this.#notesExistsBubble)
-  }
-
-  async logout() {
-    await this.#logoutBtn.click()
   }
 }
