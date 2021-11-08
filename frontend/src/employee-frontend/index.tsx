@@ -12,6 +12,7 @@ import App from './App'
 import './index.css'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/employee'
+import 'chartjs-adapter-date-fns'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({

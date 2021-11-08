@@ -10,7 +10,7 @@ import colors from 'lib-customizations/common'
 import { formatTime } from 'lib-common/date'
 import { ceil } from 'lodash'
 import { useTranslation } from '../../../../state/i18n'
-import { ChartOptions } from 'chart.js'
+import { ChartData, ChartOptions } from 'chart.js'
 
 type DatePoint = { x: Date; y: number | null }
 
@@ -28,7 +28,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
 
   const graphOptions: ChartOptions<'line'> = {
     scales: {
-      xAxis: {
+      x: {
         type: 'time',
         time: {
           displayFormats: {
@@ -42,7 +42,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
           }
         }
       },
-      yAxis: {
+      y: {
         min: 0,
         ticks: {
           maxTicksLimit: 5,
@@ -71,25 +71,23 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
     }
   }
 
+  const data: ChartData<'line', DatePoint[]> = {
+    datasets: [
+      {
+        label: i18n.unit.occupancy.subtitles.realized,
+        data: graphData,
+        spanGaps: true,
+        stepped: 'after',
+        fill: false,
+        pointBackgroundColor: colors.accents.green,
+        borderColor: colors.accents.green
+      }
+    ]
+  }
+
   return (
     <div>
-      <Line
-        data={{
-          datasets: [
-            {
-              label: i18n.unit.occupancy.subtitles.realized,
-              data: graphData,
-              spanGaps: true,
-              stepped: 'after',
-              fill: false,
-              pointBackgroundColor: colors.accents.green,
-              borderColor: colors.accents.green
-            }
-          ]
-        }}
-        options={graphOptions}
-        height={100}
-      />
+      <Line data={data} options={graphOptions} height={100} />
     </div>
   )
 })

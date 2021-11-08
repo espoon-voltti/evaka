@@ -7,50 +7,42 @@ import { fi } from 'date-fns/locale'
 import { defaults, Line } from 'react-chartjs-2'
 import { OccupancyResponse } from '../../../../api/unit'
 import colors from 'lib-customizations/common'
+import { ChartDataset, ChartOptions } from 'chart.js'
 import { formatDate } from 'lib-common/date'
-import { ChartOptions } from 'chart.js'
 
 defaults.animation = false
 defaults.font = {
-  family: '"Open Sans", "Arial", sans-serif'
+  family: '"Open Sans", "Arial", sans-serif',
+  ...defaults.font
 }
 defaults.color = colors.greyscale.darkest
 
 type DatePoint = { x: Date; y: number | null | undefined }
 
-function getGraphData(occupancies: OccupancyResponse) {
-  const data: DatePoint[] = []
-  occupancies.occupancies.forEach((occupancy) => {
-    data.push({
+function getGraphData({ occupancies }: OccupancyResponse) {
+  return occupancies.flatMap((occupancy) => [
+    {
       x: occupancy.period.start.toSystemTzDate(),
       y: occupancy.percentage
-    })
-    data.push({
+    },
+    {
       x: occupancy.period.end.toSystemTzDate(),
       y: occupancy.percentage
-    })
-  })
-
-  const lastOccupancy =
-    occupancies.occupancies.length > 0
-      ? occupancies.occupancies[occupancies.occupancies.length - 1]
-      : null
-  if (lastOccupancy)
-    data.push({
-      x: lastOccupancy.period.end.toSystemTzDate(),
-      y: lastOccupancy.percentage
-    })
-
-  return data
+    }
+  ])
 }
 
 function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
   return {
     scales: {
-      xAxis: {
+      x: {
         type: 'time',
-        min: startDate.getDate(),
-        max: endDate.getDate(),
+        // chart.js typings say number, but 'time' scale wants Date
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
+        min: startDate as any,
+        // chart.js typings say number, but 'time' scale wants Date
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
+        max: endDate as any,
         time: {
           displayFormats: {
             day: 'd.M'
@@ -63,7 +55,7 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
           }
         }
       },
-      yAxis: {
+      y: {
         min: 0,
         ticks: {
           maxTicksLimit: 5,
@@ -114,12 +106,12 @@ export default React.memo(function OccupancyGraph({
   startDate,
   endDate
 }: Props) {
-  const datasets = []
+  const datasets: ChartDataset<'line', DatePoint[]>[] = []
   if (confirmed)
     datasets.push({
       label: 'Vahvistettu täyttöaste',
       data: getGraphData(occupancies),
-      steppedLine: true,
+      stepped: true,
       fill: false,
       pointBackgroundColor: colors.brandEspoo.espooBlue,
       borderColor: colors.brandEspoo.espooBlue
@@ -128,7 +120,7 @@ export default React.memo(function OccupancyGraph({
     datasets.push({
       label: 'Suunniteltu täyttöaste',
       data: getGraphData(plannedOccupancies),
-      steppedLine: true,
+      stepped: true,
       fill: false,
       pointBackgroundColor: colors.accents.water,
       borderColor: colors.accents.water
@@ -137,7 +129,7 @@ export default React.memo(function OccupancyGraph({
     datasets.push({
       label: 'Käyttöaste',
       data: getGraphData(realizedOccupancies),
-      steppedLine: true,
+      stepped: true,
       fill: false,
       pointBackgroundColor: colors.accents.green,
       borderColor: colors.accents.green

@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import 'chartjs-adapter-date-fns'
 import { UnitOccupancies } from '../../../api/unit'
 import OccupancyCard from '../../../components/unit/tab-unit-information/occupancy/OccupancyCard'
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'
