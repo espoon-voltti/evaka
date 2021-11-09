@@ -363,16 +363,16 @@ data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
 }
 
 data class OphEnv(
-    val ophOrganizerOid: String,
-    val ophOrganizerId: String,
-    val ophMunicipalityCode: String
+    val organizerOid: String,
+    val organizerId: String,
+    val municipalityCode: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment): OphEnv {
             return OphEnv(
-                ophOrganizerOid = env.lookup("evaka.oph.organizer_oid"),
-                ophMunicipalityCode = env.lookup("evaka.oph.municipality_code"),
-                ophOrganizerId = env.lookup("evaka.oph.organizer_id")
+                organizerOid = env.lookup("evaka.oph.organizer_oid"),
+                municipalityCode = env.lookup("evaka.oph.municipality_code"),
+                organizerId = env.lookup("evaka.oph.organizer_id")
             )
         }
     }

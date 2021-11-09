@@ -46,9 +46,9 @@ class VardaUpdateService(
     private val ophEnv: OphEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-    private val ophMunicipalityCode = ophEnv.ophMunicipalityCode
-    private val ophMunicipalityOid = ophEnv.ophOrganizerOid
-    private val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.ophOrganizerId}/"
+    private val ophMunicipalityCode = ophEnv.municipalityCode
+    private val ophMunicipalityOid = ophEnv.organizerOid
+    private val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
 
     init {
         asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)

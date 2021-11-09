@@ -35,7 +35,7 @@ class VardaResetService(
     private val ophEnv: OphEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-    private val municipalOrganizerOid = ophEnv.ophOrganizerOid
+    private val municipalOrganizerOid = ophEnv.organizerOid
 
     init {
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)

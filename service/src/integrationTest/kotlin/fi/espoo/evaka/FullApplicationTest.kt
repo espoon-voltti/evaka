@@ -84,9 +84,9 @@ abstract class FullApplicationTest {
         db = Database(jdbi).connectWithManualLifecycle()
         db.transaction { it.resetDatabase() }
         feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-        municipalOrganizerOid = ophEnv.ophOrganizerOid
-        ophMunicipalityCode = ophEnv.ophMunicipalityCode
-        ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.ophOrganizerId}/"
+        municipalOrganizerOid = ophEnv.organizerOid
+        ophMunicipalityCode = ophEnv.municipalityCode
+        ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
         vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
