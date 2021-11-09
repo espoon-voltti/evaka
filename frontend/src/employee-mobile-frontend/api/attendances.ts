@@ -12,34 +12,25 @@ import {
   AbsenceThreshold,
   AttendanceResponse,
   Child,
-  ChildResult,
-  ChildResultStatus
+  ChildSensitiveInformation
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { AbsenceType, CareType } from '../types'
+import { mapPinLoginRequiredError, PinLoginRequired } from './auth-pin-login'
 import { client } from './client'
 
-export interface AttendanceReservation {
-  startTime: string
-  endTime: string
-}
-
-export async function getChildSensitiveInformation(
-  childId: string,
-  staffId: string,
-  pin: string
-): Promise<Result<ChildResult>> {
-  return client
-    .post<JsonOf<ChildResult>>(`/attendances/child/${childId}`, {
-      pin,
-      staffId
-    })
+export const getChildSensitiveInformation = (
+  childId: string
+): Promise<Result<ChildSensitiveInformation | PinLoginRequired>> =>
+  client
+    .get<JsonOf<ChildSensitiveInformation>>(
+      `/children/${childId}/sensitive-info`
+    )
     .then((res) => res.data)
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
+    .catch(mapPinLoginRequiredError)
 
 export async function getDaycareAttendances(
   unitId: string
@@ -269,22 +260,4 @@ function deserializeAttendanceResponse(
       }))
     }
   }
-}
-
-export interface PinLoginResult {
-  status: ChildResultStatus
-}
-
-export async function pinLogin(
-  employeeId: string,
-  pin: string
-): Promise<Result<ChildResultStatus>> {
-  return client
-    .post<JsonOf<ChildResultStatus>>(`/auth/pin-login`, {
-      employeeId,
-      pin
-    })
-    .then((res) => res.data)
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }

@@ -17,22 +17,23 @@ export default toRequestHandler(async (req, res) => {
   if (user) {
     if (user.userType === 'MOBILE') {
       const device = await getMobileDevice(req, user.id)
-      const globalRoles = user.globalRoles ?? []
-      const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
-      if (device) {
+      if (!device) {
+        // device has been removed
+        await logoutExpress(req, res, 'employee')
+        res.status(200).json({ loggedIn: false, apiVersion: appCommit })
+      } else {
+        const globalRoles = user.globalRoles ?? []
+        const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
+        const employeeId = user.mobileEmployeeId
         const { id, name, unitId } = device
         res.status(200).json({
           loggedIn: true,
-          user: { id, name, unitId },
+          user: { id, name, unitId, employeeId },
           globalRoles,
           allScopedRoles,
           roles: [...globalRoles, ...allScopedRoles],
           apiVersion: appCommit
         })
-      } else {
-        // device has been removed
-        await logoutExpress(req, res, 'employee')
-        res.status(200).json({ loggedIn: false, apiVersion: appCommit })
       }
     } else {
       const {

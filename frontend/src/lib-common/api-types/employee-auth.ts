@@ -10,6 +10,7 @@ export interface User {
   name: string
   accessibleFeatures: EmployeeFeatures
   unitId?: UUID // only mobile devices have this
+  employeeId?: UUID // present when PIN login session is still valid
 }
 
 export const globalRoles = [

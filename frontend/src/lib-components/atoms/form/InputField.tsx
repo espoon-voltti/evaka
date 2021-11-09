@@ -163,6 +163,7 @@ export interface TextInputProps extends BaseProps {
   readonly?: boolean
   width?: InputWidth
 
+  autoComplete?: string
   placeholder?: string
   info?: InputInfo
   clearable?: boolean
@@ -199,6 +200,7 @@ export default React.memo(function InputField({
   inputMode,
   clearable = false,
   align,
+  autoComplete,
   'data-qa': dataQa,
   className,
   icon,
@@ -226,6 +228,7 @@ export default React.memo(function InputField({
     <Wrapper>
       <InputRow>
         <StyledInput
+          autoComplete={autoComplete}
           value={value}
           onChange={(e) => {
             e.preventDefault()

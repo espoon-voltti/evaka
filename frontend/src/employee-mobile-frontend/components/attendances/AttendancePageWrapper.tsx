@@ -4,14 +4,10 @@
 
 import { combine } from 'lib-common/api'
 import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faTimes } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
@@ -23,7 +19,8 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../../types'
 import { renderResult } from '../async-rendering'
 import BottomNavbar from '../common/BottomNavbar'
 import FreeTextSearch from '../common/FreeTextSearch'
-import TopBar from '../common/TopBar'
+import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import { zIndex } from '../constants'
 import AttendanceList from './AttendanceList'
 
 export default React.memo(function AttendancePageWrapper() {
@@ -178,17 +175,10 @@ export default React.memo(function AttendancePageWrapper() {
             height: containerSpring.x.interpolate((x) => `${100 * x}%`)
           }}
         >
-          <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
-            {unitInfo.name}{' '}
-            <IconButton
-              onClick={() => setShowSearch(!showSearch)}
-              icon={faTimes}
-            />
-          </NoMarginTitle>
           <ContentArea
             opaque={false}
-            paddingVertical={'zero'}
-            paddingHorizontal={'zero'}
+            paddingVertical="zero"
+            paddingHorizontal="zero"
           >
             <FreeTextSearch
               value={freeText}
@@ -205,8 +195,8 @@ export default React.memo(function AttendancePageWrapper() {
             />
           </ContentArea>
         </SearchBar>
-        <TopBar
-          unitName={unitInfo.name}
+        <TopBarWithGroupSelector
+          title={unitInfo.name}
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
           onSearch={() => setShowSearch(!showSearch)}
@@ -239,8 +229,8 @@ export default React.memo(function AttendancePageWrapper() {
 
         <ContentArea
           opaque={false}
-          paddingVertical={'zero'}
-          paddingHorizontal={'zero'}
+          paddingVertical="zero"
+          paddingHorizontal="zero"
         >
           <AttendanceList
             attendanceChildren={attendance.children}
@@ -254,26 +244,6 @@ export default React.memo(function AttendancePageWrapper() {
   )
 })
 
-const NoMarginTitle = styled(Title)`
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: ${defaultMargins.s};
-  padding-bottom: ${defaultMargins.s};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: ${colors.blues.primary};
-  color: ${colors.greyscale.white};
-  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
-  position: relative;
-  z-index: 1;
-
-  button {
-    margin-left: ${defaultMargins.m};
-    color: ${colors.greyscale.white};
-  }
-`
-
 const Bold = styled.div`
   font-weight: ${fontWeights.semibold};
 `
@@ -283,5 +253,5 @@ const SearchBar = animated(styled.div`
   background: ${colors.greyscale.lightest};
   width: 100vw;
   overflow: hidden;
-  z-index: 2;
+  z-index: ${zIndex.searchBar};
 `)

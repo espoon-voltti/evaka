@@ -83,6 +83,7 @@ class ChildAttendanceController(
         val staffId: EmployeeId
     )
 
+    // TODO only for backwards compatibility, safe to remove in Dec 2021
     @PostMapping("/child/{childId}")
     fun getChildSensitiveInfo(
         db: Database.Connection,

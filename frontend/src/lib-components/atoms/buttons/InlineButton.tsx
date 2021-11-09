@@ -11,7 +11,7 @@ import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
 
-const StyledButton = styled.button<{ color?: string }>`
+const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   width: fit-content;
   display: inline-block;
 
@@ -47,16 +47,13 @@ const StyledButton = styled.button<{ color?: string }>`
   }
 
   svg {
-    margin-right: ${defaultMargins.xs};
+    ${({ iconRight }) =>
+      iconRight ? 'margin-left' : 'margin-right'}: ${defaultMargins.xs};
     font-size: 1.25em;
   }
 
   ${({ theme }) => defaultButtonTextStyle(theme)}
   color: ${(p) => p.color ?? p.theme.colors.main.primary};
-`
-
-const Margin = styled.span`
-  margin-left: ${defaultMargins.s};
 `
 
 export interface InlineButtonProps extends BaseProps {
@@ -91,6 +88,7 @@ export default React.memo(function InlineButton({
       aria-label={altText}
       color={color}
       type="button"
+      iconRight={iconRight}
     >
       {icon && !iconRight && <FontAwesomeIcon icon={icon} />}
       {typeof text === 'string' || typeof text === 'number' ? (
@@ -98,11 +96,7 @@ export default React.memo(function InlineButton({
       ) : (
         text
       )}
-      {icon && iconRight && (
-        <Margin>
-          <FontAwesomeIcon icon={icon} />
-        </Margin>
-      )}
+      {icon && iconRight && <FontAwesomeIcon icon={icon} />}
     </StyledButton>
   )
 })

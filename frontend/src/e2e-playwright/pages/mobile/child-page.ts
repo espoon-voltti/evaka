@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
-import { Combobox, RawElement } from 'e2e-playwright/utils/element'
+import { RawElement } from 'e2e-playwright/utils/element'
 import { Child } from 'e2e-test-common/dev-api/types'
 import { Page } from 'playwright'
 
@@ -26,11 +26,9 @@ export default class MobileChildPage {
 
   #saveNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
 
-  #goBack = new RawElement(this.page, '[data-qa="go-back"]')
-  #staffCombobox = new Combobox(this.page, '[data-qa="select-staff"]')
-  #pinInput = this.page.locator('[data-qa="pin-input"]')
-  #pinInfo = new RawElement(this.page, '[data-qa="pin-input-info"]')
-  #submitPin = new RawElement(this.page, '[data-qa="submit-pin"]')
+  #goBack = this.page.locator('[data-qa="back-btn"]')
+  #goBackFromSensitivePage = this.page.locator('[data-qa="go-back"]')
+
   #sensitiveInfo = {
     name: new RawElement(this.page, '[data-qa="child-info-name"]'),
     allergies: new RawElement(this.page, '[data-qa="child-info-allergies"]'),
@@ -66,19 +64,12 @@ export default class MobileChildPage {
     await this.#goBack.click()
   }
 
-  async openSensitiveInfoWithPinCode(
-    employeeName: string,
-    employeePin: string
-  ) {
-    await this.#sensitiveInfoLink.click()
-    await this.#staffCombobox.fill(employeeName)
-    await this.#staffCombobox.findItem(employeeName).click()
-    await this.#pinInput.type(employeePin)
-    await this.#submitPin.click()
+  async goBackFromSensitivePage() {
+    await this.#goBackFromSensitivePage.click()
   }
 
-  async assertWrongPinError() {
-    await waitUntilEqual(() => this.#pinInfo.innerText, 'Väärä PIN-koodi')
+  async openSensitiveInfo() {
+    await this.#sensitiveInfoLink.click()
   }
 
   async assertSensitiveInfoIsShown(name: string) {

@@ -20,7 +20,7 @@ export class PairingFlow {
   )
   #responseKey = this.page.locator('[data-qa="response-key"]')
   #startCtaLink = this.page.locator('[data-qa="start-cta-link"]')
-  #unitName = this.page.locator('[data-qa="unit-name"]')
+  #topBarTitle = this.page.locator('[data-qa="top-bar-title"]')
 
   async startPairing() {
     await this.#mobileStartPairingBtn.click()
@@ -43,6 +43,6 @@ export class PairingFlow {
 
   async clickStartCta() {
     await this.#startCtaLink.click()
-    await waitUntilVisible(this.#unitName)
+    await waitUntilVisible(this.#topBarTitle)
   }
 }

@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { combine, Success } from 'lib-common/api'
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
-import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
-import TopBar from '../common/TopBar'
-import BottomNavBar from '../common/BottomNavbar'
-import { getUnitStaffAttendances, postStaffAttendance } from '../../api/staff'
+import React, { useCallback, useContext, useMemo } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
 import { getRealizedOccupancyToday } from '../../api/occupancy'
-import { combine, Success } from 'lib-common/api'
-import StaffAttendanceEditor from './StaffAttendanceEditor'
-import LocalDate from 'lib-common/local-date'
+import { getUnitStaffAttendances, postStaffAttendance } from '../../api/staff'
+import { UnitContext } from '../../state/unit'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 import { renderResult } from '../async-rendering'
-import { UUID } from 'lib-common/types'
-import { UnitContext } from '../../state/unit'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import BottomNavBar from '../common/BottomNavbar'
+import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import StaffAttendanceEditor from './StaffAttendanceEditor'
 
 export default React.memo(function StaffPage() {
   const history = useHistory()
@@ -81,8 +81,8 @@ export default React.memo(function StaffPage() {
     combine(unitInfoResponse, unitOrGroupStaffAttendance, occupancy),
     ([unitInfo, foobar, occupancy]) => (
       <>
-        <TopBar
-          unitName={unitInfo.name}
+        <TopBarWithGroupSelector
+          title={unitInfo.name}
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
         />

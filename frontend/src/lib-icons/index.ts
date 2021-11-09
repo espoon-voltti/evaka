@@ -61,6 +61,7 @@ export interface IconSet {
   faLink: IconDefinition
   faList: IconDefinition
   faLockAlt: IconDefinition
+  faLockOpenAlt: IconDefinition
   faMapMarkerAlt: IconDefinition
   faMeh: IconDefinition
   faMoneyBillWave: IconDefinition
@@ -172,6 +173,7 @@ export const faInfoCircle = iconSet.faInfoCircle
 export const faLink = iconSet.faLink
 export const faList = iconSet.faList
 export const faLockAlt = iconSet.faLockAlt
+export const faLockOpenAlt = iconSet.faLockOpenAlt
 export const faMapMarkerAlt = iconSet.faMapMarkerAlt
 export const faMeh = iconSet.faMeh
 export const faMoneyBillWave = iconSet.faMoneyBillWave

@@ -1,135 +1,87 @@
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { animated, useSpring } from 'react-spring'
-import { Gap, defaultMargins } from 'lib-components/white-space'
-import { faAngleDown, faAngleUp, faSearch } from 'lib-icons'
-import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import GroupSelector, { CountInfo } from './GroupSelector'
+import { faTimes } from 'lib-icons'
+import React, { PropsWithChildren } from 'react'
+import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
+import { topBarHeight, zIndex } from '../constants'
+import { LoggedInUser } from './top-bar/LoggedInUser'
+import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 
-export interface Props {
-  unitName: string
-  selectedGroup: GroupInfo | undefined
-  onChangeGroup: (group: GroupInfo | undefined) => void
-  onSearch?: () => void
-  countInfo?: CountInfo
-}
+const StickyTopBar = styled.section`
+  position: sticky;
+  top: 0;
+  height: ${topBarHeight};
+  z-index: ${zIndex.topBar};
 
-export default function TopBar({
-  unitName,
-  selectedGroup,
-  onChangeGroup,
-  onSearch,
-  countInfo
-}: Props) {
-  const { i18n } = useTranslation()
-  const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
-  const groupSelectorSpring = useSpring<{ x: number }>({
-    x: showGroupSelector ? 1 : 0,
-    config: { duration: 100 }
-  })
-  return (
-    <>
-      <Name>
-        <NoMarginTitle size={1} centered smaller bold>
-          {unitName}
-        </NoMarginTitle>
-      </Name>
-      <GroupSelectorWrapper
-        style={{
-          maxHeight: groupSelectorSpring.x.interpolate((x) => `${100 * x}%`)
-        }}
-      >
-        <GroupSelectorButtonRow>
-          <GroupSelectorButton
-            text={selectedGroup ? selectedGroup.name : i18n.common.all}
-            onClick={() => {
-              setShowGroupSelector(!showGroupSelector)
-            }}
-            icon={showGroupSelector ? faAngleUp : faAngleDown}
-            iconRight
-            data-qa="group-selector-button"
-          />
-          {onSearch && <IconButton onClick={onSearch} icon={faSearch} />}
-        </GroupSelectorButtonRow>
-        <GroupSelector
-          selectedGroup={selectedGroup}
-          onChangeGroup={(group) => {
-            onChangeGroup(group)
-            setShowGroupSelector(false)
-          }}
-          countInfo={countInfo}
-          data-qa="group-selector"
-        />
-      </GroupSelectorWrapper>
-      <Gap size={'XL'} />
-    </>
-  )
-}
-
-const NoMarginTitle = styled(Title)`
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: ${defaultMargins.s};
-  padding-bottom: ${defaultMargins.s};
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+
   background: ${colors.blues.primary};
   color: ${colors.greyscale.white};
-  box-shadow: 0px 2px 6px 0px ${colors.greyscale.lighter};
-  position: relative;
-  z-index: 1;
+`
 
-  button {
-    margin-left: ${defaultMargins.m};
+const Title = styled.div`
+  flex-grow: 6; // occupy majority of the space, leaving rest for the user menu
+  margin: 0 ${defaultMargins.m};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  ${Label} {
     color: ${colors.greyscale.white};
   }
 `
 
-const Name = styled.div`
-  background: ${colors.greyscale.white};
-`
+interface Props {
+  title: string
+}
 
-const GroupSelectorButtonRow = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: stretch;
-  align-items: center;
-  padding: 0 ${defaultMargins.s};
-`
+function TopBarWrapper({ children, title }: PropsWithChildren<Props>) {
+  return (
+    <StickyTopBar>
+      <Title>
+        <Label data-qa="top-bar-title">{title}</Label>
+      </Title>
+      {children}
+    </StickyTopBar>
+  )
+}
 
-const GroupSelectorButton = styled(InlineButton)`
-  border: none;
-  font-family: Montserrat, sans-serif;
-  font-size: 20px;
-  height: 48px;
-  flex-grow: 1;
-  flex-shrink: 0;
-  outline: none !important;
-`
+export const TopBar = React.memo(function TopBar({ title }: Props) {
+  return (
+    <TopBarWrapper title={title}>
+      <LoggedInUser />
+    </TopBarWrapper>
+  )
+})
 
-const GroupSelectorWrapper = animated(styled.div`
-  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
-  position: absolute;
-  z-index: 1;
-  display: flex;
-  background-color: ${colors.greyscale.white};
-  flex-direction: column;
-  overflow-y: hidden;
-  min-height: 48px;
-  width: 100%;
-`)
+interface CloseableTopBarProps extends Props {
+  onClose: () => void
+}
+
+export const CloseableTopBar = React.memo(function TopBar({
+  onClose,
+  title
+}: CloseableTopBarProps) {
+  const { i18n } = useTranslation()
+  return (
+    <TopBarWrapper title={title}>
+      <TopBarIconContainer>
+        <IconButton
+          icon={faTimes}
+          white
+          onClick={onClose}
+          altText={i18n.common.close}
+        />
+      </TopBarIconContainer>
+    </TopBarWrapper>
+  )
+})

@@ -211,6 +211,7 @@ export interface EmployeePinLoginRequest {
 
 export interface EmployeePinLoginResponse {
   status: string
+  employee?: Pick<EmployeeUser, 'firstName' | 'lastName'>
 }
 
 export async function employeePinLogin(

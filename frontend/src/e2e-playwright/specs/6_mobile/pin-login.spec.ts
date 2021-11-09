@@ -2,8 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import LocalDate from 'lib-common/local-date'
+import { newBrowserContext } from 'e2e-playwright/browser'
+import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
+import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
+import PinLoginPage from 'e2e-playwright/pages/mobile/pin-login-page'
+import TopNav from 'e2e-playwright/pages/mobile/top-nav'
+import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import {
   insertBackupPickups,
   insertChildFixtures,
@@ -23,6 +27,7 @@ import {
   createDaycarePlacementFixture,
   DaycareGroupBuilder,
   EmployeeBuilder,
+  enduserChildFixtureJari,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
@@ -31,15 +36,15 @@ import {
   DaycarePlacement,
   PersonDetail
 } from 'e2e-test-common/dev-api/types'
-import { newBrowserContext } from 'e2e-playwright/browser'
-import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
-import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
-import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
+import LocalDate from 'lib-common/local-date'
+import { Page } from 'playwright'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
 let listPage: MobileListPage
 let childPage: MobileChildPage
+let pinLoginPage: PinLoginPage
+let topNav: TopNav
 
 const employeeId = uuidv4()
 const daycareGroupPlacementId = uuidv4()
@@ -48,6 +53,12 @@ let daycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let employee: EmployeeBuilder
 let child: PersonDetail
+
+const empFirstName = 'Yrjö'
+const empLastName = 'Yksikkö'
+const employeeName = `${empLastName} ${empFirstName}`
+const childName =
+  enduserChildFixtureJari.firstName + ' ' + enduserChildFixtureJari.lastName
 
 const pin = '2580'
 
@@ -61,8 +72,8 @@ beforeEach(async () => {
     .with({
       id: employeeId,
       externalId: `espooad: ${employeeId}`,
-      firstName: 'Yrjö',
-      lastName: 'Yksikkö',
+      firstName: empFirstName,
+      lastName: empLastName,
       email: 'yy@example.com',
       roles: []
     })
@@ -93,6 +104,8 @@ beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
+  pinLoginPage = new PinLoginPage(page)
+  topNav = new TopNav(page)
 
   const mobileSignupUrl = await pairMobileDevice(
     employee.data.id!, // eslint-disable-line
@@ -178,13 +191,9 @@ describe('Mobile PIN login', () => {
 
     await listPage.selectChild(child.id)
 
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      pin
-    )
-    await childPage.assertSensitiveInfoIsShown(
-      `${child.firstName} ${child.lastName}`
-    )
+    await childPage.openSensitiveInfo()
+    await pinLoginPage.login(employeeName, pin)
+    await childPage.assertSensitiveInfoIsShown(childName)
     await childPage.assertSensitiveInfo(
       childAdditionalInfo,
       contacts,
@@ -194,37 +203,44 @@ describe('Mobile PIN login', () => {
 
   test('Wrong pin shows error, and user can log in with correct pin after that', async () => {
     await listPage.selectChild(child.id)
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      '9999'
-    )
-    await childPage.assertWrongPinError()
-    await childPage.goBack()
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      pin
-    )
-    await childPage.assertSensitiveInfoIsShown(
-      `${child.firstName} ${child.lastName}`
-    )
+    await childPage.openSensitiveInfo()
+    await pinLoginPage.login(employeeName, '9999')
+    await pinLoginPage.assertWrongPinError()
+    await pinLoginPage.submitPin(pin)
+    await childPage.assertSensitiveInfoIsShown(childName)
   })
 
-  test('After successful PIN login user can log out after which new PIN is required', async () => {
+  test('PIN login is persistent', async () => {
     await listPage.selectChild(child.id)
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      pin
-    )
-    await childPage.assertSensitiveInfoIsShown(
-      `${child.firstName} ${child.lastName}`
-    )
+
+    await childPage.openSensitiveInfo()
+    // when user logs in
+    await pinLoginPage.login(employeeName, pin)
+
+    // then
+    await childPage.assertSensitiveInfoIsShown(childName)
+    await childPage.goBackFromSensitivePage()
+
+    // when opened again, no login is required
+    await childPage.openSensitiveInfo()
+    await childPage.assertSensitiveInfoIsShown(childName)
+
+    await childPage.goBackFromSensitivePage()
     await childPage.goBack()
-    await childPage.openSensitiveInfoWithPinCode(
-      `${employee.data.lastName} ${employee.data.firstName}`,
-      pin
-    )
-    await childPage.assertSensitiveInfoIsShown(
-      `${child.firstName} ${child.lastName}`
-    )
+
+    expect(await topNav.getUserInitials()).toEqual('YY')
+
+    await topNav.openUserMenu()
+    expect(await topNav.getFullName()).toEqual('Yrjö Yksikkö')
+
+    // when user logs out
+    await topNav.logout()
+
+    await listPage.selectChild(child.id)
+    await childPage.openSensitiveInfo()
+
+    // then new login is required
+    await pinLoginPage.login(employeeName, pin)
+    await childPage.assertSensitiveInfoIsShown(childName)
   })
 })

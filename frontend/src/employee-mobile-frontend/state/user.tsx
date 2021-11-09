@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Loading, Result } from 'lib-common/api'
+import { User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { createContext, useEffect, useMemo } from 'react'
 import { getAuthStatus } from '../api/auth'
 import { client } from '../api/client'
-import { User } from 'lib-common/api-types/employee-auth'
 
 export interface UserState {
   apiVersion: string | undefined
