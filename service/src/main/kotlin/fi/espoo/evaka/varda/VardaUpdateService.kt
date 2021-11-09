@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -41,10 +42,13 @@ class VardaUpdateService(
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
     private val vardaEnv: VardaEnv,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
+    private val ophEnv: OphEnv
 ) {
-    private val organizer = vardaEnv.organizer
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
+    private val ophMunicipalityCode = ophEnv.municipalityCode
+    private val ophMunicipalityOid = ophEnv.organizerOid
+    private val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
 
     init {
         asyncJobRunner.registerHandler(::updateVardaChildByAsyncJob)
@@ -57,8 +61,7 @@ class VardaUpdateService(
 
         logger.info("VardaUpdate: starting update process")
 
-        updateOrganizer(db, client, organizer)
-        updateUnits(db, client, organizer)
+        updateUnits(db, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
 
         planVardaChildrenUpdate(db)
     }
@@ -88,7 +91,7 @@ class VardaUpdateService(
 
     fun updateVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.UpdateVardaChild) {
         logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
-        updateVardaChild(db, client, msg.serviceNeedDiffByChild, feeDecisionMinDate)
+        updateVardaChild(db, client, msg.serviceNeedDiffByChild, feeDecisionMinDate, ophMunicipalityOid)
         logger.info("VardaUpdate: successfully updated child ${msg.serviceNeedDiffByChild.childId}")
     }
 }
@@ -100,7 +103,7 @@ fun getChildrenToUpdate(db: Database.Connection, feeDecisionMinDate: LocalDate):
     return serviceNeedDiffsByChild
 }
 
-fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges, feeDecisionMinDate: LocalDate) {
+fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     val evakaChildId = serviceNeedDiffByChild.childId
     try {
         serviceNeedDiffByChild.deletes.forEach { deletedServiceNeedId ->
@@ -108,11 +111,11 @@ fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDi
         }
 
         serviceNeedDiffByChild.updates.forEach { updatedServiceNeedId ->
-            handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId, feeDecisionMinDate)
+            handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId, feeDecisionMinDate, municipalOrganizerOid)
         }
 
         serviceNeedDiffByChild.additions.forEach { addedServiceNeedId ->
-            handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate)
+            handleNewEvakaServiceNeed(db, client, addedServiceNeedId, feeDecisionMinDate, municipalOrganizerOid)
         }
 
         if (!db.read { it.hasVardaServiceNeeds(evakaChildId) }) {
@@ -137,13 +140,13 @@ private fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: Varda
     }
 }
 
-private fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate) {
+private fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     try {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
             ?: error("VardaUpdate: cannot handle updated service need $evakaServiceNeedId: varda service need missing")
         deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
-        addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed, feeDecisionMinDate)
+        addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed, feeDecisionMinDate, municipalOrganizerOid)
         logger.info("VardaUpdate: successfully updated service need $evakaServiceNeedId")
     } catch (e: Exception) {
         db.transaction { it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage)) }
@@ -155,12 +158,13 @@ fun handleNewEvakaServiceNeed(
     db: Database.Connection,
     client: VardaClient,
     evakaServiceNeedId: ServiceNeedId,
-    feeDecisionMinDate: LocalDate
+    feeDecisionMinDate: LocalDate,
+    municipalOrganizerOid: String
 ) {
     logger.info("VardaUpdate: creating a new service need from $evakaServiceNeedId")
     val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
     val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
-    addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate)
+    addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed, feeDecisionMinDate, municipalOrganizerOid)
     logger.info("VardaUpdate: successfully created new service need from $evakaServiceNeedId")
 }
 
@@ -179,7 +183,8 @@ private fun addServiceNeedDataToVarda(
     vardaClient: VardaClient,
     evakaServiceNeed: EvakaServiceNeedInfoForVarda,
     vardaServiceNeed: VardaServiceNeed,
-    feeDecisionMinDate: LocalDate
+    feeDecisionMinDate: LocalDate,
+    municipalOrganizerOid: String
 ) {
     try {
         logger.info("VardaUpdate: adding service need ${evakaServiceNeed.id}")
@@ -203,7 +208,7 @@ private fun addServiceNeedDataToVarda(
 
             vardaServiceNeed.evakaServiceNeedUpdated = HelsinkiDateTime.from(evakaServiceNeed.serviceNeedUpdated)
 
-            val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
+            val vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem, municipalOrganizerOid)
             vardaServiceNeed.vardaChildId = vardaChildId
 
             val vardaDecisionId = sendDecisionToVarda(vardaClient, vardaChildId, evakaServiceNeed)

@@ -27,7 +27,7 @@ data class EvakaEnv(
     val feeDecisionMinDate: LocalDate,
     val maxAttachmentsPerUser: Int,
     val httpClientCertificateCheck: Boolean,
-    val fiveYearsOldDaycareEnabled: Boolean,
+    val fiveYearsOldDaycareEnabled: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -51,7 +51,7 @@ data class EvakaEnv(
                 fiveYearsOldDaycareEnabled = env.lookup(
                     "evaka.five_years_old_daycare.enabled",
                     "fi.espoo.evaka.five_years_old_daycare.enabled"
-                ) ?: true,
+                ) ?: true
             )
         }
     }
@@ -359,6 +359,22 @@ data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
                 (job to settings)
             }
         )
+    }
+}
+
+data class OphEnv(
+    val organizerOid: String,
+    val organizerId: String,
+    val municipalityCode: String
+) {
+    companion object {
+        fun fromEnvironment(env: Environment): OphEnv {
+            return OphEnv(
+                organizerOid = env.lookup("evaka.oph.organizer_oid"),
+                municipalityCode = env.lookup("evaka.oph.municipality_code"),
+                organizerId = env.lookup("evaka.oph.organizer_id")
+            )
+        }
     }
 }
 

@@ -23,6 +23,10 @@ evaka:
     disable_runner: true
   fee_decision:
     min_date: "2015-01-01"
+  oph:
+    organizer_oid: "1.2.246.562.10.888888888888"
+    municipality_code: "049"
+    organizer_id: "299"
   frontend:
     base_url:
       fi: https://foo.espoonvarhaiskasvatus.fi

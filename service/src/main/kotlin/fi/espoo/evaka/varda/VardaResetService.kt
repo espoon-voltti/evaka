@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
@@ -30,9 +31,11 @@ class VardaResetService(
     private val fuel: FuelManager,
     private val mapper: ObjectMapper,
     private val vardaEnv: VardaEnv,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
+    private val ophEnv: OphEnv
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
+    private val municipalOrganizerOid = ophEnv.organizerOid
 
     init {
         asyncJobRunner.registerHandler(::resetVardaChildByAsyncJob)
@@ -57,7 +60,7 @@ class VardaResetService(
 
     fun resetVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.ResetVardaChild) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
-        resetVardaChild(db, client, msg.childId, feeDecisionMinDate)
+        resetVardaChild(db, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
     }
 
     fun deleteVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.DeleteVardaChild) {
@@ -92,14 +95,14 @@ class VardaResetService(
     }
 }
 
-private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate) {
+private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
             val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
             logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
             childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
                 logger.info("VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})")
-                handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate)
+                handleNewEvakaServiceNeed(db, client, serviceNeedId, feeDecisionMinDate, municipalOrganizerOid)
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
             logger.info("VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId")

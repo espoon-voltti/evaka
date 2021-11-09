@@ -16,8 +16,8 @@ private val logger = KotlinLogging.logger {}
 
 val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
-fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: String) {
-    val units = db.read { getNewOrStaleUnits(it, organizerName, client.sourceSystem) }
+fun updateUnits(db: Database.Connection, client: VardaClient, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String) {
+    val units = db.read { getNewOrStaleUnits(it, ophMunicipalityCode, ophMunicipalOrganizerIdUrl, client.sourceSystem) }
     logger.info { "VardaUpdate: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
         try {
@@ -31,7 +31,7 @@ fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: Str
     }
 }
 
-fun getNewOrStaleUnits(tx: Database.Read, organizerName: String, sourceSystem: String): List<VardaUnit> {
+fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String, sourceSystem: String): List<VardaUnit> {
     //language=SQL
     val sql =
         """
@@ -39,8 +39,8 @@ fun getNewOrStaleUnits(tx: Database.Read, organizerName: String, sourceSystem: S
             daycare.id AS evakaDaycareId,
             varda_unit.varda_unit_id AS vardaUnitId,
             daycare.oph_unit_oid AS ophUnitOid,
-            (SELECT url from varda_organizer WHERE organizer = :organizer) AS organizer,
-            (SELECT municipality_code from varda_organizer WHERE organizer = :organizer) AS municipalityCode,
+            :ophMunicipalOrganizerIdUrl AS organizer,
+            :ophMunicipalityCode AS municipalityCode,
             daycare.name AS name,
             daycare.street_address AS address,
             daycare.postal_code AS postalCode,
@@ -71,7 +71,8 @@ fun getNewOrStaleUnits(tx: Database.Read, organizerName: String, sourceSystem: S
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("organizer", organizerName)
+        .bind("ophMunicipalityCode", ophMunicipalityCode)
+        .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
         .bind("sourceSystem", sourceSystem)
         .bindList("providerTypes", unitTypesToUpload)
         .mapTo<VardaUnit>()

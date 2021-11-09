@@ -69,7 +69,6 @@ export interface Unit {
   decisionCustomization: DecisionCustomization
   ophUnitOid: string | null
   ophOrganizerOid: string | null
-  ophOrganizationOid: string | null
   operationDays: DayOfWeek[] | null
   enabledPilotFeatures: PilotFeature[]
 }

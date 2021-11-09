@@ -31,7 +31,6 @@ import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaPlacementResponse
 import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUnitResponse
-import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 
@@ -355,27 +354,6 @@ class VardaClient(
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
                     "VardaUpdate: client failed to update unit ${unit.nimi}: $err"
-                }
-            }
-        }
-    }
-
-    fun updateOrganizer(organizer: VardaUpdateOrganizer): Boolean {
-        logger.info("VardaUpdate: client updating organizer")
-
-        val (request, _, result) = fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
-            .header(Headers.CONTENT_TYPE, "application/json")
-            .jsonBody(objectMapper.writeValueAsString(organizer))
-            .authenticatedResponseStringWithRetries()
-
-        return when (result) {
-            is Result.Success -> {
-                logger.info("VardaUpdate: client successfully updated organizer")
-                true
-            }
-            is Result.Failure -> {
-                vardaError(request, result.error) { err ->
-                    "VardaUpdate: client failed to update organizer: $err"
                 }
             }
         }

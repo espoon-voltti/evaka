@@ -80,7 +80,6 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         ),
         ophUnitOid = "1.2.3.4.5",
         ophOrganizerOid = "1.22.33.44.55",
-        ophOrganizationOid = "1.222.333.444.555",
         operationDays = setOf(1, 2, 3, 4, 5),
         financeDecisionHandlerId = null,
         roundTheClock = false
@@ -148,7 +147,6 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.mailingAddress, daycare.mailingAddress)
         assertEquals(fields.unitManager, daycare.unitManager)
         assertEquals(fields.decisionCustomization, daycare.decisionCustomization)
-        assertEquals(fields.ophOrganizationOid, daycare.ophOrganizationOid)
         assertEquals(fields.ophOrganizerOid, daycare.ophOrganizerOid)
         assertEquals(fields.ophUnitOid, daycare.ophUnitOid)
     }

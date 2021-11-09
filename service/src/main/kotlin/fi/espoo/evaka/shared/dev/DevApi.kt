@@ -986,7 +986,6 @@ data class DevDaycare(
     ),
     val ophUnitOid: String? = "1.2.3.4.5",
     val ophOrganizerOid: String? = "1.2.3.4.5",
-    val ophOrganizationOid: String? = "1.2.3.4.5",
     val roundTheClock: Boolean? = false,
     val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5),
     val enabledPilotFeatures: Set<PilotFeature> = setOf()

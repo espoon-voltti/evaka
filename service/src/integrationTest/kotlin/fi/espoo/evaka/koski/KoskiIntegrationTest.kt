@@ -6,6 +6,7 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCareType
@@ -60,6 +61,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 KoskiEnv.fromEnvironment(env).copy(
                     url = "http://localhost:${koskiServer.port}",
                 ),
+                OphEnv.fromEnvironment(env),
                 fuel = http,
                 asyncJobRunner = null
             )

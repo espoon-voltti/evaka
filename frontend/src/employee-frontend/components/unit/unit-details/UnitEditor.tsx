@@ -76,7 +76,6 @@ interface FormData {
   decisionCustomization: UnitDecisionCustomization
   ophUnitOid: string
   ophOrganizerOid: string
-  ophOrganizationOid: string
   operationDays: DayOfWeek[]
 }
 
@@ -384,7 +383,6 @@ function validateForm(
     invoicedByMunicipality,
     ophUnitOid,
     ophOrganizerOid,
-    ophOrganizationOid,
     operationDays
   } = form
 
@@ -435,7 +433,6 @@ function validateForm(
         },
         ophUnitOid,
         ophOrganizerOid,
-        ophOrganizationOid,
         operationDays
       },
       errors
@@ -488,7 +485,6 @@ function toFormData(unit: Unit | undefined): FormData {
     url: unit?.url ?? '',
     ophUnitOid: unit?.ophUnitOid ?? '',
     ophOrganizerOid: unit?.ophOrganizerOid ?? '',
-    ophOrganizationOid: unit?.ophOrganizationOid ?? '',
     visitingAddress: {
       streetAddress: unit?.visitingAddress?.streetAddress ?? '',
       postalCode: unit?.visitingAddress?.postalCode ?? '',
@@ -996,22 +992,6 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
         ) : (
           form.ophOrganizerOid
-        )}
-      </FormPart>
-      <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.ophOrganizationOid)}</div>
-        {props.editable ? (
-          <InputField
-            id="oph-organization-oid"
-            placeholder={showRequired(i18n.unitEditor.label.ophOrganizationOid)}
-            value={form.ophOrganizationOid}
-            onChange={(value) =>
-              updateForm({ ophOrganizationOid: value.trim() })
-            }
-            width="L"
-          />
-        ) : (
-          form.ophOrganizationOid
         )}
       </FormPart>
       <FormPart>

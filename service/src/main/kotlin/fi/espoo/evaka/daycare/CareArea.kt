@@ -67,7 +67,6 @@ data class Daycare(
     val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
-    val ophOrganizationOid: String?,
     val operationDays: Set<Int>,
     val roundTheClock: Boolean,
     val enabledPilotFeatures: List<PilotFeature>

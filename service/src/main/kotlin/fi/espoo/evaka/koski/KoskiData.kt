@@ -43,7 +43,6 @@ data class KoskiUnitRaw(
     val daycareLanguage: String,
     val daycareProviderType: ProviderType,
     val ophUnitOid: String,
-    val ophOrganizationOid: String,
     val ophOrganizerOid: String
 ) {
     fun haeSuoritus(type: OpiskeluoikeudenTyyppiKoodi) = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) Suoritus(
@@ -85,12 +84,12 @@ data class KoskiVoidedDataRaw(
     val studyRightId: UUID,
     val studyRightOid: String
 ) {
-    fun toKoskiData(sourceSystem: String) = KoskiData(
+    fun toKoskiData(sourceSystem: String, ophOrganizationOid: String) = KoskiData(
         oppija = Oppija(
             henkilö = child.toHenkilö(),
             opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
         ),
-        organizationOid = unit.ophOrganizationOid,
+        organizationOid = ophOrganizationOid,
         operation = KoskiOperation.VOID
     )
 
@@ -145,7 +144,7 @@ data class KoskiActiveDataRaw(
 
     private val approverTitle = "Esiopetusyksikön johtaja"
 
-    fun toKoskiData(sourceSystem: String, today: LocalDate): KoskiData? {
+    fun toKoskiData(sourceSystem: String, ophOrganizationOid: String, today: LocalDate): KoskiData? {
         // It's possible clamping to preschool term has removed all placements -> no study right can be created
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
@@ -173,10 +172,10 @@ data class KoskiActiveDataRaw(
         return KoskiData(
             oppija = Oppija(
                 henkilö = child.toHenkilö(),
-                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, termination))
+                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, ophOrganizationOid, termination))
             ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
-            organizationOid = unit.ophOrganizationOid
+            organizationOid = ophOrganizationOid
         )
     }
 
@@ -208,9 +207,9 @@ data class KoskiActiveDataRaw(
         return result
     }
 
-    private fun haeSuoritus(termination: StudyRightTermination?) = unit.haeSuoritus(type).let {
+    private fun haeSuoritus(termination: StudyRightTermination?, ophOrganizationOid: String) = unit.haeSuoritus(type).let {
         val vahvistus = when (termination) {
-            is StudyRightTermination.Qualified -> haeVahvistus(termination.date)
+            is StudyRightTermination.Qualified -> haeVahvistus(termination.date, ophOrganizationOid)
             else -> null
         }
         if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) it.copy(
@@ -240,11 +239,11 @@ data class KoskiActiveDataRaw(
         ) else it.copy(vahvistus = vahvistus)
     }
 
-    fun haeOpiskeluoikeus(sourceSystem: String, termination: StudyRightTermination?): Opiskeluoikeus {
+    fun haeOpiskeluoikeus(sourceSystem: String, ophOrganizationOid: String, termination: StudyRightTermination?): Opiskeluoikeus {
         return Opiskeluoikeus(
             oid = studyRightOid,
             tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(termination)),
-            suoritukset = listOf(haeSuoritus(termination)),
+            suoritukset = listOf(haeSuoritus(termination, ophOrganizationOid)),
             lähdejärjestelmänId = LähdejärjestelmäId(
                 id = studyRightId,
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
@@ -255,10 +254,10 @@ data class KoskiActiveDataRaw(
         )
     }
 
-    fun haeVahvistus(qualifiedDate: LocalDate) = Vahvistus(
+    fun haeVahvistus(qualifiedDate: LocalDate, ophOrganizationOid: String) = Vahvistus(
         päivä = qualifiedDate,
         paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
-        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizationOid),
+        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = ophOrganizationOid),
         myöntäjäHenkilöt = listOf(
             MyöntäjäHenkilö(
                 nimi = approverName,

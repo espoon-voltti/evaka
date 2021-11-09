@@ -124,12 +124,3 @@ export interface VardaUnitRequest {
   vakajarjestaja: string | null
   varhaiskasvatuspaikat: number
 }
-
-/**
-* Generated from fi.espoo.evaka.varda.VardaUpdateOrganizer
-*/
-export interface VardaUpdateOrganizer {
-  email: string | null
-  phone: string | null
-  vardaOrganizerId: number
-}

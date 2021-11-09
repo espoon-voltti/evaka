@@ -2609,7 +2609,6 @@ export const fi = {
       integrations: 'Integraatiot',
       ophUnitOid: 'Toimipaikan OID',
       ophOrganizerOid: 'Järjestäjän OID',
-      ophOrganizationOid: 'Organisaation OID',
       costCenter: 'Kustannuspaikka',
       financeDecisionHandler: 'Talouspäätösten käsittelijä',
       additionalInfo: 'Lisätietoja yksiköstä',
@@ -2699,7 +2698,6 @@ export const fi = {
       financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu',
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
-      ophOrganizationOid: 'Organisaation OID puuttuu',
       openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen'
     }
   },

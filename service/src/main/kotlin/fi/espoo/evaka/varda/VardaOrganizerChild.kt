@@ -19,10 +19,10 @@ fun getOrCreateVardaChildByOrganizer(
     client: VardaClient,
     evakaPersonId: ChildId,
     organizerOid: String,
-    sourceSystem: String
+    sourceSystem: String,
+    municipalOrganizerOid: String
 ): Long {
     return db.transaction { tx ->
-        val municipalOrganizerOid = getMunicipalOrganizerOid(tx)
         val isPaosChild = organizerOid != municipalOrganizerOid
 
         val rowsByChild = getVardaOrganizerChildRows(tx, evakaPersonId)
@@ -63,13 +63,6 @@ private fun getVardaOrganizerChildRows(
         .bind("evakaPersonId", evakaPersonId)
         .mapTo<VardaChildOrganizerRow>()
         .toList()
-}
-
-private fun getMunicipalOrganizerOid(tx: Database.Transaction): String {
-    return tx.createQuery("SELECT varda_organizer_oid FROM varda_organizer LIMIT 1") // one row table
-        .mapTo<String>()
-        .toList()
-        .first()
 }
 
 private fun createVardaPersonAndChild(
