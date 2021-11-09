@@ -6,6 +6,7 @@ import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from 'lib-icons'
+import { desktopMin } from '../breakpoints'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 import classNames from 'classnames'
 
@@ -36,6 +37,16 @@ export const Container = styled.div<{ verticalMargin?: string }>`
   }
 `
 
+const spacing = (
+  spacing?: SpacingSize | string,
+  defaultValue = defaultMargins.s
+) =>
+  spacing
+    ? isSpacingSize(spacing)
+      ? defaultMargins[spacing]
+      : spacing
+    : defaultValue
+
 type ContentAreaProps = {
   classname?: string
   'data-qa'?: string
@@ -49,19 +60,13 @@ type ContentAreaProps = {
 
 export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
-    `${
-      p.paddingVertical
-        ? isSpacingSize(p.paddingVertical)
-          ? defaultMargins[p.paddingVertical]
-          : p.paddingVertical
-        : defaultMargins.s
-    } ${
-      p.paddingHorizontal
-        ? isSpacingSize(p.paddingHorizontal)
-          ? defaultMargins[p.paddingHorizontal]
-          : p.paddingHorizontal
-        : defaultMargins.L
-    }`};
+    `${spacing(p.paddingVertical)} ${spacing(p.paddingHorizontal)}`};
+
+  // wider default horizontal paddings on desktop
+  @media screen and (min-width: ${desktopMin}) {
+    padding-right: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
+    padding-left: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
+  }
   background-color: ${({ theme: { colors }, ...props }) =>
     props.opaque
       ? 'white'
