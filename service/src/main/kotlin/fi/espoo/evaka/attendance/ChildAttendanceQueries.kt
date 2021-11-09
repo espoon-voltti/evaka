@@ -136,16 +136,9 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 false AS backup
             FROM daycare_group_placement gp
             JOIN placement p ON p.id = gp.daycare_placement_id
-            LEFT JOIN child_attendance ca ON (
-                ca.child_id = p.child_id AND
-                ca.unit_id = p.unit_id AND
-                ca.departed IS NULL
-            )
             WHERE
-                p.unit_id = :unitId AND (
-                    daterange(gp.start_date, gp.end_date, '[]') @> :date OR
-                    ca.id IS NOT NULL
-                ) AND NOT EXISTS (
+                p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :date AND
+                NOT EXISTS (
                     SELECT 1
                     FROM backup_care bc
                     WHERE
@@ -165,16 +158,10 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 p.child_id = bc.child_id AND
                 daterange(p.start_date, p.end_date, '[]') @> :date
             )
-            LEFT JOIN child_attendance ca ON (
-                ca.child_id = p.child_id AND
-                ca.unit_id = :unitId AND
-                ca.departed IS NULL
-            )
-            WHERE (
+            WHERE
                 bc.unit_id = :unitId AND
                 bc.group_id IS NOT NULL AND
                 daterange(bc.start_date, bc.end_date, '[]') @> :date
-            ) OR ca.id IS NOT NULL
         )
         SELECT
             pe.id,
@@ -255,13 +242,8 @@ fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, now: HelsinkiDateT
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        WHERE (
-            ca.child_id IN ($placedChildrenSql)
-            AND (ca.arrived::date = :date OR tstzrange(ca.arrived, ca.departed) @> :departedThreshold)
-            AND ca.unit_id = :unitId
-        ) OR (
-            ca.unit_id = :unitId AND ca.departed IS NULL
-        )
+        WHERE ca.child_id IN ($placedChildrenSql)
+        AND (ca.arrived::date = :date OR tstzrange(ca.arrived, ca.departed) @> :departedThreshold)
         """.trimIndent()
 
     return createQuery(sql)
