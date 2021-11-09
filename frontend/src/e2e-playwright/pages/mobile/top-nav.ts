@@ -7,13 +7,21 @@ import { Page } from 'playwright'
 export default class TopNav {
   constructor(private readonly page: Page) {}
 
-  #logoutBtn = this.page.locator('[data-qa="logout-btn"]')
+  #userMenu = this.page.locator('[data-qa="top-bar-user"]')
+
+  async openUserMenu() {
+    await this.#userMenu.click()
+  }
 
   async logout() {
-    await this.#logoutBtn.click()
+    await this.#userMenu.locator('[data-qa="logout-btn"]').click()
   }
 
   getUserInitials(): Promise<string> {
-    return this.#logoutBtn.innerText()
+    return this.#userMenu.innerText()
+  }
+
+  getFullName(): Promise<string> {
+    return this.#userMenu.locator('[data-qa="full-name"]').innerText()
   }
 }

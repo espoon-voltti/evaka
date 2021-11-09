@@ -11,7 +11,8 @@ import React, { PropsWithChildren } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { topBarHeight, zIndex } from '../constants'
-import { LoggedInUser } from './LoggedInUser'
+import { LoggedInUser } from './top-bar/LoggedInUser'
+import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 
 const StickyTopBar = styled.section`
   position: sticky;
@@ -25,14 +26,10 @@ const StickyTopBar = styled.section`
 
   background: ${colors.blues.primary};
   color: ${colors.greyscale.white};
-
-  & > :last-child {
-    margin-right: ${defaultMargins.xs};
-  }
 `
 
 const Title = styled.div`
-  flex-grow: 1;
+  flex-grow: 6; // occupy majority of the space, leaving rest for the user menu
   margin: 0 ${defaultMargins.m};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -77,12 +74,14 @@ export const CloseableTopBar = React.memo(function TopBar({
   const { i18n } = useTranslation()
   return (
     <TopBarWrapper title={title}>
-      <IconButton
-        icon={faTimes}
-        white
-        onClick={onClose}
-        altText={i18n.common.close}
-      />
+      <TopBarIconContainer>
+        <IconButton
+          icon={faTimes}
+          white
+          onClick={onClose}
+          altText={i18n.common.close}
+        />
+      </TopBarIconContainer>
     </TopBarWrapper>
   )
 })

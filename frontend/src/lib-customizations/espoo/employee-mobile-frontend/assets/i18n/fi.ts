@@ -280,7 +280,8 @@ export const fi = {
     },
     unknownError: 'Tuntematon virhe',
     logOut: 'Kirjaudu ulos',
-    login: 'Kirjaudu'
+    login: 'Kirjaudu',
+    loggedIn: 'Kirjautunut sisään'
   },
   mobile: {
     landerText1:

@@ -230,6 +230,9 @@ describe('Mobile PIN login', () => {
 
     expect(await topNav.getUserInitials()).toEqual('YY')
 
+    await topNav.openUserMenu()
+    expect(await topNav.getFullName()).toEqual('Yrjö Yksikkö')
+
     // when user logs out
     await topNav.logout()
 
