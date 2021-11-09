@@ -16,6 +16,7 @@ export type SpacingSize =
   | 'XXL'
   | 'X3L'
   | 'X4L'
+  | 'X5L'
 
 export function isSpacingSize(x: unknown): x is SpacingSize {
   return (
@@ -28,7 +29,8 @@ export function isSpacingSize(x: unknown): x is SpacingSize {
     x === 'XL' ||
     x === 'XXL' ||
     x === 'X3L' ||
-    x === 'X4L'
+    x === 'X4L' ||
+    x === 'X5L'
   )
 }
 
@@ -39,10 +41,11 @@ export const defaultMargins: Record<SpacingSize, string> = {
   s: '16px',
   m: '24px',
   L: '32px',
-  XL: '48px',
-  XXL: '60px',
-  X3L: '80px',
-  X4L: '120px'
+  XL: '40px',
+  XXL: '48px',
+  X3L: '64px',
+  X4L: '80px',
+  X5L: '120px'
 }
 
 type GapProps = {

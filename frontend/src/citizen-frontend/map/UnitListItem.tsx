@@ -55,7 +55,7 @@ const Wrapper = styled.div`
 
   &:after {
     content: '';
-    width: calc(100% - ${dM.XXL});
+    width: calc(100% - ${dM.X3L});
     background: ${colors.greyscale.lighter};
     height: 1px;
     display: block;
