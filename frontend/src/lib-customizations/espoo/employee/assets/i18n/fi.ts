@@ -1872,6 +1872,7 @@ export const fi = {
       RELIEF_REJECTED: 'Huojennus hylätty (Lähetetään manuaalisesti)'
     },
     headOfFamily: 'Päämies',
+    partner: 'Toinen huoltaja/maksuvelvollinen',
     decisionNumber: 'Päätöksen numero',
     validPeriod: 'Maksupäätös voimassa',
     sentAt: 'Maksupäätös lähetetty',

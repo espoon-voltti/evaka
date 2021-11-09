@@ -113,6 +113,16 @@ export class FeeDecisionsPage {
   }
 }
 
+export class FeeDecisionDetailsPage {
+  constructor(private readonly page: Page) {}
+
+  #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+
+  async assertPartnerName(expectedName: string) {
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+}
+
 export class ValueDecisionsPage {
   constructor(private readonly page: Page) {}
 

@@ -44,6 +44,7 @@ export interface FeeDecision {
     | 'RELIEF_REJECTED'
   validDuring: DateRange
   headOfFamily: { id: UUID }
+  partner?: { id: UUID | null }
   familySize: number
   feeThresholds: FeeDecisionThresholds
   children: [

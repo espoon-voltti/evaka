@@ -26,6 +26,7 @@ interface Props {
   id: string
   status: FeeDecisionStatus
   headOfFamily: PersonDetailed
+  partner: PersonDetailed | null
   decisionNumber: number | null
   validDuring: DateRange
   sentAt: Date | null
@@ -46,6 +47,7 @@ export default React.memo(function Heading({
   id,
   status,
   headOfFamily,
+  partner,
   decisionNumber,
   validDuring,
   sentAt,
@@ -110,7 +112,25 @@ export default React.memo(function Heading({
           ]
         : []
 
-    const always: {
+    const partnerElement: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      'data-qa'?: string
+    }[] = partner
+      ? [
+          {
+            label: i18n.feeDecision.partner,
+            value: (
+              <Link to={`/profile/${partner.id}`} data-qa="partner">
+                {formatName(partner.firstName, partner.lastName, i18n)}
+              </Link>
+            )
+          }
+        ]
+      : []
+
+    const headOfFamilyElement: {
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
@@ -123,7 +143,15 @@ export default React.memo(function Heading({
             {formatName(headOfFamily.firstName, headOfFamily.lastName, i18n)}
           </Link>
         )
-      },
+      }
+    ]
+
+    const always: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      'data-qa'?: string
+    }[] = [
       {
         label: i18n.feeDecision.validPeriod,
         value: validDuring.format()
@@ -147,7 +175,11 @@ export default React.memo(function Heading({
         : []
     )
 
-    return decisionNumberExists.concat(notDraft).concat(always)
+    return decisionNumberExists
+      .concat(notDraft)
+      .concat(headOfFamilyElement)
+      .concat(partnerElement)
+      .concat(always)
   }
 
   return (
