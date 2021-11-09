@@ -414,12 +414,26 @@ class ApplicationStateService(
         }
     }
 
-    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: DaycareId) {
+    fun confirmPlacementProposalChanges(tx: Database.Transaction, user: AuthenticatedUser, unitId: DaycareId) {
         Audit.PlacementProposalAccept.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.ACCEPT_PLACEMENT_PROPOSAL, unitId)
 
         // language=sql
-        val sql =
+        val rejectSQL =
+            """
+            UPDATE placement_plan
+            SET unit_confirmation_status = 'REJECTED'
+            WHERE 
+                unit_id = :unitId AND
+                unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
+            """.trimIndent()
+
+        tx.createUpdate(rejectSQL)
+            .bind("unitId", unitId)
+            .execute()
+
+        // language=sql
+        val acceptSQL =
             """
             SELECT application_id
             FROM placement_plan pp
@@ -430,7 +444,7 @@ class ApplicationStateService(
                 pp.unit_confirmation_status = 'ACCEPTED'
             """.trimIndent()
 
-        val validIds = tx.createQuery(sql)
+        val validIds = tx.createQuery(acceptSQL)
             .bind("unitId", unitId)
             .mapTo<ApplicationId>()
             .toList()

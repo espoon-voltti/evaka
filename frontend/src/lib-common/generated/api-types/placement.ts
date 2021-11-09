@@ -137,6 +137,7 @@ export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'
   | 'REJECTED'
+  | 'REJECTED_NOT_CONFIRMED'
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementPlanDetails

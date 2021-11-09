@@ -170,3 +170,4 @@ V169__ensure_mobile_devices.sql
 V170__vasu_and_pedadoc_feature_flag.sql
 V171__service_need_option_name_localization.sql
 V172__remove_daycare_organization_oid.sql
+V173__create_rejected_not_confirmed_state_for_placement_plans.sql

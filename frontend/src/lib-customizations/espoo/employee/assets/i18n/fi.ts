@@ -1492,8 +1492,8 @@ export const fi = {
       subtype: 'Osa/Koko',
       application: 'Hakemus',
       confirmation: 'Hyväksyntä',
-      acceptAllButton: 'Vahvista hyväksytyt',
-      rejectTitle: 'Perustele sijoitusehdotuksen palautus',
+      acceptAllButton: 'Vahvista valinnat',
+      rejectTitle: 'Valitse palautuksen syy',
       rejectReasons: {
         REASON_1:
           'TILARAJOITE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
@@ -1502,9 +1502,10 @@ export const fi = {
         REASON_3: '',
         OTHER: 'Muu syy'
       },
-      infoBoxTitle: 'Ohje yksikön johtajalle',
-      infoBoxText:
-        'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.'
+      infoTitle: 'Hyväksytyksi / hylätyksi merkitseminen',
+      infoText:
+        'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.',
+      describeOtherReason: 'Kirjoita perustelu'
     },
     applications: {
       title: 'Hakemukset',

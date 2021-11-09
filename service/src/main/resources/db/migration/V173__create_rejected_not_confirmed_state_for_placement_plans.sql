@@ -1,0 +1,1 @@
+ALTER TYPE confirmation_status ADD VALUE 'REJECTED_NOT_CONFIRMED';

@@ -79,12 +79,12 @@ export default React.memo(function PlacementProposalRow({
           resolve={{
             action: () => {
               if (reason != null) {
-                onChange('REJECTED', reason, otherReason)
+                onChange('REJECTED_NOT_CONFIRMED', reason, otherReason)
                 setModalOpen(false)
                 void loadUnitData()
               }
             },
-            label: i18n.common.confirm,
+            label: i18n.common.save,
             disabled: !reason || (reason === 'OTHER' && !otherReason)
           }}
           reject={{
@@ -104,12 +104,14 @@ export default React.memo(function PlacementProposalRow({
                 />
               )
             })}
-            <InputField
-              data-qa="proposal-reject-reason-input"
-              value={otherReason}
-              onChange={setOtherReason}
-              placeholder={i18n.unit.placementProposals.rejectReasons.OTHER}
-            />
+            {reason === 'OTHER' && (
+              <InputField
+                data-qa="proposal-reject-reason-input"
+                value={otherReason}
+                onChange={setOtherReason}
+                placeholder={i18n.unit.placementProposals.describeOtherReason}
+              />
+            )}
           </FixedSpaceColumn>
           <Gap />
         </FormModal>
@@ -176,11 +178,11 @@ export default React.memo(function PlacementProposalRow({
                 <CrossIconButton
                   data-qa={'reject-button'}
                   onClick={() =>
-                    confirmationState === 'REJECTED'
+                    confirmationState === 'REJECTED_NOT_CONFIRMED'
                       ? onChange('PENDING')
                       : setModalOpen(true)
                   }
-                  active={confirmationState === 'REJECTED'}
+                  active={confirmationState === 'REJECTED_NOT_CONFIRMED'}
                 />
               </div>
             </FixedSpaceRow>
