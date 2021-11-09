@@ -46,7 +46,7 @@ class FridgeFamilyService(
                         )
                     }
                 }
-                ?.takeIf { livesInSameAddress(it.addresses, head.addresses) }
+                ?.takeIf { livesInSameAddress(it.address, head.address) }
             if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
 
             val children = head.children + (partner?.children ?: emptyList())
@@ -59,7 +59,7 @@ class FridgeFamilyService(
                 .distinct()
                 .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
                 .filter { child -> child.dateOfBirth.isAfter(LocalDate.now().minusYears(18)) }
-                .filter { livesInSameAddress(it.addresses, head.addresses) }
+                .filter { livesInSameAddress(it.address, head.address) }
                 .filter { !currentFridgeChildren.contains(it.id) }
                 .toList()
             logger.info("New fridge children to add: ${newChildrenInSameAddress.size}")
@@ -107,27 +107,9 @@ class FridgeFamilyService(
         return tx.createQuery(sql).bind("personId", personId).mapTo<UUID>().list().toHashSet()
     }
 
-    private fun livesInSameAddress(set1: Set<PersonAddressDTO>, set2: Set<PersonAddressDTO>): Boolean {
-        val sameResidencyCode = set1
-            .map { it.residenceCode }
-            .filter { !it.isNullOrEmpty() }
-            .intersect(
-                set2
-                    .map { it.residenceCode }
-                    .filter { !it.isNullOrEmpty() }
-            )
-            .isNotEmpty()
-
-        val sameStreetAddress = set1
-            .filter { it.streetAddress.isNotEmpty() }
-            .map { Pair(it.streetAddress.lowercase(), it.city.lowercase()) }
-            .intersect(
-                set2
-                    .filter { it.streetAddress.isNotEmpty() }
-                    .map { Pair(it.streetAddress.lowercase(), it.city.lowercase()) }
-            )
-            .isNotEmpty()
-
+    private fun livesInSameAddress(address1: PersonAddressDTO, address2: PersonAddressDTO): Boolean {
+        val sameResidencyCode = address1.residenceCode == address2.residenceCode
+        val sameStreetAddress = address1.streetAddress == address2.streetAddress
         return sameResidencyCode || sameStreetAddress
     }
 }

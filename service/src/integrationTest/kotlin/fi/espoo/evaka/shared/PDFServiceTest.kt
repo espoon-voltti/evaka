@@ -81,7 +81,7 @@ private val child = PersonDTO(
     "Kullervo Kyöstinpoika",
     "Pöysti",
     null,
-    null,
+    "",
     "",
     null,
     testChild_1.dateOfBirth,
@@ -89,7 +89,7 @@ private val child = PersonDTO(
     "Kuusikallionrinne 26 A 4",
     "02270",
     "Espoo",
-    null
+    ""
 )
 private val guardian = PersonDTO(
     testAdult_1.id,
@@ -106,7 +106,7 @@ private val guardian = PersonDTO(
     "Kuusikallionrinne 26 A 4",
     "02270",
     "Espoo",
-    null
+    ""
 )
 private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 

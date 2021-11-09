@@ -51,7 +51,7 @@ import ApplicationStatusSection from '../../components/application-page/Applicat
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
 import { Translations, useTranslation } from '../../state/i18n'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -65,7 +65,7 @@ interface PreschoolApplicationProps {
   >
   errors: Record<string, string>
   units: Result<PublicUnit[]>
-  guardians: PersonDetails[]
+  guardians: PersonJSON[]
   serviceNeedOptions: ServiceNeedOptionPublicInfo[]
 }
 

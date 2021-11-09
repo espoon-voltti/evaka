@@ -12,9 +12,9 @@ import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from 'lib-common/date'
 import {
-  VoucherValueDecisionStatus,
-  PersonDetailed
-} from '../../types/invoicing'
+  Detailed as PersonDetailed,
+  VoucherValueDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '../../components/common/WarningLabel'
 import colors from 'lib-customizations/common'

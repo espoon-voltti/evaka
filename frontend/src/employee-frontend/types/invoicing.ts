@@ -8,7 +8,11 @@ import LocalDate from 'lib-common/local-date'
 import { FeeAlterationType } from './fee-alteration'
 import { Income, IncomeEffect } from './income'
 import { PlacementType } from 'lib-common/generated/enums'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import {
+  Basic as PersonBasic,
+  Detailed as PersonDetailed,
+  VoucherValueDecisionType
+} from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 
 // Enums
@@ -85,36 +89,6 @@ export const deserializePeriodic = <E extends Periodic>(json: JsonOf<E>): E => {
     periodStart: LocalDate.parseIso(json.periodStart),
     periodEnd: LocalDate.parseIso(json.periodEnd)
   } as E
-}
-
-interface PersonBasic {
-  id: UUID
-  dateOfBirth: LocalDate
-  firstName: string
-  lastName: string
-  ssn: string | null
-}
-
-export interface PersonDetailed {
-  id: UUID
-  dateOfBirth: LocalDate
-  dateOfDeath: LocalDate | null
-  firstName: string
-  lastName: string
-  ssn: string | null
-  streetAddress: string | null
-  postalCode: string | null
-  postOffice: string | null
-  residenceCode: string | null
-  restrictedDetailsEnabled: boolean
-  email: string | null
-  phone: string | null
-  language: string | null
-  invoiceRecipientName: string
-  invoicingStreetAddress: string
-  invoicingPostalCode: string
-  invoicingPostOffice: string
-  forceManualFeeDecisions: boolean
 }
 
 export const deserializePersonBasic = (

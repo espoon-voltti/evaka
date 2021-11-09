@@ -12,7 +12,10 @@ import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdfUrl } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { FeeDecisionStatus, PersonDetailed } from '../../types/invoicing'
+import {
+  Detailed as PersonDetailed,
+  FeeDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import colors from 'lib-customizations/common'
 import { formatDate } from 'lib-common/date'
 import { formatName } from '../../utils'

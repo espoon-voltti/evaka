@@ -342,7 +342,7 @@ data class CreatePersonBody(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
-    val phone: String?,
+    val phone: String,
     val email: String?
 )
 

@@ -149,7 +149,8 @@ class VTJPersonDetailsServiceTest {
         restrictedDetailsEndDate = null,
         streetAddress = "",
         postalCode = "",
-        postOffice = ""
+        postOffice = "",
+        residenceCode = ""
     )
 
     private val validPerson = VtjPerson(

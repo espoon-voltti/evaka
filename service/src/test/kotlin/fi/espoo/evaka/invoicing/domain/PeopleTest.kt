@@ -27,10 +27,10 @@ class PeopleTest {
     fun `DecisionSendAddress basic case`() {
         val address = DecisionSendAddress.fromPerson(testPerson)
         val expected = DecisionSendAddress(
-            testPerson.streetAddress!!,
-            testPerson.postalCode!!,
-            testPerson.postOffice!!,
-            testPerson.streetAddress!!,
+            testPerson.streetAddress,
+            testPerson.postalCode,
+            testPerson.postOffice,
+            testPerson.streetAddress,
             "${testPerson.postalCode} ${testPerson.postOffice}",
             ""
         )
@@ -39,17 +39,8 @@ class PeopleTest {
 
     @Test
     fun `DecisionSendAddress handles missing fields`() {
-        val testPeople = listOf(
-            testPerson.copy(streetAddress = null, postalCode = null, postOffice = null),
-            testPerson.copy(streetAddress = "", postalCode = null, postOffice = null),
-            testPerson.copy(streetAddress = null, postalCode = "", postOffice = null),
-            testPerson.copy(streetAddress = null, postalCode = null, postOffice = ""),
-            testPerson.copy(streetAddress = "", postalCode = "", postOffice = "")
-        )
-
-        testPeople.forEach {
-            val address = DecisionSendAddress.fromPerson(it)
-            assertNull(address)
-        }
+        val person = testPerson.copy(streetAddress = "", postalCode = "", postOffice = "")
+        val address = DecisionSendAddress.fromPerson(person)
+        assertNull(address)
     }
 }

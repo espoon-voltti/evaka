@@ -33,7 +33,7 @@ data class VtjPerson(
         postalCode = address?.postalCode ?: "",
         city = address?.postOffice ?: "",
         streetAddressSe = address?.streetAddressSe ?: "",
-        residenceCode = residenceCode,
+        residenceCode = residenceCode ?: "",
         citySe = address?.postOfficeSe ?: "",
         nationalities = nationalities,
         nativeLanguage = nativeLanguage,

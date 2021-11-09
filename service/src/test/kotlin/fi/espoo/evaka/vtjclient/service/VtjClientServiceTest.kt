@@ -297,6 +297,7 @@ class VtjClientServiceTest {
         streetAddress = streetAddress,
         postOffice = postalOffice,
         postalCode = postalCode,
+        residenceCode = "",
         restrictedDetailsEnabled = false,
         restrictedDetailsEndDate = null
     )

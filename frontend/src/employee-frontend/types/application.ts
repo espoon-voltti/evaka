@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Decision } from './decision'
-import { PersonDetails } from './person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
@@ -14,7 +14,7 @@ import { UUID } from 'lib-common/types'
 export interface ApplicationResponse {
   application: ApplicationDetails
   decisions: Decision[]
-  guardians: PersonDetails[]
+  guardians: PersonJSON[]
   attachments: ApplicationAttachment[]
 }
 

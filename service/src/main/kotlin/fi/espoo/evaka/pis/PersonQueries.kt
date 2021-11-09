@@ -60,12 +60,12 @@ private val personSortColumns =
 
 data class PersonSummary(
     val id: UUID,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate?,
     val socialSecurityNumber: String?,
-    val streetAddress: String?,
+    val streetAddress: String,
     val restrictedDetailsEnabled: Boolean
 )
 

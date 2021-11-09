@@ -89,9 +89,9 @@ class VoucherValueDecisionService(
                 language = lang,
                 firstName = decision.headOfFamily.firstName,
                 lastName = decision.headOfFamily.lastName,
-                streetAddress = decision.headOfFamily.streetAddress!!,
-                postalCode = decision.headOfFamily.postalCode!!,
-                postOffice = decision.headOfFamily.postOffice!!,
+                streetAddress = decision.headOfFamily.streetAddress,
+                postalCode = decision.headOfFamily.postalCode,
+                postOffice = decision.headOfFamily.postOffice,
                 ssn = decision.headOfFamily.ssn!!,
                 messageHeader = messageHeader,
                 messageContent = messageContent

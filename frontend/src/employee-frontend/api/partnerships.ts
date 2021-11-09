@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { Partnership } from '../types/fridge'
+import { Partnership } from 'lib-common/generated/api-types/pis'
 import { client } from './client'
-import { deserializePersonDetails } from '../types/person'
+import { deserializePersonJSON } from '../types/person'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -23,7 +23,7 @@ export async function getPartnerships(
         ...data,
         startDate: LocalDate.parseIso(data.startDate),
         endDate: LocalDate.parseNullableIso(data.endDate),
-        partners: data.partners.map(deserializePersonDetails)
+        partners: data.partners.map(deserializePersonJSON)
       }))
     )
     .then((v) => Success.of(v))
@@ -49,7 +49,7 @@ export async function addPartnership(
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseNullableIso(data.endDate),
-      partners: data.partners.map(deserializePersonDetails)
+      partners: data.partners.map(deserializePersonJSON)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -72,7 +72,7 @@ export async function updatePartnership(
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseNullableIso(data.endDate),
-      partners: data.partners.map(deserializePersonDetails)
+      partners: data.partners.map(deserializePersonJSON)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { Parentship } from '../types/fridge'
+import { Parentship } from 'lib-common/generated/api-types/pis'
 import { client } from './client'
-import { deserializePersonDetails } from '../types/person'
+import { deserializePersonJSON } from '../types/person'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -24,8 +24,8 @@ async function getParentships(
         ...data,
         startDate: LocalDate.parseIso(data.startDate),
         endDate: LocalDate.parseIso(data.endDate),
-        headOfChild: deserializePersonDetails(data.headOfChild),
-        child: deserializePersonDetails(data.child)
+        headOfChild: deserializePersonJSON(data.headOfChild),
+        child: deserializePersonJSON(data.child)
       }))
     )
     .then((v) => Success.of(v))
@@ -63,8 +63,8 @@ export async function addParentship(
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseIso(data.endDate),
-      headOfChild: deserializePersonDetails(data.headOfChild),
-      child: deserializePersonDetails(data.child)
+      headOfChild: deserializePersonJSON(data.headOfChild),
+      child: deserializePersonJSON(data.child)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -86,8 +86,8 @@ export async function updateParentship(
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseIso(data.endDate),
-      headOfChild: deserializePersonDetails(data.headOfChild),
-      child: deserializePersonDetails(data.child)
+      headOfChild: deserializePersonJSON(data.headOfChild),
+      child: deserializePersonJSON(data.child)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

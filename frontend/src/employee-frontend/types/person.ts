@@ -2,91 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
-export interface PersonIdentity {
-  id: UUID
-  socialSecurityNumber: string | null
-}
-
-export interface PersonDetails {
-  id: UUID
-  socialSecurityNumber: string | null
-  ssnAddingDisabled: boolean
-  firstName: string | null
-  lastName: string | null
-  email: string | null
-  phone: string | null
-  backupPhone: string
-  language: string | null
-  dateOfBirth: LocalDate
-  dateOfDeath: LocalDate | null
-  streetAddress: string | null
-  postOffice: string | null
-  postalCode: string | null
-  residenceCode: string | null
-  restrictedDetailsEnabled: boolean
-  invoiceRecipientName: string
-  invoicingStreetAddress: string
-  invoicingPostalCode: string
-  invoicingPostOffice: string
-  forceManualFeeDecisions: boolean
-  ophPersonOid: string | null
-}
-
-export const deserializePersonDetails = (
-  data: JsonOf<PersonDetails>
-): PersonDetails => ({
+export const deserializePersonJSON = (
+  data: JsonOf<PersonJSON>
+): PersonJSON => ({
   ...data,
   dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
   dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath)
 })
-
-export interface DependantAddress {
-  origin: string
-  streetAddress: string
-  postalCode: string
-  city: string
-}
-
-export interface Nationality {
-  countyName: string
-  countryCode: string
-}
-
-export interface Language {
-  languageName: string
-  code: string
-}
-
-export interface RestrictedDetails {
-  enabled: boolean
-  endDate: LocalDate | null
-}
-
-interface PersonDependantChild {
-  id: UUID
-  socialSecurityNumber: string
-  dateOfBirth: LocalDate
-  firstName: string
-  lastName: string
-  addresses: DependantAddress[]
-  nationalities: Nationality[]
-  nativeLanguage: Language | null
-  restrictedDetails: RestrictedDetails
-  source: string
-}
-
-export interface PersonWithChildren extends PersonDependantChild {
-  children: PersonDependantChild[]
-}
-
-export interface PersonContactInfo {
-  email: string | null
-  phone: string | null
-}
 
 export type SearchColumn =
   | 'last_name,first_name'

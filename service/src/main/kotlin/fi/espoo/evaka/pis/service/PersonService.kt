@@ -65,15 +65,15 @@ class PersonService(
     private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&
             !person1.restrictedDetailsEnabled && !person2.restrictedDetailsEnabled &&
-            !person1.residenceCode.isNullOrBlank() && !person2.residenceCode.isNullOrBlank() &&
+            person1.residenceCode.isNotBlank() && person2.residenceCode.isNotBlank() &&
             person1.residenceCode == person2.residenceCode
     }
 
     private fun personsHaveSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&
             !person1.restrictedDetailsEnabled && !person2.restrictedDetailsEnabled &&
-            !person1.streetAddress.isNullOrBlank() && !person2.streetAddress.isNullOrBlank() &&
-            !person1.postalCode.isNullOrBlank() && !person2.postalCode.isNullOrBlank() &&
+            person1.streetAddress.isNotBlank() && person2.streetAddress.isNotBlank() &&
+            person1.postalCode.isNotBlank() && person2.postalCode.isNotBlank() &&
             person1.streetAddress.lowercase() == person2.streetAddress.lowercase() &&
             person1.postalCode == person2.postalCode
     }
@@ -213,7 +213,7 @@ class PersonService(
             firstName = person.firstName,
             lastName = person.lastName,
             email = null,
-            phone = null,
+            phone = "",
             backupPhone = "",
             language = person.nativeLanguage?.toString(),
             dateOfBirth = person.dateOfBirth,
@@ -240,18 +240,22 @@ class PersonService(
                 enabled = person.restrictedDetailsEnabled,
                 endDate = person.restrictedDetailsEndDate
             ),
-            addresses = if (hasAddress(person) && !hasRestriction(person)) {
-                setOf(
-                    PersonAddressDTO(
-                        origin = PersonAddressDTO.Origin.VTJ,
-                        streetAddress = person.streetAddress,
-                        postalCode = person.postalCode,
-                        city = person.city,
-                        residenceCode = person.residenceCode
-                    )
+            address = if (hasAddress(person) && !hasRestriction(person)) {
+                PersonAddressDTO(
+                    origin = PersonAddressDTO.Origin.VTJ,
+                    streetAddress = person.streetAddress,
+                    postalCode = person.postalCode,
+                    city = person.city,
+                    residenceCode = person.residenceCode
                 )
             } else {
-                emptySet()
+                PersonAddressDTO(
+                    origin = PersonAddressDTO.Origin.VTJ,
+                    streetAddress = "",
+                    postalCode = "",
+                    city = "",
+                    residenceCode = ""
+                )
             },
             residenceCode = person.residenceCode,
             children = person.children.map(::toPersonWithChildrenDTO)
@@ -261,8 +265,8 @@ class PersonService(
         PersonWithChildrenDTO(
             id = person.id,
             socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.toString(),
-            firstName = person.firstName ?: "",
-            lastName = person.lastName ?: "",
+            firstName = person.firstName,
+            lastName = person.lastName,
             dateOfBirth = person.dateOfBirth,
             dateOfDeath = person.dateOfDeath,
             nationalities = emptySet(),
@@ -270,14 +274,12 @@ class PersonService(
             restrictedDetails = RestrictedDetails(
                 enabled = false
             ),
-            addresses = setOf(
-                PersonAddressDTO(
-                    origin = PersonAddressDTO.Origin.EVAKA,
-                    streetAddress = person.streetAddress ?: "",
-                    postalCode = person.postalCode ?: "",
-                    city = person.postOffice ?: "",
-                    residenceCode = person.residenceCode
-                )
+            address = PersonAddressDTO(
+                origin = PersonAddressDTO.Origin.EVAKA,
+                streetAddress = person.streetAddress,
+                postalCode = person.postalCode,
+                city = person.postOffice,
+                residenceCode = person.residenceCode
             ),
             residenceCode = person.residenceCode,
             children = emptyList()
@@ -297,18 +299,18 @@ data class PersonDTO(
     val id: UUID,
     val identity: ExternalIdentifier,
     val ssnAddingDisabled: Boolean,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val email: String?,
-    val phone: String?,
-    val backupPhone: String = "",
+    val phone: String,
+    val backupPhone: String,
     val language: String?,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
-    val streetAddress: String? = "",
-    val postalCode: String? = "",
-    val postOffice: String? = "",
-    val residenceCode: String? = "",
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val residenceCode: String,
     val nationalities: List<String> = emptyList(),
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
@@ -324,8 +326,8 @@ data class PersonDTO(
 ) {
     fun toVtjPersonDTO() = VtjPersonDTO(
         id = this.id,
-        firstName = this.firstName ?: "",
-        lastName = this.lastName ?: "",
+        firstName = this.firstName,
+        lastName = this.lastName,
         dateOfBirth = this.dateOfBirth,
         dateOfDeath = this.dateOfDeath,
         socialSecurityNumber = this.identity.toString(),
@@ -334,9 +336,9 @@ data class PersonDTO(
         nativeLanguage = NativeLanguage(
             code = this.language ?: ""
         ),
-        streetAddress = this.streetAddress ?: "",
-        postalCode = this.postalCode ?: "",
-        city = this.postOffice ?: "",
+        streetAddress = this.streetAddress,
+        postalCode = this.postalCode,
+        city = this.postOffice,
         streetAddressSe = "",
         citySe = "",
         residenceCode = this.residenceCode
@@ -363,18 +365,18 @@ data class PersonJSON(
     val id: UUID,
     val socialSecurityNumber: String? = null,
     val ssnAddingDisabled: Boolean,
-    val firstName: String? = null,
-    val lastName: String? = null,
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String? = null,
-    val phone: String? = null,
+    val phone: String = "",
     val backupPhone: String = "",
     val language: String? = null,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
-    val streetAddress: String? = null,
-    val postOffice: String? = null,
-    val postalCode: String? = null,
-    val residenceCode: String? = null,
+    val streetAddress: String = "",
+    val postOffice: String = "",
+    val postalCode: String = "",
+    val residenceCode: String = "",
     val restrictedDetailsEnabled: Boolean = false,
     val invoiceRecipientName: String = "",
     val invoicingStreetAddress: String = "",
@@ -447,8 +449,8 @@ data class PersonWithChildrenDTO(
     val dateOfDeath: LocalDate?,
     val firstName: String,
     val lastName: String,
-    val addresses: Set<PersonAddressDTO> = emptySet(),
-    val residenceCode: String?,
+    val address: PersonAddressDTO,
+    val residenceCode: String,
     val children: List<PersonWithChildrenDTO>,
     val nationalities: Set<Nationality>,
     val nativeLanguage: NativeLanguage?,
@@ -466,14 +468,15 @@ data class PersonWithChildrenDTO(
         firstName = firstName,
         lastName = lastName,
         residenceCode = residenceCode,
-        streetAddress = addresses.firstOrNull()?.streetAddress,
-        postalCode = addresses.firstOrNull()?.postalCode,
-        postOffice = addresses.firstOrNull()?.city,
+        streetAddress = address.streetAddress,
+        postalCode = address.postalCode,
+        postOffice = address.city,
         restrictedDetailsEnabled = restrictedDetails.enabled,
         restrictedDetailsEndDate = restrictedDetails.endDate,
         language = nativeLanguage?.code,
         email = null,
-        phone = null
+        phone = "",
+        backupPhone = ""
     )
 }
 
@@ -482,7 +485,7 @@ data class PersonAddressDTO(
     val streetAddress: String,
     val postalCode: String,
     val city: String,
-    val residenceCode: String?
+    val residenceCode: String
 ) {
     enum class Origin {
         VTJ, MUNICIPAL, EVAKA
@@ -566,7 +569,7 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO = PersonD
     dateOfBirth = inputPerson.dateOfBirth,
     dateOfDeath = inputPerson.dateOfDeath,
     email = null,
-    phone = null,
+    phone = "",
     backupPhone = ""
 )
 

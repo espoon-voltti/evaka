@@ -12,7 +12,7 @@ import { Label } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
-import { CreatePersonBody } from '../../api/person'
+import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 
 interface Props {
   createPersonInfo: Partial<CreatePersonBody>

@@ -17,9 +17,9 @@ import { UUID } from '../../types'
 */
 export interface ChildBasics {
   dateOfBirth: LocalDate
-  firstName: string | null
+  firstName: string
   id: UUID
-  lastName: string | null
+  lastName: string
   socialSecurityNumber: string | null
 }
 

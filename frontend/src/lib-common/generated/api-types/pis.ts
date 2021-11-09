@@ -51,7 +51,7 @@ export interface CreatePersonBody {
   email: string | null
   firstName: string
   lastName: string
-  phone: string | null
+  phone: string
   postOffice: string
   postalCode: string
   streetAddress: string
@@ -134,12 +134,12 @@ export interface EmployeeWithDaycareRoles {
 * Generated from fi.espoo.evaka.pis.FamilyContact
 */
 export interface FamilyContact {
-  backupPhone: string | null
+  backupPhone: string
   email: string | null
-  firstName: string | null
+  firstName: string
   id: UUID
-  lastName: string | null
-  phone: string | null
+  lastName: string
+  phone: string
   postOffice: string
   postalCode: string
   priority: number | null
@@ -301,7 +301,7 @@ export interface PersonAddressDTO {
   city: string
   origin: Origin
   postalCode: string
-  residenceCode: string | null
+  residenceCode: string
   streetAddress: string
 }
 
@@ -321,7 +321,7 @@ export interface PersonJSON {
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
   email: string | null
-  firstName: string | null
+  firstName: string
   forceManualFeeDecisions: boolean
   id: UUID
   invoiceRecipientName: string
@@ -329,16 +329,16 @@ export interface PersonJSON {
   invoicingPostalCode: string
   invoicingStreetAddress: string
   language: string | null
-  lastName: string | null
+  lastName: string
   ophPersonOid: string | null
-  phone: string | null
-  postOffice: string | null
-  postalCode: string | null
-  residenceCode: string | null
+  phone: string
+  postOffice: string
+  postalCode: string
+  residenceCode: string
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
   ssnAddingDisabled: boolean
-  streetAddress: string | null
+  streetAddress: string
 }
 
 /**
@@ -355,19 +355,19 @@ export interface PersonResponse {
 export interface PersonSummary {
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
-  firstName: string | null
+  firstName: string
   id: UUID
-  lastName: string | null
+  lastName: string
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
-  streetAddress: string | null
+  streetAddress: string
 }
 
 /**
 * Generated from fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 */
 export interface PersonWithChildrenDTO {
-  addresses: PersonAddressDTO[]
+  address: PersonAddressDTO
   children: PersonWithChildrenDTO[]
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
@@ -376,7 +376,7 @@ export interface PersonWithChildrenDTO {
   lastName: string
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
-  residenceCode: string | null
+  residenceCode: string
   restrictedDetails: RestrictedDetails
   socialSecurityNumber: string | null
 }

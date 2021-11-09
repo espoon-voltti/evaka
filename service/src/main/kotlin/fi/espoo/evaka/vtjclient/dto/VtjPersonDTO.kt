@@ -21,12 +21,12 @@ data class VtjPersonDTO(
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate?,
 
-    val streetAddress: String = "",
-    val postalCode: String = "",
+    val streetAddress: String,
+    val postalCode: String,
 
     // TODO: this should be postOffice
-    val city: String = "",
-    val residenceCode: String? = "",
+    val city: String,
+    val residenceCode: String,
 
     val children: List<VtjPersonDTO> = listOf(),
     val guardians: List<VtjPersonDTO> = listOf(),
@@ -34,6 +34,6 @@ data class VtjPersonDTO(
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
 
-    val streetAddressSe: String = "",
-    val citySe: String = ""
+    val streetAddressSe: String,
+    val citySe: String
 )

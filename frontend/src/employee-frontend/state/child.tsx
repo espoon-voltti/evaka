@@ -12,8 +12,7 @@ import {
   ChildBackupCare
 } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
-import { PersonDetails } from '../types/person'
-import { Parentship } from '../types/fridge'
+import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
@@ -25,8 +24,8 @@ import {
 } from 'lib-common/generated/api-types/serviceneed'
 
 export interface ChildState {
-  person: Result<PersonDetails>
-  setPerson: (request: Result<PersonDetails>) => void
+  person: Result<PersonJSON>
+  setPerson: (request: Result<PersonJSON>) => void
   permittedActions: Set<Action.Child | Action.Person>
   setPermittedActions: (r: Set<Action.Child | Action.Person>) => void
   serviceNeeds: Result<ServiceNeed[]>
@@ -47,8 +46,8 @@ export interface ChildState {
   setParentships: (request: Result<Parentship[]>) => void
   backupCares: Result<ChildBackupCare[]>
   setBackupCares: (request: Result<ChildBackupCare[]>) => void
-  guardians: Result<PersonDetails[]>
-  setGuardians: (request: Result<PersonDetails[]>) => void
+  guardians: Result<PersonJSON[]>
+  setGuardians: (request: Result<PersonJSON[]>) => void
   applications: Result<PersonApplicationSummary[]>
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
   recipients: Result<Recipient[]>
@@ -101,9 +100,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
 }: {
   children: JSX.Element
 }) {
-  const [person, setPerson] = useState<Result<PersonDetails>>(
-    defaultState.person
-  )
+  const [person, setPerson] = useState<Result<PersonJSON>>(defaultState.person)
   const [permittedActions, setPermittedActions] = useState(
     defaultState.permittedActions
   )
@@ -134,7 +131,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [backupCares, setBackupCares] = useState<Result<ChildBackupCare[]>>(
     defaultState.backupCares
   )
-  const [guardians, setGuardians] = useState<Result<PersonDetails[]>>(
+  const [guardians, setGuardians] = useState<Result<PersonJSON[]>>(
     defaultState.guardians
   )
   const [applications, setApplications] = useState<

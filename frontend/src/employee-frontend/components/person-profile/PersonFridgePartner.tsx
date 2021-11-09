@@ -13,14 +13,14 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Partnership } from '../../types/fridge'
+import { Partnership } from 'lib-common/generated/api-types/pis'
 import * as _ from 'lodash'
 import { UIContext } from '../../state/ui'
 import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
 import { faQuestion, faUser } from 'lib-icons'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import {
   getPartnerships,
   removePartnership,
@@ -126,7 +126,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
         ).map((fridgePartner: Partnership, i: number) => {
           return fridgePartner.partners
             .filter((p) => p.id !== id)
-            .map((partner: PersonDetails) => {
+            .map((partner: PersonJSON) => {
               return (
                 <Tr
                   key={`${partner.id}-${i}`}

@@ -43,13 +43,13 @@ export interface Detailed {
   invoicingStreetAddress: string
   language: string | null
   lastName: string
-  phone: string | null
-  postOffice: string | null
-  postalCode: string | null
-  residenceCode: string | null
+  phone: string
+  postOffice: string
+  postalCode: string
+  residenceCode: string
   restrictedDetailsEnabled: boolean
   ssn: string | null
-  streetAddress: string | null
+  streetAddress: string
 }
 
 /**

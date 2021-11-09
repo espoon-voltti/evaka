@@ -87,8 +87,8 @@ class VtjController(private val personService: PersonService, private val access
         companion object {
             fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails = CitizenUserDetails(
                 id = person.id,
-                firstName = person.firstName ?: "",
-                lastName = person.lastName ?: "",
+                firstName = person.firstName,
+                lastName = person.lastName,
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                 children = emptyList(),
                 accessibleFeatures = accessibleFeatures

@@ -385,11 +385,11 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
     return if (person != null) {
         ChildSensitiveInformation(
             id = person.id,
-            firstName = person.firstName ?: "",
-            lastName = person.lastName ?: "",
+            firstName = person.firstName,
+            lastName = person.lastName,
             preferredName = child?.additionalInformation?.preferredName ?: "",
             ssn = person.identity.toString(),
-            childAddress = person.streetAddress ?: "",
+            childAddress = person.streetAddress,
             placementTypes = placementTypes,
             allergies = child?.additionalInformation?.allergies ?: "",
             diet = child?.additionalInformation?.diet ?: "",
@@ -397,10 +397,10 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
             contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
                 ContactInfo(
                     id = it.id.toString(),
-                    firstName = it.firstName ?: "",
-                    lastName = it.lastName ?: "",
-                    phone = it.phone ?: "",
-                    backupPhone = it.backupPhone ?: "",
+                    firstName = it.firstName,
+                    lastName = it.lastName,
+                    phone = it.phone,
+                    backupPhone = it.backupPhone,
                     email = it.email ?: "",
                     priority = it.priority
                 )

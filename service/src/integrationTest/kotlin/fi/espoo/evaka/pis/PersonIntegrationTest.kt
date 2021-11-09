@@ -45,7 +45,12 @@ class PersonIntegrationTest : PureJdbiTest() {
                     lastName = "Meikäläinen",
                     email = "matti.meikalainen@example.com",
                     phone = "1234567890",
-                    language = "fi"
+                    backupPhone = "",
+                    language = "fi",
+                    streetAddress = "",
+                    postalCode = "",
+                    postOffice = "",
+                    residenceCode = ""
                 )
             )
         }

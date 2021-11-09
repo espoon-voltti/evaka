@@ -8,12 +8,12 @@ import * as _ from 'lodash'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext, ChildState } from '../../state/child'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
 import { H3 } from 'lib-components/typography'
 import { renderResult } from '../async-rendering'
+import { Parentship } from 'lib-common/generated/api-types/pis'
 
 const FridgeParents = React.memo(function FridgeParents() {
   const { i18n } = useTranslation()

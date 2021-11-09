@@ -8,7 +8,6 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { Partnership } from '../../../types/fridge'
 import { Loading, Result } from 'lib-common/api'
 import { faPen, faUser } from 'lib-icons'
 import { formatName } from '../../../utils'
@@ -20,7 +19,7 @@ import {
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
 import { getPerson } from '../../../api/person'
 import { UUID } from 'lib-common/types'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
 
 interface Props {
   headPersonId: UUID

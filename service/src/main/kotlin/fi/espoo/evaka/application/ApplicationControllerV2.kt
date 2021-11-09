@@ -369,21 +369,21 @@ class ApplicationControllerV2(
                     placementUnitName = placementUnitName,
                     unit = unit,
                     guardian = GuardianInfo(
-                        firstName = applicationGuardian.firstName ?: "",
-                        lastName = applicationGuardian.lastName ?: "",
+                        firstName = applicationGuardian.firstName,
+                        lastName = applicationGuardian.lastName,
                         ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
                         isVtjGuardian = applicationGuardianIsVtjGuardian
                     ),
                     child = ChildInfo(
-                        firstName = child.firstName ?: "",
-                        lastName = child.lastName ?: "",
+                        firstName = child.firstName,
+                        lastName = child.lastName,
                         ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
                     ),
                     otherGuardian = otherGuardian?.let {
                         GuardianInfo(
                             id = it.id,
-                            firstName = it.firstName ?: "",
-                            lastName = it.lastName ?: "",
+                            firstName = it.firstName,
+                            lastName = it.lastName,
                             ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
                             isVtjGuardian = true
                         )

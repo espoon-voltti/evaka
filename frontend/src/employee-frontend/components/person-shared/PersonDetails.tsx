@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { faPen } from 'lib-icons'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { useTranslation } from '../../state/i18n'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -45,9 +45,9 @@ const PostalCodeAndOffice = styled.div`
 `
 
 interface Props {
-  person: PersonDetails
+  person: PersonJSON
   isChild: boolean
-  onUpdateComplete: (data: PersonDetails) => void
+  onUpdateComplete: (data: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
 }
 
