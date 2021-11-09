@@ -95,8 +95,9 @@ const PinLoginForm = React.memo(function PinLoginForm() {
       <Gap />
       <form onSubmit={submit}>
         <FixedSpaceColumn>
-          <Label>{i18n.pin.staff}</Label>
+          <Label htmlFor="employee">{i18n.pin.staff}</Label>
           <Select
+            id="employee"
             items={employeeOptions}
             selectedItem={employee}
             onChange={selectEmployee}
@@ -105,12 +106,15 @@ const PinLoginForm = React.memo(function PinLoginForm() {
             data-qa="select-staff"
           />
 
-          <Label>{i18n.pin.pinCode}</Label>
+          <Label htmlFor="pin">{i18n.pin.pinCode}</Label>
           <PlainPinInput
-            pin={pin}
+            id="pin"
+            value={pin}
             onChange={setPin}
             info={error ? { text: error, status: 'warning' } : undefined}
           />
+
+          <Gap size="s" />
 
           <Button
             primary

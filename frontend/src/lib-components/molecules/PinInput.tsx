@@ -9,7 +9,8 @@ import styled from 'styled-components'
 import InputField, {
   InputFieldUnderRow,
   InputInfo,
-  StyledInput
+  StyledInput,
+  TextInputProps
 } from '../atoms/form/InputField'
 import UnderRowStatusIcon from '../atoms/StatusIcon'
 import { fontWeights } from '../typography'
@@ -124,29 +125,23 @@ export const PinInput = React.memo(function PinInput({
   )
 })
 
-interface PlainPinInputProps {
-  pin: string
-  onChange: (code: string) => void
-  info?: InputInfo
-  inputRef?: RefObject<HTMLInputElement>
-}
-export const PlainPinInput = React.memo(function PlainPinInput({
-  info,
-  inputRef,
-  onChange,
-  pin
-}: PlainPinInputProps) {
+type PlainPinInputProps = Pick<
+  TextInputProps,
+  'id' | 'info' | 'onChange' | 'value'
+>
+
+export const PlainPinInput = React.memo(function PlainPinInput(
+  props: PlainPinInputProps
+) {
   return (
     <InputField
+      autoComplete="off"
       data-qa="pin-input"
       type="password"
       inputMode="numeric"
       width="s"
       maxLength={4}
-      onChange={onChange}
-      value={pin}
-      info={info}
-      inputRef={inputRef}
+      {...props}
     />
   )
 })
