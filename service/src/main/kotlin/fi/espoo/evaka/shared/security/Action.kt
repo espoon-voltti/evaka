@@ -303,6 +303,7 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class MessageContent(private val roles: EnumSet<UserRole>) : ScopedAction<MessageContentId> {
+        READ_RECEIVED_MESSAGES(MOBILE)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

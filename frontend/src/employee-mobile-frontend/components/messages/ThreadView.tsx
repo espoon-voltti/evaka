@@ -18,13 +18,17 @@ import { faArrowLeft, faArrowRight } from 'lib-icons'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { useTranslation } from '../../state/i18n'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
+import { UUID } from 'lib-common/types'
 
 interface ThreadViewProps {
+  accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
 export const ThreadView = React.memo(function ThreadView({
+  accountId,
   thread: { id: threadId, messages, title },
   onBack
 }: ThreadViewProps) {
@@ -38,15 +42,17 @@ export const ThreadView = React.memo(function ThreadView({
     [setReplyContent, threadId]
   )
 
+  const { recipients } = useRecipients(messages, accountId)
+
   const onSubmitReply = () => {
     replyContent.length > 0 &&
       selectedAccount?.id &&
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
-        recipientAccountIds: messages
-          .slice(-1)[0]
-          .recipients.map((item) => item.id),
+        recipientAccountIds: recipients
+          .filter((r) => r.selected)
+          .map((r) => r.id),
         accountId: selectedAccount.id
       })
   }
@@ -54,7 +60,7 @@ export const ThreadView = React.memo(function ThreadView({
   const replyContent = getReplyContent(threadId)
 
   return (
-    <ThreadViewMobile>
+    <ThreadViewMobile data-qa={'thread-view-mobile'}>
       <ThreadViewTopbar onClick={onBack}>
         <FontAwesomeIcon
           icon={faArrowLeft}
@@ -73,10 +79,12 @@ export const ThreadView = React.memo(function ThreadView({
           className={'thread-view-input'}
           wrapperClassName={'thread-view-input-wrapper'}
           placeholder={i18n.messages.inputPlaceholder}
+          data-qa={'thread-reply-input'}
         />
         <RoundIconButton
           onClick={onSubmitReply}
           disabled={replyContent.length === 0}
+          data-qa={'thread-reply-button'}
         >
           <FontAwesomeIcon icon={faArrowRight} />
         </RoundIconButton>
@@ -87,12 +95,12 @@ export const ThreadView = React.memo(function ThreadView({
 
 function SingleMessage({ message }: { message: Message }) {
   return (
-    <MessageContainer ours={false}>
+    <MessageContainer ours={false} data-qa={'single-message'}>
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatTime(message.sentAt)}</SentDate>
       </TitleRow>
-      <MessageContent data-qa="thread-reader-content">
+      <MessageContent data-qa="single-message-content">
         {message.content}
       </MessageContent>
     </MessageContainer>

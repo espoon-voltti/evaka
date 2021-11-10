@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
-import TopBar from '../common/TopBar'
 import { UnitContext } from '../../state/unit'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
@@ -16,6 +15,7 @@ import BottomNavBar from '../common/BottomNavbar'
 import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { HeaderContainer, MessagePreview } from './MessagePreview'
+import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
 export default function MessagesPage() {
   const history = useHistory()
   const { unitId, groupId: groupIdOrAll } = useParams<{
@@ -54,15 +54,14 @@ export default function MessagesPage() {
 
   return renderResult(unitInfoResponse, (unit) => (
     <>
-      {!selectedThread ? (
+      {!(selectedThread && selectedAccount) ? (
         <>
-          <TopBar
-            unitName={unit.name}
+          <TopBarWithGroupSelector
+            title={unit.name}
             selectedGroup={selectedGroup}
             onChangeGroup={changeGroup}
           />
           <ContentArea opaque fullHeight paddingHorizontal={'zero'}>
-            {selectedAccount?.name ?? 'no accounts bro'}
             <HeaderContainer>
               <H1>{i18n.messages.title}</H1>
             </HeaderContainer>
@@ -91,6 +90,7 @@ export default function MessagesPage() {
           paddingVertical={'zero'}
         >
           <ThreadView
+            accountId={selectedAccount.id}
             thread={selectedThread}
             onBack={() => selectThread(undefined)}
           />

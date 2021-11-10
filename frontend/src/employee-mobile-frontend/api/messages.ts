@@ -35,12 +35,11 @@ export async function getMessagingAccounts(
     .catch((e) => Failure.fromError(e))
 }
 
-// todo unitId not needed after we implement proper authentication mechanism
-export async function getUnreadCounts(
-  unitId: UUID
-): Promise<Result<UnreadCountByAccount[]>> {
+export async function getUnreadCounts(): Promise<
+  Result<UnreadCountByAccount[]>
+> {
   return client
-    .get<JsonOf<UnreadCountByAccount[]>>(`/messages/mobile/unread/${unitId}`)
+    .get<JsonOf<UnreadCountByAccount[]>>(`/messages/unread`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
@@ -51,12 +50,9 @@ export async function getReceivedMessages(
   pageSize: number
 ): Promise<Result<Paged<MessageThread>>> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>(
-      `/messages/mobile/${accountId}/received`,
-      {
-        params: { page, pageSize }
-      }
-    )
+    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
+      params: { page, pageSize }
+    })
     .then(({ data }) =>
       Success.of({
         ...data,
@@ -77,13 +73,10 @@ export async function replyToThread({
   recipientAccountIds
 }: ReplyToThreadParams): Promise<Result<ThreadReply>> {
   return client
-    .post<JsonOf<ThreadReply>>(
-      `/messages/mobile/${accountId}/${messageId}/reply`,
-      {
-        content,
-        recipientAccountIds
-      }
-    )
+    .post<JsonOf<ThreadReply>>(`/messages/${accountId}/${messageId}/reply`, {
+      content,
+      recipientAccountIds
+    })
     .then(({ data }) => Success.of(deserializeReplyResponse(data)))
     .catch((e) => Failure.fromError(e))
 }
@@ -93,7 +86,7 @@ export async function markThreadRead(
   id: UUID
 ): Promise<Result<void>> {
   return client
-    .put(`/messages/mobile/${accountId}/threads/${id}/read`)
+    .put(`/messages/${accountId}/threads/${id}/read`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -103,7 +96,7 @@ export async function deleteDraft(
   draftId: UUID
 ): Promise<Result<void>> {
   return client
-    .delete(`/messages/mobile/${accountId}/drafts/${draftId}`)
+    .delete(`/messages/${accountId}/drafts/${draftId}`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -113,14 +106,14 @@ export async function postMessage(
   body: PostMessageBody
 ): Promise<Result<void>> {
   return client
-    .post(`/messages/mobile/${accountId}`, body)
+    .post(`/messages/${accountId}`, body)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
 
 export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
   return client
-    .post<UUID>(`/messages/mobile/${accountId}/drafts`)
+    .post<UUID>(`/messages/${accountId}/drafts`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
@@ -131,7 +124,7 @@ export async function saveDraft({
   content
 }: SaveDraftParams): Promise<Result<void>> {
   return client
-    .put(`/messages/mobile/${accountId}/drafts/${draftId}`, content)
+    .put(`/messages/${accountId}/drafts/${draftId}`, content)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -140,7 +133,7 @@ export async function getReceivers(
   unitId: UUID
 ): Promise<Result<MessageReceiversResponse[]>> {
   return client
-    .get<JsonOf<MessageReceiversResponse[]>>('/messages/mobile/receivers', {
+    .get<JsonOf<MessageReceiversResponse[]>>('/messages/receivers', {
       params: { unitId }
     })
     .then((res) =>

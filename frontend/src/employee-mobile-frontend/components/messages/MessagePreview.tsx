@@ -31,7 +31,7 @@ export function MessagePreview({
     <MessagePreviewContainer
       isRead={!hasUnreadMessages}
       active={false}
-      data-qa="thread-list-item"
+      data-qa="message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>

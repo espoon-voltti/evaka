@@ -122,7 +122,7 @@ export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
-    const { loggedIn } = useContext(UserContext)
+    const { user, loggedIn } = useContext(UserContext)
     const { unitInfoResponse } = useContext(UnitContext)
 
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
@@ -180,9 +180,15 @@ export const MessageContextProvider = React.memo(
       setUnreadCountsByAccount
     )
 
+    const userHasPin = !!(
+      user.isSuccess && user.map((item) => item?.employeeId).getOrElse(false)
+    )
+
     useEffect(() => {
-      loggedIn && unitId ? loadUnreadCounts(unitId) : null
-    }, [loadUnreadCounts, loggedIn, unitId])
+      loggedIn && userHasPin && user.map((item) => item?.employeeId) && unitId
+        ? loadUnreadCounts()
+        : null
+    }, [loadUnreadCounts, userHasPin, loggedIn, unitId])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>

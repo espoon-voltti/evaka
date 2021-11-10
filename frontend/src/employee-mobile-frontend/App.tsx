@@ -207,11 +207,11 @@ function MessagesRouter() {
   return (
     <MessageContextProvider>
       <Switch>
-        <Route exact path={path} component={MessagesPage} />
+        <Route exact path={path} component={requirePinAuth(MessagesPage)} />
         <Route
           exact
           path={`${path}/:childId/new-message`}
-          component={MessageEditorPage}
+          component={requirePinAuth(MessageEditorPage)}
         />
         <Redirect to={path} />
       </Switch>

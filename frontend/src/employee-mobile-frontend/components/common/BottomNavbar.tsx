@@ -9,7 +9,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
@@ -93,15 +93,12 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   }>()
 
   const { unreadCountsByAccount, selectedAccount } = useContext(MessageContext)
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    if (!unreadCountsByAccount.isSuccess || !selectedAccount) return
-    const maybeAccount = unreadCountsByAccount.value.find(
-      ({ accountId }) => accountId === selectedAccount.id
-    )
-    if (maybeAccount) setUnreadCount(maybeAccount.unreadCount)
-  }, [unreadCountsByAccount, selectedAccount])
+  const unreadCount =
+    (unreadCountsByAccount.isSuccess && !!selectedAccount
+      ? unreadCountsByAccount.value.find(
+          ({ accountId }) => accountId === selectedAccount.id
+        )?.unreadCount
+      : null) || 0
 
   return (
     <>
@@ -138,7 +135,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
           </BottomText>
         </Button>
-        <Button>
+        <Button data-qa="bottomnav-messages">
           <BottomText
             text={i18n.common.messages}
             selected={selected === 'messages'}

@@ -17,7 +17,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.jdbi.v3.core.kotlin.mapTo
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -40,21 +41,10 @@ data class ReplyToMessageBody(
 @RequestMapping("/messages")
 class MessageController(
     private val acl: AccessControlList,
+    private val ac: AccessControl,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
-
-    // todo remove
-    fun Database.Read.getFakeUser(unitId: DaycareId) = this.createQuery(
-        """
-            SELECT employee_id FROM daycare_acl_view
-            WHERE role = 'UNIT_SUPERVISOR'
-            AND daycare_id = :unitId
-        """.trimIndent()
-    )
-        .bind("unitId", unitId)
-        .mapTo<UUID>()
-        .first()
 
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<NestedMessageAccount> {
@@ -63,18 +53,22 @@ class MessageController(
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
     }
 
-    // todo remove
     @GetMapping("/mobile/my-accounts/{unitId}")
     fun getAccountsByDevice(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): Set<NestedMessageAccount> {
-        val fakeUserId = db.read { it.getFakeUser(unitId) }
-        return db.read { it.getEmployeeNestedMessageAccounts(fakeUserId) }
+        Audit.MessagingMyAccountsRead.log()
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        return when (user) {
+            is AuthenticatedUser.MobileDevice ->
+                if (user.employeeId != null) db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
+                else setOf()
+            else -> setOf()
+        }
     }
 
-    // todo remove
     @GetMapping("/mobile/{accountId}/received")
     fun getReceivedMessagesByDevice(
         db: Database.Connection,
@@ -83,6 +77,8 @@ class MessageController(
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
+        Audit.MessagingReceivedMessagesRead.log(accountId)
+        ac.requirePermissionFor(user, Action.MessageContent.READ_RECEIVED_MESSAGES, accountId)
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
@@ -112,20 +108,6 @@ class MessageController(
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
 
-
-    // todo remove
-    @GetMapping("/mobile/unread/{unitId}")
-    fun getUnreadMessagesMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable unitId: DaycareId,
-    ): Set<UnreadCountByAccount> {
-        Audit.MessagingUnreadMessagesRead.log()
-        return db.read { tx ->
-            tx.getFakeUser(unitId).let { tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(it)) }
-        }
-    }
-
     @GetMapping("/unread")
     fun getUnreadMessages(
         db: Database.Connection,
@@ -133,7 +115,7 @@ class MessageController(
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(user.id)) }
+        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) }
     }
 
     data class PostMessageBody(
@@ -175,32 +157,6 @@ class MessageController(
         }
     }
 
-    // todo remove
-    @PostMapping("/mobile/{accountId}")
-    fun createMessageMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @RequestBody body: PostMessageBody,
-    ): List<MessageThreadId> {
-        val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
-
-        return db.transaction { tx ->
-            messageService.createMessageThreadsForRecipientGroups(
-                tx,
-                title = body.title,
-                content = body.content,
-                sender = accountId,
-                type = body.type,
-                recipientNames = body.recipientNames,
-                recipientGroups = groupedRecipients,
-                attachmentIds = body.attachmentIds,
-            ).also {
-                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
-            }
-        }
-    }
-
     @GetMapping("/{accountId}/drafts")
     fun getDrafts(
         db: Database.Connection,
@@ -223,16 +179,6 @@ class MessageController(
         return db.transaction { it.initDraft(accountId) }
     }
 
-    // todo remove
-    @PostMapping("/mobile/{accountId}/drafts")
-    fun initDraftMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-    ): MessageDraftId {
-        return db.transaction { it.initDraft(accountId) }
-    }
-
     @PutMapping("/{accountId}/drafts/{draftId}")
     fun upsertDraft(
         db: Database.Connection,
@@ -243,18 +189,6 @@ class MessageController(
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
         requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.upsertDraft(accountId, draftId, content) }
-    }
-
-    // todo remove
-    @PutMapping("/mobile/{accountId}/drafts/{draftId}")
-    fun upsertDraftMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable draftId: MessageDraftId,
-        @RequestBody content: UpsertableDraftContent,
-    ) {
         return db.transaction { it.upsertDraft(accountId, draftId, content) }
     }
 
@@ -270,39 +204,10 @@ class MessageController(
         return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
 
-    // todo remove
-    @DeleteMapping("/mobile/{accountId}/drafts/{draftId}")
-    fun deleteDraftMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable draftId: MessageDraftId,
-    ) {
-        return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
-    }
-
     data class ReplyToMessageBody(
         val content: String,
         val recipientAccountIds: Set<MessageAccountId>,
     )
-
-    // todo remove
-    @PostMapping("/mobile/{accountId}/{messageId}/reply")
-    fun replyToThreadMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
-    ): MessageService.ThreadReply {
-        return messageService.replyToThread(
-            db = db,
-            replyToMessageId = messageId,
-            senderAccount = accountId,
-            recipientAccountIds = body.recipientAccountIds,
-            content = body.content
-        )
-    }
 
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
@@ -322,17 +227,6 @@ class MessageController(
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
-    }
-
-    // todo remove
-    @PutMapping("/mobile/{accountId}/threads/{threadId}/read")
-    fun markThreadReadMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable threadId: MessageThreadId,
-    ) {
-        return db.transaction { it.markThreadRead(accountId, threadId) }
     }
 
     @PutMapping("/{accountId}/threads/{threadId}/read")
@@ -358,24 +252,18 @@ class MessageController(
             UserRole.ADMIN,
             UserRole.UNIT_SUPERVISOR,
             UserRole.STAFF,
-            UserRole.SPECIAL_EDUCATION_TEACHER
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            UserRole.MOBILE
         )
 
         return db.read { it.getReceiversForNewMessage(user.id, unitId) }
     }
 
-    // todo remove
-    @GetMapping("/mobile/receivers")
-    fun getReceiversForNewMessageMobile(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestParam unitId: DaycareId
-    ): List<MessageReceiversResponse> {
-        return db.read { it.getReceiversForNewMessage(user.id, unitId) }
-    }
-
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        when (user) {
+            is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden("Permission denied")
+            else -> user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        }
     }
 
     private fun requireMessageAccountAccess(
@@ -384,7 +272,7 @@ class MessageController(
         accountId: MessageAccountId
     ) {
         requireAuthorizedMessagingRole(user)
-        db.read { it.getEmployeeMessageAccountIds(user.id) }.find { it == accountId }
+        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
@@ -395,9 +283,14 @@ class MessageController(
     ) {
         db.read {
             it.isEmployeeAuthorizedToSendTo(
-                user.id,
+                getEmployeeId(user),
                 recipientAccountIds
             )
         } || throw Forbidden("Not authorized to send to the given recipients")
     }
+
+    fun getEmployeeId(user: AuthenticatedUser): UUID = when (user) {
+        is AuthenticatedUser.MobileDevice -> user.employeeId?.raw
+        else -> user.id
+    } ?: user.id
 }
