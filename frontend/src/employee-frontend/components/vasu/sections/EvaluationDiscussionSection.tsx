@@ -9,22 +9,23 @@ import { EvaluationDiscussionContent } from '../api'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Gap } from 'lib-components/white-space'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { useTranslation } from '../../../state/i18n'
 import { ReadOnlyValue } from '../components/ReadOnlyValue'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   sectionIndex: number
   content: EvaluationDiscussionContent
   setContent: Dispatch<SetStateAction<EvaluationDiscussionContent>>
+  translations: VasuTranslations
 }
 
 export function EditableEvaluationDiscussionSection({
   sectionIndex,
   content,
-  setContent
+  setContent,
+  translations
 }: Props) {
-  const { i18n } = useTranslation()
-  const t = i18n.vasu.staticSections.evaluationDiscussion
+  const t = translations.staticSections.evaluationDiscussion
   return (
     <ContentArea opaque>
       <H2>
@@ -101,10 +102,10 @@ export function EditableEvaluationDiscussionSection({
 
 export function EvaluationDiscussionSection({
   sectionIndex,
-  content
-}: Pick<Props, 'sectionIndex' | 'content'>) {
-  const { i18n } = useTranslation()
-  const t = i18n.vasu.staticSections.evaluationDiscussion
+  content,
+  translations
+}: Pick<Props, 'sectionIndex' | 'content' | 'translations'>) {
+  const t = translations.staticSections.evaluationDiscussion
   return (
     <ContentArea opaque>
       <H2>
@@ -114,6 +115,7 @@ export function EvaluationDiscussionSection({
       <ReadOnlyValue
         label={`${sectionIndex + 1}.1 ${t.evaluation}`}
         value={content.evaluation}
+        translations={translations}
       />
 
       <H3>{t.title2}</H3>
@@ -121,6 +123,7 @@ export function EvaluationDiscussionSection({
       <ReadOnlyValue
         label={`${sectionIndex + 1}.2 ${t.discussionDate}`}
         value={content.discussionDate?.format()}
+        translations={translations}
       />
 
       <Gap />
@@ -128,6 +131,7 @@ export function EvaluationDiscussionSection({
       <ReadOnlyValue
         label={`${sectionIndex + 1}.3 ${t.participants}`}
         value={content.participants}
+        translations={translations}
       />
 
       <Gap />
@@ -135,6 +139,7 @@ export function EvaluationDiscussionSection({
       <ReadOnlyValue
         label={`${sectionIndex + 1}.4 ${t.guardianViewsAndCollaboration}`}
         value={content.guardianViewsAndCollaboration}
+        translations={translations}
       />
     </ContentArea>
   )

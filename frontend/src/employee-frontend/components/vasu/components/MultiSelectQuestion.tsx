@@ -11,17 +11,20 @@ import { MultiSelectQuestion, QuestionOption } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 import QuestionInfo from '../QuestionInfo'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]
   onChange?: (option: QuestionOption, checked: boolean) => void
+  translations: VasuTranslations
 }
 
 export function MultiSelectQuestion({
   onChange,
   question: { name, options, info },
   questionNumber,
-  selectedValues
+  selectedValues,
+  translations
 }: Props) {
   return (
     <>
@@ -52,6 +55,7 @@ export function MultiSelectQuestion({
             .filter((option) => selectedValues.includes(option.key))
             .map((o) => o.name)
             .join(', ')}
+          translations={translations}
         />
       )}
     </>

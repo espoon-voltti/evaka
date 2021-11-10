@@ -37,7 +37,8 @@ export default React.memo(function VasuPage({
     content,
     authorsContent,
     vasuDiscussionContent,
-    evaluationDiscussionContent
+    evaluationDiscussionContent,
+    translations
   } = useVasu(id)
 
   const dynamicSectionsOffset = 2
@@ -52,20 +53,28 @@ export default React.memo(function VasuPage({
             sectionIndex={0}
             content={vasu.basics}
             templateRange={vasu.templateRange}
+            translations={translations}
           />
-          <AuthorsSection sectionIndex={1} content={authorsContent} />
+          <AuthorsSection
+            sectionIndex={1}
+            content={authorsContent}
+            translations={translations}
+          />
           <DynamicSections
             sections={content.sections}
             sectionIndex={dynamicSectionsOffset}
+            translations={translations}
           />
           <VasuDiscussionSection
             sectionIndex={content.sections.length + dynamicSectionsOffset}
             content={vasuDiscussionContent}
+            translations={translations}
           />
           {vasu.documentState !== 'DRAFT' && (
             <EvaluationDiscussionSection
               sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
               content={evaluationDiscussionContent}
+              translations={translations}
             />
           )}
           <VasuEvents

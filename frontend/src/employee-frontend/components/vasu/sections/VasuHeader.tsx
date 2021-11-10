@@ -10,6 +10,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'
+import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
 const HeaderSection = styled(ContentArea)`
   display: flex;
@@ -36,7 +37,10 @@ const Confidential = styled.div`
 `
 
 interface Props {
-  document: Pick<VasuDocument, 'basics' | 'documentState' | 'templateName'>
+  document: Pick<
+    VasuDocument,
+    'basics' | 'documentState' | 'templateName' | 'language'
+  >
 }
 export function VasuHeader({
   document: {
@@ -44,10 +48,15 @@ export function VasuHeader({
       child: { firstName, lastName }
     },
     documentState,
-    templateName
+    templateName,
+    language
   }
 }: Props) {
   const { i18n } = useTranslation()
+  const translations = vasuTranslations[
+    language.toLowerCase()
+  ] as VasuTranslations
+
   return (
     <HeaderSection opaque>
       <Titles>
@@ -58,8 +67,8 @@ export function VasuHeader({
       </Titles>
       <StateAndConfidentiality>
         <VasuStateChip state={documentState} labels={i18n.vasu.states} />
-        <Confidential>{i18n.vasu.confidential}</Confidential>
-        <div>{i18n.vasu.confidentialSectionOfLaw}</div>
+        <Confidential>{translations.confidential}</Confidential>
+        <div>{translations.confidentialSectionOfLaw}</div>
       </StateAndConfidentiality>
     </HeaderSection>
   )

@@ -24,6 +24,7 @@ import {
   VasuContent,
   VasuSection
 } from '../vasu-content'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 const getDynamicQuestionNumber = (
   sectionOffset: number,
@@ -35,12 +36,14 @@ interface Props {
   sections: VasuSection[]
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
+  translations: VasuTranslations
 }
 
 export function DynamicSections({
   sections,
   sectionIndex: sectionOffset,
-  setContent
+  setContent,
+  translations
 }: Props) {
   const renderGapsBetweenSections = !!setContent
   const content = sections.map((section, sectionIndex) => {
@@ -76,6 +79,7 @@ export function DynamicSections({
                             })
                         : undefined
                     }
+                    translations={translations}
                   />
                 ) : isCheckboxQuestion(question) ? (
                   <CheckboxQuestionElem
@@ -93,6 +97,7 @@ export function DynamicSections({
                             })
                         : undefined
                     }
+                    translations={translations}
                   />
                 ) : isRadioGroupQuestion(question) ? (
                   <RadioGroupQuestionElem
@@ -117,6 +122,7 @@ export function DynamicSections({
                             })
                         : undefined
                     }
+                    translations={translations}
                   />
                 ) : isMultiSelectQuestion(question) ? (
                   <MultiSelectQuestionElem
@@ -149,6 +155,7 @@ export function DynamicSections({
                             })
                         : undefined
                     }
+                    translations={translations}
                   />
                 ) : undefined}
                 {!isLastQuestion && <Gap size={'L'} />}

@@ -11,23 +11,24 @@ import React, { Dispatch, SetStateAction, useEffect } from 'react'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
-import { useTranslation } from '../../../state/i18n'
 import { AuthorInfo, AuthorsContent } from '../api'
 import { ReadOnlyValue } from '../components/ReadOnlyValue'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   sectionIndex: number
   content: AuthorsContent
   setContent: Dispatch<SetStateAction<AuthorsContent>>
+  translations: VasuTranslations
 }
 
 export function EditableAuthorsSection({
   sectionIndex,
   content,
-  setContent
+  setContent,
+  translations
 }: Props) {
-  const { i18n } = useTranslation()
-  const t = i18n.vasu.staticSections.authors
+  const t = translations.staticSections.authors
 
   useEffect(() => {
     if (
@@ -166,10 +167,10 @@ const formatAuthor = ({ name, phone, title }: AuthorInfo) =>
 
 export function AuthorsSection({
   sectionIndex,
-  content
-}: Pick<Props, 'sectionIndex' | 'content'>) {
-  const { i18n } = useTranslation()
-  const t = i18n.vasu.staticSections.authors
+  content,
+  translations
+}: Pick<Props, 'sectionIndex' | 'content' | 'translations'>) {
+  const t = translations.staticSections.authors
 
   return (
     <ContentArea opaque>
@@ -180,6 +181,7 @@ export function AuthorsSection({
       <ReadOnlyValue
         label={`${sectionIndex + 1}.1 ${t.primaryAuthor}`}
         value={formatAuthor(content.primaryAuthor)}
+        translations={translations}
       />
 
       <Gap />
@@ -190,6 +192,7 @@ export function AuthorsSection({
           .filter((a) => !authorIsEmpty(a))
           .map(formatAuthor)
           .join(', ')}
+        translations={translations}
       />
     </ContentArea>
   )

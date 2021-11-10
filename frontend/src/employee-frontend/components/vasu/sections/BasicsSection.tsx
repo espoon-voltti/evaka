@@ -6,19 +6,24 @@ import React from 'react'
 import { Gap } from 'lib-components/white-space'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
-import { useTranslation } from '../../../state/i18n'
 import { VasuBasics } from '../api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   sectionIndex: number
   content: VasuBasics
   templateRange: FiniteDateRange
+  translations: VasuTranslations
 }
 
-export function BasicsSection({ sectionIndex, content, templateRange }: Props) {
-  const { i18n } = useTranslation()
-  const t = i18n.vasu.staticSections.basics
+export function BasicsSection({
+  sectionIndex,
+  content,
+  templateRange,
+  translations
+}: Props) {
+  const t = translations.staticSections.basics
 
   return (
     <ContentArea opaque>

@@ -9,9 +9,11 @@ import { CheckboxQuestion } from '../vasu-content'
 import { QuestionProps } from './question-props'
 import { ReadOnlyValue } from './ReadOnlyValue'
 import QuestionInfo from '../QuestionInfo'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 type Props = QuestionProps<CheckboxQuestion> & {
   onChange?: (checked: boolean) => void
+  translations: VasuTranslations
 }
 
 export function CheckboxQuestion(props: Props) {
@@ -29,6 +31,7 @@ export function CheckboxQuestion(props: Props) {
         <ReadOnlyValue
           label={label}
           value={props.question.value ? i18n.common.yes : i18n.common.no}
+          translations={props.translations}
         />
       )}
     </QuestionInfo>
