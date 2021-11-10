@@ -28,13 +28,17 @@ const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
   overflow: hidden;
   ${({ fullWidth }) =>
     fullWidth
-      ? `margin: ${defaultMargins.s} 0px ${defaultMargins.s} 0px;`
-      : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
+      ? `margin: ${defaultMargins.s} 0px;`
+      : `margin: ${defaultMargins.s} -${defaultMargins.s} ${defaultMargins.xs};`}
 
   @media (min-width: ${tabletMin}) {
     animation-name: open;
     animation-duration: 0.2s;
     animation-timing-function: ease-out;
+    ${({ fullWidth }) =>
+      fullWidth
+        ? `margin: ${defaultMargins.s} 0px;`
+        : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
   }
 `
 
