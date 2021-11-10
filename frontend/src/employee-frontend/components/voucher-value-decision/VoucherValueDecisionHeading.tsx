@@ -26,6 +26,7 @@ type Props = {
   id: string
   status: VoucherValueDecisionStatus
   headOfFamily: PersonDetailed
+  partner: PersonDetailed | null
   decisionNumber: number | null
   validFrom: LocalDate
   validTo: LocalDate | null
@@ -42,6 +43,7 @@ export default React.memo(function VoucherValueDecisionHeading({
   id,
   status,
   headOfFamily,
+  partner,
   decisionNumber,
   validFrom,
   validTo,
@@ -100,6 +102,18 @@ export default React.memo(function VoucherValueDecisionHeading({
               </Link>
             )
           },
+          ...(partner
+            ? [
+                {
+                  label: i18n.valueDecision.partner,
+                  value: (
+                    <Link to={`/profile/${partner.id}`} data-qa="partner">
+                      {formatName(partner.firstName, partner.lastName, i18n)}
+                    </Link>
+                  )
+                }
+              ]
+            : []),
           {
             label: i18n.valueDecision.validPeriod,
             value: `${validFrom.format()} - ${validTo?.format() ?? ''}`

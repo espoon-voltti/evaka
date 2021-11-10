@@ -21,6 +21,7 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import {
   FinancePage,
+  ValueDecisionDetailsPage,
   ValueDecisionsPage
 } from 'e2e-playwright/pages/employee/finance/finance-page'
 import LocalDate from 'lib-common/local-date'
@@ -122,7 +123,7 @@ describe('Value decisions', () => {
 
   test('Send value decision from details page', async () => {
     await valueDecisionsPage.openFirstValueDecision()
-    await valueDecisionsPage.sendValueDecision()
+    await new ValueDecisionDetailsPage(page).sendValueDecision()
     await runPendingAsyncJobs()
     await valueDecisionsPage.navigateBackFromDetails()
     await valueDecisionsPage.assertSentDecisionsCount(1)

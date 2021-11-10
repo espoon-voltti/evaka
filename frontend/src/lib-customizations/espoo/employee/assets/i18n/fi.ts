@@ -1972,6 +1972,7 @@ export const fi = {
       ANNULLED: 'Mitätöity arvopäätös'
     },
     headOfFamily: 'Päämies',
+    partner: 'Toinen huoltaja / maksuvelvollinen',
     decisionNUmber: 'Päätöksen numero',
     validPeriod: 'Arvopäätös voimassa',
     sentAt: 'Arvopäätös lähetetty',

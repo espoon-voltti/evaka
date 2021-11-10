@@ -163,16 +163,6 @@ export class ValueDecisionsPage {
     sent: new Radio(this.page, '[data-qa="value-decision-status-filter-SENT"]')
   }
 
-  #sendDecisionButton = new RawElement(
-    this.page,
-    '[data-qa="button-send-decision"]'
-  )
-
-  async sendValueDecision() {
-    await this.#sendDecisionButton.click()
-    await this.#sendDecisionButton.waitUntilHidden()
-  }
-
   async openFirstValueDecision() {
     await this.#valueDecisionRow.click()
     await this.#valueDecisionDetailsPage.waitUntilVisible()
@@ -225,6 +215,20 @@ export class ValueDecisionsPage {
         ),
       count
     )
+  }
+}
+
+export class ValueDecisionDetailsPage {
+  constructor(private readonly page: Page) {}
+
+  #sendDecisionButton = new RawElement(
+    this.page,
+    '[data-qa="button-send-decision"]'
+  )
+
+  async sendValueDecision() {
+    await this.#sendDecisionButton.click()
+    await this.#sendDecisionButton.waitUntilHidden()
   }
 }
 
