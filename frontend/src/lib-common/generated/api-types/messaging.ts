@@ -65,6 +65,7 @@ export interface Message {
   content: string
   id: UUID
   readAt: Date | null
+  recipientNames: string[] | null
   recipients: MessageAccount[]
   sender: MessageAccount
   sentAt: Date

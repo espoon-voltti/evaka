@@ -25,7 +25,8 @@ data class Message(
     val sentAt: HelsinkiDateTime,
     val content: String,
     val readAt: HelsinkiDateTime? = null,
-    val attachments: List<MessageAttachment>
+    val attachments: List<MessageAttachment>,
+    val recipientNames: Set<String>? = null
 )
 
 data class MessageThread(

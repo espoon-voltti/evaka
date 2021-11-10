@@ -107,7 +107,9 @@ function SingleMessage({
         </InformationText>
       </TitleRow>
       <InformationText>
-        {message.recipients.map((r) => r.name).join(', ')}
+        {(message.recipientNames || message.recipients.map((r) => r.name)).join(
+          ', '
+        )}
       </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
         {message.content}

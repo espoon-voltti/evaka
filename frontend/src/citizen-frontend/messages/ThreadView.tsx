@@ -89,7 +89,12 @@ function SingleMessage({ message }: { message: Message }) {
         <SenderName>{message.sender.name}</SenderName>
         <SentDate>{formatDate(message.sentAt)}</SentDate>
       </TitleRow>
-      <span>{message.recipients.map((r) => r.name).join(', ')}</span>
+      <span>
+        {(message.recipientNames
+          ? message.recipientNames
+          : message.recipients.map((r) => r.name)
+        ).join(', ')}
+      </span>
       <MessageContent data-qa="thread-reader-content">
         {message.content}
       </MessageContent>
