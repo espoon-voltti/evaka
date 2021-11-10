@@ -64,13 +64,13 @@ const StickyTitleRow = styled(TitleRow)`
   padding: 15px;
   background: white;
   max-height: 100px;
+  overflow: auto;
 `
 
 const StickyTitleRowTitle = styled(H2)`
   top: 0;
   padding: 15px;
   background: white;
-  overflow: scroll;
   max-height: 100px;
 `
 
