@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import Applications from '../applications/Applications'
+import requireAuth from '../auth/requireAuth'
 import { useUser } from '../auth/state'
 import Decisions from '../decisions/decisions-page/Decisions'
 import { useTranslation } from '../localization'
@@ -10,11 +11,11 @@ import MapView from '../map/MapView'
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import React from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Redirect, Route, Switch } from 'react-router-dom'
 
-export default React.memo(function Applying() {
+export default React.memo(function ApplyingRouter() {
   const t = useTranslation()
-  const loggedIn = !!useUser()
+  const user = useUser()
 
   const tabs = [
     {
@@ -36,7 +37,7 @@ export default React.memo(function Applying() {
 
   return (
     <>
-      {loggedIn && (
+      {user && (
         <>
           <Gap size="s" />
           <Tabs tabs={tabs} dataQa="applying-subnavigation" />
@@ -44,8 +45,17 @@ export default React.memo(function Applying() {
       )}
       <Switch>
         <Route exact path="/applying/map" component={MapView} />
-        <Route exact path="/applying/applications" component={Applications} />
-        <Route exact path="/applying/decisions" component={Decisions} />
+        <Route
+          exact
+          path="/applying/applications"
+          component={requireAuth(Applications)}
+        />
+        <Route
+          exact
+          path="/applying/decisions"
+          component={requireAuth(Decisions)}
+        />
+        <Redirect to="/applying/map" />
       </Switch>
     </>
   )

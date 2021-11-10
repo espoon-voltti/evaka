@@ -52,7 +52,7 @@ export default React.memo(function DecisionResponseList() {
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
-      router.push('/decisions')
+      router.push('/applying/decisions')
     }
   }
 
@@ -120,7 +120,7 @@ export default React.memo(function DecisionResponseList() {
                 t.decisions.applicationDecisions.warnings
                   .decisionWithNoResponseWarning.resolveLabel,
               action: () => {
-                router.push('/decisions')
+                router.push('/applying/decisions')
               }
             }}
             reject={{
