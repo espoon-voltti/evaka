@@ -72,6 +72,9 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             residenceCode = "1"
         ),
         residenceCode = person.residenceCode,
+        phone = "",
+        backupPhone = "",
+        email = null,
         children = emptyList(),
         nationalities = emptySet(),
         nativeLanguage = null,

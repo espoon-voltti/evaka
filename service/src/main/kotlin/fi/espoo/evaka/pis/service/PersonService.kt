@@ -93,7 +93,7 @@ class PersonService(
                 if (forceRefresh || guardian.vtjDependantsQueried == null) {
                     getPersonWithDependants(user, guardian.identity)
                         .let { upsertVtjChildren(tx, it) }
-                        .let { toPersonWithChildrenDTO(it) }
+                        .let { toPersonWithChildrenDTO(it, guardian.phone, guardian.backupPhone, guardian.email) }
                 } else {
                     val children = tx.getGuardianDependants(id)
                         .map { toPersonWithChildrenDTO(it) }
@@ -161,7 +161,12 @@ class PersonService(
         return tx.getPersonById(id)!!
     }
 
-    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: PersonId, ssn: ExternalIdentifier.SSN): PersonDTO {
+    fun addSsn(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        id: PersonId,
+        ssn: ExternalIdentifier.SSN
+    ): PersonDTO {
         val person = tx.getPersonById(id.raw) ?: throw NotFound("Person $id not found")
 
         return when (person.identity) {
@@ -226,7 +231,12 @@ class PersonService(
             restrictedDetailsEndDate = person.restrictedDetailsEndDate
         )
 
-    private fun toPersonWithChildrenDTO(person: VtjPersonDTO): PersonWithChildrenDTO =
+    private fun toPersonWithChildrenDTO(
+        person: VtjPersonDTO,
+        phone: String = "",
+        backupPhone: String = "",
+        email: String? = null
+    ): PersonWithChildrenDTO =
         PersonWithChildrenDTO(
             id = person.id,
             socialSecurityNumber = person.socialSecurityNumber,
@@ -258,6 +268,9 @@ class PersonService(
                 )
             },
             residenceCode = person.residenceCode,
+            phone = phone,
+            backupPhone = backupPhone,
+            email = email,
             children = person.children.map(::toPersonWithChildrenDTO)
         )
 
@@ -282,6 +295,9 @@ class PersonService(
                 residenceCode = person.residenceCode
             ),
             residenceCode = person.residenceCode,
+            phone = person.phone,
+            backupPhone = person.backupPhone,
+            email = person.email,
             children = emptyList()
         )
 
@@ -451,6 +467,9 @@ data class PersonWithChildrenDTO(
     val lastName: String,
     val address: PersonAddressDTO,
     val residenceCode: String,
+    val phone: String,
+    val backupPhone: String,
+    val email: String?,
     val children: List<PersonWithChildrenDTO>,
     val nationalities: Set<Nationality>,
     val nativeLanguage: NativeLanguage?,

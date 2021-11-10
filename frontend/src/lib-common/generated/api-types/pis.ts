@@ -368,14 +368,17 @@ export interface PersonSummary {
 */
 export interface PersonWithChildrenDTO {
   address: PersonAddressDTO
+  backupPhone: string
   children: PersonWithChildrenDTO[]
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
+  email: string | null
   firstName: string
   id: UUID
   lastName: string
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
+  phone: string
   residenceCode: string
   restrictedDetails: RestrictedDetails
   socialSecurityNumber: string | null

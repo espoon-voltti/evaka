@@ -23,11 +23,17 @@ export interface Child {
 */
 export interface CitizenUserDetails {
   accessibleFeatures: CitizenFeatures
+  backupPhone: string
   children: Child[]
+  email: string | null
   firstName: string
   id: UUID
   lastName: string
+  phone: string
+  postOffice: string
+  postalCode: string
   socialSecurityNumber: string
+  streetAddress: string
 }
 
 /**

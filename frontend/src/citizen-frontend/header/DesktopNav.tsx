@@ -216,6 +216,16 @@ const UserMenu = React.memo(function UserMenu() {
       {open && user ? (
         <DropDown data-qa={'user-menu'}>
           <DropDownItem
+            selected={window.location.pathname.includes('/personal-details')}
+            data-qa={'user-menu-personal-details'}
+            onClick={() => {
+              setOpen(false)
+              history.push('/personal-details')
+            }}
+          >
+            {t.header.nav.personalDetails}
+          </DropDownItem>
+          <DropDownItem
             selected={window.location.pathname.includes('/income')}
             data-qa={'user-menu-income'}
             onClick={() => {

@@ -93,6 +93,7 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
+      personalDetails: 'Omat tiedot',
       income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri',
@@ -1222,6 +1223,25 @@ export default {
     modalMessage:
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
     download: 'Lataa'
+  },
+  personalDetails: {
+    title: 'Omat tiedot',
+    description: (
+      <P>
+        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
+        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
+        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
+      </P>
+    ),
+    personalInfo: 'Henkilötiedot',
+    name: 'Nimi',
+    preferredName: 'Kutsumanimi',
+    contactInfo: 'Yhteystiedot',
+    address: 'Osoite',
+    phone: 'Puhelinnumero',
+    backupPhone: 'Varapuhelinnumero',
+    email: 'Sähköpostiosoite',
+    emailMissing: 'Sähköpostiosoite puuttuu'
   },
   income: {
     title: 'Tulotiedot',

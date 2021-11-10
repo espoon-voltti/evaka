@@ -94,6 +94,7 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
+      personalDetails: 'Personal details',
       income: 'Income',
       messages: 'Messages',
       calendar: 'Calendar',
@@ -1283,6 +1284,25 @@ const en: Translations = {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later',
     download: 'Download'
+  },
+  personalDetails: {
+    title: 'Omat tiedot',
+    description: (
+      <P>
+        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
+        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
+        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
+      </P>
+    ),
+    personalInfo: 'Henkilötiedot',
+    name: 'Nimi',
+    preferredName: 'Kutsumanimi',
+    contactInfo: 'Yhteystiedot',
+    address: 'Osoite',
+    phone: 'Puhelinnumero',
+    backupPhone: 'Varapuhelinnumero',
+    email: 'Sähköpostiosoite',
+    emailMissing: 'Sähköpostiosoite puuttuu'
   },
   income: {
     title: 'Income information',

@@ -206,6 +206,13 @@ const Navigation = React.memo(function Navigation({
           >
             {t.header.nav.applying} {maybeLockElem}
           </StyledNavLink>
+          <StyledNavLink
+            to="/personal-details"
+            onClick={close}
+            data-qa="nav-personal-details"
+          >
+            {t.header.nav.personalDetails}
+          </StyledNavLink>
           <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
             {t.header.nav.income} {maybeLockElem}
           </StyledNavLink>

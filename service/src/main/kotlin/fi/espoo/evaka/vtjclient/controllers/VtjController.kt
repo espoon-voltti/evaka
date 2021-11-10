@@ -81,6 +81,12 @@ class VtjController(private val personService: PersonService, private val access
         val firstName: String,
         val lastName: String,
         val socialSecurityNumber: String,
+        val streetAddress: String,
+        val postalCode: String,
+        val postOffice: String,
+        val phone: String,
+        val backupPhone: String,
+        val email: String?,
         val children: List<Child>,
         val accessibleFeatures: CitizenFeatures
     ) {
@@ -90,6 +96,12 @@ class VtjController(private val personService: PersonService, private val access
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
+                streetAddress = person.streetAddress,
+                postalCode = person.postalCode,
+                postOffice = person.postOffice,
+                phone = person.phone,
+                backupPhone = person.backupPhone,
+                email = person.email,
                 children = emptyList(),
                 accessibleFeatures = accessibleFeatures
             )
@@ -99,6 +111,12 @@ class VtjController(private val personService: PersonService, private val access
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber!!,
+                streetAddress = person.address.streetAddress,
+                postalCode = person.address.postalCode,
+                postOffice = person.address.city,
+                phone = person.phone,
+                backupPhone = person.backupPhone,
+                email = person.email,
                 children = person.children.map { Child.from(it) },
                 accessibleFeatures = accessibleFeatures
             )
