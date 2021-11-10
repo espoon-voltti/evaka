@@ -9,9 +9,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown } from 'lib-icons'
 import { borderStyles, DropdownProps, Root } from './shared'
 
-interface SelectProps<T> extends DropdownProps<T, HTMLSelectElement> {
-  getItemValue?: T extends string | number ? never : (item: T) => string
-}
+type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &
+  (T extends string | number
+    ? { getItemValue?: never }
+    : { getItemValue: (item: T) => string })
 
 function Select<T>(props: SelectProps<T>) {
   const {
@@ -21,13 +22,17 @@ function Select<T>(props: SelectProps<T>) {
     onChange,
     disabled,
     getItemLabel = defaultGetItemLabel,
-    getItemValue = defaultGetItemLabel,
     getItemDataQa,
     name,
     onFocus,
     fullWidth,
     'data-qa': dataQa
   } = props
+
+  const getItemValue =
+    'getItemValue' in props && props.getItemValue
+      ? props.getItemValue
+      : defaultGetItemLabel
 
   const onSelectedItemChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {

@@ -139,6 +139,7 @@ export default React.memo(function GroupTransferModal({
             }
             selectedItem={form.group}
             getItemLabel={(group) => group.name}
+            getItemValue={(group) => group.id}
           />
         </section>
         <section>
