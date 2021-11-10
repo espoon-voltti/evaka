@@ -98,7 +98,7 @@ const sv: Translations = {
       messages: 'Meddelanden',
       calendar: 'Kalender',
       applying: 'Ansöker',
-      pedagogicalDocuments: 'Kasvu ja oppiminen'
+      pedagogicalDocuments: 'Tillväxt och inlärning'
     },
     lang: {
       fi: 'Suomeksi',
