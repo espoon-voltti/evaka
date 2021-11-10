@@ -10,7 +10,12 @@ import featureFlags from './featureFlags'
 const customizations: EmployeeCustomizations = {
   appConfig: employeeConfig,
   translations: {
-    fi: {}
+    fi: {},
+    sv: {}
+  },
+  vasuTranslations: {
+    fi: {},
+    sv: {}
   },
   cityLogo: {
     src: EspooLogo,

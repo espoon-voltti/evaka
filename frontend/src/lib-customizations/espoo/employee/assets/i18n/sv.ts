@@ -2,4 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export const sv = {}
+import { fi } from './fi'
+
+export const sv: typeof fi = { ...fi }

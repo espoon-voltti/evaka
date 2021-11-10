@@ -11,7 +11,8 @@ import {
 } from './citizen'
 import {
   Lang as LangEmployee,
-  Translations as TranslationsEmployee
+  Translations as TranslationsEmployee,
+  VasuTranslations as VasuTranslationsEmployee
 } from './employee'
 import {
   Lang as LangEmployeeMobile,
@@ -126,6 +127,7 @@ export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
+  vasuTranslations: Record<LangEmployee, DeepPartial<VasuTranslationsEmployee>>
   cityLogo: {
     src: string
     alt: string
