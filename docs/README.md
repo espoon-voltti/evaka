@@ -34,14 +34,13 @@ You can generate PNG, SVG or even AsciiArt files from [PlantUML](https://plantum
 
 See also: [official documentation for the command line tool](https://plantuml.com/command-line)
 
-
 # eVaka database schema
 
 [eVaka database schema diagram](./evaka_db_schema.png)
 
 ## Vasu schema
 
-Early childhood education plan (vasu) documents are stored mostly in json format. This dynamic structure allows the admin user
+Early childhood education plan (vasu, lapsen varhaiskasvatussuunnitelma in Finnish) documents are stored mostly in json format. This dynamic structure allows the admin user
 to modify vasu templates so that the sections and questions can vary from year to year and include content specific to the
 given city.
 
