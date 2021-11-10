@@ -1299,7 +1299,7 @@ const en: Translations = {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://static.espoo.fi/cdn/ff/uCz08Q1RDj-eVJJvhztJC6oTCmF_4OGQOtOiDUwT4II/1621487195/public/2021-05/Asiakastiedote%20varhaiskasvatusmaksuista%201.8.2021%20%283%29.pdf"
+            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
           >
             here
           </a>{' '}
@@ -1308,7 +1308,7 @@ const en: Translations = {
         </p>
         <p>
           More information on the fees:{' '}
-          <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+          <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees">
             Early childhood education fees
           </a>
         </p>
