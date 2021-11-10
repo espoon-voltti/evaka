@@ -69,6 +69,7 @@ data class VasuDocument(
     val modifiedAt: HelsinkiDateTime,
     val templateName: String,
     val templateRange: FiniteDateRange,
+    val language: VasuLanguage,
     @Json
     val events: List<VasuDocumentEvent> = listOf(),
     @Json
