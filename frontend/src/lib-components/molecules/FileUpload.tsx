@@ -22,13 +22,20 @@ import {
 } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from 'lib-common/types'
-import { Result, Success } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import InlineButton from '../atoms/buttons/InlineButton'
 
-type FileUploadError = 'FILE_TOO_LARGE' | 'SERVER_ERROR'
+const fileUploadErrorKeys = {
+  FILE_TOO_LARGE: undefined,
+  EXTENSION_INVALID: undefined,
+  EXTENSION_MISSING: undefined,
+  SERVER_ERROR: undefined
+}
+
+type FileUploadError = keyof typeof fileUploadErrorKeys
 
 interface FileObject extends Attachment {
   key: number
@@ -50,6 +57,11 @@ interface FileObject extends Attachment {
   deleteInProgress: boolean
 }
 
+const isErrorCode = (code: string | undefined): code is FileUploadError =>
+  !!code && code in fileUploadErrorKeys
+const getErrorCode = (res: Failure<string>): FileUploadError =>
+  isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
+
 interface FileUploadI18n {
   download: {
     modalHeader: string
@@ -67,7 +79,7 @@ interface FileUploadI18n {
   }
 }
 
-export interface FileUploadProps {
+interface FileUploadProps {
   files: Attachment[]
   onUpload: (
     file: File,
@@ -248,6 +260,15 @@ const attachmentToFile = (attachment: Attachment): FileObject => {
   }
 }
 
+const defaultAllowedContentTypes = [
+  'image/jpeg',
+  'image/png',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.oasis.opendocument.text'
+]
+
 export const fileIcon = (file: Attachment): IconDefinition => {
   switch (file.contentType) {
     case 'image/jpeg':
@@ -276,14 +297,7 @@ export default React.memo(function FileUpload({
   slim = false,
   disabled = false,
   'data-qa': dataQa,
-  accept = [
-    'image/jpeg',
-    'image/png',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.oasis.opendocument.text'
-  ]
+  accept = defaultAllowedContentTypes
 }: FileUploadProps) {
   const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -385,7 +399,11 @@ export default React.memo(function FileUpload({
 
     try {
       const result = await onUpload(file, updateProgress)
-      if (result.isFailure) throw new Error(result.message)
+      if (result.isFailure)
+        updateUploadedFile({
+          ...fileObject,
+          error: getErrorCode(result)
+        })
       if (result.isSuccess)
         updateUploadedFile(
           {

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.childimages
 
+import fi.espoo.evaka.s3.ContentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.getAndCheckFileContentType
@@ -18,7 +19,7 @@ data class ChildImage(
 
 const val childImagesBucketPrefix = "child-images/"
 
-val allowedContentTypes = listOf("image/jpeg", "image/png")
+val allowedContentTypes = setOf(ContentType.JPEG, ContentType.PNG)
 
 fun replaceImage(
     db: Database.Connection,
