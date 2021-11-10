@@ -26,12 +26,17 @@ import { UnitContext } from '../../state/unit'
 import { UserContext } from '../../state/user'
 import { CloseableTopBar } from '../common/TopBar'
 
+interface EmployeeOption {
+  name: string
+  id: string
+}
+
 const PinLoginForm = React.memo(function PinLoginForm() {
   const { i18n } = useTranslation()
   const { refreshAuthStatus } = useContext(UserContext)
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const employeeOptions = useMemo(
+  const employeeOptions = useMemo<EmployeeOption[]>(
     () =>
       sortBy(
         unitInfoResponse
@@ -46,10 +51,11 @@ const PinLoginForm = React.memo(function PinLoginForm() {
     [unitInfoResponse]
   )
 
-  const [employee, setEmployee] = useState<typeof employeeOptions[0] | null>(
-    null
+  const [employee, setEmployee] = useState<EmployeeOption | null>(null)
+  const selectEmployee = useCallback(
+    (e: EmployeeOption | null) => setEmployee(e),
+    []
   )
-  const selectEmployee = useCallback((e) => setEmployee(e), [])
   const [pin, setPin] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -102,6 +108,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
             selectedItem={employee}
             onChange={selectEmployee}
             placeholder={i18n.pin.selectStaff}
+            getItemValue={({ id }) => id}
             getItemLabel={({ name }) => name}
             data-qa="select-staff"
           />
