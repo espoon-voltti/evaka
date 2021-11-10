@@ -385,6 +385,15 @@ export interface PersonWithChildrenDTO {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataUpdate
+*/
+export interface PersonalDataUpdate {
+  backupPhone: string
+  email: string
+  phone: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.PinCode
 */
 export interface PinCode {

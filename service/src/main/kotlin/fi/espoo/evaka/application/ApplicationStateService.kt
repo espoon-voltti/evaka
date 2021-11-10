@@ -267,18 +267,6 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
-        tx.getPersonById(application.guardianId)?.let {
-            val email = application.form.guardian.email.ifBlank {
-                it.email
-            }
-
-            tx.updatePersonBasicContactInfo(
-                id = application.guardianId,
-                email = email ?: "",
-                phone = application.form.guardian.phoneNumber
-            )
-        }
-
         tx.upsertChild(
             Child(
                 id = application.childId,

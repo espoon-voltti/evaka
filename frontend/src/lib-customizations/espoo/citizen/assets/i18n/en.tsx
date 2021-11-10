@@ -1301,8 +1301,12 @@ const en: Translations = {
     address: 'Osoite',
     phone: 'Puhelinnumero',
     backupPhone: 'Varapuhelinnumero',
+    backupPhonePlaceholder: 'Esim. työpuhelin',
     email: 'Sähköpostiosoite',
-    emailMissing: 'Sähköpostiosoite puuttuu'
+    emailMissing: 'Sähköpostiosoite puuttuu',
+    noEmail: 'Minulla ei ole sähköpostiosoitetta',
+    emailInfo:
+      'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
   },
   income: {
     title: 'Income information',
