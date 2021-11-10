@@ -9,8 +9,10 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.s3.ContentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.s3.checkFileExtension
 import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
@@ -99,7 +101,7 @@ class AttachmentsController(
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
 
-        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttacmentContentTypes)
+        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes)
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -164,26 +166,36 @@ class AttachmentsController(
         }
     }
 
+    private fun getAndCheckFileName(file: MultipartFile) = (
+        file.originalFilename
+            ?.takeIf { it.isNotBlank() }
+            ?: throw BadRequest("Filename missing")
+        )
+
+    private fun getFileExtension(name: String) = name
+        .split(".")
+        .also { if (it.size == 1) throw BadRequest("Missing file extension", "EXTENSION_MISSING") }
+        .last()
+
     private fun handleFileUpload(
         db: Database.Connection,
         user: AuthenticatedUser,
         attachTo: AttachmentParent,
         file: MultipartFile,
-        allowedContentTypes: List<String>,
+        allowedContentTypes: Set<ContentType>,
         type: AttachmentType? = null
     ): AttachmentId {
-        val name = file.originalFilename
-            ?.takeIf { it.isNotBlank() }
-            ?: throw BadRequest("Filename missing")
-
+        val fileName = getAndCheckFileName(file)
         val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
+
+        checkFileExtension(getFileExtension(fileName), contentType)
 
         val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insertAttachment(
                 user,
                 id,
-                name,
+                fileName,
                 contentType,
                 attachTo,
                 type = type
@@ -265,19 +277,18 @@ class AttachmentsController(
         documentClient.delete(filesBucket, "$attachmentId")
     }
 
-    val defaultAllowedAttachmentContentTypes: List<String> = listOf(
-        "image/jpeg",
-        "image/png",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.oasis.opendocument.text",
-        "application/x-tika-msoffice",
-        "application/x-tika-ooxml"
-    )
+    private val defaultAllowedAttachmentContentTypes: Set<ContentType> =
+        setOf(
+            ContentType.JPEG,
+            ContentType.PNG,
+            ContentType.PDF,
+            ContentType.MSWORD,
+            ContentType.MSWORD_DOCX,
+            ContentType.OPEN_DOCUMENT_TEXT,
+            ContentType.TIKA_MSOFFICE,
+            ContentType.TIKA_OOXML,
+        )
 
-    val pedagogicalDocumentAllowedAttacmentContentTypes = defaultAllowedAttachmentContentTypes + listOf(
-        "video/*",
-        "audio/*"
-    )
+    private val pedagogicalDocumentAllowedAttachmentContentTypes =
+        defaultAllowedAttachmentContentTypes + setOf(ContentType.VIDEO_ANY, ContentType.AUDIO_ANY)
 }

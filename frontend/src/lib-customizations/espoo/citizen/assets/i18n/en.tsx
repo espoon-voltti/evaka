@@ -1262,6 +1262,9 @@ const en: Translations = {
     loading: 'Loading',
     loaded: 'Loaded',
     error: {
+      EXTENSION_MISSING: 'Missing file extension',
+      EXTENSION_INVALID: 'Invalid file extension',
+      INVALID_CONTENT_TYPE: 'Invalid content type',
       FILE_TOO_LARGE: 'File is too big (max. 10MB)',
       SERVER_ERROR: 'Upload failed'
     },

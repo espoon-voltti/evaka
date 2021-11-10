@@ -1200,6 +1200,9 @@ export default {
     loading: 'Ladataan...',
     loaded: 'Ladattu',
     error: {
+      EXTENSION_MISSING: 'Tiedostopääte puuttuu',
+      EXTENSION_INVALID: 'Virheellinen tiedostopääte',
+      INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
       FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
       SERVER_ERROR: 'Lataus ei onnistunut'
     },

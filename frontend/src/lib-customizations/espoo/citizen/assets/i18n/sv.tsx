@@ -1213,6 +1213,9 @@ const sv: Translations = {
     loading: 'Uppladdas...',
     loaded: 'Uppladdad',
     error: {
+      EXTENSION_MISSING: 'Filtillägget saknas',
+      EXTENSION_INVALID: 'Ogiltigt filtillägg',
+      INVALID_CONTENT_TYPE: 'Ogiltig filtyp',
       FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
       SERVER_ERROR: 'Uppladdningen misslyckades'
     },
