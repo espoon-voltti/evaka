@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -119,7 +120,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                 startDate = LocalDate.of(2015, 1, 1),
                 endDate = LocalDate.of(2030, 1, 1)
             )
-            it.insertTestIncome(objectMapper, adultIdDuplicate, validFrom = validFrom, validTo = validTo)
+            it.insertTestIncome(objectMapper, adultIdDuplicate, validFrom = validFrom, validTo = validTo, updatedBy = testDecisionMaker_1.id)
         }
 
         val countBefore = db.read {

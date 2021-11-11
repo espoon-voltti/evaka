@@ -48,7 +48,7 @@ class IncomeQueriesTest : PureJdbiTest() {
     }
 
     private val personId = testAdult_1.id
-    private val userId = UUID.randomUUID()
+    private val userId = UUID.fromString("00000000-0000-0000-0000-000000000000")
     private val testIncome = Income(
         id = IncomeId(UUID.randomUUID()),
         personId = personId,

@@ -506,7 +506,7 @@ fun Database.Transaction.insertTestIncome(
     data: Map<String, IncomeValue> = mapOf(),
     effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     updatedAt: Instant = Instant.now(),
-    updatedBy: UUID = UUID.randomUUID()
+    updatedBy: UUID
 ): UUID {
     createUpdate(
         """
