@@ -132,6 +132,10 @@ export function VasuStateTransitionButtons({
             />
           </>
         )}
+        <Button
+          text={i18n.vasu.leavePage}
+          onClick={() => history.push(`/child-information/${childId}`)}
+        />
       </ButtonContainer>
       {(state === 'DRAFT' || state === 'READY') && (
         <PublishingDisclaimer alignItems="center" spacing="xs">
