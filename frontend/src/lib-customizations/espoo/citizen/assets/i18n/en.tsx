@@ -1294,6 +1294,8 @@ const en: Translations = {
         muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
       </P>
     ),
+    noEmailAlert:
+      'Sähköpostiosoitteesi puuttuu. Ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset.',
     personalInfo: 'Henkilötiedot',
     name: 'Nimi',
     preferredName: 'Kutsumanimi',

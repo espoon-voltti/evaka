@@ -2,21 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useCallback } from 'react'
+import React, { Dispatch, SetStateAction, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faLockAlt, faSignIn, faSignOut, faTimes } from 'lib-icons'
+import {
+  faBars,
+  faChevronDown,
+  faChevronUp,
+  faCircleExclamation,
+  faLockAlt,
+  faSignIn,
+  faSignOut,
+  faTimes,
+  faUser
+} from 'lib-icons'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from 'lib-components/white-space'
-import { tabletMin } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
-import { useUser } from '../auth/state'
+import { User, useUser } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
+import AttentionIndicator from './AttentionIndicator'
 
 type Props = {
   showMenu: boolean
@@ -39,11 +49,18 @@ export default React.memo(function MobileNav({
     [setShowMenu]
   )
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
+  const showAttentionIndicator =
+    !showMenu &&
+    (unreadMessagesCount > 0 ||
+      unreadPedagogicalDocumentsCount > 0 ||
+      user?.email === null)
 
   return (
     <Container ref={ref} data-qa="mobile-nav">
       <MenuButton onClick={toggleMenu} data-qa="menu-button">
-        <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
+        <AttentionIndicator toggled={showAttentionIndicator}>
+          <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
+        </AttentionIndicator>
       </MenuButton>
       {showMenu ? (
         <MenuContainer>
@@ -54,12 +71,10 @@ export default React.memo(function MobileNav({
             unreadMessagesCount={unreadMessagesCount}
             unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount}
           />
-          <Spacer />
+          <VerticalSpacer />
           <UserContainer>
-            <UserName>{`${user?.firstName ?? ''} ${
-              user?.lastName ?? ''
-            }`}</UserName>
-            <Gap size="s" />
+            {user && <UserNameSubMenu user={user} close={close} />}
+            <Gap size="L" />
             {user ? (
               <a href={getLogoutUri(user)} data-qa="logout-btn">
                 <LogInLogOutButton>
@@ -206,16 +221,6 @@ const Navigation = React.memo(function Navigation({
           >
             {t.header.nav.applying} {maybeLockElem}
           </StyledNavLink>
-          <StyledNavLink
-            to="/personal-details"
-            onClick={close}
-            data-qa="nav-personal-details"
-          >
-            {t.header.nav.personalDetails}
-          </StyledNavLink>
-          <StyledNavLink to="/income" onClick={close} data-qa="nav-income">
-            {t.header.nav.income} {maybeLockElem}
-          </StyledNavLink>
           {user.accessibleFeatures.pedagogicalDocumentation && (
             <StyledNavLink
               to="/pedagogical-documents"
@@ -270,8 +275,7 @@ const FloatingCircledChar = styled(CircledChar)`
   float: right;
 `
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const StyledNavItem = (component: any) => styled(component)`
+const StyledNavLink = styled(NavLink)`
   color: inherit;
   font-family: Montserrat;
   font-weight: ${fontWeights.medium};
@@ -296,21 +300,13 @@ const StyledNavItem = (component: any) => styled(component)`
   }
 `
 
-const StyledNavLink = StyledNavItem(NavLink)
-
-const Spacer = styled.div`
+const VerticalSpacer = styled.div`
   margin: auto 0;
 `
 
 const UserContainer = styled.div`
   display: flex;
   flex-direction: column;
-
-  @media (min-width: ${tabletMin}) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
 `
 
 const LogInLogOutButton = styled.button`
@@ -323,10 +319,74 @@ const LogInLogOutButton = styled.button`
   text-transform: uppercase;
   padding: ${defaultMargins.s};
   width: 100%;
+`
 
-  @media (min-width: ${tabletMin}) {
-    width: auto;
-  }
+const UserNameSubMenu = React.memo(function UserNameSubMenu({
+  user,
+  close
+}: {
+  user: User
+  close: () => void
+}) {
+  const t = useTranslation()
+  const [show, setShow] = useState(false)
+  const toggleShow = useCallback(
+    () => setShow((previous) => !previous),
+    [setShow]
+  )
+  const lock = user.userType !== 'ENDUSER' && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
+
+  return (
+    <>
+      <SubMenuButton onClick={toggleShow}>
+        <AttentionIndicator toggled={user.email === null}>
+          <FontAwesomeIcon icon={faUser} size="lg" />
+        </AttentionIndicator>
+        <Gap size="s" horizontal />
+        <UserName>
+          {user.firstName} {user.lastName}
+        </UserName>
+        <Gap size="s" horizontal />
+        <HorizontalSpacer />
+        <FontAwesomeIcon icon={show ? faChevronUp : faChevronDown} size="lg" />
+      </SubMenuButton>
+      {show && (
+        <Nav>
+          <SubMenuLink
+            to="/personal-details"
+            onClick={close}
+            data-qa="nav-personal-details"
+          >
+            {t.header.nav.personalDetails}
+            {user.email === null && (
+              <FontAwesomeIcon icon={faCircleExclamation} size="lg" />
+            )}
+          </SubMenuLink>
+          <SubMenuLink to="/income" onClick={close} data-qa="nav-income">
+            {t.header.nav.income} {lock}
+          </SubMenuLink>
+        </Nav>
+      )}
+    </>
+  )
+})
+
+const SubMenuButton = styled(MenuButton)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+`
+
+const HorizontalSpacer = styled.div`
+  margin: 0 auto;
+`
+
+const SubMenuLink = styled(StyledNavLink)`
+  margin-left: ${defaultMargins.L};
+  text-transform: none;
 `
 
 const UserName = styled.span`

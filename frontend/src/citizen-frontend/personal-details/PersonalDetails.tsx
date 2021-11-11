@@ -22,6 +22,7 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPen, fasExclamationTriangle } from 'lib-icons'
@@ -101,6 +102,9 @@ export default React.memo(function PersonalDetails() {
 
             return (
               <>
+                {email === null && (
+                  <AlertBox message={t.personalDetails.noEmailAlert} />
+                )}
                 <HorizontalLine />
                 <EditButtonRow>
                   <InlineButton
