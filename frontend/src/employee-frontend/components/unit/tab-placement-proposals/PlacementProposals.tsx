@@ -21,9 +21,9 @@ import {
 } from '../../../api/applications'
 import { UIContext } from '../../../state/ui'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
-import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { UUID } from 'lib-common/types'
+import { Label, P } from 'lib-components/typography'
 
 const ButtonRow = styled.div`
   display: flex;
@@ -121,11 +121,13 @@ export default React.memo(function PlacementProposals({
       <Title size={2}>{i18n.unit.placementProposals.title}</Title>
 
       {placementPlans.length > 0 && (
-        <InfoBox
-          title={i18n.unit.placementProposals.infoBoxTitle}
-          message={i18n.unit.placementProposals.infoBoxText}
-          wide
-        />
+        <>
+          <Label>{i18n.unit.placementProposals.infoTitle}</Label>
+          <Gap size={'xxs'} />
+          <P noMargin width={'960px'}>
+            {i18n.unit.placementProposals.infoText}
+          </P>
+        </>
       )}
 
       <div>
@@ -185,7 +187,9 @@ export default React.memo(function PlacementProposals({
                 (state) => state.submitting
               ) ||
               !Object.values(confirmationStates).some(
-                (state) => state.confirmation === 'ACCEPTED'
+                (state) =>
+                  state.confirmation === 'ACCEPTED' ||
+                  state.confirmation === 'REJECTED_NOT_CONFIRMED'
               )
             }
           />

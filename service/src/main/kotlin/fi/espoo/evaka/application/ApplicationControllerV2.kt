@@ -413,7 +413,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: DaycareId
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
+        db.transaction { applicationStateService.confirmPlacementProposalChanges(it, user, unitId) }
         return ResponseEntity.noContent().build()
     }
 

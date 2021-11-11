@@ -136,6 +136,7 @@ export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'
   | 'REJECTED'
+  | 'REJECTED_NOT_CONFIRMED'
 
 export interface DaycarePlacementPlan {
   id: UUID

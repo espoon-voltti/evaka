@@ -1099,7 +1099,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
             )
-            service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id)
+            service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
@@ -1162,7 +1162,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
             )
-            service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id)
+            service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()

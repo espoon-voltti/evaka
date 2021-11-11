@@ -43,7 +43,8 @@ data class PlacementPlanChild(
 enum class PlacementPlanConfirmationStatus {
     PENDING,
     ACCEPTED,
-    REJECTED
+    REJECTED,
+    REJECTED_NOT_CONFIRMED
 }
 
 enum class PlacementPlanRejectReason {
