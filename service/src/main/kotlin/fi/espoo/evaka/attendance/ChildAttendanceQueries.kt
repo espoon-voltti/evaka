@@ -167,7 +167,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             pe.id,
             pe.first_name,
             pe.last_name,
-            ch.preferred_name,
+            pe.preferred_name,
             pe.date_of_birth,
             dst.child_id,
             dst.type,
@@ -189,7 +189,6 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             c.backup
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
-        JOIN child ch ON ch.id = c.child_id
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         """.trimIndent()

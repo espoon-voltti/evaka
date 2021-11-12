@@ -418,3 +418,10 @@ fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: B
         .bind("disabled", disabled)
         .execute()
 }
+
+fun Database.Transaction.updatePreferredName(id: UUID, preferredName: String) {
+    createUpdate("UPDATE person SET preferred_name = :preferredName WHERE id = :id")
+        .bind("id", id)
+        .bind("preferredName", preferredName)
+        .execute()
+}

@@ -172,3 +172,4 @@ V171__service_need_option_name_localization.sql
 V172__remove_daycare_organization_oid.sql
 V173__create_rejected_not_confirmed_state_for_placement_plans.sql
 V174__non_nullable_person_data.sql
+V175__person_preferred_name.sql

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { AdditionalInformation } from '../../types/child'
+import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'

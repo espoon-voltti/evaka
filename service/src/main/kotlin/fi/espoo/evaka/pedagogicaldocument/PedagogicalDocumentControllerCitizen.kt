@@ -76,13 +76,12 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(
                 a.content_type attachment_content_type,
                 pdr.read_at is not null is_read,
                 chp.first_name,
-                ch.preferred_name
+                chp.preferred_name
             FROM pedagogical_document pd
             JOIN guardian g ON pd.child_id = g.child_id
             LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             LEFT JOIN person chp ON chp.id = pd.child_id
-            LEFT JOIN child ch ON ch.id = pd.child_id
             WHERE g.guardian_id = :guardian_id
             AND (pd.description IS NOT NULL OR a.id IS NOT NULL)
             ORDER BY pd.created DESC

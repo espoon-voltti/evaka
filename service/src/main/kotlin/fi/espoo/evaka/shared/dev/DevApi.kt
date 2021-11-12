@@ -938,7 +938,6 @@ data class DevChild(
     val id: UUID,
     val allergies: String = "",
     val diet: String = "",
-    val preferredName: String = "",
     val medication: String = "",
     val additionalInfo: String = ""
 )
@@ -1045,6 +1044,7 @@ data class DevPerson(
     val dateOfDeath: LocalDate? = null,
     val firstName: String = "Test",
     val lastName: String = "Person",
+    val preferredName: String = "",
     val ssn: String? = null,
     val ssnAddingDisabled: Boolean? = null,
     val email: String? = null,

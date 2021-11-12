@@ -6,7 +6,6 @@ import React, { useMemo, useState, createContext } from 'react'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { FeeAlteration } from '../types/fee-alteration'
 import {
-  AdditionalInformation,
   AssistanceAction,
   AssistanceNeed,
   ChildBackupCare
@@ -22,6 +21,7 @@ import {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
+import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 
 export interface ChildState {
   person: Result<PersonJSON>
