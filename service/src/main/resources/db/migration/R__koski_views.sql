@@ -145,6 +145,7 @@ TABLE (
         FROM koski_placement(today) kp
         WHERE (kp.child_id, kp.unit_id, kp.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
+    AND ksr.study_right_oid IS NOT NULL
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND d.upload_to_koski IS TRUE
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
