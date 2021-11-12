@@ -5,6 +5,11 @@
 import {
   careArea2Fixture,
   daycare2Fixture,
+  daycareFixture,
+  enduserChildFixtureJari,
+  enduserChildFixtureKaarina,
+  enduserGuardianFixture,
+  familyWithTwoGuardians,
   Fixture,
   voucherValueDecisionsFixture
 } from 'e2e-test-common/dev-api/fixtures'
@@ -37,30 +42,9 @@ const decision2DateTo = LocalDate.today().addWeeks(5)
 
 beforeEach(async () => {
   await resetDatabase()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-
-  await insertVoucherValueDecisionFixtures([
-    voucherValueDecisionsFixture(
-      'e2d75fa4-7359-406b-81b8-1703785ca649',
-      fixtures.enduserGuardianFixture.id,
-      fixtures.enduserChildFixtureKaarina.id,
-      fixtures.daycareFixture.id,
-      'DRAFT',
-      decision1DateFrom.formatIso(),
-      decision1DateTo.formatIso()
-    ),
-    voucherValueDecisionsFixture(
-      'ed462aca-f74e-4384-910f-628823201023',
-      fixtures.enduserGuardianFixture.id,
-      fixtures.enduserChildFixtureJari.id,
-      daycare2Fixture.id,
-      'DRAFT',
-      decision2DateFrom.formatIso(),
-      decision2DateTo.formatIso()
-    )
-  ])
 
   page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
 
@@ -73,18 +57,71 @@ beforeEach(async () => {
     roles: ['FINANCE_ADMIN']
   })
   await employeeLogin(page, 'FINANCE_ADMIN')
-
   await page.goto(config.employeeUrl)
-  const nav = new EmployeeNav(page)
-  await nav.openTab('finance')
-  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 })
 afterEach(async () => {
   await page.close()
 })
 
+const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
+  await insertVoucherValueDecisionFixtures([
+    voucherValueDecisionsFixture(
+      'e2d75fa4-7359-406b-81b8-1703785ca649',
+      enduserGuardianFixture.id,
+      enduserChildFixtureKaarina.id,
+      daycareFixture.id,
+      null,
+      'DRAFT',
+      decision1DateFrom.formatIso(),
+      decision1DateTo.formatIso()
+    ),
+    voucherValueDecisionsFixture(
+      'ed462aca-f74e-4384-910f-628823201023',
+      enduserGuardianFixture.id,
+      enduserChildFixtureJari.id,
+      daycare2Fixture.id,
+      null,
+      'DRAFT',
+      decision2DateFrom.formatIso(),
+      decision2DateTo.formatIso()
+    )
+  ])
+  await new EmployeeNav(page).openTab('finance')
+  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
+}
+
+const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions =
+  async () => {
+    await insertVoucherValueDecisionFixtures([
+      voucherValueDecisionsFixture(
+        'e2d75fa4-7359-406b-81b8-1703785ca649',
+        familyWithTwoGuardians.guardian.id,
+        familyWithTwoGuardians.children[0].id,
+        daycareFixture.id,
+        familyWithTwoGuardians.otherGuardian,
+        'DRAFT',
+        decision1DateFrom.formatIso(),
+        decision1DateTo.formatIso()
+      ),
+      voucherValueDecisionsFixture(
+        'ed462aca-f74e-4384-910f-628823201023',
+        enduserGuardianFixture.id,
+        enduserChildFixtureJari.id,
+        daycare2Fixture.id,
+        null,
+        'DRAFT',
+        decision2DateFrom.formatIso(),
+        decision2DateTo.formatIso()
+      )
+    ])
+    await new EmployeeNav(page).openTab('finance')
+    valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
+  }
+
 describe('Value decisions', () => {
   test('Date filter filters out decisions', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.setDates(
       decision1DateFrom.subDays(1),
       decision2DateTo.addDays(1)
@@ -99,6 +136,8 @@ describe('Value decisions', () => {
   })
 
   test('With two decisions any date filter overlap will show the decision', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.setDates(
       decision1DateTo.subDays(1),
       decision2DateTo.subDays(1)
@@ -107,6 +146,8 @@ describe('Value decisions', () => {
   })
 
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.setDates(
       decision2DateFrom.subDays(1),
       decision2DateTo.subDays(1)
@@ -117,11 +158,15 @@ describe('Value decisions', () => {
   })
 
   test('Navigate to and from decision details page', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionsPage.navigateBackFromDetails()
   })
 
   test('Send value decision from details page', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.openFirstValueDecision()
     await new ValueDecisionDetailsPage(page).sendValueDecision()
     await runPendingAsyncJobs()
@@ -130,9 +175,20 @@ describe('Value decisions', () => {
   })
 
   test('Voucher value decisions are toggled and sent', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+
     await valueDecisionsPage.toggleAllValueDecisions(true)
     await valueDecisionsPage.sendValueDecisions()
     await runPendingAsyncJobs()
     await valueDecisionsPage.assertSentDecisionsCount(2)
+  })
+
+  test('Voucher value details show partner', async () => {
+    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+
+    await valueDecisionsPage.openFirstValueDecision()
+    await new ValueDecisionDetailsPage(page).assertPartnerName(
+      `${familyWithTwoGuardians.otherGuardian.firstName} ${familyWithTwoGuardians.otherGuardian.lastName}`
+    )
   })
 })

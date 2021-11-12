@@ -89,6 +89,7 @@ export interface VoucherValueDecision {
   validTo: ISODate
   decisionType: VoucherValueDecisionType
   headOfFamily: { id: UUID }
+  partner?: { id: UUID | null }
   familySize: number
   feeThresholds: FeeDecisionThresholds
   child: {

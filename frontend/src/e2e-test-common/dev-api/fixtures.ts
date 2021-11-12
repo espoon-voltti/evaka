@@ -760,6 +760,7 @@ export const voucherValueDecisionsFixture = (
   adultId: UUID,
   childId: UUID,
   daycareId: UUID,
+  partner: PersonDetail | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.today().subYears(1).formatIso(),
   validTo = LocalDate.today().addYears(1).formatIso()
@@ -769,6 +770,7 @@ export const voucherValueDecisionsFixture = (
   validFrom,
   validTo,
   headOfFamily: { id: adultId },
+  partner: partner ? { id: partner.id } : undefined,
   decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,

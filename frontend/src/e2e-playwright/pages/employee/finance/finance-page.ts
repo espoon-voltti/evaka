@@ -221,6 +221,8 @@ export class ValueDecisionsPage {
 export class ValueDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
+  #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+
   #sendDecisionButton = new RawElement(
     this.page,
     '[data-qa="button-send-decision"]'
@@ -229,6 +231,10 @@ export class ValueDecisionDetailsPage {
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
     await this.#sendDecisionButton.waitUntilHidden()
+  }
+
+  async assertPartnerName(expectedName: string) {
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
   }
 }
 

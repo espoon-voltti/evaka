@@ -36,6 +36,7 @@ beforeEach(async () => {
       fixtures.enduserGuardianFixture.id,
       fixtures.enduserChildFixtureKaarina.id,
       fixtures.daycareFixture.id,
+      null,
       'SENT',
       '2020-01-01',
       '2020-12-31'
@@ -45,6 +46,7 @@ beforeEach(async () => {
       fixtures.enduserGuardianFixture.id,
       fixtures.enduserChildFixtureJari.id,
       daycare2Fixture.id,
+      null,
       'SENT',
       '2020-01-01',
       '2020-12-31'
