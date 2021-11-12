@@ -64,6 +64,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         dateOfDeath = person.dateOfDeath,
         firstName = person.firstName,
         lastName = person.lastName,
+        preferredName = "",
         address = PersonAddressDTO(
             origin = PersonAddressDTO.Origin.VTJ,
             streetAddress = person.streetAddress,

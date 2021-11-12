@@ -308,6 +308,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",
+            preferredName = "Matti",
             email = null,
             phone = "",
             backupPhone = "",

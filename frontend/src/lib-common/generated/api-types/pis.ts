@@ -379,6 +379,7 @@ export interface PersonWithChildrenDTO {
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
   phone: string
+  preferredName: string
   residenceCode: string
   restrictedDetails: RestrictedDetails
   socialSecurityNumber: string | null
@@ -391,6 +392,7 @@ export interface PersonalDataUpdate {
   backupPhone: string
   email: string
   phone: string
+  preferredName: string
 }
 
 /**

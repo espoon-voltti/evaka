@@ -1072,6 +1072,7 @@ data class DevPerson(
         ssnAddingDisabled = this.ssnAddingDisabled ?: false,
         firstName = this.firstName,
         lastName = this.lastName,
+        preferredName = this.preferredName,
         email = this.email,
         phone = this.phone,
         backupPhone = this.backupPhone,

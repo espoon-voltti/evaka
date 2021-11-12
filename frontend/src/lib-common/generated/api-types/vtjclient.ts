@@ -32,6 +32,7 @@ export interface CitizenUserDetails {
   phone: string
   postOffice: string
   postalCode: string
+  preferredName: string
   socialSecurityNumber: string
   streetAddress: string
 }

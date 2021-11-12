@@ -93,7 +93,7 @@ class PersonService(
                 if (forceRefresh || guardian.vtjDependantsQueried == null) {
                     getPersonWithDependants(user, guardian.identity)
                         .let { upsertVtjChildren(tx, it) }
-                        .let { toPersonWithChildrenDTO(it, guardian.phone, guardian.backupPhone, guardian.email) }
+                        .let { toPersonWithChildrenDTO(it, guardian.preferredName, guardian.phone, guardian.backupPhone, guardian.email) }
                 } else {
                     val children = tx.getGuardianDependants(id)
                         .map { toPersonWithChildrenDTO(it) }
@@ -217,6 +217,7 @@ class PersonService(
             ssnAddingDisabled = false,
             firstName = person.firstName,
             lastName = person.lastName,
+            preferredName = "",
             email = null,
             phone = "",
             backupPhone = "",
@@ -233,6 +234,7 @@ class PersonService(
 
     private fun toPersonWithChildrenDTO(
         person: VtjPersonDTO,
+        preferredName: String = "",
         phone: String = "",
         backupPhone: String = "",
         email: String? = null
@@ -242,6 +244,7 @@ class PersonService(
             socialSecurityNumber = person.socialSecurityNumber,
             firstName = person.firstName,
             lastName = person.lastName,
+            preferredName = preferredName,
             dateOfBirth = person.dateOfBirth,
             dateOfDeath = person.dateOfDeath,
             nationalities = person.nationalities.toSet(),
@@ -280,6 +283,7 @@ class PersonService(
             socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.toString(),
             firstName = person.firstName,
             lastName = person.lastName,
+            preferredName = person.preferredName,
             dateOfBirth = person.dateOfBirth,
             dateOfDeath = person.dateOfDeath,
             nationalities = emptySet(),
@@ -317,6 +321,7 @@ data class PersonDTO(
     val ssnAddingDisabled: Boolean,
     val firstName: String,
     val lastName: String,
+    val preferredName: String,
     val email: String?,
     val phone: String,
     val backupPhone: String,
@@ -465,6 +470,7 @@ data class PersonWithChildrenDTO(
     val dateOfDeath: LocalDate?,
     val firstName: String,
     val lastName: String,
+    val preferredName: String,
     val address: PersonAddressDTO,
     val residenceCode: String,
     val phone: String,
@@ -486,6 +492,7 @@ data class PersonWithChildrenDTO(
         dateOfDeath = dateOfDeath,
         firstName = firstName,
         lastName = lastName,
+        preferredName = preferredName,
         residenceCode = residenceCode,
         streetAddress = address.streetAddress,
         postalCode = address.postalCode,
@@ -493,9 +500,9 @@ data class PersonWithChildrenDTO(
         restrictedDetailsEnabled = restrictedDetails.enabled,
         restrictedDetailsEndDate = restrictedDetails.endDate,
         language = nativeLanguage?.code,
-        email = null,
-        phone = "",
-        backupPhone = ""
+        email = email,
+        phone = phone,
+        backupPhone = backupPhone
     )
 }
 
@@ -574,6 +581,7 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO = PersonD
     ssnAddingDisabled = false,
     firstName = inputPerson.firstName,
     lastName = inputPerson.lastName,
+    preferredName = "",
 
     streetAddress = getStreetAddressByLanguage(inputPerson),
     postalCode = inputPerson.postalCode,

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -25,18 +26,21 @@ class PersonalDataControllerCitizen {
         Audit.PersonalDataUpdate.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val validationErrors = listOfNotNull(
-            "invalid phone".takeIf { !PHONE_PATTERN.matches(body.phone) },
-            "invalid backup phone".takeIf {
-                body.backupPhone.isNotBlank() && !PHONE_PATTERN.matches(body.backupPhone)
-            },
-            "invalid email".takeIf { body.email.isNotBlank() && !EMAIL_PATTERN.matches(body.email) }
-        )
-
-        if (validationErrors.isNotEmpty()) throw BadRequest(validationErrors.joinToString(", "))
-
         db.transaction {
-            it.createUpdate("UPDATE person SET phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id")
+            val person = it.getPersonById(user.id) ?: error("User not found")
+
+            val validationErrors = listOfNotNull(
+                "invalid preferredName".takeUnless { person.firstName.split(" ").contains(body.preferredName) },
+                "invalid phone".takeUnless { PHONE_PATTERN.matches(body.phone) },
+                "invalid backup phone".takeUnless {
+                    body.backupPhone.isBlank() || PHONE_PATTERN.matches(body.backupPhone)
+                },
+                "invalid email".takeUnless { body.email.isBlank() || EMAIL_PATTERN.matches(body.email) }
+            )
+
+            if (validationErrors.isNotEmpty()) throw BadRequest(validationErrors.joinToString(", "))
+
+            it.createUpdate("UPDATE person SET preferred_name = :preferredName, phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id")
                 .bind("id", user.id)
                 .bindKotlin(body)
                 .execute()
@@ -45,6 +49,7 @@ class PersonalDataControllerCitizen {
 }
 
 data class PersonalDataUpdate(
+    val preferredName: String,
     val phone: String,
     val backupPhone: String,
     val email: String

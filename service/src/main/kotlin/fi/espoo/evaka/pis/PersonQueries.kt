@@ -344,6 +344,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
         ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),
+        preferredName = rs.getString("preferred_name"),
         email = rs.getString("email"),
         phone = rs.getString("phone"),
         backupPhone = rs.getString("backup_phone"),

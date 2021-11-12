@@ -9,6 +9,7 @@ import { email, phone } from 'lib-common/form-validation'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -49,6 +50,11 @@ export default React.memo(function PersonalDetails() {
     save,
     onSaveSuccess
   } = useEditState(t, user, refreshAuthStatus)
+
+  const preferredNameOptions = useMemo(
+    () => user.map((user) => user?.firstName.split(' ') ?? []).getOrElse([]),
+    [user]
+  )
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (
@@ -92,6 +98,7 @@ export default React.memo(function PersonalDetails() {
             const {
               firstName,
               lastName,
+              preferredName,
               streetAddress,
               postalCode,
               postOffice,
@@ -123,6 +130,16 @@ export default React.memo(function PersonalDetails() {
                       <div>
                         {firstName} {lastName}
                       </div>
+                      <Label>{t.personalDetails.preferredName}</Label>
+                      {editing ? (
+                        <Select
+                          items={preferredNameOptions}
+                          selectedItem={editorState.preferredName}
+                          onChange={updateState.preferredName}
+                        />
+                      ) : (
+                        <div>{preferredName}</div>
+                      )}
                       <H2 noMargin>{t.personalDetails.contactInfo}</H2>
                       <div />
                       <Label>{t.personalDetails.address}</Label>
@@ -266,10 +283,13 @@ function useEditState(
 
   const updateState = useMemo(() => {
     const updateFn =
-      (field: 'phone' | 'backupPhone' | 'email') => (value: string) =>
+      (field: 'preferredName' | 'phone' | 'backupPhone' | 'email') =>
+      (value: string) =>
         setEditorState((state) => ({ ...state, [field]: value }))
 
     return {
+      preferredName: (value: string | null) =>
+        setEditorState((state) => ({ ...state, preferredName: value ?? '' })),
       phone: updateFn('phone'),
       backupPhone: updateFn('backupPhone'),
       email: updateFn('email'),
@@ -331,6 +351,7 @@ function initialEditorState(userResult: Result<User | undefined>) {
       .map((user) =>
         user
           ? {
+              preferredName: user.preferredName,
               phone: user.phone,
               backupPhone: user.backupPhone,
               email: user.email ?? '',
@@ -340,6 +361,7 @@ function initialEditorState(userResult: Result<User | undefined>) {
           : undefined
       )
       .getOrElse(undefined) ?? {
+      preferredName: '',
       phone: '',
       backupPhone: '',
       email: '',
