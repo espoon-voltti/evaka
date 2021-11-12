@@ -62,7 +62,6 @@ class VardaClientTest {
         val client = VardaClient(
             mockTokenProvider, fuel, objectMapper,
             VardaEnv(
-                organizer = "",
                 url = "https://example.com/mock-integration/varda/api",
                 basicAuth = Sensitive(""),
                 sourceSystem = "SourceSystemVarda"

@@ -91,7 +91,6 @@ abstract class FullApplicationTest {
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
         vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
         vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv)
-        vardaOrganizerName = vardaEnv.organizer
     }
 
     @AfterAll

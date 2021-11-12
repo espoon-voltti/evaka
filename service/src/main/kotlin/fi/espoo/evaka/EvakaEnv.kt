@@ -200,14 +200,12 @@ data class KoskiEnv(val url: String, val sourceSystem: String, val user: String,
 }
 
 data class VardaEnv(
-    val organizer: String,
     val url: String,
     val sourceSystem: String,
     val basicAuth: Sensitive<String>
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VardaEnv(
-            organizer = env.lookup("evaka.integration.varda.organizer", "fi.espoo.varda.organizer") ?: "Espoo",
             url = env.lookup("evaka.integration.varda.url", "fi.espoo.integration.varda.url"),
             sourceSystem = env.lookup(
                 "evaka.integration.varda.source_system",
