@@ -8,16 +8,18 @@ import styled from 'styled-components'
 interface Props {
   toggled: boolean
   children: React.ReactNode
+  'data-qa'?: string
 }
 
 export default React.memo(function AttentionIndicator({
   toggled,
-  children
+  children,
+  'data-qa': dataQa
 }: Props) {
   return (
     <Wrapper>
       {children}
-      {toggled && <Indicator />}
+      {toggled && <Indicator data-qa={dataQa} />}
     </Wrapper>
   )
 })

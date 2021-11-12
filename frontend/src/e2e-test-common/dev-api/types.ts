@@ -258,7 +258,7 @@ export interface PersonDetail {
   lastName: string
   preferredName?: string
   ssn?: string
-  email?: string
+  email?: string | null
   phone?: string
   language?: string
   residenceCode?: string

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { waitUntilTrue } from 'e2e-playwright/utils'
 import { RawElement } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -20,6 +21,10 @@ export default class CitizenHeader {
     '[data-qa="button-select-language"]'
   )
   #languageOptionList = new RawElement(this.page, '[data-qa="select-lang"]')
+  #userMenu = new RawElement(
+    this.page,
+    `[data-qa="user-menu-title-${this.type}"]`
+  )
   applyingTab = new RawElement(this.page, '[data-qa="nav-applying"]')
 
   async logIn() {
@@ -64,10 +69,7 @@ export default class CitizenHeader {
           .click()
       }
     } else {
-      await this.page
-        .locator(`[data-qa="${this.type}-nav"]`)
-        .locator(`[data-qa="user-menu-title"]`)
-        .click()
+      await this.#userMenu.click()
       await this.page.waitForSelector('[data-qa="user-menu-income"]', {
         state: 'visible'
       })
@@ -78,5 +80,35 @@ export default class CitizenHeader {
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()
     await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
+  }
+
+  async checkPersonalDetailsAttentionIndicatorsAreShown() {
+    const attentionIndicatorSelector = `[data-qa="attention-indicator-${this.type}"]`
+    const personalDetailsAttentionIndicatorSelector = `[data-qa="personal-details-attention-indicator-${this.type}"]`
+
+    await waitUntilTrue(() => this.page.isVisible(attentionIndicatorSelector))
+    if (this.type === 'mobile') {
+      await this.#menuButton.click()
+      await waitUntilTrue(() => this.page.isVisible(attentionIndicatorSelector))
+    }
+
+    await this.#userMenu.click()
+    await waitUntilTrue(() =>
+      this.page.isVisible(personalDetailsAttentionIndicatorSelector)
+    )
+  }
+
+  async navigateToPersonalDetailsPage() {
+    const personalDetailsLinkSelector = '[data-qa="user-menu-personal-details"]'
+
+    if (this.type === 'mobile' && !(await this.#userMenu.visible)) {
+      await this.#menuButton.click()
+    }
+
+    if (!(await this.page.locator(personalDetailsLinkSelector).isVisible())) {
+      await this.#userMenu.click()
+    }
+
+    await this.page.locator(personalDetailsLinkSelector).click()
   }
 }

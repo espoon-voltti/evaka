@@ -59,9 +59,6 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
   await page.click('[data-qa="login-btn"]')
-  await page.waitForSelector('[data-qa="user-menu-title"]', {
-    state: 'visible'
-  })
 }
 
 export async function employeeLogin(page: Page, role: UserRole) {

@@ -73,6 +73,7 @@ export default React.memo(function PersonalDetails() {
             onClick={save}
             onSuccess={onSaveSuccess}
             disabled={errorCount > 0}
+            data-qa="save"
           />
         </FixedSpaceRow>
       </form>
@@ -110,7 +111,10 @@ export default React.memo(function PersonalDetails() {
             return (
               <>
                 {email === null && (
-                  <AlertBox message={t.personalDetails.noEmailAlert} />
+                  <AlertBox
+                    message={t.personalDetails.noEmailAlert}
+                    data-qa="missing-email-box"
+                  />
                 )}
                 <HorizontalLine />
                 <EditButtonRow>
@@ -119,6 +123,7 @@ export default React.memo(function PersonalDetails() {
                     icon={faPen}
                     onClick={startEditing}
                     disabled={editing}
+                    data-qa="start-editing"
                   />
                 </EditButtonRow>
                 {formWrapper(
@@ -136,9 +141,10 @@ export default React.memo(function PersonalDetails() {
                           items={preferredNameOptions}
                           selectedItem={editorState.preferredName}
                           onChange={updateState.preferredName}
+                          data-qa="preferred-name"
                         />
                       ) : (
-                        <div>{preferredName}</div>
+                        <div data-qa="preferred-name">{preferredName}</div>
                       )}
                       <H2 noMargin>{t.personalDetails.contactInfo}</H2>
                       <div />
@@ -148,7 +154,7 @@ export default React.memo(function PersonalDetails() {
                           `${streetAddress}, ${postalCode} ${postOffice}`}
                       </div>
                       <Label>{t.personalDetails.phone}</Label>
-                      <div>
+                      <div data-qa="phone">
                         {editing ? (
                           <InputField
                             type="text"
@@ -164,7 +170,7 @@ export default React.memo(function PersonalDetails() {
                         )}
                       </div>
                       <Label>{t.personalDetails.backupPhone}</Label>
-                      <div>
+                      <div data-qa="backup-phone">
                         {editing ? (
                           <InputField
                             type="text"
@@ -184,7 +190,7 @@ export default React.memo(function PersonalDetails() {
                       <Label>{t.personalDetails.email}</Label>
                       {editing ? (
                         <FixedSpaceColumn spacing="xs">
-                          <div>
+                          <div data-qa="email">
                             <InputField
                               type="text"
                               width="m"
@@ -201,6 +207,7 @@ export default React.memo(function PersonalDetails() {
                               label={t.personalDetails.noEmail}
                               checked={editorState.noEmail}
                               onChange={updateState.noEmail}
+                              data-qa="no-email"
                             />
                             <InfoButton
                               onClick={toggleEmailInfo}
@@ -209,7 +216,9 @@ export default React.memo(function PersonalDetails() {
                           </FixedSpaceRow>
                         </FixedSpaceColumn>
                       ) : (
-                        <div>{email ? email : <EmailMissing />}</div>
+                        <div data-qa="email">
+                          {email ? email : <EmailMissing />}
+                        </div>
                       )}
                     </ListGrid>
                     {editorState.showEmailInfo && (

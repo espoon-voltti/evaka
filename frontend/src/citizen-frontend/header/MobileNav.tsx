@@ -58,7 +58,10 @@ export default React.memo(function MobileNav({
   return (
     <Container ref={ref} data-qa="mobile-nav">
       <MenuButton onClick={toggleMenu} data-qa="menu-button">
-        <AttentionIndicator toggled={showAttentionIndicator}>
+        <AttentionIndicator
+          toggled={showAttentionIndicator}
+          data-qa="attention-indicator-mobile"
+        >
           <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
         </AttentionIndicator>
       </MenuButton>
@@ -340,8 +343,11 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
 
   return (
     <>
-      <SubMenuButton onClick={toggleShow}>
-        <AttentionIndicator toggled={user.email === null}>
+      <SubMenuButton onClick={toggleShow} data-qa="user-menu-title-mobile">
+        <AttentionIndicator
+          toggled={user.email === null}
+          data-qa="attention-indicator-mobile"
+        >
           <FontAwesomeIcon icon={faUser} size="lg" />
         </AttentionIndicator>
         <Gap size="s" horizontal />
@@ -361,7 +367,11 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
           >
             {t.header.nav.personalDetails}
             {user.email === null && (
-              <FontAwesomeIcon icon={faCircleExclamation} size="lg" />
+              <FontAwesomeIcon
+                icon={faCircleExclamation}
+                size="lg"
+                data-qa="personal-details-attention-indicator-mobile"
+              />
             )}
           </SubMenuLink>
           <SubMenuLink to="/income" onClick={close} data-qa="nav-income">

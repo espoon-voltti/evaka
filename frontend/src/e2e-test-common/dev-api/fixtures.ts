@@ -617,7 +617,7 @@ const applicationForm = (
         editable: false
       },
       phoneNumber: guardian.phone,
-      email: guardian.email,
+      email: guardian.email ?? undefined,
       restricted: false
     },
     guardian2: {
@@ -667,7 +667,7 @@ export const applicationFixture = (
     child,
     guardian,
     otherGuardian?.phone,
-    otherGuardian?.email,
+    otherGuardian?.email ?? undefined,
     otherGuardianAgreementStatus,
     preferredUnits,
     connectedDaycare

@@ -215,8 +215,11 @@ const UserMenu = React.memo(function UserMenu() {
 
   return (
     <div ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title'}>
-        <AttentionIndicator toggled={showUserAttentionIndicator}>
+      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title-desktop'}>
+        <AttentionIndicator
+          toggled={showUserAttentionIndicator}
+          data-qa="attention-indicator-desktop"
+        >
           <Icon icon={faUser} />
         </AttentionIndicator>
         <Gap size="s" horizontal />
@@ -241,6 +244,7 @@ const UserMenu = React.memo(function UserMenu() {
                   content={faExclamation}
                   color={theme.colors.accents.orange}
                   size="s"
+                  data-qa="personal-details-attention-indicator-desktop"
                 />
               </>
             )}
