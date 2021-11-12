@@ -12,6 +12,7 @@ import {
 import {
   Lang as LangEmployee,
   Translations as TranslationsEmployee,
+  VasuLang as VasuLangEmployee,
   VasuTranslations as VasuTranslationsEmployee
 } from './employee'
 import {
@@ -127,7 +128,10 @@ export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
-  vasuTranslations: Record<LangEmployee, DeepPartial<VasuTranslationsEmployee>>
+  vasuTranslations: Record<
+    VasuLangEmployee,
+    DeepPartial<VasuTranslationsEmployee>
+  >
   cityLogo: {
     src: string
     alt: string

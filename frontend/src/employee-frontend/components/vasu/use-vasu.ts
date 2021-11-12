@@ -201,8 +201,8 @@ export function useVasu(id: string): Vasu {
   const translations = useMemo(
     () =>
       vasu !== undefined
-        ? (vasuTranslations[vasu.language.toLowerCase()] as VasuTranslations)
-        : vasuTranslations.fi,
+        ? vasuTranslations[vasu.language]
+        : vasuTranslations.FI,
     [vasu]
   )
 

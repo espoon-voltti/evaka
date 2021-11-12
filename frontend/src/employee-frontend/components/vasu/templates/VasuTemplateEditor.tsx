@@ -28,7 +28,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
-import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
+import { vasuTranslations } from 'lib-customizations/employee'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   CheckboxQuestion,
@@ -67,12 +67,7 @@ export default React.memo(function VasuTemplateEditor() {
   const readonly = !(template.isSuccess && template.value.documentCount === 0)
 
   const translations = useMemo(
-    () =>
-      template
-        ? (vasuTranslations[
-            template.getOrElse({ language: 'FI' }).language.toLowerCase()
-          ] as VasuTranslations)
-        : vasuTranslations.fi,
+    () => vasuTranslations[template.map((t) => t.language).getOrElse('FI')],
     [template]
   )
 

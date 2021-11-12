@@ -7,7 +7,6 @@
 import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 import { fi } from './espoo/employee/assets/i18n/fi'
-import { sv } from './espoo/employee/assets/i18n/sv'
 import { mergeWith } from 'lodash'
 import { ApplicationType } from 'lib-common/generated/enums'
 import { translationsMergeCustomizer } from './common'
@@ -34,7 +33,7 @@ export {
   unitProviderTypes
 }
 
-export type Lang = 'fi' | 'sv'
+export type Lang = 'fi'
 
 export type Translations = typeof fi
 
@@ -43,25 +42,21 @@ export const translations: { [K in Lang]: Translations } = {
     fi,
     (customizations as EmployeeCustomizations).translations.fi,
     translationsMergeCustomizer
-  ),
-  sv: mergeWith(
-    sv,
-    (customizations as EmployeeCustomizations).translations.fi,
-    translationsMergeCustomizer
   )
 }
 
+export type VasuLang = 'FI' | 'SV'
 export type VasuTranslations = typeof vasuFI
 
-export const vasuTranslations: { [K in Lang]: VasuTranslations } = {
-  fi: mergeWith(
+export const vasuTranslations: { [K in VasuLang]: VasuTranslations } = {
+  FI: mergeWith(
     vasuFI,
-    (customizations as EmployeeCustomizations).vasuTranslations.fi,
+    (customizations as EmployeeCustomizations).vasuTranslations.FI,
     translationsMergeCustomizer
   ),
-  sv: mergeWith(
+  SV: mergeWith(
     vasuSV,
-    (customizations as EmployeeCustomizations).vasuTranslations.sv,
+    (customizations as EmployeeCustomizations).vasuTranslations.SV,
     translationsMergeCustomizer
   )
 }

@@ -10,7 +10,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'
-import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
+import { vasuTranslations } from 'lib-customizations/employee'
 
 const HeaderSection = styled(ContentArea)`
   display: flex;
@@ -53,9 +53,7 @@ export function VasuHeader({
   }
 }: Props) {
   const { i18n } = useTranslation()
-  const translations = vasuTranslations[
-    language.toLowerCase()
-  ] as VasuTranslations
+  const translations = vasuTranslations[language]
 
   return (
     <HeaderSection opaque>
