@@ -102,16 +102,6 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions =
         'DRAFT',
         decision1DateFrom.formatIso(),
         decision1DateTo.formatIso()
-      ),
-      voucherValueDecisionsFixture(
-        'ed462aca-f74e-4384-910f-628823201023',
-        enduserGuardianFixture.id,
-        enduserChildFixtureJari.id,
-        daycare2Fixture.id,
-        null,
-        'DRAFT',
-        decision2DateFrom.formatIso(),
-        decision2DateTo.formatIso()
       )
     ])
     await new EmployeeNav(page).openTab('finance')
