@@ -2,29 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
-import _ from 'lodash'
-import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
-import Title from 'lib-components/atoms/Title'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
+import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { faArrowRight } from 'lib-icons'
-import { useTranslation } from '../../../state/i18n'
-import { DaycareGroup } from '../../../types/unit'
-import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
-import { UIContext } from '../../../state/ui'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import Title from 'lib-components/atoms/Title'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { featureFlags, Translations } from 'lib-customizations/employee'
+import { faArrowRight } from 'lib-icons'
+import _ from 'lodash'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { MissingGroupPlacement } from '../../../api/unit'
 import CareTypeLabel, {
   careTypesFromPlacementType
 } from '../../../components/common/CareTypeLabel'
-import { UnitBackupCare } from '../../../types/child'
+import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { DaycareGroup } from '../../../types/unit'
 import { formatName } from '../../../utils'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import { MissingGroupPlacement } from '../../../api/unit'
 import { isPartDayPlacement } from '../../../utils/placements'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UUID } from 'lib-common/types'
-import { Action } from 'lib-common/generated/action'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,

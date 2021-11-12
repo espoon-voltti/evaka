@@ -53,9 +53,8 @@ data class ServiceNeedOptionSummary(
 
 data class ServiceNeedConfirmation(
     @PropagateNull
-    val employeeId: UUID,
-    val firstName: String,
-    val lastName: String,
+    val userId: UUID,
+    val name: String,
     val at: HelsinkiDateTime?
 )
 
@@ -194,7 +193,7 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = old.endDate,
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedBy = old.confirmed?.userId,
                     confirmedAt = old.confirmed?.at
                 )
             }
@@ -205,7 +204,7 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedBy = old.confirmed?.userId,
                     confirmedAt = old.confirmed?.at
                 )
             }
@@ -216,7 +215,7 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedBy = old.confirmed?.userId,
                     confirmedAt = old.confirmed?.at
                 )
                 tx.insertServiceNeed(
@@ -225,7 +224,7 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
                     endDate = old.endDate,
                     optionId = old.option.id,
                     shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.employeeId,
+                    confirmedBy = old.confirmed?.userId,
                     confirmedAt = old.confirmed?.at
                 )
             }

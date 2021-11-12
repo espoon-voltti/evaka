@@ -41,6 +41,7 @@ import * as _ from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
 import {
@@ -55,7 +56,6 @@ import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/grou
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
-import { UnitBackupCare } from '../../../../types/child'
 import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,

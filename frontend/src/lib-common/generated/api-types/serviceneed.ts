@@ -28,9 +28,8 @@ export interface ServiceNeed {
 */
 export interface ServiceNeedConfirmation {
   at: Date | null
-  employeeId: UUID
-  firstName: string
-  lastName: string
+  name: string
+  userId: UUID
 }
 
 /**

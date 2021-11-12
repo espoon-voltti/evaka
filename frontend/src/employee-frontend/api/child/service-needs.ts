@@ -3,23 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../client'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
 import {
+  ServiceNeedCreateRequest,
   ServiceNeedOption,
-  ServiceNeedOptionPublicInfo
+  ServiceNeedOptionPublicInfo,
+  ServiceNeedUpdateRequest
 } from 'lib-common/generated/api-types/serviceneed'
 import { PlacementType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-
-export interface ServiceNeedCreateRequest {
-  placementId: UUID
-  startDate: LocalDate
-  endDate: LocalDate
-  optionId: UUID
-  shiftCare: boolean
-}
+import { client } from '../client'
 
 export async function createServiceNeed(
   data: ServiceNeedCreateRequest
@@ -28,13 +21,6 @@ export async function createServiceNeed(
     .post('/service-needs', data)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface ServiceNeedUpdateRequest {
-  startDate: LocalDate
-  endDate: LocalDate
-  optionId: UUID
-  shiftCare: boolean
 }
 
 export async function updateServiceNeed(

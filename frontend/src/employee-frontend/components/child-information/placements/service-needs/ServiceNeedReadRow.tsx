@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Td, Tr } from 'lib-components/layout/Table'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import { ServiceNeed } from '../../../../types/child'
-import { useTranslation } from '../../../../state/i18n'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import { Td, Tr } from 'lib-components/layout/Table'
+import React from 'react'
+import { useTranslation } from '../../../../state/i18n'
 import Toolbar from '../../../common/Toolbar'
 
 interface ServiceNeedReadRowProps {
@@ -32,14 +32,7 @@ function ServiceNeedReadRow({
       <Td>{serviceNeed.option.nameFi}</Td>
       <Td>{serviceNeed.shiftCare ? i18n.common.yes : i18n.common.no}</Td>
       <Td>
-        <Tooltip
-          tooltip={
-            <span>
-              {serviceNeed.confirmed?.lastName}{' '}
-              {serviceNeed.confirmed?.firstName}
-            </span>
-          }
-        >
+        <Tooltip tooltip={<span>{serviceNeed.confirmed?.name}</span>}>
           {formatDate(serviceNeed.confirmed?.at, DATE_FORMAT_DATE_TIME)}
         </Tooltip>
       </Td>
