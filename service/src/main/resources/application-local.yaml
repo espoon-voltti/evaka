@@ -36,7 +36,6 @@ evaka:
       enabled: false
     varda:
       basic_auth: ""
-      organizer: Espoo
       source_system: 31
       url: http://localhost:8888/mock-integration/varda/api
     vtj:
