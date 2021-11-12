@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Loading, Paged, Result } from 'lib-common/api'
 import {
   DraftContent,
   Message,
@@ -11,18 +12,18 @@ import {
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { UserContext } from '../../state/user'
-import { Loading, Paged, Result } from 'lib-common/api'
-import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
+import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState
 } from 'react'
+import { client } from '../../api/client'
+import { UserContext } from '../../state/user'
 import {
   getMessageDrafts,
   getMessagingAccounts,
@@ -33,16 +34,14 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { AccountView } from './types-view'
-import { UUID } from 'lib-common/types'
 import { ReactSelectOption } from './SelectorNode'
+import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
   nestedAccounts: Result<NestedMessageAccount[]>
-  loadNestedAccounts: () => void
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
@@ -68,7 +67,6 @@ export interface MessagesState {
 
 const defaultState: MessagesState = {
   nestedAccounts: Loading.of(),
-  loadNestedAccounts: () => undefined,
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
@@ -116,32 +114,23 @@ export const MessageContextProvider = React.memo(
     >()
     const { loggedIn } = useContext(UserContext)
 
-    const [nestedAccounts, setNestedMessagingAccounts] = useState<
-      Result<NestedMessageAccount[]>
-    >(Loading.of())
-
-    const [unreadCountsByAccount, setUnreadCountsByAccount] = useState<
-      Result<UnreadCountByAccount[]>
-    >(Loading.of())
-
-    const getNestedAccounts = useRestApi(
-      getMessagingAccounts,
-      setNestedMessagingAccounts
-    )
-    const loadNestedAccounts = useDebouncedCallback(getNestedAccounts, 100)
-
-    const loadUnreadCounts = useRestApi(
-      getUnreadCounts,
-      setUnreadCountsByAccount
+    const [accounts] = useApiState(
+      () =>
+        loggedIn
+          ? getMessagingAccounts()
+          : Promise.resolve(Loading.of<NestedMessageAccount[]>()),
+      [loggedIn]
     )
 
-    useEffect(() => {
-      loggedIn ? loadNestedAccounts() : null
-    }, [loadNestedAccounts, loggedIn])
+    const [unreadCountsByAccount, refreshUnreadCounts] = useApiState(
+      () =>
+        loggedIn
+          ? getUnreadCounts()
+          : Promise.resolve(Loading.of<UnreadCountByAccount[]>()),
+      [loggedIn]
+    )
 
-    useEffect(() => {
-      loggedIn ? loadUnreadCounts() : null
-    }, [loadUnreadCounts, loggedIn])
+    usePeriodicRefresh(client, refreshUnreadCounts, { thresholdInMinutes: 1 })
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(
@@ -257,37 +246,23 @@ export const MessageContextProvider = React.memo(
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
 
-        const { id: accountId } = selectedAccount.account
-        const threadUnreadCount = thread.messages.reduce(
-          (sum, m) => (!m.readAt && m.sender.id !== accountId ? sum + 1 : sum),
-          0
+        const accountId = selectedAccount.account.id
+        const hasUnreadMessages = thread.messages.some(
+          (m) => !m.readAt && m.sender.id !== accountId
         )
-        if (threadUnreadCount > 0) {
-          setUnreadCountsByAccount((request) =>
-            request.map((result) =>
-              result.map(({ accountId: acc, unreadCount }) =>
-                acc === accountId
-                  ? {
-                      accountId: acc,
-                      unreadCount: unreadCount - threadUnreadCount
-                    }
-                  : { accountId: acc, unreadCount }
-              )
-            )
-          )
+        if (hasUnreadMessages) {
+          void markThreadRead(accountId, thread.id).then(() => {
+            refreshMessages(accountId)
+            refreshUnreadCounts()
+          })
         }
-
-        void markThreadRead(accountId, thread.id).then(() =>
-          refreshMessages(accountId)
-        )
       },
-      [refreshMessages, selectedAccount, setUnreadCountsByAccount]
+      [refreshMessages, selectedAccount, refreshUnreadCounts]
     )
 
     const value = useMemo(
       () => ({
-        nestedAccounts,
-        loadNestedAccounts,
+        nestedAccounts: accounts,
         selectedDraft,
         setSelectedDraft,
         selectedAccount,
@@ -311,8 +286,7 @@ export const MessageContextProvider = React.memo(
         unreadCountsByAccount
       }),
       [
-        nestedAccounts,
-        loadNestedAccounts,
+        accounts,
         selectedDraft,
         selectedAccount,
         selectedUnit,
