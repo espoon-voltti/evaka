@@ -21,7 +21,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <h1 th:text="#{decision.title}"></h1>
     <div class="child-details">
         <p>
-            <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
+            <strong th:text="#{decision.details.child.prefix}">Lapsellenne</strong>
+            <span th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Etunimi Sukunimi (s. 1.1.2000)</span>
             <br/>
             <span th:utext="#{decision.details.date}"></span>
             <span th:replace="~{shared/common :: placement-dates}"></span>

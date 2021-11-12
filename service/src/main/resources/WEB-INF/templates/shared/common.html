@@ -283,7 +283,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <div th:fragment="child-and-unit-details">
     <div class="child-details">
         <p>
-            <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
+            <strong th:text="#{decision.details.child.prefix}">Lapsellenne</strong>
+            <span th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Etunimi Sukunimi (s. 1.1.2000)</span>
             <br/>
             <span th:utext="#{decision.details.date}">on tehty varhaiskasvatuspäätös varhaiskasvatukseen
                 ajalle</span>
@@ -326,7 +327,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
             <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
         </p>
-        <div th:utext="${decision.createdBy}"></div>
+        <div th:text="${decision.createdBy}"></div>
         <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
         <div th:utext="#{decision.approver.title}">Varhaiskasvatuksen palveluohjaaja</div>
         <div th:utext="#{decision.approver.unit}">Varhaiskasvatuksen palveluohjaus</div>
