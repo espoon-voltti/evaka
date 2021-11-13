@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DayOfWeek } from './index'
-import LocalDate from 'lib-common/local-date'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { PlacementType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import {
   PlacementPlanRejectReason,
   UnitProviderType
 } from 'lib-customizations/types'
-import { ServiceNeed } from './child'
-import { PlacementType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { DayOfWeek } from './index'
 
 export interface CareArea {
   id: UUID

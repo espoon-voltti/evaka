@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { client } from './client'
 import {
   Coordinate,
@@ -20,13 +21,15 @@ import {
   UnitTypes,
   VisitingAddress
 } from '../types/unit'
-import { ServiceNeed, UnitBackupCare } from '../types/child'
 import { DayOfWeek } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { ServiceNeedOptionSummary } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ServiceNeed,
+  ServiceNeedOptionSummary
+} from 'lib-common/generated/api-types/serviceneed'
 import { UnitProviderType } from 'lib-customizations/types'
 import {
   AbsenceType,
@@ -313,7 +316,8 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
                 ? new Date(serviceNeed.confirmed.at)
                 : null
           }
-        : null
+        : null,
+    updated: new Date(serviceNeed.updated)
   }))
 }
 

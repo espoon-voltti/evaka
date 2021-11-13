@@ -26,11 +26,11 @@ fun Database.Read.getServiceNeedsByChild(
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
-            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
+            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
-        LEFT JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
         WHERE pl.child_id = :childId
         """.trimIndent()
 
@@ -51,11 +51,11 @@ fun Database.Read.getServiceNeedsByUnit(
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
-            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
+            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
-        LEFT JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]')
         """.trimIndent()
 
@@ -73,10 +73,10 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
-            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
+            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
         WHERE sn.id = :id
     """.trimIndent()
 
@@ -174,10 +174,10 @@ fun Database.Read.getOverlappingServiceNeeds(
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
-            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
+            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
         FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN employee e on e.id = sn.confirmed_by
+        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
         WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
     """.trimIndent()
 

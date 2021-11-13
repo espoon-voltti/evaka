@@ -425,9 +425,8 @@ fun getMissingGroupPlacements(
                 ),
                 'shiftCare', sn.shift_care,
                 'confirmed', jsonb_build_object(
-                    'employeeId', e.id,
-                    'firstName', e.first_name,
-                    'lastName', e.last_name,
+                    'userId', u.id,
+                    'name', u.name,
                     'at', date_part('epoch', sn.confirmed_at)
                 ),
                 'updated', date_part('epoch', sn.updated)
@@ -437,7 +436,7 @@ fun getMissingGroupPlacements(
         LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') && daterange(:launch, NULL)
         LEFT JOIN service_need sn ON sn.placement_id = pl.id
         LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-        LEFT JOIN employee e ON e.id = sn.confirmed_by
+        LEFT JOIN evaka_user u ON u.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange(:launch, NULL)
         GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
         --exclude simple cases where there is only one group placement and it matches the placement range

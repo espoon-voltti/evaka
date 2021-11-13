@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../client'
-import { Placement } from '../../types/child'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { client } from '../client'
 
 export interface PlacementCreate {
   childId: UUID
@@ -28,7 +27,7 @@ export async function createPlacement(
   body: PlacementCreate
 ): Promise<Result<null>> {
   return client
-    .post<JsonOf<Placement>>(`/placements`, {
+    .post(`/placements`, {
       ...body,
       startDate: body.startDate,
       endDate: body.endDate

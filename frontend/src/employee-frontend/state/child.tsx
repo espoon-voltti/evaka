@@ -9,8 +9,7 @@ import {
   AdditionalInformation,
   AssistanceAction,
   AssistanceNeed,
-  ChildBackupCare,
-  ServiceNeed
+  ChildBackupCare
 } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
@@ -20,7 +19,10 @@ import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ServiceNeed,
+  ServiceNeedOption
+} from 'lib-common/generated/api-types/serviceneed'
 
 export interface ChildState {
   person: Result<PersonDetails>

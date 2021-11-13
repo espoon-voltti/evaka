@@ -2,13 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroupPlacement } from './unit'
-import { AssistanceMeasure, UnitProviderType } from 'lib-customizations/types'
-import { ServiceNeedOptionSummary } from 'lib-common/generated/api-types/serviceneed'
-import { PlacementType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { AssistanceMeasure } from 'lib-customizations/types'
 
 export interface AssistanceNeed {
   id: UUID
@@ -52,38 +49,6 @@ export interface AdditionalInformation {
   medication: string
 }
 
-export interface ServiceNeed {
-  id: UUID
-  placementId: UUID
-  startDate: LocalDate
-  endDate: LocalDate
-  option: ServiceNeedOptionSummary
-  shiftCare: boolean
-  confirmed: {
-    employeeId: UUID
-    firstName: string
-    lastName: string
-    at: Date | null
-  } | null
-}
-
-export interface Placement {
-  id: UUID
-  startDate: LocalDate
-  endDate: LocalDate
-  type: PlacementType
-  daycare: {
-    id: UUID
-    name: string
-    area: string
-    providerType: UnitProviderType
-  }
-  missingServiceNeedDays: number
-  groupPlacements: DaycareGroupPlacement[]
-  serviceNeeds: ServiceNeed[]
-  isRestrictedFromUser: boolean
-}
-
 export interface ChildBackupCare {
   id: UUID
   unit: {
@@ -95,23 +60,6 @@ export interface ChildBackupCare {
     name: string
   }
   period: FiniteDateRange
-}
-
-export interface UnitBackupCare {
-  id: UUID
-  period: FiniteDateRange
-  missingServiceNeedDays: number
-  group?: {
-    id: UUID
-    name: string
-  }
-  child: {
-    id: UUID
-    firstName: string
-    lastName: string
-    birthDate: LocalDate
-  }
-  serviceNeeds: ServiceNeed[]
 }
 
 export interface ChildBackupPickup {
