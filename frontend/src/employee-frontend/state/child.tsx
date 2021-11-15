@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { FeeAlteration } from '../types/fee-alteration'
-import {
-  AssistanceAction,
-  AssistanceNeed,
-  ChildBackupCare
-} from '../types/child'
+import { AssistanceNeed, ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { VasuDocumentSummary } from '../components/vasu/api'
@@ -34,8 +30,6 @@ export interface ChildState {
   setServiceNeedOptions: (request: Result<ServiceNeedOption[]>) => void
   assistanceNeeds: Result<AssistanceNeed[]>
   setAssistanceNeeds: (request: Result<AssistanceNeed[]>) => void
-  assistanceActions: Result<AssistanceAction[]>
-  setAssistanceActions: (request: Result<AssistanceAction[]>) => void
   additionalInformation: Result<AdditionalInformation>
   setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
@@ -69,8 +63,6 @@ const defaultState: ChildState = {
   setServiceNeedOptions: () => undefined,
   assistanceNeeds: Loading.of(),
   setAssistanceNeeds: () => undefined,
-  assistanceActions: Loading.of(),
-  setAssistanceActions: () => undefined,
   additionalInformation: Loading.of(),
   setAdditionalInformation: () => undefined,
   feeAlterations: Loading.of(),
@@ -113,9 +105,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [assistanceNeeds, setAssistanceNeeds] = useState<
     Result<AssistanceNeed[]>
   >(defaultState.assistanceNeeds)
-  const [assistanceActions, setAssistanceActions] = useState<
-    Result<AssistanceAction[]>
-  >(defaultState.assistanceActions)
   const [additionalInformation, setAdditionalInformation] = useState<
     Result<AdditionalInformation>
   >(defaultState.additionalInformation)
@@ -161,8 +150,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setServiceNeedOptions,
       assistanceNeeds,
       setAssistanceNeeds,
-      assistanceActions,
-      setAssistanceActions,
       additionalInformation,
       setAdditionalInformation,
       feeAlterations,
@@ -186,36 +173,20 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     }),
     [
       person,
-      setPerson,
       permittedActions,
-      setPermittedActions,
       serviceNeeds,
-      setServiceNeeds,
       serviceNeedOptions,
-      setServiceNeedOptions,
       assistanceNeeds,
-      setAssistanceNeeds,
-      assistanceActions,
-      setAssistanceActions,
       additionalInformation,
-      setAdditionalInformation,
       feeAlterations,
-      setFeeAlterations,
       placements,
-      setPlacements,
       parentships,
-      setParentships,
       backupCares,
-      setBackupCares,
       guardians,
-      setGuardians,
       vasus,
       applications,
-      setApplications,
       recipients,
-      setRecipients,
-      pedagogicalDocuments,
-      setPedagogicalDocuments
+      pedagogicalDocuments
     ]
   )
 

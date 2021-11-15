@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { FormEvent, useContext, useEffect, useState } from 'react'
+import React, {
+  FormEvent,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -25,7 +31,6 @@ import {
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
 import FormActions from '../../../components/common/FormActions'
-import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DivFitContent } from '../../common/styled/containers'
@@ -55,6 +60,7 @@ interface FormState {
 
 interface CommonProps {
   onReload: () => undefined | void
+  assistanceActions: AssistanceAction[]
   assistanceActionOptions: AssistanceActionOption[]
 }
 
@@ -96,25 +102,46 @@ const noErrors: AssistanceActionFormErrors = {
   }
 }
 
-function AssistanceActionForm(props: Props) {
+const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
+  props.assistanceActions
+    .filter((sn) => isCreate(props) || sn.id != props.assistanceAction.id)
+    .map(({ startDate, endDate }) => ({ startDate, endDate }))
+
+function checkSoftConflict(form: FormState, props: Props): boolean {
+  if (isDateRangeInverted(form)) return false
+  return getExistingAssistanceActionRanges(props).some((existing) =>
+    rangeContainsDate(existing, form.startDate)
+  )
+}
+
+function checkHardConflict(form: FormState, props: Props): boolean {
+  if (isDateRangeInverted(form)) return false
+  return getExistingAssistanceActionRanges(props).some((existing) =>
+    rangeContainsDate(form, existing.startDate)
+  )
+}
+
+export default React.memo(function AssistanceActionForm(props: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const { assistanceActions } = useContext(ChildContext)
 
-  const initialFormState: FormState =
-    isCreate(props) && !isDuplicate(props)
-      ? {
-          startDate: LocalDate.today(),
-          endDate: LocalDate.today(),
-          actions: new Set(),
-          otherSelected: false,
-          otherAction: '',
-          measures: new Set()
-        }
-      : {
-          ...props.assistanceAction,
-          otherSelected: props.assistanceAction.otherAction !== ''
-        }
+  const initialFormState: FormState = useMemo(
+    () =>
+      isCreate(props) && !isDuplicate(props)
+        ? {
+            startDate: LocalDate.today(),
+            endDate: LocalDate.today(),
+            actions: new Set(),
+            otherSelected: false,
+            otherAction: '',
+            measures: new Set()
+          }
+        : {
+            ...props.assistanceAction,
+            otherSelected: props.assistanceAction.otherAction !== ''
+          },
+    [props]
+  )
   const [form, setForm] = useState<FormState>(initialFormState)
 
   const [formErrors, setFormErrors] =
@@ -122,48 +149,25 @@ function AssistanceActionForm(props: Props) {
 
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
-  const getExistingAssistanceActionRanges = (): DateRange[] =>
-    assistanceActions
-      .map((actions) =>
-        actions
-          .filter((sn) => isCreate(props) || sn.id != props.assistanceAction.id)
-          .map(({ startDate, endDate }) => ({ startDate, endDate }))
-      )
-      .getOrElse([])
-
-  const checkSoftConflict = (): boolean => {
-    if (isDateRangeInverted(form)) return false
-    return getExistingAssistanceActionRanges().some((existing) =>
-      rangeContainsDate(existing, form.startDate)
-    )
-  }
-
-  const checkHardConflict = (): boolean => {
-    if (isDateRangeInverted(form)) return false
-    return getExistingAssistanceActionRanges().some((existing) =>
-      rangeContainsDate(form, existing.startDate)
-    )
-  }
-
-  const checkAnyConflict = () => checkHardConflict() || checkSoftConflict()
-
   const updateFormState: UpdateStateFn<FormState> = (values) => {
     const newState = { ...form, ...values }
     setForm(newState)
   }
 
   useEffect(() => {
+    const isSoftConflict = checkSoftConflict(form, props)
+    const isHardConflict = checkHardConflict(form, props)
+    const isAnyConflict = isSoftConflict || isHardConflict
+
     setFormErrors({
       dateRange: {
         inverted: isDateRangeInverted(form),
-        conflict: isCreate(props) ? checkHardConflict() : checkAnyConflict()
+        conflict: isCreate(props) ? isHardConflict : isAnyConflict
       }
     })
 
-    setAutoCutWarning(
-      isCreate(props) && checkSoftConflict() && !checkHardConflict()
-    )
-  }, [form, assistanceActions]) // eslint-disable-line react-hooks/exhaustive-deps
+    setAutoCutWarning(isCreate(props) && isSoftConflict && !isHardConflict)
+  }, [form, props])
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -372,6 +376,4 @@ function AssistanceActionForm(props: Props) {
       />
     </form>
   )
-}
-
-export default AssistanceActionForm
+})

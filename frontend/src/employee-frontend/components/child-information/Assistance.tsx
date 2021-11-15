@@ -16,7 +16,7 @@ export interface Props {
   startOpen: boolean
 }
 
-function Assistance({ id, startOpen }: Props) {
+export default React.memo(function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
 
@@ -42,6 +42,4 @@ function Assistance({ id, startOpen }: Props) {
       </CollapsibleContentArea>
     </div>
   )
-}
-
-export default Assistance
+})
