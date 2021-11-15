@@ -1,0 +1,53 @@
+-- SPDX-FileCopyrightText: 2017-2021 City of Espoo
+--
+-- SPDX-License-Identifier: LGPL-2.1-or-later
+
+INSERT INTO unit_manager (id, name, phone, email) VALUES
+ ('003a6be2-a4b4-11ea-a126-a30ae8b0d09a', 'UNIT_MANAGER_NAME_A', 'UNIT_MANAGER_PHONE_A', 'UNIT_MANAGER_EMAIL_A@espoo.fi'),
+ ('019aec48-abd7-11eb-8020-5fdc67e1b4c3', 'UNIT_MANAGER_NAME_B', 'UNIT_MANAGER_PHONE_B', 'UNIT_MANAGER_EMAIL_B@espoo.fi');
+
+INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, short_name) VALUES
+ ('a01b0e03-b86e-4cbc-a744-6a35473b9628', 'Alue A', '2019-04-16 05:26:06.303078+00', '2020-04-02 11:40:46.780692+00', 249, '01', 'alue-a'),
+ ('801a6cc7-e8a5-4279-b192-4e8192d82c18', 'Alue B', '2019-04-16 05:26:06.303078+00', '2020-04-02 11:40:46.780692+00', 249, '01', 'alue-b');
+
+INSERT INTO public.daycare (id, name, type, care_area_id, phone, url, created, updated, backup_location, language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, unit_manager_id, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, operation_days, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period) VALUES
+ ('2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Päiväkoti ja esikoulu A', '{PREPARATORY_EDUCATION,PRESCHOOL,CENTRE}', 'a01b0e03-b86e-4cbc-a744-6a35473b9628', 'UNIT_PHONE', 'https://www.espoo.fi/fi/toimipisteet/15853', '2019-05-17 10:26:06.066821+00', '2021-09-06 08:34:27.596059+00', null, null, '2004-01-01', null, 'UNIT_EMAIL@espoo.fi', null, '', '003a6be2-a4b4-11ea-a126-a30ae8b0d09a', '31606', true, 175, 'Päiväkoti ja esiopetus A', '', 'DECISION_HANDLER', 'DECISION_HANDLER_ADDRESS', 'Osoite 1', '02920', 'Espoo', 'PL 3536', '(24.7514109,60.2766848)', null, '02070', 'ESPOON KAUPUNKI', true, 'MUNICIPAL', 'fi', false, null, null, '{1,2,3,4,5}', false, '[2020-03-01,)', '[2021-08-01,)', null),
+ ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', 'Päiväkoti ja esikoulu B', '{CENTRE,PREPARATORY_EDUCATION,PRESCHOOL}', '801a6cc7-e8a5-4279-b192-4e8192d82c18', 'UNIT_PHONE', 'https://www.espoo.fi/fi/toimipisteet/15586', '2019-05-17 10:26:06.066821+00', '2021-09-06 08:34:27.596059+00', null, null, '1984-01-01', null, 'UNIT_EMAIL@espoo.fi', null, '', '019aec48-abd7-11eb-8020-5fdc67e1b4c3', '31548', true, 56, 'Päiväkoti ja esiopetus B', 'Päiväkoti ja esiopetus B', 'DECISION_HANDLER', 'DECISION_HANDLER_ADDRESS', 'Osoite 2', '02320', 'Espoo', 'PL 32317', '(24.6390243,60.1503933)', '', '02070', 'ESPOON KAUPUNKI', true, 'MUNICIPAL', 'fi', true, null, null, '{1,2,3,4,5}', false, '[2020-03-01,)', '[2020-03-01,)', null);
+
+INSERT INTO fee_thresholds (id, valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee)
+VALUES
+    ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', daterange('2000-01-01', '2020-07-31', '[]'), 210200, 271300, 308000, 344700, 381300, 210200 + 269700, 271300 + 269700, 308000 + 269700, 344700 + 269700, 381300 + 269700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28900, 2700),
+    ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', daterange('2020-08-01', NULL), 213600, 275600, 312900, 350200, 387400, 213600 + 268700, 275600 + 268700, 312900 + 268700, 350200 + 268700, 387400 + 268700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28800, 2700);
+
+INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 1.55);
+
+INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
+                                                                           ('6f82b730-5963-11ea-b4d8-6f19186c8118', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 1', '2020-03-01', NULL),
+                                                                           ('b4bd39f6-5963-11ea-b4da-ebed8135a791', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 2', '2020-03-01', NULL);
+
+INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
+
+INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
+                                                                         ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
+                                                                         ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
+                                                                         ('SMALLER_GROUP', 'Pienennetty ryhmä', 30),
+                                                                         ('SPECIAL_GROUP', 'Erityisryhmä', 40),
+                                                                         ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
+                                                                         ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
+                                                                         ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
+                                                                         ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);
+
+INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
+                                                                                        ('AUTISM', 'Autismin kirjo', NULL, 10),
+                                                                                        ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
+                                                                                        ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20),
+                                                                                        ('FOCUS_CHALLENGE', 'Keskittymisen / tarkkaavaisuuden vaikeus', NULL, 25),
+                                                                                        ('LINGUISTIC_CHALLENGE', 'Kielellinen vaikeus', NULL, 30),
+                                                                                        ('DEVELOPMENT_MONITORING', 'Lapsen kehityksen seuranta', NULL, 35),
+                                                                                        ('DEVELOPMENT_MONITORING_PENDING', 'Lapsen kehityksen seuranta, tutkimukset kesken', 'Lapsi on terveydenhuollon tutkimuksissa, diagnoosi ei ole vielä varmistunut.', 40),
+                                                                                        ('MULTI_DISABILITY', 'Monivammaisuus', NULL, 45),
+                                                                                        ('LONG_TERM_CONDITION', 'Pitkäaikaissairaus', NULL, 50),
+                                                                                        ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
+                                                                                        ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
+
+UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS}';
