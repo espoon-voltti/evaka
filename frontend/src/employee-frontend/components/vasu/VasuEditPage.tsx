@@ -24,6 +24,10 @@ import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
 import { BasicsSection } from './sections/BasicsSection'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import {
+  LeaveVasuPageButton,
+  FullWidthDiv
+} from './components/LeaveVasuPageButton'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -152,20 +156,17 @@ export default React.memo(function VasuEditPage({
             {showSpinner && <Spinner />}
           </StatusContainer>
           {vasu && (
-            <ButtonContainer>
-              <Button
-                text={i18n.vasu.checkInPreview}
-                disabled={status.state != 'clean'}
-                onClick={() => history.push(`/vasu/${vasu.id}`)}
-                primary
-              />
-              <Button
-                text={i18n.vasu.leavePage}
-                onClick={() =>
-                  history.push(`/child-information/${vasu.basics.child.id}`)
-                }
-              />
-            </ButtonContainer>
+            <FullWidthDiv>
+              <ButtonContainer>
+                <Button
+                  text={i18n.vasu.checkInPreview}
+                  disabled={status.state != 'clean'}
+                  onClick={() => history.push(`/vasu/${vasu.id}`)}
+                  primary
+                />
+                <LeaveVasuPageButton childId={vasu.basics.child.id} />
+              </ButtonContainer>
+            </FullWidthDiv>
           )}
         </FooterContainer>
       </StickyFooter>
