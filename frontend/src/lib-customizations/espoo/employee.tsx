@@ -12,6 +12,10 @@ const customizations: EmployeeCustomizations = {
   translations: {
     fi: {}
   },
+  vasuTranslations: {
+    FI: {},
+    SV: {}
+  },
   cityLogo: {
     src: EspooLogo,
     alt: 'Espoo Logo'

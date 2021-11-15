@@ -10,6 +10,8 @@ import { fi } from './espoo/employee/assets/i18n/fi'
 import { mergeWith } from 'lodash'
 import { ApplicationType } from 'lib-common/generated/enums'
 import { translationsMergeCustomizer } from './common'
+import { fi as vasuFI } from './espoo/employee/assets/i18n/vasu/fi'
+import { sv as vasuSV } from './espoo/employee/assets/i18n/vasu/sv'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
@@ -39,6 +41,22 @@ export const translations: { [K in Lang]: Translations } = {
   fi: mergeWith(
     fi,
     (customizations as EmployeeCustomizations).translations.fi,
+    translationsMergeCustomizer
+  )
+}
+
+export type VasuLang = 'FI' | 'SV'
+export type VasuTranslations = typeof vasuFI
+
+export const vasuTranslations: { [K in VasuLang]: VasuTranslations } = {
+  FI: mergeWith(
+    vasuFI,
+    (customizations as EmployeeCustomizations).vasuTranslations.FI,
+    translationsMergeCustomizer
+  ),
+  SV: mergeWith(
+    vasuSV,
+    (customizations as EmployeeCustomizations).vasuTranslations.SV,
     translationsMergeCustomizer
   )
 }

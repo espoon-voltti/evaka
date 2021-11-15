@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Dimmed } from 'lib-components/typography'
-import { useTranslation } from '../../../state/i18n'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 const PreFormattedText = styled.div`
   white-space: pre-line;
@@ -13,13 +13,13 @@ const PreFormattedText = styled.div`
 
 interface Props {
   text: string | undefined
+  translations: VasuTranslations
 }
 
-export function ValueOrNoRecord({ text }: Props): JSX.Element {
-  const { i18n } = useTranslation()
+export function ValueOrNoRecord({ text, translations }: Props): JSX.Element {
   return (
     <PreFormattedText>
-      {text || <Dimmed>{i18n.vasu.noRecord}</Dimmed>}
+      {text || <Dimmed>{translations.noRecord}</Dimmed>}
     </PreFormattedText>
   )
 }

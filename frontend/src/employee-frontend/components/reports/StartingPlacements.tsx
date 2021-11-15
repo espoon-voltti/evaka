@@ -32,7 +32,8 @@ const StyledTd = styled(Td)`
 `
 
 const locales = {
-  fi: fi
+  fi: fi,
+  sv: fi
 }
 
 const Wrapper = styled.div`

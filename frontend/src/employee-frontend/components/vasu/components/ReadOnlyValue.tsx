@@ -5,17 +5,19 @@
 import React from 'react'
 import { Label } from 'lib-components/typography'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   label: string
   value?: string
+  translations: VasuTranslations
 }
 
-export function ReadOnlyValue({ label, value }: Props) {
+export function ReadOnlyValue({ label, value, translations }: Props) {
   return (
     <>
       <Label>{label}</Label>
-      <ValueOrNoRecord text={value} />
+      <ValueOrNoRecord text={value} translations={translations} />
     </>
   )
 }

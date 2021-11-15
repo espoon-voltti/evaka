@@ -10,19 +10,22 @@ import { Gap } from 'lib-components/white-space'
 import { QuestionOption, RadioGroupQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import QuestionInfo from '../QuestionInfo'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   questionNumber: string
   question: RadioGroupQuestion
   selectedValue: string | null
   onChange?: (selected: QuestionOption) => void
+  translations: VasuTranslations
 }
 
 export function RadioGroupQuestion({
   onChange,
   question: { name, options, info },
   questionNumber,
-  selectedValue
+  selectedValue,
+  translations
 }: Props) {
   return (
     <>
@@ -49,6 +52,7 @@ export function RadioGroupQuestion({
       ) : (
         <ValueOrNoRecord
           text={options.find((option) => option.key === selectedValue)?.name}
+          translations={translations}
         />
       )}
     </>

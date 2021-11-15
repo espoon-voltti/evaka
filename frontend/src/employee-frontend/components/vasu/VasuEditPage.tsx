@@ -60,7 +60,8 @@ export default React.memo(function VasuEditPage({
     setVasuDiscussionContent,
     evaluationDiscussionContent,
     setEvaluationDiscussionContent,
-    status
+    status,
+    translations
   } = useVasu(id)
 
   function formatVasuStatus(status: VasuStatus): string | null {
@@ -97,23 +98,27 @@ export default React.memo(function VasuEditPage({
             sectionIndex={0}
             content={vasu.basics}
             templateRange={vasu.templateRange}
+            translations={translations}
           />
           <Gap size={'L'} />
           <EditableAuthorsSection
             sectionIndex={1}
             content={authorsContent}
             setContent={setAuthorsContent}
+            translations={translations}
           />
           <Gap size={'L'} />
           <DynamicSections
             sectionIndex={dynamicSectionsOffset}
             sections={content.sections}
             setContent={setContent}
+            translations={translations}
           />
           <EditableVasuDiscussionSection
             sectionIndex={content.sections.length + dynamicSectionsOffset}
             content={vasuDiscussionContent}
             setContent={setVasuDiscussionContent}
+            translations={translations}
           />
           <Gap size={'L'} />
           {vasu.documentState !== 'DRAFT' && (
@@ -124,6 +129,7 @@ export default React.memo(function VasuEditPage({
                 }
                 content={evaluationDiscussionContent}
                 setContent={setEvaluationDiscussionContent}
+                translations={translations}
               />
               <Gap size={'L'} />
             </>

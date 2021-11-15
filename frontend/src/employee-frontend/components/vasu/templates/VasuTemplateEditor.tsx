@@ -7,7 +7,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3 } from 'lib-components/typography'
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState, useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -28,6 +28,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
+import { vasuTranslations } from 'lib-customizations/employee'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   CheckboxQuestion,
@@ -64,6 +65,11 @@ export default React.memo(function VasuTemplateEditor() {
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
 
   const readonly = !(template.isSuccess && template.value.documentCount === 0)
+
+  const translations = useMemo(
+    () => vasuTranslations[template.map((t) => t.language).getOrElse('FI')],
+    [template]
+  )
 
   function moveSection(index: number, dir: 'up' | 'down') {
     setDirty(true)
@@ -333,11 +339,11 @@ export default React.memo(function VasuTemplateEditor() {
 
             <FixedSpaceColumn>
               <SectionContainer>
-                <H2>1. {i18n.vasu.staticSections.basics.title}</H2>
+                <H2>1. {translations.staticSections.basics.title}</H2>
               </SectionContainer>
 
               <SectionContainer>
-                <H2>2. {i18n.vasu.staticSections.authors.title}</H2>
+                <H2>2. {translations.staticSections.authors.title}</H2>
               </SectionContainer>
 
               {template.value.content.sections.map((section, sectionIndex) => (
@@ -506,14 +512,14 @@ export default React.memo(function VasuTemplateEditor() {
             <SectionContainer>
               <H2>
                 {dynamicOffset + template.value.content.sections.length + 1}.{' '}
-                {i18n.vasu.staticSections.vasuDiscussion.title}
+                {translations.staticSections.vasuDiscussion.title}
               </H2>
             </SectionContainer>
 
             <SectionContainer>
               <H2>
                 {dynamicOffset + template.value.content.sections.length + 2}.{' '}
-                {i18n.vasu.staticSections.evaluationDiscussion.title}
+                {translations.staticSections.evaluationDiscussion.title}
               </H2>
             </SectionContainer>
 

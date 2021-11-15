@@ -10,19 +10,22 @@ import { TextQuestion } from '../vasu-content'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 import QuestionInfo from '../QuestionInfo'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
   onChange?: (value: string) => void
+  translations: VasuTranslations
 }
 
 export function TextQuestion({
   onChange,
   question: { name, value, multiline, info },
-  questionNumber
+  questionNumber,
+  translations
 }: TextQuestionQuestionProps) {
   const getEditorOrStaticText = () => {
     if (!onChange) {
-      return <ValueOrNoRecord text={value} />
+      return <ValueOrNoRecord text={value} translations={translations} />
     }
     return multiline ? (
       <TextArea value={value} onChange={onChange} />

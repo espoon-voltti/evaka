@@ -10,6 +10,7 @@ import { VasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UUID } from 'lib-common/types'
+import { VasuLanguage } from './templates/api'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
 export type VasuDocumentEventType =
@@ -91,6 +92,7 @@ interface VasuDocumentResponse {
   basics: VasuBasics
   templateName: string
   templateRange: FiniteDateRange
+  language: VasuLanguage
   content: VasuContent
   authorsContent: AuthorsContent
   vasuDiscussionContent: VasuDiscussionContent

@@ -7,7 +7,8 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
@@ -23,6 +24,7 @@ import {
   VasuDocument
 } from './api'
 import { VasuContent } from './vasu-content'
+import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
 type State =
   | 'loading'
@@ -58,6 +60,7 @@ interface Vasu {
     SetStateAction<EvaluationDiscussionContent>
   >
   status: VasuStatus
+  translations: VasuTranslations
 }
 
 const debounceInterval = isAutomatedTest ? 200 : 2000
@@ -195,6 +198,14 @@ export function useVasu(id: string): Vasu {
     []
   )
 
+  const translations = useMemo(
+    () =>
+      vasu !== undefined
+        ? vasuTranslations[vasu.language]
+        : vasuTranslations.FI,
+    [vasu]
+  )
+
   return {
     vasu,
     content,
@@ -205,6 +216,7 @@ export function useVasu(id: string): Vasu {
     setVasuDiscussionContent: setVasuDiscussionContentCallback,
     evaluationDiscussionContent,
     setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
-    status
+    status,
+    translations
   }
 }
