@@ -118,7 +118,11 @@ export default React.memo(function CalendarGridView({
                           d.date.formatIso() === selectedDate?.formatIso()
                         }
                         onClick={() => selectDate(d.date)}
-                        data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
+                        data-qa={
+                          dateIsOnMonth
+                            ? `desktop-calendar-day-${d.date.formatIso()}`
+                            : undefined
+                        }
                       >
                         <DayCellHeader>
                           <DayCellDate inactive={!dayIsReservable(d)}>
