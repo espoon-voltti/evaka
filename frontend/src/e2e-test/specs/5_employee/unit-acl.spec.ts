@@ -126,7 +126,6 @@ test('User can add and delete staff', async (t) => {
     { aad: config.supervisorAad, roles: [] },
     config.adminUrl
   )
-  await t.debug()
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
