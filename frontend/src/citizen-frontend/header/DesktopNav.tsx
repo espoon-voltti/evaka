@@ -25,6 +25,7 @@ import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import AttentionIndicator from './AttentionIndicator'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { featureFlags } from 'lib-customizations/citizen'
 
 interface Props {
   unreadMessagesCount: number
@@ -211,7 +212,9 @@ const UserMenu = React.memo(function UserMenu() {
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
-  const showUserAttentionIndicator = user?.email === null
+  const showUserAttentionIndicator =
+    (featureFlags.experimental?.personalDetailsPage ?? false) &&
+    user?.email === null
 
   return (
     <div ref={dropDownRef}>
@@ -228,27 +231,29 @@ const UserMenu = React.memo(function UserMenu() {
       </DropDownButton>
       {open && user ? (
         <DropDown data-qa={'user-menu'}>
-          <DropDownItem
-            selected={window.location.pathname.includes('/personal-details')}
-            data-qa={'user-menu-personal-details'}
-            onClick={() => {
-              setOpen(false)
-              history.push('/personal-details')
-            }}
-          >
-            {t.header.nav.personalDetails}
-            {showUserAttentionIndicator && (
-              <>
-                <Gap size="xs" horizontal />
-                <RoundIcon
-                  content={faExclamation}
-                  color={theme.colors.accents.orange}
-                  size="s"
-                  data-qa="personal-details-attention-indicator-desktop"
-                />
-              </>
-            )}
-          </DropDownItem>
+          {featureFlags.experimental?.personalDetailsPage && (
+            <DropDownItem
+              selected={window.location.pathname.includes('/personal-details')}
+              data-qa={'user-menu-personal-details'}
+              onClick={() => {
+                setOpen(false)
+                history.push('/personal-details')
+              }}
+            >
+              {t.header.nav.personalDetails}
+              {showUserAttentionIndicator && (
+                <>
+                  <Gap size="xs" horizontal />
+                  <RoundIcon
+                    content={faExclamation}
+                    color={theme.colors.accents.orange}
+                    size="s"
+                    data-qa="personal-details-attention-indicator-desktop"
+                  />
+                </>
+              )}
+            </DropDownItem>
+          )}
           <DropDownItem
             selected={window.location.pathname.includes('/income')}
             data-qa={'user-menu-income'}
