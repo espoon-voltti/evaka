@@ -5,7 +5,7 @@
 import React, { createContext, useMemo, useState } from 'react'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { FeeAlteration } from '../types/fee-alteration'
-import { AssistanceNeed, ChildBackupCare } from '../types/child'
+import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { VasuDocumentSummary } from '../components/vasu/api'
@@ -28,8 +28,6 @@ export interface ChildState {
   setServiceNeeds: (request: Result<ServiceNeed[]>) => void
   serviceNeedOptions: Result<ServiceNeedOption[]>
   setServiceNeedOptions: (request: Result<ServiceNeedOption[]>) => void
-  assistanceNeeds: Result<AssistanceNeed[]>
-  setAssistanceNeeds: (request: Result<AssistanceNeed[]>) => void
   additionalInformation: Result<AdditionalInformation>
   setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
@@ -61,8 +59,6 @@ const defaultState: ChildState = {
   setServiceNeeds: () => undefined,
   serviceNeedOptions: Loading.of(),
   setServiceNeedOptions: () => undefined,
-  assistanceNeeds: Loading.of(),
-  setAssistanceNeeds: () => undefined,
   additionalInformation: Loading.of(),
   setAdditionalInformation: () => undefined,
   feeAlterations: Loading.of(),
@@ -102,9 +98,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [serviceNeedOptions, setServiceNeedOptions] = useState<
     Result<ServiceNeedOption[]>
   >(defaultState.serviceNeedOptions)
-  const [assistanceNeeds, setAssistanceNeeds] = useState<
-    Result<AssistanceNeed[]>
-  >(defaultState.assistanceNeeds)
   const [additionalInformation, setAdditionalInformation] = useState<
     Result<AdditionalInformation>
   >(defaultState.additionalInformation)
@@ -148,8 +141,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setServiceNeeds,
       serviceNeedOptions,
       setServiceNeedOptions,
-      assistanceNeeds,
-      setAssistanceNeeds,
       additionalInformation,
       setAdditionalInformation,
       feeAlterations,
@@ -176,8 +167,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       permittedActions,
       serviceNeeds,
       serviceNeedOptions,
-      assistanceNeeds,
-      additionalInformation,
       feeAlterations,
       placements,
       parentships,
