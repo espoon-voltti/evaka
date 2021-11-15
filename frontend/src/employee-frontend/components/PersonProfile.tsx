@@ -18,7 +18,7 @@ import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDeci
 import WarningLabel from '../components/common/WarningLabel'
 import { getLayout, Layouts } from './layouts'
 import { UserContext } from '../state/user'
-import { PersonContext } from '../state/person'
+import { PersonContext, PersonContextProvider } from '../state/person'
 import PersonFeeDecisions from '../components/person-profile/PersonFeeDecisions'
 import PersonInvoices from '../components/person-profile/PersonInvoices'
 import styled from 'styled-components'
@@ -52,6 +52,7 @@ export const HeaderRow = styled.div`
 
 export const InfoLabelContainer = styled.div`
   display: flex;
+
   > div:not(:last-child) {
     margin-right: ${defaultMargins.xs};
   }
@@ -162,4 +163,12 @@ const PersonProfile = React.memo(function PersonProfile({
   )
 })
 
-export default PersonProfile
+export default React.memo(function PersonProfileWrapper(
+  props: RouteComponentProps<{ id: UUID }>
+) {
+  return (
+    <PersonContextProvider>
+      <PersonProfile {...props} />
+    </PersonContextProvider>
+  )
+})

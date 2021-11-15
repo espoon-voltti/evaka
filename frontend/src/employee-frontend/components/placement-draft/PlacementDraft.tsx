@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, Fragment, useState } from 'react'
+import React, {
+  Dispatch,
+  Fragment,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -16,32 +23,27 @@ import Loader from 'lib-components/atoms/Loader'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fontWeights } from 'lib-components/typography'
 
-import {
-  PlacementDraftState,
-  PlacementDraftContext,
-  UnitsState,
-  UnitsContext,
-  Unit
-} from '../../state/placementdraft'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { getApplicationUnits } from '../../api/daycare'
 import { formatName } from '../../utils'
 import {
+  DaycarePlacementPlan,
   PlacementDraft,
-  PlacementDraftPlacement,
-  DaycarePlacementPlan
+  PlacementDraftPlacement
 } from '../../types/placementdraft'
 import UnitCards from './UnitCards'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import { TitleContext, TitleState } from '../../state/title'
-import { getPlacementDraft, createPlacementPlan } from '../../api/applications'
+import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import WarningLabel from '../../components/common/WarningLabel'
 import Tooltip from '../../components/common/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { UUID } from 'lib-common/types'
+import { History } from 'history'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
@@ -96,15 +98,51 @@ const FloatRight = styled.div`
   float: right;
 `
 
-function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
+function calculateOverLaps(
+  placementDraft: Result<PlacementDraft>,
+  setPlacementDraft: Dispatch<SetStateAction<Result<PlacementDraft>>>
+) {
+  if (placementDraft.isSuccess) {
+    const placements = placementDraft.value.placements.map(
+      (placement: PlacementDraftPlacement) => {
+        return {
+          ...placement,
+          overlap: hasOverlap(placement, placementDraft)
+        }
+      }
+    )
+    setPlacementDraft(placementDraft.map((draft) => ({ ...draft, placements })))
+  }
+}
+
+function hasOverlap(
+  placement: PlacementDraftPlacement,
+  { value: { period, preschoolDaycarePeriod } }: Success<PlacementDraft>
+) {
+  const placementDateRange = new FiniteDateRange(
+    placement.startDate,
+    placement.endDate
+  )
+  return (
+    period.overlaps(placementDateRange) ||
+    (preschoolDaycarePeriod?.overlaps(placementDateRange) ?? false)
+  )
+}
+
+function redirectToMainPage(history: History) {
+  history.push('/applications')
+}
+
+export default React.memo(function PlacementDraft({
+  match
+}: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { placementDraft, setPlacementDraft } = useContext<PlacementDraftState>(
-    PlacementDraftContext
+  const [placementDraft, setPlacementDraft] = useState<Result<PlacementDraft>>(
+    Loading.of()
   )
-
-  const { units, setUnits } = useContext<UnitsState>(UnitsContext)
+  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
   const [placement, setPlacement] = useState<DaycarePlacementPlan>({
     unitId: '',
@@ -113,7 +151,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
-  const [additionalUnits, setAdditionalUnits] = useState<Unit[]>([])
+  const [additionalUnits, setAdditionalUnits] = useState<PublicUnit[]>([])
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
 
@@ -126,37 +164,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           .map((unit) => unit.ghostUnit)
           .includes(true)
       )
-  }, [placement]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function hasOverlap(
-    placement: PlacementDraftPlacement,
-    { value: { period, preschoolDaycarePeriod } }: Success<PlacementDraft>
-  ) {
-    const placementDateRange = new FiniteDateRange(
-      placement.startDate,
-      placement.endDate
-    )
-    return (
-      period.overlaps(placementDateRange) ||
-      (preschoolDaycarePeriod?.overlaps(placementDateRange) ?? false)
-    )
-  }
-
-  function calculateOverLaps(placementDraft: Result<PlacementDraft>) {
-    if (placementDraft.isSuccess) {
-      const placements = placementDraft.value.placements.map(
-        (placement: PlacementDraftPlacement) => {
-          return {
-            ...placement,
-            overlap: hasOverlap(placement, placementDraft)
-          }
-        }
-      )
-      setPlacementDraft(
-        placementDraft.map((draft) => ({ ...draft, placements }))
-      )
-    }
-  }
+  }, [placement, units])
 
   function removeOldPlacements(
     placementDraft: Result<PlacementDraft>
@@ -167,11 +175,6 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         (p) => !p.endDate.isBefore(LocalDate.today())
       )
     }))
-  }
-
-  function redirectToMainPage() {
-    history.push('/applications')
-    return null
   }
 
   useEffect(() => {
@@ -186,15 +189,15 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           preschoolDaycarePeriod:
             withoutOldPlacements.value.preschoolDaycarePeriod
         })
-        calculateOverLaps(withoutOldPlacements)
+        calculateOverLaps(withoutOldPlacements, setPlacementDraft)
       }
 
       // Application has already changed its status
       if (placementDraft.isFailure && placementDraft.statusCode === 409) {
-        redirectToMainPage()
+        redirectToMainPage(history)
       }
     })
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, history])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -203,7 +206,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         placement.period?.start ?? placementDraft.value.period.start
       ).then(setUnits)
     }
-  }, [placementDraft, placement.period?.start]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [placementDraft, placement.period?.start])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -213,7 +216,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
       )
       setTitle(`${name} | ${i18n.titles.placementDraft}`)
     }
-  }, [placementDraft]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [formatTitleName, i18n.titles.placementDraft, placementDraft, setTitle])
 
   function fixNullLengthPeriods(
     periodType: 'period' | 'preschoolDaycarePeriod',
@@ -257,7 +260,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           [periodType]: fixedPeriod
         }))
         setPlacementDraft(updatedPlacementDraft)
-        calculateOverLaps(updatedPlacementDraft)
+        calculateOverLaps(updatedPlacementDraft, setPlacementDraft)
       }
     }
 
@@ -340,7 +343,9 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
                 'end'
               )}
             />
-            {placementDraft.value.placements && <Placements />}
+            {placementDraft.value.placements && (
+              <Placements placementDraft={placementDraft.value} />
+            )}
             <SelectContainer>
               <Combobox
                 placeholder={i18n.filters.unitPlaceholder}
@@ -374,7 +379,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
                 }
                 data-qa="send-placement-button"
                 onClick={() => createPlacementPlan(id, placement)}
-                onSuccess={redirectToMainPage}
+                onSuccess={() => redirectToMainPage(history)}
                 text={i18n.placementDraft.createPlacementDraft}
               />
             </SendButtonContainer>
@@ -383,6 +388,4 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
       </ContentArea>
     </ContainerNarrow>
   )
-}
-
-export default PlacementDraft
+})

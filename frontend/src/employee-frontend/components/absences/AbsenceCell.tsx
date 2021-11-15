@@ -156,6 +156,11 @@ function AbsenceCellWrapper({
     )
     .join('<br/>')
 
+  const toggle = useCallback(
+    (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),
+    [id, toggleCellSelection]
+  )
+
   return (
     <Tooltip
       tooltipId={`tooltip_absence-${date.formatIso()}-${childId}`}
@@ -172,7 +177,7 @@ function AbsenceCellWrapper({
         absences={absences}
         backupCare={backupCare}
         isSelected={isSelected}
-        toggle={useCallback(toggleCellSelection(id), [id])} // eslint-disable-line react-hooks/exhaustive-deps
+        toggle={toggle}
       />
     </Tooltip>
   )

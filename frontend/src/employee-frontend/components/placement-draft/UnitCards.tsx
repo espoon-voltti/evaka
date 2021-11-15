@@ -5,12 +5,12 @@
 import React, { Dispatch, SetStateAction, memo } from 'react'
 import MemoizedCard from './UnitCard'
 import styled from 'styled-components'
-import { Unit } from '../../state/placementdraft'
 import {
   DaycarePlacementPlan,
   PlacementDraft
 } from '../../types/placementdraft'
 import LocalDate from 'lib-common/local-date'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 
 const FlexContainer = styled.div`
   display: flex;
@@ -19,8 +19,8 @@ const FlexContainer = styled.div`
 `
 
 interface Props {
-  additionalUnits: Unit[]
-  setAdditionalUnits: Dispatch<SetStateAction<Unit[]>>
+  additionalUnits: PublicUnit[]
+  setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
   placement: DaycarePlacementPlan
   setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
   placementDraft: PlacementDraft

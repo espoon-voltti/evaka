@@ -21,16 +21,20 @@ import {
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
-import { AbsencesContext, AbsencesState } from '../../state/absence'
+import {
+  AbsencesContext,
+  AbsencesContextProvider,
+  AbsencesState
+} from '../../state/absence'
 import { useTranslation } from '../../state/i18n'
 import {
   AbsencePayload,
-  defaultAbsenceType,
   AbsenceTypes,
+  billableCareTypes,
   CareTypeCategories,
   CareTypeCategory,
-  billableCareTypes,
   CellPart,
+  defaultAbsenceType,
   defaultCareTypeCategory
 } from '../../types/absence'
 import AbsenceTable from './AbsenceTable'
@@ -50,7 +54,7 @@ interface Props {
   setSelectedDate: (date: LocalDate) => void
 }
 
-export default function Absences({
+const Absences = React.memo(function Absences({
   groupId,
   selectedDate,
   setSelectedDate
@@ -91,7 +95,7 @@ export default function Absences({
     return () => {
       setAbsences(Loading.of())
     }
-  }, [loadAbsences]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadAbsences, setAbsences])
 
   useEffect(() => {
     if (absences.isSuccess) {
@@ -252,7 +256,15 @@ export default function Absences({
       {absences.isFailure && <ErrorSegment />}
     </AbsencesPage>
   )
-}
+})
+
+export default React.memo(function AbsencesWrapper(props: Props) {
+  return (
+    <AbsencesContextProvider>
+      <Absences {...props} />
+    </AbsencesContextProvider>
+  )
+})
 
 const AddAbsencesButton = styled(Button)`
   @media print {
@@ -299,6 +311,7 @@ const AbsencesPage = styled.div`
     &.absence-cell-wrapper {
       text-align: center;
     }
+
     &.absence-cell-wrapper > div {
       margin: 0 auto;
     }
@@ -421,30 +434,39 @@ const AbsencesPage = styled.div`
     &-OTHER_ABSENCE {
       border-top-color: ${colors.blues.dark};
     }
+
     &-SICKLEAVE {
       border-top-color: ${colors.accents.violet};
     }
+
     &-UNKNOWN_ABSENCE {
       border-top-color: ${colors.accents.green};
     }
+
     &-PLANNED_ABSENCE {
       border-top-color: ${colors.blues.light};
     }
+
     &-TEMPORARY_RELOCATION {
       border-top-color: ${colors.accents.orange};
     }
+
     &-TEMPORARY_VISITOR {
       border-top-color: ${colors.accents.yellow};
     }
+
     &-PARENTLEAVE {
       border-top-color: ${colors.blues.primary};
     }
+
     &-FORCE_MAJEURE {
       border-top-color: ${colors.accents.red};
     }
+
     &-weekend {
       border-top-color: ${colors.greyscale.lightest};
     }
+
     &-empty {
       border-top-color: ${colors.greyscale.lighter};
     }
@@ -456,30 +478,39 @@ const AbsencesPage = styled.div`
     &-OTHER_ABSENCE {
       border-bottom-color: ${colors.blues.dark};
     }
+
     &-SICKLEAVE {
       border-bottom-color: ${colors.accents.violet};
     }
+
     &-UNKNOWN_ABSENCE {
       border-bottom-color: ${colors.accents.green};
     }
+
     &-PLANNED_ABSENCE {
       border-bottom-color: ${colors.blues.light};
     }
+
     &-TEMPORARY_RELOCATION {
       border-bottom-color: ${colors.accents.orange};
     }
+
     &-TEMPORARY_VISITOR {
       border-bottom-color: ${colors.accents.yellow};
     }
+
     &-PARENTLEAVE {
       border-bottom-color: ${colors.blues.primary};
     }
+
     &-FORCE_MAJEURE {
       border-bottom-color: ${colors.accents.red};
     }
+
     &-weekend {
       border-bottom-color: ${colors.greyscale.lightest};
     }
+
     &-empty {
       border-bottom-color: ${colors.greyscale.lighter};
     }
@@ -513,6 +544,7 @@ const AbsencesPage = styled.div`
 
     .staff-attendance-cell {
       /* disable spin buttons Chrome, Safari, Edge, Opera */
+
       input::-webkit-outer-spin-button,
       input::-webkit-inner-spin-button {
         -webkit-appearance: none;

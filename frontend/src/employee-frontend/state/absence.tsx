@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import {
   TableMode,
@@ -29,7 +29,7 @@ export interface AbsencesState {
   setSelectedAbsenceType: (type: AbsenceType | null) => void
   selectedCareTypeCategories: CareTypeCategory[]
   setSelectedCareTypeCategories: (type: CareTypeCategory[]) => void
-  toggleCellSelection: (id: UUID) => (cellParts: CellPart[]) => void
+  toggleCellSelection: (id: UUID, cellParts: CellPart[]) => void
 }
 
 const defaultState: AbsencesState = {
@@ -45,7 +45,7 @@ const defaultState: AbsencesState = {
   setSelectedAbsenceType: () => undefined,
   selectedCareTypeCategories: defaultCareTypeCategory,
   setSelectedCareTypeCategories: () => undefined,
-  toggleCellSelection: () => () => undefined
+  toggleCellSelection: () => undefined
 }
 
 export const AbsencesContext = createContext<AbsencesState>(defaultState)
@@ -74,8 +74,10 @@ export const AbsencesContextProvider = React.memo(
         return included ? without : [{ id, parts }, ...without]
       })
 
-    const toggleCellSelection = (id: UUID) => (parts: CellPart[]) =>
-      updateSelectedCells({ id, parts })
+    const toggleCellSelection = useCallback(
+      (id: UUID, parts: CellPart[]) => updateSelectedCells({ id, parts }),
+      []
+    )
 
     const value = useMemo(
       () => ({
@@ -93,20 +95,14 @@ export const AbsencesContextProvider = React.memo(
         setSelectedCareTypeCategories,
         toggleCellSelection
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         absences,
-        setAbsences,
         tableMode,
-        setTableMode,
         modalVisible,
-        setModalVisible,
         selectedCells,
-        setSelectedCells,
         selectedAbsenceType,
-        setSelectedAbsenceType,
         selectedCareTypeCategories,
-        setSelectedCareTypeCategories
+        toggleCellSelection
       ]
     )
 

@@ -20,7 +20,7 @@ import { TitleContext, TitleState } from '../state/title'
 import { getDaycare, getUnitData } from '../api/unit'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
-import { UnitContext } from '../state/unit'
+import { UnitContext, UnitContextProvider } from '../state/unit'
 import TabPlacementProposals from '../components/unit/TabPlacementProposals'
 import TabWaitingConfirmation from '../components/unit/TabWaitingConfirmation'
 import TabApplications from '../components/unit/TabApplications'
@@ -29,7 +29,7 @@ import LocalDate from 'lib-common/local-date'
 import TabCalendar from './unit/TabCalendar'
 import { UUID } from 'lib-common/types'
 
-export default React.memo(function UnitPage() {
+const UnitPage = React.memo(function UnitPage() {
   const { id } = useParams<{ id: UUID }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
@@ -182,5 +182,13 @@ export default React.memo(function UnitPage() {
         </Switch>
       </Container>
     </>
+  )
+})
+
+export default React.memo(function UnitPageWrapper() {
+  return (
+    <UnitContextProvider>
+      <UnitPage />
+    </UnitContextProvider>
   )
 })
