@@ -38,7 +38,7 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 interface Props {
   placement: DaycarePlacementWithDetails
-  onRefreshNeeded: () => void | undefined
+  onRefreshNeeded: () => void
   checkOverlaps: (
     range: DateRange,
     placement: DaycarePlacementWithDetails

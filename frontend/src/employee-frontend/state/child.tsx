@@ -14,6 +14,9 @@ import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicald
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import { getPlacements } from '../api/child/placements'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
 
 export interface ChildState {
   person: Result<PersonJSON>
@@ -25,7 +28,7 @@ export interface ChildState {
   feeAlterations: Result<FeeAlteration[]>
   setFeeAlterations: (result: Result<FeeAlteration[]>) => void
   placements: Result<DaycarePlacementWithDetails[]>
-  setPlacements: (request: Result<DaycarePlacementWithDetails[]>) => void
+  loadPlacements: () => void
   parentships: Result<Parentship[]>
   setParentships: (request: Result<Parentship[]>) => void
   backupCares: Result<ChildBackupCare[]>
@@ -52,7 +55,7 @@ const defaultState: ChildState = {
   feeAlterations: Loading.of(),
   setFeeAlterations: () => undefined,
   placements: Loading.of(),
-  setPlacements: () => undefined,
+  loadPlacements: () => undefined,
   parentships: Loading.of(),
   setParentships: () => undefined,
   backupCares: Loading.of(),
@@ -72,8 +75,10 @@ const defaultState: ChildState = {
 export const ChildContext = createContext<ChildState>(defaultState)
 
 export const ChildContextProvider = React.memo(function ChildContextProvider({
+  id,
   children
 }: {
+  id: UUID
   children: JSX.Element
 }) {
   const [person, setPerson] = useState<Result<PersonJSON>>(defaultState.person)
@@ -86,9 +91,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [feeAlterations, setFeeAlterations] = useState<Result<FeeAlteration[]>>(
     defaultState.feeAlterations
   )
-  const [placements, setPlacements] = useState<
-    Result<DaycarePlacementWithDetails[]>
-  >(defaultState.placements)
+  const [placements, loadPlacements] = useApiState(
+    () => getPlacements(id),
+    [id]
+  )
   const [parentships, setParentships] = useState<Result<Parentship[]>>(
     defaultState.parentships
   )
@@ -124,7 +130,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       feeAlterations,
       setFeeAlterations,
       placements,
-      setPlacements,
+      loadPlacements,
       parentships,
       setParentships,
       backupCares,

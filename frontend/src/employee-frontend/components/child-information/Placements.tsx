@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext, ChildState } from '../../state/child'
 import { Gap } from 'lib-components/white-space'
@@ -10,11 +10,10 @@ import PlacementRow from '../../components/child-information/placements/Placemen
 import { UIContext } from '../../state/ui'
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { getPlacements } from '../../api/child/placements'
 import { RequireRole } from '../../utils/roles'
 import { DateRange, rangesOverlap } from '../../utils/date'
 import { getServiceNeedOptions } from '../../api/child/service-needs'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import _ from 'lodash'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
@@ -31,14 +30,11 @@ interface Props {
 
 export default React.memo(function Placements({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { placements, setPlacements } = useContext<ChildState>(ChildContext)
+  const { placements, loadPlacements } = useContext<ChildState>(ChildContext)
   const [serviceNeedOptions] = useApiState(getServiceNeedOptions, [])
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
-
-  const loadPlacements = useRestApi(getPlacements, setPlacements)
-  useEffect(() => loadPlacements(id), [id, loadPlacements])
 
   const checkOverlaps = (
     range: DateRange,
@@ -89,7 +85,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
                 <Fragment key={p.id}>
                   <PlacementRow
                     placement={p}
-                    onRefreshNeeded={() => loadPlacements(id)}
+                    onRefreshNeeded={loadPlacements}
                     checkOverlaps={checkOverlaps}
                     serviceNeedOptions={serviceNeedOptions}
                   />
@@ -103,7 +99,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
         )}
       </CollapsibleContentArea>
       {uiMode === 'create-new-placement' && (
-        <CreatePlacementModal childId={id} reload={() => loadPlacements(id)} />
+        <CreatePlacementModal childId={id} reload={loadPlacements} />
       )}
     </div>
   )

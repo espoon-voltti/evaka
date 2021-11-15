@@ -334,8 +334,9 @@ const ChildInformation = React.memo(function ChildInformation({
 export default React.memo(function ChildInformationWrapper(
   props: RouteComponentProps<{ id: UUID }>
 ) {
+  const { id } = props.match.params
   return (
-    <ChildContextProvider>
+    <ChildContextProvider id={id}>
       <ChildInformation {...props} />
     </ChildContextProvider>
   )
