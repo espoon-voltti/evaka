@@ -115,10 +115,7 @@ ORDER BY p.id, t
     return createQuery(sql)
         .bind("start_date", from)
         .bind("end_date", to)
-        .registerColumnMapper(UnitType::class.java) { rs, columnNumber, _ ->
-            @Suppress("UNCHECKED_CAST")
-            (rs.getArray(columnNumber).array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType)
-        }
+        .registerColumnMapper(UnitType::class.java, UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<RawReportRow>()
         .toList()
 }

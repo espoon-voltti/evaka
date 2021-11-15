@@ -610,22 +610,6 @@ export const fi = {
           'Voit kirjoittaa tähän lisätietoa tuen tarpeesta.',
         bases: 'Perusteet',
         basisTypes: {
-          AUTISM: 'Autismin kirjo',
-          DEVELOPMENTAL_DISABILITY_1: 'Kehitysvamma 1',
-          DEVELOPMENTAL_DISABILITY_2: 'Kehitysvamma 2',
-          DEVELOPMENTAL_DISABILITY_2_INFO:
-            'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.',
-          FOCUS_CHALLENGE: 'Keskittymisen / tarkkaavaisuuden vaikeus',
-          LINGUISTIC_CHALLENGE: 'Kielellinen vaikeus',
-          DEVELOPMENT_MONITORING: 'Lapsen kehityksen seuranta',
-          DEVELOPMENT_MONITORING_PENDING:
-            'Lapsen kehityksen seuranta, tutkimukset kesken',
-          DEVELOPMENT_MONITORING_PENDING_INFO:
-            'Lapsi on terveydenhuollon tutkimuksissa, diagnoosi ei ole vielä varmistunut.',
-          MULTI_DISABILITY: 'Monivammaisuus',
-          LONG_TERM_CONDITION: 'Pitkäaikaissairaus',
-          REGULATION_SKILL_CHALLENGE: 'Säätelytaitojen vaikeus',
-          DISABILITY: 'Vamma (näkö, kuulo, liikunta, muu)',
           OTHER: 'Muu peruste'
         },
         otherBasisPlaceholder: 'Kirjoita muu peruste.'
@@ -647,22 +631,14 @@ export const fi = {
         dateRange: 'Tukitoimien voimassaoloaika',
         actions: 'Tukitoimet',
         actionTypes: {
-          ASSISTANCE_SERVICE_CHILD: 'Avustamispalvelut yhdelle lapselle',
-          ASSISTANCE_SERVICE_UNIT: 'Avustamispalvelut yksikköön',
-          SMALLER_GROUP: 'Pienennetty ryhmä',
-          SPECIAL_GROUP: 'Erityisryhmä',
-          PERVASIVE_VEO_SUPPORT: 'Laaja-alaisen veon tuki',
-          RESOURCE_PERSON: 'Resurssihenkilö',
-          RATIO_DECREASE: 'Suhdeluvun väljennys',
-          PERIODICAL_VEO_SUPPORT: 'Jaksottainen veon tuki (2–6 kk)',
           OTHER: 'Muu tukitoimi'
         },
         measures: 'Toimenpiteet',
         measureTypes: {
-          SPECIAL_ASSISTANCE_DECISION: 'Erityisen tuen päätös, esiopetus\n',
+          SPECIAL_ASSISTANCE_DECISION: 'Erityisen tuen päätös\n',
           SPECIAL_ASSISTANCE_DECISION_INFO:
             'Lapsella on pidennetty oppivelvollisuus.',
-          INTENSIFIED_ASSISTANCE: 'Tehostettu tuki, esiopetus',
+          INTENSIFIED_ASSISTANCE: 'Tehostettu tuki',
           INTENSIFIED_ASSISTANCE_INFO:
             'Lapsella on avustamispalvelu tai lapsi on pedagogisesti vahvistetussa ryhmässä. Koskee myös osaa laaja-alaisen veon tukea saavista lapsista. ',
           EXTENDED_COMPULSORY_EDUCATION: 'Pidennetty oppivelvollisuus',

@@ -184,7 +184,7 @@ fun Database.Transaction.deleteAssistanceBasisOptionRefsByNeedId(needId: Assista
         .execute()
 }
 
-fun Database.Transaction.getAssistanceBasisOptions(): List<AssistanceBasisOption> {
+fun Database.Read.getAssistanceBasisOptions(): List<AssistanceBasisOption> {
     //language=sql
     val sql = "SELECT value, name_fi, description_fi FROM assistance_basis_option ORDER BY display_order"
     return createQuery(sql).mapTo(AssistanceBasisOption::class.java).list()

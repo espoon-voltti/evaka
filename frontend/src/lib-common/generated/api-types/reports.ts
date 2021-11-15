@@ -8,7 +8,10 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { AbsenceType } from './daycare'
+import { AssistanceActionOption } from './assistanceaction'
+import { AssistanceBasisOption } from './assistanceneed'
 import { PlacementType } from './placement'
+import { ProviderType } from './daycare'
 import { UUID } from '../../types'
 
 /**
@@ -27,39 +30,31 @@ export interface ApplicationsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportRow
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReport
+*/
+export interface AssistanceNeedsAndActionsReport {
+  actions: AssistanceActionOption[]
+  bases: AssistanceBasisOption[]
+  rows: AssistanceNeedsAndActionsReportRow[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
-  assistanceServiceChild: number
-  assistanceServiceUnit: number
-  autism: number
+  actionCounts: string[]
+  basisCounts: string[]
   careAreaName: string
-  developmentMonitoring: number
-  developmentMonitoringPending: number
-  developmentalDisability1: number
-  developmentalDisability2: number
-  disability: number
-  focusChallenge: number
   groupId: UUID
   groupName: string
-  linguisticChallenge: number
-  longTermCondition: number
-  multiDisability: number
-  noAssistanceActions: number
-  noAssistanceNeeds: number
-  otherAssistanceAction: number
-  otherAssistanceNeed: number
-  periodicalVeoSupport: number
-  pervasiveVeoSupport: number
-  ratioDecrease: number
-  regulationSkillChallenge: number
-  resourcePerson: number
-  smallerGroup: number
-  specialGroup: number
+  noActionCount: number
+  noBasisCount: number
+  otherActionCount: number
+  otherBasisCount: number
   unitId: UUID
   unitName: string
-  unitProviderType: string
-  unitType: UnitType | null
+  unitProviderType: ProviderType
+  unitType: UnitType
 }
 
 /**

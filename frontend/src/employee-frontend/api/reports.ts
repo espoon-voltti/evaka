@@ -22,10 +22,10 @@ import {
   RawReportRow,
   FamilyContactsReportRow,
   PlacementSketchingRow,
-  AssistanceNeedsAndActionsReportRow,
   InvalidServiceNeedReportRow,
   DecisionsReportRow,
-  VardaErrorReportRow
+  VardaErrorReportRow,
+  AssistanceNeedsAndActionsReport
 } from '../types/reports'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -250,9 +250,9 @@ export interface AssistanceNeedsAndActionsReportFilters {
 
 export async function getAssistanceNeedsAndActionsReport(
   filters: AssistanceNeedsAndActionsReportFilters
-): Promise<Result<AssistanceNeedsAndActionsReportRow[]>> {
+): Promise<Result<AssistanceNeedsAndActionsReport>> {
   return client
-    .get<JsonOf<AssistanceNeedsAndActionsReportRow[]>>(
+    .get<JsonOf<AssistanceNeedsAndActionsReport>>(
       '/reports/assistance-needs-and-actions',
       {
         params: {

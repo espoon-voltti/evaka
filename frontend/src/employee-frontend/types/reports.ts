@@ -6,6 +6,10 @@ import LocalDate from 'lib-common/local-date'
 import { UnitProviderType } from 'lib-customizations/types'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { UnitType } from 'lib-common/generated/api-types/reports'
 
 export interface InvoiceReportRow {
   areaCode: number
@@ -251,32 +255,26 @@ export interface ChildAgeLanguageReportRow extends UnitBasicsAbstractReportRow {
   other_7y: number
 }
 
-export interface AssistanceNeedsAndActionsReportRow
-  extends GroupBasicsAbstractReportRow {
-  autism: number
-  developmentalDisability1: number
-  developmentalDisability2: number
-  focusChallenge: number
-  linguisticChallenge: number
-  developmentMonitoring: number
-  developmentMonitoringPending: number
-  multiDisability: number
-  longTermCondition: number
-  regulationSkillChallenge: number
-  disability: number
-  otherAssistanceNeed: number
-  noAssistanceNeeds: number
+export interface AssistanceNeedsAndActionsReport {
+  actions: AssistanceActionOption[]
+  bases: AssistanceBasisOption[]
+  rows: AssistanceNeedsAndActionsReportRow[]
+}
 
-  assistanceServiceChild: number
-  assistanceServiceUnit: number
-  smallerGroup: number
-  specialGroup: number
-  pervasiveVeoSupport: number
-  resourcePerson: number
-  ratioDecrease: number
-  periodicalVeoSupport: number
-  otherAssistanceAction: number
-  noAssistanceActions: number
+export interface AssistanceNeedsAndActionsReportRow {
+  actionCounts: Record<string, number>
+  basisCounts: Record<string, number>
+  careAreaName: string
+  groupId: UUID
+  groupName: string
+  noActionCount: number
+  noBasisCount: number
+  otherActionCount: number
+  otherBasisCount: number
+  unitId: UUID
+  unitName: string
+  unitProviderType: ProviderType
+  unitType: UnitType
 }
 
 export interface OccupancyReportRow {
