@@ -188,7 +188,7 @@ export const MessageContextProvider = React.memo(
       loggedIn && userHasPin && user.map((item) => item?.employeeId) && unitId
         ? loadUnreadCounts()
         : null
-    }, [loadUnreadCounts, userHasPin, loggedIn, unitId])
+    }, [loadUnreadCounts, user, userHasPin, loggedIn, unitId])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>

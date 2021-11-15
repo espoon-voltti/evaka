@@ -70,7 +70,11 @@ export const ThreadView = React.memo(function ThreadView({
         <ThreadViewTitle>{title}</ThreadViewTitle>
       </ThreadViewTopbar>
       {messages.map((message) => (
-        <SingleMessage key={message.id} message={message} />
+        <SingleMessage
+          key={message.id}
+          message={message}
+          accountId={accountId}
+        />
       ))}
       <ThreadViewReply>
         <InputField
@@ -93,12 +97,19 @@ export const ThreadView = React.memo(function ThreadView({
   )
 })
 
-function SingleMessage({ message }: { message: Message }) {
+function SingleMessage({
+  message,
+  accountId
+}: {
+  message: Message
+  accountId: UUID
+}) {
+  const ourMessage = message.sender.id === accountId
   return (
-    <MessageContainer ours={false} data-qa={'single-message'}>
+    <MessageContainer ours={ourMessage} data-qa={'single-message'}>
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
-        <SentDate>{formatTime(message.sentAt)}</SentDate>
+        <SentDate white={ourMessage}>{formatTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
         {message.content}
@@ -131,7 +142,8 @@ const MessageContainer = styled.div`
       ? `
       border-bottom-right-radius: 2px;
       align-self: flex-end;
-      background-color: ${colors.blues.primary}
+      background-color: ${colors.blues.primary};
+      color: white;
     `
       : `
       border-bottom-left-radius: 2px;
@@ -141,6 +153,13 @@ const MessageContainer = styled.div`
   padding: ${defaultMargins.s};
   margin: ${defaultMargins.s};
   margin-bottom: 0;
+`
+
+const SentDate = styled.div`
+  font-size: 14px;
+  font-weight: ${fontWeights.semibold};
+  color: ${(p: { white: boolean }) =>
+    p.white ? colors.greyscale.white : colors.greyscale.dark};
 `
 
 const TitleRow = styled.div`
@@ -156,12 +175,6 @@ const TitleRow = styled.div`
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
   margin-right: ${defaultMargins.m};
-`
-
-const SentDate = styled.div`
-  font-size: 14px;
-  font-weight: ${fontWeights.semibold};
-  color: ${colors.greyscale.dark};
 `
 
 const MessageContent = styled.div`

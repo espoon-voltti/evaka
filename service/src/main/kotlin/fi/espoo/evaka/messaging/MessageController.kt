@@ -204,11 +204,6 @@ class MessageController(
         return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
     }
 
-    data class ReplyToMessageBody(
-        val content: String,
-        val recipientAccountIds: Set<MessageAccountId>,
-    )
-
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
