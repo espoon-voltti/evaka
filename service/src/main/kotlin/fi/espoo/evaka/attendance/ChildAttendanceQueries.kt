@@ -144,6 +144,10 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                     WHERE
                         bc.child_id = p.child_id AND
                         daterange(bc.start_date, bc.end_date, '[]') @> :date
+                ) AND
+                NOT EXISTS (
+                    SELECT 1 FROM child_attendance ca
+                    WHERE ca.child_id = p.child_id AND ca.departed IS NULL
                 )
 
             UNION ALL
@@ -161,7 +165,30 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             WHERE
                 bc.unit_id = :unitId AND
                 bc.group_id IS NOT NULL AND
-                daterange(bc.start_date, bc.end_date, '[]') @> :date
+                daterange(bc.start_date, bc.end_date, '[]') @> :date AND
+                NOT EXISTS (
+                    SELECT 1 FROM child_attendance ca
+                    WHERE ca.child_id = p.child_id AND ca.departed IS NULL
+                )
+
+            UNION ALL
+
+            SELECT
+                coalesce(bc.group_id, gp.daycare_group_id) as group_id,
+                ca.child_id,
+                p.type as placement_type,
+                bc.group_id IS NOT NULL as backup
+            FROM child_attendance ca
+            JOIN placement p
+                ON ca.child_id = p.child_id
+                AND daterange(p.start_date, p.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
+            JOIN daycare_group_placement gp
+                ON gp.daycare_placement_id = p.id
+                AND daterange(gp.start_date, gp.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
+            LEFT JOIN backup_care bc
+                ON ca.child_id = bc.child_id
+                AND daterange(bc.start_date, bc.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
+            WHERE ca.departed IS NULL AND ca.unit_id = :unitId
         )
         SELECT
             pe.id,
@@ -242,7 +269,7 @@ fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, now: HelsinkiDateT
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        WHERE ca.child_id IN ($placedChildrenSql)
+        WHERE ca.unit_id = :unitId
         AND (ca.arrived::date = :date OR tstzrange(ca.arrived, ca.departed) @> :departedThreshold)
         """.trimIndent()
 
