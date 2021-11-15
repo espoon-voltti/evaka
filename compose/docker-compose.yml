@@ -64,8 +64,36 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: jboss/keycloak
+    ports:
+    - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-sSfI", "http://localhost:8080/auth/"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    environment:
+      KEYCLOAK_FRONTEND_URL: "http://localhost:8080/auth/"
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    volumes:
+      - ./keycloak:/configuration
+      - h2-data:/opt/jboss/keycloak/standalone/data/
+    command:
+      - '-b'
+      - '0.0.0.0'
+      - '-Dkeycloak.migration.action=import'
+      - '-Dkeycloak.migration.provider=singleFile'
+      - '-Dkeycloak.migration.file=/configuration/evaka.json'
+      - '-Dkeycloak.migration.strategy=OVERWRITE_EXISTING'
+      - '--server-config=standalone.xml'
+
 volumes:
   db-data:
     driver: local
   s3-data:
+    driver: local
+  h2-data:
     driver: local

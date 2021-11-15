@@ -17,7 +17,7 @@ import {
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
-import { employeeLogin } from 'e2e-playwright/utils/user'
+import { employeeLogin, employeeLoginKeyCloak } from 'e2e-playwright/utils/user'
 import {
   createDaycarePlacementFixture,
   uuidv4
@@ -290,5 +290,11 @@ describe('Child information page sections', () => {
       childApplications: false,
       messageBlocklist: false
     })
+  })
+})
+
+describe('SAML login', () => {
+  test('Login', async () => {
+    await employeeLoginKeyCloak(page)
   })
 })

@@ -74,7 +74,7 @@ function Login({ error }: Props) {
           </LoginButton>
           <Gap horizontal />
           {featureFlags.evakaLogin && (
-            <LoginButton data-qa="login-btn" href={getLoginUrl('evaka')}>
+            <LoginButton data-qa="login-btn-evaka" href={getLoginUrl('evaka')}>
               <span>{i18n.login.loginEvaka}</span>
             </LoginButton>
           )}

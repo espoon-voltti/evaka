@@ -25,7 +25,11 @@ import {
   createDaycareGroupPlacementFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
-import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
+import {
+  employeeLogin,
+  enduserLogin,
+  enduserLoginWeak
+} from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
 import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
@@ -91,103 +95,117 @@ async function initCitizenPage() {
   await enduserLogin(citizenPage)
 }
 
+async function initCitizenPageWeak() {
+  citizenPage = await (await newBrowserContext()).newPage()
+  await enduserLoginWeak(citizenPage)
+}
+
 describe('Sending and receiving messages', () => {
-  describe('Interactions', () => {
-    beforeEach(async () => {
-      await Promise.all([initSupervisorPage(), initCitizenPage()])
-    })
+  const initConfigurations = [
+    { init: initCitizenPage, name: 'direct login' },
+    { init: initCitizenPageWeak, name: 'weak login' }
+  ]
 
-    test('Unit supervisor sends message and citizen replies', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-      const reply = 'Testivastaus testiviestiin'
+  initConfigurations.forEach(function (configuration) {
+    describe(`Interactions with ${configuration.name}`, () => {
+      beforeEach(async () => {
+        await Promise.all([initSupervisorPage(), configuration.init()])
+      })
 
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content)
+      test('Unit supervisor sends message and citizen replies', async () => {
+        const title = 'Otsikko'
+        const content = 'Testiviestin sisältö'
+        const reply = 'Testivastaus testiviestiin'
 
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.assertThreadContent(title, content)
-      await citizenMessagesPage.replyToFirstThread(reply)
-      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.sendNewMessage(title, content)
 
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.assertMessageContent(1, reply)
-    })
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(title, content)
+        await citizenMessagesPage.replyToFirstThread(reply)
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
-    test('Employee can send attachments', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.assertMessageContent(1, reply)
+      })
 
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content, 2)
+      test('Employee can send attachments', async () => {
+        const title = 'Otsikko'
+        const content = 'Testiviestin sisältö'
 
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.assertThreadContent(title, content)
-      await waitUntilEqual(
-        () => citizenMessagesPage.getThreadAttachmentCount(),
-        2
-      )
-    })
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.sendNewMessage(title, content, 2)
 
-    test('Admin sends a message and blocked guardian does not get it', async () => {
-      const title = 'Kielletty viesti'
-      const content = 'Tämän ei pitäisi mennä perille'
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(title, content)
+        await waitUntilEqual(
+          () => citizenMessagesPage.getThreadAttachmentCount(),
+          2
+        )
+      })
 
-      // Add child's guardian to block list
-      const adminPage = await (await newBrowserContext()).newPage()
-      await employeeLogin(adminPage, 'ADMIN')
-      await adminPage.goto(`${config.employeeUrl}/child-information/${childId}`)
-      const childInformationPage = new ChildInformationPage(adminPage)
-      await childInformationPage.addParentToBlockList(
-        fixtures.enduserGuardianFixture.id
-      )
+      test('Admin sends a message and blocked guardian does not get it', async () => {
+        const title = 'Kielletty viesti'
+        const content = 'Tämän ei pitäisi mennä perille'
 
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content)
+        // Add child's guardian to block list
+        const adminPage = await (await newBrowserContext()).newPage()
+        await employeeLogin(adminPage, 'ADMIN')
+        await adminPage.goto(
+          `${config.employeeUrl}/child-information/${childId}`
+        )
+        const childInformationPage = new ChildInformationPage(adminPage)
+        await childInformationPage.addParentToBlockList(
+          fixtures.enduserGuardianFixture.id
+        )
 
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 0)
-    })
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.sendNewMessage(title, content)
 
-    test('Citizen sends a message to the unit supervisor', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-      const receivers = ['Esimies Essi']
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.sendNewMessage(title, content, receivers)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 0)
+      })
 
-      await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.openInbox(1)
-      await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.openInbox(2)
-      await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
-    })
+      test('Citizen sends a message to the unit supervisor', async () => {
+        const title = 'Otsikko'
+        const content = 'Testiviestin sisältö'
+        const receivers = ['Esimies Essi']
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(title, content, receivers)
 
-    test('Citizen sends message to the unit supervisor and the group', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-      const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
-      await citizenPage.goto(config.enduserMessagesUrl)
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.sendNewMessage(title, content, receivers)
+        await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(1)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.openInbox(2)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
+      })
 
-      await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
-      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-      const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.openInbox(1)
-      await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.openInbox(2)
-      await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+      test('Citizen sends message to the unit supervisor and the group', async () => {
+        const title = 'Otsikko'
+        const content = 'Testiviestin sisältö'
+        const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(title, content, receivers)
+
+        await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(1)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.openInbox(2)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+      })
     })
   })
 
