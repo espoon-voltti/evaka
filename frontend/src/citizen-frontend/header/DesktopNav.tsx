@@ -223,7 +223,7 @@ const UserMenu = React.memo(function UserMenu() {
           <Icon icon={faUser} />
         </AttentionIndicator>
         <Gap size="s" horizontal />
-        {user?.firstName} {user?.lastName}
+        {user?.preferredName || user?.firstName} {user?.lastName}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open && user ? (

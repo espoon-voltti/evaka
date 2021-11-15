@@ -352,7 +352,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
         </AttentionIndicator>
         <Gap size="s" horizontal />
         <UserName>
-          {user.firstName} {user.lastName}
+          {user.preferredName || user.firstName} {user.lastName}
         </UserName>
         <Gap size="s" horizontal />
         <HorizontalSpacer />
