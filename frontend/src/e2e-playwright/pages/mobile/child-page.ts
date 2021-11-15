@@ -20,6 +20,8 @@ export default class MobileChildPage {
     '[data-qa="link-child-sensitive-info"]'
   )
 
+  #messageEditorLink = new RawElement(this.page, '[data-qa="link-new-message"]')
+
   #notesLink = this.page.locator('[data-qa="link-child-daycare-daily-note"]')
 
   #notesExistsBubble = this.page.locator('[data-qa="daily-note-icon-bubble"]')
@@ -70,6 +72,10 @@ export default class MobileChildPage {
 
   async openSensitiveInfo() {
     await this.#sensitiveInfoLink.click()
+  }
+
+  async openMessageEditor() {
+    await this.#messageEditorLink.click()
   }
 
   async assertSensitiveInfoIsShown(name: string) {

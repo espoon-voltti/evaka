@@ -183,7 +183,7 @@ export const getSubTree = (
 
 export const receiverAsSelectorNode = (r: MessageReceiver): SelectorNode => ({
   selectorId: r.childId,
-  selected: true,
+  selected: false,
   name: `${r.childFirstName} ${r.childLastName}`,
   childNodes: r.receiverPersons.map(
     ({ accountId, receiverFirstName, receiverLastName }) => ({
