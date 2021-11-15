@@ -609,3 +609,22 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
         .bind("ids", ids.toTypedArray())
         .execute()
 }
+
+fun Database.Read.isElementaryFamily(
+    headOfFamilyId: UUID,
+    partnerId: UUID,
+    childIds: List<UUID>
+): Boolean = createQuery(
+    """
+SELECT
+    COALESCE((
+    SELECT array_agg(DISTINCT(head.child_id)) as child_ids
+    FROM guardian head JOIN guardian partner ON head.child_id = partner.child_id
+    WHERE head.guardian_id = :headOfFamilyId and partner.guardian_id = :partnerId), '{}') @>:childIds
+    """.trimIndent()
+)
+    .bind("headOfFamilyId", headOfFamilyId)
+    .bind("partnerId", partnerId)
+    .bind("childIds", childIds.toTypedArray())
+    .mapTo<Boolean>()
+    .first()

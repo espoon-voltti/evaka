@@ -155,7 +155,8 @@ data class FeeDecisionDetailed(
     val sentAt: Instant? = null,
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
-    val created: Instant = Instant.now()
+    val created: Instant = Instant.now(),
+    val isElementaryFamily: Boolean? = false
 ) : Mergeable<FeeDecisionChildDetailed, FeeDecisionDetailed> {
     override fun withChildren(children: List<FeeDecisionChildDetailed>) = this.copy(children = children)
     @JsonProperty("totalFee")

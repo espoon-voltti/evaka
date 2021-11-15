@@ -15,6 +15,7 @@ import {
 import {
   insertEmployeeFixture,
   insertFeeDecisionFixtures,
+  insertGuardianFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
@@ -103,8 +104,15 @@ describe.only('Fee decisions', () => {
     await feeDecisionsPage.assertSentDecisionsCount(1)
   })
 
-  test('Partner is shown', async () => {
+  test('Partner is shown for elementary family', async () => {
     const partner = familyWithTwoGuardians.otherGuardian
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      },
+      { guardianId: partner.id, childId: familyWithTwoGuardians.children[0].id }
+    ])
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
@@ -114,5 +122,22 @@ describe.only('Fee decisions', () => {
     await new FeeDecisionDetailsPage(page).assertPartnerName(
       `${partner.firstName} ${partner.lastName}`
     )
+  })
+
+  test('Partner is not shown for non elementary family', async () => {
+    const partner = familyWithTwoGuardians.otherGuardian
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      }
+    ])
+    await insertFeeDecisionFixtureAndNavigateToIt(
+      familyWithTwoGuardians.guardian,
+      familyWithTwoGuardians.children[0],
+      partner
+    )
+    await feeDecisionsPage.openFirstFeeDecision()
+    await new FeeDecisionDetailsPage(page).assertPartnerNameNotShown()
   })
 })

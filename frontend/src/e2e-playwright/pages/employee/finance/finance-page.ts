@@ -12,7 +12,11 @@ import {
   RawElement,
   RawTextInput
 } from 'e2e-playwright/utils/element'
-import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
+import {
+  waitUntilEqual,
+  waitUntilFalse,
+  waitUntilTrue
+} from 'e2e-playwright/utils'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
@@ -117,9 +121,15 @@ export class FeeDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
   #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+  #headOfFamily = new RawElement(this.page, '[data-qa="head-of-family"]')
 
   async assertPartnerName(expectedName: string) {
     await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+
+  async assertPartnerNameNotShown() {
+    await waitUntilTrue(() => this.#headOfFamily.visible)
+    await waitUntilFalse(() => this.#partnerName.visible)
   }
 }
 

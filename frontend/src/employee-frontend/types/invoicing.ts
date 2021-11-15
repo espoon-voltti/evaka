@@ -231,6 +231,7 @@ export interface FeeDecisionDetailed {
   requiresManualSending: boolean
   isRetroactive: boolean
   created: Date
+  isElementaryFamily: boolean | null
 }
 
 export interface FeeDecisionSummary {

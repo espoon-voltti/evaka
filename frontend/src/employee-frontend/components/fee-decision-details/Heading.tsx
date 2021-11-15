@@ -37,6 +37,7 @@ interface Props {
   decisionType: FeeDecisionType
   changeDecisionType: (type: FeeDecisionType) => void
   newDecisionType: FeeDecisionType
+  isElementaryFamily: boolean | null
 }
 
 function displayDecisionNumber(number: number) {
@@ -56,7 +57,8 @@ export default React.memo(function Heading({
   documentKey,
   decisionType,
   changeDecisionType,
-  newDecisionType
+  newDecisionType,
+  isElementaryFamily
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -117,18 +119,19 @@ export default React.memo(function Heading({
       value: React.ReactNode
       valueWidth?: string
       'data-qa'?: string
-    }[] = partner
-      ? [
-          {
-            label: i18n.feeDecision.partner,
-            value: (
-              <Link to={`/profile/${partner.id}`} data-qa="partner">
-                {formatName(partner.firstName, partner.lastName, i18n)}
-              </Link>
-            )
-          }
-        ]
-      : []
+    }[] =
+      partner && isElementaryFamily
+        ? [
+            {
+              label: i18n.feeDecision.partner,
+              value: (
+                <Link to={`/profile/${partner.id}`} data-qa="partner">
+                  {formatName(partner.firstName, partner.lastName, i18n)}
+                </Link>
+              )
+            }
+          ]
+        : []
 
     const headOfFamilyElement: {
       label: React.ReactNode

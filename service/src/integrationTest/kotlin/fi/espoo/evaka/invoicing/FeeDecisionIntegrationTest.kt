@@ -12,6 +12,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
 import fi.espoo.evaka.invoicing.controller.Wrapper
+import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -19,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
@@ -1410,5 +1412,100 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(true, confirmed.requiresManualSending())
             assertEquals(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING, confirmed.status)
         }
+    }
+
+    @Test
+    fun `Fee decision indicates elementary family for a family with two partners and 2 common children`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+
+        val decision = createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+        }
+
+        val (_, _, result0) = http.get("/decisions/${decision.id}")
+            .asUser(user)
+            .responseString()
+
+        deserializeResult(result0.get()).data.let { decisionForFamily ->
+            assertEquals(true, decisionForFamily.isElementaryFamily)
+        }
+    }
+
+    @Test
+    fun `Fee decision indicates elementary family for a family with two partners and one common child and one child not in fee decision`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+
+            // Adult 2 has a custodian in another family
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+
+        val decision = createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1))
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+        }
+
+        val (_, _, result0) = http.get("/decisions/${decision.id}")
+            .asUser(user)
+            .responseString()
+
+        deserializeResult(result0.get()).data.let { decisionForFamily ->
+            assertEquals(true, decisionForFamily.isElementaryFamily)
+        }
+    }
+
+    @Test
+    fun `Fee decision indicates not an elementary family for a family with two partners and one common child and one not common child`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+
+            // Adult 2 is only the parent of child 2, not child 1 -> not an elementary family
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+
+        val decision = createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+        }
+
+        val (_, _, result0) = http.get("/decisions/${decision.id}")
+            .asUser(user)
+            .responseString()
+
+        deserializeResult(result0.get()).data.let { decisionForFamily ->
+            assertEquals(false, decisionForFamily.isElementaryFamily)
+        }
+    }
+
+    private fun createFeeDecisionsForFamily(headOfFamily: PersonData.Detailed, partner: PersonData.Detailed?, familyChildren: List<PersonData.Detailed>): FeeDecision {
+        return createFeeDecisionFixture(
+            status = FeeDecisionStatus.DRAFT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = headOfFamily.id,
+            period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+            children = familyChildren.map {
+                createFeeDecisionChildFixture(
+                    childId = it.id,
+                    dateOfBirth = it.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    siblingDiscount = 50,
+                    fee = 14500
+                )
+            },
+            partnerId = partner?.id
+        )
     }
 }
