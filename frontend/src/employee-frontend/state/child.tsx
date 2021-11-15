@@ -13,10 +13,6 @@ import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
-  ServiceNeed,
-  ServiceNeedOption
-} from 'lib-common/generated/api-types/serviceneed'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 
 export interface ChildState {
@@ -24,10 +20,6 @@ export interface ChildState {
   setPerson: (request: Result<PersonJSON>) => void
   permittedActions: Set<Action.Child | Action.Person>
   setPermittedActions: (r: Set<Action.Child | Action.Person>) => void
-  serviceNeeds: Result<ServiceNeed[]>
-  setServiceNeeds: (request: Result<ServiceNeed[]>) => void
-  serviceNeedOptions: Result<ServiceNeedOption[]>
-  setServiceNeedOptions: (request: Result<ServiceNeedOption[]>) => void
   additionalInformation: Result<AdditionalInformation>
   setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
@@ -55,10 +47,6 @@ const defaultState: ChildState = {
   setPerson: () => undefined,
   permittedActions: new Set(),
   setPermittedActions: () => undefined,
-  serviceNeeds: Loading.of(),
-  setServiceNeeds: () => undefined,
-  serviceNeedOptions: Loading.of(),
-  setServiceNeedOptions: () => undefined,
   additionalInformation: Loading.of(),
   setAdditionalInformation: () => undefined,
   feeAlterations: Loading.of(),
@@ -92,12 +80,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [permittedActions, setPermittedActions] = useState(
     defaultState.permittedActions
   )
-  const [serviceNeeds, setServiceNeeds] = useState<Result<ServiceNeed[]>>(
-    defaultState.serviceNeeds
-  )
-  const [serviceNeedOptions, setServiceNeedOptions] = useState<
-    Result<ServiceNeedOption[]>
-  >(defaultState.serviceNeedOptions)
   const [additionalInformation, setAdditionalInformation] = useState<
     Result<AdditionalInformation>
   >(defaultState.additionalInformation)
@@ -137,10 +119,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setPerson,
       permittedActions,
       setPermittedActions,
-      serviceNeeds,
-      setServiceNeeds,
-      serviceNeedOptions,
-      setServiceNeedOptions,
       additionalInformation,
       setAdditionalInformation,
       feeAlterations,
@@ -165,8 +143,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     [
       person,
       permittedActions,
-      serviceNeeds,
-      serviceNeedOptions,
       feeAlterations,
       placements,
       parentships,

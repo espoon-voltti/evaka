@@ -34,6 +34,7 @@ import {
 import { InputWarning } from '../../common/InputWarning'
 import ServiceNeeds from './ServiceNeeds'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 interface Props {
   placement: DaycarePlacementWithDetails
@@ -42,6 +43,7 @@ interface Props {
     range: DateRange,
     placement: DaycarePlacementWithDetails
   ) => boolean | undefined
+  serviceNeedOptions: ServiceNeedOption[]
 }
 
 const DataRow = styled.div`
@@ -80,7 +82,12 @@ const CompactDatePicker = styled(DatePickerDeprecated)`
   }
 `
 
-function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
+export default React.memo(function PlacementRow({
+  placement,
+  onRefreshNeeded,
+  checkOverlaps,
+  serviceNeedOptions
+}: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
 
@@ -324,7 +331,11 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
 
         <Gap size="s" />
 
-        <ServiceNeeds placement={placement} reload={onRefreshNeeded} />
+        <ServiceNeeds
+          placement={placement}
+          reload={onRefreshNeeded}
+          serviceNeedOptions={serviceNeedOptions}
+        />
       </ToolbarAccordion>
       {confirmingDelete && (
         <InfoModal
@@ -343,9 +354,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
       )}
     </>
   )
-}
-
-export default PlacementRow
+})
 
 const DatepickerContainer = styled.div`
   display: flex;
