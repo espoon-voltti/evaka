@@ -8,21 +8,12 @@ import {
   UnwrapResultProps
 } from 'lib-components/async-rendering'
 import { useTranslation } from '../state/i18n'
-import { Result } from 'lib-common/api'
-import React from 'react'
 
 function useFailureMessage() {
   const { i18n } = useTranslation()
   return i18n.common.loadingFailed
 }
 
-const { UnwrapResult } = makeHelpers(useFailureMessage)
+const { UnwrapResult, renderResult } = makeHelpers(useFailureMessage)
 export type { UnwrapResultProps, RenderResultFn }
-export { UnwrapResult }
-
-export function renderResult<T>(
-  result: Result<T>,
-  renderer: RenderResultFn<T>
-) {
-  return <UnwrapResult result={result}>{renderer}</UnwrapResult>
-}
+export { UnwrapResult, renderResult }
