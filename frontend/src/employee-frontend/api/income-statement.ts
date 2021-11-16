@@ -34,11 +34,19 @@ export async function getIncomeStatements(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getIncomeStatementsAwaitingHandler(
-  areas: string[] = [],
-  page = 1,
-  pageSize = 50
-): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
+export interface IncomeStatementsAwaitingHandlerParams {
+  areas: string[]
+  page: number
+  pageSize: number
+}
+
+export async function getIncomeStatementsAwaitingHandler({
+  areas,
+  page,
+  pageSize
+}: IncomeStatementsAwaitingHandlerParams): Promise<
+  Result<Paged<IncomeStatementAwaitingHandler>>
+> {
   return client
     .get<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
       '/income-statements/awaiting-handler',

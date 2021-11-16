@@ -2,23 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Paged, Result } from 'lib-common/api'
 import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
 import { formatDate } from 'lib-common/date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H1 } from 'lib-components/typography'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { getIncomeStatementsAwaitingHandler } from '../../api/income-statement'
-import { useTranslation } from '../../state/i18n'
-import { Gap } from 'lib-components/white-space'
-import { AreaFilter } from '../common/Filters'
-import { CareArea } from '../../types/unit'
-import { getAreas } from '../../api/daycare'
 import Pagination from 'lib-components/Pagination'
+import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import React, { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { getAreas } from '../../api/daycare'
+import {
+  getIncomeStatementsAwaitingHandler,
+  IncomeStatementsAwaitingHandlerParams
+} from '../../api/income-statement'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+import { AreaFilter } from '../common/Filters'
 
 function IncomeStatementsList({
   data
@@ -27,9 +29,6 @@ function IncomeStatementsList({
 }) {
   const { i18n } = useTranslation()
 
-  if (!data.length) {
-    return <div>{i18n.common.noResults}</div>
-  }
   return (
     <Table>
       <Thead>
@@ -60,37 +59,22 @@ function IncomeStatementsList({
   )
 }
 
-interface SearchParams {
-  areas: string[]
-  page: number
-}
-
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
-  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
+  const [areas] = useApiState(getAreas, [])
 
-  const [incomeStatements, setIncomeStatements] = useState<
-    Result<Paged<IncomeStatementAwaitingHandler>>
-  >(Loading.of())
-  const [searchParams, setSearchParams] = useState<SearchParams>({
-    areas: [],
-    page: 1
-  })
+  const [searchParams, setSearchParams] =
+    useState<IncomeStatementsAwaitingHandlerParams>({
+      areas: [],
+      page: 1,
+      pageSize: 50
+    })
 
-  const loadAreas = useRestApi(getAreas, setAreas)
-  const loadData = useRestApi(
-    getIncomeStatementsAwaitingHandler,
-    setIncomeStatements
+  const [incomeStatements] = useApiState(
+    () => getIncomeStatementsAwaitingHandler(searchParams),
+    [searchParams]
   )
-
-  useEffect(() => {
-    loadAreas()
-  }, [loadAreas])
-
-  useEffect(() => {
-    loadData(searchParams.areas, searchParams.page)
-  }, [loadData, searchParams])
 
   const toggleArea = useCallback(
     (area: string) => () => {
@@ -121,16 +105,21 @@ export default React.memo(function IncomeStatementsPage() {
         </ContentArea>
       ))}
       <Gap size="s" />
-      {renderResult(incomeStatements, (incomeStatements) => (
+      {renderResult(incomeStatements, ({ data, pages, total }) => (
         <ContentArea opaque>
-          <IncomeStatementsList data={incomeStatements.data} />
+          <FixedSpaceRow justifyContent="flex-end">
+            {i18n.common.resultCount(total)}
+          </FixedSpaceRow>
+          <IncomeStatementsList data={data} />
           <Gap size="s" />
-          <Pagination
-            pages={incomeStatements.pages}
-            currentPage={searchParams.page}
-            setPage={handlePageChange}
-            label={i18n.common.page}
-          />
+          {pages > 1 && (
+            <Pagination
+              pages={pages}
+              currentPage={searchParams.page}
+              setPage={handlePageChange}
+              label={i18n.common.page}
+            />
+          )}
         </ContentArea>
       ))}
     </Container>
