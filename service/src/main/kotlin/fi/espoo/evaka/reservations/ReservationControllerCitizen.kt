@@ -204,10 +204,9 @@ GROUP BY date, is_holiday
 private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name, child.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
+SELECT ch.id, ch.first_name, ch.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
-LEFT JOIN child ON ch.id = child.id
 LEFT JOIN LATERAL (
     SELECT
         min(p.start_date) AS placement_min_start,

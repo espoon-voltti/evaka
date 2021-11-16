@@ -31,9 +31,9 @@ fun getSendAddress(messageProvider: IMessageProvider, guardian: PersonDTO, lang:
             }
         }
         else -> DecisionSendAddress(
-            street = guardian.streetAddress!!,
-            postalCode = guardian.postalCode!!,
-            postOffice = guardian.postOffice!!,
+            street = guardian.streetAddress,
+            postalCode = guardian.postalCode,
+            postOffice = guardian.postOffice,
             row1 = guardian.streetAddress,
             row2 = "${guardian.postalCode} ${guardian.postOffice}",
             row3 = ""
@@ -54,7 +54,7 @@ data class DecisionSendAddress(
             person.let {
                 if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
                     return DecisionSendAddress(
-                        person.streetAddress!!, person.postalCode!!, person.postOffice!!,
+                        person.streetAddress, person.postalCode, person.postOffice,
                         person.streetAddress, "${person.postalCode} ${person.postOffice}", ""
                     )
                 }

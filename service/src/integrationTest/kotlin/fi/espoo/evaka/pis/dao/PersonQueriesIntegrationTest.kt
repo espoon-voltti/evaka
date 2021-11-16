@@ -308,8 +308,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",
+            preferredName = "Matti",
             email = null,
-            phone = null,
+            phone = "",
             backupPhone = "",
             language = "fi",
             nationalities = listOf("248", "060"),
@@ -317,6 +318,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             streetAddress = "Jokutie 66",
             postalCode = "00000",
             postOffice = "Jokula",
+            residenceCode = "",
 
             restrictedDetailsEnabled = true,
             restrictedDetailsEndDate = LocalDate.now().plusYears(1)

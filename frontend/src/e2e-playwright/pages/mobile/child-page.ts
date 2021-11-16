@@ -82,7 +82,7 @@ export default class MobileChildPage {
       firstName: string
       lastName: string
       phone?: string
-      email?: string
+      email?: string | null
     }>,
     backupPickups: Array<{
       name: string

@@ -194,7 +194,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             pe.id,
             pe.first_name,
             pe.last_name,
-            ch.preferred_name,
+            pe.preferred_name,
             pe.date_of_birth,
             dst.child_id,
             dst.type,
@@ -216,7 +216,6 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             c.backup
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
-        JOIN child ch ON ch.id = c.child_id
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         """.trimIndent()
@@ -412,11 +411,11 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
     return if (person != null) {
         ChildSensitiveInformation(
             id = person.id,
-            firstName = person.firstName ?: "",
-            lastName = person.lastName ?: "",
+            firstName = person.firstName,
+            lastName = person.lastName,
             preferredName = child?.additionalInformation?.preferredName ?: "",
             ssn = person.identity.toString(),
-            childAddress = person.streetAddress ?: "",
+            childAddress = person.streetAddress,
             placementTypes = placementTypes,
             allergies = child?.additionalInformation?.allergies ?: "",
             diet = child?.additionalInformation?.diet ?: "",
@@ -424,10 +423,10 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
             contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
                 ContactInfo(
                     id = it.id.toString(),
-                    firstName = it.firstName ?: "",
-                    lastName = it.lastName ?: "",
-                    phone = it.phone ?: "",
-                    backupPhone = it.backupPhone ?: "",
+                    firstName = it.firstName,
+                    lastName = it.lastName,
+                    phone = it.phone,
+                    backupPhone = it.backupPhone,
                     email = it.email ?: "",
                     priority = it.priority
                 )

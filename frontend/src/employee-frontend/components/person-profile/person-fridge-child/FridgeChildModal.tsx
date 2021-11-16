@@ -8,7 +8,6 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { Parentship } from '../../../types/fridge'
 import { Loading, Result } from 'lib-common/api'
 import { faChild } from 'lib-icons'
 import { formatName } from '../../../utils'
@@ -17,7 +16,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { getPerson } from '../../../api/person'
 import { UUID } from 'lib-common/types'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
 
 interface Props {
   headPersonId: UUID

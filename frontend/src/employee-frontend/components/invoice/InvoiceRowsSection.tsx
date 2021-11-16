@@ -17,11 +17,8 @@ import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import {
-  InvoiceRowDetailed,
-  InvoiceCodes,
-  PersonDetailed
-} from '../../types/invoicing'
+import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceRowDetailed, InvoiceCodes } from '../../types/invoicing'
 import { Result } from 'lib-common/api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'

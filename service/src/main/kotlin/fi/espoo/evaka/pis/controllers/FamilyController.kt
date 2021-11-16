@@ -145,7 +145,7 @@ WITH contact AS (
     UNION
 
     -- siblings in the same household
-    SELECT 'LOCAL_SIBLING' AS role, p.id, p.first_name, p.last_name, NULL AS email, NULL AS phone, NULL AS backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
+    SELECT 'LOCAL_SIBLING' AS role, p.id, p.first_name, p.last_name, NULL AS email, '' AS phone, '' AS backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
     FROM person p
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE EXISTS (

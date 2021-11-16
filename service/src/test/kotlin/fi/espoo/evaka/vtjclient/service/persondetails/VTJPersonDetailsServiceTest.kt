@@ -140,6 +140,7 @@ class VTJPersonDetailsServiceTest {
         ssnAddingDisabled = false,
         firstName = firstNames,
         lastName = lastName,
+        preferredName = "",
         language = nativeLanguage?.code ?: "fi",
         email = "example@example.org",
         phone = "+573601234567",
@@ -149,7 +150,8 @@ class VTJPersonDetailsServiceTest {
         restrictedDetailsEndDate = null,
         streetAddress = "",
         postalCode = "",
-        postOffice = ""
+        postOffice = "",
+        residenceCode = ""
     )
 
     private val validPerson = VtjPerson(

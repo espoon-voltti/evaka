@@ -43,9 +43,15 @@ class PersonIntegrationTest : PureJdbiTest() {
                     dateOfBirth = LocalDate.of(2012, 5, 8),
                     firstName = "Matti",
                     lastName = "Meikäläinen",
+                    preferredName = "",
                     email = "matti.meikalainen@example.com",
                     phone = "1234567890",
-                    language = "fi"
+                    backupPhone = "",
+                    language = "fi",
+                    streetAddress = "",
+                    postalCode = "",
+                    postOffice = "",
+                    residenceCode = ""
                 )
             )
         }

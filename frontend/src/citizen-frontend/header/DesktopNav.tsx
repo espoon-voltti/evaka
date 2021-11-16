@@ -10,17 +10,22 @@ import colors from 'lib-customizations/common'
 import {
   faChevronDown,
   faChevronUp,
+  faExclamation,
   faLockAlt,
   faSignIn,
-  faSignOut
+  faSignOut,
+  faUser
 } from 'lib-icons'
 import React, { useCallback, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
 import { useUser } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
+import AttentionIndicator from './AttentionIndicator'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { featureFlags } from 'lib-customizations/citizen'
 
 interface Props {
   unreadMessagesCount: number
@@ -201,20 +206,54 @@ const UserMenu = React.memo(function UserMenu() {
   const t = useTranslation()
   const history = useHistory()
   const user = useUser()
+  const theme = useTheme()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
+  const showUserAttentionIndicator =
+    (featureFlags.experimental?.personalDetailsPage ?? false) &&
+    user?.email === null
 
   return (
     <div ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title'}>
-        {user?.firstName} {user?.lastName}
+      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title-desktop'}>
+        <AttentionIndicator
+          toggled={showUserAttentionIndicator}
+          data-qa="attention-indicator-desktop"
+        >
+          <Icon icon={faUser} />
+        </AttentionIndicator>
+        <Gap size="s" horizontal />
+        {user?.preferredName || user?.firstName} {user?.lastName}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open && user ? (
         <DropDown data-qa={'user-menu'}>
+          {featureFlags.experimental?.personalDetailsPage && (
+            <DropDownItem
+              selected={window.location.pathname.includes('/personal-details')}
+              data-qa={'user-menu-personal-details'}
+              onClick={() => {
+                setOpen(false)
+                history.push('/personal-details')
+              }}
+            >
+              {t.header.nav.personalDetails}
+              {showUserAttentionIndicator && (
+                <>
+                  <Gap size="xs" horizontal />
+                  <RoundIcon
+                    content={faExclamation}
+                    color={theme.colors.accents.orange}
+                    size="s"
+                    data-qa="personal-details-attention-indicator-desktop"
+                  />
+                </>
+              )}
+            </DropDownItem>
+          )}
           <DropDownItem
             selected={window.location.pathname.includes('/income')}
             data-qa={'user-menu-income'}
@@ -232,10 +271,9 @@ const UserMenu = React.memo(function UserMenu() {
               location.href = getLogoutUri(user)
             }}
           >
-            <div>
-              <span style={{ marginRight: '10px' }}>{t.header.logout}</span>{' '}
-              <FontAwesomeIcon icon={faSignOut} />
-            </div>
+            {t.header.logout}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon icon={faSignOut} />
           </DropDownItem>
         </DropDown>
       ) : null}
@@ -253,7 +291,9 @@ const DropDownButton = styled.button`
   border-bottom: 3px solid transparent;
   cursor: pointer;
   white-space: nowrap;
-  display: block;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 `
 
 const DropDownIcon = styled(FontAwesomeIcon)`
@@ -274,6 +314,8 @@ const DropDown = styled.ul`
 
 const DropDownItem = styled.button<{ selected: boolean }>`
   display: flex;
+  flex-direction: row;
+  align-items: center;
   border: none;
   background: transparent;
   cursor: pointer;

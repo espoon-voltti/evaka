@@ -11,7 +11,7 @@ import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { ChildContext } from '../../state'
@@ -44,7 +44,7 @@ const GuardiansAndParents = React.memo(function Guardians({
     })
   }, [id, setGuardians])
 
-  const printableAddresses = (guardian: PersonDetails) =>
+  const printableAddresses = (guardian: PersonJSON) =>
     [
       guardian.streetAddress || '',
       guardian.postalCode || '',
@@ -55,7 +55,7 @@ const GuardiansAndParents = React.memo(function Guardians({
     guardians
       .map((gs) =>
         _.orderBy(gs, ['lastName', 'firstName'], ['asc']).map(
-          (guardian: PersonDetails) => {
+          (guardian: PersonJSON) => {
             return (
               <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
                 <NameTd data-qa="guardian-name">

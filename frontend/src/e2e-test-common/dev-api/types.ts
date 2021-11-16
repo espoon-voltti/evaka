@@ -217,7 +217,6 @@ export interface DaycareCaretakers {
 
 export interface Child {
   id: UUID
-  preferredName?: string
   allergies?: string
   diet?: string
   medication?: string
@@ -257,8 +256,9 @@ export interface PersonDetail {
   dateOfDeath?: string
   firstName: string
   lastName: string
+  preferredName?: string
   ssn?: string
-  email?: string
+  email?: string | null
   phone?: string
   language?: string
   residenceCode?: string

@@ -8,6 +8,7 @@ import { set } from 'lodash/fp'
 import { faPlus } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { getAge } from 'lib-common/utils/local-date'
+import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
@@ -15,7 +16,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { useTranslation } from '../../state/i18n'
-import { createPerson, CreatePersonBody } from '../../api/person'
+import { createPerson } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
 
 type Form = Omit<CreatePersonBody, 'dateOfBirth'> & {
@@ -34,7 +35,9 @@ export default React.memo(function CreatePersonModal({
     dateOfBirth: '',
     streetAddress: '',
     postalCode: '',
-    postOffice: ''
+    postOffice: '',
+    phone: '',
+    email: null
   })
   const [requestInFlight, setRequestInFlight] = useState(false)
   const [saveError, setSaveError] = useState(false)
@@ -83,14 +86,14 @@ export default React.memo(function CreatePersonModal({
         <ListGrid labelWidth="min-content">
           <Label>{i18n.personSearch.createNewPerson.form.firstName}*</Label>
           <InputField
-            value={form.firstName ?? ''}
+            value={form.firstName}
             onChange={(value) => setForm(set('firstName', value))}
             width="full"
             data-qa="first-name-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.lastName}*</Label>
           <InputField
-            value={form.lastName ?? ''}
+            value={form.lastName}
             onChange={(value) => setForm(set('lastName', value))}
             width="full"
             data-qa="last-name-input"
@@ -101,8 +104,8 @@ export default React.memo(function CreatePersonModal({
             locale={lang}
             onChange={(value) => {
               if (!isAdult(value)) {
-                setForm(set('phone', undefined))
-                setForm(set('email', undefined))
+                setForm(set('phone', ''))
+                setForm(set('email', null))
               }
               setForm(set('dateOfBirth', value))
             }}
@@ -114,7 +117,7 @@ export default React.memo(function CreatePersonModal({
           <AddressContainer>
             <InputField
               placeholder={i18n.personSearch.createNewPerson.form.streetAddress}
-              value={form.streetAddress ?? ''}
+              value={form.streetAddress}
               onChange={(value) => setForm(set('streetAddress', value))}
               width="full"
               data-qa="street-address-input"
@@ -126,7 +129,7 @@ export default React.memo(function CreatePersonModal({
                   placeholder={
                     i18n.personSearch.createNewPerson.form.postalCode
                   }
-                  value={form.postalCode ?? ''}
+                  value={form.postalCode}
                   onChange={(value) => setForm(set('postalCode', value))}
                   width="full"
                   data-qa="postal-code-input"
@@ -137,7 +140,7 @@ export default React.memo(function CreatePersonModal({
                   placeholder={
                     i18n.personSearch.createNewPerson.form.postOffice
                   }
-                  value={form.postOffice ?? ''}
+                  value={form.postOffice}
                   onChange={(value) => setForm(set('postOffice', value))}
                   width="full"
                   data-qa="post-office-input"
@@ -149,7 +152,7 @@ export default React.memo(function CreatePersonModal({
             <>
               <Label>{i18n.personSearch.createNewPerson.form.phone}*</Label>
               <InputField
-                value={form.phone ?? ''}
+                value={form.phone}
                 onChange={(value) => setForm(set('phone', value))}
                 width="full"
                 data-qa="phone-input"

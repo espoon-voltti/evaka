@@ -64,16 +64,18 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         dateOfDeath = person.dateOfDeath,
         firstName = person.firstName,
         lastName = person.lastName,
-        addresses = setOf(
-            PersonAddressDTO(
-                origin = PersonAddressDTO.Origin.VTJ,
-                streetAddress = person.streetAddress!!,
-                postalCode = person.postalCode!!,
-                city = person.postOffice!!,
-                residenceCode = "1"
-            )
+        preferredName = "",
+        address = PersonAddressDTO(
+            origin = PersonAddressDTO.Origin.VTJ,
+            streetAddress = person.streetAddress,
+            postalCode = person.postalCode,
+            city = person.postOffice,
+            residenceCode = "1"
         ),
         residenceCode = person.residenceCode,
+        phone = "",
+        backupPhone = "",
+        email = null,
         children = emptyList(),
         nationalities = emptySet(),
         nativeLanguage = null,
@@ -101,14 +103,12 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
     fun `children in different address are not added`() {
         val dto = getDto(testAdult_1).copy(
             children = listOf(getDto(testChild_1)),
-            addresses = setOf(
-                PersonAddressDTO(
-                    origin = PersonAddressDTO.Origin.VTJ,
-                    streetAddress = "different",
-                    postalCode = "02770",
-                    city = "Espoo",
-                    residenceCode = "2"
-                )
+            address = PersonAddressDTO(
+                origin = PersonAddressDTO.Origin.VTJ,
+                streetAddress = "different",
+                postalCode = "02770",
+                city = "Espoo",
+                residenceCode = "2"
             )
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)

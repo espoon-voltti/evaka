@@ -94,6 +94,7 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
+      personalDetails: 'Egen information',
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
@@ -1234,6 +1235,31 @@ const sv: Translations = {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
     download: 'Ladda ner'
+  },
+  personalDetails: {
+    title: 'Omat tiedot',
+    description: (
+      <P>
+        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
+        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
+        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
+      </P>
+    ),
+    noEmailAlert:
+      'Sähköpostiosoitteesi puuttuu. Ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset.',
+    personalInfo: 'Henkilötiedot',
+    name: 'Nimi',
+    preferredName: 'Kutsumanimi',
+    contactInfo: 'Yhteystiedot',
+    address: 'Osoite',
+    phone: 'Puhelinnumero',
+    backupPhone: 'Varapuhelinnumero',
+    backupPhonePlaceholder: 'Esim. työpuhelin',
+    email: 'Sähköpostiosoite',
+    emailMissing: 'Sähköpostiosoite puuttuu',
+    noEmail: 'Minulla ei ole sähköpostiosoitetta',
+    emailInfo:
+      'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
   },
   income: {
     title: 'Inkomstuppgifter',

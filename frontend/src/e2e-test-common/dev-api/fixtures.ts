@@ -189,6 +189,7 @@ export const enduserChildFixtureJari: PersonDetail = {
   ssn: '070714A9126',
   firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
   lastName: 'Karhula',
+  preferredName: 'Jari',
   email: '',
   phone: '',
   language: 'fi',
@@ -616,7 +617,7 @@ const applicationForm = (
         editable: false
       },
       phoneNumber: guardian.phone,
-      email: guardian.email,
+      email: guardian.email ?? undefined,
       restricted: false
     },
     guardian2: {
@@ -666,7 +667,7 @@ export const applicationFixture = (
     child,
     guardian,
     otherGuardian?.phone,
-    otherGuardian?.email,
+    otherGuardian?.email ?? undefined,
     otherGuardianAgreementStatus,
     preferredUnits,
     connectedDaycare

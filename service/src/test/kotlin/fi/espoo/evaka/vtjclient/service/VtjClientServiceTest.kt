@@ -275,6 +275,7 @@ class VtjClientServiceTest {
         externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",
         lastName: String = "Testing",
+        preferredName: String = "Tomi",
         email: String = "email@example.org",
         phone: String = "+89371094",
         backupPhone: String = "+89371099",
@@ -289,6 +290,7 @@ class VtjClientServiceTest {
         ssnAddingDisabled = false,
         firstName = firstName,
         lastName = lastName,
+        preferredName = preferredName,
         email = email,
         phone = phone,
         backupPhone = backupPhone,
@@ -297,6 +299,7 @@ class VtjClientServiceTest {
         streetAddress = streetAddress,
         postOffice = postalOffice,
         postalCode = postalCode,
+        residenceCode = "",
         restrictedDetailsEnabled = false,
         restrictedDetailsEndDate = null
     )

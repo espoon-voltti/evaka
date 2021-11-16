@@ -42,7 +42,6 @@ class VtjController(private val personService: PersonService, private val access
 
         return db.transaction { tx ->
             val person = tx.getPersonById(personId) ?: return@transaction null
-
             when (person.identity) {
                 is ExternalIdentifier.NoID ->
                     CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user))
@@ -80,16 +79,30 @@ class VtjController(private val personService: PersonService, private val access
         val id: UUID,
         val firstName: String,
         val lastName: String,
+        val preferredName: String,
         val socialSecurityNumber: String,
+        val streetAddress: String,
+        val postalCode: String,
+        val postOffice: String,
+        val phone: String,
+        val backupPhone: String,
+        val email: String?,
         val children: List<Child>,
         val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
             fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails = CitizenUserDetails(
                 id = person.id,
-                firstName = person.firstName ?: "",
-                lastName = person.lastName ?: "",
+                firstName = person.firstName,
+                lastName = person.lastName,
+                preferredName = person.preferredName,
                 socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
+                streetAddress = person.streetAddress,
+                postalCode = person.postalCode,
+                postOffice = person.postOffice,
+                phone = person.phone,
+                backupPhone = person.backupPhone,
+                email = person.email,
                 children = emptyList(),
                 accessibleFeatures = accessibleFeatures
             )
@@ -98,7 +111,14 @@ class VtjController(private val personService: PersonService, private val access
                 id = person.id,
                 firstName = person.firstName,
                 lastName = person.lastName,
+                preferredName = person.preferredName,
                 socialSecurityNumber = person.socialSecurityNumber!!,
+                streetAddress = person.address.streetAddress,
+                postalCode = person.address.postalCode,
+                postOffice = person.address.city,
+                phone = person.phone,
+                backupPhone = person.backupPhone,
+                email = person.email,
                 children = person.children.map { Child.from(it) },
                 accessibleFeatures = accessibleFeatures
             )

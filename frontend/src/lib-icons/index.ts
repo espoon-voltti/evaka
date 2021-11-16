@@ -27,6 +27,7 @@ export interface IconSet {
   faChevronRight: IconDefinition
   faChevronUp: IconDefinition
   faChild: IconDefinition
+  faCircleExclamation: IconDefinition
   faClock: IconDefinition
   faCoins: IconDefinition
   faCopy: IconDefinition
@@ -139,6 +140,7 @@ export const faChevronLeft = iconSet.faChevronLeft
 export const faChevronRight = iconSet.faChevronRight
 export const faChevronUp = iconSet.faChevronUp
 export const faChild = iconSet.faChild
+export const faCircleExclamation = iconSet.faCircleExclamation
 export const faClock = iconSet.faClock
 export const faCommentAlt = iconSet.faCommentAlt
 export const faCoins = iconSet.faCoins

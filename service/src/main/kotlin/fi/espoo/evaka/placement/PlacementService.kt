@@ -553,8 +553,8 @@ data class MissingGroupPlacement(
     val backup: Boolean,
     val placementPeriod: FiniteDateRange,
     val childId: UUID,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val dateOfBirth: LocalDate,
     val serviceNeeds: Set<ServiceNeed>,
     val gap: FiniteDateRange
@@ -563,8 +563,8 @@ data class MissingGroupPlacement(
 data class ChildBasics(
     val id: UUID,
     val socialSecurityNumber: String? = null,
-    val firstName: String? = null,
-    val lastName: String? = null,
+    val firstName: String = "",
+    val lastName: String = "",
     val dateOfBirth: LocalDate
 )
 

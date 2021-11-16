@@ -4,21 +4,19 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
-import {
-  deserializePersonDetails,
-  PersonContactInfo,
-  PersonWithChildren,
-  SearchColumn
-} from '../types/person'
+import { deserializePersonJSON, SearchColumn } from '../types/person'
 import { SearchOrder } from '../types'
 import { client } from './client'
 import { Decision } from '../types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import {
+  ContactInfo,
+  CreatePersonBody,
   PersonJSON,
   PersonResponse,
-  PersonSummary
+  PersonSummary,
+  PersonWithChildrenDTO
 } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
@@ -28,7 +26,7 @@ export async function getPerson(id: UUID): Promise<Result<PersonJSON>> {
   return client
     .get<JsonOf<PersonJSON>>(`/person/identity/${id}`)
     .then((res) => res.data)
-    .then(deserializePersonDetails)
+    .then(deserializePersonJSON)
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -40,7 +38,7 @@ export async function getPersonDetails(
     .get<JsonOf<PersonResponse>>(`/person/${id}`)
     .then((res) =>
       Success.of({
-        person: deserializePersonDetails(res.data.person),
+        person: deserializePersonJSON(res.data.person),
         permittedActions: res.data.permittedActions
       })
     )
@@ -54,7 +52,7 @@ export async function getChildDetails(
     .get<JsonOf<ChildResponse>>(`/children/${id}`)
     .then(({ data }) => ({
       ...data,
-      person: deserializePersonDetails(data.person)
+      person: deserializePersonJSON(data.person)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -62,13 +60,10 @@ export async function getChildDetails(
 
 export async function fridgeHeadPerson(
   id: UUID,
-  fridgeHeadPerson: PersonContactInfo
-): Promise<Result<PersonContactInfo>> {
+  fridgeHeadPerson: ContactInfo
+): Promise<Result<ContactInfo>> {
   return client
-    .put<JsonOf<PersonContactInfo>>(
-      `/person/${id}/contact-info`,
-      fridgeHeadPerson
-    )
+    .put<JsonOf<ContactInfo>>(`/person/${id}/contact-info`, fridgeHeadPerson)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -79,7 +74,7 @@ export async function patchPersonDetails(
 ): Promise<Result<PersonJSON>> {
   return client
     .patch<JsonOf<PersonJSON>>(`/person/${id}`, data)
-    .then(({ data }) => deserializePersonDetails(data))
+    .then(({ data }) => deserializePersonJSON(data))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -90,7 +85,7 @@ export async function addSsn(
 ): Promise<Result<PersonJSON>> {
   return client
     .put<JsonOf<PersonJSON>>(`/person/${id}/ssn`, { ssn })
-    .then(({ data }) => deserializePersonDetails(data))
+    .then(({ data }) => deserializePersonJSON(data))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -104,7 +99,7 @@ export async function getOrCreatePersonBySsn(
       ssn,
       readonly
     })
-    .then(({ data }) => deserializePersonDetails(data))
+    .then(({ data }) => deserializePersonJSON(data))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -195,13 +190,14 @@ export async function updateChildRecipient(
 
 export async function getPersonDependants(
   guardianId: UUID
-): Promise<Result<PersonWithChildren[]>> {
+): Promise<Result<PersonWithChildrenDTO[]>> {
   return client
-    .get<JsonOf<PersonWithChildren[]>>(`/person/dependants/${guardianId}`)
+    .get<JsonOf<PersonWithChildrenDTO[]>>(`/person/dependants/${guardianId}`)
     .then((res) =>
       res.data.map((data) => ({
         ...data,
         dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
+        dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath),
         restrictedDetails: {
           ...data.restrictedDetails,
           endDate: LocalDate.parseNullableIso(data.restrictedDetails.endDate)
@@ -209,10 +205,12 @@ export async function getPersonDependants(
         children: data.children.map((child) => ({
           ...child,
           dateOfBirth: LocalDate.parseIso(child.dateOfBirth),
+          dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath),
           restrictedDetails: {
             ...data.restrictedDetails,
             endDate: LocalDate.parseNullableIso(child.restrictedDetails.endDate)
-          }
+          },
+          children: []
         }))
       }))
     )
@@ -225,7 +223,7 @@ export async function getPersonGuardians(
 ): Promise<Result<PersonJSON[]>> {
   return client
     .get<JsonOf<PersonJSON[]>>(`/person/guardians/${personId}`)
-    .then((res) => Success.of(res.data.map(deserializePersonDetails)))
+    .then((res) => Success.of(res.data.map(deserializePersonJSON)))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -277,17 +275,6 @@ export async function deletePerson(id: UUID): Promise<Result<null>> {
     .delete(`/person/${id}`)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
-}
-
-export type CreatePersonBody = {
-  firstName: string
-  lastName: string
-  dateOfBirth: LocalDate
-  streetAddress: string
-  postalCode: string
-  postOffice: string
-  phone?: string
-  email?: string
 }
 
 export async function createPerson(

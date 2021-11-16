@@ -14,24 +14,10 @@ import { client } from '../api-client'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { getAuthStatus } from './api'
 import { Loading, Result } from 'lib-common/api'
+import { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
 
-export type Person = {
-  id: string
-  firstName: string
-  lastName: string
-  socialSecurityNumber: string
-}
-
-export type AccessibleFeatures = {
-  messages: boolean
-  reservations: boolean
-  pedagogicalDocumentation: boolean
-}
-
-export type User = Person & {
-  children: Person[]
+export type User = CitizenUserDetails & {
   userType: 'ENDUSER' | 'CITIZEN_WEAK'
-  accessibleFeatures: AccessibleFeatures
 }
 
 type AuthState = {

@@ -16,7 +16,7 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getPersonDependants } from '../../api/person'
-import { DependantAddress, PersonWithChildren } from '../../types/person'
+import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { getAge } from 'lib-common/utils/local-date'
@@ -40,19 +40,15 @@ const PersonDependants = React.memo(function PersonDependants({
     })
   }, [id, setDependants])
 
-  const printableAddresses = (addresses: DependantAddress[] | null) =>
-    addresses && addresses.length > 0
-      ? [
-          addresses[0].streetAddress,
-          addresses[0].postalCode,
-          addresses[0].city
-        ].join(', ')
+  const printableAddresses = (address: PersonWithChildrenDTO['address']) =>
+    address.streetAddress
+      ? `${address.streetAddress}, ${address.postalCode}, ${address.city}`
       : ''
 
   const renderDependants = () =>
     dependants.isSuccess
       ? _.orderBy(dependants.value, ['dateOfBirth'], ['asc']).map(
-          (dependant: PersonWithChildren) => {
+          (dependant: PersonWithChildrenDTO) => {
             return (
               <Tr key={`${dependant.id}`} data-qa="table-dependant-row">
                 <NameTd data-qa="dependant-name">
@@ -65,7 +61,7 @@ const PersonDependants = React.memo(function PersonDependants({
                 </Td>
                 <Td data-qa="dependant-age">{getAge(dependant.dateOfBirth)}</Td>
                 <Td data-qa="dependant-street-address">
-                  {printableAddresses(dependant.addresses)}
+                  {printableAddresses(dependant.address)}
                 </Td>
               </Tr>
             )

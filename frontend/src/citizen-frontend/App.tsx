@@ -31,6 +31,7 @@ import GlobalInfoDialog from './overlay/Info'
 import { OverlayContextProvider } from './overlay/state'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
+import PersonalDetails from './personal-details/PersonalDetails'
 
 export default function App() {
   const i18n = useTranslation()
@@ -59,6 +60,11 @@ export default function App() {
                           exact
                           path="/applications/:applicationId"
                           component={requireAuth(ApplicationReadView)}
+                        />
+                        <Route
+                          exact
+                          path="/personal-details"
+                          component={requireAuth(PersonalDetails, false)}
                         />
                         <Route
                           exact

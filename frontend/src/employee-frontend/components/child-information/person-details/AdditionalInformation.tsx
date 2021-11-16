@@ -17,7 +17,7 @@ import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'
 import { faPen } from 'lib-icons'
 import { UIContext, UiState } from '../../../state/ui'
-import { AdditionalInformation } from '../../../types/child'
+import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { formatParagraphs } from '../../../utils/html-utils'
 import { textAreaRows } from '../../utils'
 import { RequireRole } from '../../../utils/roles'
@@ -128,14 +128,14 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                     i18n.childInformation.additionalInformation.preferredName,
                   value: editing ? (
                     <TextAreaInput
-                      value={form.preferredName || ''}
+                      value={form.preferredName}
                       onChange={(value) =>
                         setForm({ ...form, preferredName: value })
                       }
-                      rows={textAreaRows(form.preferredName || '')}
+                      rows={textAreaRows(form.preferredName)}
                     />
                   ) : (
-                    formatParagraphs(data.preferredName || '')
+                    formatParagraphs(data.preferredName)
                   ),
                   valueWidth: '400px'
                 },

@@ -258,15 +258,15 @@ data class ApplicationForm(
             return ApplicationForm(
                 child = ChildDetails(
                     person = PersonBasics(
-                        firstName = child.firstName ?: "",
-                        lastName = child.lastName ?: "",
+                        firstName = child.firstName,
+                        lastName = child.lastName,
                         socialSecurityNumber = (child.identity as? ExternalIdentifier.SSN)?.ssn
                     ),
                     dateOfBirth = child.dateOfBirth,
                     address = Address(
-                        street = child.streetAddress ?: "",
-                        postalCode = child.postalCode ?: "",
-                        postOffice = child.postOffice ?: ""
+                        street = child.streetAddress,
+                        postalCode = child.postalCode,
+                        postOffice = child.postOffice
                     ),
                     futureAddress = null,
                     nationality = child.nationalities.firstOrNull() ?: "",
@@ -278,17 +278,17 @@ data class ApplicationForm(
                 ),
                 guardian = Guardian(
                     person = PersonBasics(
-                        firstName = guardian.firstName ?: "",
-                        lastName = guardian.lastName ?: "",
+                        firstName = guardian.firstName,
+                        lastName = guardian.lastName,
                         socialSecurityNumber = (guardian.identity as? ExternalIdentifier.SSN)?.ssn
                     ),
                     address = Address(
-                        street = guardian.streetAddress ?: "",
-                        postalCode = guardian.postalCode ?: "",
-                        postOffice = guardian.postOffice ?: ""
+                        street = guardian.streetAddress,
+                        postalCode = guardian.postalCode,
+                        postOffice = guardian.postOffice
                     ),
                     futureAddress = null,
-                    phoneNumber = guardian.phone ?: "",
+                    phoneNumber = guardian.phone,
                     email = guardian.email ?: ""
                 ),
                 secondGuardian = null,

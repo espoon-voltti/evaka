@@ -13,7 +13,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { getOrCreatePersonBySsn } from '../../api/person'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isSsnValid } from '../../utils/validation/validations'
 
 export default React.memo(function VTJModal({
@@ -23,7 +23,7 @@ export default React.memo(function VTJModal({
 }) {
   const { i18n } = useTranslation()
   const [ssn, setSsn] = useState('')
-  const [person, setPerson] = useState<Result<PersonDetails>>()
+  const [person, setPerson] = useState<Result<PersonJSON>>()
   const [requestInFlight, setRequestInFlight] = useState(false)
   const [saveError, setSaveError] = useState(false)
 

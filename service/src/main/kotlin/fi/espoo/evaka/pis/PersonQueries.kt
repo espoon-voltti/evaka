@@ -60,12 +60,12 @@ private val personSortColumns =
 
 data class PersonSummary(
     val id: UUID,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate?,
     val socialSecurityNumber: String?,
-    val streetAddress: String?,
+    val streetAddress: String,
     val restrictedDetailsEnabled: Boolean
 )
 
@@ -344,6 +344,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
         ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),
+        preferredName = rs.getString("preferred_name"),
         email = rs.getString("email"),
         phone = rs.getString("phone"),
         backupPhone = rs.getString("backup_phone"),
@@ -416,5 +417,12 @@ fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: B
     createUpdate("UPDATE person SET ssn_adding_disabled = :disabled WHERE id = :id")
         .bind("id", id)
         .bind("disabled", disabled)
+        .execute()
+}
+
+fun Database.Transaction.updatePreferredName(id: UUID, preferredName: String) {
+    createUpdate("UPDATE person SET preferred_name = :preferredName WHERE id = :id")
+        .bind("id", id)
+        .bind("preferredName", preferredName)
         .execute()
 }

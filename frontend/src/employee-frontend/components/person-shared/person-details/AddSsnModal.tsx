@@ -9,7 +9,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { addSsn } from '../../../api/person'
-import { PersonDetails } from '../../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isSsnValid } from '../../../utils/validation/validations'
 import colors from 'lib-customizations/common'
 import { UUID } from 'lib-common/types'
@@ -23,7 +23,7 @@ const Error = styled.div`
 
 interface Props {
   personId: UUID
-  onUpdateComplete?: (data: PersonDetails) => void
+  onUpdateComplete?: (data: PersonJSON) => void
 }
 
 function AddSsnModal({ personId, onUpdateComplete }: Props) {

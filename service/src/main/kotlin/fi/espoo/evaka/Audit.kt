@@ -206,6 +206,7 @@ enum class Audit(
     PedagogicalDocumentReadByGuardian("evaka.pedagogical-document.read-by-guardian", securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentRead("evaka.pedagogical-document.read", securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentUpdate("evaka.pedagogical-document.update", securityEvent = true, securityLevel = "high"),
+    PersonalDataUpdate("evaka.personal-data.update", securityEvent = true, securityLevel = "high"),
     PersonContactInfoUpdate("evaka.person-contact-info.update", securityEvent = true, securityLevel = "high"),
     PersonCreate("evaka.person.create", securityEvent = true, securityLevel = "high"),
     PersonDelete("evaka.person.delete", securityEvent = true, securityLevel = "high"),

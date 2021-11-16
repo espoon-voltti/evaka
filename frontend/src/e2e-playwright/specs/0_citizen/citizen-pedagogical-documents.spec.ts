@@ -145,11 +145,6 @@ describe('Citizen pedagogical documents', () => {
           description: 'e2e test description'
         })
         .save()
-      await Fixture.child(fixtures.enduserChildFixtureJari.id)
-        .with({
-          preferredName: 'Jari'
-        })
-        .save()
       const pd2 = await Fixture.pedagogicalDocument()
         .with({
           childId: fixtures.enduserChildFixtureKaarina.id,

@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
+import fi.espoo.evaka.pis.updatePreferredName
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -94,6 +95,7 @@ fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation
 }
 
 fun Database.Transaction.upsertAdditionalInformation(childId: UUID, data: AdditionalInformation) {
+    updatePreferredName(childId, data.preferredName)
     val child = getChild(childId)
     if (child != null) {
         updateChild(child.copy(additionalInformation = data))

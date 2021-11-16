@@ -4,8 +4,11 @@
 
 import React, { useMemo, useState, createContext, useCallback } from 'react'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { PersonWithChildren, PersonDetails } from '../types/person'
-import { Parentship, Partnership } from '../types/fridge'
+import {
+  PersonJSON,
+  PersonWithChildrenDTO
+} from 'lib-common/generated/api-types/pis'
+import { Parentship, Partnership } from 'lib-common/generated/api-types/pis'
 import { Income } from '../types/income'
 import { Loading, Paged, Result } from 'lib-common/api'
 import { Decision } from '../types/decision'
@@ -17,25 +20,25 @@ import { Action } from 'lib-common/generated/action'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 
 export interface PersonState {
-  person: Result<PersonDetails>
+  person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
   parentships: Result<Parentship[]>
   partnerships: Result<Partnership[]>
   incomes: Result<Income[]>
   incomeStatements: Result<Paged<IncomeStatement>>
   applications: Result<PersonApplicationSummary[]>
-  dependants: Result<PersonWithChildren[]>
+  dependants: Result<PersonWithChildrenDTO[]>
   decisions: Result<Decision[]>
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
-  setPerson: (request: Result<PersonDetails>) => void
+  setPerson: (request: Result<PersonJSON>) => void
   setPermittedActions: React.Dispatch<React.SetStateAction<Set<Action.Person>>>
   setParentships: (request: Result<Parentship[]>) => void
   setPartnerships: (request: Result<Partnership[]>) => void
   setIncomes: (r: Result<Income[]>) => void
   setIncomeStatements: (r: Result<Paged<IncomeStatement>>) => void
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
-  setDependants: (r: Result<PersonWithChildren[]>) => void
+  setDependants: (r: Result<PersonWithChildrenDTO[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
   setFamily: (r: Result<FamilyOverview>) => void
   setInvoices: (r: Result<Invoice[]>) => void

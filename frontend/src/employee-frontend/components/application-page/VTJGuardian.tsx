@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { getPerson } from '../../api/person'
 import { Loading, Result } from 'lib-common/api'
-import { PersonDetails } from '../../types/person'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Link } from 'react-router-dom'
@@ -24,7 +24,7 @@ function VTJGuardian({
   otherGuardianLivesInSameAddress
 }: VTJGuardianProps) {
   const { i18n } = useTranslation()
-  const [guardianResult, setGuardian] = useState<Result<PersonDetails>>(
+  const [guardianResult, setGuardian] = useState<Result<PersonJSON>>(
     Loading.of()
   )
 
@@ -34,7 +34,7 @@ function VTJGuardian({
     }
   }, [guardianId])
 
-  const render = (guardian: PersonDetails) => (
+  const render = (guardian: PersonJSON) => (
     <ListGrid>
       <Label>{i18n.application.person.name}</Label>
       <Link to={`/profile/${guardian.id}`} data-qa="vtj-guardian-name">

@@ -91,8 +91,8 @@ class AbsenceService {
             tx.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
         return AbsenceChildMinimal(
             id = child.id,
-            firstName = child.firstName ?: "",
-            lastName = child.lastName ?: "",
+            firstName = child.firstName,
+            lastName = child.lastName,
             absences = composeAbsenceMap(
                 range,
                 absenceList

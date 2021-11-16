@@ -11,7 +11,7 @@ import java.util.UUID
 
 fun Database.Read.getChild(id: UUID): Child? {
     // language=SQL
-    val sql = "SELECT * FROM child WHERE id = :id"
+    val sql = "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
 
     return createQuery(sql)
         .bind("id", id)
@@ -51,14 +51,13 @@ fun Database.Transaction.upsertChild(child: Child) {
 
 fun Database.Transaction.updateChild(child: Child) {
     // language=SQL
-    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, preferred_name = :preferredName, medication = :medication WHERE id = :id"
+    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication WHERE id = :id"
 
     createUpdate(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
-        .bind("preferredName", child.additionalInformation.preferredName)
         .bind("medication", child.additionalInformation.medication)
         .execute()
 }

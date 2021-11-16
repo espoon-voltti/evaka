@@ -204,7 +204,7 @@ class DvvModificationsService(
                 logger.info("Dvv modification for ${it.id}: residence code change")
                 tx.updatePersonFromVtj(
                     it.copy(
-                        residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus
+                        residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus ?: ""
                     )
                 )
             }
