@@ -94,7 +94,7 @@ fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTyp
         """
         SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
+        JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE income.id = :id
         """.trimIndent()
     )
@@ -113,7 +113,7 @@ fun Database.Read.getIncomesForPerson(
         """
         SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
+        JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE person_id = :personId
         AND (:validAt::timestamp IS NULL OR tsrange(valid_from, valid_to) @> :validAt::timestamp)
         ORDER BY valid_from DESC
@@ -136,7 +136,7 @@ fun Database.Read.getIncomesFrom(
         """
         SELECT income.*, evaka_user.name AS updated_by_name
         FROM income
-        LEFT JOIN evaka_user ON income.updated_by = evaka_user.id
+        JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE
             person_id = ANY(:personIds)
             AND (valid_to IS NULL OR valid_to >= :from)

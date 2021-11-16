@@ -1971,7 +1971,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 validFrom = period.start,
                 validTo = period.end,
                 effect = IncomeEffect.INCOME,
-                data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1))
+                data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                updatedBy = testDecisionMaker_1.id
             )
         }
     }

@@ -206,7 +206,8 @@ class FamilyOverviewTest : FullApplicationTest() {
                 objectMapper,
                 personId,
                 effect = IncomeEffect.INCOME,
-                data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1))
+                data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                updatedBy = testDecisionMaker_1.id
             )
         }
         return incomeTotal
