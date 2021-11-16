@@ -13,7 +13,6 @@ import React, {
 import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
-import { VasuDocumentSummary } from '../components/vasu/api'
 import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
@@ -39,8 +38,6 @@ export interface ChildState {
   guardians: Result<PersonJSON[]>
   applications: Result<PersonApplicationSummary[]>
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
-  vasus: Result<VasuDocumentSummary[]>
-  setVasus: (r: Result<VasuDocumentSummary[]>) => void
   pedagogicalDocuments: Result<PedagogicalDocument[]>
   setPedagogicalDocuments: (r: Result<PedagogicalDocument[]>) => void
 }
@@ -59,8 +56,6 @@ const defaultState: ChildState = {
   guardians: Loading.of(),
   applications: Loading.of(),
   setApplications: () => undefined,
-  vasus: Loading.of(),
-  setVasus: () => undefined,
   pedagogicalDocuments: Loading.of(),
   setPedagogicalDocuments: () => undefined
 }
@@ -133,9 +128,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [applications, setApplications] = useState<
     Result<PersonApplicationSummary[]>
   >(defaultState.applications)
-  const [vasus, setVasus] = useState<Result<VasuDocumentSummary[]>>(
-    defaultState.vasus
-  )
 
   const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
     Result<PedagogicalDocument[]>
@@ -152,8 +144,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       backupCares,
       setBackupCares,
       guardians,
-      vasus,
-      setVasus,
       applications,
       setApplications,
       pedagogicalDocuments,
@@ -168,7 +158,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       guardians,
-      vasus,
       applications,
       pedagogicalDocuments
     ]
