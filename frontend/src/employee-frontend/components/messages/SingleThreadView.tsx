@@ -64,13 +64,13 @@ const StickyTitleRow = styled(TitleRow)`
   padding: 15px;
   background: white;
   max-height: 100px;
+  overflow: auto;
 `
 
 const StickyTitleRowTitle = styled(H2)`
   top: 0;
   padding: 15px;
   background: white;
-  overflow: scroll;
   max-height: 100px;
 `
 
@@ -107,7 +107,9 @@ function SingleMessage({
         </InformationText>
       </TitleRow>
       <InformationText>
-        {message.recipients.map((r) => r.name).join(', ')}
+        {(message.recipientNames || message.recipients.map((r) => r.name)).join(
+          ', '
+        )}
       </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
         {message.content}
@@ -200,7 +202,7 @@ export function SingleThreadView({
       accountId
     })
 
-  const canReply = type === 'MESSAGE' || messages[0].sender.id === accountId
+  const canReply = type === 'MESSAGE'
   const editorLabels = useMemo(
     () => ({
       add: i18n.common.add,
@@ -259,30 +261,32 @@ export function SingleThreadView({
             />
           </React.Fragment>
         ))}
-        {canReply && view == 'RECEIVED' && replyEditorVisible ? (
-          <MessageContainer>
-            <MessageReplyEditor
-              replyState={replyState}
-              onSubmit={onSubmitReply}
-              onUpdateContent={onUpdateContent}
-              recipients={recipients}
-              onToggleRecipient={onToggleRecipient}
-              replyContent={replyContent}
-              i18n={editorLabels}
-            />
-          </MessageContainer>
-        ) : (
-          <>
-            <Gap size={'s'} />
-            <ReplyToThreadButton
-              icon={faReply}
-              onClick={() => setReplyEditorVisible(true)}
-              data-qa="message-reply-editor-btn"
-              text={i18n.messages.replyToThread}
-            />
-            <Gap size={'m'} />
-          </>
-        )}
+        {canReply &&
+          view == 'RECEIVED' &&
+          (replyEditorVisible ? (
+            <MessageContainer>
+              <MessageReplyEditor
+                replyState={replyState}
+                onSubmit={onSubmitReply}
+                onUpdateContent={onUpdateContent}
+                recipients={recipients}
+                onToggleRecipient={onToggleRecipient}
+                replyContent={replyContent}
+                i18n={editorLabels}
+              />
+            </MessageContainer>
+          ) : (
+            <>
+              <Gap size={'s'} />
+              <ReplyToThreadButton
+                icon={faReply}
+                onClick={() => setReplyEditorVisible(true)}
+                data-qa="message-reply-editor-btn"
+                text={i18n.messages.replyToThread}
+              />
+              <Gap size={'m'} />
+            </>
+          ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}
       </ScrollContainer>
     </ThreadContainer>

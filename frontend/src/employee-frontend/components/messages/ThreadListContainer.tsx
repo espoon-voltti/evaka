@@ -87,7 +87,10 @@ export default React.memo(function ThreadListContainer({
     id: thread.id,
     title: thread.title,
     content: thread.messages[thread.messages.length - 1].content,
-    participants: getUniqueParticipants(thread),
+    participants:
+      view === 'SENT'
+        ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
+        : getUniqueParticipants(thread),
     unread: thread.messages.some((m) => !m.readAt && m.sender.id != account.id),
     onClick: () => selectThread(thread),
     type: thread.type,
@@ -103,6 +106,7 @@ export default React.memo(function ThreadListContainer({
         id: message.contentId,
         type: message.type,
         title: message.threadTitle,
+        participants: message.recipientNames,
         messages: [
           {
             id: message.contentId,
@@ -111,7 +115,8 @@ export default React.memo(function ThreadListContainer({
             recipients: message.recipients,
             readAt: new Date(),
             content: message.content,
-            attachments: message.attachments
+            attachments: message.attachments,
+            recipientNames: message.recipientNames
           }
         ]
       }))
