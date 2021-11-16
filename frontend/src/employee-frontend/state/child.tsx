@@ -14,7 +14,6 @@ import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { Action } from 'lib-common/generated/action'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { getPlacements } from '../api/child/placements'
@@ -38,8 +37,6 @@ export interface ChildState {
   guardians: Result<PersonJSON[]>
   applications: Result<PersonApplicationSummary[]>
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
-  pedagogicalDocuments: Result<PedagogicalDocument[]>
-  setPedagogicalDocuments: (r: Result<PedagogicalDocument[]>) => void
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -55,9 +52,7 @@ const defaultState: ChildState = {
   setBackupCares: () => undefined,
   guardians: Loading.of(),
   applications: Loading.of(),
-  setApplications: () => undefined,
-  pedagogicalDocuments: Loading.of(),
-  setPedagogicalDocuments: () => undefined
+  setApplications: () => undefined
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -129,10 +124,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     Result<PersonApplicationSummary[]>
   >(defaultState.applications)
 
-  const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
-    Result<PedagogicalDocument[]>
-  >(defaultState.pedagogicalDocuments)
-
   const value = useMemo(
     (): ChildState => ({
       person,
@@ -145,9 +136,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setBackupCares,
       guardians,
       applications,
-      setApplications,
-      pedagogicalDocuments,
-      setPedagogicalDocuments
+      setApplications
     }),
     [
       person,
@@ -158,8 +147,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       guardians,
-      applications,
-      pedagogicalDocuments
+      applications
     ]
   )
 
