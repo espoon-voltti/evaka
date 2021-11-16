@@ -209,11 +209,11 @@ function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
 }
 
 const ChildInformation = React.memo(function ChildInformation({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
+  id
+}: {
+  id: UUID
+}) {
   const { i18n } = useTranslation()
-  const { id } = match.params
-
   const { roles } = useContext(UserContext)
   const { person, parentships } = useContext<ChildState>(ChildContext)
 
@@ -304,7 +304,7 @@ export default React.memo(function ChildInformationWrapper(
   const { id } = props.match.params
   return (
     <ChildContextProvider id={id}>
-      <ChildInformation {...props} />
+      <ChildInformation id={id} />
     </ChildContextProvider>
   )
 })
