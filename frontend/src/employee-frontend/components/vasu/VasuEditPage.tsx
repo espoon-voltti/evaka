@@ -164,7 +164,10 @@ export default React.memo(function VasuEditPage({
                   onClick={() => history.push(`/vasu/${vasu.id}`)}
                   primary
                 />
-                <LeaveVasuPageButton childId={vasu.basics.child.id} />
+                <LeaveVasuPageButton
+                  disabled={status.state != 'clean'}
+                  childId={vasu.basics.child.id}
+                />
               </ButtonContainer>
             </FullWidthDiv>
           )}

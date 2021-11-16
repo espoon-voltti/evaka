@@ -10,9 +10,11 @@ import { UUID } from 'lib-common/types'
 import { useTranslation } from '../../../state/i18n'
 
 export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
-  childId
+  childId,
+  disabled = false
 }: {
   childId: UUID
+  disabled?: boolean
 }) {
   const history = useHistory()
   const { i18n } = useTranslation()
@@ -22,6 +24,7 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
       <Button
         text={i18n.vasu.leavePage}
         onClick={() => history.push(`/child-information/${childId}`)}
+        disabled={disabled}
       />
     </ExitButtonWrapper>
   )
