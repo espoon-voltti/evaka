@@ -4,16 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { fontWeights } from 'lib-components/typography'
-import { isNestedGroupMessageAccount } from './messages/types'
+import { combine } from 'lib-common/api'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { cityLogo, featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
+import { partition } from 'lodash'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import {
   Link,
@@ -26,6 +26,7 @@ import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { MessageContext } from './messages/MessageContext'
+import { isNestedGroupMessageAccount } from './messages/types'
 
 const Img = styled.img`
   color: #0050bb;
@@ -92,35 +93,24 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { nestedAccounts, unreadCountsByAccount } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
-  const unreadCount = useMemo<number>(() => {
-    if (nestedAccounts.isSuccess && unreadCountsByAccount.isSuccess) {
-      const countUnreads = (nestedAccounts: NestedMessageAccount[]) =>
-        nestedAccounts.reduce<number>(
-          (sum, account) =>
-            (
-              unreadCountsByAccount.value.find(
-                (x) => x.accountId === account.account.id
-              ) || { unreadCount: 0 }
-            ).unreadCount + sum,
-          0
-        )
-      if (
-        nestedAccounts.value.find((acc) => !isNestedGroupMessageAccount(acc))
-      ) {
-        return countUnreads(
-          nestedAccounts.value.filter(
-            (acc) => !isNestedGroupMessageAccount(acc)
+  const unreadCount = useMemo<number>(
+    () =>
+      combine(nestedAccounts, unreadCountsByAccount)
+        .map(([accounts, counts]) => {
+          const [group, personal] = partition(
+            accounts,
+            isNestedGroupMessageAccount
           )
-        )
-      } else {
-        return countUnreads(
-          nestedAccounts.value.filter(isNestedGroupMessageAccount)
-        )
-      }
-    } else {
-      return 0
-    }
-  }, [nestedAccounts, unreadCountsByAccount])
+          return (personal.length > 0 ? personal : group).reduce(
+            (sum, { account: { id: accountId } }) =>
+              sum +
+              (counts.find((c) => c.accountId === accountId)?.unreadCount || 0),
+            0
+          )
+        })
+        .getOrElse(0),
+    [nestedAccounts, unreadCountsByAccount]
+  )
 
   const path = location.pathname
   const atCustomerInfo =

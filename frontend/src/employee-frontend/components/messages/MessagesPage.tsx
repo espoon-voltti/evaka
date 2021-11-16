@@ -37,7 +37,6 @@ const PanelContainer = styled.div`
 export default function MessagesPage() {
   const {
     nestedAccounts,
-    loadNestedAccounts,
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
@@ -49,7 +48,6 @@ export default function MessagesPage() {
   const { setErrorMessage } = useContext(UIContext)
   const { i18n } = useTranslation()
 
-  useEffect(() => loadNestedAccounts(), [loadNestedAccounts])
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
 
