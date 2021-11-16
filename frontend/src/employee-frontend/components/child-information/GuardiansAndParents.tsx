@@ -15,7 +15,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import FridgeParents from './FridgeParents'
 import { Gap } from 'lib-components/white-space'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 import { ChildContext } from '../../state'
 
 interface Props {
@@ -47,48 +47,44 @@ export default React.memo(function Guardians({ startOpen }: Props) {
       >
         <Gap size="m" />
         <H3 noMargin>{i18n.personProfile.guardians}</H3>
-        <Table data-qa="table-of-guardians">
-          <Thead>
-            <Tr>
-              <Th>{i18n.personProfile.name}</Th>
-              <Th>{i18n.personProfile.ssn}</Th>
-              <Th>{i18n.personProfile.age}</Th>
-              <Th>{i18n.personProfile.streetAddress}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            <UnwrapResult result={guardians}>
-              {(guardians) => (
-                <>
-                  {_.orderBy(guardians, ['lastName', 'firstName'], ['asc']).map(
-                    (guardian: PersonJSON) => (
-                      <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
-                        <NameTd data-qa="guardian-name">
-                          <Link to={`/profile/${guardian.id}`}>
-                            {formatName(
-                              guardian.firstName,
-                              guardian.lastName,
-                              i18n
-                            )}
-                          </Link>
-                        </NameTd>
-                        <Td data-qa="guardian-ssn">
-                          {guardian.socialSecurityNumber}
-                        </Td>
-                        <Td data-qa="guardian-age">
-                          {getAge(guardian.dateOfBirth)}
-                        </Td>
-                        <Td data-qa="guardian-street-address">
-                          {printableAddresses(guardian)}
-                        </Td>
-                      </Tr>
-                    )
-                  )}
-                </>
+        {renderResult(guardians, (guardians) => (
+          <Table data-qa="table-of-guardians">
+            <Thead>
+              <Tr>
+                <Th>{i18n.personProfile.name}</Th>
+                <Th>{i18n.personProfile.ssn}</Th>
+                <Th>{i18n.personProfile.age}</Th>
+                <Th>{i18n.personProfile.streetAddress}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {_.orderBy(guardians, ['lastName', 'firstName'], ['asc']).map(
+                (guardian: PersonJSON) => (
+                  <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
+                    <NameTd data-qa="guardian-name">
+                      <Link to={`/profile/${guardian.id}`}>
+                        {formatName(
+                          guardian.firstName,
+                          guardian.lastName,
+                          i18n
+                        )}
+                      </Link>
+                    </NameTd>
+                    <Td data-qa="guardian-ssn">
+                      {guardian.socialSecurityNumber}
+                    </Td>
+                    <Td data-qa="guardian-age">
+                      {getAge(guardian.dateOfBirth)}
+                    </Td>
+                    <Td data-qa="guardian-street-address">
+                      {printableAddresses(guardian)}
+                    </Td>
+                  </Tr>
+                )
               )}
-            </UnwrapResult>
-          </Tbody>
-        </Table>
+            </Tbody>
+          </Table>
+        ))}
         <Gap size="XL" />
         <FridgeParents />
       </CollapsibleContentArea>

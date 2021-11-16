@@ -40,7 +40,7 @@ import {
   VasuTemplateSummary
 } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult, UnwrapResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
 
 const StateCell = styled(Td)`
@@ -249,58 +249,52 @@ export default React.memo(function VasuAndLeops({
         paddingVertical="L"
       >
         <VasuInitialization childId={childId} allowCreation={allowCreation} />
-        <Table>
-          <Tbody>
-            <UnwrapResult result={vasus}>
-              {(vasus) => (
-                <>
-                  {vasus.map((vasu) => (
-                    <Tr key={vasu.id}>
-                      <Td>
+        {renderResult(vasus, (vasus) => (
+          <Table>
+            <Tbody>
+              {vasus.map((vasu) => (
+                <Tr key={vasu.id}>
+                  <Td>
+                    <InlineButton
+                      onClick={() => history.push(`/vasu/${vasu.id}`)}
+                      text={vasu.name}
+                    />
+                  </Td>
+                  <Td>{getDates(vasu)}</Td>
+                  <StateCell>
+                    <VasuStateChip
+                      state={vasu.documentState}
+                      labels={i18n.vasu.states}
+                    />
+                  </StateCell>
+                  <Td>
+                    {vasu.documentState === 'CLOSED' ? (
+                      <RequireRole oneOf={['ADMIN']}>
                         <InlineButton
-                          onClick={() => history.push(`/vasu/${vasu.id}`)}
-                          text={vasu.name}
+                          onClick={() =>
+                            void updateDocumentState({
+                              documentId: vasu.id,
+                              eventType: 'RETURNED_TO_REVIEWED'
+                            }).finally(() => loadVasus())
+                          }
+                          text={
+                            i18n.vasu.transitions.RETURNED_TO_REVIEWED
+                              .buttonText
+                          }
                         />
-                      </Td>
-                      <Td>{getDates(vasu)}</Td>
-                      <StateCell>
-                        <VasuStateChip
-                          state={vasu.documentState}
-                          labels={i18n.vasu.states}
-                        />
-                      </StateCell>
-                      <Td>
-                        {vasu.documentState === 'CLOSED' ? (
-                          <RequireRole oneOf={['ADMIN']}>
-                            <InlineButton
-                              onClick={() =>
-                                void updateDocumentState({
-                                  documentId: vasu.id,
-                                  eventType: 'RETURNED_TO_REVIEWED'
-                                }).finally(() => loadVasus())
-                              }
-                              text={
-                                i18n.vasu.transitions.RETURNED_TO_REVIEWED
-                                  .buttonText
-                              }
-                            />
-                          </RequireRole>
-                        ) : (
-                          <InlineButton
-                            onClick={() =>
-                              history.push(`/vasu/${vasu.id}/edit`)
-                            }
-                            text={i18n.common.edit}
-                          />
-                        )}
-                      </Td>
-                    </Tr>
-                  ))}
-                </>
-              )}
-            </UnwrapResult>
-          </Tbody>
-        </Table>
+                      </RequireRole>
+                    ) : (
+                      <InlineButton
+                        onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
+                        text={i18n.common.edit}
+                      />
+                    )}
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        ))}
       </CollapsibleContentArea>
     </div>
   )

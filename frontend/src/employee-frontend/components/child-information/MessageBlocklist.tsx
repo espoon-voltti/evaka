@@ -13,7 +13,7 @@ import { useTranslation } from '../../state/i18n'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { UIContext } from '../../state/ui'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   id: UUID
@@ -66,51 +66,42 @@ export default React.memo(function ChildDetails({ id, startOpen }: Props) {
         data-qa="child-message-blocklist-collapsible"
       >
         <P>{i18n.childInformation.messaging.info}</P>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{i18n.childInformation.messaging.name}</Th>
-              <Th>{i18n.childInformation.messaging.role}</Th>
-              <Th>{i18n.childInformation.messaging.notBlocklisted}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            <UnwrapResult result={recipients}>
-              {(recipients) => (
-                <>
-                  {recipients.map((recipient) => (
-                    <Tr
-                      key={recipient.personId}
-                      data-qa={`recipient-${recipient.personId}`}
-                    >
-                      <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
-                      <Td>
-                        {getRoleString(
-                          recipient.headOfChild,
-                          recipient.guardian
-                        )}
-                      </Td>
-                      <Td>
-                        <Checkbox
-                          label={`${recipient.firstName} ${recipient.lastName}`}
-                          hiddenLabel
-                          checked={!recipient.blocklisted}
-                          data-qa={'blocklist-checkbox'}
-                          disabled={
-                            !permittedActions.has('UPDATE_CHILD_RECIPIENT')
-                          }
-                          onChange={(checked) =>
-                            onChange(recipient.personId, checked)
-                          }
-                        />
-                      </Td>
-                    </Tr>
-                  ))}
-                </>
-              )}
-            </UnwrapResult>
-          </Tbody>
-        </Table>
+        {renderResult(recipients, (recipients) => (
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>{i18n.childInformation.messaging.name}</Th>
+                <Th>{i18n.childInformation.messaging.role}</Th>
+                <Th>{i18n.childInformation.messaging.notBlocklisted}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {recipients.map((recipient) => (
+                <Tr
+                  key={recipient.personId}
+                  data-qa={`recipient-${recipient.personId}`}
+                >
+                  <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
+                  <Td>
+                    {getRoleString(recipient.headOfChild, recipient.guardian)}
+                  </Td>
+                  <Td>
+                    <Checkbox
+                      label={`${recipient.firstName} ${recipient.lastName}`}
+                      hiddenLabel
+                      checked={!recipient.blocklisted}
+                      data-qa={'blocklist-checkbox'}
+                      disabled={!permittedActions.has('UPDATE_CHILD_RECIPIENT')}
+                      onChange={(checked) =>
+                        onChange(recipient.personId, checked)
+                      }
+                    />
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        ))}
       </CollapsibleContentArea>
     </div>
   )
