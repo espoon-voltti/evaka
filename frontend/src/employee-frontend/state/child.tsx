@@ -20,7 +20,6 @@ import { Action } from 'lib-common/generated/action'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { getPlacements } from '../api/child/placements'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
@@ -34,8 +33,6 @@ export interface ChildState {
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
-  additionalInformation: Result<AdditionalInformation>
-  setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
   setFeeAlterations: (result: Result<FeeAlteration[]>) => void
   placements: Result<DaycarePlacementWithDetails[]>
@@ -61,8 +58,6 @@ const defaultState: ChildState = {
   person: Loading.of(),
   setPerson: () => undefined,
   permittedActions: emptyPermittedActions,
-  additionalInformation: Loading.of(),
-  setAdditionalInformation: () => undefined,
   feeAlterations: Loading.of(),
   setFeeAlterations: () => undefined,
   placements: Loading.of(),
@@ -132,9 +127,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     []
   )
 
-  const [additionalInformation, setAdditionalInformation] = useState<
-    Result<AdditionalInformation>
-  >(defaultState.additionalInformation)
   const [feeAlterations, setFeeAlterations] = useState<Result<FeeAlteration[]>>(
     defaultState.feeAlterations
   )
@@ -175,8 +167,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       setPerson,
       permittedActions,
-      additionalInformation,
-      setAdditionalInformation,
       feeAlterations,
       setFeeAlterations,
       placements,
@@ -199,7 +189,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       setPerson,
       permittedActions,
-      additionalInformation,
       feeAlterations,
       placements,
       loadPlacements,
