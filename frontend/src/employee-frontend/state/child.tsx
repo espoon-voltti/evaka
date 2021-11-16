@@ -11,7 +11,6 @@ import React, {
   useState
 } from 'react'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
-import { FeeAlteration } from '../types/fee-alteration'
 import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -33,8 +32,6 @@ export interface ChildState {
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
-  feeAlterations: Result<FeeAlteration[]>
-  setFeeAlterations: (result: Result<FeeAlteration[]>) => void
   placements: Result<DaycarePlacementWithDetails[]>
   loadPlacements: () => void
   parentships: Result<Parentship[]>
@@ -58,8 +55,6 @@ const defaultState: ChildState = {
   person: Loading.of(),
   setPerson: () => undefined,
   permittedActions: emptyPermittedActions,
-  feeAlterations: Loading.of(),
-  setFeeAlterations: () => undefined,
   placements: Loading.of(),
   loadPlacements: () => undefined,
   parentships: Loading.of(),
@@ -127,9 +122,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     []
   )
 
-  const [feeAlterations, setFeeAlterations] = useState<Result<FeeAlteration[]>>(
-    defaultState.feeAlterations
-  )
   const [placements, loadPlacements] = useApiState(
     () => getPlacements(id),
     [id]
@@ -167,8 +159,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       setPerson,
       permittedActions,
-      feeAlterations,
-      setFeeAlterations,
       placements,
       loadPlacements,
       parentships,
@@ -189,7 +179,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       setPerson,
       permittedActions,
-      feeAlterations,
       placements,
       loadPlacements,
       parentships,
