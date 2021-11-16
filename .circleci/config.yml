@@ -504,7 +504,7 @@ commands:
           name: Run E2E tests against compose inside a docker-compose
           working_directory: << pipeline.parameters.workspace_root >>
           command: |
-            CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
+            CI=true ./bin/circleci-e2e.sh "<< parameters.test_runner >>"
       - run:
           name: Collect docker-compose logs
           working_directory: *workspace_compose

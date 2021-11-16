@@ -61,16 +61,6 @@ export async function enduserLogin(page: Page) {
   await page.click('[data-qa="login-btn"]')
 }
 
-export async function enduserLoginWeak(page: Page) {
-  await page.goto(config.enduserMessagesUrl)
-  await page.fill('[id="username"]', 'test@example.com')
-  await page.fill('[id="password"]', 'test123')
-  await page.click('[id="kc-login"]')
-  await page.waitForSelector('[data-qa="user-menu-title"]', {
-    state: 'visible'
-  })
-}
-
 export async function employeeLogin(page: Page, role: UserRole) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const user = getLoginUser(role)

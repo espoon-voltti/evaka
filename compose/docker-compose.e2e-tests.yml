@@ -4,11 +4,13 @@
 
 # Use this compose file to extend docker-compose.yml when you want to run
 # the latest published versions, e.g. for E2E testing.
+
 version: '3.5'
 
 services:
   playwright:
     image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-playwright:${COMPOSE_TAG:-latest}
+    network_mode: host
     build:
       context: ./e2e
       dockerfile: ./playwright.Dockerfile
@@ -18,6 +20,12 @@ services:
     environment:
       CI: ${CI:-false}
       DEBUG: ${DEBUG:-}
+    depends_on:
+      - evaka-proxy
+      - keycloak
+      - enduser-gw
+      - internal-gw
+      - evaka-srv
 
   testcafe:
     image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-testcafe:${COMPOSE_TAG:-latest}
@@ -32,3 +40,9 @@ services:
       REPO_GID: "${GID}"
       CI: ${CI:-false}
       DEBUG: ${DEBUG:-}
+    depends_on:
+      - evaka-proxy
+      - keycloak
+      - enduser-gw
+      - internal-gw
+      - evaka-srv

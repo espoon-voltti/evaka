@@ -26,7 +26,7 @@
     "e2e-messaging": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/7_messaging/*.spec.ts",
     "e2e-playwright": "LANG=fi-FI LANGUAGE=fi_FI jest --testTimeout 60000 --runInBand src/e2e-playwright/specs",
     "e2e-ci-testcafe": "BASE_URL=${BASE_URL:-http://evaka-proxy:8080} testcafe 'chrome:headless:emulation:width=1920;height=1080' -s takeOnFails=true --video videos --video-options failedOnly=true --stop-on-first-fail --quarantine-mode attemptLimit=2,successThreshold=1",
-    "e2e-ci-playwright": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://evaka-proxy:8080} jest --testTimeout 60000 --runInBand --bail 1 --retries=2"
+    "e2e-ci-playwright": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --testTimeout 60000 --runInBand --bail 1 --retries=2"
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",

@@ -25,11 +25,7 @@ import {
   createDaycareGroupPlacementFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
-import {
-  employeeLogin,
-  enduserLogin,
-  enduserLoginWeak
-} from 'e2e-playwright/utils/user'
+import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
 import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
@@ -95,18 +91,34 @@ async function initCitizenPage() {
   await enduserLogin(citizenPage)
 }
 
+async function enduserLoginWeak(page: Page) {
+  await page.goto(config.enduserMessagesUrl)
+  await page.fill('[id="username"]', 'test@example.com')
+  await page.fill('[id="password"]', 'test123')
+  await page.click('[id="kc-login"]')
+  await page.waitForSelector('[data-qa="nav-messages"]', {
+    state: 'visible'
+  })
+}
+
 async function initCitizenPageWeak() {
   citizenPage = await (await newBrowserContext()).newPage()
   await enduserLoginWeak(citizenPage)
 }
 
 describe('Sending and receiving messages', () => {
+  describe('Test weak login', () => {
+    test('Weak', async () => {
+      citizenPage = await (await newBrowserContext()).newPage()
+      await enduserLoginWeak(citizenPage)
+    })
+  })
   const initConfigurations = [
     { init: initCitizenPage, name: 'direct login' },
     { init: initCitizenPageWeak, name: 'weak login' }
   ]
 
-  initConfigurations.forEach(function (configuration) {
+  for (const configuration of initConfigurations) {
     describe(`Interactions with ${configuration.name}`, () => {
       beforeEach(async () => {
         await Promise.all([initSupervisorPage(), configuration.init()])
@@ -207,7 +219,7 @@ describe('Sending and receiving messages', () => {
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
       })
     })
-  })
+  }
 
   describe('Drafts', () => {
     beforeEach(async () => {

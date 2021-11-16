@@ -23,14 +23,13 @@ if [ "${1:-X}" = "X" ]; then
 fi
 
 COMPOSE_NETWORK=${COMPOSE_NETWORK:-compose_default}
-SKIP_SPLIT=${SKIP_SPLIT:-false}
 PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION:-v1.16.2}
 TEST_RUNNER=$1
 
 # Ensure we are in repository root
 pushd "$(dirname "${BASH_SOURCE[0]}")"/..
 
-if [ "$SKIP_SPLIT" != 'true' ]; then
+if [ "${CI:-false}" = 'true' ]; then
   pushd frontend
   # Get list of test files that should run on this node.
   if [ "$TEST_RUNNER" = "playwright" ]; then

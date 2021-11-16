@@ -10,6 +10,7 @@ export DEBUG="${DEBUG:-false}"
 export CI="${CI:-false}"
 export FORCE_COLOR=1
 export PROXY_URL=${PROXY_URL:-http://evaka-proxy:8080}
+export KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
 
 if [ "${DEBUG}" = "true" ]; then
     set -x
@@ -18,6 +19,13 @@ fi
 cd /repo/frontend
 
 echo 'INFO: Waiting for compose stack to be up...'
-./wait-for-dev-api.sh "$PROXY_URL"
+./wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
+./wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "200"
 
-yarn e2e-ci-testcafe --fixture-grep "$(cat testcafe-fixture-regex.txt)" -- src/e2e-test/specs/
+command=(yarn e2e-ci-testcafe)
+if test -f testcafe-fixture-regex.txt; then
+    command+=(--fixture-grep "$(cat testcafe-fixture-regex.txt)")
+fi
+command+=(-- src/e2e-test/specs/)
+
+"${command[@]}"

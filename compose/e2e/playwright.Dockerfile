@@ -20,5 +20,4 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 
 COPY ./playwright/bin/run-tests.sh ./entrypoint.sh /bin/
 
-#ENTRYPOINT ["/bin/entrypoint.sh"]
 CMD ["/bin/run-tests.sh"]

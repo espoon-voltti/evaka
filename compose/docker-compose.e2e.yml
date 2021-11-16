@@ -10,10 +10,21 @@ services:
   evaka-proxy:
     image: nginx:1.21.3-alpine
     ports:
-      - "9999:8080"
+      - "9099:8080"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/conf.d/evaka-nginx.conf
       - ./s3-mount:/static
+    depends_on:
+      - keycloak
+      - enduser-gw
+      - internal-gw
+      - evaka-srv
+    healthcheck:
+      test: ["CMD", "curl", "-sSfI", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     # Enable for debug logging
     # command: [nginx-debug, '-g', 'daemon off;']
 
@@ -42,11 +53,17 @@ services:
       EVAKA_CUSTOMER_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-sSfI", "http://localhost:3010/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   internal-gw:
     image: ${EVAKA_GW_IMAGE}
     ports:
-      - "3020"
+      - "3020:3020"
     hostname: internal-gw
     depends_on:
       - redis
@@ -66,6 +83,12 @@ services:
       EVAKA_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-sSfI", "http://localhost:3020/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   evaka-srv:
     image: ${EVAKA_SRV_IMAGE}
@@ -113,6 +136,12 @@ services:
       APPLICATION_FRONTEND_BASEURL: ""
       APPLICATION_FRONTEND_BASEURL_SV: ""
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sSfI", "http://localhost:8888/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   db:
 
@@ -121,6 +150,8 @@ services:
   redis:
 
   s3.mock.evaka:
+
+  keycloak:
 
 volumes:
   db-data:
