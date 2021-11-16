@@ -22,7 +22,7 @@ import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/plac
 import { getPlacements } from '../api/child/placements'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
-import { getChildDetails } from '../api/person'
+import { getChildDetails, getPersonGuardians } from '../api/person'
 import { requireRole } from '../utils/roles'
 import { getParentshipsByChild } from '../api/parentships'
 import { UserContext } from './user'
@@ -38,7 +38,6 @@ export interface ChildState {
   backupCares: Result<ChildBackupCare[]>
   setBackupCares: (request: Result<ChildBackupCare[]>) => void
   guardians: Result<PersonJSON[]>
-  setGuardians: (request: Result<PersonJSON[]>) => void
   applications: Result<PersonApplicationSummary[]>
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
   recipients: Result<Recipient[]>
@@ -61,7 +60,6 @@ const defaultState: ChildState = {
   backupCares: Loading.of(),
   setBackupCares: () => undefined,
   guardians: Loading.of(),
-  setGuardians: () => undefined,
   applications: Loading.of(),
   setApplications: () => undefined,
   recipients: Loading.of(),
@@ -136,9 +134,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [backupCares, setBackupCares] = useState<Result<ChildBackupCare[]>>(
     defaultState.backupCares
   )
-  const [guardians, setGuardians] = useState<Result<PersonJSON[]>>(
-    defaultState.guardians
-  )
+  const [guardians] = useApiState(() => getPersonGuardians(id), [id])
   const [applications, setApplications] = useState<
     Result<PersonApplicationSummary[]>
   >(defaultState.applications)
@@ -165,7 +161,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       backupCares,
       setBackupCares,
       guardians,
-      setGuardians,
       vasus,
       setVasus,
       applications,
