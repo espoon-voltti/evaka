@@ -11,6 +11,7 @@ import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { Container } from 'lib-components/layout/Container'
+import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -23,6 +24,8 @@ import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
 import { BasicsSection } from './sections/BasicsSection'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -151,12 +154,20 @@ export default React.memo(function VasuEditPage({
             {showSpinner && <Spinner />}
           </StatusContainer>
           {vasu && (
-            <Button
-              text={i18n.vasu.checkInPreview}
-              disabled={status.state != 'clean'}
-              onClick={() => history.push(`/vasu/${vasu.id}`)}
-              primary
-            />
+            <FullWidthDiv>
+              <ButtonContainer>
+                <Button
+                  text={i18n.vasu.checkInPreview}
+                  disabled={status.state != 'clean'}
+                  onClick={() => history.push(`/vasu/${vasu.id}`)}
+                  primary
+                />
+                <LeaveVasuPageButton
+                  disabled={status.state != 'clean'}
+                  childId={vasu.basics.child.id}
+                />
+              </ButtonContainer>
+            </FullWidthDiv>
           )}
         </FooterContainer>
       </StickyFooter>

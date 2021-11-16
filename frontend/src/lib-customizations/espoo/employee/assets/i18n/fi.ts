@@ -894,6 +894,7 @@ export const fi = {
     lastPublished: 'Viimeksi julkaistu huoltajalle',
     vasuDiscussion: 'Vasukeskustelu',
     evaluationDiscussion: 'Arviointikeskustelu',
+    leavePage: 'Poistu',
     eventTypes: {
       PUBLISHED: 'Julkaistu huoltajalle',
       MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
