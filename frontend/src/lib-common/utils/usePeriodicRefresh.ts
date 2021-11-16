@@ -23,7 +23,9 @@ export function usePeriodicRefresh(
   callback: () => void,
   { thresholdInMinutes }: PeriodicRefreshOptions
 ) {
-  const { lastResponse } = useAxiosResponseInterceptor(client)
+  const [lastResponse, setLastResponse] = useState(Date.now())
+  const updateLastResponse = useCallback(() => setLastResponse(Date.now()), [])
+  useAxiosResponseInterceptor(client, updateLastResponse)
 
   const [nextThreshold, setNextThreshold] = useState(
     calculateNextThreshold(thresholdInMinutes)
