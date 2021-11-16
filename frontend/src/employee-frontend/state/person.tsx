@@ -2,13 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext, useCallback } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
+  Parentship,
+  Partnership,
   PersonJSON,
+  PersonResponse,
   PersonWithChildrenDTO
 } from 'lib-common/generated/api-types/pis'
-import { Parentship, Partnership } from 'lib-common/generated/api-types/pis'
 import { Income } from '../types/income'
 import { Loading, Paged, Result } from 'lib-common/api'
 import { Decision } from '../types/decision'
@@ -18,6 +26,8 @@ import { getFamilyOverview } from '../api/family-overview'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { Action } from 'lib-common/generated/action'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { getPersonDetails } from '../api/person'
+import { UUID } from 'lib-common/types'
 
 export interface PersonState {
   person: Result<PersonJSON>
@@ -31,8 +41,7 @@ export interface PersonState {
   decisions: Result<Decision[]>
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
-  setPerson: (request: Result<PersonJSON>) => void
-  setPermittedActions: React.Dispatch<React.SetStateAction<Set<Action.Person>>>
+  setPerson: (person: PersonJSON) => void
   setParentships: (request: Result<Parentship[]>) => void
   setPartnerships: (request: Result<Partnership[]>) => void
   setIncomes: (r: Result<Income[]>) => void
@@ -58,7 +67,6 @@ const defaultState: PersonState = {
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
-  setPermittedActions: () => undefined,
   setParentships: () => undefined,
   setPartnerships: () => undefined,
   setIncomes: () => undefined,
@@ -71,17 +79,55 @@ const defaultState: PersonState = {
   reloadFamily: (_id: string) => undefined
 }
 
+const emptyPermittedActions: Set<Action.Person> = new Set()
+
 export const PersonContext = createContext<PersonState>(defaultState)
 
 export const PersonContextProvider = React.memo(function PersonContextProvider({
+  id,
   children
 }: {
+  id: UUID
   children: JSX.Element
 }) {
-  const [person, setPerson] = useState(defaultState.person)
-  const [permittedActions, setPermittedActions] = useState(
-    defaultState.permittedActions
+  const [personResponse, setPersonResponse] = useState<Result<PersonResponse>>(
+    Loading.of()
   )
+  const [permittedActions, setPermittedActions] = useState<Set<Action.Person>>(
+    emptyPermittedActions
+  )
+  const setFullPersonResponse = useCallback(
+    (response: Result<PersonResponse>) => {
+      setPermittedActions(
+        response
+          .map(({ permittedActions }) => new Set(permittedActions))
+          .getOrElse(emptyPermittedActions)
+      )
+      setPersonResponse(response)
+    },
+    []
+  )
+  const loadPerson = useRestApi(getPersonDetails, setFullPersonResponse)
+  useEffect(() => loadPerson(id), [loadPerson, id])
+
+  const [family, setFamily] = useState(defaultState.family)
+  const loadFamily = useRestApi(getFamilyOverview, setFamily)
+  const reloadFamily = useCallback((id: string) => loadFamily(id), [loadFamily])
+
+  const person = useMemo(
+    () => personResponse.map((response) => response.person),
+    [personResponse]
+  )
+  const setPerson = useCallback(
+    (person: PersonJSON) => {
+      setPersonResponse((prev) =>
+        prev.map((response) => ({ ...response, person }))
+      )
+      reloadFamily(id)
+    },
+    [id, reloadFamily]
+  )
+
   const [parentships, setParentships] = useState(defaultState.parentships)
   const [partnerships, setPartnerships] = useState(defaultState.partnerships)
   const [applications, setApplications] = useState(defaultState.applications)
@@ -91,19 +137,13 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   )
   const [dependants, setDependants] = useState(defaultState.dependants)
   const [decisions, setDecisions] = useState(defaultState.decisions)
-  const [family, setFamily] = useState(defaultState.family)
   const [invoices, setInvoices] = useState(defaultState.invoices)
 
-  const loadFamily = useRestApi(getFamilyOverview, setFamily)
-  const reloadFamily = useCallback((id: string) => loadFamily(id), [loadFamily])
-
-  const value = useMemo(
+  const value = useMemo<PersonState>(
     () => ({
       person,
       setPerson,
       permittedActions,
-      setPermittedActions,
-      parentships,
       setParentships,
       partnerships,
       setPartnerships,
@@ -125,6 +165,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     }),
     [
       person,
+      setPerson,
       permittedActions,
       parentships,
       partnerships,

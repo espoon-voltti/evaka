@@ -25,7 +25,7 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '../state/i18n'
 import CircularLabel from '../components/common/CircularLabel'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { UUID } from 'lib-common/types'
 
 export const NameTd = styled(Td)`
@@ -110,10 +110,7 @@ const layouts: Layouts<typeof components> = {
   ]
 }
 
-const PersonProfile = React.memo(function PersonProfile({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
-  const { id } = match.params
+const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
 
   const { roles } = useContext(UserContext)
@@ -147,7 +144,7 @@ const PersonProfile = React.memo(function PersonProfile({
               )}
             </InfoLabelContainer>
           </HeaderRow>
-          <PersonFridgeHead id={id} />
+          <PersonFridgeHead />
           {layout.map(({ component, open }) => {
             const Component = components[component]
             return (
@@ -166,9 +163,10 @@ const PersonProfile = React.memo(function PersonProfile({
 export default React.memo(function PersonProfileWrapper(
   props: RouteComponentProps<{ id: UUID }>
 ) {
+  const { id } = props.match.params
   return (
-    <PersonContextProvider>
-      <PersonProfile {...props} />
+    <PersonContextProvider id={id}>
+      <PersonProfile id={id} />
     </PersonContextProvider>
   )
 })
