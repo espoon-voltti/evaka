@@ -4,40 +4,29 @@
 
 import { getChildRecipients, updateChildRecipient } from '../../api/person'
 import { ChildContext } from '../../state'
-import { Loading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2, P } from 'lib-components/typography'
 import React, { useContext, useState } from 'react'
-import { useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { UIContext } from '../../state/ui'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   id: UUID
   startOpen: boolean
 }
 
-const MessageBlocklist = React.memo(function ChildDetails({
-  id,
-  startOpen
-}: Props) {
+export default React.memo(function ChildDetails({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
 
   const { setErrorMessage } = useContext(UIContext)
-  const { recipients, setRecipients, permittedActions } =
-    useContext(ChildContext)
-
+  const { permittedActions } = useContext(ChildContext)
+  const [recipients, loadData] = useApiState(() => getChildRecipients(id), [id])
   const [open, setOpen] = useState(startOpen)
-
-  const loadData = useRestApi(getChildRecipients, setRecipients)
-
-  useEffect(() => loadData(id), [id, loadData])
 
   const getRoleString = (headOfChild: boolean, guardian: boolean) => {
     if (headOfChild && guardian) {
@@ -51,6 +40,19 @@ const MessageBlocklist = React.memo(function ChildDetails({
     } else {
       return null
     }
+  }
+
+  const onChange = async (personId: UUID, checked: boolean) => {
+    const res = await updateChildRecipient(id, personId, !checked)
+    if (res.isFailure) {
+      setErrorMessage({
+        type: 'error',
+        title: i18n.common.error.unknown,
+        text: i18n.common.error.saveFailed,
+        resolveLabel: i18n.common.ok
+      })
+    }
+    loadData()
   }
 
   return (
@@ -73,68 +75,43 @@ const MessageBlocklist = React.memo(function ChildDetails({
             </Tr>
           </Thead>
           <Tbody>
-            {recipients.isLoading && (
-              <Tr>
-                <Td />
-                <Td>
-                  <SpinnerSegment />
-                </Td>
-                <Td />
-              </Tr>
-            )}
-            {recipients.isFailure && (
-              <Tr>
-                <Td />
-                <Td>
-                  <ErrorSegment title={i18n.common.loadingFailed} />
-                </Td>
-                <Td />
-              </Tr>
-            )}
-            {recipients.isSuccess &&
-              recipients.value.map((recipient) => (
-                <Tr
-                  key={recipient.personId}
-                  data-qa={`recipient-${recipient.personId}`}
-                >
-                  <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
-                  <Td>
-                    {getRoleString(recipient.headOfChild, recipient.guardian)}
-                  </Td>
-                  <Td>
-                    <Checkbox
-                      label={`${recipient.firstName} ${recipient.lastName}`}
-                      hiddenLabel
-                      checked={!recipient.blocklisted}
-                      data-qa={'blocklist-checkbox'}
-                      disabled={!permittedActions.has('UPDATE_CHILD_RECIPIENT')}
-                      onChange={(checked: boolean) => {
-                        setRecipients(Loading.of())
-                        void updateChildRecipient(
-                          id,
-                          recipient.personId,
-                          !checked
-                        ).then((res) => {
-                          if (res.isFailure) {
-                            setErrorMessage({
-                              type: 'error',
-                              title: i18n.common.error.unknown,
-                              text: i18n.common.error.saveFailed,
-                              resolveLabel: i18n.common.ok
-                            })
+            <UnwrapResult result={recipients}>
+              {(recipients) => (
+                <>
+                  {recipients.map((recipient) => (
+                    <Tr
+                      key={recipient.personId}
+                      data-qa={`recipient-${recipient.personId}`}
+                    >
+                      <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
+                      <Td>
+                        {getRoleString(
+                          recipient.headOfChild,
+                          recipient.guardian
+                        )}
+                      </Td>
+                      <Td>
+                        <Checkbox
+                          label={`${recipient.firstName} ${recipient.lastName}`}
+                          hiddenLabel
+                          checked={!recipient.blocklisted}
+                          data-qa={'blocklist-checkbox'}
+                          disabled={
+                            !permittedActions.has('UPDATE_CHILD_RECIPIENT')
                           }
-                          loadData(id)
-                        })
-                      }}
-                    />
-                  </Td>
-                </Tr>
-              ))}
+                          onChange={(checked) =>
+                            onChange(recipient.personId, checked)
+                          }
+                        />
+                      </Td>
+                    </Tr>
+                  ))}
+                </>
+              )}
+            </UnwrapResult>
           </Tbody>
         </Table>
       </CollapsibleContentArea>
     </div>
   )
 })
-
-export default MessageBlocklist

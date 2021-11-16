@@ -10,7 +10,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -40,8 +39,6 @@ export interface ChildState {
   guardians: Result<PersonJSON[]>
   applications: Result<PersonApplicationSummary[]>
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
-  recipients: Result<Recipient[]>
-  setRecipients: (r: Result<Recipient[]>) => void
   vasus: Result<VasuDocumentSummary[]>
   setVasus: (r: Result<VasuDocumentSummary[]>) => void
   pedagogicalDocuments: Result<PedagogicalDocument[]>
@@ -62,8 +59,6 @@ const defaultState: ChildState = {
   guardians: Loading.of(),
   applications: Loading.of(),
   setApplications: () => undefined,
-  recipients: Loading.of(),
-  setRecipients: () => undefined,
   vasus: Loading.of(),
   setVasus: () => undefined,
   pedagogicalDocuments: Loading.of(),
@@ -142,10 +137,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     defaultState.vasus
   )
 
-  const [recipients, setRecipients] = useState<Result<Recipient[]>>(
-    defaultState.recipients
-  )
-
   const [pedagogicalDocuments, setPedagogicalDocuments] = useState<
     Result<PedagogicalDocument[]>
   >(defaultState.pedagogicalDocuments)
@@ -165,8 +156,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setVasus,
       applications,
       setApplications,
-      recipients,
-      setRecipients,
       pedagogicalDocuments,
       setPedagogicalDocuments
     }),
@@ -181,7 +170,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       guardians,
       vasus,
       applications,
-      recipients,
       pedagogicalDocuments
     ]
   )
