@@ -75,7 +75,7 @@ const RightAlignedRow = styled.div`
   justify-content: flex-end;
 `
 
-const PersonDetails = React.memo(function PersonDetails({
+export default React.memo(function PersonDetails({
   person,
   isChild,
   onUpdateComplete,
@@ -531,5 +531,3 @@ const PersonDetails = React.memo(function PersonDetails({
     </>
   )
 })
-
-export default PersonDetails

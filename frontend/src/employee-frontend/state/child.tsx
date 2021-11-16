@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useMemo, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { FeeAlteration } from '../types/fee-alteration'
 import { ChildBackupCare } from '../types/child'
@@ -15,14 +22,18 @@ import { PersonApplicationSummary } from 'lib-common/generated/api-types/applica
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { getPlacements } from '../api/child/placements'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
+import { getChildDetails } from '../api/person'
+import { requireRole } from '../utils/roles'
+import { getParentshipsByChild } from '../api/parentships'
+import { UserContext } from './user'
+import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 
 export interface ChildState {
   person: Result<PersonJSON>
-  setPerson: (request: Result<PersonJSON>) => void
+  setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
-  setPermittedActions: (r: Set<Action.Child | Action.Person>) => void
   additionalInformation: Result<AdditionalInformation>
   setAdditionalInformation: (request: Result<AdditionalInformation>) => void
   feeAlterations: Result<FeeAlteration[]>
@@ -30,7 +41,6 @@ export interface ChildState {
   placements: Result<DaycarePlacementWithDetails[]>
   loadPlacements: () => void
   parentships: Result<Parentship[]>
-  setParentships: (request: Result<Parentship[]>) => void
   backupCares: Result<ChildBackupCare[]>
   setBackupCares: (request: Result<ChildBackupCare[]>) => void
   guardians: Result<PersonJSON[]>
@@ -45,11 +55,12 @@ export interface ChildState {
   setPedagogicalDocuments: (r: Result<PedagogicalDocument[]>) => void
 }
 
+const emptyPermittedActions = new Set<Action.Child | Action.Person>()
+
 const defaultState: ChildState = {
   person: Loading.of(),
   setPerson: () => undefined,
-  permittedActions: new Set(),
-  setPermittedActions: () => undefined,
+  permittedActions: emptyPermittedActions,
   additionalInformation: Loading.of(),
   setAdditionalInformation: () => undefined,
   feeAlterations: Loading.of(),
@@ -57,7 +68,6 @@ const defaultState: ChildState = {
   placements: Loading.of(),
   loadPlacements: () => undefined,
   parentships: Loading.of(),
-  setParentships: () => undefined,
   backupCares: Loading.of(),
   setBackupCares: () => undefined,
   guardians: Loading.of(),
@@ -81,10 +91,47 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   id: UUID
   children: JSX.Element
 }) {
-  const [person, setPerson] = useState<Result<PersonJSON>>(defaultState.person)
-  const [permittedActions, setPermittedActions] = useState(
-    defaultState.permittedActions
+  const { roles } = useContext(UserContext)
+
+  const [childResponse, setChildResponse] = useState<Result<ChildResponse>>(
+    Loading.of()
   )
+  const [permittedActions, setPermittedActions] = useState<
+    Set<Action.Child | Action.Person>
+  >(emptyPermittedActions)
+
+  const setFullChildResponse = useCallback(
+    (response: Result<ChildResponse>) => {
+      setPermittedActions(
+        response
+          .map(
+            ({ permittedActions, permittedPersonActions }) =>
+              new Set([...permittedActions, ...permittedPersonActions])
+          )
+          .getOrElse(emptyPermittedActions)
+      )
+      setChildResponse(response)
+    },
+    []
+  )
+  const loadChild = useRestApi(getChildDetails, setFullChildResponse)
+  useEffect(() => loadChild(id), [loadChild, id])
+
+  const person = useMemo(
+    () => childResponse.map((response) => response.person),
+    [childResponse]
+  )
+  const setPerson = useCallback(
+    (person: PersonJSON) =>
+      setChildResponse((prev) =>
+        prev.map((child) => ({
+          ...child,
+          person
+        }))
+      ),
+    []
+  )
+
   const [additionalInformation, setAdditionalInformation] = useState<
     Result<AdditionalInformation>
   >(defaultState.additionalInformation)
@@ -95,8 +142,12 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     () => getPlacements(id),
     [id]
   )
-  const [parentships, setParentships] = useState<Result<Parentship[]>>(
-    defaultState.parentships
+  const [parentships] = useApiState(
+    async (): Promise<Result<Parentship[]>> =>
+      requireRole(roles, 'SERVICE_WORKER', 'UNIT_SUPERVISOR', 'FINANCE_ADMIN')
+        ? await getParentshipsByChild(id)
+        : Loading.of(),
+    [roles, id]
   )
   const [backupCares, setBackupCares] = useState<Result<ChildBackupCare[]>>(
     defaultState.backupCares
@@ -120,11 +171,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   >(defaultState.pedagogicalDocuments)
 
   const value = useMemo(
-    () => ({
+    (): ChildState => ({
       person,
       setPerson,
       permittedActions,
-      setPermittedActions,
       additionalInformation,
       setAdditionalInformation,
       feeAlterations,
@@ -132,7 +182,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       placements,
       loadPlacements,
       parentships,
-      setParentships,
       backupCares,
       setBackupCares,
       guardians,
@@ -148,9 +197,12 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     }),
     [
       person,
+      setPerson,
       permittedActions,
+      additionalInformation,
       feeAlterations,
       placements,
+      loadPlacements,
       parentships,
       backupCares,
       guardians,
