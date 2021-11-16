@@ -14,7 +14,6 @@ import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { Action } from 'lib-common/generated/action'
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { getPlacements } from '../api/child/placements'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -35,8 +34,6 @@ export interface ChildState {
   backupCares: Result<ChildBackupCare[]>
   setBackupCares: (request: Result<ChildBackupCare[]>) => void
   guardians: Result<PersonJSON[]>
-  applications: Result<PersonApplicationSummary[]>
-  setApplications: (r: Result<PersonApplicationSummary[]>) => void
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -50,9 +47,7 @@ const defaultState: ChildState = {
   parentships: Loading.of(),
   backupCares: Loading.of(),
   setBackupCares: () => undefined,
-  guardians: Loading.of(),
-  applications: Loading.of(),
-  setApplications: () => undefined
+  guardians: Loading.of()
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -120,9 +115,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     defaultState.backupCares
   )
   const [guardians] = useApiState(() => getPersonGuardians(id), [id])
-  const [applications, setApplications] = useState<
-    Result<PersonApplicationSummary[]>
-  >(defaultState.applications)
 
   const value = useMemo(
     (): ChildState => ({
@@ -134,9 +126,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       setBackupCares,
-      guardians,
-      applications,
-      setApplications
+      guardians
     }),
     [
       person,
@@ -146,8 +136,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       loadPlacements,
       parentships,
       backupCares,
-      guardians,
-      applications
+      guardians
     ]
   )
 
