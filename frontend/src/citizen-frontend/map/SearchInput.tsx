@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import ReactSelect, {
-  components,
-  InputActionMeta,
-  InputProps
-} from 'react-select'
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { Result, Success } from 'lib-common/api'
+import { combine, Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import colors from 'lib-customizations/common'
@@ -21,6 +15,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fasMapMarkerAlt } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
 import { queryAutocomplete } from './api'
@@ -33,18 +28,6 @@ type Props = {
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
   setSelectedUnit: (u: PublicUnit | null) => void
-}
-
-const Input = (props: InputProps) => (
-  <components.Input {...props} isHidden={false} />
-)
-
-async function fetchAddressOptions(input: string) {
-  if (input.length > 0) {
-    return await queryAutocomplete(input)
-  } else {
-    return Success.of([])
-  }
 }
 
 export default React.memo(function SearchInput({
@@ -62,135 +45,136 @@ export default React.memo(function SearchInput({
     [debouncedInputString]
   )
 
-  const getUnitOptions = useCallback(() => {
-    if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []
-
-    return allUnits.value
-      .filter((u) =>
-        u.name.toLowerCase().includes(debouncedInputString.toLowerCase())
+  const unitOptions = useMemo(() => {
+    return allUnits
+      .map((units) =>
+        units.map((u) => ({
+          unit: {
+            id: u.id,
+            name: u.name
+          },
+          streetAddress: u.streetAddress,
+          postalCode: u.postalCode,
+          postOffice: u.postOffice,
+          coordinates: u.location ?? { lat: 0, lon: 0 }
+        }))
       )
-      .map<MapAddress>((u) => ({
-        unit: {
-          id: u.id,
-          name: u.name
-        },
-        streetAddress: u.streetAddress,
-        postalCode: u.postalCode,
-        postOffice: u.postOffice,
-        coordinates: u.location ?? { lat: 0, lon: 0 }
-      }))
-  }, [allUnits, debouncedInputString])
+      .getOrElse([])
+  }, [allUnits])
 
-  const selectOption = (option: MapAddress) => {
-    if (option.unit) {
-      setSelectedAddress(null)
-      if (allUnits.isSuccess) {
-        setSelectedUnit(
-          allUnits.value.find((u) => u.id === option.unit?.id) ?? null
-        )
-      }
-    } else {
-      setSelectedUnit(null)
-      setSelectedAddress(option)
-      setInputString(`${option.streetAddress}, ${option.postOffice}`)
-    }
-  }
+  const filteredUnitOptions = useMemo(() => {
+    if (debouncedInputString.length < 3) return []
 
-  const clearSelection = () => {
+    return unitOptions.filter(({ unit }) =>
+      unit?.name.toLowerCase().includes(debouncedInputString.toLowerCase())
+    )
+  }, [unitOptions, debouncedInputString])
+
+  const options = useMemo(() => {
+    return [...filteredUnitOptions, ...addressOptions.getOrElse([])]
+  }, [filteredUnitOptions, addressOptions])
+
+  const clearSelection = useCallback(() => {
+    setInputString('')
     setSelectedAddress(null)
     setSelectedUnit(null)
-  }
+  }, [setSelectedAddress, setSelectedUnit])
 
-  const onFocus = (e: React.FocusEvent<HTMLElement>) => {
-    ;(e as React.FocusEvent<HTMLInputElement>).target.select()
-  }
-
-  const onInputChange = (inputValue: string, { action }: InputActionMeta) => {
-    if (action === 'input-blur') {
-      setInputString(
-        selectedAddress
-          ? `${selectedAddress.streetAddress}, ${selectedAddress.postOffice}`
-          : ''
-      )
-    } else if (action === 'input-change') {
+  const onInputChange = useCallback(
+    (inputValue: string) => {
       if (inputValue.length === 0) {
         setSelectedAddress(null)
       }
       setInputString(inputValue)
-    }
-  }
+    },
+    [setSelectedAddress]
+  )
+
+  const onChange = useCallback(
+    (item: MapAddress | null) => {
+      if (!item) {
+        return clearSelection()
+      }
+
+      if (item.unit) {
+        setSelectedAddress(null)
+        if (allUnits.isSuccess) {
+          setSelectedUnit(
+            allUnits.value.find((u) => u.id === item.unit?.id) ?? null
+          )
+        }
+      } else {
+        setSelectedUnit(null)
+        setSelectedAddress(item)
+        setInputString(`${item.streetAddress}, ${item.postOffice}`)
+      }
+    },
+    [allUnits, clearSelection, setSelectedAddress, setSelectedUnit]
+  )
 
   return (
     <div data-qa="map-search-input">
-      <ReactSelect
-        isSearchable
-        isClearable
-        closeMenuOnSelect
-        isLoading={addressOptions.isLoading}
-        inputValue={inputString}
+      <Combobox
+        clearable
+        isLoading={combine(addressOptions, allUnits).isLoading}
         onInputChange={onInputChange}
-        options={[
-          {
-            options: getUnitOptions()
-          },
-          {
-            options: addressOptions.isSuccess ? addressOptions.value : []
-          }
-        ]}
-        getOptionLabel={(option) =>
-          option.unit
-            ? option.unit.name
-            : `${option.streetAddress}, ${option.postOffice ?? ''}`
-        }
-        value={selectedAddress}
-        onChange={(selected) => {
-          if (!selected) {
-            clearSelection()
-          } else if ('length' in selected) {
-            if (selected.length > 0) {
-              selectOption(selected[0])
-            } else clearSelection()
-          } else {
-            selectOption(selected)
-          }
-        }}
+        items={options}
+        getItemLabel={getItemLabel}
+        selectedItem={selectedAddress}
+        onChange={onChange}
         placeholder={t.map.searchPlaceholder}
-        noOptionsMessage={() => t.map.noResults}
-        components={{
-          Input,
-          Option: function Option({ innerRef, innerProps, ...props }) {
-            const option = props.data as MapAddress
-            const addressLabel = [option.streetAddress, option.postOffice].join(
-              ', '
-            )
-
-            return (
-              <OptionWrapper
-                data-qa={
-                  option.unit
-                    ? `map-search-${option.unit.id}`
-                    : 'map-search-address'
-                }
-                data-address={option.streetAddress}
-                ref={innerRef}
-                {...innerProps}
-                key={option.unit?.id ?? addressLabel}
-                className={classNames({ focused: props.isFocused })}
-              >
-                <OptionContents
-                  label={option.unit?.name ?? addressLabel}
-                  secondaryText={option.unit ? addressLabel : undefined}
-                  isUnit={!!option.unit}
-                />
-              </OptionWrapper>
-            )
-          }
-        }}
+        menuEmptyLabel={t.map.noResults}
         onFocus={onFocus}
-      />
+      >
+        {customComponents}
+      </Combobox>
     </div>
   )
 })
+
+async function fetchAddressOptions(input: string) {
+  if (input.length > 0) {
+    return await queryAutocomplete(input)
+  } else {
+    return Success.of([])
+  }
+}
+
+const onFocus: FocusEventHandler<HTMLInputElement> = (e) => {
+  e.target.select()
+}
+
+const getItemLabel = (item: MapAddress) =>
+  item.unit ? item.unit.name : `${item.streetAddress}, ${item.postOffice ?? ''}`
+
+const customComponents = {
+  menuItem: function MenuItem({
+    item,
+    highlighted
+  }: {
+    item: MapAddress
+    highlighted: boolean
+  }) {
+    const addressLabel = [item.streetAddress, item.postOffice].join(', ')
+
+    return (
+      <OptionWrapper
+        data-qa={
+          item.unit ? `map-search-${item.unit.id}` : 'map-search-address'
+        }
+        data-address={item.streetAddress}
+        key={item.unit?.id ?? addressLabel}
+        className={classNames({ focused: highlighted })}
+      >
+        <OptionContents
+          label={item.unit?.name ?? addressLabel}
+          secondaryText={item.unit ? addressLabel : undefined}
+          isUnit={!!item.unit}
+        />
+      </OptionWrapper>
+    )
+  }
+}
 
 const OptionWrapper = styled.div`
   cursor: pointer;
