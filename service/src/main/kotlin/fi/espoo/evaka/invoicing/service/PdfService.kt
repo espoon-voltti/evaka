@@ -227,6 +227,7 @@ class PDFService(
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "hasPartner" to (decision.partner != null),
+            "isElementaryFamily" to (decision.partner != null && decision.isElementaryFamily == true),
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),

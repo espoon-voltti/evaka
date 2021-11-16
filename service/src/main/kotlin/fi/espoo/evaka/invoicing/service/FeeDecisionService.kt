@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.data.getDetailedFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
+import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.lockFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
@@ -128,8 +129,11 @@ class FeeDecisionService(
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
-        val decision = tx.getFeeDecision(id)
-            ?: throw NotFound("No fee decision found with ID ($id)")
+        val decision = tx.getFeeDecision(id)?.let {
+            val isElementaryFamily = if (it.partner != null) tx.isElementaryFamily(it.headOfFamily.id, it.partner.id, it.children.map { it.child.id }) else false
+            it.copy(isElementaryFamily = isElementaryFamily)
+        } ?: throw NotFound("No fee decision found with ID ($id)")
+
         if (!decision.documentKey.isNullOrBlank()) {
             throw Conflict("Fee decision $id has document key already!")
         }
