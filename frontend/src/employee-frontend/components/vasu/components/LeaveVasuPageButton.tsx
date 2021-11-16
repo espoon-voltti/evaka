@@ -33,7 +33,3 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
 const ExitButtonWrapper = styled.div`
   flex: 1;
 `
-
-export const FullWidthDiv = styled.div`
-  width: 100%;
-`

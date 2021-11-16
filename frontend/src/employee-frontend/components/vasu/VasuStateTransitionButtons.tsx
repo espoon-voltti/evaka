@@ -13,6 +13,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -25,10 +26,7 @@ import {
   VasuDocumentState
 } from './api'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import {
-  LeaveVasuPageButton,
-  FullWidthDiv
-} from './components/LeaveVasuPageButton'
+import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;
