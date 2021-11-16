@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, {
-  memo,
+  Fragment,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
-  useState,
-  Fragment,
-  useContext
+  useState
 } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
@@ -27,14 +26,14 @@ import {
   getDecisionUnits,
   updateDecisionDrafts
 } from '../../api/decision-draft'
-import { DecisionDraftState, DecisionDraftContext } from '../../state/decision'
-import { useTranslation, Translations } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LabelValueList from '../../components/common/LabelValueList'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   DecisionDraft,
+  DecisionDraftGroup,
   DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
@@ -47,6 +46,7 @@ import { formatName } from '../../utils'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { UUID } from 'lib-common/types'
+import { History } from 'history'
 
 const ColumnTitle = styled.div`
   font-weight: ${fontWeights.semibold};
@@ -150,23 +150,23 @@ const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
   'PRESCHOOL_DAYCARE'
 ]
 
-const Decision = memo(function Decision({
+function redirectToMainPage(history: History) {
+  history.push('/applications')
+}
+
+const Decision = React.memo(function Decision({
   match
 }: RouteComponentProps<{ id: UUID }>) {
   const { id: applicationId } = match.params
   const { i18n } = useTranslation()
   const history = useHistory()
-  const { decisionDraftGroup, setDecisionDraftGroup } =
-    useContext<DecisionDraftState>(DecisionDraftContext)
+  const [decisionDraftGroup, setDecisionDraftGroup] = useState<
+    Result<DecisionDraftGroup>
+  >(Loading.of())
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
   const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()
   const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
-
-  function redirectToMainPage() {
-    history.push('/applications')
-    return null
-  }
 
   useEffect(() => {
     setDecisionDraftGroup(Loading.of())
@@ -179,10 +179,10 @@ const Decision = memo(function Decision({
 
       // Application has already changed its status
       if (result.isFailure && result.statusCode === 409) {
-        redirectToMainPage()
+        redirectToMainPage(history)
       }
     })
-  }, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [applicationId, history])
 
   useEffect(() => {
     if (decisionDraftGroup.isSuccess) {
@@ -192,7 +192,7 @@ const Decision = memo(function Decision({
       )
       setTitle(`${name} | ${i18n.titles.decision}`)
     }
-  }, [decisionDraftGroup]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [decisionDraftGroup, formatTitleName, i18n.titles.decision, setTitle])
 
   useEffect(() => {
     void getDecisionUnits().then(setUnits)
@@ -514,7 +514,7 @@ const Decision = memo(function Decision({
               <FixedSpaceRow>
                 <Button
                   data-qa="cancel-decisions-button"
-                  onClick={redirectToMainPage}
+                  onClick={() => redirectToMainPage(history)}
                   text={i18n.common.cancel}
                 />
                 <AsyncButton
@@ -533,7 +533,7 @@ const Decision = memo(function Decision({
                     )
                     return updateDecisionDrafts(applicationId, updatedDrafts)
                   }}
-                  onSuccess={redirectToMainPage}
+                  onSuccess={() => redirectToMainPage(history)}
                   text={i18n.common.save}
                 />
               </FixedSpaceRow>

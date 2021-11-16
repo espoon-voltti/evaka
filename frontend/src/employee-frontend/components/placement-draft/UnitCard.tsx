@@ -28,8 +28,8 @@ import { faCheck } from 'lib-icons'
 import { formatPercentage } from 'lib-common/utils/number'
 import { Occupancy } from '../../types/unit'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
-import { Unit } from '../../state/placementdraft'
 import { UUID } from 'lib-common/types'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 
 const MarginBox = styled.div`
   margin: 1rem;
@@ -124,8 +124,8 @@ interface Props {
   unitName: string
   startDate: LocalDate
   endDate: LocalDate
-  additionalUnits: Unit[]
-  setAdditionalUnits: Dispatch<SetStateAction<Unit[]>>
+  additionalUnits: PublicUnit[]
+  setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
   setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
   isSelectedUnit: boolean
   displayGhostUnitWarning: boolean

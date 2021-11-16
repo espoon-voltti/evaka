@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import InputField from 'lib-components/atoms/form/InputField'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
@@ -17,7 +17,7 @@ import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import {
   getIncomeStatement,
   updateIncomeStatementHandled
@@ -27,21 +27,19 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income,
-  IncomeStatement
+  Income
 } from 'lib-common/api-types/incomeStatement'
-import { combine, Loading, Result } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { PersonContext } from '../state/person'
 import { getPerson } from '../api/person'
-import { getAttachmentBlob } from '../api/attachments'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import {
   deleteAttachment,
+  getAttachmentBlob,
   saveIncomeStatementAttachment
 } from '../api/attachments'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { renderResult } from './async-rendering'
 import { UUID } from 'lib-common/types'
@@ -52,18 +50,12 @@ export default React.memo(function IncomeStatementPage({
   const { personId, incomeStatementId } = match.params
   const { i18n } = useTranslation()
   const history = useHistory()
-  const [incomeStatement, setIncomeStatement] = useState<
-    Result<IncomeStatement>
-  >(Loading.of())
 
-  const { person, setPerson } = useContext(PersonContext)
-  const loadPerson = useRestApi(getPerson, setPerson)
-  const loadIncomeStatement = useRestApi(getIncomeStatement, setIncomeStatement)
-
-  useEffect(() => {
-    loadPerson(personId)
-    loadIncomeStatement(personId, incomeStatementId)
-  }, [loadPerson, loadIncomeStatement, personId, incomeStatementId])
+  const [person] = useApiState(() => getPerson(personId), [personId])
+  const [incomeStatement, loadIncomeStatement] = useApiState(
+    () => getIncomeStatement(personId, incomeStatementId),
+    [personId, incomeStatementId]
+  )
 
   const onUpdateHandled = useCallback(
     (params: SetIncomeStatementHandledBody) =>
@@ -71,87 +63,67 @@ export default React.memo(function IncomeStatementPage({
     [incomeStatementId]
   )
 
-  const handleAttachmentUploaded = (attachment: Attachment) =>
-    setIncomeStatement((result) =>
-      result.map((prev) =>
-        prev.type === 'INCOME'
-          ? {
-              ...prev,
-              attachments: [
-                ...prev.attachments,
-                { ...attachment, uploadedByEmployee: true }
-              ]
-            }
-          : prev
-      )
-    )
+  const navigateToPersonProfile = useCallback(
+    () => history.push(`/profile/${personId}`),
+    [history, personId]
+  )
 
-  const handleAttachmentDeleted = (id: UUID) =>
-    setIncomeStatement((result) =>
-      result.map((prev) =>
-        prev.type === 'INCOME'
-          ? {
-              ...prev,
-              attachments: prev.attachments.filter(
-                (attachment) => attachment.id !== id
-              )
-            }
-          : prev
-      )
-    )
-
-  const navigateToPersonProfile = () => history.push(`/profile/${personId}`)
-
-  return renderResult(
-    combine(person, incomeStatement),
-    ([person, incomeStatement]) => (
-      <Container>
-        <Gap size="s" />
-        <ContentArea opaque>
-          <H1>{i18n.incomeStatement.title}</H1>
-          <H2>
-            {person.firstName} {person.lastName}
-          </H2>
-          <Row
-            label={i18n.incomeStatement.startDate}
-            value={incomeStatement.startDate.format()}
-          />
-          <Row
-            label={i18n.incomeStatement.feeBasis}
-            value={i18n.incomeStatement.statementTypes[incomeStatement.type]}
-          />
-          {incomeStatement.type === 'INCOME' && (
-            <IncomeInfo incomeStatement={incomeStatement} />
-          )}
-        </ContentArea>
-        {incomeStatement.type === 'INCOME' && (
+  return (
+    <Container>
+      <Gap size="s" />
+      {renderResult(
+        combine(person, incomeStatement),
+        ([person, incomeStatement]) => (
           <>
+            <ContentArea opaque>
+              <H1>{i18n.incomeStatement.title}</H1>
+              <H2>
+                {person.firstName} {person.lastName}
+              </H2>
+              <Row
+                label={i18n.incomeStatement.startDate}
+                value={incomeStatement.startDate.format()}
+              />
+              <Row
+                label={i18n.incomeStatement.feeBasis}
+                value={
+                  i18n.incomeStatement.statementTypes[incomeStatement.type]
+                }
+              />
+              {incomeStatement.type === 'INCOME' && (
+                <IncomeInfo incomeStatement={incomeStatement} />
+              )}
+            </ContentArea>
+            {incomeStatement.type === 'INCOME' && (
+              <>
+                <Gap size="L" />
+                <ContentArea opaque>
+                  <EmployeeAttachments
+                    incomeStatementId={incomeStatement.id}
+                    attachments={incomeStatement.attachments.filter(
+                      (attachment) => attachment.uploadedByEmployee
+                    )}
+                    onUploaded={loadIncomeStatement}
+                    onDeleted={loadIncomeStatement}
+                  />
+                </ContentArea>
+              </>
+            )}
             <Gap size="L" />
             <ContentArea opaque>
-              <EmployeeAttachments
-                incomeStatementId={incomeStatement.id}
-                attachments={incomeStatement.attachments.filter(
-                  (attachment) => attachment.uploadedByEmployee
-                )}
-                onUploaded={handleAttachmentUploaded}
-                onDeleted={handleAttachmentDeleted}
+              <HandlerNotesForm
+                onSave={onUpdateHandled}
+                onSuccess={navigateToPersonProfile}
+                initialValues={{
+                  handled: incomeStatement.handled,
+                  handlerNote: incomeStatement.handlerNote
+                }}
               />
             </ContentArea>
           </>
-        )}
-        <Gap size="L" />
-        <ContentArea opaque>
-          <HandlerNotesForm
-            onSave={onUpdateHandled}
-            onSuccess={navigateToPersonProfile}
-            initialValues={{
-              handled: incomeStatement.handled,
-              handlerNote: incomeStatement.handlerNote
-            }}
-          />
-        </ContentArea>
-      </Container>
-    )
+        )
+      )}
+    </Container>
   )
 })
 

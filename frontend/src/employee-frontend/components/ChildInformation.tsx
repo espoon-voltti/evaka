@@ -27,7 +27,7 @@ import FeeAlteration from './child-information/FeeAlteration'
 import GuardiansAndParents from './child-information/GuardiansAndParents'
 import Placements from './child-information/Placements'
 import WarningLabel from './common/WarningLabel'
-import { ChildContext, ChildState } from '../state/child'
+import { ChildContext, ChildContextProvider, ChildState } from '../state/child'
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
@@ -202,6 +202,16 @@ const layouts: Layouts<typeof components> = {
   ]
 }
 
+function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
+  const currentDate = LocalDate.today()
+  const currentRelation = fridgeRelations.find(
+    (r) =>
+      !r.startDate.isAfter(currentDate) &&
+      (r.endDate ? !r.endDate.isBefore(currentDate) : true)
+  )
+  return currentRelation?.headOfChildId
+}
+
 const ChildInformation = React.memo(function ChildInformation({
   match
 }: RouteComponentProps<{ id: UUID }>) {
@@ -240,7 +250,7 @@ const ChildInformation = React.memo(function ChildInformation({
     ) {
       void getParentshipsByChild(id).then(setParentships)
     }
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, roles, setParentships, setPermittedActions, setPerson])
 
   useEffect(() => {
     if (person.isSuccess) {
@@ -250,23 +260,14 @@ const ChildInformation = React.memo(function ChildInformation({
       )
       setTitle(`${name} | ${i18n.titles.customers}`)
     }
-  }, [person]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [formatTitleName, i18n.titles.customers, person, setTitle])
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
-  function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
-    const currentDate = LocalDate.today()
-    const currentRelation = fridgeRelations.find(
-      (r) =>
-        !r.startDate.isAfter(currentDate) &&
-        (r.endDate ? !r.endDate.isBefore(currentDate) : true)
-    )
-    return currentRelation?.headOfChildId
-  }
-
-  const currentHeadOfChildId = parentships
-    .map(getCurrentHeadOfChildId)
-    .getOrElse(undefined)
+  const currentHeadOfChildId = useMemo(
+    () => parentships.map(getCurrentHeadOfChildId).getOrElse(undefined),
+    [parentships]
+  )
 
   return (
     <Container>
@@ -330,4 +331,12 @@ const ChildInformation = React.memo(function ChildInformation({
   )
 })
 
-export default ChildInformation
+export default React.memo(function ChildInformationWrapper(
+  props: RouteComponentProps<{ id: UUID }>
+) {
+  return (
+    <ChildContextProvider>
+      <ChildInformation {...props} />
+    </ChildContextProvider>
+  )
+})

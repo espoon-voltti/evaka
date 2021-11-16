@@ -2,18 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState, useContext } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Paged, Result } from 'lib-common/api'
 import { getApplications } from '../../api/applications'
-import { ApplicationSearchParams } from '../../types/application'
+import {
+  ApplicationSearchParams,
+  SortByApplications
+} from '../../types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SortByApplications } from '../../types/application'
 import { SearchOrder } from '../../types'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
-import { ApplicationUIContext } from '../../state/application-ui'
+import {
+  ApplicationUIContext,
+  ApplicationUIContextProvider
+} from '../../state/application-ui'
 import { H1 } from 'lib-components/typography'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -27,7 +32,7 @@ const PaddedDiv = styled.div`
 
 const pageSize = 50
 
-function ApplicationsPage() {
+const ApplicationsPage = React.memo(function ApplicationsPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortByApplications>('APPLICATION_TYPE')
@@ -129,22 +134,7 @@ function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [
-    setPage,
-    area,
-    units,
-    basis,
-    type,
-    preschoolType,
-    status,
-    allStatuses,
-    dateType,
-    distinctions,
-    startDate,
-    endDate,
-    debouncedSearchTerms,
-    setCheckedIds
-  ])
+  }, [setPage, area, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, setCheckedIds])
 
   return (
     <div data-qa="applications-page">
@@ -193,6 +183,12 @@ function ApplicationsPage() {
       </Container>
     </div>
   )
-}
+})
 
-export default ApplicationsPage
+export default React.memo(function ApplicationsPageWrapper() {
+  return (
+    <ApplicationUIContextProvider>
+      <ApplicationsPage />
+    </ApplicationUIContextProvider>
+  )
+})
