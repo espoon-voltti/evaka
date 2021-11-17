@@ -33,12 +33,15 @@ let fixtures: AreaAndPersonFixtures
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-playwright/assets/${testFileName}`
+const mockedDate = LocalDate.of(2021, 4, 1)
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await (
+    await newBrowserContext({ mockedTime: mockedDate.toSystemTzDate() })
+  ).newPage()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
@@ -124,8 +127,8 @@ describe('Citizen daycare applications', () => {
         type: 'DAYCARE',
         childId: fixtures.enduserChildFixtureJari.id,
         unitId: fixtures.daycareFixture.id,
-        startDate: LocalDate.today().subYears(1).formatIso(),
-        endDate: LocalDate.today().addYears(1).formatIso()
+        startDate: mockedDate.subYears(1).formatIso(),
+        endDate: mockedDate.addYears(1).formatIso()
       }
     ])
 
@@ -144,7 +147,7 @@ describe('Citizen daycare applications', () => {
     )
 
     await editorPage.fillData(minimalDaycareForm.form)
-    await editorPage.setPreferredStartDate(LocalDate.today().format())
+    await editorPage.setPreferredStartDate(mockedDate.format())
     await editorPage.assertPreferredStartDateWarningIsShown(true)
   })
 
@@ -155,16 +158,12 @@ describe('Citizen daycare applications', () => {
       'DAYCARE'
     )
 
-    await editorPage.setPreferredStartDate(
-      LocalDate.today().addYears(2).format()
-    )
+    await editorPage.setPreferredStartDate(mockedDate.addYears(2).format())
     await editorPage.assertPreferredStartDateInfo(
       'Aloituspäivä ei ole sallittu'
     )
 
-    await editorPage.setPreferredStartDate(
-      LocalDate.today().addMonths(4).format()
-    )
+    await editorPage.setPreferredStartDate(mockedDate.addMonths(4).format())
     await editorPage.assertPreferredStartDateInfo(undefined)
   })
 
@@ -179,13 +178,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend()
 
     await applicationsPage.editApplication(applicationId)
-    await editorPage.setPreferredStartDate(
-      LocalDate.parseFiOrThrow(
-        minimalDaycareForm.form.serviceNeed?.preferredStartDate ?? ''
-      )
-        ?.subDays(1)
-        .format()
-    )
+    await editorPage.setPreferredStartDate(mockedDate.subDays(1).format())
     await editorPage.assertPreferredStartDateInfo(
       'Aloituspäivä ei ole sallittu'
     )

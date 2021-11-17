@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -55,6 +56,7 @@ class AttachmentsController(
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentEmployee(
         db: Database.Connection,
+        evakaClock: EvakaClock,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
@@ -63,7 +65,7 @@ class AttachmentsController(
         Audit.AttachmentsUploadForApplication.log(applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
         return handleFileUpload(db, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
-            db.transaction { tx -> stateService.reCalculateDueDate(tx, applicationId) }
+            db.transaction { tx -> stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId) }
         }
     }
 
@@ -108,6 +110,7 @@ class AttachmentsController(
     fun uploadApplicationAttachmentCitizen(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
@@ -119,7 +122,7 @@ class AttachmentsController(
         checkAttachmentCount(db, attachTo, user)
 
         return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes, type)
-            .also { db.transaction { stateService.reCalculateDueDate(it, applicationId) } }
+            .also { db.transaction { stateService.reCalculateDueDate(it, evakaClock.today(), applicationId) } }
     }
 
     @PostMapping(

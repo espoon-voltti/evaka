@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
@@ -99,6 +99,7 @@ class ApplicationControllerCitizen(
     fun createApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: CreateApplicationBody
     ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
@@ -127,7 +128,7 @@ class ApplicationControllerCitizen(
                 childId = body.childId,
                 origin = ApplicationOrigin.ELECTRONIC
             )
-            applicationStateService.initializeApplicationForm(tx, user, applicationId, body.type, guardian, child)
+            applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), applicationId, body.type, guardian, child)
 
             ResponseEntity.ok(applicationId)
         }
@@ -178,6 +179,7 @@ class ApplicationControllerCitizen(
     fun updateApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
@@ -190,7 +192,7 @@ class ApplicationControllerCitizen(
                 user,
                 applicationId,
                 applicationForm,
-                currentDateInFinland()
+                evakaClock.today()
             )
         }
         return ResponseEntity.noContent().build()
@@ -200,6 +202,7 @@ class ApplicationControllerCitizen(
     fun saveApplicationAsDraft(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
@@ -212,7 +215,7 @@ class ApplicationControllerCitizen(
                 user,
                 applicationId,
                 applicationForm,
-                currentDateInFinland(),
+                evakaClock.today(),
                 asDraft = true
             )
         }
@@ -245,9 +248,10 @@ class ApplicationControllerCitizen(
     fun sendApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland(), isEnduser = true) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today(), isEnduser = true) }
         return ResponseEntity.noContent().build()
     }
 

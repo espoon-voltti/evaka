@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -123,6 +124,7 @@ class ApplicationControllerV2(
     fun createPaperApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
     ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
@@ -155,7 +157,7 @@ class ApplicationControllerV2(
                 hideFromGuardian = body.hideFromGuardian,
                 sentDate = body.sentDate
             )
-            applicationStateService.initializeApplicationForm(tx, user, id, body.type, guardian, child)
+            applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
             id
         }
 
