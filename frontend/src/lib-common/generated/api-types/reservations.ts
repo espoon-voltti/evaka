@@ -74,7 +74,7 @@ export interface ReservationsResponse {
   children: ReservationChild[]
   dailyData: DailyReservationData[]
   includesWeekends: boolean
-  reservableDays: FiniteDateRange
+  reservableDays: FiniteDateRange | null
 }
 
 /**

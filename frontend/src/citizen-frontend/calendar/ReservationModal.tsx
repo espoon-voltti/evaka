@@ -37,7 +37,7 @@ interface Props {
   onClose: () => void
   onReload: () => void
   availableChildren: ReservationChild[]
-  reservableDays: FiniteDateRange
+  reservableDays: FiniteDateRange | null
 }
 
 type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
@@ -85,7 +85,7 @@ export default React.memo(function ReservationModal({
 
   const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: reservableDays.start.format(),
+    startDate: reservableDays?.start.format() ?? '',
     endDate: '',
     repetition: 'DAILY',
     dailyTimes: [
@@ -224,7 +224,7 @@ export default React.memo(function ReservationModal({
           date={formData.startDate}
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays.includes(date)}
+          isValidDate={(date) => reservableDays?.includes(date) ?? false}
           info={errorToInputInfo(
             validationResult.errors?.startDate,
             i18n.validationErrors
@@ -237,14 +237,14 @@ export default React.memo(function ReservationModal({
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays.includes(date)}
+          isValidDate={(date) => reservableDays?.includes(date) ?? false}
           info={errorToInputInfo(
             validationResult.errors?.endDate,
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={
-            LocalDate.parseFiOrNull(formData.startDate) ?? reservableDays.start
+            LocalDate.parseFiOrNull(formData.startDate) ?? reservableDays?.start
           }
           data-qa="end-date"
         />
@@ -540,7 +540,7 @@ type ValidationResult =
   | { errors: undefined; requestPayload: DailyReservationRequest[] }
 
 function validateForm(
-  reservableDays: FiniteDateRange,
+  reservableDays: FiniteDateRange | null,
   formData: ReservationFormData
 ): ValidationResult {
   const errors: ReservationErrors = {}
@@ -550,14 +550,14 @@ function validateForm(
   }
 
   const startDate = LocalDate.parseFiOrNull(formData.startDate)
-  if (startDate === null) {
+  if (startDate === null || reservableDays === null) {
     errors['startDate'] = 'validDate'
   } else if (startDate.isBefore(reservableDays.start)) {
     errors['startDate'] = 'dateTooEarly'
   }
 
   const endDate = LocalDate.parseFiOrNull(formData.endDate)
-  if (endDate === null) {
+  if (endDate === null || reservableDays === null) {
     errors['endDate'] = 'validDate'
   } else if (startDate && endDate.isBefore(startDate)) {
     errors['endDate'] = 'dateTooEarly'

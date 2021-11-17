@@ -52,14 +52,18 @@ class ReservationControllerCitizen(
                 it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
             }
             val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
-            val reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate())
+            val reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate()).let { reservableDays ->
+                val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
+                if (reservableDays.start > maxPlacementEnd) null
+                else FiniteDateRange(
+                    maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
+                    minOf(reservableDays.end, maxPlacementEnd)
+                )
+            }
             ReservationsResponse(
                 dailyData = reservations,
                 children = children,
-                reservableDays = FiniteDateRange(
-                    maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
-                    minOf(reservableDays.end, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
-                ),
+                reservableDays = reservableDays,
                 includesWeekends = includeWeekends
             )
         }
@@ -110,7 +114,7 @@ class ReservationControllerCitizen(
 data class ReservationsResponse(
     val dailyData: List<DailyReservationData>,
     val children: List<ReservationChild>,
-    val reservableDays: FiniteDateRange,
+    val reservableDays: FiniteDateRange?,
     val includesWeekends: Boolean
 )
 
