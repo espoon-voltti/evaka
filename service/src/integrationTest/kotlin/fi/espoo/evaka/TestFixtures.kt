@@ -535,9 +535,9 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 ssn = it.ssn,
                 firstName = it.firstName,
                 lastName = it.lastName,
-                streetAddress = it.streetAddress ?: "",
-                postalCode = it.postalCode ?: "",
-                postOffice = it.postOffice ?: "",
+                streetAddress = it.streetAddress,
+                postalCode = it.postalCode,
+                postOffice = it.postOffice,
                 email = it.email,
                 restrictedDetailsEnabled = it.restrictedDetailsEnabled
             )
@@ -553,9 +553,9 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 ssn = it.ssn,
                 firstName = it.firstName,
                 lastName = it.lastName,
-                streetAddress = it.streetAddress ?: "",
-                postalCode = it.postalCode ?: "",
-                postOffice = it.postOffice ?: ""
+                streetAddress = it.streetAddress,
+                postalCode = it.postalCode,
+                postOffice = it.postOffice
             )
         )
         insertTestChild(DevChild(id = it.id))
@@ -824,4 +824,4 @@ fun Database.Transaction.insertApplication(
 }
 
 private fun addressOf(person: PersonData.Detailed): Address =
-    Address(street = person.streetAddress!!, postalCode = person.postalCode!!, postOffice = person.postOffice!!)
+    Address(street = person.streetAddress, postalCode = person.postalCode, postOffice = person.postOffice)

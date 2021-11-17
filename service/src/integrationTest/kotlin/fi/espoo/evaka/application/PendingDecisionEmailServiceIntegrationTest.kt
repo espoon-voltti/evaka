@@ -102,7 +102,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         assertEquals(0, MockEmailClient.emails.size)
     }
 
-    val eightDaySeconds: Long = 60 * 60 * 24 * 8
+    val eightDaySeconds: Long = 60L * 60L * 24L * 8L
 
     @Test
     fun `Pending decision older than one week with sent reminder older than one week sends a new email`() {

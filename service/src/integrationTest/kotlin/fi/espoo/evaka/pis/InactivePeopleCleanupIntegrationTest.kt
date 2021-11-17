@@ -231,9 +231,9 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
             ssn = person.ssn,
             firstName = person.firstName,
             lastName = person.lastName,
-            streetAddress = person.streetAddress ?: "",
-            postalCode = person.postalCode ?: "",
-            postOffice = person.postOffice ?: "",
+            streetAddress = person.streetAddress,
+            postalCode = person.postalCode,
+            postOffice = person.postOffice,
             email = person.email,
             restrictedDetailsEnabled = person.restrictedDetailsEnabled
         )
