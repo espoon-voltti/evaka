@@ -28,6 +28,11 @@ export default React.memo(function ApplicationFormClub({
     [formData.serviceNeed.preferredStartDate]
   )
 
+  const originalPreferredStartDate =
+    apiData.status !== 'CREATED'
+      ? apiData.form.preferences.preferredStartDate
+      : null
+
   return (
     <FixedSpaceColumn spacing="s">
       <Heading
@@ -40,7 +45,7 @@ export default React.memo(function ApplicationFormClub({
 
       <ServiceNeedSection
         status={apiData.status}
-        originalPreferredStartDate={apiData.form.preferences.preferredStartDate}
+        originalPreferredStartDate={originalPreferredStartDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
