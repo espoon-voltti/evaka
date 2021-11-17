@@ -17,30 +17,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
-data class ChildResult(
-    val status: ChildResultStatus,
-    val child: ChildSensitiveInformation? = null
-)
-
-enum class ChildResultStatus {
-    SUCCESS, WRONG_PIN, PIN_LOCKED, NOT_FOUND
-}
-
-data class ChildSensitiveInformation(
-    val id: UUID,
-    val firstName: String,
-    val lastName: String,
-    val preferredName: String,
-    val ssn: String,
-    val childAddress: String,
-    val placementTypes: List<PlacementType>,
-    val allergies: String,
-    val diet: String,
-    val medication: String,
-    val contacts: List<ContactInfo>,
-    val backupPickups: List<ContactInfo>
-)
-
 data class ContactInfo(
     val id: String,
     val firstName: String,

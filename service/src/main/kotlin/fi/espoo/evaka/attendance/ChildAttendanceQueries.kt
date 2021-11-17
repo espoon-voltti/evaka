@@ -4,17 +4,12 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
-import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
-import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -400,49 +395,3 @@ fun Database.Read.fetchAttendanceReservations(
     }
     .groupBy { (childId, _) -> childId }
     .mapValues { it.value.map { (_, reservation) -> reservation } }
-
-fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
-    val person = getPersonById(childId)
-    val placementTypes = getPlacementsForChild(childId).map { it.type }
-    val child = getChild(childId)
-    val backupPickups = getBackupPickupsForChild(childId)
-    val familyContacts = fetchFamilyContacts(childId)
-
-    return if (person != null) {
-        ChildSensitiveInformation(
-            id = person.id,
-            firstName = person.firstName,
-            lastName = person.lastName,
-            preferredName = child?.additionalInformation?.preferredName ?: "",
-            ssn = person.identity.toString(),
-            childAddress = person.streetAddress,
-            placementTypes = placementTypes,
-            allergies = child?.additionalInformation?.allergies ?: "",
-            diet = child?.additionalInformation?.diet ?: "",
-            medication = child?.additionalInformation?.medication ?: "",
-            contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
-                ContactInfo(
-                    id = it.id.toString(),
-                    firstName = it.firstName,
-                    lastName = it.lastName,
-                    phone = it.phone,
-                    backupPhone = it.backupPhone,
-                    email = it.email ?: "",
-                    priority = it.priority
-                )
-            },
-            backupPickups = backupPickups.map {
-                ContactInfo(
-                    id = it.id.toString(),
-                    firstName = it.name,
-                    lastName = "",
-                    phone = it.phone,
-                    backupPhone = "",
-                    email = "",
-                    priority = 1
-                )
-            }
-        )
-    } else
-        return null
-}

@@ -3,16 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
 import { PlacementType } from 'lib-common/generated/enums'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { faPhone } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
-import { ChildSensitiveInformation } from 'lib-common/generated/api-types/attendance'
+import { getAge } from 'lib-common/utils/local-date'
 import { useTranslation } from '../../../state/i18n'
 
 const Key = styled.span`
@@ -65,22 +67,23 @@ interface Props {
 export default React.memo(function ChildSensitiveInfo({ child }: Props) {
   const { i18n } = useTranslation()
 
-  const placementTypesToText = (types: PlacementType[]): string => {
-    return types.map((type) => i18n.common.placement[type]).join(',')
-  }
+  const placementTypesToText = (types: PlacementType[]): string =>
+    types.map((type) => i18n.common.placement[type]).join(', ')
 
   return (
     <FixedSpaceColumn spacing="m">
-      <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="m">
+      <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="xs">
         <FixedSpaceColumn alignItems="center" spacing="m">
-          <Title>{i18n.attendances.childInfo.header}</Title>
+          <Title noMargin>{i18n.attendances.childInfo.header}</Title>
         </FixedSpaceColumn>
       </ContentArea>
 
       <ContentArea shadow opaque>
         <CollapsibleSection
+          fitted
           title={i18n.attendances.childInfo.personalInfoHeader}
         >
+          <Gap size="s" />
           <FixedSpaceColumn>
             <KeyValue>
               <Key>{i18n.attendances.childInfo.childName}</Key>
@@ -94,23 +97,34 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
             )}
 
             {renderKeyValue(
+              i18n.attendances.childInfo.dateOfBirth,
+              `${child.dateOfBirth.format()}, ${getAge(child.dateOfBirth)}${
+                i18n.common.yearsShort
+              }.`,
+              'child-info-dob'
+            )}
+
+            {renderKeyValue(
               i18n.attendances.childInfo.address,
               child.childAddress,
               'child-info-child-address'
             )}
 
-            {child.placementTypes && child.placementTypes.length > 0 && (
-              <KeyValue>
-                <Key>{i18n.attendances.childInfo.type}</Key>
-                <span>{placementTypesToText(child.placementTypes)}</span>
-              </KeyValue>
+            {renderKeyValue(
+              i18n.attendances.childInfo.type,
+              placementTypesToText(child.placementTypes) || '-',
+              'child-info-placement-types'
             )}
           </FixedSpaceColumn>
         </CollapsibleSection>
       </ContentArea>
 
       <ContentArea shadow opaque>
-        <CollapsibleSection title={i18n.attendances.childInfo.allergiesHeader}>
+        <CollapsibleSection
+          fitted
+          title={i18n.attendances.childInfo.allergiesHeader}
+        >
+          <Gap size="s" />
           <FixedSpaceColumn>
             {renderKeyValue(
               i18n.attendances.childInfo.allergies,
@@ -135,45 +149,50 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
 
       <ContentArea shadow opaque>
         <CollapsibleSection
+          fitted
           title={i18n.attendances.childInfo.contactInfoHeader}
         >
-          {child.contacts?.map((contact, index) => (
-            <div key={contact.id}>
-              <Title size={4}>{`${i18n.attendances.childInfo.contact} ${
-                index + 1
-              }`}</Title>
-              <FixedSpaceColumn>
-                <KeyValue>
-                  <Key>{i18n.attendances.childInfo.name}</Key>
-                  <span data-qa={`child-info-contact${index + 1}-name`}>{`${
-                    contact.firstName || ''
-                  } ${contact.lastName || ''}`}</span>
-                </KeyValue>
+          <Gap size="s" />
+          <FixedSpaceColumn>
+            {child.contacts.map((contact, index) => (
+              <div key={contact.id}>
+                <Title size={4} noMargin>{`${
+                  i18n.attendances.childInfo.contact
+                } ${index + 1}`}</Title>
+                <Gap size="s" />
+                <FixedSpaceColumn>
+                  <KeyValue>
+                    <Key>{i18n.attendances.childInfo.name}</Key>
+                    <span data-qa={`child-info-contact${index + 1}-name`}>{`${
+                      contact.firstName || ''
+                    } ${contact.lastName || ''}`}</span>
+                  </KeyValue>
 
-                {renderKeyValue(
-                  i18n.attendances.childInfo.phone,
-                  contact.phone,
-                  `child-info-contact${index + 1}-phone`,
-                  true
-                )}
+                  {renderKeyValue(
+                    i18n.attendances.childInfo.phone,
+                    contact.phone,
+                    `child-info-contact${index + 1}-phone`,
+                    true
+                  )}
 
-                {renderKeyValue(
-                  i18n.attendances.childInfo.backupPhone,
-                  contact.backupPhone,
-                  `child-info-contact${index + 1}-backup-phone`,
-                  true
-                )}
+                  {renderKeyValue(
+                    i18n.attendances.childInfo.backupPhone,
+                    contact.backupPhone,
+                    `child-info-contact${index + 1}-backup-phone`,
+                    true
+                  )}
 
-                {renderKeyValue(
-                  i18n.attendances.childInfo.email,
-                  contact.email,
-                  `child-info-contact${index + 1}-email`
-                )}
+                  {renderKeyValue(
+                    i18n.attendances.childInfo.email,
+                    contact.email,
+                    `child-info-contact${index + 1}-email`
+                  )}
 
-                <Divider />
-              </FixedSpaceColumn>
-            </div>
-          ))}
+                  {index !== child.contacts.length - 1 && <Divider />}
+                </FixedSpaceColumn>
+              </div>
+            ))}
+          </FixedSpaceColumn>
 
           {child.backupPickups?.map((backupPickup, index) => (
             <div key={backupPickup.id}>

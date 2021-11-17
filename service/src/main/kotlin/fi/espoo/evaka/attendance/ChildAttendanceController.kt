@@ -10,11 +10,6 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
 import fi.espoo.evaka.note.group.getGroupNotesForUnit
-import fi.espoo.evaka.pis.employeePinIsCorrect
-import fi.espoo.evaka.pis.getEmployeeUser
-import fi.espoo.evaka.pis.markEmployeeLastLogin
-import fi.espoo.evaka.pis.resetEmployeePinFailureCount
-import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
@@ -23,7 +18,6 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -32,13 +26,10 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.dateNow
-import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -63,8 +54,6 @@ val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
 val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15)
 
-private val logger = KotlinLogging.logger {}
-
 @RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
@@ -78,69 +67,16 @@ class ChildAttendanceController(
         UserRole.MOBILE
     )
 
-    data class GetChildSensitiveInfoRequest(
-        val pin: String,
-        val staffId: EmployeeId
-    )
-
-    // TODO only for backwards compatibility, safe to remove in Dec 2021
-    @PostMapping("/child/{childId}")
-    fun getChildSensitiveInfo(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable childId: UUID,
-        @RequestBody body: GetChildSensitiveInfoRequest
-    ): ResponseEntity<ChildResult> {
-        Audit.ChildSensitiveInfoRead.log(targetId = childId, objectId = body.staffId)
-
-        val employeeUser = db.read { it.getEmployeeUser(body.staffId) }
-        if (employeeUser != null) {
-            try {
-                acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId)
-                    .requireOneOfRoles(*authorizedRoles)
-            } catch (e: Forbidden) {
-                logger.warn("Unallowed user ${body.staffId} tried to access child info for $childId")
-                return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
-            }
-        } else {
-            logger.warn("Unknown user $${body.staffId} tried to access child info for $childId")
-            return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
-        }
-
-        val result = db.transaction { tx ->
-            if (tx.employeePinIsCorrect(body.staffId, body.pin)) {
-                tx.markEmployeeLastLogin(body.staffId)
-                tx.resetEmployeePinFailureCount(body.staffId)
-                tx.getChildSensitiveInfo(childId)?.let {
-                    ChildResult(
-                        status = ChildResultStatus.SUCCESS,
-                        child = it
-                    )
-                } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
-            } else {
-                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(body.staffId)) {
-                    ChildResult(status = ChildResultStatus.PIN_LOCKED, child = null)
-                } else {
-                    ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
-                }
-            }
-        }
-
-        return ResponseEntity.ok(result)
-    }
-
     @GetMapping("/units/{unitId}")
     fun getAttendances(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.read { tx ->
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        return db.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) }
     }
 
     data class ArrivalRequest(
@@ -154,7 +90,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: ArrivalRequest
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -174,7 +110,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
@@ -183,7 +119,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -205,7 +141,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     @GetMapping("/units/{unitId}/children/{childId}/departure")
@@ -252,7 +188,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: DepartureRequest
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -300,7 +236,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
@@ -309,7 +245,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -330,7 +266,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     data class FullDayAbsenceRequest(
@@ -344,7 +280,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: FullDayAbsenceRequest
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -366,7 +302,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     data class AbsenceRangeRequest(
@@ -382,7 +318,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: AbsenceRangeRequest
-    ): ResponseEntity<AttendanceResponse> {
+    ): AttendanceResponse {
         Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
@@ -401,7 +337,7 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
@@ -411,12 +347,10 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.AbsenceDeleteRange.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
-        return db.transaction { tx ->
-            tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
-        }.let { ResponseEntity.ok(it) }
+        return db.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) }
     }
 }
 

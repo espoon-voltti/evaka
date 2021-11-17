@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.mobile
+package fi.espoo.evaka.sensitive
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.attendance.ChildSensitiveInformation
-import fi.espoo.evaka.attendance.getChildSensitiveInfo
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
