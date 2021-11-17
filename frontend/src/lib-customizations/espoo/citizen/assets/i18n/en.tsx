@@ -194,6 +194,7 @@ const en: Translations = {
     noReservation: 'No reservations',
     reservation: 'Reservation',
     realized: 'Realized',
+    reservationsAndRealized: 'Reservations and realized',
     reservationModal: {
       title: 'Make a reservation',
       selectChildren: 'Children the reservation is made for',

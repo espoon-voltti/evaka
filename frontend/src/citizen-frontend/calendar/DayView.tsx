@@ -132,7 +132,7 @@ export default React.memo(function DayView({
         </DayPicker>
         <Gap size="m" />
         <ReservationTitle>
-          <H2 noMargin>Varaukset ja toteuma</H2>
+          <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
           {editable ? (
             editing ? (
               <InlineButton
