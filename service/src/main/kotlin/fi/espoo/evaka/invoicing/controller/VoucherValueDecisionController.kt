@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
+import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
@@ -98,8 +99,11 @@ class VoucherValueDecisionController(
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getVoucherValueDecision(id) }
-            ?: throw NotFound("No voucher value decision found with given ID ($id)")
+        val res = db.read { tx ->
+            tx.getVoucherValueDecision(id)?.let {
+                it.copy(isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
+            }
+        } ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
 

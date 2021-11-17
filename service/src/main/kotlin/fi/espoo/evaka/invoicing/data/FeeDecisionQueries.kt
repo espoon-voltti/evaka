@@ -612,9 +612,9 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
 
 fun Database.Read.isElementaryFamily(
     headOfFamilyId: UUID,
-    partnerId: UUID,
+    partnerId: UUID?,
     childIds: List<UUID>
-): Boolean = createQuery(
+): Boolean = partnerId != null && createQuery(
     """
 SELECT
     COALESCE((

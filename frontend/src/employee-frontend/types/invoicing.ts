@@ -291,6 +291,7 @@ export interface VoucherValueDecisionDetailed {
   requiresManualSending: boolean
   isRetroactive: boolean
   decisionType: VoucherValueDecisionType
+  isElementaryFamily: boolean | null
 }
 
 export interface VoucherValueDecisionPlacement {

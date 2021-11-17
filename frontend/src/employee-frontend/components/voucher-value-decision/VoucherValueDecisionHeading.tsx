@@ -37,6 +37,7 @@ type Props = {
   decisionType: VoucherValueDecisionType
   changeDecisionType: (type: VoucherValueDecisionType) => void
   newDecisionType: VoucherValueDecisionType
+  isElementaryFamily: boolean | null
 }
 
 export default React.memo(function VoucherValueDecisionHeading({
@@ -53,7 +54,8 @@ export default React.memo(function VoucherValueDecisionHeading({
   decisionType,
   changeDecisionType,
   newDecisionType,
-  documentKey
+  documentKey,
+  isElementaryFamily
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -102,7 +104,7 @@ export default React.memo(function VoucherValueDecisionHeading({
               </Link>
             )
           },
-          ...(partner
+          ...(partner && isElementaryFamily
             ? [
                 {
                   label: i18n.valueDecision.partner,

@@ -160,6 +160,7 @@ class PDFService(
             "hasPartner" to (decision.partner != null),
             "partner" to decision.partner,
             "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
+            "isElementaryFamily" to (decision.partner != null && decision.isElementaryFamily == true),
             "partnerIncomeEffect" to (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
             "totalIncome" to formatCents(totalIncome),

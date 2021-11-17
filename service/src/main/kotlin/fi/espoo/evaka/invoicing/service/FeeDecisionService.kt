@@ -130,7 +130,7 @@ class FeeDecisionService(
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
         val decision = tx.getFeeDecision(id)?.let {
-            val isElementaryFamily = if (it.partner != null) tx.isElementaryFamily(it.headOfFamily.id, it.partner.id, it.children.map { it.child.id }) else false
+            val isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, it.children.map { it.child.id })
             it.copy(isElementaryFamily = isElementaryFamily)
         } ?: throw NotFound("No fee decision found with ID ($id)")
 

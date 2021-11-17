@@ -15,6 +15,7 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import {
   insertEmployeeFixture,
+  insertGuardianFixtures,
   insertVoucherValueDecisionFixtures,
   resetDatabase,
   runPendingAsyncJobs
@@ -173,12 +174,35 @@ describe('Value decisions', () => {
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 
-  test('Voucher value details show partner', async () => {
+  test('Partner is shown for elementary family', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      },
+      {
+        guardianId: familyWithTwoGuardians.otherGuardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      }
+    ])
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
 
     await valueDecisionsPage.openFirstValueDecision()
     await new ValueDecisionDetailsPage(page).assertPartnerName(
       `${familyWithTwoGuardians.otherGuardian.firstName} ${familyWithTwoGuardians.otherGuardian.lastName}`
     )
+  })
+
+  test('Partner is not shown for non elementary family', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      }
+    ])
+    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+
+    await valueDecisionsPage.openFirstValueDecision()
+    await new ValueDecisionDetailsPage(page).assertPartnerNameNotShown()
   })
 })

@@ -136,9 +136,10 @@ class FeeDecisionController(
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read {
-            val fd = it.getFeeDecision(uuid)
-            val isElementaryFamily = if (fd?.partner != null && it.isElementaryFamily(fd.headOfFamily.id, fd.partner.id, fd.children.map { it.child.id })) true else false
-            fd?.copy(isElementaryFamily = isElementaryFamily)
+            it.getFeeDecision(uuid)?.let { fd ->
+                val isElementaryFamily = it.isElementaryFamily(fd.headOfFamily.id, fd.partner?.id, fd.children.map { it.child.id })
+                fd.copy(isElementaryFamily = isElementaryFamily)
+            }
         } ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }

@@ -232,6 +232,7 @@ export class ValueDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
   #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+  #headOfFamily = new RawElement(this.page, '[data-qa="head-of-family"]')
 
   #sendDecisionButton = new RawElement(
     this.page,
@@ -245,6 +246,11 @@ export class ValueDecisionDetailsPage {
 
   async assertPartnerName(expectedName: string) {
     await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+
+  async assertPartnerNameNotShown() {
+    await waitUntilTrue(() => this.#headOfFamily.visible)
+    await waitUntilFalse(() => this.#partnerName.visible)
   }
 }
 
