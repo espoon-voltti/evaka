@@ -28,7 +28,7 @@ export function RadioGroupQuestion({
   translations
 }: Props) {
   return (
-    <>
+    <div>
       <QuestionInfo info={info}>
         <Label>
           {questionNumber} {name}
@@ -55,6 +55,6 @@ export function RadioGroupQuestion({
           translations={translations}
         />
       )}
-    </>
+    </div>
   )
 }
