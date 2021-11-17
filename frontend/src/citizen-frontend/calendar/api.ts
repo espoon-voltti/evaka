@@ -33,7 +33,9 @@ export async function getReservations(
           placementMinStart: LocalDate.parseIso(child.placementMinStart),
           placementMaxEnd: LocalDate.parseIso(child.placementMaxEnd)
         })),
-        reservableDays: FiniteDateRange.parseJson(res.data.reservableDays)
+        reservableDays: res.data.reservableDays
+          ? FiniteDateRange.parseJson(res.data.reservableDays)
+          : null
       })
     )
     .catch((e) => Failure.fromError(e))

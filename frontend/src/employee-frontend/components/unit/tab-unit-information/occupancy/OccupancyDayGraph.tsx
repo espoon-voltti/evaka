@@ -77,7 +77,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
         label: i18n.unit.occupancy.subtitles.realized,
         data: graphData,
         spanGaps: true,
-        stepped: 'after',
+        stepped: 'before',
         fill: false,
         pointBackgroundColor: colors.accents.green,
         borderColor: colors.accents.green

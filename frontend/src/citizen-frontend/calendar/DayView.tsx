@@ -295,7 +295,7 @@ function useEditState(
   }[]
 ) {
   const editable =
-    data.reservableDays.includes(date) &&
+    (data.reservableDays?.includes(date) ?? false) &&
     childrenWithReservations.some(
       ({ editableReservation }) => editableReservation
     )
