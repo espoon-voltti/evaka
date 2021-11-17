@@ -2858,7 +2858,8 @@ export const fi = {
       TEXT: 'Tekstimuotoinen',
       CHECKBOX: 'Rasti',
       RADIO_GROUP: 'Valitse yksi',
-      MULTISELECT: 'Monivalinta'
+      MULTISELECT: 'Monivalinta',
+      FOLLOWUP: 'Seuranta'
     },
     errorCodes: {
       EXPIRED_START: 'Päättyneen pohjan alkupäivää ei voi muuttaa',

@@ -32,7 +32,9 @@ import { vasuTranslations } from 'lib-customizations/employee'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   CheckboxQuestion,
+  Followup,
   isCheckboxQuestion,
+  isFollowup,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
   isTextQuestion,
@@ -302,6 +304,23 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  function renderFollowup(
+    question: Followup,
+    sectionIndex: number,
+    questionIndex: number
+  ) {
+    return (
+      <FixedSpaceColumn spacing="s">
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
+        <TextArea value="" />
+      </FixedSpaceColumn>
+    )
+  }
+
   function renderQuestion(
     question: VasuQuestion,
     sectionIndex: number,
@@ -315,6 +334,8 @@ export default React.memo(function VasuTemplateEditor() {
       return renderRadioGroupQuestion(question, sectionIndex, questionIndex)
     } else if (isMultiSelectQuestion(question)) {
       return renderMultiSelectQuestion(question, sectionIndex, questionIndex)
+    } else if (isFollowup(question)) {
+      return renderFollowup(question, sectionIndex, questionIndex)
     } else {
       return null
     }
