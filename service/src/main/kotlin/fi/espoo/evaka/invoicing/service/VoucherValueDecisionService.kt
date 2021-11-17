@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
@@ -162,8 +163,9 @@ ORDER BY start_date ASC
     }
 
     private fun getDecision(tx: Database.Read, decisionId: VoucherValueDecisionId): VoucherValueDecisionDetailed =
-        tx.getVoucherValueDecision(decisionId)
-            ?: error("No voucher value decision found with ID ($decisionId)")
+        tx.getVoucherValueDecision(decisionId)?.let {
+            it.copy(isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
+        } ?: error("No voucher value decision found with ID ($decisionId)")
 
     private val key = { id: VoucherValueDecisionId -> "value_decision_$id.pdf" }
     private fun uploadPdf(decisionId: VoucherValueDecisionId, file: ByteArray): String {

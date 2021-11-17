@@ -221,6 +221,7 @@ fun createFeeDecisionFixture(
     period: DateRange,
     headOfFamilyId: UUID,
     children: List<FeeDecisionChild>,
+    partnerId: UUID? = null,
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
@@ -229,12 +230,12 @@ fun createFeeDecisionFixture(
     decisionType = decisionType,
     validDuring = period,
     headOfFamily = PersonData.JustId(headOfFamilyId),
-    partner = null,
+    partner = if (partnerId != null) PersonData.JustId(partnerId) else null,
     headOfFamilyIncome = headOfFamilyIncome,
     partnerIncome = null,
     familySize = children.size + 1,
     feeThresholds = feeThresholds,
-    children = children
+    children = children,
 )
 
 fun createVoucherValueDecisionFixture(

@@ -433,7 +433,9 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
         .merge()
-        .firstOrNull()
+        .firstOrNull()?.let {
+            it.copy(isElementaryFamily = isElementaryFamily(it.headOfFamily.id, it.partner?.id, it.children.map { it.child.id }))
+        }
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
@@ -609,3 +611,22 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
         .bind("ids", ids.toTypedArray())
         .execute()
 }
+
+fun Database.Read.isElementaryFamily(
+    headOfFamilyId: UUID,
+    partnerId: UUID?,
+    childIds: List<UUID>
+): Boolean = partnerId != null && createQuery(
+    """
+SELECT
+    COALESCE((
+    SELECT array_agg(DISTINCT(head.child_id)) as child_ids
+    FROM guardian head JOIN guardian partner ON head.child_id = partner.child_id
+    WHERE head.guardian_id = :headOfFamilyId and partner.guardian_id = :partnerId), '{}') @>:childIds
+    """.trimIndent()
+)
+    .bind("headOfFamilyId", headOfFamilyId)
+    .bind("partnerId", partnerId)
+    .bind("childIds", childIds.toTypedArray())
+    .mapTo<Boolean>()
+    .first()

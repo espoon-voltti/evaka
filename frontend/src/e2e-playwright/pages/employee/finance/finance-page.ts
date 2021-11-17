@@ -12,7 +12,11 @@ import {
   RawElement,
   RawTextInput
 } from 'e2e-playwright/utils/element'
-import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
+import {
+  waitUntilEqual,
+  waitUntilFalse,
+  waitUntilTrue
+} from 'e2e-playwright/utils'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
@@ -113,6 +117,22 @@ export class FeeDecisionsPage {
   }
 }
 
+export class FeeDecisionDetailsPage {
+  constructor(private readonly page: Page) {}
+
+  #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+  #headOfFamily = new RawElement(this.page, '[data-qa="head-of-family"]')
+
+  async assertPartnerName(expectedName: string) {
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+
+  async assertPartnerNameNotShown() {
+    await waitUntilTrue(() => this.#headOfFamily.visible)
+    await waitUntilFalse(() => this.#partnerName.visible)
+  }
+}
+
 export class ValueDecisionsPage {
   constructor(private readonly page: Page) {}
 
@@ -151,16 +171,6 @@ export class ValueDecisionsPage {
   #navigateBackButton = new RawElement(this.page, '[data-qa="navigate-back"]')
   #statusFilter = {
     sent: new Radio(this.page, '[data-qa="value-decision-status-filter-SENT"]')
-  }
-
-  #sendDecisionButton = new RawElement(
-    this.page,
-    '[data-qa="button-send-decision"]'
-  )
-
-  async sendValueDecision() {
-    await this.#sendDecisionButton.click()
-    await this.#sendDecisionButton.waitUntilHidden()
   }
 
   async openFirstValueDecision() {
@@ -215,6 +225,32 @@ export class ValueDecisionsPage {
         ),
       count
     )
+  }
+}
+
+export class ValueDecisionDetailsPage {
+  constructor(private readonly page: Page) {}
+
+  #partnerName = new RawElement(this.page, '[data-qa="partner"]')
+  #headOfFamily = new RawElement(this.page, '[data-qa="head-of-family"]')
+
+  #sendDecisionButton = new RawElement(
+    this.page,
+    '[data-qa="button-send-decision"]'
+  )
+
+  async sendValueDecision() {
+    await this.#sendDecisionButton.click()
+    await this.#sendDecisionButton.waitUntilHidden()
+  }
+
+  async assertPartnerName(expectedName: string) {
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+
+  async assertPartnerNameNotShown() {
+    await waitUntilTrue(() => this.#headOfFamily.visible)
+    await waitUntilFalse(() => this.#partnerName.visible)
   }
 }
 

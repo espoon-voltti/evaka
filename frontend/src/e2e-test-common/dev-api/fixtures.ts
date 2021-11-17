@@ -716,6 +716,7 @@ export const feeDecisionsFixture = (
   adult: PersonDetail,
   child: PersonDetail,
   daycareId: UUID,
+  partner: PersonDetail | null,
   validDuring: DateRange = new DateRange(
     LocalDate.today().subYears(1),
     LocalDate.today().addYears(1)
@@ -728,6 +729,7 @@ export const feeDecisionsFixture = (
   decisionType: 'NORMAL',
   validDuring,
   headOfFamily: { id: adult.id },
+  partner: partner ? { id: partner.id } : undefined,
   familySize: 2,
   feeThresholds: feeThresholds,
   children: [
@@ -758,6 +760,7 @@ export const voucherValueDecisionsFixture = (
   adultId: UUID,
   childId: UUID,
   daycareId: UUID,
+  partner: PersonDetail | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.today().subYears(1).formatIso(),
   validTo = LocalDate.today().addYears(1).formatIso()
@@ -767,6 +770,7 @@ export const voucherValueDecisionsFixture = (
   validFrom,
   validTo,
   headOfFamily: { id: adultId },
+  partner: partner ? { id: partner.id } : undefined,
   decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,

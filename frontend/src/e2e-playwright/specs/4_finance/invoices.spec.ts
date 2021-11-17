@@ -59,6 +59,7 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture,
     fixtures.enduserChildFixtureKaarina,
     fixtures.daycareFixture.id,
+    null,
     new DateRange(
       LocalDate.today().subMonths(1).withDate(1),
       LocalDate.today().withDate(1).subDays(1)

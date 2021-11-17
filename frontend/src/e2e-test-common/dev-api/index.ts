@@ -814,3 +814,13 @@ export async function insertPedagogicalDocumentAttachment(
     throw new DevApiError(e)
   }
 }
+
+export async function insertGuardianFixtures(
+  guardians: { guardianId: string; childId: string }[]
+): Promise<void> {
+  try {
+    await devClient.post('/guardian', guardians)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

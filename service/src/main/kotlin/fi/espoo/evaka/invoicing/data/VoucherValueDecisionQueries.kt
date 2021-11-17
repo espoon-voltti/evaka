@@ -328,7 +328,9 @@ WHERE decision.id = :id
     return createQuery(sql)
         .bind("id", id)
         .mapTo<VoucherValueDecisionDetailed>()
-        .singleOrNull()
+        .singleOrNull()?.let {
+            it.copy(isElementaryFamily = isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
+        }
 }
 
 fun Database.Read.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId: UUID): List<VoucherValueDecisionSummary> {

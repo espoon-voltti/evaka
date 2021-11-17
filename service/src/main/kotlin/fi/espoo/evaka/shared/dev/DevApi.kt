@@ -61,6 +61,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
@@ -438,6 +439,21 @@ RETURNING id
 """
             ).bindKotlin(employee).executeAndReturnGeneratedKeys().mapTo<UUID>().single()
         )
+    }
+
+    data class DevGuardian(
+        val guardianId: UUID,
+        val childId: UUID
+    )
+
+    @PostMapping("/guardian")
+    fun insertGuardians(db: Database.Connection, @RequestBody guardians: List<DevGuardian>): ResponseEntity<Unit> {
+        db.transaction {
+            guardians.forEach { guardian ->
+                it.insertGuardian(guardian.guardianId, guardian.childId)
+            }
+        }
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/child")

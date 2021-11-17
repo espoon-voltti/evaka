@@ -269,7 +269,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchValueDecisions(status = "SENT", searchTerms = "Ricky").total)
         assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
     }
-
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 

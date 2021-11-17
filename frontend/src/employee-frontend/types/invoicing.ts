@@ -231,6 +231,7 @@ export interface FeeDecisionDetailed {
   requiresManualSending: boolean
   isRetroactive: boolean
   created: Date
+  isElementaryFamily: boolean | null
 }
 
 export interface FeeDecisionSummary {
@@ -290,6 +291,7 @@ export interface VoucherValueDecisionDetailed {
   requiresManualSending: boolean
   isRetroactive: boolean
   decisionType: VoucherValueDecisionType
+  isElementaryFamily: boolean | null
 }
 
 export interface VoucherValueDecisionPlacement {

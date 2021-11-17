@@ -59,6 +59,7 @@ describe('Head of family fee decisions', () => {
           enduserGuardianFixture,
           enduserChildFixtureKaarina,
           daycareFixture.id,
+          null,
           new DateRange(sentAt, sentAt),
           sentAt.toSystemTzDate(),
           uuidv4()
