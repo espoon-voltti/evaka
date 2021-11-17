@@ -198,10 +198,13 @@ const Decision = React.memo(function Decision({
     void getDecisionUnits().then(setUnits)
   }, [setUnits])
 
-  const unitOptions = useMemo(() => units.getOrElse([]), [units])
+  const unitOptions = useMemo(
+    (): DecisionUnit[] => units.getOrElse([]),
+    [units]
+  )
 
   const onUnitSelect = useCallback(
-    (value) => {
+    (value: DecisionUnit) => {
       if (decisionDraftGroup.isSuccess && units.isSuccess) {
         setSelectedUnit(value ?? decisionDraftGroup.value.unit)
       }
@@ -347,7 +350,7 @@ const Decision = React.memo(function Decision({
                             {units.isSuccess && (
                               <Combobox
                                 onChange={(unit) =>
-                                  unit ? onUnitSelect(unit.id) : undefined
+                                  unit ? onUnitSelect(unit) : undefined
                                 }
                                 items={unitOptions}
                                 selectedItem={selectedUnit}
