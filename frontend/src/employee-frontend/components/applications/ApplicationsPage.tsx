@@ -15,10 +15,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
-import {
-  ApplicationUIContext,
-  ApplicationUIContextProvider
-} from '../../state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import { H1 } from 'lib-components/typography'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -32,7 +29,7 @@ const PaddedDiv = styled.div`
 
 const pageSize = 50
 
-const ApplicationsPage = React.memo(function ApplicationsPage() {
+export default React.memo(function ApplicationsPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortByApplications>('APPLICATION_TYPE')
@@ -182,13 +179,5 @@ const ApplicationsPage = React.memo(function ApplicationsPage() {
         </ContentArea>
       </Container>
     </div>
-  )
-})
-
-export default React.memo(function ApplicationsPageWrapper() {
-  return (
-    <ApplicationUIContextProvider>
-      <ApplicationsPage />
-    </ApplicationUIContextProvider>
   )
 })

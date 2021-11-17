@@ -9,6 +9,7 @@ import { UnitsContextProvider } from './units'
 import { UIContextProvider } from './ui'
 import { InvoicingUIContextProvider } from './invoicing-ui'
 import { TitleContextProvider } from './title'
+import { ApplicationUIContextProvider } from './application-ui'
 
 const StateProvider = React.memo(function StateProvider({
   children
@@ -21,7 +22,11 @@ const StateProvider = React.memo(function StateProvider({
         <CustomersContextProvider>
           <InvoicingUIContextProvider>
             <MessageContextProvider>
-              <TitleContextProvider>{children}</TitleContextProvider>
+              <TitleContextProvider>
+                <ApplicationUIContextProvider>
+                  {children}
+                </ApplicationUIContextProvider>
+              </TitleContextProvider>
             </MessageContextProvider>
           </InvoicingUIContextProvider>
         </CustomersContextProvider>
