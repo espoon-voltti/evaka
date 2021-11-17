@@ -137,7 +137,9 @@ export const validateApplication = (
         required,
         validDate,
         preferredStartDateValidator(
-          apiData.form.preferences.preferredStartDate,
+          apiData.status !== 'CREATED'
+            ? apiData.form.preferences.preferredStartDate
+            : null,
           apiData.type,
           terms
         )
