@@ -52,7 +52,7 @@ function getRedirectUrl(req: express.Request): string {
     }
   }
 
-  logError('Invalid RelayState for redirect', req)
+  if (relayState) logError('Invalid RelayState for redirect', req)
 
   return getDefaultPageUrl(req)
 }
