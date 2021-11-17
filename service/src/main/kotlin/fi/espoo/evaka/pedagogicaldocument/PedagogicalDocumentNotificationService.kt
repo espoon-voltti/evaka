@@ -17,7 +17,10 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.dateNow
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class PedagogicalDocumentNotificationService(
@@ -67,27 +70,25 @@ class PedagogicalDocumentNotificationService(
             coalesce(lower(p.language), 'fi') as language
         FROM recipient_ids r
         JOIN person p ON r.person_id = p.id
-        WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = p.id)
+        WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = p.id) AND p.email IS NOT NULL
         """.trimIndent()
 
-        try {
-            return tx.createQuery(sql)
-                .bind("childId", childId)
-                .bind("date", dateNow())
-                .map { row ->
-                    AsyncJob.SendPedagogicalDocumentNotificationEmail(
-                        pedagogicalDocumentId = docId,
-                        recipientEmail = row.mapColumn("recipient_email"),
-                        language = getLanguage(row.mapColumn("language"))
-                    )
-                }
-                .list()
-        } catch (e: Exception) {
-            return listOf()
-        }
+        return tx.createQuery(sql)
+            .bind("childId", childId)
+            .bind("date", dateNow())
+            .map { row ->
+                AsyncJob.SendPedagogicalDocumentNotificationEmail(
+                    pedagogicalDocumentId = docId,
+                    recipientEmail = row.mapColumn("recipient_email"),
+                    language = getLanguage(row.mapColumn("language"))
+                )
+            }
+            .list()
     }
 
     fun scheduleSendingNotifications(tx: Database.Transaction, docId: PedagogicalDocumentId, childId: ChildId) {
+        logger.info { "Scheduling sending of Pedagogical Documentation notification emails" }
+
         asyncJobRunner.plan(
             tx,
             payloads = getPedagogicalDocumentationNotifications(tx, docId, childId),
