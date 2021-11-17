@@ -112,6 +112,7 @@ export default React.memo(function VasuEditPage({
             sectionIndex={dynamicSectionsOffset}
             sections={content.sections}
             setContent={setContent}
+            state={vasu.documentState}
             translations={translations}
           />
           <EditableVasuDiscussionSection

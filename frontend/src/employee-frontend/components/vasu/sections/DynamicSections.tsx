@@ -14,6 +14,7 @@ import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
+  isFollowup,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
   isTextQuestion,
@@ -25,6 +26,7 @@ import {
   VasuSection
 } from '../vasu-content'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { VasuDocumentState } from '../api'
 
 const getDynamicQuestionNumber = (
   sectionOffset: number,
@@ -36,6 +38,7 @@ interface Props {
   sections: VasuSection[]
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
+  state: VasuDocumentState
   translations: VasuTranslations
 }
 
@@ -43,6 +46,7 @@ export function DynamicSections({
   sections,
   sectionIndex: sectionOffset,
   setContent,
+  state,
   translations
 }: Props) {
   const renderGapsBetweenSections = !!setContent
@@ -155,6 +159,13 @@ export function DynamicSections({
                             })
                         : undefined
                     }
+                    translations={translations}
+                  />
+                ) : isFollowup(question) && state !== 'DRAFT' ? (
+                  /* TODO: temporarily rendered as a text question */
+                  <TextQuestionElem
+                    question={{ ...question, multiline: true, value: '' }}
+                    questionNumber={questionNumber}
                     translations={translations}
                   />
                 ) : undefined}
