@@ -47,9 +47,10 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
 
     private val testGuardianFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testGuardianSv = DevPerson(email = "sv@example.com", language = "sv")
+    private val testGuardianNoEmail = DevPerson(language = "en")
     private val testHeadOfChild = DevPerson(email = "head@example.com", language = "en")
 
-    private val testPersons = listOf(testGuardianFi, testGuardianSv, testHeadOfChild)
+    private val testPersons = listOf(testGuardianFi, testGuardianSv, testGuardianNoEmail, testHeadOfChild)
     private val testAddresses = testPersons.mapNotNull { it.email }
 
     private val employeeId: UUID = UUID.randomUUID()
@@ -141,6 +142,29 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
                     assertTrue(row.mapColumn("email_sent"))
                 }
         }
+    }
+
+    @Test
+    fun `notifications are sent to the guardians with email addresses even if one guardian has no email address`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testGuardianNoEmail.id, testChild_1.id)
+        }
+
+        postNewDocument(
+            user = employee,
+            childId = testChild_1.id
+        )
+        asyncJobRunner.runPendingJobsSync()
+
+        assertEquals(
+            testAddresses.toSet(),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(
+            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka [null]",
+            getEmailFor(testGuardianFi).subject
+        )
+        assertEquals("Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>", getEmailFor(testGuardianSv).fromAddress)
     }
 
     private fun postNewDocument(
