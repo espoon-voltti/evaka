@@ -42,7 +42,7 @@ FROM async_job
 WHERE completed_at IS NULL
 AND type = ANY(:jobTypes)
 """
-    ).bind("jobTypes", jobTypes.flatMap { jobType -> jobType.getAllNames() }.toTypedArray())
+    ).bind("jobTypes", jobTypes.map { it.name }.toTypedArray())
         .mapTo<Int>()
         .one()
 
@@ -70,13 +70,13 @@ SET
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
 """
-    ).bind("jobTypes", jobTypes.flatMap { jobType -> jobType.getAllNames() }.toTypedArray())
+    ).bind("jobTypes", jobTypes.map { it.name }.toTypedArray())
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(
                 jobId = row.mapColumn("jobId"),
                 jobType = row.mapColumn<String>("jobType").let { jobType ->
-                    jobTypes.find { it.getAllNames().contains(jobType) }
+                    jobTypes.find { it.name == jobType }
                 }!!,
                 txId = row.mapColumn("txId"),
                 remainingAttempts = row.mapColumn("remainingAttempts")
