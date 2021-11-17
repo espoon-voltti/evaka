@@ -4,12 +4,17 @@
 
 package fi.espoo.evaka.shared.config
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
@@ -24,6 +29,7 @@ import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.time.ZonedDateTime
 import java.util.UUID
 import javax.servlet.http.HttpServletRequest
 
@@ -37,7 +43,7 @@ import javax.servlet.http.HttpServletRequest
  * - `Id<*>`: a type-safe identifier, which is serialized/deserialized as UUID (= string)
  */
 @Configuration
-class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
+class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
@@ -47,6 +53,7 @@ class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
         resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getOrOpenConnection() })
+        resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getEvakaClock() })
     }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -71,6 +78,15 @@ class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
         }
         return user
     }
+
+    private fun WebRequest.getEvakaClock(): EvakaClock =
+        if (!env.mockClock) RealEvakaClock()
+        else {
+            val mockTime = this.getHeader("EvakaMockedTime")?.let {
+                HelsinkiDateTime.from(ZonedDateTime.parse(it))
+            }
+            MockEvakaClock(mockTime ?: HelsinkiDateTime.now())
+        }
 }
 
 private const val ATTR_DB = "evaka.database"

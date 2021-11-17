@@ -37,3 +37,14 @@ export const isIOS = () =>
     navigator.platform
   ) ||
   (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+
+declare global {
+  interface Window {
+    evakaMockedTime: string | undefined
+  }
+}
+
+export const mockNow = (): string | undefined =>
+  typeof window !== 'undefined' && 'evakaMockedTime' in window
+    ? (window.evakaMockedTime as string)
+    : undefined

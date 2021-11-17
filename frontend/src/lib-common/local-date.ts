@@ -28,6 +28,7 @@ import {
   startOfWeek,
   getISOWeek
 } from 'date-fns'
+import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
 const fiPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/
@@ -161,6 +162,10 @@ export default class LocalDate {
     return new Date(`${this.formatIso()}T00:00`)
   }
   static today(): LocalDate {
+    if (isAutomatedTest) {
+      const now = mockNow()
+      return LocalDate.fromSystemTzDate(now ? new Date(now) : startOfToday())
+    }
     return LocalDate.fromSystemTzDate(startOfToday())
   }
   static fromSystemTzDate(date: Date): LocalDate {

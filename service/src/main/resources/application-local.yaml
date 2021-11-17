@@ -11,6 +11,8 @@ evaka:
     decisions: evaka-daycaredecisions-dev
     fee_decisions: evaka-paymentdecisions-dev
     voucher_value_decisions: evaka-vouchervaluedecisions-dev
+  clock:
+    mock: true
   database:
     log_sql: false
     password: app
