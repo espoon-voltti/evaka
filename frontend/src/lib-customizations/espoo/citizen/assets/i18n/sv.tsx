@@ -193,7 +193,8 @@ const sv: Translations = {
     newReservationBtn: 'Reservera',
     noReservation: 'Ingen reservation',
     reservation: 'Reservation',
-    realized: 'Insikt',
+    realized: 'Förverkligad',
+    reservationsAndRealized: 'Reservationer och förverkligade',
     reservationModal: {
       title: 'Reservera',
       selectChildren: 'Barn som reserveras för',

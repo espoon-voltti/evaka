@@ -193,6 +193,7 @@ export default {
     noReservation: 'Ei varausta',
     reservation: 'Varaus',
     realized: 'Toteuma',
+    reservationsAndRealized: 'Varaukset ja toteuma',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Lapset, joille varaus tehdään',
