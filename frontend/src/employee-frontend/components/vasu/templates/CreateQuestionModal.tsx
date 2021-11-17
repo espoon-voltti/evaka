@@ -85,6 +85,13 @@ export default React.memo(function CreateQuestionModal({
           maxSelections: null,
           value: []
         }
+      case 'FOLLOWUP':
+        return {
+          type: 'FOLLOWUP',
+          ophKey: null,
+          name: name,
+          info: info
+        }
     }
   }
 

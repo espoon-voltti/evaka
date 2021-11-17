@@ -37,13 +37,13 @@ export function TextQuestion({
   }
 
   return (
-    <>
+    <div>
       <QuestionInfo info={info}>
         <Label>
           {questionNumber} {name}
         </Label>
       </QuestionInfo>
       {getEditorOrStaticText()}
-    </>
+    </div>
   )
 }

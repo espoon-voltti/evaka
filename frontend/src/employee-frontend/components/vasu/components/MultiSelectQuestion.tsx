@@ -27,7 +27,7 @@ export function MultiSelectQuestion({
   translations
 }: Props) {
   return (
-    <>
+    <div>
       <QuestionInfo info={info}>
         <Label>
           {questionNumber} {name}
@@ -58,6 +58,6 @@ export function MultiSelectQuestion({
           translations={translations}
         />
       )}
-    </>
+    </div>
   )
 }

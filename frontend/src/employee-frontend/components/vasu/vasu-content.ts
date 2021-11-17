@@ -15,7 +15,8 @@ export const vasuQuestionTypes = [
   'TEXT',
   'CHECKBOX',
   'RADIO_GROUP',
-  'MULTISELECT'
+  'MULTISELECT',
+  'FOLLOWUP'
 ] as const
 
 export type VasuQuestionType = typeof vasuQuestionTypes[number]
@@ -53,11 +54,14 @@ export interface QuestionOption {
   name: string
 }
 
+export type Followup = VasuQuestionCommon
+
 export type VasuQuestion =
   | TextQuestion
   | CheckboxQuestion
   | RadioGroupQuestion
   | MultiSelectQuestion
+  | Followup
 
 export function isTextQuestion(
   question: VasuQuestion
@@ -81,4 +85,8 @@ export function isMultiSelectQuestion(
   question: VasuQuestion
 ): question is MultiSelectQuestion {
   return question.type === 'MULTISELECT'
+}
+
+export function isFollowup(question: VasuQuestion): question is Followup {
+  return question.type === 'FOLLOWUP'
 }

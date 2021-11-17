@@ -147,6 +147,7 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.CheckboxQuestion::class, name = "CHECKBOX"),
     JsonSubTypes.Type(value = VasuQuestion.RadioGroupQuestion::class, name = "RADIO_GROUP"),
     JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
+    JsonSubTypes.Type(value = VasuQuestion.Followup::class, name = "FOLLOWUP"),
 )
 sealed class VasuQuestion(
     val type: VasuQuestionType
@@ -204,6 +205,16 @@ sealed class VasuQuestion(
             return question is MultiSelectQuestion && question.copy(value = this.value) == this
         }
     }
+
+    data class Followup(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+    ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is Followup && question.copy() == this
+        }
+    }
 }
 
 data class QuestionOption(
@@ -215,7 +226,8 @@ enum class VasuQuestionType {
     TEXT,
     CHECKBOX,
     RADIO_GROUP,
-    MULTISELECT
+    MULTISELECT,
+    FOLLOWUP
 }
 
 @Json
