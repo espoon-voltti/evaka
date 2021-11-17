@@ -7,7 +7,6 @@ import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import 'lib-components/layout/ButtonContainer'
-import { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { AuthorsSection } from './sections/AuthorsSection'
@@ -19,6 +18,7 @@ import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
 import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
 import { BasicsSection } from './sections/BasicsSection'
+import { VasuContainer } from './components/VasuContainer'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -44,7 +44,7 @@ export default React.memo(function VasuPage({
   const dynamicSectionsOffset = 2
 
   return (
-    <Container>
+    <VasuContainer gapSize={'zero'}>
       <Gap size={'L'} />
       {vasu && (
         <>
@@ -78,6 +78,7 @@ export default React.memo(function VasuPage({
               translations={translations}
             />
           )}
+          <Gap size={'s'} />
           <VasuEvents
             document={vasu}
             vasuDiscussionDate={vasuDiscussionContent.discussionDate}
@@ -98,6 +99,6 @@ export default React.memo(function VasuPage({
           )}
         </FooterContainer>
       </StickyFooter>
-    </Container>
+    </VasuContainer>
   )
 })
