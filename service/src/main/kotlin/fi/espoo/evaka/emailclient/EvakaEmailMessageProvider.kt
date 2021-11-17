@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.emailclient
 
-class EvakaEmailMessageProvider() : IEmailMessageProvider {
+class EvakaEmailMessageProvider : IEmailMessageProvider {
 
     override val subjectForPendingDecisionEmail: String = "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
     override val subjectForClubApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
