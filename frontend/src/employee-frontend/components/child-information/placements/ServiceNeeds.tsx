@@ -4,7 +4,10 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ServiceNeed,
+  ServiceNeedOption
+} from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -12,10 +15,9 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
 import { faPlus, faQuestion } from 'lib-icons'
 import _ from 'lodash'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { deleteServiceNeed } from '../../../api/child/service-needs'
-import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { DateRange } from '../../../utils/date'
 import { RequireRole } from '../../../utils/roles'
@@ -26,9 +28,14 @@ import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 interface Props {
   placement: DaycarePlacementWithDetails
   reload: () => void
+  serviceNeedOptions: ServiceNeedOption[]
 }
 
-function ServiceNeeds({ placement, reload }: Props) {
+export default React.memo(function ServiceNeeds({
+  placement,
+  reload,
+  serviceNeedOptions
+}: Props) {
   const { serviceNeeds, type: placementType } = placement
 
   const { i18n } = useTranslation()
@@ -37,8 +44,6 @@ function ServiceNeeds({ placement, reload }: Props) {
   const [creatingNew, setCreatingNew] = useState<boolean | LocalDate>(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-
-  const { serviceNeedOptions } = useContext(ChildContext)
 
   const gaps: DateRange[] = useMemo(
     () =>
@@ -54,20 +59,14 @@ function ServiceNeeds({ placement, reload }: Props) {
 
   const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
 
-  const options = serviceNeedOptions
-    .map((options) =>
-      options.filter(
-        (option) =>
-          option.validPlacementType === placementType && !option.defaultOption
-      )
-    )
-    .getOrElse([])
+  const options = serviceNeedOptions.filter(
+    (option) =>
+      option.validPlacementType === placementType && !option.defaultOption
+  )
 
-  const placementHasNonDefaultServiceNeedOptions =
-    serviceNeedOptions.isSuccess &&
-    serviceNeedOptions.value.some(
-      (opt) => opt.validPlacementType === placementType && !opt.defaultOption
-    )
+  const placementHasNonDefaultServiceNeedOptions = serviceNeedOptions.some(
+    (opt) => opt.validPlacementType === placementType && !opt.defaultOption
+  )
 
   // if only default option exists service needs are not relevant and do not need to be rendered
   return placementHasNonDefaultServiceNeedOptions ? (
@@ -192,7 +191,7 @@ function ServiceNeeds({ placement, reload }: Props) {
       )}
     </div>
   ) : null
-}
+})
 
 type ServiceNeedOrGap = ServiceNeed | DateRange
 
@@ -201,5 +200,3 @@ const HeaderRow = styled.div`
   justify-content: space-between;
   align-items: center;
 `
-
-export default ServiceNeeds

@@ -5,8 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
-import { Loading } from 'lib-common/api'
-import Loader from 'lib-components/atoms/Loader'
 import * as _ from 'lodash'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -23,40 +21,35 @@ import { UIContext } from '../../state/ui'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   id: UUID
   startOpen: boolean
 }
 
-const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
+export default React.memo(function PedagogicalDocuments({
   id,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    pedagogicalDocuments,
-    setPedagogicalDocuments,
-    permittedActions,
-    placements
-  } = useContext(ChildContext)
+  const { permittedActions, placements } = useContext(ChildContext)
+  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+
+  const [pedagogicalDocuments, loadData] = useApiState(
+    () => getChildPedagogicalDocuments(id),
+    [id]
+  )
 
   const [open, setOpen] = useState(startOpen)
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [submitting, setSubmitting] = useState(false)
   const [tobeDeleted, setTobeDeleted] = useState<
     PedagogicalDocument | undefined
   >(undefined)
 
-  const loadData = () => {
-    setSubmitting(true)
-    setPedagogicalDocuments(Loading.of())
-    void getChildPedagogicalDocuments(id)
-      .then(setPedagogicalDocuments)
-      .then(() => setSubmitting(false))
-  }
-
-  useEffect(loadData, [id, open, setPedagogicalDocuments])
+  useEffect(() => {
+    if (open) loadData()
+  }, [open, loadData])
 
   const handleDelete = (document: PedagogicalDocument) => {
     setTobeDeleted(document)
@@ -96,32 +89,6 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
     />
   )
 
-  function renderPedagogicalDocuments() {
-    if (pedagogicalDocuments.isLoading) {
-      return <Loader />
-    } else if (pedagogicalDocuments.isFailure) {
-      return <div>{i18n.common.loadingFailed}</div>
-    } else
-      return _.orderBy(pedagogicalDocuments.value, ['created'], ['desc']).map(
-        (pedagogicalDocument: PedagogicalDocument) => (
-          <PedagogicalDocumentRow
-            key={pedagogicalDocument.id}
-            id={pedagogicalDocument.id}
-            childId={pedagogicalDocument.childId}
-            attachment={pedagogicalDocument.attachment}
-            description={pedagogicalDocument.description}
-            created={pedagogicalDocument.created}
-            updated={pedagogicalDocument.updated}
-            initInEditMode={
-              uiMode == `edit-pedagogical-document-${pedagogicalDocument.id}`
-            }
-            onReload={loadData}
-            onDelete={handleDelete}
-          />
-        )
-      )
-  }
-
   if (
     !permittedActions.has('READ_PEDAGOGICAL_DOCUMENTS') ||
     placements
@@ -152,13 +119,11 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
           text={i18n.childInformation.pedagogicalDocument.create}
           onClick={() => createNewDocument()}
           data-qa="button-create-pedagogical-document"
-          disabled={submitting}
+          disabled={pedagogicalDocuments.isLoading}
         />
       )}
 
-      {pedagogicalDocuments.isLoading && <Loader />}
-      {pedagogicalDocuments.isFailure && <div>{i18n.common.loadingFailed}</div>}
-      {pedagogicalDocuments.isSuccess && (
+      {renderResult(pedagogicalDocuments, (pedagogicalDocuments) => (
         <Table data-qa="table-of-pedagogical-documents">
           <Thead>
             <Tr>
@@ -168,14 +133,32 @@ const PedagogicalDocuments = React.memo(function PedagogicalDocuments({
               <Th />
             </Tr>
           </Thead>
-          <Tbody>{renderPedagogicalDocuments()}</Tbody>
+          <Tbody>
+            {_.orderBy(pedagogicalDocuments, ['created'], ['desc']).map(
+              (pedagogicalDocument: PedagogicalDocument) => (
+                <PedagogicalDocumentRow
+                  key={pedagogicalDocument.id}
+                  id={pedagogicalDocument.id}
+                  childId={pedagogicalDocument.childId}
+                  attachment={pedagogicalDocument.attachment}
+                  description={pedagogicalDocument.description}
+                  created={pedagogicalDocument.created}
+                  updated={pedagogicalDocument.updated}
+                  initInEditMode={
+                    uiMode ==
+                    `edit-pedagogical-document-${pedagogicalDocument.id}`
+                  }
+                  onReload={loadData}
+                  onDelete={handleDelete}
+                />
+              )
+            )}
+          </Tbody>
         </Table>
-      )}
+      ))}
       {uiMode === 'delete-pedagogical-document' && (
         <DeletePedagogicalDocumentModal />
       )}
     </CollapsibleContentArea>
   )
 })
-
-export default PedagogicalDocuments

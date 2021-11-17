@@ -2,11 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useMemo, useRef } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from 'lib-common/api'
-import { ChildContext } from '../../state'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AssistanceActionRow from './assistance-action/AssistanceActionRow'
 import AssistanceActionForm from '../../components/child-information/assistance-action/AssistanceActionForm'
@@ -18,9 +15,10 @@ import {
   getAssistanceActionOptions,
   getAssistanceActions
 } from '../../api/child/assistance-actions'
-import { AssistanceActionOption } from '../../types/child'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
+import { renderResult } from '../async-rendering'
+import { combine } from 'lib-common/api'
 
 const TitleRow = styled.div`
   display: flex;
@@ -37,104 +35,80 @@ export interface Props {
   id: UUID
 }
 
-function AssistanceAction({ id }: Props) {
+export default React.memo(function AssistanceAction({ id }: Props) {
   const { i18n } = useTranslation()
-  const { assistanceActions, setAssistanceActions } = useContext(ChildContext)
+  const [assistanceActions, loadData] = useApiState(
+    () => getAssistanceActions(id),
+    [id]
+  )
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const refSectionTop = useRef(null)
 
-  const loadData = () => {
-    setAssistanceActions(Loading.of())
-    void getAssistanceActions(id).then(setAssistanceActions)
-  }
+  const [assistanceActionOptions] = useApiState(getAssistanceActionOptions, [])
 
-  useEffect(loadData, [id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [assistanceActionOptions, setAssistanceActionOptions] = useState<
-    Result<AssistanceActionOption[]>
-  >(Success.of([]))
-  const loadAssistanceActionOptions = useRestApi(
-    getAssistanceActionOptions,
-    setAssistanceActionOptions
+  const duplicate = useMemo(
+    () =>
+      !!uiMode && uiMode.startsWith('duplicate-assistance-action')
+        ? assistanceActions
+            .map((actions) =>
+              actions.find((an) => an.id == uiMode.split('_').pop())
+            )
+            .getOrElse(undefined)
+        : undefined,
+    [assistanceActions, uiMode]
   )
-  useEffect(() => {
-    loadAssistanceActionOptions()
-  }, [loadAssistanceActionOptions])
 
-  function renderAssistanceActions() {
-    if (assistanceActions.isLoading || assistanceActionOptions.isLoading) {
-      return <Loader />
-    } else if (
-      assistanceActions.isFailure ||
-      assistanceActionOptions.isFailure
-    ) {
-      return <div>{i18n.common.loadingFailed}</div>
-    } else {
-      return assistanceActions.value.map((assistanceAction) => (
-        <AssistanceActionRow
-          key={assistanceAction.id}
-          assistanceAction={assistanceAction}
-          onReload={loadData}
-          assistanceActionOptions={assistanceActionOptions.value}
-          refSectionTop={refSectionTop}
-        />
-      ))
-    }
-  }
-
-  const duplicate =
-    !!uiMode &&
-    uiMode.startsWith('duplicate-assistance-action') &&
-    assistanceActions
-      .map((actions) => actions.find((an) => an.id == uiMode.split('_').pop()))
-      .getOrElse(undefined)
-
-  if (assistanceActionOptions.isLoading) {
-    return <Loader />
-  }
-  if (assistanceActionOptions.isFailure) {
-    return <div>{i18n.common.loadingFailed}</div>
-  }
-
-  return (
-    <div ref={refSectionTop}>
-      <TitleRow>
-        <Title size={4}>{i18n.childInformation.assistanceAction.title}</Title>
-        <AddButton
-          flipped
-          text={i18n.childInformation.assistanceAction.create}
-          onClick={() => {
-            toggleUiMode('create-new-assistance-action')
-            scrollToRef(refSectionTop)
-          }}
-          disabled={uiMode === 'create-new-assistance-action'}
-          data-qa="assistance-action-create-btn"
-        />
-      </TitleRow>
-      {uiMode === 'create-new-assistance-action' && (
-        <>
-          <AssistanceActionForm
-            childId={id}
-            onReload={loadData}
-            assistanceActionOptions={assistanceActionOptions.value}
+  return renderResult(
+    combine(assistanceActions, assistanceActionOptions),
+    ([assistanceActions, assistanceActionOptions]) => (
+      <div ref={refSectionTop}>
+        <TitleRow>
+          <Title size={4}>{i18n.childInformation.assistanceAction.title}</Title>
+          <AddButton
+            flipped
+            text={i18n.childInformation.assistanceAction.create}
+            onClick={() => {
+              toggleUiMode('create-new-assistance-action')
+              scrollToRef(refSectionTop)
+            }}
+            disabled={uiMode === 'create-new-assistance-action'}
+            data-qa="assistance-action-create-btn"
           />
-          <div className="separator" />
-        </>
-      )}
-      {duplicate && (
-        <>
-          <AssistanceActionForm
-            childId={id}
-            assistanceAction={duplicate}
+        </TitleRow>
+        {uiMode === 'create-new-assistance-action' && (
+          <>
+            <AssistanceActionForm
+              childId={id}
+              onReload={loadData}
+              assistanceActions={assistanceActions}
+              assistanceActionOptions={assistanceActionOptions}
+            />
+            <div className="separator" />
+          </>
+        )}
+        {duplicate && (
+          <>
+            <AssistanceActionForm
+              childId={id}
+              assistanceAction={duplicate}
+              onReload={loadData}
+              assistanceActions={assistanceActions}
+              assistanceActionOptions={assistanceActionOptions}
+            />
+            <div className="separator" />
+          </>
+        )}
+        {assistanceActions.map((assistanceAction) => (
+          <AssistanceActionRow
+            key={assistanceAction.id}
+            assistanceAction={assistanceAction}
             onReload={loadData}
-            assistanceActionOptions={assistanceActionOptions.value}
+            assistanceActions={assistanceActions}
+            assistanceActionOptions={assistanceActionOptions}
+            refSectionTop={refSectionTop}
           />
-          <div className="separator" />
-        </>
-      )}
-      {renderAssistanceActions()}
-    </div>
+        ))}
+      </div>
+    )
   )
-}
-
-export default AssistanceAction
+})

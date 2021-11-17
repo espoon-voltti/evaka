@@ -122,7 +122,7 @@ export const CollapsibleContentArea = React.memo(
             data-qa="collapsible-trigger"
           />
         </TitleContainer>
-        {open ? children : null}
+        <Collapsible open={open}>{children}</Collapsible>
       </ContentArea>
     )
   }
@@ -176,6 +176,10 @@ const TitleIcon = styled(FontAwesomeIcon)`
   color: ${({ theme: { colors } }) => colors.main.primary};
   height: 24px !important;
   width: 24px !important;
+`
+
+const Collapsible = styled.div<{ open: boolean }>`
+  display: ${(props) => (props.open ? 'block' : 'none')};
 `
 
 export default Container

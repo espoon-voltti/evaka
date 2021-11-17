@@ -24,7 +24,6 @@ import {
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
 import FormActions from '../../../components/common/FormActions'
-import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DivFitContent } from '../../common/styled/containers'
@@ -74,6 +73,7 @@ const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
   onReload: () => undefined | void
+  assistanceNeeds: AssistanceNeed[]
   assistanceBasisOptions: AssistanceBasisOption[]
 }
 
@@ -117,10 +117,29 @@ const noErrors: AssistanceNeedFormErrors = {
   coefficient: false
 }
 
+function getExistingAssistanceNeedRanges(props: Props): DateRange[] {
+  return props.assistanceNeeds
+    .filter((sn) => isCreate(props) || sn.id != props.assistanceNeed.id)
+    .map(({ startDate, endDate }) => ({ startDate, endDate }))
+}
+
+function checkSoftConflict(form: FormState, props: Props): boolean {
+  if (isDateRangeInverted(form)) return false
+  return getExistingAssistanceNeedRanges(props).some((existing) =>
+    rangeContainsDate(existing, form.startDate)
+  )
+}
+
+function checkHardConflict(form: FormState, props: Props): boolean {
+  if (isDateRangeInverted(form)) return false
+  return getExistingAssistanceNeedRanges(props).some((existing) =>
+    rangeContainsDate(form, existing.startDate)
+  )
+}
+
 function AssistanceNeedForm(props: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const { assistanceNeeds } = useContext(ChildContext)
 
   const initialFormState: FormState =
     isCreate(props) && !isDuplicate(props)
@@ -145,51 +164,28 @@ function AssistanceNeedForm(props: Props) {
 
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
-  const getExistingAssistanceNeedRanges = (): DateRange[] =>
-    assistanceNeeds
-      .map((needs) =>
-        needs
-          .filter((sn) => isCreate(props) || sn.id != props.assistanceNeed.id)
-          .map(({ startDate, endDate }) => ({ startDate, endDate }))
-      )
-      .getOrElse([])
-
-  const checkSoftConflict = (): boolean => {
-    if (isDateRangeInverted(form)) return false
-    return getExistingAssistanceNeedRanges().some((existing) =>
-      rangeContainsDate(existing, form.startDate)
-    )
-  }
-
-  const checkHardConflict = (): boolean => {
-    if (isDateRangeInverted(form)) return false
-    return getExistingAssistanceNeedRanges().some((existing) =>
-      rangeContainsDate(form, existing.startDate)
-    )
-  }
-
-  const checkAnyConflict = () => checkHardConflict() || checkSoftConflict()
-
   const updateFormState: UpdateStateFn<FormState> = (values) => {
     const newState = { ...form, ...values }
     setForm(newState)
   }
 
   useEffect(() => {
+    const isHardConflict = checkHardConflict(form, props)
+    const isSoftConflict = checkSoftConflict(form, props)
+    const isAnyConflict = isHardConflict || isSoftConflict
+
     setFormErrors({
       dateRange: {
         inverted: isDateRangeInverted(form),
-        conflict: isCreate(props) ? checkHardConflict() : checkAnyConflict()
+        conflict: isCreate(props) ? isHardConflict : isAnyConflict
       },
       coefficient:
         !coefficientRegex.test(form.capacityFactor) ||
         Number(form.capacityFactor.replace(',', '.')) < 1
     })
 
-    setAutoCutWarning(
-      isCreate(props) && checkSoftConflict() && !checkHardConflict()
-    )
-  }, [form, assistanceNeeds]) // eslint-disable-line react-hooks/exhaustive-deps
+    setAutoCutWarning(isCreate(props) && isAnyConflict && !isHardConflict)
+  }, [form, props])
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -378,7 +374,7 @@ function AssistanceNeedForm(props: Props) {
                           otherBasis: ''
                         })
                       }
-                    ></Checkbox>
+                    />
                   </CheckboxRow>
                 ) : null}
                 {form.otherSelected && (

@@ -24,6 +24,7 @@ import { featureFlags } from 'lib-customizations/employee'
 export interface Props {
   assistanceNeed: AssistanceNeed
   onReload: () => undefined | void
+  assistanceNeeds: AssistanceNeed[]
   assistanceBasisOptions: AssistanceBasisOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
@@ -31,6 +32,7 @@ export interface Props {
 function AssistanceNeedRow({
   assistanceNeed,
   onReload,
+  assistanceNeeds,
   assistanceBasisOptions,
   refSectionTop
 }: Props) {
@@ -98,6 +100,7 @@ function AssistanceNeedRow({
             <AssistanceNeedForm
               assistanceNeed={assistanceNeed}
               onReload={onReload}
+              assistanceNeeds={assistanceNeeds}
               assistanceBasisOptions={assistanceBasisOptions}
             />
           </div>

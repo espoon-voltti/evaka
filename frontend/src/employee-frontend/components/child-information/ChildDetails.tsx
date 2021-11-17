@@ -4,7 +4,6 @@
 
 import React, { useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Success } from 'lib-common/api'
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
@@ -17,7 +16,7 @@ interface Props {
   id: UUID
 }
 
-const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
+export default React.memo(function ChildDetails({ id }: Props) {
   const { i18n } = useTranslation()
   const { person, setPerson, permittedActions } =
     useContext<ChildState>(ChildContext)
@@ -37,7 +36,7 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
           <PersonDetails
             person={person}
             isChild={true}
-            onUpdateComplete={(p) => setPerson(Success.of(p))}
+            onUpdateComplete={setPerson}
             permittedActions={permittedActions}
           />
         ))}
@@ -50,5 +49,3 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
     </div>
   )
 })
-
-export default ChildDetails

@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
-import { Loading } from 'lib-common/api'
 import {
   getAdditionalInformation,
   updateAdditionalInformation
 } from '../../../api/child/additional-information'
-import { ChildContext } from '../../../state'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -24,8 +22,9 @@ import { RequireRole } from '../../../utils/roles'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
 import { FlexRow } from '../../common/styled/containers'
-import { UnwrapResult } from '../../async-rendering'
+import { renderResult } from '../../async-rendering'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -42,12 +41,12 @@ interface Props {
   id: UUID
 }
 
-const AdditionalInformation = React.memo(function AdditionalInformation({
-  id
-}: Props) {
+export default React.memo(function AdditionalInformation({ id }: Props) {
   const { i18n } = useTranslation()
-  const { additionalInformation, setAdditionalInformation } =
-    useContext(ChildContext)
+  const [additionalInformation, loadData] = useApiState(
+    () => getAdditionalInformation(id),
+    [id]
+  )
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const [form, setForm] = useState<AdditionalInformation>({
     additionalInfo: '',
@@ -58,17 +57,6 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   })
 
   const editing = uiMode == 'child-additional-details-editing'
-
-  const loadData = () => {
-    setAdditionalInformation(Loading.of())
-    void getAdditionalInformation(id).then((additionalInformation) => {
-      setAdditionalInformation(additionalInformation)
-    })
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startEdit = () => {
     if (additionalInformation.isSuccess) {
@@ -114,118 +102,109 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
           />
         </RequireRole>
       </FlexRow>
-      <UnwrapResult
-        result={additionalInformation}
-        failure={() => <div>{i18n.common.loadingFailed}</div>}
-      >
-        {(data) => (
-          <>
-            <LabelValueList
-              spacing="small"
-              contents={[
-                {
-                  label:
-                    i18n.childInformation.additionalInformation.preferredName,
-                  value: editing ? (
-                    <TextAreaInput
-                      value={form.preferredName}
-                      onChange={(value) =>
-                        setForm({ ...form, preferredName: value })
-                      }
-                      rows={textAreaRows(form.preferredName)}
-                    />
-                  ) : (
-                    formatParagraphs(data.preferredName)
-                  ),
-                  valueWidth: '400px'
-                },
-                {
-                  label:
-                    i18n.childInformation.additionalInformation.additionalInfo,
-                  value: editing ? (
-                    <TextAreaInput
-                      value={form.additionalInfo}
-                      onChange={(value) =>
-                        setForm({ ...form, additionalInfo: value })
-                      }
-                      rows={textAreaRows(form.additionalInfo)}
-                    />
-                  ) : (
-                    formatParagraphs(data.additionalInfo)
-                  ),
-                  valueWidth: '400px'
-                },
-                {
-                  label: i18n.childInformation.additionalInformation.allergies,
-                  value: editing ? (
-                    <TextAreaInput
-                      value={form.allergies}
-                      onChange={(value) =>
-                        setForm({ ...form, allergies: value })
-                      }
-                      rows={textAreaRows(form.allergies)}
-                      maxLength={40}
-                    />
-                  ) : (
-                    formatParagraphs(data.allergies)
-                  ),
-                  valueWidth: '400px'
-                },
-                {
-                  label: i18n.childInformation.additionalInformation.diet,
-                  value: editing ? (
-                    <TextAreaInput
-                      value={form.diet}
-                      onChange={(value) => setForm({ ...form, diet: value })}
-                      rows={textAreaRows(form.diet)}
-                    />
-                  ) : (
-                    formatParagraphs(data.diet)
-                  ),
-                  valueWidth: '400px'
-                },
-                {
-                  label: i18n.childInformation.additionalInformation.medication,
-                  value: editing ? (
-                    <TextAreaInput
-                      value={form.medication}
-                      onChange={(value) =>
-                        setForm({ ...form, medication: value })
-                      }
-                      rows={textAreaRows(form.medication)}
-                      data-qa="medication-input"
-                    />
-                  ) : (
-                    <span data-qa="medication">
-                      {formatParagraphs(data.medication)}
-                    </span>
-                  ),
-                  valueWidth: '400px'
-                }
-              ]}
-            />
-            {editing && (
-              <RightAlignedRow>
-                <FixedSpaceRow>
-                  <Button
-                    onClick={() => clearUiMode()}
-                    text={i18n.common.cancel}
+      {renderResult(additionalInformation, (data) => (
+        <>
+          <LabelValueList
+            spacing="small"
+            contents={[
+              {
+                label:
+                  i18n.childInformation.additionalInformation.preferredName,
+                value: editing ? (
+                  <TextAreaInput
+                    value={form.preferredName}
+                    onChange={(value) =>
+                      setForm({ ...form, preferredName: value })
+                    }
+                    rows={textAreaRows(form.preferredName)}
                   />
-                  <Button
-                    primary
-                    disabled={false}
-                    onClick={() => onSubmit()}
-                    data-qa="confirm-edited-child-button"
-                    text={i18n.common.confirm}
+                ) : (
+                  formatParagraphs(data.preferredName)
+                ),
+                valueWidth: '400px'
+              },
+              {
+                label:
+                  i18n.childInformation.additionalInformation.additionalInfo,
+                value: editing ? (
+                  <TextAreaInput
+                    value={form.additionalInfo}
+                    onChange={(value) =>
+                      setForm({ ...form, additionalInfo: value })
+                    }
+                    rows={textAreaRows(form.additionalInfo)}
                   />
-                </FixedSpaceRow>
-              </RightAlignedRow>
-            )}
-          </>
-        )}
-      </UnwrapResult>
+                ) : (
+                  formatParagraphs(data.additionalInfo)
+                ),
+                valueWidth: '400px'
+              },
+              {
+                label: i18n.childInformation.additionalInformation.allergies,
+                value: editing ? (
+                  <TextAreaInput
+                    value={form.allergies}
+                    onChange={(value) => setForm({ ...form, allergies: value })}
+                    rows={textAreaRows(form.allergies)}
+                    maxLength={40}
+                  />
+                ) : (
+                  formatParagraphs(data.allergies)
+                ),
+                valueWidth: '400px'
+              },
+              {
+                label: i18n.childInformation.additionalInformation.diet,
+                value: editing ? (
+                  <TextAreaInput
+                    value={form.diet}
+                    onChange={(value) => setForm({ ...form, diet: value })}
+                    rows={textAreaRows(form.diet)}
+                  />
+                ) : (
+                  formatParagraphs(data.diet)
+                ),
+                valueWidth: '400px'
+              },
+              {
+                label: i18n.childInformation.additionalInformation.medication,
+                value: editing ? (
+                  <TextAreaInput
+                    value={form.medication}
+                    onChange={(value) =>
+                      setForm({ ...form, medication: value })
+                    }
+                    rows={textAreaRows(form.medication)}
+                    data-qa="medication-input"
+                  />
+                ) : (
+                  <span data-qa="medication">
+                    {formatParagraphs(data.medication)}
+                  </span>
+                ),
+                valueWidth: '400px'
+              }
+            ]}
+          />
+          {editing && (
+            <RightAlignedRow>
+              <FixedSpaceRow>
+                <Button
+                  onClick={() => clearUiMode()}
+                  text={i18n.common.cancel}
+                />
+                <Button
+                  primary
+                  disabled={false}
+                  onClick={() => onSubmit()}
+                  data-qa="confirm-edited-child-button"
+                  text={i18n.common.confirm}
+                />
+              </FixedSpaceRow>
+            </RightAlignedRow>
+          )}
+        </>
+      ))}
     </div>
   )
 })
-
-export default AdditionalInformation

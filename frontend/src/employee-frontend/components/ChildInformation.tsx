@@ -6,7 +6,6 @@ import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fontWeights } from 'lib-components/typography'
 import MessageBlocklist from './child-information/MessageBlocklist'
-import { Loading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -16,8 +15,6 @@ import { faUsers } from 'lib-icons'
 import React, { useContext, useEffect, useMemo } from 'react'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
-import { getParentshipsByChild } from '../api/parentships'
-import { getChildDetails } from '../api/person'
 import Assistance from './child-information/Assistance'
 import BackupCare from './child-information/BackupCare'
 import ChildApplications from './child-information/ChildApplications'
@@ -32,7 +29,6 @@ import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
 import { Parentship } from 'lib-common/generated/api-types/pis'
-import { requireRole } from '../utils/roles'
 import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
@@ -213,44 +209,15 @@ function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
 }
 
 const ChildInformation = React.memo(function ChildInformation({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
+  id
+}: {
+  id: UUID
+}) {
   const { i18n } = useTranslation()
-  const { id } = match.params
-
   const { roles } = useContext(UserContext)
-  const {
-    person,
-    setPerson,
-    parentships,
-    setParentships,
-    setPermittedActions
-  } = useContext<ChildState>(ChildContext)
+  const { person, parentships } = useContext<ChildState>(ChildContext)
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
-  useEffect(() => {
-    setPerson(Loading.of())
-    setParentships(Loading.of())
-    setPermittedActions(new Set())
-    void getChildDetails(id).then((result) => {
-      setPerson(result.map((details) => details.person))
-      if (result.isSuccess) {
-        setPermittedActions(
-          new Set([
-            ...result.value.permittedActions,
-            ...result.value.permittedPersonActions
-          ])
-        )
-      }
-    })
-
-    if (
-      requireRole(roles, 'SERVICE_WORKER', 'UNIT_SUPERVISOR', 'FINANCE_ADMIN')
-    ) {
-      void getParentshipsByChild(id).then(setParentships)
-    }
-  }, [id, roles, setParentships, setPermittedActions, setPerson])
 
   useEffect(() => {
     if (person.isSuccess) {
@@ -334,9 +301,10 @@ const ChildInformation = React.memo(function ChildInformation({
 export default React.memo(function ChildInformationWrapper(
   props: RouteComponentProps<{ id: UUID }>
 ) {
+  const { id } = props.match.params
   return (
-    <ChildContextProvider>
-      <ChildInformation {...props} />
+    <ChildContextProvider id={id}>
+      <ChildInformation id={id} />
     </ChildContextProvider>
   )
 })

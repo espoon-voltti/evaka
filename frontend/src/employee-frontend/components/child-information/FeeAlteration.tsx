@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import { faQuestion } from 'lib-icons'
-import Loader from 'lib-components/atoms/Loader'
 import { Gap } from 'lib-components/white-space'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { ChildContext } from '../../state'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
-import { Loading, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
@@ -25,6 +23,8 @@ import { scrollToRef } from '../../utils'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../async-rendering'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
@@ -34,28 +34,18 @@ interface Props {
   startOpen: boolean
 }
 
-const FeeAlteration = React.memo(function FeeAlteration({
-  id,
-  startOpen
-}: Props) {
+export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
-  const { feeAlterations, setFeeAlterations } = useContext(ChildContext)
+  const [feeAlterations, loadFeeAlterations] = useApiState(
+    () => getFeeAlterations(id),
+    [id]
+  )
 
   const [open, setOpen] = useState(startOpen)
   const [deleted, setDeleted] = useState<FeeAlteration>()
   const refSectionTop = useRef(null)
-
-  const loadFeeAlterations = () => {
-    setFeeAlterations(Loading.of())
-    void getFeeAlterations(id).then(setFeeAlterations)
-  }
-
-  useEffect(() => {
-    loadFeeAlterations()
-    return () => setFeeAlterations(Loading.of())
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (result: Result<void>) => {
     if (result.isSuccess) {
@@ -68,25 +58,6 @@ const FeeAlteration = React.memo(function FeeAlteration({
         resolveLabel: i18n.common.ok
       })
     }
-  }
-
-  const content = () => {
-    if (feeAlterations.isLoading) return <Loader />
-    if (feeAlterations.isFailure)
-      return <div>{i18n.childInformation.feeAlteration.error}</div>
-
-    return (
-      <FeeAlterationList
-        feeAlterations={feeAlterations.value}
-        toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
-        isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
-        cancel={() => clearUiMode()}
-        update={(value: FeeAlteration) =>
-          updateFeeAlteration(value).then(handleChange)
-        }
-        toggleDeleteModal={(feeAlteration) => setDeleted(feeAlteration)}
-      />
-    )
   }
 
   return (
@@ -118,7 +89,18 @@ const FeeAlteration = React.memo(function FeeAlteration({
             }
           />
         ) : null}
-        {content()}
+        {renderResult(feeAlterations, (feeAlterations) => (
+          <FeeAlterationList
+            feeAlterations={feeAlterations}
+            toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
+            isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
+            cancel={() => clearUiMode()}
+            update={(value: FeeAlteration) =>
+              updateFeeAlteration(value).then(handleChange)
+            }
+            toggleDeleteModal={(feeAlteration) => setDeleted(feeAlteration)}
+          />
+        ))}
       </CollapsibleContentArea>
       {deleted ? (
         <InfoModal
@@ -156,5 +138,3 @@ const FeeAlteration = React.memo(function FeeAlteration({
     </div>
   )
 })
-
-export default FeeAlteration

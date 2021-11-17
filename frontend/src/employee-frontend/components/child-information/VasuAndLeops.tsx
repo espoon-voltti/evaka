@@ -2,13 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Loader from 'lib-components/atoms/Loader'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -35,7 +40,7 @@ import {
   VasuTemplateSummary
 } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult, UnwrapResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
 
 const StateCell = styled(Td)`
@@ -179,19 +184,19 @@ interface Props {
   startOpen: boolean
 }
 
-const VasuAndLeops = React.memo(function VasuAndLeops({
+export default React.memo(function VasuAndLeops({
   id: childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions, placements, vasus, setVasus } =
-    useContext(ChildContext)
+  const { permittedActions, placements } = useContext(ChildContext)
+  const [vasus, loadVasus] = useApiState(
+    () => getVasuDocumentSummaries(childId),
+    [childId]
+  )
   const history = useHistory()
 
   const [open, setOpen] = useState(startOpen)
-
-  const loadVasus = useRestApi(getVasuDocumentSummaries, setVasus)
-  useEffect(() => loadVasus(childId), [childId, loadVasus])
 
   const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
     const publishedAt = getLastPublished(events)
@@ -207,64 +212,30 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
     ].join(', ')
   }
 
-  const renderSummaries = () =>
-    vasus
-      .map((value) =>
-        value.map((vasu) => (
-          <Tr key={vasu.id}>
-            <Td>
-              <InlineButton
-                onClick={() => history.push(`/vasu/${vasu.id}`)}
-                text={vasu.name}
-              />
-            </Td>
-            <Td>{getDates(vasu)}</Td>
-            <StateCell>
-              <VasuStateChip
-                state={vasu.documentState}
-                labels={i18n.vasu.states}
-              />
-            </StateCell>
-            <Td>
-              {vasu.documentState === 'CLOSED' ? (
-                <RequireRole oneOf={['ADMIN']}>
-                  <InlineButton
-                    onClick={() =>
-                      void updateDocumentState({
-                        documentId: vasu.id,
-                        eventType: 'RETURNED_TO_REVIEWED'
-                      }).finally(() => loadVasus(childId))
-                    }
-                    text={i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText}
-                  />
-                </RequireRole>
-              ) : (
-                <InlineButton
-                  onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
-                  text={i18n.common.edit}
-                />
-              )}
-            </Td>
-          </Tr>
-        ))
-      )
-      .getOrElse(null)
+  const allowCreation = useMemo(
+    () =>
+      vasus
+        .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
+        .getOrElse(false),
+    [vasus]
+  )
 
-  const allowCreation = vasus
-    .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
-    .getOrElse(false)
-
-  if (
-    !permittedActions.has('READ_VASU_DOCUMENT') ||
-    placements
-      .map(
-        (ps) =>
-          !ps.some((placement) =>
-            placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
-          )
-      )
-      .getOrElse(true)
-  ) {
+  const noPermission = useMemo(
+    () =>
+      !permittedActions.has('READ_VASU_DOCUMENT') ||
+      placements
+        .map(
+          (ps) =>
+            !ps.some((placement) =>
+              placement.daycare.enabledPilotFeatures.includes(
+                'VASU_AND_PEDADOC'
+              )
+            )
+        )
+        .getOrElse(true),
+    [permittedActions, placements]
+  )
+  if (noPermission) {
     return null
   }
 
@@ -278,14 +249,53 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
         paddingVertical="L"
       >
         <VasuInitialization childId={childId} allowCreation={allowCreation} />
-        <Table>
-          <Tbody>{renderSummaries()}</Tbody>
-        </Table>
-        {vasus.isLoading && <Loader />}
-        {vasus.isFailure && <div>{i18n.common.loadingFailed}</div>}
+        {renderResult(vasus, (vasus) => (
+          <Table>
+            <Tbody>
+              {vasus.map((vasu) => (
+                <Tr key={vasu.id}>
+                  <Td>
+                    <InlineButton
+                      onClick={() => history.push(`/vasu/${vasu.id}`)}
+                      text={vasu.name}
+                    />
+                  </Td>
+                  <Td>{getDates(vasu)}</Td>
+                  <StateCell>
+                    <VasuStateChip
+                      state={vasu.documentState}
+                      labels={i18n.vasu.states}
+                    />
+                  </StateCell>
+                  <Td>
+                    {vasu.documentState === 'CLOSED' ? (
+                      <RequireRole oneOf={['ADMIN']}>
+                        <InlineButton
+                          onClick={() =>
+                            void updateDocumentState({
+                              documentId: vasu.id,
+                              eventType: 'RETURNED_TO_REVIEWED'
+                            }).finally(() => loadVasus())
+                          }
+                          text={
+                            i18n.vasu.transitions.RETURNED_TO_REVIEWED
+                              .buttonText
+                          }
+                        />
+                      </RequireRole>
+                    ) : (
+                      <InlineButton
+                        onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
+                        text={i18n.common.edit}
+                      />
+                    )}
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        ))}
       </CollapsibleContentArea>
     </div>
   )
 })
-
-export default VasuAndLeops

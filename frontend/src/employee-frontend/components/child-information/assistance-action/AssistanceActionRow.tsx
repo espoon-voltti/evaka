@@ -21,13 +21,15 @@ import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 export interface Props {
   assistanceAction: AssistanceAction
   onReload: () => undefined | void
+  assistanceActions: AssistanceAction[]
   assistanceActionOptions: AssistanceActionOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
-function AssistanceActionRow({
+export default React.memo(function AssistanceActionRow({
   assistanceAction,
   onReload,
+  assistanceActions,
   assistanceActionOptions,
   refSectionTop
 }: Props) {
@@ -95,6 +97,7 @@ function AssistanceActionRow({
             <AssistanceActionForm
               assistanceAction={assistanceAction}
               onReload={onReload}
+              assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
             />
           </div>
@@ -153,6 +156,4 @@ function AssistanceActionRow({
       </ToolbarAccordion>
     </div>
   )
-}
-
-export default AssistanceActionRow
+})
