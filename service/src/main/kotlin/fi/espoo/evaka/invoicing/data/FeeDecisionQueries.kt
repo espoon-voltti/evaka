@@ -433,7 +433,9 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
         .merge()
-        .firstOrNull()
+        .firstOrNull()?.let {
+            it.copy(isElementaryFamily = isElementaryFamily(it.headOfFamily.id, it.partner?.id, it.children.map { it.child.id }))
+        }
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(

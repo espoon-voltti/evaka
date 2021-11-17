@@ -269,19 +269,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchValueDecisions(status = "SENT", searchTerms = "Ricky").total)
         assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
     }
-
-    @Test
-    fun `value decision indicates an elementary family when child is the child of both parents`() {
-        createPlacement(startDate, endDate)
-        sendAllValueDecisions()
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
-        }
-    }
-
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 

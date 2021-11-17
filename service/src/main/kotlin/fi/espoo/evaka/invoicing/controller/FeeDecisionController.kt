@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
-import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -135,12 +134,8 @@ class FeeDecisionController(
     fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read {
-            it.getFeeDecision(uuid)?.let { fd ->
-                val isElementaryFamily = it.isElementaryFamily(fd.headOfFamily.id, fd.partner?.id, fd.children.map { it.child.id })
-                fd.copy(isElementaryFamily = isElementaryFamily)
-            }
-        } ?: throw NotFound("No fee decision found with given ID ($uuid)")
+        val res = db.read { it.getFeeDecision(uuid) }
+            ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
