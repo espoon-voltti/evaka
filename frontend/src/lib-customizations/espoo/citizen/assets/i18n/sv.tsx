@@ -94,7 +94,7 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
-      personalDetails: 'Egen information',
+      personalDetails: 'Personuppgifter',
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
@@ -1238,29 +1238,30 @@ const sv: Translations = {
     download: 'Ladda ner'
   },
   personalDetails: {
-    title: 'Omat tiedot',
+    title: 'Personuppgifter',
     description: (
       <P>
-        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
-        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
-        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
+        Här kan du kontrollera och komplettera dina egna person- och
+        kontaktuppgifter. Vi hämtar ditt namn och din adress i
+        befolkningsdatasystemet och om de ändras ska du göra en anmälan till
+        myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
     noEmailAlert:
-      'Sähköpostiosoitteesi puuttuu. Ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset.',
-    personalInfo: 'Henkilötiedot',
-    name: 'Nimi',
-    preferredName: 'Kutsumanimi',
-    contactInfo: 'Yhteystiedot',
-    address: 'Osoite',
-    phone: 'Puhelinnumero',
-    backupPhone: 'Varapuhelinnumero',
-    backupPhonePlaceholder: 'Esim. työpuhelin',
-    email: 'Sähköpostiosoite',
-    emailMissing: 'Sähköpostiosoite puuttuu',
-    noEmail: 'Minulla ei ole sähköpostiosoitetta',
+      'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
+    personalInfo: 'Personuppgifter',
+    name: 'Namn',
+    preferredName: 'Tilltalsnamn',
+    contactInfo: 'Kontakt information',
+    address: 'Adress',
+    phone: 'Telefonnummer',
+    backupPhone: 'Reservtelefonnummer',
+    backupPhonePlaceholder: 'T.ex. arbetstelefon',
+    email: 'E-postadress',
+    emailMissing: 'E-postadress saknas',
+    noEmail: 'Jag har ingen e-postadress',
     emailInfo:
-      'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+      'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
   },
   income: {
     title: 'Inkomstuppgifter',

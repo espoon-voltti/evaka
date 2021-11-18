@@ -120,7 +120,6 @@ interface BaseFeatureFlags {
     ai?: boolean
     messageAttachments?: boolean
     realtimeStaffAttendance?: boolean
-    personalDetailsPage?: boolean
   }
 }
 

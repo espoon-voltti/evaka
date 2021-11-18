@@ -94,7 +94,7 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
-      personalDetails: 'Personal details',
+      personalDetails: 'Personal information',
       income: 'Income',
       messages: 'Messages',
       calendar: 'Calendar',
@@ -1287,29 +1287,30 @@ const en: Translations = {
     download: 'Download'
   },
   personalDetails: {
-    title: 'Omat tiedot',
+    title: 'Personal information',
     description: (
       <P>
-        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
-        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
-        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
+        Here you can check and update your personal and contact information.
+        Your name and address are retrieved from the Population Information
+        System. If they change, you will need to inform the Digital and
+        Population Data Services Agency (DVV).
       </P>
     ),
     noEmailAlert:
-      'Sähköpostiosoitteesi puuttuu. Ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset.',
-    personalInfo: 'Henkilötiedot',
-    name: 'Nimi',
-    preferredName: 'Kutsumanimi',
-    contactInfo: 'Yhteystiedot',
-    address: 'Osoite',
-    phone: 'Puhelinnumero',
-    backupPhone: 'Varapuhelinnumero',
-    backupPhonePlaceholder: 'Esim. työpuhelin',
-    email: 'Sähköpostiosoite',
-    emailMissing: 'Sähköpostiosoite puuttuu',
-    noEmail: 'Minulla ei ole sähköpostiosoitetta',
+      'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
+    personalInfo: 'Personal information',
+    name: 'Name',
+    preferredName: 'Preferred first name',
+    contactInfo: 'Contact information',
+    address: 'Address',
+    phone: 'Phone number',
+    backupPhone: 'Additional phone number',
+    backupPhonePlaceholder: 'Eg. work phone number',
+    email: 'Email',
+    emailMissing: 'Email missing',
+    noEmail: 'I have no email address',
     emailInfo:
-      'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+      'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
   },
   income: {
     title: 'Income information',

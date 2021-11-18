@@ -27,8 +27,7 @@ const features: Features = {
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
-      personalDetailsPage: true
+      realtimeStaffAttendance: false
     }
   },
   staging: {
@@ -46,8 +45,7 @@ const features: Features = {
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: true,
-      personalDetailsPage: true
+      realtimeStaffAttendance: true
     }
   },
   prod: {
@@ -65,8 +63,7 @@ const features: Features = {
     experimental: {
       ai: false,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
-      personalDetailsPage: false
+      realtimeStaffAttendance: false
     }
   }
 }
