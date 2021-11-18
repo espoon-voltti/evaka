@@ -15,13 +15,11 @@ import {
   PersonResponse,
   PersonWithChildrenDTO
 } from 'lib-common/generated/api-types/pis'
-import { Income } from '../types/income'
-import { Loading, Paged, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { Action } from 'lib-common/generated/action'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { getPersonDetails } from '../api/person'
@@ -30,16 +28,12 @@ import { UUID } from 'lib-common/types'
 export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
-  incomes: Result<Income[]>
-  incomeStatements: Result<Paged<IncomeStatement>>
   applications: Result<PersonApplicationSummary[]>
   dependants: Result<PersonWithChildrenDTO[]>
   decisions: Result<Decision[]>
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
   setPerson: (person: PersonJSON) => void
-  setIncomes: (r: Result<Income[]>) => void
-  setIncomeStatements: (r: Result<Paged<IncomeStatement>>) => void
   setApplications: (r: Result<PersonApplicationSummary[]>) => void
   setDependants: (r: Result<PersonWithChildrenDTO[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
@@ -51,16 +45,12 @@ export interface PersonState {
 const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
-  incomes: Loading.of(),
-  incomeStatements: Loading.of(),
   applications: Loading.of(),
   dependants: Loading.of(),
   decisions: Loading.of(),
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
-  setIncomes: () => undefined,
-  setIncomeStatements: () => undefined,
   setApplications: () => undefined,
   setDependants: () => undefined,
   setDecisions: () => undefined,
@@ -119,10 +109,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   )
 
   const [applications, setApplications] = useState(defaultState.applications)
-  const [incomes, setIncomes] = useState(defaultState.incomes)
-  const [incomeStatements, setIncomeStatements] = useState(
-    defaultState.incomeStatements
-  )
   const [dependants, setDependants] = useState(defaultState.dependants)
   const [decisions, setDecisions] = useState(defaultState.decisions)
   const [invoices, setInvoices] = useState(defaultState.invoices)
@@ -136,10 +122,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setApplications,
       dependants,
       setDependants,
-      incomes,
-      setIncomes,
-      incomeStatements,
-      setIncomeStatements,
       decisions,
       setDecisions,
       family,
@@ -154,8 +136,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       permittedActions,
       applications,
       dependants,
-      incomes,
-      incomeStatements,
       decisions,
       family,
       invoices,
