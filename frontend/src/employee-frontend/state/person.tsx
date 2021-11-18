@@ -12,7 +12,6 @@ import React, {
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { Loading, Result } from 'lib-common/api'
-import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
@@ -23,11 +22,9 @@ import { UUID } from 'lib-common/types'
 export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
-  decisions: Result<Decision[]>
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
   setPerson: (person: PersonJSON) => void
-  setDecisions: (r: Result<Decision[]>) => void
   setFamily: (r: Result<FamilyOverview>) => void
   setInvoices: (r: Result<Invoice[]>) => void
   reloadFamily: (id: string) => void
@@ -36,11 +33,9 @@ export interface PersonState {
 const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
-  decisions: Loading.of(),
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
-  setDecisions: () => undefined,
   setFamily: () => undefined,
   setInvoices: () => undefined,
   reloadFamily: (_id: string) => undefined
@@ -95,7 +90,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     [id, reloadFamily]
   )
 
-  const [decisions, setDecisions] = useState(defaultState.decisions)
   const [invoices, setInvoices] = useState(defaultState.invoices)
 
   const value = useMemo<PersonState>(
@@ -103,23 +97,13 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       person,
       setPerson,
       permittedActions,
-      decisions,
-      setDecisions,
       family,
       setFamily,
       invoices,
       setInvoices,
       reloadFamily
     }),
-    [
-      person,
-      setPerson,
-      permittedActions,
-      decisions,
-      family,
-      invoices,
-      reloadFamily
-    ]
+    [person, setPerson, permittedActions, family, invoices, reloadFamily]
   )
 
   return (
