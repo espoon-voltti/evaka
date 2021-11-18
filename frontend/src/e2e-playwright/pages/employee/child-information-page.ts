@@ -74,3 +74,39 @@ export default class ChildInformationPage {
       .click()
   }
 }
+
+export class ChildAssistanceNeed {
+  constructor(private page: Page) {}
+
+  #createAssistanceNeedButton = this.page.locator(
+    '[data-qa="assistance-need-create-btn"]'
+  )
+  #assistanceNeedDescriptionInput = this.page.locator(
+    '[data-qa="input-assistance-need-description"]'
+  )
+  #confirmAssistanceNeedButton = this.page.locator(
+    '[data-qa="button-assistance-need-confirm"]'
+  )
+  #assistanceNeedDescription = this.page.locator(
+    '[data-qa="assistance-need-description"]'
+  )
+
+  async createNewAssistanceNeed() {
+    await this.#createAssistanceNeedButton.click()
+  }
+
+  async setAssistanceNeedDescription(description: string) {
+    await this.#assistanceNeedDescriptionInput.type(description)
+  }
+
+  async confirmAssistanceNeed() {
+    await this.#confirmAssistanceNeedButton.click()
+  }
+
+  async assertAssistanceNeedDescription(expected: string, nth = 0) {
+    await waitUntilEqual(
+      () => this.#assistanceNeedDescription.nth(nth).innerText(),
+      expected
+    )
+  }
+}
