@@ -11,26 +11,13 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
   AttendanceResponse,
-  Child,
-  ChildSensitiveInformation
+  Child
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { AbsenceType, CareType } from '../types'
-import { mapPinLoginRequiredError, PinLoginRequired } from './auth-pin-login'
 import { client } from './client'
-
-export const getChildSensitiveInformation = (
-  childId: string
-): Promise<Result<ChildSensitiveInformation | PinLoginRequired>> =>
-  client
-    .get<JsonOf<ChildSensitiveInformation>>(
-      `/children/${childId}/sensitive-info`
-    )
-    .then((res) => res.data)
-    .then((v) => Success.of(v))
-    .catch(mapPinLoginRequiredError)
 
 export async function getDaycareAttendances(
   unitId: string

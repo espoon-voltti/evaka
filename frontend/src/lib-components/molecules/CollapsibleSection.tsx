@@ -105,7 +105,7 @@ export default React.memo(function CollapsibleSection({
             <FontAwesomeIcon icon={icon} />
           </IconWrapper>
         )}
-        <H3 bold fitted>
+        <H3 bold fitted noMargin={fitted}>
           {title}
         </H3>
         <ToggleWrapper

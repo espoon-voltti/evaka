@@ -63,6 +63,7 @@ export const fi = {
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
     minuteShort: 'min',
+    yearsShort: 'v',
     errors: {
       minutes: 'Korkeintaan 59 minuuttia'
     },
@@ -211,7 +212,7 @@ export const fi = {
       personalInfoHeader: 'Lapsen henkilötiedot',
       childName: 'Lapsen nimi',
       preferredName: 'Kutsumanimi',
-      ssn: 'Hetu',
+      dateOfBirth: 'Syntymäaika',
       address: 'Lapsen kotiosoite',
       type: 'Sijoitusmuoto',
       allergiesHeader: 'Allergiat, ruokavalio, lääkitys',

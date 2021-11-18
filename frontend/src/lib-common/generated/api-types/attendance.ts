@@ -107,41 +107,6 @@ export interface ChildAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildResult
-*/
-export interface ChildResult {
-  child: ChildSensitiveInformation | null
-  status: ChildResultStatus
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildResultStatus
-*/
-export type ChildResultStatus = 
-  | 'SUCCESS'
-  | 'WRONG_PIN'
-  | 'PIN_LOCKED'
-  | 'NOT_FOUND'
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildSensitiveInformation
-*/
-export interface ChildSensitiveInformation {
-  allergies: string
-  backupPickups: ContactInfo[]
-  childAddress: string
-  contacts: ContactInfo[]
-  diet: string
-  firstName: string
-  id: UUID
-  lastName: string
-  medication: string
-  placementTypes: PlacementType[]
-  preferredName: string
-  ssn: string
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.ContactInfo
 */
 export interface ContactInfo {
@@ -194,14 +159,6 @@ export interface ExternalStaffMember {
 */
 export interface FullDayAbsenceRequest {
   absenceType: AbsenceType
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.GetChildSensitiveInfoRequest
-*/
-export interface GetChildSensitiveInfoRequest {
-  pin: string
-  staffId: UUID
 }
 
 /**
