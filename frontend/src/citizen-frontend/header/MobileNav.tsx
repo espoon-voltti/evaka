@@ -27,7 +27,6 @@ import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
 import AttentionIndicator from './AttentionIndicator'
-import { featureFlags } from 'lib-customizations/citizen'
 
 type Props = {
   showMenu: boolean
@@ -54,8 +53,7 @@ export default React.memo(function MobileNav({
     !showMenu &&
     (unreadMessagesCount > 0 ||
       unreadPedagogicalDocumentsCount > 0 ||
-      ((featureFlags.experimental?.personalDetailsPage ?? false) &&
-        user?.email === null))
+      user?.email === null)
 
   return (
     <Container ref={ref} data-qa="mobile-nav">
@@ -347,10 +345,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
     <>
       <SubMenuButton onClick={toggleShow} data-qa="user-menu-title-mobile">
         <AttentionIndicator
-          toggled={
-            (featureFlags.experimental?.personalDetailsPage ?? false) &&
-            user.email === null
-          }
+          toggled={user.email === null}
           data-qa="attention-indicator-mobile"
         >
           <FontAwesomeIcon icon={faUser} size="lg" />
@@ -365,22 +360,20 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
       </SubMenuButton>
       {show && (
         <Nav>
-          {featureFlags.experimental?.personalDetailsPage && (
-            <SubMenuLink
-              to="/personal-details"
-              onClick={close}
-              data-qa="nav-personal-details"
-            >
-              {t.header.nav.personalDetails}
-              {user.email === null && (
-                <FontAwesomeIcon
-                  icon={faCircleExclamation}
-                  size="lg"
-                  data-qa="personal-details-attention-indicator-mobile"
-                />
-              )}
-            </SubMenuLink>
-          )}
+          <SubMenuLink
+            to="/personal-details"
+            onClick={close}
+            data-qa="nav-personal-details"
+          >
+            {t.header.nav.personalDetails}
+            {user.email === null && (
+              <FontAwesomeIcon
+                icon={faCircleExclamation}
+                size="lg"
+                data-qa="personal-details-attention-indicator-mobile"
+              />
+            )}
+          </SubMenuLink>
           <SubMenuLink to="/income" onClick={close} data-qa="nav-income">
             {t.header.nav.income} {lock}
           </SubMenuLink>
