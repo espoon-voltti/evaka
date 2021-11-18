@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { Loading, Result } from 'lib-common/api'
 import { Invoice } from '../types/invoicing'
@@ -25,9 +25,8 @@ export interface PersonState {
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
   setPerson: (person: PersonJSON) => void
-  setFamily: (r: Result<FamilyOverview>) => void
   setInvoices: (r: Result<Invoice[]>) => void
-  reloadFamily: (id: string) => void
+  reloadFamily: () => void
 }
 
 const defaultState: PersonState = {
@@ -36,9 +35,8 @@ const defaultState: PersonState = {
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
-  setFamily: () => undefined,
   setInvoices: () => undefined,
-  reloadFamily: (_id: string) => undefined
+  reloadFamily: () => undefined
 }
 
 const emptyPermittedActions: Set<Action.Person> = new Set()
@@ -72,9 +70,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   const loadPerson = useRestApi(getPersonDetails, setFullPersonResponse)
   useEffect(() => loadPerson(id), [loadPerson, id])
 
-  const [family, setFamily] = useState(defaultState.family)
-  const loadFamily = useRestApi(getFamilyOverview, setFamily)
-  const reloadFamily = useCallback((id: string) => loadFamily(id), [loadFamily])
+  const [family, reloadFamily] = useApiState(() => getFamilyOverview(id), [id])
 
   const person = useMemo(
     () => personResponse.map((response) => response.person),
@@ -85,9 +81,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setPersonResponse((prev) =>
         prev.map((response) => ({ ...response, person }))
       )
-      reloadFamily(id)
+      reloadFamily()
     },
-    [id, reloadFamily]
+    [reloadFamily]
   )
 
   const [invoices, setInvoices] = useState(defaultState.invoices)
@@ -98,7 +94,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setPerson,
       permittedActions,
       family,
-      setFamily,
       invoices,
       setInvoices,
       reloadFamily

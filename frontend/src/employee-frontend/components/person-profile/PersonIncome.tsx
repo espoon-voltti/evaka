@@ -103,8 +103,8 @@ const Incomes = React.memo(function Incomes({ personId }: { personId: UUID }) {
   // FIXME: This component shouldn't know about family's dependency on its data
   const reloadIncomes = useCallback(() => {
     loadIncomes()
-    reloadFamily(personId)
-  }, [personId, loadIncomes, reloadFamily])
+    reloadFamily()
+  }, [loadIncomes, reloadFamily])
   useEffect(reloadIncomes, [reloadIncomes])
 
   useEffect(() => {

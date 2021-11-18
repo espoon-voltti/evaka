@@ -48,7 +48,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
   // FIXME: This component shouldn't know about family's dependency on its data
   const reload = () => {
     loadData()
-    reloadFamily(id)
+    reloadFamily()
   }
 
   const getFridgeChildById = (id: UUID) => {
