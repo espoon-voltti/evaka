@@ -5,3 +5,4 @@
 *
 !target
 !entrypoint.sh
+!dd-jmxfetch/*
