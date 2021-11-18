@@ -88,14 +88,6 @@ enum class Audit(
     ChildStickyNoteDelete("evaka.child-sticky-note.delete"),
     ChildVasuDocumentsRead("evaka.child.vasu-documents.read"),
     CitizenLogin("evaka.citizen.login", securityEvent = true, securityLevel = "high"),
-    @Deprecated("use ChildDailyNoteCreate or GroupNoteCreate")
-    DaycareDailyNoteCreate("evaka.daycare-daily-note.create"),
-    @Deprecated("use ChildDailyNoteUpdate or GroupNoteUpdate")
-    DaycareDailyNoteUpdate("evaka.daycare-daily-note.update"),
-    @Deprecated("use NotesByChildRead or NotesByGroupRead")
-    DaycareDailyNoteRead("evaka.daycare-daily-note.read"),
-    @Deprecated("use ChildDailyNoteDelete or GroupNoteDelete")
-    DaycareDailyNoteDelete("evaka.daycare-daily-note.delete"),
     DaycareGroupPlacementCreate("evaka.daycare-group-placement.create"),
     DaycareGroupPlacementDelete("evaka.daycare-group-placement.delete"),
     DaycareGroupPlacementTransfer("evaka.daycare-group-placement.transfer"),

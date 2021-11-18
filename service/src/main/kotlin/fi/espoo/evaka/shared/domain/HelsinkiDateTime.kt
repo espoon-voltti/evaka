@@ -18,7 +18,6 @@ import java.time.LocalTime
 import java.time.Month
 import java.time.ZonedDateTime
 
-fun Instant.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
 fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
 
 /**

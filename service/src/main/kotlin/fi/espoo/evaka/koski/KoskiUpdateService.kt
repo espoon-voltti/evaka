@@ -30,9 +30,6 @@ class KoskiUpdateService(
         asyncJobRunner.registerHandler { db, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, msg.params) }
     }
 
-    fun scheduleKoskiUploads(db: Database, params: KoskiSearchParams) = db.connect {
-        scheduleKoskiUploads(it, params)
-    }
     fun scheduleKoskiUploads(db: Database.Connection, params: KoskiSearchParams) {
         if (env.koskiEnabled) {
             db.transaction { tx ->

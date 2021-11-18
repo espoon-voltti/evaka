@@ -35,9 +35,6 @@ class FamilyInitializerService(
         asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
-    fun handleInitializeFamilyFromApplication(db: Database, msg: AsyncJob.InitializeFamilyFromApplication) =
-        db.connect { handleInitializeFamilyFromApplication(it, msg) }
-
     fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: AsyncJob.InitializeFamilyFromApplication) {
         val user = msg.user
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
