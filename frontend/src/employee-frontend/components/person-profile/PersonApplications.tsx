@@ -8,90 +8,27 @@ import { Link } from 'react-router-dom'
 
 import { faFileAlt } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
-import { useEffect } from 'react'
-import { Loading } from 'lib-common/api'
-import { useContext } from 'react'
-import { PersonContext } from '../../state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { UUID } from 'lib-common/types'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   id: UUID
   open: boolean
 }
 
-const PersonApplications = React.memo(function PersonApplications({
-  id,
-  open
-}: Props) {
+export default React.memo(function PersonApplications({ id, open }: Props) {
   const { i18n } = useTranslation()
-  const { applications, setApplications } = useContext(PersonContext)
-
-  useEffect(() => {
-    setApplications(Loading.of())
-    void getGuardianApplicationSummaries(id).then((response) => {
-      setApplications(response)
-    })
-  }, [id, setApplications])
-
-  const renderApplications = () =>
-    applications.isSuccess
-      ? _.orderBy(
-          applications.value,
-          ['preferredStartDate', 'preferredUnitName'],
-          ['desc', 'desc']
-        ).map((application: PersonApplicationSummary) => {
-          return (
-            <Tr
-              key={`${application.applicationId}`}
-              data-qa="table-application-row"
-            >
-              <NameTd data-qa="application-child-name">
-                <Link to={`/child-information/${application.childId}`}>
-                  {application.childName}
-                </Link>
-              </NameTd>
-              <Td data-qa="application-preferred-unit-id">
-                <Link to={`/units/${application.preferredUnitId ?? ''}`}>
-                  {application.preferredUnitName}
-                </Link>
-              </Td>
-              <DateTd data-qa="application-start-date">
-                {application.preferredStartDate?.format()}
-              </DateTd>
-              <DateTd data-qa="application-sent-date">
-                {application.sentDate?.format()}
-              </DateTd>
-              <Td data-qa="application-type">
-                {
-                  i18n.personProfile.application.types[
-                    inferApplicationType(application)
-                  ]
-                }
-              </Td>
-              <StatusTd>
-                {i18n.personProfile.application.statuses[application.status] ??
-                  application.status}
-              </StatusTd>
-              <Td>
-                <Link to={`/applications/${application.applicationId}`}>
-                  <IconButton
-                    onClick={() => undefined}
-                    icon={faFileAlt}
-                    altText={i18n.personProfile.application.open}
-                  />
-                </Link>
-              </Td>
-            </Tr>
-          )
-        })
-      : null
+  const [applications] = useApiState(
+    () => getGuardianApplicationSummaries(id),
+    [id]
+  )
 
   return (
     <div>
@@ -101,28 +38,77 @@ const PersonApplications = React.memo(function PersonApplications({
         startCollapsed={!open}
         data-qa="person-applications-collapsible"
       >
-        <Table data-qa="table-of-applications">
-          <Thead>
-            <Tr>
-              <Th>{i18n.personProfile.application.child}</Th>
-              <Th>{i18n.personProfile.application.preferredUnit}</Th>
-              <Th>{i18n.personProfile.application.startDate}</Th>
-              <Th>{i18n.personProfile.application.sentDate}</Th>
-              <Th>{i18n.personProfile.application.type}</Th>
-              <Th>{i18n.personProfile.application.status}</Th>
-              <Th>{i18n.personProfile.application.open}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>{renderApplications()}</Tbody>
-        </Table>
-        {applications.isLoading && <Loader />}
-        {applications.isFailure && <div>{i18n.common.loadingFailed}</div>}
+        {renderResult(applications, (applications) => (
+          <Table data-qa="table-of-applications">
+            <Thead>
+              <Tr>
+                <Th>{i18n.personProfile.application.child}</Th>
+                <Th>{i18n.personProfile.application.preferredUnit}</Th>
+                <Th>{i18n.personProfile.application.startDate}</Th>
+                <Th>{i18n.personProfile.application.sentDate}</Th>
+                <Th>{i18n.personProfile.application.type}</Th>
+                <Th>{i18n.personProfile.application.status}</Th>
+                <Th>{i18n.personProfile.application.open}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {_.orderBy(
+                applications,
+                ['preferredStartDate', 'preferredUnitName'],
+                ['desc', 'desc']
+              ).map((application: PersonApplicationSummary) => {
+                return (
+                  <Tr
+                    key={`${application.applicationId}`}
+                    data-qa="table-application-row"
+                  >
+                    <NameTd data-qa="application-child-name">
+                      <Link to={`/child-information/${application.childId}`}>
+                        {application.childName}
+                      </Link>
+                    </NameTd>
+                    <Td data-qa="application-preferred-unit-id">
+                      <Link to={`/units/${application.preferredUnitId ?? ''}`}>
+                        {application.preferredUnitName}
+                      </Link>
+                    </Td>
+                    <DateTd data-qa="application-start-date">
+                      {application.preferredStartDate?.format()}
+                    </DateTd>
+                    <DateTd data-qa="application-sent-date">
+                      {application.sentDate?.format()}
+                    </DateTd>
+                    <Td data-qa="application-type">
+                      {
+                        i18n.personProfile.application.types[
+                          inferApplicationType(application)
+                        ]
+                      }
+                    </Td>
+                    <StatusTd>
+                      {i18n.personProfile.application.statuses[
+                        application.status
+                      ] ?? application.status}
+                    </StatusTd>
+                    <Td>
+                      <Link to={`/applications/${application.applicationId}`}>
+                        <IconButton
+                          onClick={() => undefined}
+                          icon={faFileAlt}
+                          altText={i18n.personProfile.application.open}
+                        />
+                      </Link>
+                    </Td>
+                  </Tr>
+                )
+              })}
+            </Tbody>
+          </Table>
+        ))}
       </CollapsibleSection>
     </div>
   )
 })
-
-export default PersonApplications
 
 export function inferApplicationType(application: PersonApplicationSummary) {
   const baseType = application.type.toUpperCase()

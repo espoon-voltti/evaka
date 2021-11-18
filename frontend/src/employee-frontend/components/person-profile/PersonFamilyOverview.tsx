@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -16,16 +16,14 @@ import { PersonContext } from '../../state/person'
 import {
   FamilyOverview,
   FamilyOverviewPerson,
-  FamilyOverviewRow,
-  FamilyOverviewPersonRole
+  FamilyOverviewPersonRole,
+  FamilyOverviewRow
 } from '../../types/family-overview'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { formatName } from '../../utils'
-import { UUID } from 'lib-common/types'
 
 interface Props {
-  id: UUID
   open: boolean
 }
 
@@ -77,9 +75,9 @@ function getAdults(family: FamilyOverview): FamilyOverviewPerson[] {
   return partner ? [headOfFamily, partner] : [headOfFamily]
 }
 
-const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
+const FamilyOverview = React.memo(function FamilyOverview({ open }: Props) {
   const { i18n } = useTranslation()
-  const { family, setFamily, reloadFamily } = useContext(PersonContext)
+  const { family } = useContext(PersonContext)
 
   function getIncomeString(
     incomeTotal: number | undefined,
@@ -100,10 +98,6 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
 
     return i18n.personProfile.familyOverview.incomeMissingCompletely
   }
-
-  useEffect(() => {
-    void reloadFamily(id)
-  }, [id, setFamily]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const familyIncomeTotal = family
     .map(({ totalIncome }) => formatCents(totalIncome?.total))
