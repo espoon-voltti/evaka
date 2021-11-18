@@ -6,7 +6,8 @@ import {
   CheckboxQuestion,
   MultiSelectQuestion,
   RadioGroupQuestion,
-  TextQuestion
+  TextQuestion,
+  Followup
 } from '../vasu-content'
 
 export interface QuestionProps<
@@ -15,6 +16,7 @@ export interface QuestionProps<
     | CheckboxQuestion
     | RadioGroupQuestion
     | MultiSelectQuestion
+    | Followup
 > {
   questionNumber: string
   question: T

@@ -90,7 +90,8 @@ export default React.memo(function CreateQuestionModal({
           type: 'FOLLOWUP',
           ophKey: null,
           name: name,
-          info: info
+          info: info,
+          title: ''
         }
     }
   }

@@ -4,14 +4,16 @@
 
 import { cloneDeep } from 'lodash'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
+import { last } from 'lodash'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
+import FollowupQuestionElem from '../components/FollowupQuestion'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
@@ -50,11 +52,11 @@ export function DynamicSections({
   state,
   translations
 }: Props) {
-  const renderGapsBetweenSections = !!setContent
   const content = sections.map((section, sectionIndex) => {
+    const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
-        <ContentArea opaque>
+        <SectionContent opaque padBottom={!isLastQuestionFollowup}>
           <H2>
             {sectionIndex + 1 + sectionOffset}. {section.name}
           </H2>
@@ -166,24 +168,37 @@ export function DynamicSections({
                       translations={translations}
                     />
                   ) : isFollowup(question) && state !== 'DRAFT' ? (
-                    /* TODO: temporarily rendered as a text question */
-                    <TextQuestionElem
-                      question={{ ...question, multiline: true, value: '' }}
+                    <FollowupQuestionElem
+                      question={question}
                       questionNumber={questionNumber}
                       translations={translations}
+                      onChange={
+                        setContent
+                          ? (_value: string) =>
+                              setContent((prev) => {
+                                return prev
+                              })
+                          : undefined
+                      }
                     />
                   ) : undefined}
                 </Fragment>
               )
             })}
           </Questions>
-        </ContentArea>
-        {renderGapsBetweenSections && <Gap size={'L'} />}
+        </SectionContent>
       </Fragment>
     )
   })
   return <>{content}</>
 }
+
+const SectionContent = styled(ContentArea)<{ padBottom: boolean }>`
+  /* make selector specific enough */
+  && {
+    padding-bottom: ${(p) => (p.padBottom ? defaultMargins.L : '0px')};
+  }
+`
 
 const Questions = styled.div`
   display: flex;
