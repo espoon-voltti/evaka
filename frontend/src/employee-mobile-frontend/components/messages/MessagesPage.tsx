@@ -16,6 +16,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { HeaderContainer, MessagePreview } from './MessagePreview'
 import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+
 export default function MessagesPage() {
   const history = useHistory()
   const { unitId, groupId: groupIdOrAll } = useParams<{
@@ -40,6 +41,8 @@ export default function MessagesPage() {
   const {
     loadNestedAccounts,
     selectedAccount,
+    setSelectedAccount,
+    nestedAccounts,
     refreshMessages,
     receivedMessages,
     selectedThread,
@@ -49,6 +52,18 @@ export default function MessagesPage() {
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => refreshMessages(), [refreshMessages])
+
+  useEffect(() => {
+    if (!selectedGroup) return
+
+    const groupAccount = nestedAccounts.isSuccess
+      ? nestedAccounts.value.find(
+          ({ daycareGroup }) => daycareGroup?.id === selectedGroup.id
+        )?.account
+      : undefined
+
+    if (groupAccount) setSelectedAccount(groupAccount)
+  }, [selectedGroup, nestedAccounts, setSelectedAccount])
 
   const { i18n } = useTranslation()
 

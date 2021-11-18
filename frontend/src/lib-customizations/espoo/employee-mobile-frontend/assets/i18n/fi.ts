@@ -289,7 +289,7 @@ export const fi = {
     loggedIn: 'Kirjautunut sisään'
   },
   messages: {
-    title: 'Viestit',
+    title: 'Saapuneet viestit',
     inputPlaceholder: 'Kirjoita...',
     messageEditor: {
       newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
@@ -346,6 +346,9 @@ export const fi = {
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  childButtons: {
+    newMessage: 'Uusi viesti'
   },
   fileUpload: {
     upload: {

@@ -58,8 +58,8 @@ export default function MessageEditorPage() {
     void getReceivers(unitId).then(
       (result: Result<MessageReceiversResponse[]>) => {
         if (result.isSuccess) {
-          const child = result.value.map(({ receivers }) =>
-            receivers.find((r) => r.childId === childId)
+          const child = result.value.flatMap(({ receivers }) =>
+            receivers.filter((r) => r.childId === childId)
           )[0]
           if (!child) return
           setSelectedReceivers(receiverAsSelectorNode(child))

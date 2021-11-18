@@ -366,16 +366,20 @@ export default React.memo(function MessageEditor({
           <Bold>{i18n.receivers}</Bold>
           <Gap size={'xs'} />
         </div>
-        <MultiSelect
-          placeholder={i18n.search}
-          value={selectedReceivers}
-          options={receiverOptions}
-          onChange={updateReceiverTree}
-          noOptionsMessage={i18n.noResults}
-          getOptionId={({ value }) => value}
-          getOptionLabel={({ label }) => label}
-          data-qa="select-receiver"
-        />
+        {receiverOptions.length > 1 ? (
+          <MultiSelect
+            placeholder={i18n.search}
+            value={selectedReceivers}
+            options={receiverOptions}
+            onChange={updateReceiverTree}
+            noOptionsMessage={i18n.noResults}
+            getOptionId={({ value }) => value}
+            getOptionLabel={({ label }) => label}
+            data-qa="select-receiver"
+          />
+        ) : (
+          message.recipientNames.join(', ')
+        )}
         <Gap size={'s'} />
         <Bold>{i18n.title}</Bold>
         <InputField

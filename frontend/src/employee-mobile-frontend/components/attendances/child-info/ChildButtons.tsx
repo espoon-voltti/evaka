@@ -45,7 +45,7 @@ export default React.memo(function ChildButtons({
             content={faComments}
             color={colors.main.primary}
             size="XL"
-            label={i18n.common.messages}
+            label={i18n.childButtons.newMessage}
           />
         </Link>
         <Link
