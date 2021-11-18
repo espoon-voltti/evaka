@@ -20,6 +20,10 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
+fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) = this.createUpdate("UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id")
+    .bind("id", evakaChildId)
+    .execute()
+
 fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
     this.createQuery(
         """
