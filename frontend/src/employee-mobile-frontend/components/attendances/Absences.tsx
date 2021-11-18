@@ -2,46 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Child } from 'lib-common/generated/api-types/attendance'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Label } from 'lib-components/typography'
 import React from 'react'
 import styled from 'styled-components'
-
-import Title from 'lib-components/atoms/Title'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { formatCareType } from '../../types'
-import { Child } from 'lib-common/generated/api-types/attendance'
 
-const CustomLabel = styled(Label)`
-  min-width: 150px;
-  display: inline-block;
+const AbsenceLabels = styled.div`
+  text-align: center;
 `
 
-const AbsencesTitle = styled(Title)`
-  font-size: 18px;
-`
-
-interface ChildListItemProps {
+interface Props {
   child: Child
 }
 
-export default React.memo(function Absences({ child }: ChildListItemProps) {
+export default React.memo(function Absences({ child }: Props) {
   const { i18n } = useTranslation()
 
   if (child.absences.length === 0) return null
 
+  const absenceCareTypes = child.absences
+    .map(({ careType }) => formatCareType(careType, child.placementType, i18n))
+    .join(', ')
   return (
-    <FixedSpaceColumn>
-      <AbsencesTitle size={2}>{i18n.absences.title}</AbsencesTitle>
+    <>
+      <HorizontalLine slim />
 
-      {child.absences.map((absence) => (
-        <div key={absence.id} data-qa="absence">
-          <CustomLabel>
-            {formatCareType(absence.careType, child.placementType, i18n)}
-          </CustomLabel>
-          <span>{i18n.absences.absence}</span>
-        </div>
-      ))}
-    </FixedSpaceColumn>
+      <AbsenceLabels>
+        <Label>{i18n.absences.title}</Label>{' '}
+        <span data-qa="absence">{absenceCareTypes}</span>
+      </AbsenceLabels>
+    </>
   )
 })

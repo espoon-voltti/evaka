@@ -84,7 +84,7 @@ export const fi = {
     title: 'Jotain meni pieleen'
   },
   absences: {
-    title: 'Poissaolomerkinnät',
+    title: 'Poissaolomerkintä',
     absenceTypes: {
       OTHER_ABSENCE: 'Muu poissaolo',
       SICKLEAVE: 'Sairaus',
@@ -104,7 +104,6 @@ export const fi = {
       DAYCARE: 'Varhaiskasvatus',
       CLUB: 'Kerho'
     },
-    absence: 'Poissaolo',
     chooseStartDate: 'Valitse tuleva päivä',
     startBeforeEnd: 'Aloitus oltava ennen päättymispäivää.',
     reason: 'Poissaolon syy',
