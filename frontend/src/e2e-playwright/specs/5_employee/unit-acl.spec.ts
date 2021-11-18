@@ -17,7 +17,7 @@ import UnitPage from 'e2e-playwright/pages/employee/units/unit'
 import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilSuccess } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
@@ -26,10 +26,14 @@ let unitPage: UnitPage
 let staffId: UUID
 const groupId: UUID = uuidv4()
 
+const taunoFirstname = 'Tauno'
+const taunoLastname = 'Testimies'
+const taunoName = `${taunoFirstname} ${taunoLastname}`
+const taunoEmail = 'tauno.testimies@example.com'
 const tauno: EmployeeDetail = {
-  email: 'tauno.testimies@example.com',
-  firstName: 'Tauno',
-  lastName: 'Testimies',
+  email: taunoEmail,
+  firstName: taunoFirstname,
+  lastName: taunoLastname,
   roles: []
 }
 
@@ -70,21 +74,21 @@ beforeEach(async () => {
 describe('Employee - unit ACL', () => {
   test('Staff can be assigned/removed to/from groups', async () => {
     async function toggleGroups() {
-      const row = await (
-        await unitInfo.staffAcl.getRow('Tauno Testimies')
-      ).edit()
-      await row.toggleStaffGroups([groupId])
-      await row.save()
+      const row = await waitUntilSuccess(() =>
+        unitInfo.staffAcl.getRow(taunoName)
+      )
+      const rowEditor = await row.edit()
+      await rowEditor.toggleStaffGroups([groupId])
+      await rowEditor.save()
     }
 
     const expectedRow = {
       name: `${tauno.firstName} ${tauno.lastName}`,
-      email: tauno.email!, // eslint-disable-line
+      email: taunoEmail,
       groups: []
     }
-
     const unitInfo = await unitPage.openUnitInformation()
-    await unitInfo.staffAcl.addEmployeeAcl(staffId)
+    await unitInfo.staffAcl.addEmployeeAcl(taunoEmail, staffId)
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
     await toggleGroups()
     await waitUntilEqual(
