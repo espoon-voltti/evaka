@@ -2,19 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { RawElement } from 'e2e-playwright/utils/element'
+import { Locator, Page } from 'playwright'
 import { UUID } from 'lib-common/types'
 
 export default class UnitPage {
   constructor(private readonly page: Page) {}
 
-  readonly #unitInfoTab = new RawElement(this.page, '[data-qa="unit-info-tab"]')
+  readonly #unitInfoTab = this.page.locator('[data-qa="unit-info-tab"]')
 
   async openUnitInformation(): Promise<UnitInformationSection> {
     await this.#unitInfoTab.click()
     const section = new UnitInformationSection(this.page)
-    await section.unitName.waitUntilVisible()
+    await section.waitFor()
     return section
   }
 }
@@ -23,79 +22,84 @@ class UnitInformationSection {
   constructor(private readonly page: Page) {}
 
   readonly staffAcl = new StaffAclSection(
-    this.page,
-    '[data-qa="daycare-acl-staff"]'
+    this.page.locator('[data-qa="daycare-acl-staff"]')
   )
-  readonly unitName = new RawElement(this.page, '[data-qa="unit-name"]')
+
+  async waitFor() {
+    await this.page.locator('[data-qa="unit-name"]').waitFor()
+  }
 }
 
-class StaffAclSection extends RawElement {
-  readonly #table = this.find('[data-qa="acl-table"]')
-  readonly #combobox = this.find('[data-qa="acl-combobox"]')
-  readonly #addButton = this.find('[data-qa="acl-add-button"]')
+class StaffAclSection {
+  constructor(private root: Locator) {}
 
-  async waitUntilLoaded() {
-    await this.#table.waitUntilVisible()
-  }
+  readonly #table = this.root.locator('[data-qa="acl-table"]')
+  readonly #tableRows = this.#table.locator('[data-qa="acl-row"]')
+
+  readonly #combobox = this.root.locator('[data-qa="acl-combobox"]')
+  readonly #addButton = this.root.locator('[data-qa="acl-add-button"]')
+
   async addEmployeeAcl(employeeId: UUID) {
-    await this.waitUntilLoaded()
     await this.#combobox.click()
-    await this.#combobox.find(`[data-qa="value-${employeeId}"]`).click()
+    await this.#combobox.locator(`[data-qa="value-${employeeId}"]`).click()
     await this.#addButton.click()
-    await this.waitUntilLoaded()
+    await this.#table.waitFor()
   }
+
   get rows() {
-    return this.page.$$eval(
-      `${this.#table.selector} [data-qa="acl-row"]`,
-      (rows) =>
-        rows.map((row) => ({
-          name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
-          email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
-          groups: Array.from(
-            row.querySelectorAll('[data-qa="groups"] > div')
-          ).map((element) => element.textContent ?? '')
-        }))
+    return this.#tableRows.evaluateAll((rows) =>
+      rows.map((row) => ({
+        name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
+        email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
+        groups: Array.from(
+          row.querySelectorAll('[data-qa="groups"] > div')
+        ).map((element) => element.textContent ?? '')
+      }))
     )
   }
+
   async getRow(name: string): Promise<StaffAclRow> {
     const rowIndex = (await this.rows).findIndex((row) => row.name === name)
     if (rowIndex < 0) {
       throw new Error(`Row with name ${name} not found`)
     }
     return new StaffAclRow(
-      this.page,
-      `${this.#table.selector} tbody tr:nth-child(${
-        rowIndex + 1
-      })[data-qa="acl-row"]`
+      this.#table.locator(
+        `tbody tr:nth-child(${rowIndex + 1})[data-qa="acl-row"]`
+      )
     )
   }
 }
 
-class StaffAclRow extends RawElement {
-  readonly #editButton = this.find('[data-qa="edit"]')
+class StaffAclRow {
+  constructor(private root: Locator) {}
+
+  readonly #editButton = this.root.locator('[data-qa="edit"]')
 
   async edit(): Promise<StaffAclRowEditor> {
     await this.#editButton.click()
-    return new StaffAclRowEditor(this.page, this.selector)
+    return new StaffAclRowEditor(this.root)
   }
 }
 
-class StaffAclRowEditor extends RawElement {
-  readonly #groupEditor = this.find('[data-qa="groups"]')
-  readonly #save = this.find('[data-qa="save"]')
+class StaffAclRowEditor {
+  constructor(private root: Locator) {}
+
+  readonly #groupEditor = this.root.locator('[data-qa="groups"]')
+  readonly #save = this.root.locator('[data-qa="save"]')
 
   async toggleStaffGroups(groupIds: UUID[]) {
-    await this.#groupEditor.find('> div').click()
+    await this.#groupEditor.locator('> div').click()
     for (const groupId of groupIds) {
       await this.#groupEditor
-        .find(`[data-qa="option"][data-id="${groupId}"]`)
+        .locator(`[data-qa="option"][data-id="${groupId}"]`)
         .click()
     }
-    await this.#groupEditor.find('> div').click()
+    await this.#groupEditor.locator('> div').click()
   }
 
   async save(): Promise<StaffAclRow> {
     await this.#save.click()
-    return new StaffAclRow(this.page, this.selector)
+    return new StaffAclRow(this.root)
   }
 }

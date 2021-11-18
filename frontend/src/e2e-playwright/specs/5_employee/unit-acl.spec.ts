@@ -17,7 +17,7 @@ import UnitPage from 'e2e-playwright/pages/employee/units/unit'
 import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilSuccess } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
@@ -32,6 +32,7 @@ const tauno: EmployeeDetail = {
   lastName: 'Testimies',
   roles: []
 }
+const taunoName = `${tauno.firstName} ${tauno.lastName}`
 
 beforeEach(async () => {
   await resetDatabase()
@@ -70,11 +71,12 @@ beforeEach(async () => {
 describe('Employee - unit ACL', () => {
   test('Staff can be assigned/removed to/from groups', async () => {
     async function toggleGroups() {
-      const row = await (
-        await unitInfo.staffAcl.getRow('Tauno Testimies')
-      ).edit()
-      await row.toggleStaffGroups([groupId])
-      await row.save()
+      const row = await waitUntilSuccess(() =>
+        unitInfo.staffAcl.getRow(taunoName)
+      )
+      const rowEditor = await row.edit()
+      await rowEditor.toggleStaffGroups([groupId])
+      await rowEditor.save()
     }
 
     const expectedRow = {
