@@ -20,7 +20,7 @@ const ListGrid = styled.div<ListGridProps>`
     grid-template-columns: auto;
     row-gap: ${defaultMargins.xxs};
 
-    *:nth-child(2n) {
+    > *:nth-child(2n) {
       margin-bottom: ${(p) => defaultMargins[p.rowGap || 'xs']};
     }
   }
