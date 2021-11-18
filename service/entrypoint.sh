@@ -30,8 +30,12 @@ if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
 
   # shellcheck disable=SC2086
   exec java \
-    -javaagent:/opt/dd-java-agent.jar -Ddd.profiling.enabled=true -Ddd.logs.injection=true \
-    -Ddd.trace.sample.rate=1 -XX:FlightRecorderOptions=stackdepth=256 \
+    -Ddd.jmxfetch.config=/etc/jmxfetch/conf.yaml \
+    -Ddd.profiling.enabled=true \
+    -Ddd.logs.injection=true \
+    -Ddd.trace.sample.rate=1 \
+    -javaagent:/opt/dd-java-agent.jar \
+    -XX:FlightRecorderOptions=stackdepth=256 \
     -cp . -server $JAVA_OPTS org.springframework.boot.loader.JarLauncher "$@"
 else
   # shellcheck disable=SC2086
