@@ -30,7 +30,7 @@ INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
 INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
                                                                          ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
                                                                          ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
-                                                                         ('SMALLER_GROUP', 'Pienennetty ryhmä', 30),
+                                                                         ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', 30),
                                                                          ('SPECIAL_GROUP', 'Erityisryhmä', 40),
                                                                          ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
                                                                          ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
@@ -38,16 +38,7 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
                                                                          ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);
 
 INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
-                                                                                        ('AUTISM', 'Autismin kirjo', NULL, 10),
                                                                                         ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
-                                                                                        ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20),
-                                                                                        ('FOCUS_CHALLENGE', 'Keskittymisen / tarkkaavaisuuden vaikeus', NULL, 25),
-                                                                                        ('LINGUISTIC_CHALLENGE', 'Kielellinen vaikeus', NULL, 30),
-                                                                                        ('DEVELOPMENT_MONITORING', 'Lapsen kehityksen seuranta', NULL, 35),
-                                                                                        ('DEVELOPMENT_MONITORING_PENDING', 'Lapsen kehityksen seuranta, tutkimukset kesken', 'Lapsi on terveydenhuollon tutkimuksissa, diagnoosi ei ole vielä varmistunut.', 40),
-                                                                                        ('MULTI_DISABILITY', 'Monivammaisuus', NULL, 45),
-                                                                                        ('LONG_TERM_CONDITION', 'Pitkäaikaissairaus', NULL, 50),
-                                                                                        ('REGULATION_SKILL_CHALLENGE', 'Säätelytaitojen vaikeus', NULL, 55),
-                                                                                        ('DISABILITY', 'Vamma (näkö, kuulo, liikunta, muu)', NULL, 60);
+                                                                                        ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20);
 
 UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS}';

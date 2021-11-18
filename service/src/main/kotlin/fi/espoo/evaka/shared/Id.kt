@@ -17,6 +17,8 @@ sealed interface DatabaseTable {
     sealed class ApplicationNote : DatabaseTable
     sealed class Area : DatabaseTable
     sealed class AssistanceAction : DatabaseTable
+    sealed class AssistanceActionOption : DatabaseTable
+    sealed class AssistanceBasisOption : DatabaseTable
     sealed class AssistanceNeed : DatabaseTable
     sealed class Attachment : DatabaseTable
     sealed class Attendance : DatabaseTable
@@ -63,6 +65,8 @@ typealias ApplicationId = Id<DatabaseTable.Application>
 typealias ApplicationNoteId = Id<DatabaseTable.ApplicationNote>
 typealias AreaId = Id<DatabaseTable.Area>
 typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
+typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
+typealias AssistanceBasisOptionId = Id<DatabaseTable.AssistanceBasisOption>
 typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 typealias AttachmentId = Id<DatabaseTable.Attachment>
 typealias AttendanceId = Id<DatabaseTable.Attendance>

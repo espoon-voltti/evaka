@@ -12,7 +12,6 @@ import Title from 'lib-components/atoms/Title'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
-import { AssistanceNeedsAndActionsReportRow } from '../../types/reports'
 import {
   AssistanceNeedsAndActionsReportFilters,
   getAssistanceNeedsAndActionsReport
@@ -24,6 +23,11 @@ import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import {
+  AssistanceNeedsAndActionsReport,
+  AssistanceNeedsAndActionsReportRow
+} from '../../types/reports'
+import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
 
 interface DisplayFilters {
   careArea: string
@@ -37,11 +41,20 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
+const measures: AssistanceMeasure[] = [
+  'SPECIAL_ASSISTANCE_DECISION',
+  'INTENSIFIED_ASSISTANCE',
+  'EXTENDED_COMPULSORY_EDUCATION',
+  'CHILD_SERVICE',
+  'CHILD_ACCULTURATION_SUPPORT',
+  'TRANSPORT_BENEFIT'
+]
+
 function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<
-    Result<AssistanceNeedsAndActionsReportRow[]>
-  >(Loading.of())
+  const [report, setReport] = useState<Result<AssistanceNeedsAndActionsReport>>(
+    Loading.of()
+  )
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.today()
@@ -56,17 +69,14 @@ function AssistanceNeedsAndActions() {
   }
 
   useEffect(() => {
-    setRows(Loading.of())
+    setReport(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getAssistanceNeedsAndActionsReport(filters).then(setRows)
+    void getAssistanceNeedsAndActionsReport(filters).then(setReport)
   }, [filters])
 
-  const basisTypes = i18n.childInformation.assistanceNeed.fields.basisTypes
-  const actionTypes = i18n.childInformation.assistanceAction.fields.actionTypes
-
   const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+    () => report.map((rs) => rs.rows.filter(displayFilter)).getOrElse([]),
+    [report, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (
@@ -88,12 +98,14 @@ function AssistanceNeedsAndActions() {
             <Combobox
               items={[
                 { value: '', label: i18n.common.all },
-                ...rows
+                ...report
                   .map((rs) =>
-                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
-                      value: s,
-                      label: s
-                    }))
+                    distinct(rs.rows.map((row) => row.careAreaName)).map(
+                      (s) => ({
+                        value: s,
+                        label: s
+                      })
+                    )
                   )
                   .getOrElse([])
               ]}
@@ -122,18 +134,36 @@ function AssistanceNeedsAndActions() {
           </Wrapper>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {report.isLoading && <Loader />}
+        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {report.isSuccess && (
           <>
-            <ReportDownload
+            <ReportDownload<Record<string, unknown>>
               data={filteredRows.map((row) => ({
                 ...row,
                 unitType: row.unitType
                   ? i18n.reports.common.unitTypes[row.unitType]
                   : '',
                 unitProviderType:
-                  i18n.reports.common.unitProviderTypes[row.unitProviderType]
+                  i18n.reports.common.unitProviderTypes[row.unitProviderType],
+                ...Object.fromEntries(
+                  Object.entries(row.basisCounts).map(([value, count]) => [
+                    `BASIS-${value}`,
+                    count ?? 0
+                  ])
+                ),
+                ...Object.fromEntries(
+                  Object.entries(row.actionCounts).map(([value, count]) => [
+                    `ACTION-${value}`,
+                    count ?? 0
+                  ])
+                ),
+                ...Object.fromEntries(
+                  Object.entries(row.measureCounts).map(([value, count]) => [
+                    `MEASURE-${value}`,
+                    count ?? 0
+                  ])
+                )
               }))}
               headers={[
                 {
@@ -156,86 +186,41 @@ function AssistanceNeedsAndActions() {
                   label: i18n.reports.common.unitProviderType,
                   key: 'unitProviderType'
                 },
+                ...report.value.bases.map((basis) => ({
+                  label: basis.nameFi,
+                  key: `BASIS-${basis.value}`
+                })),
                 {
-                  label: basisTypes.AUTISM,
-                  key: 'autism'
-                },
-                {
-                  label: basisTypes.DEVELOPMENTAL_DISABILITY_1,
-                  key: 'developmentalDisability1'
-                },
-                {
-                  label: basisTypes.DEVELOPMENTAL_DISABILITY_2,
-                  key: 'developmentalDisability2'
-                },
-                {
-                  label: basisTypes.FOCUS_CHALLENGE,
-                  key: 'focusChallenge'
-                },
-                {
-                  label: basisTypes.LINGUISTIC_CHALLENGE,
-                  key: 'linguisticChallenge'
-                },
-                {
-                  label: basisTypes.DEVELOPMENT_MONITORING,
-                  key: 'developmentMonitoring'
-                },
-                {
-                  label: basisTypes.DEVELOPMENT_MONITORING_PENDING,
-                  key: 'developmentMonitoringPending'
-                },
-                {
-                  label: basisTypes.MULTI_DISABILITY,
-                  key: 'multiDisability'
-                },
-                {
-                  label: basisTypes.LONG_TERM_CONDITION,
-                  key: 'longTermCondition'
-                },
-                {
-                  label: basisTypes.REGULATION_SKILL_CHALLENGE,
-                  key: 'regulationSkillChallenge'
-                },
-                {
-                  label: basisTypes.DISABILITY,
-                  key: 'disability'
-                },
-                {
-                  label: basisTypes.OTHER,
-                  key: 'otherAssistanceNeed'
+                  label:
+                    i18n.childInformation.assistanceNeed.fields.basisTypes
+                      .OTHER,
+                  key: 'otherBasisCount'
                 },
                 {
                   label: i18n.reports.assistanceNeedsAndActions.basisMissing,
-                  key: 'noAssistanceNeeds'
+                  key: 'noBasisCount'
                 },
+                ...report.value.actions.map((action) => ({
+                  label: action.nameFi,
+                  key: `ACTION-${action.value}`
+                })),
                 {
-                  label: actionTypes.ASSISTANCE_SERVICE_CHILD,
-                  key: 'assistanceServiceChild'
-                },
-                {
-                  label: actionTypes.ASSISTANCE_SERVICE_UNIT,
-                  key: 'assistanceServiceUnit'
-                },
-                { label: actionTypes.SMALLER_GROUP, key: 'smallerGroup' },
-                { label: actionTypes.SPECIAL_GROUP, key: 'specialGroup' },
-                {
-                  label: actionTypes.PERVASIVE_VEO_SUPPORT,
-                  key: 'pervasiveVeoSupport'
-                },
-                { label: actionTypes.RESOURCE_PERSON, key: 'resourcePerson' },
-                { label: actionTypes.RATIO_DECREASE, key: 'ratioDecrease' },
-                {
-                  label: actionTypes.PERIODICAL_VEO_SUPPORT,
-                  key: 'periodicalVeoSupport'
-                },
-                {
-                  label: actionTypes.OTHER,
-                  key: 'otherAssistanceAction'
+                  label:
+                    i18n.childInformation.assistanceAction.fields.actionTypes
+                      .OTHER,
+                  key: 'otherActionCount'
                 },
                 {
                   label: i18n.reports.assistanceNeedsAndActions.actionMissing,
-                  key: 'noAssistanceActions'
-                }
+                  key: 'noActionCount'
+                },
+                ...measures.map((measure) => ({
+                  label:
+                    i18n.childInformation.assistanceAction.fields.measureTypes[
+                      measure
+                    ],
+                  key: `MEASURE-${measure}`
+                }))
               ]}
               filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
             />
@@ -247,31 +232,36 @@ function AssistanceNeedsAndActions() {
                   <Th>{i18n.reports.common.groupName}</Th>
                   <Th>{i18n.reports.common.unitType}</Th>
                   <Th>{i18n.reports.common.unitProviderType}</Th>
-                  <Th>{basisTypes.AUTISM}</Th>
-                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_1}</Th>
-                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_2}</Th>
-                  <Th>{basisTypes.FOCUS_CHALLENGE}</Th>
-                  <Th>{basisTypes.LINGUISTIC_CHALLENGE}</Th>
-                  <Th>{basisTypes.DEVELOPMENT_MONITORING}</Th>
-                  <Th>{basisTypes.DEVELOPMENT_MONITORING_PENDING}</Th>
-                  <Th>{basisTypes.MULTI_DISABILITY}</Th>
-                  <Th>{basisTypes.LONG_TERM_CONDITION}</Th>
-                  <Th>{basisTypes.REGULATION_SKILL_CHALLENGE}</Th>
-                  <Th>{basisTypes.DISABILITY}</Th>
-                  <Th>{basisTypes.OTHER}</Th>
+                  {report.value.bases.map((basis) => (
+                    <Th key={basis.value}>{basis.nameFi}</Th>
+                  ))}
+                  <Th>
+                    {
+                      i18n.childInformation.assistanceNeed.fields.basisTypes
+                        .OTHER
+                    }
+                  </Th>
                   <Th>{i18n.reports.assistanceNeedsAndActions.basisMissing}</Th>
-                  <Th>{actionTypes.ASSISTANCE_SERVICE_CHILD}</Th>
-                  <Th>{actionTypes.ASSISTANCE_SERVICE_UNIT}</Th>
-                  <Th>{actionTypes.SMALLER_GROUP}</Th>
-                  <Th>{actionTypes.SPECIAL_GROUP}</Th>
-                  <Th>{actionTypes.PERVASIVE_VEO_SUPPORT}</Th>
-                  <Th>{actionTypes.RESOURCE_PERSON}</Th>
-                  <Th>{actionTypes.RATIO_DECREASE}</Th>
-                  <Th>{actionTypes.PERIODICAL_VEO_SUPPORT}</Th>
-                  <Th>{actionTypes.OTHER}</Th>
+                  {report.value.actions.map((action) => (
+                    <Th key={action.value}>{action.nameFi}</Th>
+                  ))}
+                  <Th>
+                    {
+                      i18n.childInformation.assistanceAction.fields.actionTypes
+                        .OTHER
+                    }
+                  </Th>
                   <Th>
                     {i18n.reports.assistanceNeedsAndActions.actionMissing}
                   </Th>
+                  {measures.map((measure) => (
+                    <Th key={measure}>
+                      {
+                        i18n.childInformation.assistanceAction.fields
+                          .measureTypes[measure]
+                      }
+                    </Th>
+                  ))}
                 </Tr>
               </Thead>
               <Tbody>
@@ -294,29 +284,23 @@ function AssistanceNeedsAndActions() {
                         ]
                       }
                     </Td>
-                    <Td>{row.autism}</Td>
-                    <Td>{row.developmentalDisability1}</Td>
-                    <Td>{row.developmentalDisability2}</Td>
-                    <Td>{row.focusChallenge}</Td>
-                    <Td>{row.linguisticChallenge}</Td>
-                    <Td>{row.developmentMonitoring}</Td>
-                    <Td>{row.developmentMonitoringPending}</Td>
-                    <Td>{row.multiDisability}</Td>
-                    <Td>{row.longTermCondition}</Td>
-                    <Td>{row.regulationSkillChallenge}</Td>
-                    <Td>{row.disability}</Td>
-                    <Td>{row.otherAssistanceNeed}</Td>
-                    <Td>{row.noAssistanceNeeds}</Td>
-                    <Td>{row.assistanceServiceChild}</Td>
-                    <Td>{row.assistanceServiceUnit}</Td>
-                    <Td>{row.smallerGroup}</Td>
-                    <Td>{row.specialGroup}</Td>
-                    <Td>{row.pervasiveVeoSupport}</Td>
-                    <Td>{row.resourcePerson}</Td>
-                    <Td>{row.ratioDecrease}</Td>
-                    <Td>{row.periodicalVeoSupport}</Td>
-                    <Td>{row.otherAssistanceAction}</Td>
-                    <Td>{row.noAssistanceActions}</Td>
+                    {report.value.bases.map((basis) => (
+                      <Td key={basis.value}>
+                        {row.basisCounts[basis.value] ?? 0}
+                      </Td>
+                    ))}
+                    <Td>{row.otherBasisCount}</Td>
+                    <Td>{row.noBasisCount}</Td>
+                    {report.value.actions.map((action) => (
+                      <Td key={action.value}>
+                        {row.actionCounts[action.value] ?? 0}
+                      </Td>
+                    ))}
+                    <Td>{row.otherActionCount}</Td>
+                    <Td>{row.noActionCount}</Td>
+                    {measures.map((measure) => (
+                      <Td key={measure}>{row.measureCounts[measure] ?? 0}</Td>
+                    ))}
                   </Tr>
                 ))}
               </Tbody>
@@ -327,118 +311,42 @@ function AssistanceNeedsAndActions() {
                   <Td />
                   <Td />
                   <Td />
-                  <Td>{reducePropertySum(filteredRows, (r) => r.autism)}</Td>
+                  {report.value.bases.map((basis) => (
+                    <Td key={basis.value}>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.basisCounts[basis.value] ?? 0
+                      )}
+                    </Td>
+                  ))}
                   <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.developmentalDisability1
-                    )}
+                    {reducePropertySum(filteredRows, (r) => r.otherBasisCount)}
                   </Td>
                   <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.developmentalDisability2
-                    )}
+                    {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
+                  </Td>
+                  {report.value.actions.map((action) => (
+                    <Td key={action.value}>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.actionCounts[action.value] ?? 0
+                      )}
+                    </Td>
+                  ))}
+                  <Td>
+                    {reducePropertySum(filteredRows, (r) => r.otherActionCount)}
                   </Td>
                   <Td>
-                    {reducePropertySum(filteredRows, (r) => r.focusChallenge)}
+                    {reducePropertySum(filteredRows, (r) => r.noActionCount)}
                   </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.linguisticChallenge
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.developmentMonitoring
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.developmentMonitoringPending
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.multiDisability)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.longTermCondition
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.regulationSkillChallenge
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.disability)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.otherAssistanceNeed
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.noAssistanceNeeds
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.assistanceServiceChild
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.assistanceServiceUnit
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.smallerGroup)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.specialGroup)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.pervasiveVeoSupport
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.resourcePerson)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.ratioDecrease)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.periodicalVeoSupport
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.otherAssistanceAction
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.noAssistanceActions
-                    )}
-                  </Td>
+                  {measures.map((measure) => (
+                    <Td key={measure}>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.measureCounts[measure] ?? 0
+                      )}
+                    </Td>
+                  ))}
                 </Tr>
               </TableFooter>
             </TableScrollable>
