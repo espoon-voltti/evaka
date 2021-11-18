@@ -120,6 +120,10 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                     value = ""
                 ),
                 VasuQuestion.Followup(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Täydennykset ja jatkuva arviointi toimintakauden aikana"
+                        VasuLanguage.SV -> ""
+                    },
                     name = when (lang) {
                         VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointia ja tarkennuksia toimintakauden aikana lapsen tarpeiden mukaan sekä mahdollinen huoltajien kanssa tehty yhteistyö"
                         VasuLanguage.SV -> ""
