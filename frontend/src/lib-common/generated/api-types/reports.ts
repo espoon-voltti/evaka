@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import { AbsenceType } from './daycare'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
+import { AssistanceMeasure } from './assistanceaction'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
 import { UUID } from '../../types'
@@ -47,6 +48,7 @@ export interface AssistanceNeedsAndActionsReportRow {
   careAreaName: string
   groupId: UUID
   groupName: string
+  measureCounts: AssistanceMeasure[]
   noActionCount: number
   noBasisCount: number
   otherActionCount: number

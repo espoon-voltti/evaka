@@ -6,7 +6,10 @@ import LocalDate from 'lib-common/local-date'
 import { UnitProviderType } from 'lib-customizations/types'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import {
+  AssistanceActionOption,
+  AssistanceMeasure
+} from 'lib-common/generated/api-types/assistanceaction'
 import { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { UnitType } from 'lib-common/generated/api-types/reports'
@@ -264,6 +267,7 @@ export interface AssistanceNeedsAndActionsReport {
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>
   basisCounts: Record<string, number>
+  measureCounts: Record<AssistanceMeasure, number>
   careAreaName: string
   groupId: UUID
   groupName: string

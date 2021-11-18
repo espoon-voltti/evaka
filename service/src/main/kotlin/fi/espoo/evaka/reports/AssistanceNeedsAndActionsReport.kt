@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
+import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.assistanceneed.AssistanceBasisOption
 import fi.espoo.evaka.assistanceneed.getAssistanceBasisOptions
@@ -66,6 +67,8 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         val actionCounts: Map<AssistanceActionOptionValue, Int>,
         val otherActionCount: Int,
         val noActionCount: Int,
+        @Json
+        val measureCounts: Map<AssistanceMeasure, Int>,
     )
 }
 
@@ -120,7 +123,23 @@ SELECT
         ) action_counts
     ) AS action_counts,
     coalesce(action_stats.other_count, 0) AS other_action_count,
-    coalesce(action_stats.none_count, 0) AS no_action_count
+    coalesce(action_stats.none_count, 0) AS no_action_count,
+    (
+        SELECT jsonb_object_agg(value, count)
+        FROM (
+            SELECT
+                value,
+                count(aa.child_id) AS count
+            FROM unnest(enum_range(NULL::assistance_measure)) AS value
+            LEFT JOIN daycare_group_placement gpl ON daterange(gpl.start_date, gpl.end_date, '[]') @> :target_date
+            AND gpl.daycare_group_id = g.id
+            LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
+            LEFT JOIN assistance_action aa ON value = ANY(aa.measures)
+            AND aa.child_id = pl.child_id
+            AND daterange(aa.start_date, aa.end_date, '[]') @> :target_date
+            GROUP BY value
+        ) measure_counts
+    ) AS measure_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> :target_date
