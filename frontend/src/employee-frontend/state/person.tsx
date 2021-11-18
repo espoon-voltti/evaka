@@ -10,11 +10,7 @@ import React, {
   useState
 } from 'react'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import {
-  PersonJSON,
-  PersonResponse,
-  PersonWithChildrenDTO
-} from 'lib-common/generated/api-types/pis'
+import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { Loading, Result } from 'lib-common/api'
 import { Decision } from '../types/decision'
 import { Invoice } from '../types/invoicing'
@@ -27,12 +23,10 @@ import { UUID } from 'lib-common/types'
 export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
-  dependants: Result<PersonWithChildrenDTO[]>
   decisions: Result<Decision[]>
   family: Result<FamilyOverview>
   invoices: Result<Invoice[]>
   setPerson: (person: PersonJSON) => void
-  setDependants: (r: Result<PersonWithChildrenDTO[]>) => void
   setDecisions: (r: Result<Decision[]>) => void
   setFamily: (r: Result<FamilyOverview>) => void
   setInvoices: (r: Result<Invoice[]>) => void
@@ -42,12 +36,10 @@ export interface PersonState {
 const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
-  dependants: Loading.of(),
   decisions: Loading.of(),
   family: Loading.of(),
   invoices: Loading.of(),
   setPerson: () => undefined,
-  setDependants: () => undefined,
   setDecisions: () => undefined,
   setFamily: () => undefined,
   setInvoices: () => undefined,
@@ -103,7 +95,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     [id, reloadFamily]
   )
 
-  const [dependants, setDependants] = useState(defaultState.dependants)
   const [decisions, setDecisions] = useState(defaultState.decisions)
   const [invoices, setInvoices] = useState(defaultState.invoices)
 
@@ -112,8 +103,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       person,
       setPerson,
       permittedActions,
-      dependants,
-      setDependants,
       decisions,
       setDecisions,
       family,
@@ -126,7 +115,6 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       person,
       setPerson,
       permittedActions,
-      dependants,
       decisions,
       family,
       invoices,
