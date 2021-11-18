@@ -24,6 +24,7 @@ export interface ChildSensitiveInformation {
   id: UUID
   lastName: string
   medication: string
+  placementType: PlacementType | null
   placementTypes: PlacementType[]
   preferredName: string
   ssn: string

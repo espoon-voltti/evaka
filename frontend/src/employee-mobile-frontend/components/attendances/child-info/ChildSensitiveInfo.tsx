@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
-import { PlacementType } from 'lib-common/generated/enums'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -66,10 +65,6 @@ interface Props {
 
 export default React.memo(function ChildSensitiveInfo({ child }: Props) {
   const { i18n } = useTranslation()
-
-  const placementTypesToText = (types: PlacementType[]): string =>
-    types.map((type) => i18n.common.placement[type]).join(', ')
-
   return (
     <FixedSpaceColumn spacing="m">
       <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="xs">
@@ -112,8 +107,10 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
 
             {renderKeyValue(
               i18n.attendances.childInfo.type,
-              placementTypesToText(child.placementTypes) || '-',
-              'child-info-placement-types'
+              child.placementType
+                ? i18n.common.placement[child.placementType]
+                : '-',
+              'child-info-placement-type'
             )}
           </FixedSpaceColumn>
         </CollapsibleSection>

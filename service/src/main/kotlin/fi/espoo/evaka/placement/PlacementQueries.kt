@@ -22,15 +22,14 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-// language=SQL
-private val placementSelector =
-    """
-        SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
-        FROM placement p
-    """.trimIndent()
-
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
-    return createQuery("$placementSelector WHERE p.id = :id")
+    return createQuery(
+        """
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+FROM placement p
+WHERE p.id = :id
+        """.trimIndent()
+    )
         .bind("id", id)
         .mapTo<Placement>()
         .first()
@@ -73,19 +72,46 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
 }
 
 fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
-    return createQuery("$placementSelector WHERE p.child_id = :childId")
+    return createQuery(
+        """
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+FROM placement p
+WHERE p.child_id = :childId
+        """.trimIndent()
+    )
         .bind("childId", childId)
         .mapTo<Placement>()
         .list()
 }
 
 fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
-    return createQuery("$placementSelector WHERE p.child_id = :childId AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')")
+    return createQuery(
+        """
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+FROM placement p
+WHERE p.child_id = :childId
+AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
+        """.trimIndent()
+    )
         .bind("childId", childId)
         .bind("start", start)
         .bindNullable("end", end)
         .mapTo<Placement>()
         .list()
+}
+
+fun Database.Read.getCurrentPlacementForChild(childId: UUID): Placement? {
+    return createQuery(
+        """
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+FROM placement p
+WHERE p.child_id = :childId
+AND daterange(p.start_date, p.end_date, '[]') @> now()::date
+        """.trimIndent()
+    )
+        .bind("childId", childId)
+        .mapTo<Placement>()
+        .firstOrNull()
 }
 
 fun Database.Transaction.insertPlacement(

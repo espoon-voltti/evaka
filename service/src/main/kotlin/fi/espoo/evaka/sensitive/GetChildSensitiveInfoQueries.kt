@@ -9,14 +9,14 @@ import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.placement.getPlacementsForChild
+import fi.espoo.evaka.placement.getCurrentPlacementForChild
 import fi.espoo.evaka.shared.db.Database
 import java.util.UUID
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = getPersonById(childId) ?: return null
 
-    val placementTypes = getPlacementsForChild(childId).map { it.type }
+    val placementType = getCurrentPlacementForChild(childId)?.let { it.type }
     val child = getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
     val familyContacts = fetchFamilyContacts(childId)
@@ -29,7 +29,8 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
         dateOfBirth = person.dateOfBirth,
         ssn = person.identity.toString(),
         childAddress = person.streetAddress,
-        placementTypes = placementTypes,
+        placementTypes = listOfNotNull(placementType),
+        placementType = placementType,
         allergies = child?.additionalInformation?.allergies ?: "",
         diet = child?.additionalInformation?.diet ?: "",
         medication = child?.additionalInformation?.medication ?: "",
