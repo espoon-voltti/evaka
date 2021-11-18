@@ -27,8 +27,7 @@ import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportRow
 } from '../../types/reports'
-import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
-import { featureFlags } from 'lib-customizations/employee'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
 interface DisplayFilters {
   careArea: string
@@ -41,15 +40,6 @@ const emptyDisplayFilters: DisplayFilters = {
 const Wrapper = styled.div`
   width: 100%;
 `
-
-const measures: AssistanceMeasure[] = [
-  'SPECIAL_ASSISTANCE_DECISION',
-  'INTENSIFIED_ASSISTANCE',
-  'EXTENDED_COMPULSORY_EDUCATION',
-  'CHILD_SERVICE',
-  'CHILD_ACCULTURATION_SUPPORT',
-  'TRANSPORT_BENEFIT'
-]
 
 function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
@@ -223,7 +213,7 @@ function AssistanceNeedsAndActions() {
                   label: i18n.reports.assistanceNeedsAndActions.actionMissing,
                   key: 'noActionCount'
                 },
-                ...measures.map((measure) => ({
+                ...assistanceMeasures.map((measure) => ({
                   label:
                     i18n.childInformation.assistanceAction.fields.measureTypes[
                       measure
@@ -267,7 +257,7 @@ function AssistanceNeedsAndActions() {
                   <Th>
                     {i18n.reports.assistanceNeedsAndActions.actionMissing}
                   </Th>
-                  {measures.map((measure) => (
+                  {assistanceMeasures.map((measure) => (
                     <Th key={measure}>
                       {
                         i18n.childInformation.assistanceAction.fields
@@ -315,7 +305,7 @@ function AssistanceNeedsAndActions() {
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
-                    {measures.map((measure) => (
+                    {assistanceMeasures.map((measure) => (
                       <Td key={measure}>{row.measureCounts[measure] ?? 0}</Td>
                     ))}
                   </Tr>
@@ -363,7 +353,7 @@ function AssistanceNeedsAndActions() {
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.noActionCount)}
                   </Td>
-                  {measures.map((measure) => (
+                  {assistanceMeasures.map((measure) => (
                     <Td key={measure}>
                       {reducePropertySum(
                         filteredRows,
