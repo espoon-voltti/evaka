@@ -26,13 +26,16 @@ let unitPage: UnitPage
 let staffId: UUID
 const groupId: UUID = uuidv4()
 
+const taunoFirstname = 'Tauno'
+const taunoLastname = 'Testimies'
+const taunoName = `${taunoFirstname} ${taunoLastname}`
+const taunoEmail = 'tauno.testimies@example.com'
 const tauno: EmployeeDetail = {
-  email: 'tauno.testimies@example.com',
-  firstName: 'Tauno',
-  lastName: 'Testimies',
+  email: taunoEmail,
+  firstName: taunoFirstname,
+  lastName: taunoLastname,
   roles: []
 }
-const taunoName = `${tauno.firstName} ${tauno.lastName}`
 
 beforeEach(async () => {
   await resetDatabase()
@@ -81,12 +84,11 @@ describe('Employee - unit ACL', () => {
 
     const expectedRow = {
       name: `${tauno.firstName} ${tauno.lastName}`,
-      email: tauno.email!, // eslint-disable-line
+      email: taunoEmail,
       groups: []
     }
-
     const unitInfo = await unitPage.openUnitInformation()
-    await unitInfo.staffAcl.addEmployeeAcl(staffId)
+    await unitInfo.staffAcl.addEmployeeAcl(taunoEmail, staffId)
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
     await toggleGroups()
     await waitUntilEqual(

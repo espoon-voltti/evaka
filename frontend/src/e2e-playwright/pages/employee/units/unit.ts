@@ -39,8 +39,9 @@ class StaffAclSection {
   readonly #combobox = this.root.locator('[data-qa="acl-combobox"]')
   readonly #addButton = this.root.locator('[data-qa="acl-add-button"]')
 
-  async addEmployeeAcl(employeeId: UUID) {
+  async addEmployeeAcl(employeeEmail: string, employeeId: UUID) {
     await this.#combobox.click()
+    await this.#combobox.locator('input').type(employeeEmail)
     await this.#combobox.locator(`[data-qa="value-${employeeId}"]`).click()
     await this.#addButton.click()
     await this.#table.waitFor()
