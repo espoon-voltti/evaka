@@ -15,7 +15,7 @@ import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import requireAuth from './auth/requireAuth'
-import { AuthContext, AuthContextProvider } from './auth/state'
+import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import CitizenReloadNotification from './CitizenReloadNotification'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -107,7 +107,7 @@ export default function App() {
                           component={requireAuth(PedagogicalDocuments)}
                         />
                         <Route path="/">
-                          <Redirect to="/applying/map" />
+                          <HandleRedirection />
                         </Route>
                       </Switch>
                     </Main>
@@ -123,6 +123,16 @@ export default function App() {
         </Localization>
       </ThemeProvider>
     </BrowserRouter>
+  )
+}
+
+function HandleRedirection() {
+  const user = useUser()
+  const hasAccessToCalendar = !!user?.accessibleFeatures.reservations
+  return hasAccessToCalendar ? (
+    <Redirect to="/calendar" />
+  ) : (
+    <Redirect to="/applying/map" />
   )
 }
 
