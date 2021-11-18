@@ -12,7 +12,6 @@ import React, {
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { Loading, Result } from 'lib-common/api'
-import { Invoice } from '../types/invoicing'
 import { FamilyOverview } from '../types/family-overview'
 import { getFamilyOverview } from '../api/family-overview'
 import { Action } from 'lib-common/generated/action'
@@ -23,9 +22,7 @@ export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
   family: Result<FamilyOverview>
-  invoices: Result<Invoice[]>
   setPerson: (person: PersonJSON) => void
-  setInvoices: (r: Result<Invoice[]>) => void
   reloadFamily: () => void
 }
 
@@ -33,9 +30,7 @@ const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
   family: Loading.of(),
-  invoices: Loading.of(),
   setPerson: () => undefined,
-  setInvoices: () => undefined,
   reloadFamily: () => undefined
 }
 
@@ -86,19 +81,15 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     [reloadFamily]
   )
 
-  const [invoices, setInvoices] = useState(defaultState.invoices)
-
   const value = useMemo<PersonState>(
     () => ({
       person,
       setPerson,
       permittedActions,
       family,
-      invoices,
-      setInvoices,
       reloadFamily
     }),
-    [person, setPerson, permittedActions, family, invoices, reloadFamily]
+    [person, setPerson, permittedActions, family, reloadFamily]
   )
 
   return (
