@@ -120,7 +120,13 @@ fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDi
 
         if (!db.read { it.hasVardaServiceNeeds(evakaChildId) }) {
             logger.info("VardaUpdate: deleting child for not having service needs ($evakaChildId)")
-            deleteChildDataFromVardaAndDb(db, client, evakaChildId.raw)
+
+            if (!deleteChildDataFromVardaAndDb(db, client, evakaChildId.raw)) {
+                // If child has 0 service needs in varda, and delete fails, we need to retry it via the reset mechanism
+                db.transaction {
+                    it.resetChildResetTimestamp(evakaChildId)
+                }
+            }
         }
     } catch (e: Exception) {
         logger.info("VardaUpdate: failed to update child $evakaChildId: ${e.localizedMessage}")
