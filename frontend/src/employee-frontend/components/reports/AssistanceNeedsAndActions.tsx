@@ -28,6 +28,7 @@ import {
   AssistanceNeedsAndActionsReportRow
 } from '../../types/reports'
 import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
+import { featureFlags } from 'lib-customizations/employee'
 
 interface DisplayFilters {
   careArea: string
@@ -190,12 +191,16 @@ function AssistanceNeedsAndActions() {
                   label: basis.nameFi,
                   key: `BASIS-${basis.value}`
                 })),
-                {
-                  label:
-                    i18n.childInformation.assistanceNeed.fields.basisTypes
-                      .OTHER,
-                  key: 'otherBasisCount'
-                },
+                ...(featureFlags.assistanceBasisOtherEnabled
+                  ? [
+                      {
+                        label:
+                          i18n.childInformation.assistanceNeed.fields.basisTypes
+                            .OTHER,
+                        key: 'otherBasisCount'
+                      }
+                    ]
+                  : []),
                 {
                   label: i18n.reports.assistanceNeedsAndActions.basisMissing,
                   key: 'noBasisCount'
@@ -204,12 +209,16 @@ function AssistanceNeedsAndActions() {
                   label: action.nameFi,
                   key: `ACTION-${action.value}`
                 })),
-                {
-                  label:
-                    i18n.childInformation.assistanceAction.fields.actionTypes
-                      .OTHER,
-                  key: 'otherActionCount'
-                },
+                ...(featureFlags.assistanceActionOtherEnabled
+                  ? [
+                      {
+                        label:
+                          i18n.childInformation.assistanceAction.fields
+                            .actionTypes.OTHER,
+                        key: 'otherActionCount'
+                      }
+                    ]
+                  : []),
                 {
                   label: i18n.reports.assistanceNeedsAndActions.actionMissing,
                   key: 'noActionCount'
@@ -235,22 +244,26 @@ function AssistanceNeedsAndActions() {
                   {report.value.bases.map((basis) => (
                     <Th key={basis.value}>{basis.nameFi}</Th>
                   ))}
-                  <Th>
-                    {
-                      i18n.childInformation.assistanceNeed.fields.basisTypes
-                        .OTHER
-                    }
-                  </Th>
+                  {featureFlags.assistanceBasisOtherEnabled && (
+                    <Th>
+                      {
+                        i18n.childInformation.assistanceNeed.fields.basisTypes
+                          .OTHER
+                      }
+                    </Th>
+                  )}
                   <Th>{i18n.reports.assistanceNeedsAndActions.basisMissing}</Th>
                   {report.value.actions.map((action) => (
                     <Th key={action.value}>{action.nameFi}</Th>
                   ))}
-                  <Th>
-                    {
-                      i18n.childInformation.assistanceAction.fields.actionTypes
-                        .OTHER
-                    }
-                  </Th>
+                  {featureFlags.assistanceActionOtherEnabled && (
+                    <Th>
+                      {
+                        i18n.childInformation.assistanceAction.fields
+                          .actionTypes.OTHER
+                      }
+                    </Th>
+                  )}
                   <Th>
                     {i18n.reports.assistanceNeedsAndActions.actionMissing}
                   </Th>
@@ -289,14 +302,18 @@ function AssistanceNeedsAndActions() {
                         {row.basisCounts[basis.value] ?? 0}
                       </Td>
                     ))}
-                    <Td>{row.otherBasisCount}</Td>
+                    {featureFlags.assistanceBasisOtherEnabled && (
+                      <Td>{row.otherBasisCount}</Td>
+                    )}
                     <Td>{row.noBasisCount}</Td>
                     {report.value.actions.map((action) => (
                       <Td key={action.value}>
                         {row.actionCounts[action.value] ?? 0}
                       </Td>
                     ))}
-                    <Td>{row.otherActionCount}</Td>
+                    {featureFlags.assistanceActionOtherEnabled && (
+                      <Td>{row.otherActionCount}</Td>
+                    )}
                     <Td>{row.noActionCount}</Td>
                     {measures.map((measure) => (
                       <Td key={measure}>{row.measureCounts[measure] ?? 0}</Td>
@@ -322,9 +339,11 @@ function AssistanceNeedsAndActions() {
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.otherBasisCount)}
                   </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
-                  </Td>
+                  {featureFlags.assistanceBasisOtherEnabled && (
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
+                    </Td>
+                  )}
                   {report.value.actions.map((action) => (
                     <Td key={action.value}>
                       {reducePropertySum(
@@ -333,9 +352,14 @@ function AssistanceNeedsAndActions() {
                       )}
                     </Td>
                   ))}
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.otherActionCount)}
-                  </Td>
+                  {featureFlags.assistanceActionOtherEnabled && (
+                    <Td>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.otherActionCount
+                      )}
+                    </Td>
+                  )}
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.noActionCount)}
                   </Td>
