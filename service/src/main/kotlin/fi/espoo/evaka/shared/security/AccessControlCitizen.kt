@@ -6,17 +6,12 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class AccessControlCitizen(private val jdbi: Jdbi) {
-    fun getPermittedFeatures(user: AuthenticatedUser): CitizenFeatures {
-        return Database(jdbi).connect { db -> db.read { getPermittedFeatures(it, user) } }
-    }
-
+class AccessControlCitizen {
     fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {
         return CitizenFeatures(
             messages = tx.citizenHasAccessToMessaging(user.id),

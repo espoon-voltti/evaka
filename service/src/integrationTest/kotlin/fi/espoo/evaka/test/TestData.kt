@@ -77,9 +77,9 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
             ),
             dateOfBirth = testChild_1.dateOfBirth,
             address = Address(
-                street = testChild_1.streetAddress!!,
-                postalCode = testChild_1.postalCode!!,
-                postOffice = testChild_1.postOffice!!
+                street = testChild_1.streetAddress,
+                postalCode = testChild_1.postalCode,
+                postOffice = testChild_1.postOffice
             ),
             futureAddress = null,
             nationality = "fi",
@@ -96,9 +96,9 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                 socialSecurityNumber = testAdult_1.ssn
             ),
             address = Address(
-                street = testAdult_1.streetAddress!!,
-                postalCode = testAdult_1.postalCode!!,
-                postOffice = testAdult_1.postOffice!!
+                street = testAdult_1.streetAddress,
+                postalCode = testAdult_1.postalCode,
+                postOffice = testAdult_1.postOffice
             ),
             futureAddress = null,
             phoneNumber = "0504139432",
@@ -160,9 +160,9 @@ val validPreschoolApplication = ApplicationDetails(
             ),
             dateOfBirth = testChild_1.dateOfBirth,
             address = Address(
-                street = testChild_1.streetAddress!!,
-                postalCode = testChild_1.postalCode!!,
-                postOffice = testChild_1.postOffice!!
+                street = testChild_1.streetAddress,
+                postalCode = testChild_1.postalCode,
+                postOffice = testChild_1.postOffice
             ),
             futureAddress = null,
             nationality = "fi",
@@ -179,9 +179,9 @@ val validPreschoolApplication = ApplicationDetails(
                 socialSecurityNumber = testAdult_1.ssn
             ),
             address = Address(
-                street = testAdult_1.streetAddress!!,
-                postalCode = testAdult_1.postalCode!!,
-                postOffice = testAdult_1.postOffice!!
+                street = testAdult_1.streetAddress,
+                postalCode = testAdult_1.postalCode,
+                postOffice = testAdult_1.postOffice
             ),
             futureAddress = null,
             phoneNumber = "0504139432",
@@ -248,9 +248,9 @@ val validClubApplication = ApplicationDetails(
             ),
             dateOfBirth = testChild_1.dateOfBirth,
             address = Address(
-                street = testChild_1.streetAddress!!,
-                postalCode = testChild_1.postalCode!!,
-                postOffice = testChild_1.postOffice!!
+                street = testChild_1.streetAddress,
+                postalCode = testChild_1.postalCode,
+                postOffice = testChild_1.postOffice
             ),
             futureAddress = null,
             nationality = "fi",
@@ -267,9 +267,9 @@ val validClubApplication = ApplicationDetails(
                 socialSecurityNumber = testAdult_1.ssn
             ),
             address = Address(
-                street = testAdult_1.streetAddress!!,
-                postalCode = testAdult_1.postalCode!!,
-                postOffice = testAdult_1.postOffice!!
+                street = testAdult_1.streetAddress,
+                postalCode = testAdult_1.postalCode,
+                postOffice = testAdult_1.postOffice
             ),
             futureAddress = null,
             phoneNumber = "0504139432",

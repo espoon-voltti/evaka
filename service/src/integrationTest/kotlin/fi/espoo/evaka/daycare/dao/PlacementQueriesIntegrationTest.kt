@@ -45,7 +45,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
         val placements = h.getDaycarePlacements(daycareId, null, null, null)
         assertThat(placements).hasSize(1)
         val placement = placements.first()
-        assertThat(placement.id).isNotNull()
+        assertThat(placement.id).isNotNull
         assertThat(placement.child.id).isEqualTo(childId)
         assertThat(placement.daycare.id).isEqualTo(daycareId)
         assertThat(placement.startDate).isEqualTo(placementStart)

@@ -82,7 +82,7 @@ class MockDataServiceTest {
         val expectedEmptyAddress = ""
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
-        assertThat(parent.address!!.streetAddress).isBlank()
+        assertThat(parent.address!!.streetAddress).isBlank
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)
@@ -121,7 +121,7 @@ class MockDataServiceTest {
         val expectedChildAddress = "Raivaajantie 19"
 
         assertThat(parent).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
-        assertThat(parent.address!!.streetAddress).isBlank()
+        assertThat(parent.address!!.streetAddress).isBlank
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)

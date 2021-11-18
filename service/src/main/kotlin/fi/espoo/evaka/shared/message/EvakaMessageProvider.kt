@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.message
 
 import fi.espoo.evaka.decision.DecisionSendAddress
 
-class EvakaMessageProvider() : IMessageProvider {
+class EvakaMessageProvider : IMessageProvider {
 
     override fun getDecisionHeader(lang: MessageLanguage): String = when (lang) {
         MessageLanguage.FI -> """Espoon varhaiskasvatukseen liittyvät päätökset"""

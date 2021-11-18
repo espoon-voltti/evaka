@@ -363,7 +363,7 @@ class VtjHenkiloMapperTest {
         }
         val result: RestrictedDetails = value.mapToRestrictedDetails()
 
-        assertThat(result.enabled).isTrue()
+        assertThat(result.enabled).isTrue
 
         val endDate = result.endDate
         assertThat(endDate!!.year).isEqualTo(2020)
@@ -376,7 +376,7 @@ class VtjHenkiloMapperTest {
         val value = Turvakielto().apply { turvakieltoTieto = "1" }
         val result: RestrictedDetails = value.mapToRestrictedDetails()
 
-        assertThat(result.enabled).isTrue()
+        assertThat(result.enabled).isTrue
         assertThat(result.endDate).isNull()
     }
 
@@ -385,7 +385,7 @@ class VtjHenkiloMapperTest {
         val value = Turvakielto()
         val result: RestrictedDetails = value.mapToRestrictedDetails()
 
-        assertThat(result.enabled).isFalse()
+        assertThat(result.enabled).isFalse
         assertThat(result.endDate).isNull()
     }
 

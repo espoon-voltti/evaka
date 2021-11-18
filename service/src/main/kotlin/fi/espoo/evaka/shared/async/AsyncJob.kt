@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.async
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
@@ -29,30 +28,6 @@ import kotlin.reflect.KClass
 data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
     val name: String = payloadClass.simpleName!!
     override fun toString(): String = name
-
-    @Suppress("DEPRECATION")
-    fun getAllNames(): List<String> = listOf(name) + when (payloadClass) {
-        AsyncJob.NotifyDecisionCreated::class -> listOf("DECISION_CREATED")
-        AsyncJob.SendDecision::class -> listOf("SEND_DECISION")
-        AsyncJob.NotifyFeeDecisionApproved::class -> listOf("FEE_DECISION_APPROVED")
-        AsyncJob.NotifyFeeDecisionPdfGenerated::class -> listOf("FEE_DECISION_PDF_GENERATED")
-        AsyncJob.NotifyVoucherValueDecisionApproved::class -> listOf("VOUCHER_VALUE_DECISION_APPROVED")
-        AsyncJob.NotifyVoucherValueDecisionPdfGenerated::class -> listOf("VOUCHER_VALUE_DECISION_PDF_GENERATED")
-        AsyncJob.InitializeFamilyFromApplication::class -> listOf("INITIALIZE_FAMILY_FROM_APPLICATION")
-        AsyncJob.VTJRefresh::class -> listOf("VTJ_REFRESH")
-        AsyncJob.DvvModificationsRefresh::class -> listOf("DVV_MODIFICATIONS_REFRESH")
-        AsyncJob.UploadToKoski::class -> listOf("UPLOAD_TO_KOSKI")
-        AsyncJob.ScheduleKoskiUploads::class -> listOf("SCHEDULE_KOSKI_UPLOADS")
-        AsyncJob.SendApplicationEmail::class -> listOf("SEND_APPLICATION_EMAIL")
-        AsyncJob.GarbageCollectPairing::class -> listOf("GARBAGE_COLLECT_PAIRING")
-        AsyncJob.SendPendingDecisionEmail::class -> listOf("SEND_PENDING_DECISION_EMAIL")
-        AsyncJob.SendMessageNotificationEmail::class -> listOf("SEND_UNREAD_MESSAGE_NOTIFICATION")
-        AsyncJob.RunScheduledJob::class -> listOf("RUN_SCHEDULED_JOB")
-        AsyncJob.NotifyFeeThresholdsUpdated::class -> listOf("FEE_THRESHOLDS_UPDATED")
-        AsyncJob.GenerateFinanceDecisions::class -> listOf("GENERATE_FINANCE_DECISIONS")
-        AsyncJob.SendPedagogicalDocumentNotificationEmail::class -> listOf("SEND_NEW_PEDAGOGICAL_DOCUMENT_NOTIFICATION")
-        else -> emptyList()
-    }
 
     companion object {
         fun <T : AsyncJobPayload> ofPayload(payload: T): AsyncJobType<T> = AsyncJobType(payload.javaClass.kotlin)
@@ -83,7 +58,6 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
     }
 }
 
-@JsonIgnoreProperties("asyncJobType") // only present in old jobs in db
 sealed interface AsyncJob : AsyncJobPayload {
     data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) : AsyncJob {
         override val user: AuthenticatedUser? = null

@@ -33,9 +33,9 @@ fun PersonData.Detailed.toDaycareFormChild(
     socialSecurityNumber = ssn ?: "",
     dateOfBirth = dateOfBirth,
     address = DaycareFormAddress(
-        street = streetAddress ?: "",
-        postalCode = postalCode ?: "",
-        city = postOffice ?: ""
+        street = streetAddress,
+        postalCode = postalCode,
+        city = postOffice
     ),
     nationality = nationality,
     language = language,
@@ -47,9 +47,9 @@ fun PersonData.Detailed.toDaycareFormAdult(restricted: Boolean = false) = Daycar
     lastName = lastName,
     socialSecurityNumber = ssn ?: "",
     address = DaycareFormAddress(
-        street = streetAddress ?: "",
-        postalCode = postalCode ?: "",
-        city = postOffice ?: ""
+        street = streetAddress,
+        postalCode = postalCode,
+        city = postOffice
     ),
     phoneNumber = phone,
     email = email,

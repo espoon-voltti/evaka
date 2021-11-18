@@ -60,9 +60,9 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         email = guardian.email,
         socialSecurityNumber = guardian.ssn!!,
         address = Address(
-            street = guardian.streetAddress!!,
-            city = guardian.postOffice!!,
-            postalCode = guardian.postalCode!!,
+            street = guardian.streetAddress,
+            city = guardian.postOffice,
+            postalCode = guardian.postalCode,
             editable = false
         )
     )
