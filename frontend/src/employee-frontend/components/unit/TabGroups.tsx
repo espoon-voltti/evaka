@@ -22,7 +22,7 @@ interface Props {
 }
 
 function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
-  const { unitInformation, unitData, filters, setFilters, savePosition } =
+  const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
 
   if (unitInformation.isFailure || unitData.isFailure) {
@@ -47,7 +47,6 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
           groups={unitData.value.groups}
           missingGroupPlacements={unitData.value.missingGroupPlacements}
           backupCares={unitData.value.backupCares}
-          savePosition={savePosition}
           reloadUnitData={reloadUnitData}
           permittedPlacementActions={unitData.value.permittedPlacementActions}
           permittedBackupCareActions={unitData.value.permittedBackupCareActions}

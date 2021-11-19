@@ -17,8 +17,6 @@ import Tabs from 'lib-components/molecules/Tabs'
 import TabUnitInformation from '../components/unit/TabUnitInformation'
 import TabGroups from '../components/unit/TabGroups'
 import { TitleContext, TitleState } from '../state/title'
-import { getDaycare, getUnitData } from '../api/unit'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { UnitContext, UnitContextProvider } from '../state/unit'
 import TabPlacementProposals from '../components/unit/TabPlacementProposals'
@@ -29,22 +27,11 @@ import LocalDate from 'lib-common/local-date'
 import TabCalendar from './unit/TabCalendar'
 import { UUID } from 'lib-common/types'
 
-const UnitPage = React.memo(function UnitPage() {
-  const { id } = useParams<{ id: UUID }>()
+const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const {
-    unitInformation,
-    setUnitInformation,
-    unitData,
-    setUnitData,
-    filters,
-    setFilters,
-    savePosition,
-    scrollToPosition
-  } = useContext(UnitContext)
-
-  const loadUnitInformation = useRestApi(getDaycare, setUnitInformation)
+  const { unitInformation, unitData, reloadUnitData, filters, setFilters } =
+    useContext(UnitContext)
 
   const query = useQuery()
   useEffect(() => {
@@ -54,28 +41,11 @@ const UnitPage = React.memo(function UnitPage() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => loadUnitInformation(id), [id, loadUnitInformation])
   useEffect(() => {
     if (unitInformation.isSuccess) {
       setTitle(unitInformation.value.daycare.name)
     }
   }, [setTitle, unitInformation])
-
-  const loadUnitData = useRestApi(getUnitData, setUnitData)
-  const loadUnitDataWithFixedPosition = () => {
-    savePosition()
-    loadUnitData(id, filters.startDate, filters.endDate)
-  }
-
-  useEffect(() => {
-    loadUnitDataWithFixedPosition()
-  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (unitData.isSuccess) {
-      scrollToPosition()
-    }
-  }, [scrollToPosition, unitData])
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
@@ -148,7 +118,7 @@ const UnitPage = React.memo(function UnitPage() {
             path="/units/:id/groups"
             component={() => (
               <TabGroups
-                reloadUnitData={loadUnitDataWithFixedPosition}
+                reloadUnitData={reloadUnitData}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
               />
@@ -168,9 +138,7 @@ const UnitPage = React.memo(function UnitPage() {
             exact
             path="/units/:id/placement-proposals"
             component={() => (
-              <TabPlacementProposals
-                reloadUnitData={loadUnitDataWithFixedPosition}
-              />
+              <TabPlacementProposals reloadUnitData={reloadUnitData} />
             )}
           />
           <RouteWithTitle
@@ -186,9 +154,10 @@ const UnitPage = React.memo(function UnitPage() {
 })
 
 export default React.memo(function UnitPageWrapper() {
+  const { id } = useParams<{ id: UUID }>()
   return (
-    <UnitContextProvider>
-      <UnitPage />
+    <UnitContextProvider id={id}>
+      <UnitPage id={id} />
     </UnitContextProvider>
   )
 })
