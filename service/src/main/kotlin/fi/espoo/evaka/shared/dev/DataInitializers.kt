@@ -157,9 +157,6 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, n
     // language=sql
     val sql =
         """
-        INSERT INTO employee (id, first_name, last_name, email, external_id)
-        VALUES (:id, :name, 'Yksikkö', null, null);
-
         INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
 
         INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (:id, 'MOBILE_DEVICE', :id, :name);

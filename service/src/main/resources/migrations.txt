@@ -175,3 +175,4 @@ V174__non_nullable_person_data.sql
 V175__person_preferred_name.sql
 V176__evaka_user_income_updated_by.sql
 V177__income_statement_awaiting_handler_index.sql
+V178__delete_mobile_devices_from_employee.sql

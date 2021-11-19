@@ -16,11 +16,9 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
@@ -62,7 +60,7 @@ class SystemControllerTest : FullApplicationTest() {
     }
 
     private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): MobileDeviceId {
-        val id = MobileDeviceId(insertTestEmployee(DevEmployee()))
+        val id = MobileDeviceId(UUID.randomUUID())
         insertTestMobileDevice(
             DevMobileDevice(
                 id = id,

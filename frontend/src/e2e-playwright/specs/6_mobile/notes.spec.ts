@@ -86,10 +86,7 @@ beforeEach(async () => {
 
   page = await (await newBrowserContext()).newPage()
 
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    unit.id
-  )
+  const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 
   await new MobileListPage(page).selectChild(child.id)

@@ -898,7 +898,6 @@ fun Database.Transaction.ensureFakeAdminExists() {
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
     execute("DELETE FROM message_account WHERE employee_id = ?", id)
-    execute("DELETE FROM mobile_device WHERE id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
 }

@@ -6,7 +6,6 @@ import {
   createDaycareGroupPlacementFixture,
   createDaycarePlacementFixture,
   daycareGroupFixture,
-  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { newBrowserContext } from '../../browser'
@@ -53,16 +52,11 @@ beforeEach(async () => {
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
-  const employee = await Fixture.employee().save()
-
   page = await (await newBrowserContext()).newPage()
   nav = new MobileNav(page)
   staffPage = new StaffPage(page)
 
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    fixtures.daycareFixture.id
-  )
+  const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
   await page.goto(mobileSignupUrl)
   await nav.openPage('staff')
 })

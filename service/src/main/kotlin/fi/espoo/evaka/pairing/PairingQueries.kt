@@ -63,15 +63,10 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: PairingId, chal
                 JOIN daycare u ON u.id = p.unit_id
                 WHERE p.id = :id AND p.challenge_key = :challenge AND p.response_key = :response 
                     AND p.status = 'WAITING_RESPONSE' AND p.expires > :now AND p.attempts <= :maxAttempts
-            ), new_employee AS (
-                INSERT INTO employee (first_name, last_name, email, external_id)
-                SELECT :name, unit_name, null, null
-                FROM target_pairing
-                RETURNING employee.id
             ), new_device AS (
-                INSERT INTO mobile_device (id, unit_id, name)
-                SELECT new_employee.id, target_pairing.unit_id, :name
-                FROM new_employee, target_pairing
+                INSERT INTO mobile_device (unit_id, name)
+                SELECT target_pairing.unit_id, :name
+                FROM target_pairing
                 RETURNING mobile_device.id
             )
             UPDATE pairing SET status = 'READY', mobile_device_id = new_device.id
