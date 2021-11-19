@@ -14,10 +14,12 @@ import { MessageContext } from '../../state/messages'
 import BottomNavBar from '../common/BottomNavbar'
 import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
-import { HeaderContainer, MessagePreview } from './MessagePreview'
+import { MessagePreview } from './MessagePreview'
 import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
 import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
+import styled from 'styled-components'
+import { defaultMargins } from 'lib-components/white-space'
 
 export default function MessagesPage() {
   const history = useHistory()
@@ -123,3 +125,8 @@ export default function MessagesPage() {
     </>
   ))
 }
+
+export const HeaderContainer = styled.div`
+  padding: 0 ${defaultMargins.s};
+  border-bottom: 1px solid ${colors.greyscale.lighter};
+`

@@ -311,7 +311,7 @@ export const fi = {
       send: 'Lähetä',
       sending: 'Lähetetään'
     },
-    emptyInbox: 'Viestikansio on tyhjä'
+    emptyInbox: 'Viestilaatikkosi on tyhjä'
   },
   mobile: {
     landerText1:

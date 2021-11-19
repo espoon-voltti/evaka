@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { defaultMargins } from 'lib-components/white-space'
 import {
   Container,
   Header,
@@ -61,14 +60,8 @@ export function MessagePreview({
   )
 }
 
-export const HeaderContainer = styled.div`
-  padding: 0 ${defaultMargins.s};
-`
 const MessagePreviewContainer = styled(Container)`
   border-left-width: 0;
   border-right-width: 0;
-  border-bottom-width: 0;
-  &:last-of-type {
-    border-bottom-width: 1px;
-  }
+  border-top-width: 0;
 `
