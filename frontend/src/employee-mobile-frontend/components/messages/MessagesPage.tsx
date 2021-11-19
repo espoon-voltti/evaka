@@ -58,15 +58,16 @@ export default function MessagesPage() {
   useEffect(() => refreshMessages(), [refreshMessages])
 
   useEffect(() => {
-    if (!selectedGroup) return
+    if (!nestedAccounts.isSuccess) return
 
-    const groupAccount = nestedAccounts.isSuccess
-      ? nestedAccounts.value.find(
-          ({ daycareGroup }) => daycareGroup?.id === selectedGroup.id
-        )?.account
-      : undefined
+    const maybeAccount =
+      nestedAccounts.value.find(({ account, daycareGroup }) =>
+        selectedGroup
+          ? daycareGroup?.id === selectedGroup.id
+          : account.type === 'PERSONAL'
+      )?.account ?? undefined
 
-    if (groupAccount) setSelectedAccount(groupAccount)
+    if (maybeAccount) setSelectedAccount(maybeAccount)
   }, [selectedGroup, nestedAccounts, setSelectedAccount])
 
   const { i18n } = useTranslation()
