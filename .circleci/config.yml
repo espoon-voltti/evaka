@@ -1175,6 +1175,12 @@ jobs:
       - restore_service_build_cache
       - login_docker_hub
       - run:
+          name: Install Java 17
+          command: |
+            sudo apt-get update && sudo apt-get install openjdk-17-jdk
+            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
+            java -version
+      - run:
           name: gradle integrationTest
           working_directory: *workspace_service
           command: |
@@ -1255,6 +1261,12 @@ jobs:
       - restore_message_service_gradle
       - restore_message_service_build_cache
       - login_docker_hub
+      - run:
+          name: Install Java 17
+          command: |
+            sudo apt-get update && sudo apt-get install openjdk-17-jdk
+            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
+            java -version
       - run:
           name: gradle integrationTest
           working_directory: *workspace_message_service
