@@ -27,7 +27,7 @@ import {
 } from '../../../../api/daycare-notes'
 import { Translations, useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
-import { ChildDailyNoteForm } from './ChildDailyNoteForm'
+import ChildDailyNoteForm from './ChildDailyNoteForm'
 
 const getLabels = (i18n: Translations, title: string, placeholder: string) => ({
   addNew: i18n.common.addNew,
@@ -86,7 +86,7 @@ interface Props {
   onClose: () => void
 }
 
-export const NotesModal = React.memo(function NotesModal({
+export default React.memo(function NotesModal({
   child,
   group,
   notesByGroup,

@@ -31,7 +31,7 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `
 
-function TabWaitingConfirmation() {
+export default React.memo(function TabWaitingConfirmation() {
   const { i18n } = useTranslation()
 
   const { unitData } = useContext(UnitContext)
@@ -113,6 +113,4 @@ function TabWaitingConfirmation() {
       </div>
     </ContentArea>
   ))
-}
-
-export default React.memo(TabWaitingConfirmation)
+})

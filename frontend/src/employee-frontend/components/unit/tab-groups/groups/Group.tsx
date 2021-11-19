@@ -70,7 +70,7 @@ import { UnitFilters } from '../../../../utils/UnitFilters'
 import { renderResult } from '../../../async-rendering'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
-import { NotesModal } from '../notes/NotesModal'
+import NotesModal from '../notes/NotesModal'
 
 interface Props {
   unit: Unit
@@ -130,7 +130,7 @@ function getChildMinMaxHeadcounts(
 
 type IdAndName = { id: UUID; name: string }
 
-function Group({
+export default React.memo(function Group({
   unit,
   filters,
   group,
@@ -700,7 +700,7 @@ function Group({
       ) : null}
     </DaycareGroup>
   )
-}
+})
 
 const TitleBar = styled.div`
   display: flex;
@@ -753,5 +753,3 @@ const TitleSummary = React.memo(function TitleSummary({
 const Label = styled.label`
   font-weight: ${fontWeights.semibold};
 `
-
-export default Group

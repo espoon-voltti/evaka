@@ -14,7 +14,9 @@ interface Props {
   reloadUnitData: () => void
 }
 
-function TabPlacementProposals({ reloadUnitData }: Props) {
+export default React.memo(function TabPlacementProposals({
+  reloadUnitData
+}: Props) {
   const { id } = useParams<{ id: UUID }>()
   const { unitData } = useContext(UnitContext)
 
@@ -27,6 +29,4 @@ function TabPlacementProposals({ reloadUnitData }: Props) {
       />
     </ContentArea>
   ))
-}
-
-export default React.memo(TabPlacementProposals)
+})

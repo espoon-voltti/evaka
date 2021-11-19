@@ -34,7 +34,7 @@ interface CreateGroupForm {
   initialCaretakers: number
 }
 
-function GroupModal({ unitId, reload }: Props) {
+export default React.memo(function GroupModal({ unitId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
@@ -132,6 +132,4 @@ function GroupModal({ unitId, reload }: Props) {
       </FixedSpaceColumn>
     </FormModal>
   )
-}
-
-export default GroupModal
+})
