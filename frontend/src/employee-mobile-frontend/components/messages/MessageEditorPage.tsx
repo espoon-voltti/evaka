@@ -76,6 +76,7 @@ export default function MessageEditorPage() {
           refreshMessages(accountId)
           history.back()
         } else {
+          // TODO handle eg. expired pin session correctly
           console.error('Failed to send message')
         }
         setSending(false)
