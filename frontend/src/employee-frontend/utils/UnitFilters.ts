@@ -8,46 +8,33 @@ import { UnitFiltersType } from '../types/unit'
 export type FilterTimePeriod = '1 day' | '3 months' | '6 months' | '1 year'
 
 export class UnitFilters implements UnitFiltersType {
-  private readonly _startDate: LocalDate
-  private readonly _endDate: LocalDate
-  private readonly _period: FilterTimePeriod
+  readonly endDate: LocalDate
 
-  constructor(startDate: LocalDate, period: FilterTimePeriod) {
-    this._startDate = startDate
-    this._period = period
+  constructor(
+    public readonly startDate: LocalDate,
+    public readonly period: FilterTimePeriod
+  ) {
     switch (period) {
       case '1 day':
-        this._endDate = startDate.addDays(0)
+        this.endDate = startDate.addDays(0)
         break
       case '3 months':
-        this._endDate = startDate.addMonths(3)
+        this.endDate = startDate.addMonths(3)
         break
       case '6 months':
-        this._endDate = startDate.addMonths(6)
+        this.endDate = startDate.addMonths(6)
         break
       case '1 year':
-        this._endDate = startDate.addYears(1)
+        this.endDate = startDate.addYears(1)
         break
     }
   }
 
   withStartDate(date: LocalDate) {
-    return new UnitFilters(date, this._period)
+    return new UnitFilters(date, this.period)
   }
 
   withPeriod(period: FilterTimePeriod) {
-    return new UnitFilters(this._startDate, period)
-  }
-
-  get startDate(): LocalDate {
-    return this._startDate
-  }
-
-  get endDate(): LocalDate {
-    return this._endDate
-  }
-
-  get period(): FilterTimePeriod {
-    return this._period
+    return new UnitFilters(this.startDate, period)
   }
 }
