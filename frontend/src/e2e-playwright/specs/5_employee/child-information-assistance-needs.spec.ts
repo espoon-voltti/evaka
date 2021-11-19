@@ -7,7 +7,10 @@ import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
-  resetDatabase
+  insertDefaultServiceNeedOptions,
+  insertEmployeeFixture,
+  resetDatabase,
+  setAclForDaycares
 } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
@@ -31,6 +34,7 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
+  await insertDefaultServiceNeedOptions()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id
@@ -43,15 +47,28 @@ beforeEach(async () => {
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
+  await insertEmployeeFixture({
+    id: config.unitSupervisorAad,
+    externalId: `espoo-ad:${config.unitSupervisorAad}`,
+    email: 'essi.esimies@evaka.test',
+    firstName: 'Essi',
+    lastName: 'Esimies',
+    roles: []
+  })
+  await setAclForDaycares(
+    `espoo-ad:${config.unitSupervisorAad}`,
+    fixtures.daycareFixture.id
+  )
+
   page = await (await newBrowserContext()).newPage()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, 'UNIT_SUPERVISOR')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.assistanceCollapsible.click()
   assistanceNeeds = new ChildAssistanceNeed(page)
 })
 
-describe('Child Information assistance need', () => {
+describe('Child Information assistance need functionality for unit supervisor', () => {
   test('assistance need can be added', async () => {
     await assistanceNeeds.createNewAssistanceNeed()
     await assistanceNeeds.setAssistanceNeedDescription('a description')
