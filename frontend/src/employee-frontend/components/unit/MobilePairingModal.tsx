@@ -5,8 +5,8 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
-import { Result, Loading } from 'lib-common/api'
-import { fontWeights } from 'lib-components/typography'
+import { Loading, Result } from 'lib-common/api'
+import { fontWeights, P } from 'lib-components/typography'
 import {
   getPairingStatus,
   PairingResponse,
@@ -14,13 +14,12 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '../../api/unit'
-import { P } from 'lib-components/typography'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import InputField from 'lib-components/atoms/form/InputField'
-import Loader from 'lib-components/atoms/Loader'
 import { faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from 'lib-common/types'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   unitId: UUID
@@ -131,13 +130,11 @@ export default React.memo(function MobilePairingModal({
             <br />
             {i18n.unit.accessControl.mobileDevices.modalText2}
           </P>
-          {pairingResponse.isLoading && <Loader />}
-          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
-          {pairingResponse.isSuccess && (
+          {renderResult(pairingResponse, (pairingResponse) => (
             <ResponseKey data-qa="challenge-key">
-              {pairingResponse.value.challengeKey}
+              {pairingResponse.challengeKey}
             </ResponseKey>
-          )}
+          ))}
         </InfoModal>
       )}
 
@@ -149,9 +146,7 @@ export default React.memo(function MobilePairingModal({
           resolve={{ action: closeModal, label: i18n.common.cancel }}
         >
           <P centered>{i18n.unit.accessControl.mobileDevices.modalText3}</P>
-          {pairingResponse.isLoading && <Loader />}
-          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
-          {pairingResponse.isSuccess && (
+          {renderResult(pairingResponse, () => (
             <Flex>
               <InputField
                 value={responseKey}
@@ -161,7 +156,7 @@ export default React.memo(function MobilePairingModal({
                 data-qa="response-key-input"
               />
             </Flex>
-          )}
+          ))}
         </InfoModal>
       )}
 
@@ -174,11 +169,9 @@ export default React.memo(function MobilePairingModal({
           resolve={{ action: saveDeviceName, label: i18n.common.ready }}
         >
           <P centered>{i18n.unit.accessControl.mobileDevices.modalText4}</P>
-          {pairingResponse.isLoading && <Loader />}
-          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
-          {pairingResponse.isSuccess && (
+          {renderResult(pairingResponse, (pairingResponse) => (
             <Flex>
-              {pairingResponse.value.mobileDeviceId ? (
+              {pairingResponse.mobileDeviceId ? (
                 <InputField
                   value={deviceName}
                   onChange={setDeviceName}
@@ -187,13 +180,13 @@ export default React.memo(function MobilePairingModal({
                   }
                   width={'m'}
                   data-qa="mobile-device-name-input"
-                  id={pairingResponse.value.mobileDeviceId}
+                  id={pairingResponse.mobileDeviceId}
                 />
               ) : (
                 <div>{i18n.common.loadingFailed}</div>
               )}
             </Flex>
-          )}
+          ))}
         </InfoModal>
       )}
     </Fragment>

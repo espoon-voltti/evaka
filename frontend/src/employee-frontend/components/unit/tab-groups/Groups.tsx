@@ -40,7 +40,7 @@ function renderGroups(
   unit: Unit,
   filters: UnitFilters,
   groups: DaycareGroup[],
-  groupPermittedActions: Record<UUID, Set<Action.Group>>,
+  groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>,
   placements: DaycarePlacement[],
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>,
   permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>,
@@ -79,7 +79,7 @@ function renderGroups(
           key={group.id}
           reload={reload}
           onTransferRequested={onTransferRequested}
-          open={!!openGroups[group.id]}
+          open={openGroups[group.id]}
           toggleOpen={() =>
             setOpenGroups((current) => ({
               ...current,
@@ -103,7 +103,7 @@ type Props = {
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
   backupCares: UnitBackupCare[]
-  groupPermittedActions: Record<UUID, Set<Action.Group>>
+  groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>
   groupCaretakers: Record<string, Stats>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>

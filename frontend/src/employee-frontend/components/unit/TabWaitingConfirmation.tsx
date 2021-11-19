@@ -1,3 +1,5 @@
+import { renderResult } from '../async-rendering'
+
 {
   /*
 SPDX-FileCopyrightText: 2017-2020 City of Espoo
@@ -6,11 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
@@ -36,21 +36,19 @@ function TabWaitingConfirmation() {
 
   const { unitData } = useContext(UnitContext)
 
-  if (unitData.isLoading) {
-    return <SpinnerSegment />
-  }
+  const sortedRows = useMemo(
+    () =>
+      unitData.map((unitData) =>
+        _.sortBy(unitData.placementPlans, [
+          (p: DaycarePlacementPlan) => p.child.lastName,
+          (p: DaycarePlacementPlan) => p.child.firstName,
+          (p: DaycarePlacementPlan) => p.period.start
+        ])
+      ),
+    [unitData]
+  )
 
-  if (unitData.isFailure || !unitData.value.placementPlans) {
-    return <ErrorSegment />
-  }
-
-  const sortedRows = _.sortBy(unitData.value.placementPlans, [
-    (p: DaycarePlacementPlan) => p.child.lastName,
-    (p: DaycarePlacementPlan) => p.child.firstName,
-    (p: DaycarePlacementPlan) => p.period.start
-  ])
-
-  return (
+  return renderResult(sortedRows, (sortedRows) => (
     <ContentArea opaque>
       <Title size={2}>{i18n.unit.placementPlans.title}</Title>
       <div>
@@ -114,7 +112,7 @@ function TabWaitingConfirmation() {
         </Table>
       </div>
     </ContentArea>
-  )
+  ))
 }
 
 export default React.memo(TabWaitingConfirmation)

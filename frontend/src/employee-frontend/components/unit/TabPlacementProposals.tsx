@@ -5,11 +5,10 @@
 import React, { useContext } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { useParams } from 'react-router-dom'
 import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
 import { UUID } from 'lib-common/types'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   reloadUnitData: () => void
@@ -19,23 +18,15 @@ function TabPlacementProposals({ reloadUnitData }: Props) {
   const { id } = useParams<{ id: UUID }>()
   const { unitData } = useContext(UnitContext)
 
-  if (unitData.isFailure) {
-    return <ErrorSegment />
-  }
-
-  if (unitData.isLoading) {
-    return <SpinnerSegment />
-  }
-
-  return (
+  return renderResult(unitData, (unitData) => (
     <ContentArea opaque>
       <PlacementProposals
         unitId={id}
-        placementPlans={unitData.value.placementProposals ?? []}
+        placementPlans={unitData.placementProposals ?? []}
         loadUnitData={reloadUnitData}
       />
     </ContentArea>
-  )
+  ))
 }
 
 export default React.memo(TabPlacementProposals)
