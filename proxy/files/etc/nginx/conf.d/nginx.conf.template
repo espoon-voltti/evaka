@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -119,6 +119,10 @@ log_format json_access escape=json
     '"traceId":"$request_id",'
     '"type":"app-requests-received",'
     '"userIdHash":"",'
+<% if ENV["DD_PROFILING_ENABLED"] == "true" %>
+    '"dd.trace_id":"$opentracing_context_x_datadog_trace_id",'
+    '"dd.span_id":"$opentracing_context_x_datadog_parent_id",'
+<% end %>
     '"version":1'
   '}';
 

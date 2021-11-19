@@ -657,12 +657,30 @@ commands:
           working_directory: << pipeline.parameters.workspace_root >>
           command: docker load -i evaka-base.tar
 
+  push_docker_image:
+    parameters:
+      image:
+        type: string
+    steps:
+      - run:
+          name: Push docker image
+          command: |
+            if test -z "$CIRCLE_PR_NUMBER"; then
+              ecr-login
+              ecr-push << parameters.image >>
+            else
+              echo "Forked - not pushing image"
+            fi
+
   build_docker_image:
     parameters:
       image:
         type: string
       dir:
         type: string
+      push:
+        type: boolean
+        default: true
     steps:
       - run:
           name: Build docker image
@@ -673,15 +691,11 @@ commands:
               --build-arg "build=${CIRCLE_BUILD_NUM}" \
               --build-arg "commit=${CIRCLE_SHA1}" \
               .
-      - run:
-          name: Push docker image
-          command: |
-            if test -z "$CIRCLE_PR_NUMBER"; then
-              ecr-login
-              ecr-push << parameters.image >>
-            else
-              echo "Forked - not pushing image"
-            fi
+      - when:
+          condition: << parameters.push >>
+          steps:
+            - push_docker_image:
+                image: << parameters.image >>
       - run:
           name: Save docker image
           working_directory: << parameters.dir >>
@@ -1042,19 +1056,16 @@ jobs:
     steps:
       - restore_repo
       - setup_authenticated_remote_docker
-      - run:
-          name: Test proxy image configuration
-          working_directory: *workspace_proxy
-          command: |
-            docker build \
-              -t smoketest-evaka-proxy \
-              -f smoketest.Dockerfile \
-              --build-arg "build=${CIRCLE_BUILD_NUM}" \
-              --build-arg "commit=${CIRCLE_SHA1}" \
-              .
       - build_docker_image:
           image: evaka/proxy
           dir: *workspace_proxy
+          push: false
+      - run:
+          name: Test proxy image
+          working_directory: *workspace_proxy
+          command: ./test.sh
+      - push_docker_image:
+          image: evaka/proxy
       - notify_slack
 
   service_build:
