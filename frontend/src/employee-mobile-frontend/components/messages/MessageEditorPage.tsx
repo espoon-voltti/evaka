@@ -84,18 +84,24 @@ export default function MessageEditorPage() {
     [refreshMessages]
   )
 
-  const onDiscard = (accountId: UUID, draftId: UUID) => {
-    void deleteDraft(accountId, draftId)
-      .then(() => refreshMessages(accountId))
-      .then(() => history.back())
-  }
+  const onDiscard = useCallback(
+    (accountId: UUID, draftId: UUID) => {
+      void deleteDraft(accountId, draftId)
+        .then(() => refreshMessages(accountId))
+        .then(() => history.back())
+    },
+    [refreshMessages]
+  )
 
-  const onHide = (didChanges: boolean) => {
-    if (didChanges) {
-      refreshMessages()
-    }
-    history.back()
-  }
+  const onHide = useCallback(
+    (didChanges: boolean) => {
+      if (didChanges) {
+        refreshMessages()
+      }
+      history.back()
+    },
+    [refreshMessages]
+  )
 
   return (
     <>
