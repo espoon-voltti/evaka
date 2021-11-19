@@ -179,3 +179,4 @@ V178__delete_mobile_devices_from_employee.sql
 V179__report_viewer_user_role.sql
 V180__allow_new_report_viewer_role_on_employees.sql
 V181__assistance_need_remove_description_other_basis.sql
+V182__employee_personal_mobile_device.sql

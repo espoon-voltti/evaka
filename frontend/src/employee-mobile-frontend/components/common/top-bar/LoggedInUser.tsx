@@ -67,7 +67,7 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
   return (
     <UserContainer active={menuOpen} data-qa="top-bar-user">
       {renderResult(user, (u) =>
-        u?.employeeId ? (
+        u?.employeeId && u?.pinLoginActive ? (
           menuOpen ? (
             <>
               <IconButton

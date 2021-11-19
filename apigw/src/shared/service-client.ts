@@ -153,7 +153,9 @@ export async function validatePairing(
 export interface MobileDevice {
   id: UUID
   name: string
-  unitId: UUID
+  unitIds: UUID[]
+  employeeId?: UUID
+  personalDevice: boolean
 }
 
 export async function identifyMobileDevice(

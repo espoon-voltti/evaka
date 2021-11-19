@@ -4,7 +4,7 @@
 
 import { client } from './client'
 import { JsonOf } from 'lib-common/json'
-import { AuthStatus } from 'lib-common/api-types/employee-auth'
+import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
 
@@ -18,6 +18,8 @@ export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
   return `/api/internal/auth/${type}/login?RelayState=${relayState}`
 }
 
-export async function getAuthStatus(): Promise<AuthStatus> {
-  return client.get<JsonOf<AuthStatus>>('/auth/status').then((res) => res.data)
+export async function getAuthStatus(): Promise<AuthStatus<User>> {
+  return client
+    .get<JsonOf<AuthStatus<User>>>('/auth/status')
+    .then((res) => res.data)
 }

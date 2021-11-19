@@ -25,9 +25,9 @@ export default React.memo(function MobileLander() {
   const { user } = useContext(UserContext)
 
   return renderResult(user, (u) =>
-    u?.unitId ? (
+    u?.unitIds ? (
       <Redirect
-        to={`/units/${u.unitId}/groups/all/child-attendance/list/coming`}
+        to={`/units/${u.unitIds[0]}/groups/all/child-attendance/list/coming`}
       />
     ) : (
       <FullHeightContainer spaced>

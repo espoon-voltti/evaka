@@ -36,11 +36,11 @@ class MobileDevicesController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
-    ): ResponseEntity<List<MobileDevice>> {
+    ): ResponseEntity<List<SharedMobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return db
-            .read { it.listDevices(unitId) }
+            .read { it.listSharedDevices(unitId) }
             .let { ResponseEntity.ok(it) }
     }
 

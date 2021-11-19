@@ -15,13 +15,18 @@ import java.util.UUID
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDevice {
     return createQuery(
         """
-SELECT 
-    id,
-    name,
-    unit_id
-FROM mobile_device
+SELECT
+    md.id, md.name, md.employee_id,
+    CASE
+        WHEN md.unit_id IS NOT NULL THEN ARRAY[md.unit_id]
+        ELSE coalesce(array_agg(acv.daycare_id) FILTER (WHERE acv.daycare_id IS NOT NULL), '{}')
+    END AS unit_ids,
+    md.employee_id IS NOT NULL AS personal_device
+FROM mobile_device md
+LEFT JOIN daycare_acl_view acv ON md.employee_id = acv.employee_id
 WHERE id = :id AND deleted = false
-        """.trimIndent()
+GROUP BY md.id, md.name, md.employee_id
+"""
     )
         .bind("id", id)
         .mapTo<MobileDevice>()
@@ -33,19 +38,10 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQu
 ).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
     ?: throw NotFound("Device not found with token $token")
 
-fun Database.Read.listDevices(unitId: DaycareId): List<MobileDevice> {
-    return createQuery(
-        """
-SELECT 
-    id,
-    name,
-    unit_id
-FROM mobile_device
-WHERE unit_id = :unitId AND deleted = false
-        """.trimIndent()
-    )
+fun Database.Read.listSharedDevices(unitId: DaycareId): List<SharedMobileDevice> {
+    return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId AND deleted = false")
         .bind("unitId", unitId)
-        .mapTo<MobileDevice>()
+        .mapTo<SharedMobileDevice>()
         .list()
 }
 

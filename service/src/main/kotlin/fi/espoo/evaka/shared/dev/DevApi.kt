@@ -682,7 +682,10 @@ RETURNING id
         @RequestBody body: PairingsController.PostPairingReq
     ): ResponseEntity<Pairing> {
         return db.transaction {
-            it.initPairing(body.unitId)
+            when (body) {
+                is PairingsController.PostPairingReq.Unit -> it.initPairing(unitId = body.unitId)
+                is PairingsController.PostPairingReq.Employee -> it.initPairing(employeeId = body.employeeId)
+            }
         }.let { ResponseEntity.ok(it) }
     }
 

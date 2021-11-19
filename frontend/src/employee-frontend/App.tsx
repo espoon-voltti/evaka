@@ -81,7 +81,7 @@ import VardaErrors from './components/reports/VardaErrors'
 import UnitFeaturesPage from './components/UnitFeaturesPage'
 import SettingsPage from './components/SettingsPage'
 import ReloadNotification from 'lib-components/molecules/ReloadNotification'
-import { AuthStatus } from 'lib-common/api-types/employee-auth'
+import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { getAuthStatus } from './api/auth'
 
 export default function App() {
@@ -502,8 +502,8 @@ const redirectTo = (urlMapper: (params: { [k: string]: string }) => string) =>
     return <Redirect to={urlMapper(routeParams)} />
   }
 
-function useAuthStatus(): AuthStatus | undefined {
-  const [authStatus, setAuthStatus] = useState<AuthStatus>()
+function useAuthStatus(): AuthStatus<User> | undefined {
+  const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
 
   const refreshAuthStatus = useCallback(
     () => getAuthStatus().then(setAuthStatus),

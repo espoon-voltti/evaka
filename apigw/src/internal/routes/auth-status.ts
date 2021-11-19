@@ -24,12 +24,20 @@ export default toRequestHandler(async (req, res) => {
       } else {
         const globalRoles = user.globalRoles ?? []
         const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
-        const employeeId = user.mobileEmployeeId
-        const { id, name, unitId } = device
+        const employeeId = device.employeeId ?? user.mobileEmployeeId
+        const pinLoginActive = user.mobileEmployeeId
+        const { id, name, unitIds, personalDevice } = device
         await saveSession(req)
         res.status(200).json({
           loggedIn: true,
-          user: { id, name, unitId, employeeId },
+          user: {
+            id,
+            name,
+            unitIds,
+            employeeId,
+            pinLoginActive,
+            personalDevice
+          },
           globalRoles,
           allScopedRoles,
           roles: [...globalRoles, ...allScopedRoles],

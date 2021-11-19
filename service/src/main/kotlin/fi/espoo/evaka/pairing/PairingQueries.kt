@@ -5,8 +5,10 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
@@ -16,17 +18,18 @@ import java.util.UUID
 const val maxAttempts = 100 // additional brute-force protection
 const val expiresInMinutes = 60L
 
-fun Database.Transaction.initPairing(unitId: DaycareId): Pairing {
+fun Database.Transaction.initPairing(unitId: DaycareId? = null, employeeId: EmployeeId? = null): Pairing {
     // language=sql
     val sql =
         """
-            INSERT INTO pairing (unit_id, expires, challenge_key) 
-            VALUES (:unitId, :expires, :challenge)
+            INSERT INTO pairing (unit_id, employee_id, expires, challenge_key)
+            VALUES (:unitId, :employeeId, :expires, :challenge)
             RETURNING *
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
+        .bind("employeeId", employeeId)
         .bind("expires", HelsinkiDateTime.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
         .mapTo<Pairing>()
@@ -58,14 +61,13 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: PairingId, chal
     val sql =
         """
             WITH target_pairing AS (
-                SELECT p.id, unit_id, u.name AS unit_name
+                SELECT p.id, unit_id, employee_id
                 FROM pairing p
-                JOIN daycare u ON u.id = p.unit_id
                 WHERE p.id = :id AND p.challenge_key = :challenge AND p.response_key = :response 
                     AND p.status = 'WAITING_RESPONSE' AND p.expires > :now AND p.attempts <= :maxAttempts
             ), new_device AS (
-                INSERT INTO mobile_device (unit_id, name)
-                SELECT target_pairing.unit_id, :name
+                INSERT INTO mobile_device (unit_id, employee_id, name)
+                SELECT target_pairing.unit_id, target_pairing.employee_id, :name
                 FROM target_pairing
                 RETURNING mobile_device.id
             )
@@ -109,6 +111,15 @@ RETURNING id, long_term_token
         .bind("longTermToken", UUID.randomUUID())
         .mapTo<MobileDeviceIdentity>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
+}
+
+fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, EmployeeId?> {
+    return createQuery("SELECT unit_id, employee_id FROM pairing WHERE id = :id")
+        .bind("id", id)
+        .map { rowView ->
+            rowView.mapColumn<DaycareId?>("unit_id") to rowView.mapColumn<EmployeeId?>("employee_id")
+        }
+        .firstOrNull() ?: throw NotFound("Pairing not found")
 }
 
 fun Database.Read.fetchPairingStatus(id: PairingId): PairingStatus {

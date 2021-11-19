@@ -46,6 +46,7 @@ import {
 } from 'lib-common/api-types/reservations'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
+import { SharedMobileDevice } from 'lib-common/generated/api-types/pairing'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -720,16 +721,11 @@ export async function putMobileDeviceName(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface MobileDevice {
-  id: UUID
-  name: string
-}
-
 export async function getMobileDevices(
   unitId: UUID
-): Promise<Result<MobileDevice[]>> {
+): Promise<Result<SharedMobileDevice[]>> {
   return client
-    .get<JsonOf<MobileDevice[]>>(`/mobile-devices`, {
+    .get<JsonOf<SharedMobileDevice[]>>(`/mobile-devices`, {
       params: {
         unitId
       }

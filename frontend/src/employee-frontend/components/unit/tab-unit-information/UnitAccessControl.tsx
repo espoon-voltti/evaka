@@ -24,7 +24,6 @@ import {
   deleteMobileDevice,
   getDaycareAclRows,
   getMobileDevices,
-  MobileDevice,
   putMobileDeviceName,
   removeDaycareAclSpecialEducationTeacher,
   removeDaycareAclStaff,
@@ -55,6 +54,7 @@ import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { renderResult } from '../../async-rendering'
+import { SharedMobileDevice } from 'lib-common/generated/api-types/pairing'
 
 type Props = {
   unitId: string
@@ -308,7 +308,7 @@ const DevicesTable = React.memo(function DevicesTable({
   onEditDevice,
   onDeleteDevice
 }: {
-  rows: MobileDevice[]
+  rows: SharedMobileDevice[]
   onEditDevice: (deviceId: UUID) => void
   onDeleteDevice: (deviceId: UUID) => void
 }) {
@@ -345,14 +345,13 @@ function DeviceRow({
   onClickEdit,
   onClickDelete
 }: {
-  row: MobileDevice
+  row: SharedMobileDevice
   onClickEdit: () => void
   onClickDelete: () => void
 }) {
   return (
     <Tr data-qa="device-row">
       <Td data-qa="name">{row.name}</Td>
-      {/* <Td data-qa="last-used">{row.lastUsed}</Td> */}
       <Td>
         <FixedSpaceRowAlignRight>
           <IconButton

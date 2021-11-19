@@ -19,9 +19,11 @@ export interface Employee {
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
+  employeeId: UUID | null
   id: UUID
   name: string
-  unitId: UUID
+  personalDevice: boolean
+  unitIds: UUID[]
 }
 
 /**
@@ -37,12 +39,13 @@ export interface MobileDeviceIdentity {
 */
 export interface Pairing {
   challengeKey: string
+  employeeId: UUID | null
   expires: Date
   id: UUID
   mobileDeviceId: UUID | null
   responseKey: string | null
   status: PairingStatus
-  unitId: UUID
+  unitId: UUID | null
 }
 
 /**
@@ -93,13 +96,6 @@ export interface PostPairingChallengeReq {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
-*/
-export interface PostPairingReq {
-  unitId: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingResponseReq
 */
 export interface PostPairingResponseReq {
@@ -119,5 +115,13 @@ export interface PostPairingValidationReq {
 * Generated from fi.espoo.evaka.pairing.MobileDevicesController.RenameRequest
 */
 export interface RenameRequest {
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.SharedMobileDevice
+*/
+export interface SharedMobileDevice {
+  id: UUID
   name: string
 }
