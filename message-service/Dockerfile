@@ -8,7 +8,7 @@ USER root
 RUN set -eux \
  && apt-get update && apt-get -y --no-install-recommends install \
        curl \
-       openjdk-11-jre-headless \
+       openjdk-17-jre-headless \
  && rm -rf /var/lib/apt/lists/*
 
 ARG DD_JAVA_AGENT_VERSION="0.89.0"

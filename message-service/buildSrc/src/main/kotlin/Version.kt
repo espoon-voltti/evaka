@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 object Version {
-    const val java = "11"
+    const val java = "17"
     const val ktlint = "0.43.0"
 
     object GradlePlugin {

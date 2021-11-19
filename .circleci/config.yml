@@ -46,7 +46,7 @@ aliases:
   - &shellcheck_image_version v0.7.2
   - &reuse_image fsfe/reuse:0.13.0 # NOTE: Update bin/add-license-headers.sh to match
   - &nodejs_image << pipeline.parameters.nodejs_image >>
-  - &openjdk_image cimg/openjdk:11.0
+  - &openjdk_image cimg/openjdk:17.0
   - &ubuntu_machine_image ubuntu-2004:202107-02
   - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-core-<< pipeline.parameters.builder_aws_type >>
   - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-docker-<< pipeline.parameters.builder_aws_type >>
