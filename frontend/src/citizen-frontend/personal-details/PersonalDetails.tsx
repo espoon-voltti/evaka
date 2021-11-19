@@ -52,7 +52,7 @@ export default React.memo(function PersonalDetails() {
   } = useEditState(t, user, refreshAuthStatus)
 
   const preferredNameOptions = useMemo(
-    () => user.map((user) => user?.firstName.split(' ') ?? []).getOrElse([]),
+    () => getPreferredNameOptions(user),
     [user]
   )
 
@@ -242,13 +242,17 @@ export default React.memo(function PersonalDetails() {
   )
 })
 
+function getPreferredNameOptions(user: Result<User | undefined>): string[] {
+  return user.map((user) => user?.firstName.split(' ') ?? []).getOrElse([])
+}
+
 function useEditState(
   t: Translations,
   user: Result<User | undefined>,
   reloadUser: () => void
 ) {
   const [editing, setEditing] = useState(false)
-  const [editorState, setEditorState] = useState(initialEditorState(user))
+  const [editorState, setEditorState] = useState(() => initialEditorState(user))
 
   const errors = useMemo(() => {
     const errors: Partial<
@@ -354,13 +358,15 @@ function useEditState(
 function initialEditorState(userResult: Result<User | undefined>) {
   const noEmail = false
   const showEmailInfo = false
+  const preferredNameOptions = getPreferredNameOptions(userResult)
 
   return (
     userResult
       .map((user) =>
         user
           ? {
-              preferredName: user.preferredName,
+              preferredName:
+                user.preferredName || (preferredNameOptions[0] ?? ''),
               phone: user.phone,
               backupPhone: user.backupPhone,
               email: user.email ?? '',
