@@ -11,7 +11,6 @@ import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
-import fi.espoo.evaka.messaging.getEmployeeMessageAccountIds
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
@@ -36,7 +35,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -491,21 +489,6 @@ WHERE employee_id = :userId
             action = action,
             mapping = permittedRoleActions::decisionActions
         )
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.MessageContent, accountId: MessageAccountId) {
-        when (user) {
-            is AuthenticatedUser.MobileDevice -> when (action) {
-                Action.MessageContent.READ_RECEIVED_MESSAGES -> {
-                    if (user.employeeId == null) throw Forbidden("Permission denied")
-                    Database(jdbi).connect { db ->
-                        db.read { it.getEmployeeMessageAccountIds(user.employeeId.raw) }.find { it == accountId }
-                            ?: throw Forbidden("Permission denied")
-                    }
-                }
-            }
-            else -> throw Forbidden("Permission denied")
-        }
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {

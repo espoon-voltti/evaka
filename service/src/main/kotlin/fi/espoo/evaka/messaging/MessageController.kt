@@ -17,8 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.security.AccessControl
-import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,7 +39,6 @@ data class ReplyToMessageBody(
 @RequestMapping("/messages")
 class MessageController(
     private val acl: AccessControlList,
-    private val ac: AccessControl,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
@@ -67,19 +64,6 @@ class MessageController(
                 else setOf()
             else -> setOf()
         }
-    }
-
-    @GetMapping("/mobile/{accountId}/received")
-    fun getReceivedMessagesByDevice(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
-        @RequestParam page: Int,
-    ): Paged<MessageThread> {
-        Audit.MessagingReceivedMessagesRead.log(accountId)
-        ac.requirePermissionFor(user, Action.MessageContent.READ_RECEIVED_MESSAGES, accountId)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
     @GetMapping("/{accountId}/received")
