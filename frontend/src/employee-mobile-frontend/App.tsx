@@ -39,6 +39,10 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 import { UnitContextProvider } from './state/unit'
 import { UserContextProvider } from './state/user'
+import MessagesPage from './components/messages/MessagesPage'
+import { MessageContextProvider } from './state/messages'
+import { featureFlags } from 'lib-customizations/employee'
+import MessageEditorPage from './components/messages/MessageEditorPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -97,6 +101,9 @@ function GroupRouter() {
         path={`${path}/staff-attendance`}
         component={StaffAttendanceRouter}
       />
+      {featureFlags.experimental?.mobileMessages && (
+        <Route path={`${path}/messages`} component={MessagesRouter} />
+      )}
     </Switch>
   )
 }
@@ -191,5 +198,23 @@ function StaffAttendanceRouter() {
         <Redirect to={path} />
       </Switch>
     </StaffAttendanceContextProvider>
+  )
+}
+
+function MessagesRouter() {
+  const { path } = useRouteMatch()
+
+  return (
+    <MessageContextProvider>
+      <Switch>
+        <Route exact path={path} component={requirePinAuth(MessagesPage)} />
+        <Route
+          exact
+          path={`${path}/:childId/new-message`}
+          component={requirePinAuth(MessageEditorPage)}
+        />
+        <Redirect to={path} />
+      </Switch>
+    </MessageContextProvider>
   )
 }

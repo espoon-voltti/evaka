@@ -185,6 +185,7 @@ export interface TextInputProps extends BaseProps {
   required?: boolean
   autoFocus?: boolean
   inputRef?: RefObject<HTMLInputElement>
+  wrapperClassName?: string
 }
 
 export default React.memo(function InputField({
@@ -215,7 +216,8 @@ export default React.memo(function InputField({
   inputRef,
   'aria-describedby': ariaId,
   required,
-  autoFocus
+  autoFocus,
+  wrapperClassName = undefined
 }: TextInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -225,7 +227,7 @@ export default React.memo(function InputField({
   const infoStatus = hideError ? undefined : info?.status
 
   return (
-    <Wrapper>
+    <Wrapper className={wrapperClassName}>
       <InputRow>
         <StyledInput
           autoComplete={autoComplete}

@@ -7,10 +7,9 @@ import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { UpsertableDraftContent } from 'lib-common/generated/api-types/messaging'
-import * as api from './api'
-import { SaveDraftParams } from './api'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { SaveDraftParams } from 'lib-components/employee/messages/types'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 
@@ -22,7 +21,15 @@ const draftToSaveParams = ({ accountId, ...content }: Draft, id: string) => ({
   draftId: id
 })
 
-export function useDraft(initialId: UUID | null): {
+export function useDraft({
+  initialId,
+  saveDraftRaw,
+  initDraftRaw
+}: {
+  initialId: UUID | null
+  saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
+  initDraftRaw: (accountId: string) => Promise<Result<string>>
+}): {
   draftId: string | null
   saveDraft: () => void
   wasModified: boolean
@@ -34,7 +41,7 @@ export function useDraft(initialId: UUID | null): {
   const [draft, setDraft] = useState<Draft>()
   const [wasModified, setWasModified] = useState(false)
 
-  const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
+  const initDraft = useRestApi(initDraftRaw, (res: Result<UUID>) => {
     if (res.isSuccess) {
       setId(res.value)
       setInitializing(false)
@@ -49,7 +56,7 @@ export function useDraft(initialId: UUID | null): {
     }
   }, [id, initDraft, draft, saveState, initializing])
 
-  const save = useRestApi(api.saveDraft, (res: Result<void>) => {
+  const save = useRestApi(saveDraftRaw, (res: Result<void>) => {
     if (res.isSuccess) {
       setWasModified(true)
       setSaveState('clean')

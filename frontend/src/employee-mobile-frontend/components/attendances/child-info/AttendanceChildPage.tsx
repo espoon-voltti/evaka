@@ -37,6 +37,7 @@ import { UnitContext } from '../../../state/unit'
 import { UUID } from 'lib-common/types'
 import { combine } from 'lib-common/api'
 import { renderResult } from '../../async-rendering'
+import MessageEditorPage from '../../messages/MessageEditorPage'
 
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
@@ -55,7 +56,7 @@ export default React.memo(function AttendanceChildPage() {
   )
 
   const [uiMode, setUiMode] = useState<
-    'default' | 'img-modal' | 'img-crop' | 'img-delete'
+    'default' | 'img-modal' | 'img-crop' | 'img-delete' | 'send-new-message'
   >('default')
 
   const [rawImage, setRawImage] = useState<string | null>(null)
@@ -293,6 +294,7 @@ export default React.memo(function AttendanceChildPage() {
           }}
         />
       )}
+      {uiMode == 'send-new-message' && <MessageEditorPage />}
     </>
   )
 })

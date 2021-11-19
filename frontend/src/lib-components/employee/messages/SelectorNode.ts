@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageReceiver,
+  MessageReceiversResponse
+} from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -31,6 +34,9 @@ export interface ReactSelectOption {
   label: string
   value: string
 }
+
+export const isShallow = (s: SelectorNode): boolean =>
+  s.childNodes.every((cn) => cn.childNodes.length === 0)
 
 export const getSelectorStatus = (id: UUID, selector: SelectorNode): boolean =>
   id === selector.selectorId
@@ -83,7 +89,7 @@ export const getReceiverOptions = (
   selectorNode: SelectorNode
 ): ReactSelectOption[] => {
   return !selectorNode.selected && selectorNode.childNodes.length > 0
-    ? [{ label: selectorNode.name, value: selectorNode.selectorId }].concat(
+    ? [asSelectOption(selectorNode)].concat(
         selectorNode.childNodes.flatMap((childNode: SelectorNode) =>
           getReceiverOptions(childNode)
         )
@@ -153,11 +159,16 @@ export const getSelectedBottomElements = (selector: SelectorNode): UUID[] => {
   }
 }
 
+export const asSelectOption = (selector: SelectorNode): ReactSelectOption => ({
+  value: selector.selectorId,
+  label: selector.name
+})
+
 export const getSelected = (selector: SelectorNode): ReactSelectOption[] => {
   if (!selector.selected) {
     return selector.childNodes ? selector.childNodes.flatMap(getSelected) : []
   } else {
-    return [{ value: selector.selectorId, label: selector.name }]
+    return [asSelectOption(selector)]
   }
 }
 
@@ -177,3 +188,17 @@ export const getSubTree = (
   }
   return undefined
 }
+
+export const receiverAsSelectorNode = (r: MessageReceiver): SelectorNode => ({
+  selectorId: r.childId,
+  selected: true,
+  name: `${r.childFirstName} ${r.childLastName}`,
+  childNodes: r.receiverPersons.map(
+    ({ accountId, receiverFirstName, receiverLastName }) => ({
+      selectorId: accountId,
+      selected: true,
+      name: `${receiverFirstName} ${receiverLastName}`,
+      childNodes: []
+    })
+  )
+})

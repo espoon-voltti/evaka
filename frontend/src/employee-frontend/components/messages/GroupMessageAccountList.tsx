@@ -10,9 +10,9 @@ import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import MessageBox, { MessageBoxRow } from './MessageBox'
-import { NestedGroupMessageAccount } from './types'
 import { AccountView, messageBoxes } from './types-view'
 import { MessageContext } from './MessageContext'
+import { NestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 
 const AccountContainer = styled.div`
   margin: 12px 0;

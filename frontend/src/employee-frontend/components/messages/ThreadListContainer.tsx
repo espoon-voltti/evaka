@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import EmptyMessageFolder from './EmptyMessageFolder'
+import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'
@@ -15,6 +15,7 @@ import { ThreadList, ThreadListItem } from './ThreadList'
 import { SingleThreadView } from './SingleThreadView'
 import { AccountView } from './types-view'
 import { Result } from 'lib-common/api'
+import colors from 'lib-customizations/common'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -171,6 +172,8 @@ export default React.memo(function ThreadListContainer({
         (view === 'SENT' && sentMessages.isLoading) ||
         (view === 'DRAFTS' && messageDrafts.isLoading)
       }
+      iconColor={colors.greyscale.medium}
+      text={i18n.messages.emptyInbox}
     />
   )
 })

@@ -240,6 +240,7 @@ const Text = styled.span<{ color: string }>`
   font-size: 16px;
   line-height: 21px;
   color: ${(props) => props.color};
+  white-space: nowrap;
 `
 
 const Circle = styled.span<{ smaller: boolean; color?: string }>`

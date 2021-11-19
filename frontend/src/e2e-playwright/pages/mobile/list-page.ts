@@ -13,4 +13,9 @@ export default class MobileListPage {
     const elem = new RawElement(this.page, `[data-qa="child-${childId}"]`)
     return elem.click()
   }
+
+  async gotoMessages() {
+    const elem = new RawElement(this.page, `[data-qa="bottomnav-messages"]`)
+    return elem.click()
+  }
 }

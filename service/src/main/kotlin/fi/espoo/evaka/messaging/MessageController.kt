@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
 
@@ -47,6 +48,22 @@ class MessageController(
         Audit.MessagingMyAccountsRead.log()
         user.requireAnyEmployee()
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
+    }
+
+    @GetMapping("/mobile/my-accounts/{unitId}")
+    fun getAccountsByDevice(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId
+    ): Set<NestedMessageAccount> {
+        Audit.MessagingMyAccountsRead.log()
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        return when (user) {
+            is AuthenticatedUser.MobileDevice ->
+                if (user.employeeId != null) db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
+                else setOf()
+            else -> setOf()
+        }
     }
 
     @GetMapping("/{accountId}/received")
@@ -82,7 +99,7 @@ class MessageController(
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(user.id)) }
+        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) }
     }
 
     data class PostMessageBody(
@@ -214,14 +231,18 @@ class MessageController(
             UserRole.ADMIN,
             UserRole.UNIT_SUPERVISOR,
             UserRole.STAFF,
-            UserRole.SPECIAL_EDUCATION_TEACHER
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            UserRole.MOBILE
         )
 
         return db.read { it.getReceiversForNewMessage(user.id, unitId) }
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        when (user) {
+            is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden("Permission denied")
+            else -> user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        }
     }
 
     private fun requireMessageAccountAccess(
@@ -230,7 +251,7 @@ class MessageController(
         accountId: MessageAccountId
     ) {
         requireAuthorizedMessagingRole(user)
-        db.read { it.getEmployeeMessageAccountIds(user.id) }.find { it == accountId }
+        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
@@ -241,9 +262,14 @@ class MessageController(
     ) {
         db.read {
             it.isEmployeeAuthorizedToSendTo(
-                user.id,
+                getEmployeeId(user),
                 recipientAccountIds
             )
         } || throw Forbidden("Not authorized to send to the given recipients")
     }
+
+    fun getEmployeeId(user: AuthenticatedUser): UUID = when (user) {
+        is AuthenticatedUser.MobileDevice -> user.employeeId?.raw
+        else -> user.id
+    } ?: user.id
 }

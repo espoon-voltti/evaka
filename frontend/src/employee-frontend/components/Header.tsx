@@ -26,7 +26,7 @@ import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { MessageContext } from './messages/MessageContext'
-import { isNestedGroupMessageAccount } from './messages/types'
+import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 
 const Img = styled.img`
   color: #0050bb;

@@ -13,15 +13,13 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
-import FileUpload from 'lib-components/molecules/FileUpload'
+import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { Failure } from 'lib-common/api'
-import { featureFlags } from 'lib-customizations/employee'
+import { Failure, Result } from 'lib-common/api'
 import {
   DraftContent,
   NestedMessageAccount,
@@ -29,13 +27,6 @@ import {
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { fontWeights } from 'lib-components/typography'
-import {
-  deleteAttachment,
-  getAttachmentBlob,
-  saveMessageAttachment
-} from '../../api/attachments'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { useTranslation } from '../../state/i18n'
 import {
   deselectAll,
   getReceiverOptions,
@@ -46,9 +37,13 @@ import {
   ReactSelectOption,
   SelectorNode,
   updateSelector
-} from './SelectorNode'
-import { isNestedGroupMessageAccount } from './types'
-import { Draft, useDraft } from './useDraft'
+} from 'lib-components/employee/messages/SelectorNode'
+import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
+import {
+  isNestedGroupMessageAccount,
+  SaveDraftParams
+} from 'lib-components/employee/messages/types'
+import Combobox from '../../atoms/dropdowns/Combobox'
 
 type Message = UpsertableDraftContent & {
   sender: ReactSelectOption
@@ -89,31 +84,74 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
     deselectAll(tree)
   )
 
+export interface MessageEditorI18n {
+  newMessage: (unitName: string) => string
+  to: {
+    label: string
+    placeholder: string
+    noOptions: string
+  }
+  type: {
+    label: string
+    message: string
+    bulletin: string
+  }
+  sender: string
+  receivers: string
+  title: string
+  message: string
+  deleteDraft: string
+  send: string
+  sending: string
+  saving: string
+  saved: string
+  search: string
+  noResults: string
+}
+
 interface Props {
-  defaultSender: ReactSelectOption
-  nestedAccounts: NestedMessageAccount[]
-  selectedUnit: ReactSelectOption
   availableReceivers: SelectorNode
-  onSend: (accountId: UUID, msg: PostMessageBody) => void
+  attachmentsEnabled: boolean
+  defaultSender: ReactSelectOption
+  deleteAttachment: (id: UUID) => Promise<Result<void>>
+  draftContent?: DraftContent
+  getAttachmentBlob: (attachmentId: UUID) => Promise<Result<BlobPart>>
+  i18n: MessageEditorI18n & FileUploadI18n
+  initDraftRaw: (accountId: string) => Promise<Result<string>>
+  mobileVersion?: boolean
+  nestedAccounts: NestedMessageAccount[]
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId: UUID) => void
-  draftContent?: DraftContent
+  onSend: (accountId: UUID, msg: PostMessageBody) => void
+  saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
+  saveMessageAttachment: (
+    draftId: UUID,
+    file: File,
+    onUploadProgress: (progressEvent: ProgressEvent) => void
+  ) => Promise<Result<UUID>>
+  selectedUnit: ReactSelectOption
   sending: boolean
 }
 
 export default React.memo(function MessageEditor({
-  defaultSender,
-  nestedAccounts,
-  selectedUnit,
   availableReceivers,
-  onSend,
-  onDiscard,
-  onClose,
+  attachmentsEnabled,
+  defaultSender,
+  deleteAttachment,
   draftContent,
+  getAttachmentBlob,
+  i18n,
+  initDraftRaw,
+  mobileVersion = false,
+  nestedAccounts,
+  onClose,
+  onDiscard,
+  onSend,
+  saveDraftRaw,
+  saveMessageAttachment,
+  selectedUnit,
   sending
 }: Props) {
-  const { i18n } = useTranslation()
-
   const [receiverTree, setReceiverTree] = useState<SelectorNode>(
     draftContent
       ? createReceiverTree(availableReceivers, draftContent.recipientIds)
@@ -138,7 +176,11 @@ export default React.memo(function MessageEditor({
     saveDraft,
     state: draftState,
     wasModified: draftWasModified
-  } = useDraft(draftContent?.id ?? null)
+  } = useDraft({
+    initialId: draftContent?.id ?? null,
+    saveDraftRaw,
+    initDraftRaw
+  })
 
   useEffect(
     function syncDraftContentOnMessageChanges() {
@@ -177,9 +219,9 @@ export default React.memo(function MessageEditor({
   useEffect(
     function updateTextualSaveStatusOnDraftStateChange() {
       if (draftState === 'saving') {
-        setSaveStatus(`${i18n.common.saving}...`)
+        setSaveStatus(`${i18n.saving}...`)
       } else if (draftState === 'clean' && draftWasModified) {
-        setSaveStatus(i18n.common.saved)
+        setSaveStatus(i18n.saved)
       } else {
         return
       }
@@ -224,9 +266,7 @@ export default React.memo(function MessageEditor({
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title =
-    debouncedSaveStatus ||
-    message.title ||
-    i18n.messages.messageEditor.newMessage(selectedUnit.label)
+    debouncedSaveStatus || message.title || i18n.newMessage(selectedUnit.label)
 
   const updateMessage = useCallback<UpdateStateFn<Message>>((changes) => {
     setMessage((old) => ({ ...old, ...changes }))
@@ -263,7 +303,7 @@ export default React.memo(function MessageEditor({
             }
           )
         : Failure.of<UUID>({ message: 'Should not happen' }),
-    [draftId]
+    [draftId, saveMessageAttachment]
   )
 
   const handleAttachmentDelete = useCallback(
@@ -274,7 +314,7 @@ export default React.memo(function MessageEditor({
           attachments: attachments.filter((a) => a.id !== id)
         }))
       ),
-    []
+    [deleteAttachment]
   )
 
   const onCloseHandler = useCallback(() => {
@@ -307,7 +347,77 @@ export default React.memo(function MessageEditor({
   const sendEnabled =
     !sending && draftState === 'clean' && areRequiredFieldsFilled(message)
 
-  return (
+  return mobileVersion ? (
+    <ContainerMobile data-qa="message-editor" data-status={draftState}>
+      <TopBarMobile>
+        <Title>{title}</Title>
+        <IconButton
+          icon={faTimes}
+          onClick={onCloseHandler}
+          data-qa="close-message-editor-btn"
+        />
+      </TopBarMobile>
+      <ScrollableFormArea>
+        <Bold>{i18n.sender}</Bold>
+        <Gap size={'xs'} />
+        {message.sender.label}
+        <div>
+          <Gap size={'s'} />
+          <Bold>{i18n.receivers}</Bold>
+          <Gap size={'xs'} />
+        </div>
+        {receiverOptions.length > 1 ? (
+          <MultiSelect
+            placeholder={i18n.search}
+            value={selectedReceivers}
+            options={receiverOptions}
+            onChange={updateReceiverTree}
+            noOptionsMessage={i18n.noResults}
+            getOptionId={({ value }) => value}
+            getOptionLabel={({ label }) => label}
+            data-qa="select-receiver"
+          />
+        ) : (
+          message.recipientNames.join(', ')
+        )}
+        <Gap size={'s'} />
+        <Bold>{i18n.title}</Bold>
+        <InputField
+          value={message.title ?? ''}
+          onChange={(title) => updateMessage({ title })}
+          data-qa={'input-title'}
+        />
+        <Gap size="m" />
+        <Bold>{i18n.message}</Bold>
+        <Gap size="xs" />
+        <MessageAreaMobile
+          value={message.content}
+          onChange={(e) => updateMessage({ content: e.target.value })}
+          data-qa="input-content"
+        />
+        <Gap size={'L'} />
+      </ScrollableFormArea>
+      <BottomBarMobile>
+        {draftId ? (
+          <InlineButton
+            onClick={() => onDiscard(message.sender.value, draftId)}
+            text={i18n.deleteDraft}
+            icon={faTrash}
+            data-qa="discard-draft-btn"
+          />
+        ) : (
+          <Gap horizontal />
+        )}
+        <Button
+          text={sending ? i18n.sending : i18n.send}
+          primary
+          disabled={!sendEnabled}
+          onClick={sendHandler}
+          data-qa="send-message-btn"
+        />
+      </BottomBarMobile>
+    </ContainerMobile>
+  ) : (
     <Container data-qa="message-editor" data-status={draftState}>
       <TopBar>
         <Title>{title}</Title>
@@ -319,7 +429,7 @@ export default React.memo(function MessageEditor({
         />
       </TopBar>
       <ScrollableFormArea>
-        <Bold>{i18n.messages.messageEditor.sender}</Bold>
+        <Bold>{i18n.sender}</Bold>
         <Gap size={'xs'} />
         <Combobox
           items={senderOptions}
@@ -333,56 +443,56 @@ export default React.memo(function MessageEditor({
         />
         <div>
           <Gap size={'s'} />
-          <Bold>{i18n.messages.messageEditor.receivers}</Bold>
+          <Bold>{i18n.receivers}</Bold>
           <Gap size={'xs'} />
         </div>
         <MultiSelect
-          placeholder={i18n.common.search}
+          placeholder={i18n.search}
           value={selectedReceivers}
           options={receiverOptions}
           onChange={updateReceiverTree}
-          noOptionsMessage={i18n.common.noResults}
+          noOptionsMessage={i18n.noResults}
           getOptionId={({ value }) => value}
           getOptionLabel={({ label }) => label}
           data-qa="select-receiver"
         />
         <Gap size={'s'} />
-        <Bold>{i18n.messages.messageEditor.type.label}</Bold>
+        <Bold>{i18n.type.label}</Bold>
         <Gap size={'xs'} />
         <FixedSpaceRow>
           <Radio
-            label={i18n.messages.messageEditor.type.message}
+            label={i18n.type.message}
             checked={message.type === 'MESSAGE'}
             onChange={() => updateMessage({ type: 'MESSAGE' })}
           />
           <Radio
-            label={i18n.messages.messageEditor.type.bulletin}
+            label={i18n.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
           />
         </FixedSpaceRow>
         <Gap size={'s'} />
-        <Bold>{i18n.messages.messageEditor.title}</Bold>
+        <Bold>{i18n.title}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(title) => updateMessage({ title })}
           data-qa={'input-title'}
         />
         <Gap size="m" />
-        <Bold>{i18n.messages.messageEditor.message}</Bold>
+        <Bold>{i18n.message}</Bold>
         <Gap size="xs" />
         <StyledTextArea
           value={message.content}
           onChange={(e) => updateMessage({ content: e.target.value })}
           data-qa="input-content"
         />
-        {featureFlags.experimental?.messageAttachments && (
+        {attachmentsEnabled && (
           <FileUpload
             slim
             disabled={!draftId}
             data-qa="upload-message-attachment"
             files={message.attachments}
-            i18n={i18n.fileUpload}
+            i18n={i18n}
             onDownloadFile={getAttachmentBlob}
             onUpload={handleAttachmentUpload}
             onDelete={handleAttachmentDelete}
@@ -394,7 +504,7 @@ export default React.memo(function MessageEditor({
         {draftId ? (
           <InlineButton
             onClick={() => onDiscard(message.sender.value, draftId)}
-            text={i18n.messages.messageEditor.deleteDraft}
+            text={i18n.deleteDraft}
             icon={faTrash}
             data-qa="discard-draft-btn"
           />
@@ -402,11 +512,7 @@ export default React.memo(function MessageEditor({
           <Gap horizontal />
         )}
         <Button
-          text={
-            sending
-              ? i18n.messages.messageEditor.sending
-              : i18n.messages.messageEditor.send
-          }
+          text={sending ? i18n.sending : i18n.send}
           primary
           disabled={!sendEnabled}
           onClick={sendHandler}
@@ -428,19 +534,47 @@ const Container = styled.div`
   box-shadow: 0 8px 8px 8px rgba(15, 15, 15, 0.15);
   display: flex;
   flex-direction: column;
-  background-color: ${colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   overflow: scroll;
+`
+
+const ContainerMobile = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: ${(p) => p.theme.colors.greyscale.white};
+  overflow: scroll;
+  height: 100vh;
 `
 
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${colors.primary};
-  color: ${colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.brand.primary};
+  color: ${(p) => p.theme.colors.greyscale.white};
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
+`
+
+const TopBarMobile = styled.div`
+  width: 100%;
+  height: 60px;
+  background-color: ${(p) => p.theme.colors.greyscale.lightest};
+  color: ${(p) => p.theme.colors.brand.primary};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${defaultMargins.m};
+`
+
+const MessageAreaMobile = styled.textarea`
+  width: 100%;
+  resize: none;
+  flex-grow: 1;
+  border: 1px solid ${(p) => p.theme.colors.greyscale.dark};
+  min-height: 100px;
 `
 
 const Title = styled.span`
@@ -470,7 +604,16 @@ const StyledTextArea = styled.textarea`
 
 const BottomBar = styled.div`
   width: 100%;
-  border-top: 1px solid ${colors.greyscale.medium};
+  border-top: 1px solid ${(p) => p.theme.colors.greyscale.medium};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${defaultMargins.m};
+`
+
+const BottomBarMobile = styled.div`
+  width: 100%;
+  border-top: 1px solid ${(p) => p.theme.colors.greyscale.medium};
   display: flex;
   justify-content: space-between;
   align-items: center;
