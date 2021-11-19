@@ -16,6 +16,8 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { HeaderContainer, MessagePreview } from './MessagePreview'
 import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import colors from 'lib-customizations/common'
+import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 
 export default function MessagesPage() {
   const history = useHistory()
@@ -80,7 +82,7 @@ export default function MessagesPage() {
             <HeaderContainer>
               <H1>{i18n.messages.title}</H1>
             </HeaderContainer>
-            {receivedMessages.isSuccess &&
+            {receivedMessages.isSuccess && receivedMessages.value.length > 0 ? (
               receivedMessages.value.map((thread) => (
                 <MessagePreview
                   thread={thread}
@@ -93,7 +95,14 @@ export default function MessagesPage() {
                   }}
                   key={thread.id}
                 />
-              ))}
+              ))
+            ) : (
+              <EmptyMessageFolder
+                loading={receivedMessages.isLoading}
+                iconColor={colors.greyscale.medium}
+                text={i18n.messages.emptyInbox}
+              />
+            )}
           </ContentArea>
           <BottomNavBar selected="messages" />
         </>

@@ -310,7 +310,8 @@ export const fi = {
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'
-    }
+    },
+    emptyInbox: 'Viestikansio on tyhjä'
   },
   mobile: {
     landerText1:

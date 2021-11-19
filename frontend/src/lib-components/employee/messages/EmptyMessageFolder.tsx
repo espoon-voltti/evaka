@@ -6,29 +6,28 @@ import React from 'react'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { H3 } from 'lib-components/typography'
-import colors from 'lib-customizations/common'
 import styled from 'styled-components'
-import { useTranslation } from '../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 
 type Props = {
   loading: boolean
+  iconColor: string
+  text: string
 }
 
-export default React.memo(function EmptyMessagesFolder({ loading }: Props) {
-  const { i18n } = useTranslation()
+export default React.memo(function EmptyMessagesFolder({
+  loading,
+  iconColor,
+  text
+}: Props) {
   return (
     <EmptyThreadViewContainer>
       {loading ? (
         <Loader />
       ) : (
         <>
-          <FontAwesomeIcon
-            icon={faFolderOpen}
-            size={'7x'}
-            color={colors.greyscale.medium}
-          />
-          <H3>{i18n.messages.emptyInbox}</H3>
+          <FontAwesomeIcon icon={faFolderOpen} size={'7x'} color={iconColor} />
+          <H3>{text}</H3>
         </>
       )}
     </EmptyThreadViewContainer>
