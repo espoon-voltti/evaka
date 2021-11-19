@@ -72,8 +72,8 @@ dependencies {
     integrationTestImplementation(kotlin("test-junit5"))
 
     // Logging
+    implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter")
     implementation("io.github.microutils:kotlin-logging-jvm")
-    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter")
 
     // Spring
     api("org.springframework.boot:spring-boot-starter")
