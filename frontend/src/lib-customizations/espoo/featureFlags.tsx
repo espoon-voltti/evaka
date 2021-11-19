@@ -49,7 +49,7 @@ const features: Features = {
       messageAttachments: true,
       realtimeStaffAttendance: true,
       personalDetailsPage: true,
-      mobileMessages: false
+      mobileMessages: true
     }
   },
   prod: {
