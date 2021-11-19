@@ -11,6 +11,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
+import featureFlags from 'lib-customizations/espoo/featureFlags'
 
 interface Props {
   unitId: UUID
@@ -37,17 +38,21 @@ export default React.memo(function ChildButtons({
         maxWidth={'56px'}
         justifyContent={'center'}
       >
-        <Link
-          to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
-          data-qa={'link-new-message'}
-        >
-          <RoundIcon
-            content={faComments}
-            color={colors.main.primary}
-            size="XL"
-            label={i18n.childButtons.newMessage}
-          />
-        </Link>
+        {featureFlags.experimental?.mobileMessages ? (
+          <Link
+            to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
+            data-qa={'link-new-message'}
+          >
+            <RoundIcon
+              content={faComments}
+              color={colors.main.primary}
+              size="XL"
+              label={i18n.childButtons.newMessage}
+            />
+          </Link>
+        ) : (
+          <></>
+        )}
         <Link
           to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
           data-qa={'link-child-daycare-daily-note'}
