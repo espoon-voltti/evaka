@@ -77,4 +77,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2021-43466</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Workaround for Spring WS Security misidentification: https://github.com/jeremylong/DependencyCheck/issues/3811
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.ws/spring\-ws\-security@.*$</packageUrl>
+        <cpe>cpe:/a:pivotal_software:spring_security</cpe>
+        <cpe>cpe:/a:vmware:spring_security</cpe>
+    </suppress>
 </suppressions>
