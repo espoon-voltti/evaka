@@ -9,20 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
         <notes><![CDATA[
-        Ktlint depends on versions < 1.4.30 with this vulnerability
-        ]]></notes>
-        <filePath regex="true">.*/kotlin-(.*)-1\.4\.(10|21|30|31|32)\.jar</filePath>
-        <cve>CVE-2020-29582</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        This vulnerability was already fixed in 1.4.0, but the version is parsed incorrectly.
-        ]]></notes>
-        <filePath regex="true">.*/kotlin-(.*)-1\.4\.(10|21|30|31|32)\.jar</filePath>
-        <cve>CVE-2020-15824</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         Dependency of spring-ws-security, which is already at latest version (3.0.10.RELEASE).
         ]]></notes>
         <filePath regex="true">.*/commons-collections-3\.2\.1\.jar</filePath>
@@ -40,30 +26,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         Not relevant for us as we do not use velocity templates.
         ]]></notes>
         <cve>CVE-2020-13936</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us as we do not use Compress to read untrusted 7Z files
-        ]]></notes>
-        <cve>CVE-2021-35515</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us as we do not use Compress to read untrusted 7Z files
-        ]]></notes>
-        <cve>CVE-2021-35516</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us as we do not use Compress to read untrusted TAR files
-        ]]></notes>
-        <cve>CVE-2021-35517</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us as we do not use Compress to read untrusted ZIP files
-        ]]></notes>
-        <cve>CVE-2021-36090</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
