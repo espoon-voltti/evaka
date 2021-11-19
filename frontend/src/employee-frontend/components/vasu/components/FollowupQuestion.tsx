@@ -21,14 +21,14 @@ interface FollowupQuestionProps extends QuestionProps<Followup> {
 
 export default React.memo(function FollowupQuestion({
   onChange,
-  question: { title, name, info },
+  question: { title, name, value, info },
   translations
 }: FollowupQuestionProps) {
   const getEditorOrStaticText = () => {
     if (!onChange) {
-      return <ValueOrNoRecord text={''} translations={translations} />
+      return <ValueOrNoRecord text={value} translations={translations} />
     }
-    return <TextArea value={''} onChange={onChange} />
+    return <TextArea value={value} onChange={onChange} />
   }
 
   return (

@@ -56,6 +56,7 @@ export interface QuestionOption {
 
 export interface Followup extends VasuQuestionCommon {
   title: string
+  value: string
 }
 
 export type VasuQuestion =

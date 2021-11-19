@@ -210,10 +210,11 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
-        val title: String = ""
+        val title: String = "",
+        val value: String
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is Followup && question.copy() == this
+            return question is Followup && question.copy(value = this.value) == this
         }
     }
 }

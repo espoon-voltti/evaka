@@ -91,7 +91,8 @@ export default React.memo(function CreateQuestionModal({
           ophKey: null,
           name: name,
           info: info,
-          title: ''
+          title: '',
+          value: ''
         }
     }
   }
