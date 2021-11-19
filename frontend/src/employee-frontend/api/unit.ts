@@ -670,12 +670,10 @@ export interface PairingResponse {
 }
 
 export async function postPairing(
-  unitId: UUID
+  data: { unitId: UUID } | { employeeId: UUID }
 ): Promise<Result<PairingResponse>> {
   return client
-    .post<JsonOf<PairingResponse>>(`/pairings`, {
-      unitId
-    })
+    .post<JsonOf<PairingResponse>>(`/pairings`, data)
     .then((res) => res.data)
     .then((pairingResponse) => {
       return {

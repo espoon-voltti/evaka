@@ -53,6 +53,7 @@ export interface EmployeeFeatures {
   financeBasics: boolean
   messages: boolean
   personSearch: boolean
+  personalMobileDevice: boolean
   reports: boolean
   settings: boolean
   unitFeatures: boolean

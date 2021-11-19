@@ -4,6 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import { UIContext } from 'employee-frontend/state/ui'
 import { combine } from 'lib-common/api'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
@@ -91,6 +92,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
   const { nestedAccounts, unreadCountsByAccount } = useContext(MessageContext)
+  const { startPairing } = useContext(UIContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
@@ -279,6 +281,17 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             >
               {i18n.pinCode.link}
             </Link>
+            {featureFlags.experimental?.personalMobileDevice &&
+              user?.accessibleFeatures.personalMobileDevice && (
+                <LinklikeButton
+                  onClick={() => {
+                    closeUserPopup()
+                    user && startPairing({ employeeId: user.id })
+                  }}
+                  text={i18n.mobilePairingModal.headerButtonLabel}
+                  data-qa="user-popup-pairing"
+                />
+              )}
             <LogoutLink
               data-qa="logout-btn"
               href={logoutUrl}
@@ -429,6 +442,13 @@ const NavbarStart = styled.div`
     justify-content: flex-start;
     margin-right: auto;
   }
+`
+
+const LinklikeButton = styled(InlineButton)`
+  color: ${({ theme }) => theme.colors.greyscale.darkest};
+  font-weight: 400;
+  text-align: left;
+  white-space: normal;
 `
 
 const HeaderTitle = styled.div`

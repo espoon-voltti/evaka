@@ -83,6 +83,8 @@ import SettingsPage from './components/SettingsPage'
 import ReloadNotification from 'lib-components/molecules/ReloadNotification'
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { getAuthStatus } from './api/auth'
+import { UIContext } from './state/ui'
+import MobilePairingModal from './components/MobilePairingModal'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -453,6 +455,7 @@ export default function App() {
                   apiVersion={authStatus?.apiVersion}
                 />
                 <LoginErrorModal translations={i18n.login.failedModal} />
+                <PairingModal />
               </Router>
             </StateProvider>
           </UserContextProvider>
@@ -526,3 +529,15 @@ function useAuthStatus(): AuthStatus<User> | undefined {
 
   return authStatus
 }
+
+const PairingModal = React.memo(function GlobalModals() {
+  const { uiMode, pairingState, closePairingModal } = useContext(UIContext)
+
+  if (uiMode !== 'pair-mobile-device' || !pairingState) {
+    return null
+  }
+
+  return (
+    <MobilePairingModal closeModal={closePairingModal} {...pairingState.id} />
+  )
+})

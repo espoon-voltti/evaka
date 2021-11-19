@@ -43,7 +43,6 @@ import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Gap } from 'lib-components/white-space'
-import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -634,7 +633,8 @@ export default React.memo(function UnitAccessControl({
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
   )
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { uiMode, toggleUiMode, clearUiMode, startPairing } =
+    useContext(UIContext)
 
   const openRemoveModal = useCallback(
     (removeState: RemoveState) => {
@@ -677,12 +677,9 @@ export default React.memo(function UnitAccessControl({
   )
 
   const openPairMobileDeviceModal = useCallback(() => {
-    toggleUiMode(`pair-daycare-mobile-device-${unitId}`)
-  }, [toggleUiMode, unitId])
-  const closePairMobileDeviceModal = useCallback(() => {
-    reloadMobileDevices()
-    clearUiMode()
-  }, [reloadMobileDevices, clearUiMode])
+    startPairing({ unitId }, reloadMobileDevices)
+  }, [startPairing, unitId, reloadMobileDevices])
+
   const saveMobileDevice = useCallback(
     async (name: string) => {
       if (mobileId) {
@@ -712,12 +709,6 @@ export default React.memo(function UnitAccessControl({
         <DeleteMobileDeviceConfirmationModal
           onClose={closeRemoveModal}
           onConfirm={confirmRemoveDevice}
-        />
-      )}
-      {uiMode === `pair-daycare-mobile-device-${unitId}` && (
-        <MobilePairingModal
-          unitId={unitId}
-          closeModal={closePairMobileDeviceModal}
         />
       )}
       <ContentArea opaque data-qa="daycare-acl-supervisors">
