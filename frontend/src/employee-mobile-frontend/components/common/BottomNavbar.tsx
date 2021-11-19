@@ -135,19 +135,26 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
           </BottomText>
         </Button>
-        <Button data-qa="bottomnav-messages">
-          <BottomText
-            text={i18n.common.messages}
-            selected={selected === 'messages'}
-            onClick={() =>
-              selected !== 'messages' &&
-              history.push(`/units/${unitId}/groups/${groupId}/messages`)
-            }
-          >
-            <CustomIcon icon={faComments} selected={selected === 'messages'} />
-            {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
-          </BottomText>
-        </Button>
+        {featureFlags.experimental?.mobileMessages ? (
+          <Button data-qa="bottomnav-messages">
+            <BottomText
+              text={i18n.common.messages}
+              selected={selected === 'messages'}
+              onClick={() =>
+                selected !== 'messages' &&
+                history.push(`/units/${unitId}/groups/${groupId}/messages`)
+              }
+            >
+              <CustomIcon
+                icon={faComments}
+                selected={selected === 'messages'}
+              />
+              {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+            </BottomText>
+          </Button>
+        ) : (
+          <></>
+        )}
       </Root>
     </>
   )
