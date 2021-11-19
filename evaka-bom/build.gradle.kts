@@ -61,7 +61,7 @@ dependencies {
         api("redis.clients:jedis:3.7.0")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.12.5"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.24.1"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.0"))

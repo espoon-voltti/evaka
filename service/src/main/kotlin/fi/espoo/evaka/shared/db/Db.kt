@@ -73,7 +73,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         .registerModule(JavaTimeModule())
         .registerModule(Jdk8Module())
         .registerModule(ParameterNamesModule())
-        .registerModule(KotlinModule())
+        .registerModule(KotlinModule.Builder().build())
     jdbi.installPlugin(KotlinPlugin())
         .installPlugin(PostgresPlugin())
         .installPlugin(Jackson2Plugin())

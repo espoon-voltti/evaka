@@ -516,7 +516,7 @@ RETURNING id
 
     fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
         val mapper = objectMapper()
-        return mapper.treeToValue<EnduserDaycareFormJSON>(mapper.readTree(jsonString))!!.deserialize()
+        return mapper.treeToValue<EnduserDaycareFormJSON>(mapper.readTree(jsonString)).deserialize()
     }
 
     @PostMapping("/placement-plan/{application-id}")
