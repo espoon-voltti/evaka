@@ -16,17 +16,22 @@ import {
 import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
 let fixtures: AreaAndPersonFixtures
 
+const mockedDate = LocalDate.of(2021, 1, 15)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await (
+    await newBrowserContext({ mockedTime: mockedDate.toSystemTzDate() })
+  ).newPage()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)

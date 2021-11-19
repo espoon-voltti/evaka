@@ -78,7 +78,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -107,13 +106,14 @@ class ApplicationStateService(
     fun initializeApplicationForm(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        today: LocalDate,
         applicationId: ApplicationId,
         type: ApplicationType,
         guardian: PersonDTO,
         child: PersonDTO
     ) {
         val form = ApplicationForm.initForm(type, guardian, child)
-            .let { form -> withDefaultStartDate(tx, type, form) }
+            .let { form -> withDefaultStartDate(tx, today, type, form) }
             .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
             .let { form -> withDefaultServiceNeedOption(tx, type, form) }
 
@@ -128,11 +128,10 @@ class ApplicationStateService(
 
     private fun withDefaultStartDate(
         tx: Database.Transaction,
+        today: LocalDate,
         type: ApplicationType,
         form: ApplicationForm
     ): ApplicationForm {
-        val today = dateNow()
-
         val startDate = when (type) {
             ApplicationType.PRESCHOOL -> tx.getPreschoolTerms().firstOrNull { it.extendedTerm.start.isAfter(today) }
                 ?.extendedTerm?.start
@@ -582,7 +581,7 @@ class ApplicationStateService(
             }
         }
 
-        tx.updateApplicationContents(original, updatedForm)
+        tx.updateApplicationContents(currentDate, original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
@@ -610,7 +609,7 @@ class ApplicationStateService(
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
-        tx.updateApplicationContents(original, updatedForm, manuallySetDueDate = update.dueDate)
+        tx.updateApplicationContents(currentDate, original, updatedForm, manuallySetDueDate = update.dueDate)
     }
 
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
@@ -621,14 +620,14 @@ class ApplicationStateService(
             .firstOrNull() ?: false
     }
 
-    private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, updatedForm: ApplicationForm, manuallySetDueDate: LocalDate? = null) {
+    private fun Database.Transaction.updateApplicationContents(today: LocalDate, original: ApplicationDetails, updatedForm: ApplicationForm, manuallySetDueDate: LocalDate? = null) {
         if (!listOf(CREATED, SENT).contains(original.status))
             throw BadRequest("Cannot update application with status ${original.status}")
 
         updateForm(original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
-            null -> calculateAndUpdateDueDate(original, updatedForm.preferences.urgent)
+            null -> calculateAndUpdateDueDate(today, original, updatedForm.preferences.urgent)
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
         }
     }
@@ -641,11 +640,11 @@ class ApplicationStateService(
             .execute()
     }
 
-    private fun Database.Transaction.calculateAndUpdateDueDate(original: ApplicationDetails, urgent: Boolean) {
+    private fun Database.Transaction.calculateAndUpdateDueDate(today: LocalDate, original: ApplicationDetails, urgent: Boolean) {
         if (original.sentDate == null || original.dueDateSetManuallyAt != null) return
 
         // If an application is flagged as urgent afterwards, the new due date is calculated from current date
-        val sentDate = if (urgent && !original.form.preferences.urgent) LocalDate.now() else original.sentDate
+        val sentDate = if (urgent && !original.form.preferences.urgent) today else original.sentDate
         val newDueDate =
             calculateDueDate(original.type, sentDate, urgent, original.transferApplication, original.attachments)
 
@@ -657,10 +656,10 @@ class ApplicationStateService(
             .execute()
     }
 
-    fun reCalculateDueDate(tx: Database.Transaction, applicationId: ApplicationId) {
+    fun reCalculateDueDate(tx: Database.Transaction, today: LocalDate, applicationId: ApplicationId) {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
-        tx.calculateAndUpdateDueDate(application, application.form.preferences.urgent)
+        tx.calculateAndUpdateDueDate(today, application, application.form.preferences.urgent)
     }
 
     // HELPERS

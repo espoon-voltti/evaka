@@ -132,6 +132,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             service.initializeApplicationForm(
                 tx,
                 AuthenticatedUser.Citizen(testAdult_1.id),
+                today,
                 applicationId,
                 ApplicationType.DAYCARE,
                 tx.getPersonById(testChild_1.id)!!,
@@ -161,6 +162,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             service.initializeApplicationForm(
                 tx,
                 AuthenticatedUser.Citizen(testAdult_1.id),
+                today,
                 applicationId,
                 ApplicationType.DAYCARE,
                 tx.getPersonById(testChild_1.id)!!,

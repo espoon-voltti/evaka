@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios, { AxiosError } from 'axios'
+import { isAutomatedTest, mockNow } from 'lib-common/utils/helpers'
 
 export const API_URL = '/api/internal'
 
@@ -10,6 +11,17 @@ export const client = axios.create({
   baseURL: API_URL,
   xsrfCookieName: 'evaka.employee.xsrf'
 })
+
+if (isAutomatedTest) {
+  client.interceptors.request.use((config) => {
+    const evakaMockedTime = mockNow()
+    if (evakaMockedTime) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      config.params = { ...config.params, evakaMockedTime }
+    }
+    return config
+  })
+}
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {
   if (err.response && err.response.status == 401) {

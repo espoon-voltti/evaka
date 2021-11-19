@@ -6,12 +6,6 @@ import { ApplicationDetails } from 'lib-common/api-types/application/Application
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
-import { format } from 'date-fns'
-
-const currentPreferredStartDate = format(
-  new Date(new Date().getFullYear() + 1, 7, 13),
-  'dd.MM.yyyy'
-)
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)
@@ -62,7 +56,7 @@ export const minimalDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate,
+      preferredStartDate: '16.08.2021',
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -110,7 +104,7 @@ export const minimalDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
@@ -138,7 +132,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate,
+      preferredStartDate: '16.08.2021',
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -160,7 +154,7 @@ export const fullDaycareForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2022',
+      childMoveDate: '11.10.2021',
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',
@@ -200,7 +194,7 @@ export const fullDaycareForm: {
     assertEquals('SENT', res.status)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.child.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.child.futureAddress?.street)
@@ -213,7 +207,7 @@ export const fullDaycareForm: {
     assertEquals('Keskittymisvaikeus', res.form.child.assistanceDescription)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.guardian.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.guardian.futureAddress?.street)
@@ -256,7 +250,7 @@ export const fullDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
@@ -282,7 +276,7 @@ export const minimalClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate
+      preferredStartDate: '16.08.2021'
     },
     unitPreference: {
       preferredUnits: [
@@ -319,7 +313,7 @@ export const minimalClubForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -342,7 +336,7 @@ export const fullClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate,
+      preferredStartDate: '16.08.2021',
       wasOnClubCare: true,
       wasOnDaycare: true,
       assistanceNeeded: true,
@@ -361,7 +355,7 @@ export const fullClubForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2022',
+      childMoveDate: '11.10.2021',
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',
@@ -379,7 +373,7 @@ export const fullClubForm: {
     assertEquals('SENT', res.status)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.child.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.child.futureAddress?.street)
@@ -392,7 +386,7 @@ export const fullClubForm: {
     assertEquals('Keskittymisvaikeus', res.form.child.assistanceDescription)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.guardian.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.guardian.futureAddress?.street)
@@ -410,7 +404,7 @@ export const fullClubForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -434,7 +428,7 @@ export const minimalPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate
+      preferredStartDate: '16.08.2021'
     },
     unitPreference: {
       preferredUnits: [
@@ -474,7 +468,7 @@ export const minimalPreschoolForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertNull(res.form.preferences.serviceNeed)
@@ -499,7 +493,7 @@ export const fullPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: currentPreferredStartDate,
+      preferredStartDate: '16.08.2021',
       connectedDaycare: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -521,7 +515,7 @@ export const fullPreschoolForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2022',
+      childMoveDate: '11.10.2021',
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',
@@ -559,7 +553,7 @@ export const fullPreschoolForm: {
     assertEquals('SENT', res.status)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.child.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.child.futureAddress?.street)
@@ -572,7 +566,7 @@ export const fullPreschoolForm: {
     assertEquals('Keskittymisvaikeus', res.form.child.assistanceDescription)
 
     assertEquals(
-      '11.10.2022',
+      '11.10.2021',
       res.form.guardian.futureAddress?.movingDate?.format()
     )
     assertEquals('Katu 1', res.form.guardian.futureAddress?.street)
@@ -610,7 +604,7 @@ export const fullPreschoolForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      currentPreferredStartDate,
+      '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)

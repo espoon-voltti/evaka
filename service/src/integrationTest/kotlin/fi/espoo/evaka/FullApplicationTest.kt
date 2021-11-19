@@ -7,6 +7,7 @@ package fi.espoo.evaka
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.shared.ApplicationId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
@@ -108,3 +110,5 @@ abstract class FullApplicationTest {
         return res.isSuccessful
     }
 }
+
+fun Request.withMockedTime(time: HelsinkiDateTime) = this.header("EvakaMockedTime", time.toZonedDateTime())

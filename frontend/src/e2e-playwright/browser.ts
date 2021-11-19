@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import path from 'path'
 import playwright, {
   Browser,
   BrowserContext,
@@ -68,10 +67,10 @@ afterAll(async () => {
   delete global.evaka
 })
 
-const injected = fs.readFileSync(
-  path.resolve(__dirname, '../e2e-test-common/injected.js'),
-  'utf-8'
-)
+const initScript = (mockedTime?: Date) => `
+window.evakaAutomatedTest = true
+${mockedTime ? `window.evakaMockedTime = '${mockedTime.toISOString()}'` : ''}
+`
 
 async function forEachPage(
   fn: (pageInfo: {
@@ -150,7 +149,7 @@ function configurePage(page: Page) {
 }
 
 export async function newBrowserContext(
-  options?: BrowserContextOptions
+  options?: BrowserContextOptions & { mockedTime?: Date }
 ): Promise<BrowserContext> {
   const recordVideoOptions = config.playwright.ci
     ? { recordVideo: { dir: '/tmp/playwright_videos' } }
@@ -158,7 +157,7 @@ export async function newBrowserContext(
   const ctx = await browser.newContext({ ...recordVideoOptions, ...options })
   ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
-  await ctx.addInitScript({ content: injected })
+  await ctx.addInitScript({ content: initScript(options?.mockedTime) })
   return ctx
 }
 

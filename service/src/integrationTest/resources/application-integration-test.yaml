@@ -11,6 +11,8 @@ evaka:
     decisions: evaka-daycaredecisions-it
     fee_decisions: evaka-paymentdecisions-it
     voucher_value_decisions: evaka-vouchervaluedecisions-it
+  clock:
+    mock: true
   email:
     application_received:
       sender_address:
