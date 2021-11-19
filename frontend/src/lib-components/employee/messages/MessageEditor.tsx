@@ -544,6 +544,7 @@ const ContainerMobile = styled.div`
   flex-direction: column;
   background-color: ${(p) => p.theme.colors.greyscale.white};
   overflow: scroll;
+  height: 100vh;
 `
 
 const TopBar = styled.div`
@@ -572,8 +573,7 @@ const MessageAreaMobile = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
-  border: none;
-  border-bottom: 1px solid ${(p) => p.theme.colors.greyscale.dark};
+  border: 1px solid ${(p) => p.theme.colors.greyscale.dark};
   min-height: 100px;
 `
 
@@ -618,8 +618,6 @@ const BottomBarMobile = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
-  position: fixed;
-  bottom: 0;
 `
 
 const Bold = styled.span`
