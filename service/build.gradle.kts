@@ -137,12 +137,12 @@ dependencies {
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("net.logstash.logback:logstash-logback-encoder")
     testImplementation("org.jetbrains:annotations")
     testImplementation("org.mockito:mockito-core")
     testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("org.mockito.kotlin:mockito-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.ws:spring-ws-test")
 

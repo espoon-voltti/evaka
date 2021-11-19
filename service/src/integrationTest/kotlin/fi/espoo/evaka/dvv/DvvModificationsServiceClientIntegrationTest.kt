@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.dvv
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
 import java.time.LocalDate
 import kotlin.test.assertEquals
 

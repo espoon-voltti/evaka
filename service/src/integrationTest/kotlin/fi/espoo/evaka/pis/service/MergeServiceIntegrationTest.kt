@@ -5,11 +5,6 @@
 package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageNotificationEmailService
@@ -42,6 +37,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -50,12 +50,13 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService
 
     private val objectMapper: ObjectMapper = defaultObjectMapper()
-    private val asyncJobRunnerMock: AsyncJobRunner<AsyncJob> = mock { }
+    private lateinit var asyncJobRunnerMock: AsyncJobRunner<AsyncJob>
     private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
     private val messageService: MessageService = MessageService(messageNotificationEmailService)
 
     @BeforeEach
     internal fun setUp() {
+        asyncJobRunnerMock = mock { }
         mergeService = MergeService(asyncJobRunnerMock)
         db.transaction { tx ->
             tx.resetDatabase()
@@ -186,7 +187,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         }
         assertEquals(1, countAfter)
 
-        verifyZeroInteractions(asyncJobRunnerMock)
+        verifyNoInteractions(asyncJobRunnerMock)
     }
 
     @Test

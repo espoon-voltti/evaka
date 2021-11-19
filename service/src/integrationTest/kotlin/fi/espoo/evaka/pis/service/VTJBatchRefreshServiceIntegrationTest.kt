@@ -4,11 +4,6 @@
 
 package fi.espoo.evaka.pis.service
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
-import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
@@ -21,6 +16,11 @@ import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import java.time.LocalDate
@@ -113,7 +113,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
         service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
-        verifyZeroInteractions(parentshipService)
+        verifyNoInteractions(parentshipService)
     }
 
     @Test
@@ -193,6 +193,6 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
         service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.id))
-        verifyZeroInteractions(parentshipService)
+        verifyNoInteractions(parentshipService)
     }
 }

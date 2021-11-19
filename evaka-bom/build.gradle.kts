@@ -11,7 +11,7 @@ object Version {
     const val cxf = "3.4.4"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "3.11.2"
+    const val mockito = "4.0.0"
 }
 
 repositories {
@@ -29,7 +29,6 @@ dependencies {
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
-        api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
         api("com.zaxxer:HikariCP:5.0.0")
         api("io.github.microutils:kotlin-logging-jvm:2.0.10")
         api("io.javalin:javalin:4.1.1")
@@ -52,6 +51,7 @@ dependencies {
         api("org.jetbrains:annotations:21.0.1")
         api("org.mockito:mockito-core:${Version.mockito}")
         api("org.mockito:mockito-junit-jupiter:${Version.mockito}")
+        api("org.mockito.kotlin:mockito-kotlin:4.0.0")
         api("org.postgresql:postgresql:42.2.22")
         api("org.skyscreamer:jsonassert:1.5.0")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
-import com.nhaarman.mockitokotlin2.mock
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -20,6 +19,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.security.cert.X509Certificate

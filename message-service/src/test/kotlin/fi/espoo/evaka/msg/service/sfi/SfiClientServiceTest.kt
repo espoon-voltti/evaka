@@ -4,10 +4,6 @@
 
 package fi.espoo.evaka.msg.service.sfi
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.msg.mapper.SfiMapper
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.EmailNotification
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.MessageDetails
@@ -30,6 +26,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.util.ResourceUtils
 import org.springframework.ws.client.core.WebServiceTemplate
 import java.time.LocalDate
