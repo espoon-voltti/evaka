@@ -12,7 +12,7 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -38,7 +38,7 @@ import {
   faUndo
 } from 'lib-icons'
 import * as _ from 'lodash'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
@@ -150,19 +150,15 @@ export default React.memo(function Group({
   const { roles } = useContext(UserContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
+  const hasNotesPermission = permittedActions.has('READ_NOTES')
+  const [notesResponse, loadNotes] = useApiState(
+    async (): Promise<Result<NotesByGroupResponse>> =>
+      hasNotesPermission ? await getNotesByGroup(group.id) : Loading.of(),
+    [hasNotesPermission, group.id]
+  )
+
   const [notesModal, setNotesModal] =
     useState<{ child?: IdAndName; group: IdAndName }>()
-  const [notesResponse, setNotesResponse] = useState<
-    Result<NotesByGroupResponse>
-  >(Loading.of())
-
-  const loadNotes = useRestApi(getNotesByGroup, setNotesResponse)
-
-  useEffect(() => {
-    if (permittedActions.has('READ_NOTES')) {
-      loadNotes(group.id)
-    }
-  }, [permittedActions, loadNotes, group.id])
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -347,7 +343,7 @@ export default React.memo(function Group({
         <NotesModal
           {...notesModal}
           notesByGroup={notesResponse}
-          reload={() => loadNotes(group.id)}
+          reload={loadNotes}
           onClose={() => setNotesModal(undefined)}
         />
       )}
