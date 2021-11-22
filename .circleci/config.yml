@@ -489,7 +489,12 @@ commands:
           name: Start up compose stack
           working_directory: *workspace_compose
           command: |
-            docker-compose build
+            tries=3
+            while !docker-compose build; do
+              ((--tries)) || exit 1
+              echo "Retrying ..."
+              sleep 5
+            done
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - restore_frontend_deps
       - restore_frontend_comm_deps

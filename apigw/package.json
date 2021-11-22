@@ -24,6 +24,7 @@
     "cookie-parser": "^1.4.5",
     "csurf": "^1.11.0",
     "date-fns": "^2.25.0",
+    "dd-trace": "^1.5.1",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.3",
     "express-session": "^1.17.2",

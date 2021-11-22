@@ -91,11 +91,18 @@ export const appCommit = process.env.APP_COMMIT ?? 'UNDEFINED'
 export const hostIp = process.env.HOST_IP ?? 'UNDEFINED'
 export const debug = ifNodeEnv(['local', 'test'], true) ?? false
 
+export const tracingEnabled = process.env.DD_TRACE_ENABLED === 'true' ?? false
+export const traceAgentHostname =
+  process.env.DD_TRACE_AGENT_HOSTNAME ?? 'localhost'
+export const traceAgentPort = env('DD_TRACE_AGENT_PORT', parseInteger) ?? 8126
+
 export const jwtPrivateKey = required(
   process.env.JWT_PRIVATE_KEY ??
     ifNodeEnv(['local', 'test'], 'config/test-cert/jwt_private_key.pem')
 )
-export const jwtKid = process.env.JWT_KID ?? `evaka-${gatewayRole || 'dev'}-gw`
+
+export const serviceName = `evaka-${gatewayRole}-gw`
+export const jwtKid = process.env.JWT_KID ?? serviceName
 
 export const evakaBaseUrl = required(
   process.env.EVAKA_BASE_URL ?? ifNodeEnv(['local', 'test'], 'local')

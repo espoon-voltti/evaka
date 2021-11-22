@@ -18,7 +18,8 @@ fi
 # Run as exec so the application can receive any Unix signals sent to the container, e.g.,
 # Ctrl + C.
 if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
-  export DD_AGENT_HOST="${DD_AGENT_HOST:-$HOST_IP}"
+  export DD_AGENT_HOST="${DD_AGENT_HOST:-localhost}"
+  export DD_TRACE_AGENT_PORT="${DD_TRACE_AGENT_PORT:-8126}"
   export DD_ENV="${DD_ENV:-$VOLTTI_ENV}"
   export DD_VERSION="${DD_VERSION:-$APP_COMMIT}"
   export DD_SERVICE="${DD_SERVICE:-$APP_NAME}"
