@@ -25,6 +25,38 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
+val personDTOColumns = listOf(
+    "id",
+    "social_security_number",
+    "ssn_adding_disabled",
+    "first_name",
+    "last_name",
+    "preferred_name",
+    "email",
+    "phone",
+    "backup_phone",
+    "language",
+    "date_of_birth",
+    "date_of_death",
+    "nationalities",
+    "restricted_details_enabled",
+    "restricted_details_end_date",
+    "street_address",
+    "postal_code",
+    "post_office",
+    "residence_code",
+    "updated_from_vtj",
+    "vtj_guardians_queried",
+    "vtj_guardians_queried",
+    "invoice_recipient_name",
+    "invoicing_street_address",
+    "invoicing_postal_code",
+    "invoicing_post_office",
+    "force_manual_fee_decisions",
+    "oph_person_oid",
+)
+val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
+
 data class CitizenUser(val id: PersonId)
 
 fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? = createQuery(
@@ -32,24 +64,38 @@ fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? = createQuery(
 ).bind("ssn", ssn).mapTo<CitizenUser>().firstOrNull()
 
 fun Database.Read.getPersonById(id: UUID): PersonDTO? {
-    // language=SQL
-    val sql = "SELECT * FROM person WHERE id = :id"
-
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person
+WHERE id = :id
+        """.trimIndent()
+    )
         .bind("id", id)
         .map(toPersonDTO)
         .firstOrNull()
 }
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery(
-    "SELECT * FROM person WHERE social_security_number = :ssn FOR UPDATE"
+    """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person
+WHERE social_security_number = :ssn
+FOR UPDATE
+    """.trimIndent()
 ).bind("ssn", ssn).map(toPersonDTO).firstOrNull()
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
-    // language=SQL
-    val sql = "SELECT * FROM person WHERE social_security_number = :ssn"
-
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person
+WHERE social_security_number = :ssn
+        """.trimIndent()
+    )
         .bind("ssn", ssn)
         .map(toPersonDTO)
         .firstOrNull()
@@ -327,10 +373,14 @@ fun Database.Transaction.addSSNToPerson(id: UUID, ssn: String) {
 }
 
 fun Database.Read.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
-    // language=SQL
-    val sql = "SELECT * FROM person WHERE date_of_death >= :since"
 
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person WHERE date_of_death >= :since
+        """.trimIndent()
+    )
         .bind("since", since)
         .map(toPersonDTO)
         .toList()
@@ -402,13 +452,27 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
 }
 
 fun Database.Read.getGuardianDependants(personId: UUID) =
-    createQuery("SELECT * FROM person WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)")
+    createQuery(
+        """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person
+WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)
+        """.trimIndent()
+    )
         .bind("personId", personId)
         .map(toPersonDTO)
         .toList()
 
 fun Database.Read.getDependantGuardians(personId: UUID) =
-    createQuery("SELECT * FROM person WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)")
+    createQuery(
+        """
+SELECT
+$commaSeparatedPersonDTOColumns
+FROM person
+WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)
+        """.trimIndent()
+    )
         .bind("personId", personId)
         .map(toPersonDTO)
         .toList()
