@@ -26,9 +26,11 @@ import {
   DaycareGroupPlacement,
   EmployeePin,
   PedagogicalDocument,
-  ServiceNeedFixture
+  ServiceNeedFixture,
+  AssistanceNeed
 } from './types'
 import {
+  insertAssistanceNeedFixtures,
   insertCareAreaFixtures,
   insertChildFixtures,
   insertDaycareFixtures,
@@ -1065,6 +1067,19 @@ export class Fixture {
   static child(id: string): ChildBuilder {
     return new ChildBuilder({ id })
   }
+
+  static assistanceNeed(): AssistanceNeedBuilder {
+    return new AssistanceNeedBuilder({
+      id: uuidv4(),
+      capacityFactor: 1.0,
+      childId: 'not_set',
+      description: '',
+      startDate: new Date(),
+      endDate: new Date(),
+      otherBasis: '',
+      updatedBy: ''
+    })
+  }
 }
 
 export class DaycareBuilder {
@@ -1381,5 +1396,31 @@ export class ChildBuilder {
   // Note: shallow copy
   copy(): ChildBuilder {
     return new ChildBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceNeedBuilder {
+  data: AssistanceNeed
+
+  constructor(data: AssistanceNeed) {
+    this.data = data
+  }
+
+  with(value: Partial<AssistanceNeed>): AssistanceNeedBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<AssistanceNeedBuilder> {
+    await insertAssistanceNeedFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): AssistanceNeedBuilder {
+    return new AssistanceNeedBuilder({ ...this.data })
   }
 }

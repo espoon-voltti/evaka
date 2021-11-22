@@ -36,7 +36,8 @@ import {
   PersonDetailWithDependantsAndGuardians,
   HighestFeeFixture,
   PedagogicalDocument,
-  ServiceNeedFixture
+  ServiceNeedFixture,
+  AssistanceNeed
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -216,6 +217,16 @@ export async function insertDaycareGroupFixtures(
 export async function insertChildFixtures(fixture: Child[]): Promise<void> {
   try {
     await devClient.post(`/children`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertAssistanceNeedFixtures(
+  fixture: AssistanceNeed[]
+): Promise<void> {
+  try {
+    await devClient.post(`/assistance-needs`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

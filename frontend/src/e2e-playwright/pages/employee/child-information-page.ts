@@ -109,4 +109,11 @@ export class ChildAssistanceNeed {
       expected
     )
   }
+
+  async assertAssistanceNeedCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#assistanceNeedDescription.count(),
+      expectedCount
+    )
+  }
 }
