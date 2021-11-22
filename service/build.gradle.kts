@@ -149,6 +149,7 @@ dependencies {
     integrationTestImplementation("io.javalin:javalin")
     integrationTestImplementation("org.testcontainers:postgresql")
 
+    implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
 
     ktlint("com.pinterest:ktlint:${Version.ktlint}")

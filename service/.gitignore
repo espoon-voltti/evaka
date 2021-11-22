@@ -13,6 +13,8 @@
 /codegen/target/
 /buildSrc/build/
 /buildSrc/target/
+/sficlient/build/
+/sficlient/target/
 /vtjclient/build/
 /vtjclient/target/
 
