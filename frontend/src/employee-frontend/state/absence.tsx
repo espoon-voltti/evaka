@@ -2,33 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useMemo, useState } from 'react'
-import { CareTypeCategory, defaultCareTypeCategory } from '../types/absence'
+import React, { createContext, useMemo } from 'react'
 
-export interface AbsencesState {
-  selectedCareTypeCategories: CareTypeCategory[]
-  setSelectedCareTypeCategories: (type: CareTypeCategory[]) => void
-}
+export interface AbsencesState {}
 
-const defaultState: AbsencesState = {
-  selectedCareTypeCategories: defaultCareTypeCategory,
-  setSelectedCareTypeCategories: () => undefined
-}
+const defaultState: AbsencesState = {}
 
 export const AbsencesContext = createContext<AbsencesState>(defaultState)
 
 export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
-    const [selectedCareTypeCategories, setSelectedCareTypeCategories] =
-      useState(defaultState.selectedCareTypeCategories)
-
-    const value = useMemo(
-      () => ({
-        selectedCareTypeCategories,
-        setSelectedCareTypeCategories
-      }),
-      [selectedCareTypeCategories]
-    )
+    const value = useMemo(() => ({}), [])
 
     return (
       <AbsencesContext.Provider value={value}>

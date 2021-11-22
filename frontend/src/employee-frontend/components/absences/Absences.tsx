@@ -16,11 +16,7 @@ import {
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
-import {
-  AbsencesContext,
-  AbsencesContextProvider,
-  AbsencesState
-} from '../../state/absence'
+import { AbsencesContextProvider } from '../../state/absence'
 import { useTranslation } from '../../state/i18n'
 import {
   AbsencePayload,
@@ -56,13 +52,14 @@ const Absences = React.memo(function Absences({
   setSelectedDate
 }: Props) {
   const { i18n } = useTranslation()
-  const { selectedCareTypeCategories, setSelectedCareTypeCategories } =
-    useContext<AbsencesState>(AbsencesContext)
+  const { setTitle } = useContext<TitleState>(TitleContext)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedCells, setSelectedCells] = useState<Cell[]>([])
   const [selectedAbsenceType, setSelectedAbsenceType] =
     useState<AbsenceType | null>(defaultAbsenceType)
-  const { setTitle } = useContext<TitleState>(TitleContext)
+  const [selectedCareTypeCategories, setSelectedCareTypeCategories] = useState(
+    defaultCareTypeCategory
+  )
 
   const selectedYear = selectedDate.getYear()
   const selectedMonth = selectedDate.getMonth()
