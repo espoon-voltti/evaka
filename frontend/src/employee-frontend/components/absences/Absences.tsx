@@ -16,7 +16,6 @@ import {
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
-import { AbsencesContextProvider } from '../../state/absence'
 import { useTranslation } from '../../state/i18n'
 import {
   AbsencePayload,
@@ -46,7 +45,7 @@ interface Props {
   setSelectedDate: (date: LocalDate) => void
 }
 
-const Absences = React.memo(function Absences({
+export default React.memo(function Absences({
   groupId,
   selectedDate,
   setSelectedDate
@@ -220,14 +219,6 @@ const Absences = React.memo(function Absences({
         </FixedSpaceColumn>
       ))}
     </AbsencesPage>
-  )
-})
-
-export default React.memo(function AbsencesWrapper(props: Props) {
-  return (
-    <AbsencesContextProvider>
-      <Absences {...props} />
-    </AbsencesContextProvider>
   )
 })
 
