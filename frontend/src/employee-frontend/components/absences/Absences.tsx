@@ -42,6 +42,7 @@ import { Gap } from 'lib-components/white-space'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
 import AbsenceModal from './AbsenceModal'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 interface Props {
   groupId: UUID
@@ -55,14 +56,12 @@ const Absences = React.memo(function Absences({
   setSelectedDate
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    selectedAbsenceType,
-    setSelectedAbsenceType,
-    selectedCareTypeCategories,
-    setSelectedCareTypeCategories
-  } = useContext<AbsencesState>(AbsencesContext)
+  const { selectedCareTypeCategories, setSelectedCareTypeCategories } =
+    useContext<AbsencesState>(AbsencesContext)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedCells, setSelectedCells] = useState<Cell[]>([])
+  const [selectedAbsenceType, setSelectedAbsenceType] =
+    useState<AbsenceType | null>(defaultAbsenceType)
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   const selectedYear = selectedDate.getYear()
