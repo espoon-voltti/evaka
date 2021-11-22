@@ -31,7 +31,6 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
-import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -256,36 +255,6 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         val sentMail = sentMails.first()
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
-    }
-
-    @Test
-    fun `email is not sent when provider type of preferred unit is private voucher`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult,
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testVoucherDaycare.id)
-                        )
-                    )
-                )
-            }
-        }
-
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .asUser(endUser)
-            .response()
-
-        assertEquals(204, res.statusCode)
-        assertApplicationIsSent(applicationId)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
-        assertEquals(0, MockEmailClient.emails.size)
     }
 
     @Test
