@@ -11,7 +11,7 @@ object Version {
     const val cxf = "3.4.5"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "4.0.0"
+    const val mockito = "4.1.0"
 }
 
 repositories {
