@@ -199,7 +199,16 @@ WHERE update_failed = true
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
         """
-SELECT *
+SELECT
+    evaka_child_id,
+    evaka_service_need_id,
+    evaka_service_need_updated,
+    varda_child_id,
+    varda_decision_id,
+    varda_placement_id,
+    varda_fee_data_ids,
+    update_failed,
+    errors
 FROM varda_service_need
 WHERE evaka_child_id = :evakaChildId
 """
@@ -211,7 +220,16 @@ WHERE evaka_child_id = :evakaChildId
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(eVakaServiceNeedId: ServiceNeedId): VardaServiceNeed? =
     createQuery(
         """
-SELECT *
+SELECT
+    evaka_child_id,
+    evaka_service_need_id,
+    evaka_service_need_updated,
+    varda_child_id,
+    varda_decision_id,
+    varda_placement_id,
+    varda_fee_data_ids,
+    update_failed,
+    errors
 FROM varda_service_need
 WHERE evaka_service_need_id = :eVakaServiceNeedId
 """
