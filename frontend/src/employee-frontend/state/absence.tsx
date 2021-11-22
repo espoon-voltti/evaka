@@ -14,8 +14,6 @@ import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
 export interface AbsencesState {
-  modalVisible: boolean
-  setModalVisible: (modalVisible: boolean) => void
   selectedCells: Cell[]
   setSelectedCells: (cells: Cell[]) => void
   selectedAbsenceType: AbsenceType | null
@@ -26,8 +24,6 @@ export interface AbsencesState {
 }
 
 const defaultState: AbsencesState = {
-  modalVisible: false,
-  setModalVisible: () => undefined,
   selectedCells: [],
   setSelectedCells: () => undefined,
   selectedAbsenceType: defaultAbsenceType,
@@ -49,7 +45,6 @@ export const AbsencesContextProvider = React.memo(
     )
     const [selectedCareTypeCategories, setSelectedCareTypeCategories] =
       useState(defaultState.selectedCareTypeCategories)
-    const [modalVisible, setModalVisible] = useState(defaultState.modalVisible)
 
     const updateSelectedCells = ({ id, parts }: Cell) =>
       setSelectedCells((currentSelectedCells) => {
@@ -68,8 +63,6 @@ export const AbsencesContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        modalVisible,
-        setModalVisible,
         selectedCells,
         setSelectedCells,
         selectedAbsenceType,
@@ -79,7 +72,6 @@ export const AbsencesContextProvider = React.memo(
         toggleCellSelection
       }),
       [
-        modalVisible,
         selectedCells,
         selectedAbsenceType,
         selectedCareTypeCategories,

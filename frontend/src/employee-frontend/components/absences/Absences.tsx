@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { flatMap, partition } from 'lodash'
 import colors from 'lib-customizations/common'
 import { fontWeights } from 'lib-components/typography'
@@ -55,8 +55,6 @@ const Absences = React.memo(function Absences({
 }: Props) {
   const { i18n } = useTranslation()
   const {
-    modalVisible,
-    setModalVisible,
     selectedCells,
     setSelectedCells,
     selectedAbsenceType,
@@ -64,6 +62,7 @@ const Absences = React.memo(function Absences({
     selectedCareTypeCategories,
     setSelectedCareTypeCategories
   } = useContext<AbsencesState>(AbsencesContext)
+  const [modalVisible, setModalVisible] = useState(false)
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   const selectedYear = selectedDate.getYear()
@@ -78,13 +77,13 @@ const Absences = React.memo(function Absences({
     [groupId, selectedYear, selectedMonth]
   )
 
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setSelectedCells([])
     setSelectedCareTypeCategories([])
     setSelectedAbsenceType(defaultAbsenceType)
     setSelectedCareTypeCategories(defaultCareTypeCategory)
     setModalVisible(false)
-  }
+  }, [setSelectedAbsenceType, setSelectedCareTypeCategories, setSelectedCells])
 
   useEffect(() => {
     if (absences.isSuccess) {
