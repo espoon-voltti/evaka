@@ -55,14 +55,27 @@ sealed class DailyServiceTimes(
 }
 
 fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
-    // language=sql
-    val sql = """
-        SELECT *
-        FROM daily_service_time
-        WHERE child_id = :childId
-    """.trimIndent()
-
-    return this.createQuery(sql)
+    return this.createQuery(
+        """
+SELECT
+    child_id,
+    type,
+    regular_start,
+    regular_end,
+    monday_start,
+    monday_end,
+    tuesday_start,
+    tuesday_end,
+    wednesday_start,
+    wednesday_end,
+    thursday_start,
+    thursday_end,
+    friday_start,
+    friday_end
+FROM daily_service_time
+WHERE child_id = :childId
+        """.trimIndent()
+    )
         .bind("childId", childId)
         .map { row -> toDailyServiceTimes(row) }
         .firstOrNull()

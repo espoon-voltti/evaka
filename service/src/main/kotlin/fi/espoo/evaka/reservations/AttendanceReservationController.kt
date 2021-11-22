@@ -229,9 +229,23 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
 // currently queried separately to be able to use existing mapper
 private fun Database.Read.getDailyServiceTimes(childIds: Set<UUID>) = createQuery(
     """
-    SELECT *
-    FROM daily_service_time
-    WHERE child_id = ANY(:childIds)
+SELECT
+    child_id,
+    type,
+    regular_start,
+    regular_end,
+    monday_start,
+    monday_end,
+    tuesday_start,
+    tuesday_end,
+    wednesday_start,
+    wednesday_end,
+    thursday_start,
+    thursday_end,
+    friday_start,
+    friday_end
+FROM daily_service_time
+WHERE child_id = ANY(:childIds)
     """.trimIndent()
 )
     .bind("childIds", childIds.toTypedArray())
