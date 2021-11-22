@@ -26,6 +26,7 @@ import {
   AbsencePayload,
   billableCareTypes,
   CareTypeCategory,
+  Cell,
   CellPart,
   defaultAbsenceType,
   defaultCareTypeCategory
@@ -55,14 +56,13 @@ const Absences = React.memo(function Absences({
 }: Props) {
   const { i18n } = useTranslation()
   const {
-    selectedCells,
-    setSelectedCells,
     selectedAbsenceType,
     setSelectedAbsenceType,
     selectedCareTypeCategories,
     setSelectedCareTypeCategories
   } = useContext<AbsencesState>(AbsencesContext)
   const [modalVisible, setModalVisible] = useState(false)
+  const [selectedCells, setSelectedCells] = useState<Cell[]>([])
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   const selectedYear = selectedDate.getYear()
@@ -75,6 +75,24 @@ const Absences = React.memo(function Absences({
         month: selectedMonth
       }),
     [groupId, selectedYear, selectedMonth]
+  )
+
+  const updateSelectedCells = useCallback(
+    ({ id, parts }: Cell) =>
+      setSelectedCells((currentSelectedCells) => {
+        const selectedIds = currentSelectedCells.map((item) => item.id)
+
+        const included = selectedIds.includes(id)
+        const without = currentSelectedCells.filter((item) => item.id !== id)
+
+        return included ? without : [{ id, parts }, ...without]
+      }),
+    []
+  )
+
+  const toggleCellSelection = useCallback(
+    (id: UUID, parts: CellPart[]) => updateSelectedCells({ id, parts }),
+    [updateSelectedCells]
   )
 
   const resetModalState = useCallback(() => {
@@ -163,6 +181,8 @@ const Absences = React.memo(function Absences({
           <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
           <AbsenceTable
             groupId={groupId}
+            selectedCells={selectedCells}
+            toggleCellSelection={toggleCellSelection}
             selectedDate={selectedDate}
             childList={absences.children}
             operationDays={absences.operationDays}

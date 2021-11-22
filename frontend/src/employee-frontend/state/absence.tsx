@@ -2,81 +2,46 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useCallback, useMemo, useState } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 import {
   CareTypeCategory,
-  Cell,
-  CellPart,
   defaultAbsenceType,
   defaultCareTypeCategory
 } from '../types/absence'
 import { AbsenceType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
 
 export interface AbsencesState {
-  selectedCells: Cell[]
-  setSelectedCells: (cells: Cell[]) => void
   selectedAbsenceType: AbsenceType | null
   setSelectedAbsenceType: (type: AbsenceType | null) => void
   selectedCareTypeCategories: CareTypeCategory[]
   setSelectedCareTypeCategories: (type: CareTypeCategory[]) => void
-  toggleCellSelection: (id: UUID, cellParts: CellPart[]) => void
 }
 
 const defaultState: AbsencesState = {
-  selectedCells: [],
-  setSelectedCells: () => undefined,
   selectedAbsenceType: defaultAbsenceType,
   setSelectedAbsenceType: () => undefined,
   selectedCareTypeCategories: defaultCareTypeCategory,
-  setSelectedCareTypeCategories: () => undefined,
-  toggleCellSelection: () => undefined
+  setSelectedCareTypeCategories: () => undefined
 }
 
 export const AbsencesContext = createContext<AbsencesState>(defaultState)
 
 export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
-    const [selectedCells, setSelectedCells] = useState<Cell[]>(
-      defaultState.selectedCells
-    )
     const [selectedAbsenceType, setSelectedAbsenceType] = useState(
       defaultState.selectedAbsenceType
     )
     const [selectedCareTypeCategories, setSelectedCareTypeCategories] =
       useState(defaultState.selectedCareTypeCategories)
 
-    const updateSelectedCells = ({ id, parts }: Cell) =>
-      setSelectedCells((currentSelectedCells) => {
-        const selectedIds = currentSelectedCells.map((item) => item.id)
-
-        const included = selectedIds.includes(id)
-        const without = currentSelectedCells.filter((item) => item.id !== id)
-
-        return included ? without : [{ id, parts }, ...without]
-      })
-
-    const toggleCellSelection = useCallback(
-      (id: UUID, parts: CellPart[]) => updateSelectedCells({ id, parts }),
-      []
-    )
-
     const value = useMemo(
       () => ({
-        selectedCells,
-        setSelectedCells,
         selectedAbsenceType,
         setSelectedAbsenceType,
         selectedCareTypeCategories,
-        setSelectedCareTypeCategories,
-        toggleCellSelection
+        setSelectedCareTypeCategories
       }),
-      [
-        selectedCells,
-        selectedAbsenceType,
-        selectedCareTypeCategories,
-        toggleCellSelection
-      ]
+      [selectedAbsenceType, selectedCareTypeCategories]
     )
 
     return (

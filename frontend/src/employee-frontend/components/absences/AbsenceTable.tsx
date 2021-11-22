@@ -6,15 +6,18 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from 'lib-common/local-date'
-import { Child } from '../../types/absence'
+import { Cell, CellPart, Child } from '../../types/absence'
 import { getMonthDays, getRange, getWeekDay } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
 import { Translations, useTranslation } from '../../state/i18n'
 import Tooltip from '../../components/common/Tooltip'
+import { UUID } from 'lib-common/types'
 
 interface AbsenceRowProps {
   child: Child
+  selectedCells: Cell[]
+  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   dateCols: LocalDate[]
   emptyCols: number[]
   operationDays: LocalDate[]
@@ -36,7 +39,9 @@ function getEmptyCols(dateColsLength: number): number[] {
   return getRange(31 - dateColsLength)
 }
 
-function AbsenceTableRow({
+const AbsenceTableRow = React.memo(function AbsenceTableRow({
+  selectedCells,
+  toggleCellSelection,
   child,
   dateCols,
   emptyCols,
@@ -75,6 +80,8 @@ function AbsenceTableRow({
             data-qa={'absence-cell'}
           >
             <AbsenceCellWrapper
+              selectedCells={selectedCells}
+              toggleCellSelection={toggleCellSelection}
               careTypes={placements[date.formatIso()]}
               absences={absences[date.formatIso()]}
               backupCare={backupCares[date.formatIso()]}
@@ -95,7 +102,7 @@ function AbsenceTableRow({
       ))}
     </tr>
   )
-}
+})
 
 interface AbsenceHeadProps {
   dateCols: LocalDate[]
@@ -103,7 +110,7 @@ interface AbsenceHeadProps {
   operationDays: LocalDate[]
 }
 
-function AbsenceTableHead({
+const AbsenceTableHead = React.memo(function AbsenceTableHead({
   dateCols,
   emptyCols,
   operationDays
@@ -137,17 +144,21 @@ function AbsenceTableHead({
       </tr>
     </thead>
   )
-}
+})
 
 interface AbsenceTableProps {
   groupId: string
+  selectedCells: Cell[]
+  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   selectedDate: LocalDate
   childList: Child[]
   operationDays: LocalDate[]
 }
 
-function AbsenceTable({
+export default React.memo(function AbsenceTable({
   groupId,
+  selectedCells,
+  toggleCellSelection,
   selectedDate,
   childList,
   operationDays
@@ -183,6 +194,8 @@ function AbsenceTable({
         {childList.map((item) => (
           <AbsenceTableRow
             key={item.id}
+            selectedCells={selectedCells}
+            toggleCellSelection={toggleCellSelection}
             child={item}
             dateCols={dateColsBody}
             emptyCols={emptyCols}
@@ -200,6 +213,4 @@ function AbsenceTable({
       </tbody>
     </table>
   )
-}
-
-export default AbsenceTable
+})

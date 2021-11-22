@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useCallback, memo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import LocalDate from 'lib-common/local-date'
 import {
-  CellPart,
+  AbsenceBackupCare,
   billableCareTypes,
-  AbsenceBackupCare
+  Cell,
+  CellPart
 } from '../../types/absence'
-import { AbsencesState, AbsencesContext } from '../../state/absence'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { Absence } from 'lib-common/api-types/child/Absences'
@@ -38,6 +38,8 @@ function AbsenceCellPart({
 
 interface AbsenceCellProps {
   childId: UUID
+  selectedCells: Cell[]
+  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   date: LocalDate
   careTypes: AbsenceCareType[]
   absences: Absence[]
@@ -97,7 +99,7 @@ export function DisabledCell() {
   return <div className="absence-cell absence-cell-disabled" />
 }
 
-const MemoizedCell = memo(function AbsenceCell({
+const Cell = React.memo(function Cell({
   childId,
   date,
   careTypes,
@@ -110,7 +112,10 @@ const MemoizedCell = memo(function AbsenceCell({
   isSelected: boolean
   toggle: (parts: CellPart[]) => void
 }) {
-  const parts = getCellParts(childId, date, careTypes, absences, backupCare)
+  const parts = useMemo(
+    () => getCellParts(childId, date, careTypes, absences, backupCare),
+    [absences, backupCare, careTypes, childId, date]
+  )
   if (parts.length === 0) {
     return <DisabledCell />
   }
@@ -133,28 +138,33 @@ const MemoizedCell = memo(function AbsenceCell({
   )
 })
 
-function AbsenceCellWrapper({
+export default React.memo(function AbsenceCell({
   childId,
+  selectedCells,
+  toggleCellSelection,
   date,
   careTypes,
   absences,
   backupCare
 }: AbsenceCellProps) {
-  const { selectedCells, toggleCellSelection } =
-    useContext<AbsencesState>(AbsencesContext)
   const { i18n } = useTranslation()
 
-  const id = getCellId(childId, date)
-  const isSelected = selectedCells.some(
-    ({ id: selectedId }) => selectedId === id
+  const id = useMemo(() => getCellId(childId, date), [childId, date])
+  const isSelected = useMemo(
+    () => selectedCells.some(({ id: selectedId }) => selectedId === id),
+    [id, selectedCells]
   )
 
-  const tooltipText = absences
-    .map(
-      ({ careType, absenceType }) =>
-        `${i18n.absences.careTypes[careType]}: ${i18n.absences.absenceTypes[absenceType]}`
-    )
-    .join('<br/>')
+  const tooltipText = useMemo(
+    () =>
+      absences
+        .map(
+          ({ careType, absenceType }) =>
+            `${i18n.absences.careTypes[careType]}: ${i18n.absences.absenceTypes[absenceType]}`
+        )
+        .join('<br/>'),
+    [absences, i18n]
+  )
 
   const toggle = useCallback(
     (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),
@@ -169,9 +179,11 @@ function AbsenceCellWrapper({
       className={'absence-tooltip'}
       delayShow={750}
     >
-      <MemoizedCell
+      <Cell
         id={id}
         childId={childId}
+        selectedCells={selectedCells}
+        toggleCellSelection={toggleCellSelection}
         date={date}
         careTypes={careTypes}
         absences={absences}
@@ -181,6 +193,4 @@ function AbsenceCellWrapper({
       />
     </Tooltip>
   )
-}
-
-export default AbsenceCellWrapper
+})
