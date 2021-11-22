@@ -22,7 +22,6 @@ import fi.espoo.evaka.attachment.deleteAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
@@ -242,9 +241,7 @@ class ApplicationStateService(
             val preferredUnit =
                 tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
-            if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
-            }
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
