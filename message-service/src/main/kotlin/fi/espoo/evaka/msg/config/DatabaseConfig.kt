@@ -36,7 +36,7 @@ class DatabaseConfig {
             .registerModule(JavaTimeModule())
             .registerModule(Jdk8Module())
             .registerModule(ParameterNamesModule())
-            .registerModule(KotlinModule())
+            .registerModule(KotlinModule.Builder().build())
     }
 
     @Bean

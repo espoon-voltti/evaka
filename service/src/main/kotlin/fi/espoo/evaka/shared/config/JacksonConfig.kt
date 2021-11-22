@@ -16,6 +16,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+@Suppress("DEPRECATION")
 fun defaultObjectMapper(): ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .registerModule(JaxbAnnotationModule())

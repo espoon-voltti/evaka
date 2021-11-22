@@ -73,8 +73,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
     // Logging
+    implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter")
     implementation("io.github.microutils:kotlin-logging-jvm")
-    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter")
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter")
@@ -124,7 +124,7 @@ dependencies {
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin")
+    testImplementation("org.mockito.kotlin:mockito-kotlin")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

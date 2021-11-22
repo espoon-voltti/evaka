@@ -4,10 +4,6 @@
 
 package fi.espoo.evaka.msg.service
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.msg.async.AsyncJobRunner
 import fi.espoo.evaka.msg.controllers.PdfSendMessage
 import fi.espoo.evaka.msg.service.attachments.DocumentService
@@ -19,6 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 private val recipient = ISfiClientService.Recipient(
     ssn = "101010-1010",

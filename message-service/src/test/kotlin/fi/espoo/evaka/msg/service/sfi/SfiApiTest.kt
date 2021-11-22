@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.msg.service.sfi
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.msg.config.CryptoBuildHelper
 import fi.espoo.evaka.msg.config.SfiErrorResponseHandlerConfig
 import fi.espoo.evaka.msg.config.SfiSoapClientConfig
@@ -24,6 +22,8 @@ import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A
 import fi.espoo.evaka.msg.sficlient.soap.Viranomainen
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest

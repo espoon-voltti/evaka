@@ -72,8 +72,8 @@ dependencies {
     integrationTestImplementation(kotlin("test-junit5"))
 
     // Logging
+    implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter")
     implementation("io.github.microutils:kotlin-logging-jvm")
-    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter")
 
     // Spring
     api("org.springframework.boot:spring-boot-starter")
@@ -137,12 +137,12 @@ dependencies {
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("net.logstash.logback:logstash-logback-encoder")
     testImplementation("org.jetbrains:annotations")
     testImplementation("org.mockito:mockito-core")
     testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("org.mockito.kotlin:mockito-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.ws:spring-ws-test")
 
