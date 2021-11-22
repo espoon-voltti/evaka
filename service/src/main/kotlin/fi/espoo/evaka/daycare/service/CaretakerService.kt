@@ -8,8 +8,11 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
+import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -35,17 +38,25 @@ class CaretakerService {
     fun insert(tx: Database.Transaction, groupId: GroupId, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
-        tx.endPreviousRow(groupId, startDate)
-
-        // language=sql
-        val sql =
-            """
-            INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
-            VALUES (:groupId, :start, :end, :amount)
-            """.trimIndent()
+        try {
+            tx.endPreviousRow(groupId, startDate)
+        } catch (e: Exception) {
+            throw if (e.cause is PSQLException) {
+                when ((e.cause as PSQLException).sqlState) {
+                    PSQLState.CHECK_VIOLATION.state ->
+                        Conflict("Non-unique start date")
+                    else -> e
+                }
+            } else e
+        }
 
         try {
-            tx.createUpdate(sql)
+            tx.createUpdate(
+                """
+            INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
+            VALUES (:groupId, :start, :end, :amount)
+            """
+            )
                 .bind("groupId", groupId)
                 .bind("start", startDate)
                 .bind("end", endDate)
@@ -68,7 +79,14 @@ class CaretakerService {
         createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
     }
 
-    fun update(tx: Database.Transaction, groupId: GroupId, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+    fun update(
+        tx: Database.Transaction,
+        groupId: GroupId,
+        id: UUID,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+        amount: Double
+    ) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
         // language=sql

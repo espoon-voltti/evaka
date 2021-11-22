@@ -10,9 +10,11 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -98,5 +100,35 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
         assertEquals(LocalDate.of(2000, 7, 1), updated.startDate)
         assertEquals(LocalDate.of(2000, 8, 1), updated.endDate)
         assertEquals(2.0, updated.amount)
+    }
+
+    @Test
+    fun `creating two caretaker rows with overlapping dates should conflict`() {
+        assertThrows<Conflict> {
+            db.transaction { tx ->
+                service.insert(
+                    tx,
+                    groupId = groupId,
+                    startDate = groupStart.minusDays(3),
+                    endDate = groupStart.plusDays(3),
+                    amount = 5.0
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `creating two caretaker rows with the same start date should conflict`() {
+        assertThrows<Conflict> {
+            db.transaction { tx ->
+                service.insert(
+                    tx,
+                    groupId = groupId,
+                    startDate = groupStart,
+                    endDate = null,
+                    amount = 5.0
+                )
+            }
+        }
     }
 }
