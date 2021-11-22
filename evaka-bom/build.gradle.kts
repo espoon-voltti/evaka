@@ -11,7 +11,7 @@ object Version {
     const val cxf = "3.4.5"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "4.0.0"
+    const val mockito = "4.1.0"
 }
 
 repositories {
@@ -25,12 +25,12 @@ javaPlatform {
 dependencies {
     constraints {
         api("com.auth0:java-jwt:3.18.2")
-        api("com.github.kagkarlsson:db-scheduler:10.3")
+        api("com.github.kagkarlsson:db-scheduler:10.4")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
         api("com.zaxxer:HikariCP:5.0.0")
-        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.0.0")
+        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.1.0")
         api("io.github.microutils:kotlin-logging-jvm:2.1.0")
         api("io.javalin:javalin:4.1.1")
         api("javax.annotation:javax.annotation-api:1.3.2")
@@ -68,5 +68,5 @@ dependencies {
     api(platform("org.junit:junit-bom:5.8.1"))
     api(platform("org.springframework.boot:spring-boot-dependencies:2.6.0"))
     api(platform("org.testcontainers:testcontainers-bom:1.16.2"))
-    api(platform("software.amazon.awssdk:bom:2.17.85"))
+    api(platform("software.amazon.awssdk:bom:2.17.86"))
 }
