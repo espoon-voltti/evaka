@@ -1,19 +1,16 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
-import React, { Dispatch, SetStateAction, useContext } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Groups from '../../components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
+import { combine, Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   reloadUnitData: () => void
@@ -21,63 +18,67 @@ interface Props {
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
 }
 
-function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
-  const { unitInformation, unitData, filters, setFilters, savePosition } =
+export default React.memo(function TabGroups({
+  reloadUnitData,
+  openGroups,
+  setOpenGroups
+}: Props) {
+  const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
 
-  if (unitInformation.isFailure || unitData.isFailure) {
-    return <ErrorSegment />
-  }
-
-  if (unitInformation.isLoading || unitData.isLoading) {
-    return <SpinnerSegment />
-  }
-
-  const groupPermittedActions = Object.fromEntries(
-    unitInformation.value.groups.map(({ id, permittedActions }) => [
-      id,
-      permittedActions
-    ])
+  const groupPermittedActions: Result<
+    Record<string, Set<Action.Group> | undefined>
+  > = useMemo(
+    () =>
+      unitInformation.map((unitInformation) =>
+        Object.fromEntries(
+          unitInformation.groups.map(({ id, permittedActions }) => [
+            id,
+            permittedActions
+          ])
+        )
+      ),
+    [unitInformation]
   )
 
-  return (
-    <FixedSpaceColumn>
-      <ContentArea opaque>
-        <MissingGroupPlacements
-          groups={unitData.value.groups}
-          missingGroupPlacements={unitData.value.missingGroupPlacements}
-          backupCares={unitData.value.backupCares}
-          savePosition={savePosition}
-          reloadUnitData={reloadUnitData}
-          permittedPlacementActions={unitData.value.permittedPlacementActions}
-          permittedBackupCareActions={unitData.value.permittedBackupCareActions}
-        />
-      </ContentArea>
+  return renderResult(
+    combine(unitInformation, unitData, groupPermittedActions),
+    ([unitInformation, unitData, groupPermittedActions]) => (
+      <FixedSpaceColumn>
+        <ContentArea opaque>
+          <MissingGroupPlacements
+            groups={unitData.groups}
+            missingGroupPlacements={unitData.missingGroupPlacements}
+            backupCares={unitData.backupCares}
+            reloadUnitData={reloadUnitData}
+            permittedPlacementActions={unitData.permittedPlacementActions}
+            permittedBackupCareActions={unitData.permittedBackupCareActions}
+          />
+        </ContentArea>
 
-      <ContentArea opaque>
-        <Groups
-          unit={unitInformation.value.daycare}
-          permittedActions={unitInformation.value.permittedActions}
-          filters={filters}
-          setFilters={setFilters}
-          groups={unitData.value.groups}
-          placements={unitData.value.placements}
-          backupCares={unitData.value.backupCares}
-          groupPermittedActions={groupPermittedActions}
-          groupCaretakers={unitData.value.caretakers.groupCaretakers}
-          groupConfirmedOccupancies={unitData.value.groupOccupancies?.confirmed}
-          groupRealizedOccupancies={unitData.value.groupOccupancies?.realized}
-          permittedBackupCareActions={unitData.value.permittedBackupCareActions}
-          permittedGroupPlacementActions={
-            unitData.value.permittedGroupPlacementActions
-          }
-          reloadUnitData={reloadUnitData}
-          openGroups={openGroups}
-          setOpenGroups={setOpenGroups}
-        />
-      </ContentArea>
-    </FixedSpaceColumn>
+        <ContentArea opaque>
+          <Groups
+            unit={unitInformation.daycare}
+            permittedActions={unitInformation.permittedActions}
+            filters={filters}
+            setFilters={setFilters}
+            groups={unitData.groups}
+            placements={unitData.placements}
+            backupCares={unitData.backupCares}
+            groupPermittedActions={groupPermittedActions}
+            groupCaretakers={unitData.caretakers.groupCaretakers}
+            groupConfirmedOccupancies={unitData.groupOccupancies?.confirmed}
+            groupRealizedOccupancies={unitData.groupOccupancies?.realized}
+            permittedBackupCareActions={unitData.permittedBackupCareActions}
+            permittedGroupPlacementActions={
+              unitData.permittedGroupPlacementActions
+            }
+            reloadUnitData={reloadUnitData}
+            openGroups={openGroups}
+            setOpenGroups={setOpenGroups}
+          />
+        </ContentArea>
+      </FixedSpaceColumn>
+    )
   )
-}
-
-export default React.memo(TabGroups)
+})

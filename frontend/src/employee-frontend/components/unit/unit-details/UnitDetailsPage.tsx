@@ -4,12 +4,11 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { Loading, Result } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import { CareArea } from '../../../types/unit'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import Loader from 'lib-components/atoms/Loader'
 import { Gap } from 'lib-components/white-space'
 import { useParams } from 'react-router-dom'
 import {
@@ -19,12 +18,11 @@ import {
   updateDaycare
 } from '../../../api/unit'
 import { TitleContext, TitleState } from '../../../state/title'
-import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { renderResult } from '../../async-rendering'
 
 export default function UnitDetailsPage(): JSX.Element {
   const { id } = useParams<{ id: string }>()
-  const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
@@ -69,33 +67,25 @@ export default function UnitDetailsPage(): JSX.Element {
     })
   }
 
-  const loading =
-    areas.isLoading || unit.isLoading || financeDecisionHandlerOptions.isLoading
-  const failure =
-    areas.isFailure || unit.isFailure || financeDecisionHandlerOptions.isFailure
-
   return (
     <Container>
       <Gap size={'L'} />
       <ContentArea opaque>
-        {loading && <Loader />}
-        {!loading && failure && <div>{i18n.common.error.unknown}</div>}
-        {areas.isSuccess &&
-          unit.isSuccess &&
-          financeDecisionHandlerOptions.isSuccess && (
+        {renderResult(
+          combine(areas, unit, financeDecisionHandlerOptions),
+          ([areas, unit, financeDecisionHandlerOptions]) => (
             <UnitEditor
               editable={editable}
-              areas={areas.value}
-              financeDecisionHandlerOptions={
-                financeDecisionHandlerOptions.value
-              }
-              unit={unit.value.daycare}
+              areas={areas}
+              financeDecisionHandlerOptions={financeDecisionHandlerOptions}
+              unit={unit.daycare}
               submit={submitState}
-              onSubmit={(fields) => onSubmit(fields, unit.value)}
+              onSubmit={(fields) => onSubmit(fields, unit)}
               onClickCancel={() => setEditable(false)}
               onClickEdit={() => setEditable(true)}
             />
-          )}
+          )
+        )}
       </ContentArea>
     </Container>
   )

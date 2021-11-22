@@ -30,7 +30,6 @@ function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
   onAddToGroup: () => void,
   i18n: Translations,
-  savePosition: () => void,
   canCreateGroupPlacement: boolean
 ) {
   const {
@@ -50,7 +49,7 @@ function renderMissingGroupPlacementRow(
       data-qa="missing-placement-row"
     >
       <Td data-qa="child-name">
-        <Link to={`/child-information/${childId}`} onClick={savePosition}>
+        <Link to={`/child-information/${childId}`}>
           {formatName(firstName, lastName, i18n, true)}
         </Link>
       </Td>
@@ -105,7 +104,6 @@ type Props = {
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   backupCares: UnitBackupCare[]
-  savePosition: () => void
   reloadUnitData: () => void
   permittedPlacementActions: Record<UUID, Set<Action.Placement>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
@@ -114,7 +112,6 @@ type Props = {
 export default React.memo(function MissingGroupPlacements({
   groups,
   missingGroupPlacements,
-  savePosition,
   reloadUnitData,
   permittedPlacementActions,
   permittedBackupCareActions
@@ -165,7 +162,6 @@ export default React.memo(function MissingGroupPlacements({
                 row,
                 () => addPlacementToGroup(row),
                 i18n,
-                savePosition,
                 row.backup
                   ? permittedBackupCareActions[row.placementId]?.has('UPDATE')
                   : permittedPlacementActions[row.placementId]?.has(

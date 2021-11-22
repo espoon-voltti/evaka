@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { Loading, Result } from 'lib-common/api'
-import { DaycareGroup } from '../../../types/unit'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { getDaycareGroups } from '../../../api/unit'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import DateRange from 'lib-common/date-range'
@@ -26,9 +24,7 @@ export default React.memo(function GroupSelector({
   onSelect
 }: Props) {
   const { i18n } = useTranslation()
-  const [groups, setGroups] = useState<Result<DaycareGroup[]>>(Loading.of())
-  const loadGroups = useRestApi(getDaycareGroups, setGroups)
-  useEffect(() => loadGroups(unitId), [unitId, loadGroups])
+  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
 
   const options = useMemo(
     () => [

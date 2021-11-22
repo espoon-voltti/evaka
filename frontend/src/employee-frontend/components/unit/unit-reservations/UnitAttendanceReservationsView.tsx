@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
-import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
@@ -19,10 +18,7 @@ import ReservationsTable from './ReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import { UUID } from 'lib-common/types'
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import {
-  Child,
-  UnitAttendanceReservations
-} from 'lib-common/api-types/reservations'
+import { Child } from 'lib-common/api-types/reservations'
 
 interface Props {
   unitId: UUID
@@ -46,19 +42,10 @@ export default React.memo(function UnitAttendanceReservationsView({
     [selectedDate]
   )
 
-  const [reservations, setReservations] = useState<
-    Result<UnitAttendanceReservations>
-  >(Loading.of())
-  const loadAttendanceReservations = useRestApi(
-    getUnitAttendanceReservations,
-    setReservations
+  const [reservations, reload] = useApiState(
+    () => getUnitAttendanceReservations(unitId, dateRange),
+    [unitId, dateRange]
   )
-
-  const reload = useCallback(
-    () => loadAttendanceReservations(unitId, dateRange),
-    [unitId, dateRange, loadAttendanceReservations]
-  )
-  useEffect(reload, [reload])
 
   const [creatingReservationChild, setCreatingReservationChild] =
     useState<Child | null>(null)

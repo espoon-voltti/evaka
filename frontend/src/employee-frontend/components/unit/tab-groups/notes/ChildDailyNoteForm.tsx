@@ -87,7 +87,7 @@ interface Props {
   onRemove: () => void
 }
 
-export const ChildDailyNoteForm = React.memo(function ChildDailyNoteForm({
+export default React.memo(function ChildDailyNoteForm({
   note,
   childId,
   childName,

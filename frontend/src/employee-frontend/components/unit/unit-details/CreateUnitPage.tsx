@@ -5,19 +5,17 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { Loading, Result } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import { CareArea } from '../../../types/unit'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import Loader from 'lib-components/atoms/Loader'
 import { createDaycare, DaycareFields } from '../../../api/unit'
-import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { renderResult } from '../../async-rendering'
 
 export default function CreateUnitPage(): JSX.Element {
   const history = useHistory()
-  const { i18n } = useTranslation()
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
@@ -54,18 +52,19 @@ export default function CreateUnitPage(): JSX.Element {
   return (
     <Container>
       <ContentArea opaque>
-        {areas.isLoading && <Loader />}
-        {areas.isFailure && <div>{i18n.common.error.unknown}</div>}
-        {areas.isSuccess && financeDecisionHandlerOptions.isSuccess && (
-          <UnitEditor
-            editable={true}
-            areas={areas.value}
-            financeDecisionHandlerOptions={financeDecisionHandlerOptions.value}
-            unit={undefined}
-            submit={submitState}
-            onSubmit={onSubmit}
-            onClickCancel={() => window.history.back()}
-          />
+        {renderResult(
+          combine(areas, financeDecisionHandlerOptions),
+          ([areas, financeDecisionHandlerOptions]) => (
+            <UnitEditor
+              editable={true}
+              areas={areas}
+              financeDecisionHandlerOptions={financeDecisionHandlerOptions}
+              unit={undefined}
+              submit={submitState}
+              onSubmit={onSubmit}
+              onClickCancel={() => window.history.back()}
+            />
+          )
         )}
       </ContentArea>
     </Container>

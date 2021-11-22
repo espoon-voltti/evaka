@@ -1,11 +1,8 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
+import { renderResult } from '../async-rendering'
 import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -14,8 +11,6 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { requireRole } from '../../utils/roles'
 import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
 import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
@@ -25,8 +20,10 @@ import { UserContext } from '../../state/user'
 import { DataList } from '../common/DataList'
 import { useTranslation } from '../../state/i18n'
 import { Gap } from 'lib-components/white-space'
+import { UnitData } from '../../api/unit'
+import { Result } from 'lib-common/api'
 
-function TabUnitInformation() {
+export default React.memo(function TabUnitInformation() {
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
   const { unitInformation, unitData, filters, setFilters } =
@@ -34,46 +31,20 @@ function TabUnitInformation() {
 
   const groups = useMemo(
     () =>
-      unitInformation.isSuccess
-        ? Object.fromEntries(
-            unitInformation.value.groups.map(
-              (group) => [group.id, group] as const
-            )
+      unitInformation
+        .map((unitInformation) =>
+          Object.fromEntries(
+            unitInformation.groups.map((group) => [group.id, group] as const)
           )
-        : {},
+        )
+        .getOrElse({}),
     [unitInformation]
   )
 
-  if (unitInformation.isLoading) {
-    return <SpinnerSegment />
-  }
-
-  if (unitInformation.isFailure) {
-    return <ErrorSegment />
-  }
-
-  const renderCaretakers = () => {
-    if (!unitData.isSuccess) return null
-
-    const formatNumber = (num: number) =>
-      parseFloat(num.toFixed(2)).toLocaleString()
-
-    const min = formatNumber(unitData.value.caretakers.unitCaretakers.minimum)
-    const max = formatNumber(unitData.value.caretakers.unitCaretakers.maximum)
-
-    return min === max ? (
-      <span>
-        {min} {i18n.unit.info.caretakers.unitOfValue}
-      </span>
-    ) : (
-      <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
-    )
-  }
-
-  return (
+  return renderResult(unitInformation, (unitInformation) => (
     <FixedSpaceColumn>
       <ContentArea opaque>
-        <H2 data-qa="unit-name">{unitInformation.value.daycare.name}</H2>
+        <H2 data-qa="unit-name">{unitInformation.daycare.name}</H2>
         <Gap size="s" />
         <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
@@ -96,40 +67,64 @@ function TabUnitInformation() {
           <div>
             <label>{i18n.unit.info.caretakers.titleLabel}</label>
             <span data-qa={'unit-total-caretaker-count'}>
-              {renderCaretakers()}
+              <Caretakers unitData={unitData} />
             </span>
           </div>
         </DataList>
         <Gap />
-        {unitData.isLoading && <SpinnerSegment />}
-        {unitData.isFailure && <ErrorSegment />}
-        {unitData.isSuccess && unitData.value.unitOccupancies && (
-          <Occupancy
-            filters={filters}
-            occupancies={unitData.value.unitOccupancies}
-          />
+        {renderResult(unitData, (unitData) =>
+          unitData.unitOccupancies ? (
+            <Occupancy
+              filters={filters}
+              occupancies={unitData.unitOccupancies}
+            />
+          ) : null
         )}
       </ContentArea>
 
       <ContentArea opaque>
         <UnitInformation
-          unit={unitInformation.value.daycare}
-          permittedActions={unitInformation.value.permittedActions}
+          unit={unitInformation.daycare}
+          permittedActions={unitInformation.permittedActions}
         />
       </ContentArea>
 
-      {unitInformation.value.permittedActions.has('READ_ACL') && (
+      {unitInformation.permittedActions.has('READ_ACL') && (
         <UnitAccessControl
-          unitId={unitInformation.value.daycare.id}
-          permittedActions={unitInformation.value.permittedActions}
+          unitId={unitInformation.daycare.id}
+          permittedActions={unitInformation.permittedActions}
           groups={groups}
-          mobileEnabled={unitInformation.value.daycare.enabledPilotFeatures.includes(
+          mobileEnabled={unitInformation.daycare.enabledPilotFeatures.includes(
             'MOBILE'
           )}
         />
       )}
     </FixedSpaceColumn>
-  )
-}
+  ))
+})
 
-export default React.memo(TabUnitInformation)
+const Caretakers = React.memo(function Caretakers({
+  unitData
+}: {
+  unitData: Result<UnitData>
+}) {
+  const { i18n } = useTranslation()
+
+  const formatNumber = (num: number) =>
+    parseFloat(num.toFixed(2)).toLocaleString()
+
+  return unitData
+    .map((unitData) => {
+      const min = formatNumber(unitData.caretakers.unitCaretakers.minimum)
+      const max = formatNumber(unitData.caretakers.unitCaretakers.maximum)
+
+      return min === max ? (
+        <span>
+          {min} {i18n.unit.info.caretakers.unitOfValue}
+        </span>
+      ) : (
+        <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
+      )
+    })
+    .getOrElse(null)
+})

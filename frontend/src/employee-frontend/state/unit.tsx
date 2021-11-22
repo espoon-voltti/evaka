@@ -4,84 +4,60 @@
 
 import React, {
   createContext,
-  useMemo,
-  useState,
-  useCallback,
   Dispatch,
-  SetStateAction
+  SetStateAction,
+  useMemo,
+  useState
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
-import { UnitData, UnitResponse } from '../api/unit'
+import { getDaycare, getUnitData, UnitData, UnitResponse } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
 import LocalDate from 'lib-common/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
 
 export interface UnitState {
   unitInformation: Result<UnitResponse>
-  setUnitInformation: (res: Result<UnitResponse>) => void
+  unitData: Result<UnitData>
+  reloadUnitData: () => void
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
-  unitData: Result<UnitData>
-  setUnitData: (res: Result<UnitData>) => void
-  scrollToPosition: () => void
-  savePosition: () => void
 }
 
 const defaultState: UnitState = {
   unitInformation: Loading.of(),
-  setUnitInformation: () => undefined,
-  filters: new UnitFilters(LocalDate.today(), '3 months'),
-  setFilters: () => undefined,
   unitData: Loading.of(),
-  setUnitData: () => undefined,
-  scrollToPosition: () => undefined,
-  savePosition: () => undefined
+  reloadUnitData: () => undefined,
+  filters: new UnitFilters(LocalDate.today(), '3 months'),
+  setFilters: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
 
 export const UnitContextProvider = React.memo(function UnitContextProvider({
+  id,
   children
 }: {
+  id: UUID
   children: JSX.Element
 }) {
-  const [unitInformation, setUnitInformation] = useState<Result<UnitResponse>>(
-    Loading.of()
-  )
   const [filters, setFilters] = useState(defaultState.filters)
-  const [unitData, setUnitData] = useState<Result<UnitData>>(Loading.of())
-  const [position, setPosition] = useState<number>(-1)
-  const savePosition = useCallback(
-    () => setPosition(window.scrollY),
-    [setPosition]
+
+  const [unitInformation] = useApiState(() => getDaycare(id), [id])
+  const [unitData, reloadUnitData] = useApiState(
+    () => getUnitData(id, filters.startDate, filters.endDate),
+    [id, filters.startDate, filters.endDate]
   )
-  const scrollToPosition = useCallback(() => {
-    if (position > -1) {
-      window.scrollTo(0, position)
-      setPosition(-1)
-    }
-  }, [position, setPosition])
 
   const value = useMemo(
     () => ({
       unitInformation,
-      setUnitInformation,
-      filters,
-      setFilters,
       unitData,
-      setUnitData,
-      scrollToPosition,
-      savePosition
+      reloadUnitData,
+      filters,
+      setFilters
     }),
-    [
-      unitInformation,
-      setUnitInformation,
-      filters,
-      setFilters,
-      unitData,
-      setUnitData,
-      scrollToPosition,
-      savePosition
-    ]
+    [unitInformation, unitData, reloadUnitData, filters]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
