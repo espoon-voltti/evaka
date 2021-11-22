@@ -43,7 +43,7 @@ WHERE daycare_id = :daycareId
 fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: EmployeeId, role: UserRole): Boolean = createQuery(
     """
         SELECT EXISTS(
-            SELECT * FROM daycare_acl
+            SELECT 1 FROM daycare_acl
             WHERE employee_id = :employeeId AND role = :role
         )
     """.trimIndent()
