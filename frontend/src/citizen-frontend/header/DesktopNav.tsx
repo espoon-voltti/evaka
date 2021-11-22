@@ -16,15 +16,16 @@ import {
   faSignOut,
   faUser
 } from 'lib-icons'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-import { useUser } from '../auth/state'
+import { AuthContext, useUser } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import AttentionIndicator from './AttentionIndicator'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { UnwrapResult } from '../async-rendering'
 
 interface Props {
   unreadMessagesCount: number
@@ -35,65 +36,72 @@ export default React.memo(function DesktopNav({
   unreadMessagesCount,
   unreadPedagogicalDocuments
 }: Props) {
-  const user = useUser()
+  const { user } = useContext(AuthContext)
   const t = useTranslation()
-
-  const isEnduser = user?.userType === 'ENDUSER'
-  const maybeLockElem = !isEnduser && (
-    <FontAwesomeIcon icon={faLockAlt} size="xs" />
-  )
   return (
-    <Container data-qa="desktop-nav">
-      <Nav>
-        {user && (
-          <>
-            <StyledNavLink to="/applying" data-qa="nav-applying">
-              {t.header.nav.applying} {maybeLockElem}
-            </StyledNavLink>
-            {user.accessibleFeatures.pedagogicalDocumentation && (
-              <StyledNavLink
-                to="/pedagogical-documents"
-                data-qa="nav-pedagogical-documents"
-              >
-                {t.header.nav.pedagogicalDocuments}
-                {isEnduser && unreadPedagogicalDocuments > 0 && (
-                  <CircledChar data-qa={'unread-pedagogical-documents-count'}>
-                    {unreadPedagogicalDocuments}
-                  </CircledChar>
-                )}
-                {maybeLockElem}
-              </StyledNavLink>
+    <UnwrapResult result={user} loading={() => null}>
+      {(user) => {
+        const isEnduser = user?.userType === 'ENDUSER'
+        const maybeLockElem = isEnduser ? null : (
+          <FontAwesomeIcon icon={faLockAlt} size="xs" />
+        )
+        return (
+          <Container data-qa="desktop-nav">
+            <Nav>
+              {user ? (
+                <>
+                  <StyledNavLink to="/applying" data-qa="nav-applying">
+                    {t.header.nav.applying} {maybeLockElem}
+                  </StyledNavLink>
+                  {user.accessibleFeatures.pedagogicalDocumentation && (
+                    <StyledNavLink
+                      to="/pedagogical-documents"
+                      data-qa="nav-pedagogical-documents"
+                    >
+                      {t.header.nav.pedagogicalDocuments}
+                      {isEnduser && unreadPedagogicalDocuments > 0 && (
+                        <CircledChar
+                          data-qa={'unread-pedagogical-documents-count'}
+                        >
+                          {unreadPedagogicalDocuments}
+                        </CircledChar>
+                      )}
+                      {maybeLockElem}
+                    </StyledNavLink>
+                  )}
+                  {user.accessibleFeatures.messages && (
+                    <StyledNavLink to="/messages" data-qa="nav-messages">
+                      {t.header.nav.messages}{' '}
+                      {unreadMessagesCount > 0 ? (
+                        <CircledChar>{unreadMessagesCount}</CircledChar>
+                      ) : (
+                        ''
+                      )}
+                    </StyledNavLink>
+                  )}
+                  {user.accessibleFeatures.reservations && (
+                    <StyledNavLink to="/calendar" data-qa="nav-calendar">
+                      {t.header.nav.calendar}
+                    </StyledNavLink>
+                  )}
+                </>
+              ) : null}
+            </Nav>
+            <LanguageMenu />
+            {user ? (
+              <UserMenu />
+            ) : (
+              <Login href={getLoginUri()} data-qa="login-btn">
+                <Icon icon={faSignIn} />
+                <Gap size="xs" horizontal />
+                {t.header.login}
+              </Login>
             )}
-            {user.accessibleFeatures.messages && (
-              <StyledNavLink to="/messages" data-qa="nav-messages">
-                {t.header.nav.messages}{' '}
-                {unreadMessagesCount > 0 ? (
-                  <CircledChar>{unreadMessagesCount}</CircledChar>
-                ) : (
-                  ''
-                )}
-              </StyledNavLink>
-            )}
-            {user.accessibleFeatures.reservations && (
-              <StyledNavLink to="/calendar" data-qa="nav-calendar">
-                {t.header.nav.calendar}
-              </StyledNavLink>
-            )}
-          </>
-        )}
-      </Nav>
-      <LanguageMenu />
-      {user ? (
-        <UserMenu />
-      ) : (
-        <Login href={getLoginUri()} data-qa="login-btn">
-          <Icon icon={faSignIn} />
-          <Gap size="xs" horizontal />
-          {t.header.login}
-        </Login>
-      )}
-      <Gap size="m" horizontal />
-    </Container>
+            <Gap size="m" horizontal />
+          </Container>
+        )
+      }}
+    </UnwrapResult>
   )
 })
 
