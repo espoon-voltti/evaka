@@ -715,7 +715,7 @@ fun Database.Read.getFreeJulyChildren(year: Int): List<UUID> {
         //language=sql
         """
 WITH invoiced_placement AS (
-    SELECT * FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
+    SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
 )
 SELECT
   distinct(p09.child_id)

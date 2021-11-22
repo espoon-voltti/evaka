@@ -282,7 +282,17 @@ private val excludedPlacementTypes = arrayOf(
  */
 private fun Database.Read.getActivePaidPlacements(childId: UUID, from: LocalDate): List<Placement> {
     return createQuery(
-        "SELECT * FROM placement WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])"
+        """
+SELECT
+    id,
+    type,
+    child_id,
+    unit_id,
+    start_date,
+    end_date
+FROM placement
+WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])
+        """.trimIndent()
     )
         .bind("childId", childId)
         .bind("from", from)
