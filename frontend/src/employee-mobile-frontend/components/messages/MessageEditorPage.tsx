@@ -42,7 +42,7 @@ export default function MessageEditorPage() {
     nestedAccounts,
     selectedAccount,
     selectedUnit,
-    refreshMessages,
+    loadMessagesForSelectedAccount,
     loadNestedAccounts
   } = useContext(MessageContext)
 
@@ -73,7 +73,7 @@ export default function MessageEditorPage() {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          refreshMessages(accountId)
+          loadMessagesForSelectedAccount()
           history.back()
         } else {
           // TODO handle eg. expired pin session correctly
@@ -82,26 +82,26 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   const onDiscard = useCallback(
     (accountId: UUID, draftId: UUID) => {
       void deleteDraft(accountId, draftId)
-        .then(() => refreshMessages(accountId))
+        .then(() => loadMessagesForSelectedAccount())
         .then(() => history.back())
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   const onHide = useCallback(
     (didChanges: boolean) => {
       if (didChanges) {
-        refreshMessages()
+        loadMessagesForSelectedAccount()
       }
       history.back()
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   return (
