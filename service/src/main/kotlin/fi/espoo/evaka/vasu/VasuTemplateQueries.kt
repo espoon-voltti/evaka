@@ -80,11 +80,15 @@ fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: 
 fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSummary? {
     // language=sql
     val sql = """
-        SELECT *,
-               (SELECT COUNT(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
-        FROM vasu_template vt
-        WHERE id = :id
-        FOR UPDATE
+SELECT
+    id,
+    name,
+    valid,
+    language,
+    (SELECT COUNT(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
+FROM vasu_template vt
+WHERE id = :id
+FOR UPDATE
     """.trimIndent()
 
     return createQuery(sql)
