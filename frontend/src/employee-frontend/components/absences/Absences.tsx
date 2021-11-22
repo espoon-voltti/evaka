@@ -2,37 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { flatMap, partition } from 'lodash'
 import colors from 'lib-customizations/common'
 import { fontWeights } from 'lib-components/typography'
-import { Label, LabelText } from '../common/styled/common'
 import Button from 'lib-components/atoms/buttons/Button'
-import Radio from 'lib-components/atoms/form/Radio'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import Loader from 'lib-components/atoms/Loader'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
-import { Loading } from 'lib-common/api'
 import {
   deleteGroupAbsences,
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
-import {
-  AbsencesContext,
-  AbsencesContextProvider,
-  AbsencesState
-} from '../../state/absence'
 import { useTranslation } from '../../state/i18n'
 import {
   AbsencePayload,
-  AbsenceTypes,
   billableCareTypes,
-  CareTypeCategories,
   CareTypeCategory,
+  Cell,
   CellPart,
   defaultAbsenceType,
   defaultCareTypeCategory
@@ -41,12 +30,14 @@ import AbsenceTable from './AbsenceTable'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import { TitleContext, TitleState } from '../../state/title'
 import styled from 'styled-components'
-import FormModal from 'lib-components/molecules/modals/FormModal'
 import { UUID } from 'lib-common/types'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../async-rendering'
+import AbsenceModal from './AbsenceModal'
+import { AbsenceType } from 'lib-common/generated/enums'
 
 interface Props {
   groupId: UUID
@@ -54,48 +45,58 @@ interface Props {
   setSelectedDate: (date: LocalDate) => void
 }
 
-const Absences = React.memo(function Absences({
+export default React.memo(function Absences({
   groupId,
   selectedDate,
   setSelectedDate
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    absences,
-    setAbsences,
-    modalVisible,
-    setModalVisible,
-    selectedCells,
-    setSelectedCells,
-    selectedAbsenceType,
-    setSelectedAbsenceType,
-    selectedCareTypeCategories,
-    setSelectedCareTypeCategories
-  } = useContext<AbsencesState>(AbsencesContext)
   const { setTitle } = useContext<TitleState>(TitleContext)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedCells, setSelectedCells] = useState<Cell[]>([])
+  const [selectedAbsenceType, setSelectedAbsenceType] =
+    useState<AbsenceType | null>(defaultAbsenceType)
+  const [selectedCareTypeCategories, setSelectedCareTypeCategories] = useState(
+    defaultCareTypeCategory
+  )
 
-  const resetModalState = () => {
+  const selectedYear = selectedDate.getYear()
+  const selectedMonth = selectedDate.getMonth()
+
+  const [absences, loadAbsences] = useApiState(
+    () =>
+      getGroupAbsences(groupId, {
+        year: selectedYear,
+        month: selectedMonth
+      }),
+    [groupId, selectedYear, selectedMonth]
+  )
+
+  const updateSelectedCells = useCallback(
+    ({ id, parts }: Cell) =>
+      setSelectedCells((currentSelectedCells) => {
+        const selectedIds = currentSelectedCells.map((item) => item.id)
+
+        const included = selectedIds.includes(id)
+        const without = currentSelectedCells.filter((item) => item.id !== id)
+
+        return included ? without : [{ id, parts }, ...without]
+      }),
+    []
+  )
+
+  const toggleCellSelection = useCallback(
+    (id: UUID, parts: CellPart[]) => updateSelectedCells({ id, parts }),
+    [updateSelectedCells]
+  )
+
+  const resetModalState = useCallback(() => {
     setSelectedCells([])
     setSelectedCareTypeCategories([])
     setSelectedAbsenceType(defaultAbsenceType)
     setSelectedCareTypeCategories(defaultCareTypeCategory)
     setModalVisible(false)
-  }
-
-  const loadAbsences = useCallback(() => {
-    setAbsences(Loading.of())
-    void getGroupAbsences(groupId, {
-      year: selectedDate.getYear(),
-      month: selectedDate.getMonth()
-    }).then(setAbsences)
-  }, [groupId, selectedDate, setAbsences])
-
-  useEffect(() => {
-    loadAbsences()
-    return () => {
-      setAbsences(Loading.of())
-    }
-  }, [loadAbsences, setAbsences])
+  }, [setSelectedAbsenceType, setSelectedCareTypeCategories, setSelectedCells])
 
   useEffect(() => {
     if (absences.isSuccess) {
@@ -103,13 +104,16 @@ const Absences = React.memo(function Absences({
     }
   }, [absences, setTitle])
 
-  function updateCareTypes(type: CareTypeCategory) {
-    const included = selectedCareTypeCategories.includes(type)
-    const without = selectedCareTypeCategories.filter((item) => item !== type)
-    setSelectedCareTypeCategories(included ? without : [type, ...without])
-  }
+  const updateCareTypes = useCallback(
+    (type: CareTypeCategory) => {
+      const included = selectedCareTypeCategories.includes(type)
+      const without = selectedCareTypeCategories.filter((item) => item !== type)
+      setSelectedCareTypeCategories(included ? without : [type, ...without])
+    },
+    [selectedCareTypeCategories, setSelectedCareTypeCategories]
+  )
 
-  function updateAbsences() {
+  const updateAbsences = useCallback(() => {
     const selectedParts: CellPart[] = flatMap(
       selectedCells,
       ({ parts }) => parts
@@ -145,76 +149,38 @@ const Absences = React.memo(function Absences({
       .finally(() => {
         resetModalState()
       })
-  }
-
-  const showModal = () => modalVisible && selectedCells.length > 0
-
-  const renderAbsenceModal = () =>
-    showModal() ? (
-      <FormModal
-        title=""
-        className="absence-modal"
-        resolve={{
-          action: updateAbsences,
-          label: i18n.absences.modal.saveButton,
-          disabled: selectedCareTypeCategories.length === 0
-        }}
-        reject={{
-          action: resetModalState,
-          label: i18n.absences.modal.cancelButton
-        }}
-      >
-        <FixedSpaceColumn spacing={'L'}>
-          <Label>
-            <LabelText>{i18n.absences.modal.absenceSectionLabel}</LabelText>
-          </Label>
-          <FixedSpaceColumn spacing={'xs'}>
-            {AbsenceTypes.map((absenceType, index) => (
-              <Radio
-                key={index}
-                id={absenceType}
-                label={i18n.absences.modal.absenceTypes[absenceType]}
-                checked={selectedAbsenceType === absenceType}
-                onChange={() => setSelectedAbsenceType(absenceType)}
-              />
-            ))}
-            <Radio
-              id={'PRESENCE'}
-              label={i18n.absences.modal.absenceTypes.PRESENCE}
-              checked={selectedAbsenceType === null}
-              onChange={() => setSelectedAbsenceType(null)}
-            />
-          </FixedSpaceColumn>
-
-          <Label>
-            <LabelText>{i18n.absences.modal.placementSectionLabel}</LabelText>
-          </Label>
-          <FixedSpaceColumn spacing={'xs'}>
-            {CareTypeCategories.map((careTypeCategory, index) => (
-              <Checkbox
-                key={index}
-                label={i18n.absences.careTypeCategories[careTypeCategory]}
-                checked={selectedCareTypeCategories.includes(careTypeCategory)}
-                onChange={() => updateCareTypes(careTypeCategory)}
-                data-qa={`absences-select-caretype-${careTypeCategory}`}
-              />
-            ))}
-          </FixedSpaceColumn>
-        </FixedSpaceColumn>
-      </FormModal>
-    ) : null
+  }, [
+    groupId,
+    loadAbsences,
+    resetModalState,
+    selectedAbsenceType,
+    selectedCareTypeCategories,
+    selectedCells
+  ])
 
   return (
     <AbsencesPage data-qa="absences-page">
-      {renderAbsenceModal()}
-      {absences.isSuccess ? (
+      {modalVisible && selectedCells.length > 0 && (
+        <AbsenceModal
+          onSave={updateAbsences}
+          saveDisabled={selectedCareTypeCategories.length === 0}
+          onCancel={resetModalState}
+          selectedAbsenceType={selectedAbsenceType}
+          setSelectedAbsenceType={setSelectedAbsenceType}
+          selectedCareTypeCategories={selectedCareTypeCategories}
+          updateCareTypes={updateCareTypes}
+        />
+      )}
+      {renderResult(absences, (absences) => (
         <FixedSpaceColumn spacing="zero">
           <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
           <AbsenceTable
             groupId={groupId}
+            selectedCells={selectedCells}
+            toggleCellSelection={toggleCellSelection}
             selectedDate={selectedDate}
-            childList={absences.value.children}
-            operationDays={absences.value.operationDays}
+            childList={absences.children}
+            operationDays={absences.operationDays}
           />
           <Gap />
           <AddAbsencesButton
@@ -251,18 +217,8 @@ const Absences = React.memo(function Absences({
             </StaticChip>
           </FixedSpaceFlexWrap>
         </FixedSpaceColumn>
-      ) : null}
-      {absences.isLoading && <Loader />}
-      {absences.isFailure && <ErrorSegment />}
+      ))}
     </AbsencesPage>
-  )
-})
-
-export default React.memo(function AbsencesWrapper(props: Props) {
-  return (
-    <AbsencesContextProvider>
-      <Absences {...props} />
-    </AbsencesContextProvider>
   )
 })
 
