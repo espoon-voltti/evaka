@@ -560,7 +560,7 @@ private fun Database.Read.childHasPaidServiceNeedToday(
 ): Boolean = createQuery(
     """
 SELECT EXISTS(
-    SELECT *
+    SELECT 1
     FROM placement p  
         LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> current_date
         LEFT JOIN service_need_option sno ON sn.option_id = sno.id
