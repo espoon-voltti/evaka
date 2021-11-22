@@ -820,12 +820,9 @@ export const fi = {
     },
     messaging: {
       title: 'Lapseen liittyvä viestintä (vastaanottajat)',
-      info: 'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
+      info: 'Lapseen liittyvät viestit lähetetään merkityille huoltajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta. Viestejä ei lähetetä päämiehille.',
       name: 'Vastaanottajan nimi',
-      role: 'Rooli',
-      notBlocklisted: 'Saa Vastaanottaa',
-      guardian: 'Huoltaja',
-      headOfChild: 'Päämies'
+      notBlocklisted: 'Saa vastaanottaa'
     },
     backupCares: {
       title: 'Varasijoitukset',

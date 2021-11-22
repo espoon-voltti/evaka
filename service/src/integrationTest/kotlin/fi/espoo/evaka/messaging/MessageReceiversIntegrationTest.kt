@@ -123,7 +123,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
             insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
-            // Child 2 has a placement but is not in any group => should not
+            // Child 2 has a placement but is not in any group => should not
             // (currently) show up in receivers list
             insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unitId)
 
@@ -179,8 +179,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             setOf(testChild_3.id, testChild_4.id),
             groupKoekaniinit.receivers.map { it.childId }.toSet()
         )
-        val childWithTwoReceiverPersons = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }!!
-        assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
+
+        // child 3 has a guardian and a head of child, only the guardian gets the messages
+        val childWithANonGuardian = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }!!
+        assertEquals(1, childWithANonGuardian.receiverPersons.size)
+        assertEquals(testAdult_3.lastName, childWithANonGuardian.receiverPersons[0].receiverLastName)
     }
 
     @Test

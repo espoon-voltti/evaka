@@ -153,8 +153,6 @@ export interface PostMessageBody {
 export interface Recipient {
   blocklisted: boolean
   firstName: string
-  guardian: boolean
-  headOfChild: boolean
   lastName: string
   personId: string
 }

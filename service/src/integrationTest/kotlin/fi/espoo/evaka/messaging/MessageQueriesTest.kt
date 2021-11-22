@@ -435,7 +435,7 @@ class MessageQueriesTest : PureJdbiTest() {
             tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
 
             // and person1 is a blocked receiver
-            addToBlocklist(tx, testChild_1.id, person1Id)
+            tx.addToBlocklist(testChild_1.id, person1Id)
         }
 
         val person1Account = db.read {

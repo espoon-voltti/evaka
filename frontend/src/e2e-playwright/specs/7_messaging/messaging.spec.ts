@@ -2,35 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from '../../browser'
-import { Page } from 'playwright'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
+import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
+import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
+import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
+import { waitUntilEqual } from 'e2e-playwright/utils'
+import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
+import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  insertParentshipFixtures,
+  insertGuardianFixtures,
   resetDatabase,
   setAclForDaycares,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
 import {
-  daycareGroupFixture,
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  createDaycareGroupPlacementFixture,
   createDaycarePlacementFixture,
-  uuidv4,
-  createDaycareGroupPlacementFixture
+  daycareGroupFixture,
+  uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
-import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
-import config from 'e2e-test-common/config'
-import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
-import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
-import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { Page } from 'playwright'
+import { newBrowserContext } from '../../browser'
 
 let unitSupervisorPage: Page
 let citizenPage: Page
@@ -71,12 +71,10 @@ beforeEach(async () => {
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
   await upsertMessageAccounts()
-  await insertParentshipFixtures([
+  await insertGuardianFixtures([
     {
       childId: childId,
-      headOfChildId: fixtures.enduserGuardianFixture.id,
-      startDate: '2021-01-01',
-      endDate: '2028-01-01'
+      guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
 })
