@@ -152,6 +152,13 @@ export async function logoutExpress(
   res.clearCookie(sessionCookie(sessionType))
 }
 
+export async function saveSession(req: express.Request) {
+  if (req.session) {
+    const session = req.session
+    await fromCallback((cb) => session.save(cb))
+  }
+}
+
 export default (sessionType: SessionType, redisClient?: RedisClient) => {
   asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
   return session({

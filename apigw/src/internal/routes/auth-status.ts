@@ -8,7 +8,7 @@ import {
   getEmployeeDetails,
   getMobileDevice
 } from '../../shared/service-client'
-import { logoutExpress } from '../../shared/session'
+import { logoutExpress, saveSession } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
 import { appCommit } from '../../shared/config'
 
@@ -26,6 +26,7 @@ export default toRequestHandler(async (req, res) => {
         const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
         const employeeId = user.mobileEmployeeId
         const { id, name, unitId } = device
+        await saveSession(req)
         res.status(200).json({
           loggedIn: true,
           user: { id, name, unitId, employeeId },
@@ -56,6 +57,7 @@ export default toRequestHandler(async (req, res) => {
         )
       }
 
+      await saveSession(req)
       res.status(200).json({
         loggedIn: true,
         user: { id, name, accessibleFeatures: accessibleFeatures ?? {} },
