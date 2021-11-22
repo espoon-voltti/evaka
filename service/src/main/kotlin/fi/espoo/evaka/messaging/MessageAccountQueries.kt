@@ -159,7 +159,7 @@ common_guardians AS (
           AND g2.child_id = g.child_id
     )
 )
-SELECT * FROM common_guardians
+SELECT id, child_id FROM common_guardians
         """.trimIndent()
     )
         .bind("accountIds", accountIds.toTypedArray())
