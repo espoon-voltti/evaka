@@ -12,20 +12,20 @@ import React, {
 import { Redirect, Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
 import { RouteWithTitle } from './RouteWithTitle'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import Tabs from 'lib-components/molecules/Tabs'
 import TabUnitInformation from '../components/unit/TabUnitInformation'
 import TabGroups from '../components/unit/TabGroups'
 import { TitleContext, TitleState } from '../state/title'
 import Container from 'lib-components/layout/Container'
 import { UnitContext, UnitContextProvider } from '../state/unit'
-import TabPlacementProposals from '../components/unit/TabPlacementProposals'
-import TabWaitingConfirmation from '../components/unit/TabWaitingConfirmation'
-import TabApplications from '../components/unit/TabApplications'
 import { useQuery } from 'lib-common/utils/useQuery'
 import LocalDate from 'lib-common/local-date'
 import TabCalendar from './unit/TabCalendar'
 import { UUID } from 'lib-common/types'
+import TabApplicationProcess from './unit/TabApplicationProcess'
+import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -73,22 +73,17 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
       unitInformation.value.permittedActions.has('READ_DETAILED')
         ? [
             {
-              id: 'waiting-confirmation',
-              link: `/units/${id}/waiting-confirmation`,
-              label: i18n.unit.tabs.waitingConfirmation
-            },
-            {
-              id: 'placement-proposals',
-              link: `/units/${id}/placement-proposals`,
-              label: i18n.unit.tabs.placementProposals,
+              id: 'application-process',
+              link: `/units/${id}/application-process`,
+              label: i18n.unit.tabs.applicationProcess,
               counter: unitData
-                .map((data) => data.placementProposals?.length)
-                .getOrElse(undefined)
-            },
-            {
-              id: 'applications',
-              link: `/units/${id}/applications`,
-              label: i18n.unit.tabs.applications
+                .map(
+                  (data) =>
+                    (data.applications?.length ?? 0) +
+                    (data.placementPlans?.length ?? 0) +
+                    (data.placementProposals?.length ?? 0)
+                )
+                .getOrElse(0)
             }
           ]
         : [])
@@ -131,20 +126,10 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           />
           <RouteWithTitle
             exact
-            path="/units/:id/waiting-confirmation"
-            component={TabWaitingConfirmation}
-          />
-          <RouteWithTitle
-            exact
-            path="/units/:id/placement-proposals"
+            path="/units/:id/application-process"
             component={() => (
-              <TabPlacementProposals reloadUnitData={reloadUnitData} />
+              <TabApplicationProcess reloadUnitData={reloadUnitData} />
             )}
-          />
-          <RouteWithTitle
-            exact
-            path="/units/:id/applications"
-            component={TabApplications}
           />
           <Route path="/" component={RedirectToUnitInfo} />
         </Switch>
@@ -161,3 +146,14 @@ export default React.memo(function UnitPageWrapper() {
     </UnitContextProvider>
   )
 })
+
+export const NotificationCounter = styled.span`
+  height: 21px;
+  padding: 4px 8px;
+  border-radius: 50%;
+  background-color: ${({ theme: { colors } }) => colors.accents.orange};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  margin-left: ${defaultMargins.xs};
+  font-weight: ${fontWeights.bold};
+  font-size: 16px;
+`

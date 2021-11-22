@@ -1338,9 +1338,7 @@ export const fi = {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',
       calendar: 'Kalenteri',
-      waitingConfirmation: 'Vahvistettavana huoltajalla',
-      placementProposals: 'Sijoitusehdotukset',
-      applications: 'Hakemukset'
+      applicationProcess: 'Hakuprosessi'
     },
     create: 'Luo uusi yksikkö',
     openDetails: 'Näytä yksikön kaikki tiedot',
@@ -1410,6 +1408,9 @@ export const fi = {
       minimum: 'Minimi',
       noValidValues: 'Aikavälille ei voitu laskea täyttöastetta',
       noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta'
+    },
+    applicationProcess: {
+      title: 'Hakuprosessi'
     },
     placementPlans: {
       title: 'Vahvistettavana huoltajalla',

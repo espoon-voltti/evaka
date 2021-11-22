@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import { ContentArea } from 'lib-components/layout/Container'
+import React, { useContext, useState } from 'react'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
 import { useTranslation } from '../../state/i18n'
 import Title from 'lib-components/atoms/Title'
@@ -12,16 +12,31 @@ import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { careTypesFromPlacementType } from '../common/CareTypeLabel'
 import { isPartDayPlacement } from '../../utils/placements'
+import { NotificationCounter } from '../UnitPage'
 import { renderResult } from '../async-rendering'
 
 export default React.memo(function TabApplications() {
   const { i18n } = useTranslation()
   const { unitData } = useContext(UnitContext)
+  const [open, setOpen] = useState<boolean>(true)
 
   return renderResult(unitData, (unitData) =>
     unitData.applications ? (
-      <ContentArea opaque>
-        <Title size={2}>{i18n.unit.applications.title}</Title>
+      <CollapsibleContentArea
+        title={
+          <Title size={2}>
+            {i18n.unit.applications.title}
+            {unitData.applications.length > 0 ? (
+              <NotificationCounter>
+                {unitData.applications.length}
+              </NotificationCounter>
+            ) : null}
+          </Title>
+        }
+        opaque
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+      >
         <div>
           <Table>
             <Thead>
@@ -85,7 +100,7 @@ export default React.memo(function TabApplications() {
             </Tbody>
           </Table>
         </div>
-      </ContentArea>
+      </CollapsibleContentArea>
     ) : null
   )
 })

@@ -7,7 +7,6 @@ import _ from 'lodash'
 import styled from 'styled-components'
 
 import { Table, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
-import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
@@ -118,8 +117,6 @@ export default React.memo(function PlacementProposals({
 
   return (
     <>
-      <Title size={2}>{i18n.unit.placementProposals.title}</Title>
-
       {placementPlans.length > 0 && (
         <>
           <Label>{i18n.unit.placementProposals.infoTitle}</Label>

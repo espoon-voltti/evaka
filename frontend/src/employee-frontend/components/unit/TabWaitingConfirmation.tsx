@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
-import { ContentArea } from 'lib-components/layout/Container'
+import React, { useContext, useMemo, useState } from 'react'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -20,6 +20,7 @@ import styled from 'styled-components'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../utils/placements'
 import { renderResult } from '../async-rendering'
+import { NotificationCounter } from '../UnitPage'
 
 const CenteredDiv = styled.div`
   display: flex;
@@ -30,6 +31,7 @@ export default React.memo(function TabWaitingConfirmation() {
   const { i18n } = useTranslation()
 
   const { unitData } = useContext(UnitContext)
+  const [open, setOpen] = useState<boolean>(true)
 
   const sortedRows = useMemo(
     () =>
@@ -44,7 +46,19 @@ export default React.memo(function TabWaitingConfirmation() {
   )
 
   return renderResult(sortedRows, (sortedRows) => (
-    <ContentArea opaque>
+    <CollapsibleContentArea
+      opaque
+      open={open}
+      title={
+        <Title size={2}>
+          {i18n.unit.placementPlans.title}
+          {sortedRows.length > 0 ? (
+            <NotificationCounter>{sortedRows.length}</NotificationCounter>
+          ) : null}
+        </Title>
+      }
+      toggleOpen={() => setOpen(!open)}
+    >
       <Title size={2}>{i18n.unit.placementPlans.title}</Title>
       <div>
         <Table>
@@ -106,6 +120,6 @@ export default React.memo(function TabWaitingConfirmation() {
           </Tbody>
         </Table>
       </div>
-    </ContentArea>
+    </CollapsibleContentArea>
   ))
 })
