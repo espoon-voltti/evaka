@@ -8,15 +8,12 @@ import {
   Cell,
   CellPart,
   defaultAbsenceType,
-  defaultCareTypeCategory,
-  TableMode
+  defaultCareTypeCategory
 } from '../types/absence'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
 export interface AbsencesState {
-  tableMode: TableMode
-  setTableMode: (mode: TableMode) => void
   modalVisible: boolean
   setModalVisible: (modalVisible: boolean) => void
   selectedCells: Cell[]
@@ -29,8 +26,6 @@ export interface AbsencesState {
 }
 
 const defaultState: AbsencesState = {
-  tableMode: 'MONTH',
-  setTableMode: () => undefined,
   modalVisible: false,
   setModalVisible: () => undefined,
   selectedCells: [],
@@ -46,7 +41,6 @@ export const AbsencesContext = createContext<AbsencesState>(defaultState)
 
 export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
-    const [tableMode, setTableMode] = useState(defaultState.tableMode)
     const [selectedCells, setSelectedCells] = useState<Cell[]>(
       defaultState.selectedCells
     )
@@ -74,8 +68,6 @@ export const AbsencesContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        tableMode,
-        setTableMode,
         modalVisible,
         setModalVisible,
         selectedCells,
@@ -87,7 +79,6 @@ export const AbsencesContextProvider = React.memo(
         toggleCellSelection
       }),
       [
-        tableMode,
         modalVisible,
         selectedCells,
         selectedAbsenceType,

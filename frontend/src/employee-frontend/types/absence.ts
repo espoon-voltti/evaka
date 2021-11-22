@@ -17,8 +17,6 @@ import {
 } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
-export type TableMode = 'MONTH'
-
 export const AbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',
   'SICKLEAVE',

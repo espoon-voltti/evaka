@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from 'lib-common/local-date'
-import { Child, TableMode } from '../../types/absence'
-import { getRange, getWeekDay, getMonthDays } from './utils'
+import { Child } from '../../types/absence'
+import { getMonthDays, getRange, getWeekDay } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
-import { AbsencesState, AbsencesContext } from '../../state/absence'
 import { Translations, useTranslation } from '../../state/i18n'
 import Tooltip from '../../components/common/Tooltip'
 
@@ -33,12 +32,8 @@ const shortChildName = (
     : i18n.common.noName
 }
 
-function getEmptyCols(dateColsLength: number, tableMode: TableMode): number[] {
-  switch (tableMode) {
-    case 'MONTH': {
-      return getRange(31 - dateColsLength)
-    }
-  }
+function getEmptyCols(dateColsLength: number): number[] {
+  return getRange(31 - dateColsLength)
 }
 
 function AbsenceTableRow({
@@ -159,8 +154,6 @@ function AbsenceTable({
 }: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
-  const { tableMode } = useContext<AbsencesState>(AbsencesContext)
-
   const dateColsBody =
     childList.length > 0
       ? Object.keys(childList[0].placements)
@@ -171,11 +164,11 @@ function AbsenceTable({
   const dateColsHead =
     dateColsBody.length > 0 ? dateColsBody : getMonthDays(selectedDate)
 
-  const emptyCols = getEmptyCols(dateColsHead.length, tableMode)
+  const emptyCols = getEmptyCols(dateColsHead.length)
 
   const renderEmptyRow = () => (
     <tr>
-      <td className={'empty-row'}></td>
+      <td className={'empty-row'} />
     </tr>
   )
 
