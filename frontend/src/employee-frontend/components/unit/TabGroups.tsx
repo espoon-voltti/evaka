@@ -1,4 +1,7 @@
-import { renderResult } from '../async-rendering'
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
@@ -7,14 +10,7 @@ import Groups from '../../components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
 import { combine, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+import { renderResult } from '../async-rendering'
 
 interface Props {
   reloadUnitData: () => void

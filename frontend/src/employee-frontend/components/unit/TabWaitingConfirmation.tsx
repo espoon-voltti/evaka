@@ -1,12 +1,6 @@
-import { renderResult } from '../async-rendering'
-
-{
-  /*
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -25,6 +19,7 @@ import { DaycarePlacementPlan } from '../../types/unit'
 import styled from 'styled-components'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../utils/placements'
+import { renderResult } from '../async-rendering'
 
 const CenteredDiv = styled.div`
   display: flex;
