@@ -824,3 +824,11 @@ export async function insertGuardianFixtures(
     throw new DevApiError(e)
   }
 }
+
+export async function insertVasuTemplateFixture(): Promise<void> {
+  try {
+    await devClient.post('/vasu-template')
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

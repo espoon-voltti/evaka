@@ -148,6 +148,7 @@ function VasuInitialization({
           !allowCreation || templates?.isSuccess || templates?.isLoading
         }
         text={i18n.childInformation.vasu.createNew}
+        data-qa="add-new-vasu-button"
       />
       {templates && (
         <UnwrapResult
@@ -247,6 +248,7 @@ export default React.memo(function VasuAndLeops({
         toggleOpen={() => setOpen(!open)}
         opaque
         paddingVertical="L"
+        data-qa="vasu-and-leops-collapsible"
       >
         <VasuInitialization childId={childId} allowCreation={allowCreation} />
         {renderResult(vasus, (vasus) => (
