@@ -51,7 +51,8 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     private val testHeadOfChild = DevPerson(email = "head@example.com", language = "en")
 
     private val testPersons = listOf(testGuardianFi, testGuardianSv, testGuardianNoEmail, testHeadOfChild)
-    private val testAddresses = testPersons.mapNotNull { it.email }
+    private val testNotificationRecipients = listOf(testGuardianFi, testGuardianSv)
+    private val testAddresses = testNotificationRecipients.mapNotNull { it.email }
 
     private val employeeId: UUID = UUID.randomUUID()
     private val employee = AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
@@ -110,7 +111,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     }
 
     @Test
-    fun `notifications are sent to guardians (and heads)`() {
+    fun `notifications are sent to guardians but not heads`() {
         postNewDocument(
             user = employee,
             childId = testChild_1.id

@@ -51,26 +51,14 @@ class PedagogicalDocumentNotificationService(
     ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
         // language=sql
         val sql = """
-        WITH guardians AS (
-            SELECT g.guardian_id AS person_id
-            FROM guardian g
-            WHERE g.child_id = :childId
-        ), head_of_child AS (
-            SELECT fc.head_of_child AS person_id
-            FROM fridge_child fc
-            WHERE fc.child_id = :childId AND daterange(fc.start_date, fc.end_date, '[]') @> :date
-        ), recipient_ids AS (
-            SELECT person_id FROM guardians
-            UNION DISTINCT 
-            SELECT person_id FROM head_of_child
-        )
-        
         SELECT DISTINCT
             p.email as recipient_email,
             coalesce(lower(p.language), 'fi') as language
-        FROM recipient_ids r
-        JOIN person p ON r.person_id = p.id
-        WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = p.id) AND p.email IS NOT NULL
+        FROM person p
+        JOIN guardian g ON (p.id = g.guardian_id)
+        WHERE g.child_id = :childId
+          AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = p.id)
+          AND p.email IS NOT NULL
         """.trimIndent()
 
         return tx.createQuery(sql)
