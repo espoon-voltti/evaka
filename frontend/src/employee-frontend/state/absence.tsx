@@ -3,22 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useCallback, useMemo, useState } from 'react'
-import { Loading, Result } from 'lib-common/api'
 import {
-  TableMode,
-  Group,
-  defaultAbsenceType,
-  defaultCareTypeCategory,
+  CareTypeCategory,
   Cell,
   CellPart,
-  CareTypeCategory
+  defaultAbsenceType,
+  defaultCareTypeCategory,
+  TableMode
 } from '../types/absence'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
 export interface AbsencesState {
-  absences: Result<Group>
-  setAbsences: (request: Result<Group>) => void
   tableMode: TableMode
   setTableMode: (mode: TableMode) => void
   modalVisible: boolean
@@ -33,8 +29,6 @@ export interface AbsencesState {
 }
 
 const defaultState: AbsencesState = {
-  absences: Loading.of(),
-  setAbsences: () => undefined,
   tableMode: 'MONTH',
   setTableMode: () => undefined,
   modalVisible: false,
@@ -52,7 +46,6 @@ export const AbsencesContext = createContext<AbsencesState>(defaultState)
 
 export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
-    const [absences, setAbsences] = useState<Result<Group>>(Loading.of())
     const [tableMode, setTableMode] = useState(defaultState.tableMode)
     const [selectedCells, setSelectedCells] = useState<Cell[]>(
       defaultState.selectedCells
@@ -81,8 +74,6 @@ export const AbsencesContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        absences,
-        setAbsences,
         tableMode,
         setTableMode,
         modalVisible,
@@ -96,7 +87,6 @@ export const AbsencesContextProvider = React.memo(
         toggleCellSelection
       }),
       [
-        absences,
         tableMode,
         modalVisible,
         selectedCells,

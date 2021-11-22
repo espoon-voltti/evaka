@@ -38,6 +38,7 @@ import { UUID } from 'lib-common/types'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
 import AbsenceModal from './AbsenceModal'
 
@@ -54,8 +55,6 @@ const Absences = React.memo(function Absences({
 }: Props) {
   const { i18n } = useTranslation()
   const {
-    absences,
-    setAbsences,
     modalVisible,
     setModalVisible,
     selectedCells,
@@ -67,6 +66,18 @@ const Absences = React.memo(function Absences({
   } = useContext<AbsencesState>(AbsencesContext)
   const { setTitle } = useContext<TitleState>(TitleContext)
 
+  const selectedYear = selectedDate.getYear()
+  const selectedMonth = selectedDate.getMonth()
+
+  const [absences, loadAbsences] = useApiState(
+    () =>
+      getGroupAbsences(groupId, {
+        year: selectedYear,
+        month: selectedMonth
+      }),
+    [groupId, selectedYear, selectedMonth]
+  )
+
   const resetModalState = () => {
     setSelectedCells([])
     setSelectedCareTypeCategories([])
@@ -74,21 +85,6 @@ const Absences = React.memo(function Absences({
     setSelectedCareTypeCategories(defaultCareTypeCategory)
     setModalVisible(false)
   }
-
-  const loadAbsences = useCallback(() => {
-    setAbsences(Loading.of())
-    void getGroupAbsences(groupId, {
-      year: selectedDate.getYear(),
-      month: selectedDate.getMonth()
-    }).then(setAbsences)
-  }, [groupId, selectedDate, setAbsences])
-
-  useEffect(() => {
-    loadAbsences()
-    return () => {
-      setAbsences(Loading.of())
-    }
-  }, [loadAbsences, setAbsences])
 
   useEffect(() => {
     if (absences.isSuccess) {
