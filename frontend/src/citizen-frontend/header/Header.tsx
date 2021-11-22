@@ -39,7 +39,7 @@ export default React.memo(function Header() {
   }, [refreshUnreadPedagogicalDocumentsCount, user])
 
   return (
-    <HeaderContainer>
+    <HeaderContainer showMenu={showMenu}>
       <CityLogo />
       <EvakaLogo />
       <DesktopNav
@@ -56,11 +56,11 @@ export default React.memo(function Header() {
   )
 })
 
-const HeaderContainer = styled.header`
+const HeaderContainer = styled.header<{ showMenu: boolean }>`
   z-index: 9;
   color: ${colors.greyscale.white};
   background-color: ${colors.blues.primary};
-  position: sticky;
+  position: ${({ showMenu }) => (showMenu ? 'fixed' : 'sticky')};
   top: 0;
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
