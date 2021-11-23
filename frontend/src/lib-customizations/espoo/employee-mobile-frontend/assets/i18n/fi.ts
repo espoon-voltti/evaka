@@ -331,15 +331,20 @@ export const fi = {
       text4:
         'Turvataksesi lasten tiedot muistathan asettaa laitteeseen pääsykoodin, jos et ole sitä vielä tehnyt.'
     },
-    emptyList: {
-      no: 'Ei',
-      status: {
-        COMING: 'tulossa olevia',
-        ABSENT: 'poissaolevia',
-        PRESENT: 'läsnäolevia',
-        DEPARTED: 'lähteneitä'
-      },
-      children: 'lapsia'
+    emptyList: (status: 'COMING' | 'ABSENT' | 'PRESENT' | 'DEPARTED') => {
+      const statusText = (() => {
+        switch (status) {
+          case 'COMING':
+            return 'tulossa olevia'
+          case 'ABSENT':
+            return 'poissaolevia'
+          case 'PRESENT':
+            return 'läsnäolevia'
+          case 'DEPARTED':
+            return 'lähteneitä'
+        }
+      })()
+      return `Ei ${statusText} lapsia`
     }
   },
   reloadNotification: {

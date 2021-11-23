@@ -13,7 +13,7 @@ interface Props {
   title: string
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
-  onSearch?: () => void
+  toggleSearch?: () => void
   countInfo?: CountInfo
   groups?: GroupInfo[]
 }
@@ -22,7 +22,7 @@ export const TopBarWithGroupSelector = React.memo(
   function TopBarWithGroupSelector({
     countInfo,
     onChangeGroup,
-    onSearch,
+    toggleSearch: onSearch,
     selectedGroup,
     title,
     groups
