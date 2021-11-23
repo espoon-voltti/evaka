@@ -181,7 +181,6 @@ export function DynamicSections({
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[questionIndex] as Followup
                                 question1.value = value
-                                console.log(clone)
                                 return clone
                               })
                           : undefined
