@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useCallback, useState } from 'react'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -20,13 +26,14 @@ import {
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
-import { User, useUser } from '../auth/state'
+import { AuthContext, User, useUser } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
 import AttentionIndicator from './AttentionIndicator'
+import { UnwrapResult } from '../async-rendering'
 
 type Props = {
   showMenu: boolean
@@ -41,7 +48,7 @@ export default React.memo(function MobileNav({
   unreadMessagesCount,
   unreadPedagogicalDocumentsCount
 }: Props) {
-  const user = useUser()
+  const { user } = useContext(AuthContext)
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
   const toggleMenu = useCallback(
@@ -49,56 +56,65 @@ export default React.memo(function MobileNav({
     [setShowMenu]
   )
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
-  const showAttentionIndicator =
-    !showMenu &&
-    (unreadMessagesCount > 0 ||
-      unreadPedagogicalDocumentsCount > 0 ||
-      user?.email === null)
 
   return (
-    <Container ref={ref} data-qa="mobile-nav">
-      <MenuButton onClick={toggleMenu} data-qa="menu-button">
-        <AttentionIndicator
-          toggled={showAttentionIndicator}
-          data-qa="attention-indicator-mobile"
-        >
-          <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
-        </AttentionIndicator>
-      </MenuButton>
-      {showMenu ? (
-        <MenuContainer>
-          <LanguageMenu close={close} />
-          <Gap size="s" />
-          <Navigation
-            close={close}
-            unreadMessagesCount={unreadMessagesCount}
-            unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount}
-          />
-          <VerticalSpacer />
-          <UserContainer>
-            {user && <UserNameSubMenu user={user} close={close} />}
-            <Gap size="L" />
-            {user ? (
-              <a href={getLogoutUri(user)} data-qa="logout-btn">
-                <LogInLogOutButton>
-                  <FontAwesomeIcon icon={faSignOut} size="lg" />
-                  <Gap size="xs" horizontal />
-                  {t.header.logout}
-                </LogInLogOutButton>
-              </a>
-            ) : (
-              <a href={getLoginUri()} data-qa="login-btn">
-                <LogInLogOutButton>
-                  <FontAwesomeIcon icon={faSignIn} size="lg" />
-                  <Gap size="xs" horizontal />
-                  {t.header.login}
-                </LogInLogOutButton>
-              </a>
-            )}
-          </UserContainer>
-        </MenuContainer>
-      ) : null}
-    </Container>
+    <UnwrapResult result={user} loading={() => null}>
+      {(user) => {
+        const showAttentionIndicator =
+          !showMenu &&
+          (unreadMessagesCount > 0 ||
+            unreadPedagogicalDocumentsCount > 0 ||
+            user?.email === null)
+
+        return (
+          <Container ref={ref} data-qa="mobile-nav">
+            <MenuButton onClick={toggleMenu} data-qa="menu-button">
+              <AttentionIndicator
+                toggled={showAttentionIndicator}
+                data-qa="attention-indicator-mobile"
+              >
+                <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
+              </AttentionIndicator>
+            </MenuButton>
+            {showMenu ? (
+              <MenuContainer>
+                <LanguageMenu close={close} />
+                <Gap size="s" />
+                <Navigation
+                  close={close}
+                  unreadMessagesCount={unreadMessagesCount}
+                  unreadPedagogicalDocumentsCount={
+                    unreadPedagogicalDocumentsCount
+                  }
+                />
+                <VerticalSpacer />
+                <UserContainer>
+                  {user && <UserNameSubMenu user={user} close={close} />}
+                  <Gap size="L" />
+                  {user ? (
+                    <a href={getLogoutUri(user)} data-qa="logout-btn">
+                      <LogInLogOutButton>
+                        <FontAwesomeIcon icon={faSignOut} size="lg" />
+                        <Gap size="xs" horizontal />
+                        {t.header.logout}
+                      </LogInLogOutButton>
+                    </a>
+                  ) : (
+                    <a href={getLoginUri()} data-qa="login-btn">
+                      <LogInLogOutButton>
+                        <FontAwesomeIcon icon={faSignIn} size="lg" />
+                        <Gap size="xs" horizontal />
+                        {t.header.login}
+                      </LogInLogOutButton>
+                    </a>
+                  )}
+                </UserContainer>
+              </MenuContainer>
+            ) : null}
+          </Container>
+        )
+      }}
+    </UnwrapResult>
   )
 })
 
