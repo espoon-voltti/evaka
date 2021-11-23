@@ -177,15 +177,11 @@ const Modal = React.memo(function Modal({
       icon={faPlus}
       iconColour={'blue'}
       title={i18n.personProfile.feeDecisions.modalTitle}
-      resolve={{
-        action: resolve,
-        label: i18n.common.create,
-        disabled: date === undefined
-      }}
-      reject={{
-        action: clear,
-        label: i18n.common.cancel
-      }}
+      resolveAction={resolve}
+      resolveLabel={i18n.common.create}
+      resolveDisabled={date === undefined}
+      rejectAction={clear}
+      rejectLabel={i18n.common.cancel}
     >
       <ModalContent>
         <InputContainer>

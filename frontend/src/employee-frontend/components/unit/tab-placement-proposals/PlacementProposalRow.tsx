@@ -76,21 +76,17 @@ export default React.memo(function PlacementProposalRow({
       {modalOpen && (
         <FormModal
           title={i18n.unit.placementProposals.rejectTitle}
-          resolve={{
-            action: () => {
-              if (reason != null) {
-                onChange('REJECTED_NOT_CONFIRMED', reason, otherReason)
-                setModalOpen(false)
-                void loadUnitData()
-              }
-            },
-            label: i18n.common.save,
-            disabled: !reason || (reason === 'OTHER' && !otherReason)
+          resolveAction={() => {
+            if (reason != null) {
+              onChange('REJECTED_NOT_CONFIRMED', reason, otherReason)
+              setModalOpen(false)
+              void loadUnitData()
+            }
           }}
-          reject={{
-            action: () => setModalOpen(false),
-            label: i18n.common.cancel
-          }}
+          resolveLabel={i18n.common.save}
+          resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
+          rejectAction={() => setModalOpen(false)}
+          rejectLabel={i18n.common.cancel}
         >
           <FixedSpaceColumn>
             {placementPlanRejectReasons.map((option) => {

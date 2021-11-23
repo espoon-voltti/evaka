@@ -537,19 +537,16 @@ const ApplicationsList = React.memo(function Applications({
       {editedNote && (
         <AsyncFormModal
           title={i18n.applications.list.serviceWorkerNote}
-          resolve={{
-            action: async () =>
-              updateServiceWorkerNote(editedNote, editedNoteText),
-            label: i18n.common.save,
-            onSuccess: () => {
-              setEditedNote(null)
-              reloadApplications()
-            }
+          resolveAction={async () =>
+            updateServiceWorkerNote(editedNote, editedNoteText)
+          }
+          resolveLabel={i18n.common.save}
+          onSuccess={() => {
+            setEditedNote(null)
+            reloadApplications()
           }}
-          reject={{
-            action: () => setEditedNote(null),
-            label: i18n.common.cancel
-          }}
+          rejectAction={() => setEditedNote(null)}
+          rejectLabel={i18n.common.cancel}
         >
           <AlignRight>
             <InlineButton

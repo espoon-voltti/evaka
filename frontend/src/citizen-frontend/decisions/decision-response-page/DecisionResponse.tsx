@@ -282,19 +282,17 @@ export default React.memo(function DecisionResponse({
           text={
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
           }
-          resolve={{
-            label:
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning
-                .resolveLabel,
-            action: onSubmit,
-            onSuccess: () => setDisplayCascadeWarning(false)
-          }}
-          reject={{
-            label:
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning
-                .rejectLabel,
-            action: () => setDisplayCascadeWarning(false)
-          }}
+          resolveLabel={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning
+              .resolveLabel
+          }
+          resolveAction={onSubmit}
+          onSuccess={() => setDisplayCascadeWarning(false)}
+          rejectLabel={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning
+              .rejectLabel
+          }
+          rejectAction={() => setDisplayCascadeWarning(false)}
           data-qa={'cascade-warning-modal'}
         />
       )}

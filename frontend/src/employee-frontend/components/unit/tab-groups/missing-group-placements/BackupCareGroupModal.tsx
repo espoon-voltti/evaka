@@ -72,15 +72,11 @@ export default React.memo(function BackupCareGroupModal({
       }
       icon={isTransfer ? faExchange : faChild}
       iconColour={'blue'}
-      resolve={{
-        action: submitForm,
-        label: i18n.common.confirm,
-        disabled: !group
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submitForm}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={!group}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <section>
         <div className="bold">{i18n.unit.placements.modal.child}</div>

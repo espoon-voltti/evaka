@@ -100,14 +100,10 @@ export default React.memo(function CreateQuestionModal({
   return (
     <FormModal
       title={t.title}
-      resolve={{
-        action: () => onSave(createQuestion()),
-        label: i18n.common.confirm
-      }}
-      reject={{
-        action: onCancel,
-        label: i18n.common.cancel
-      }}
+      resolveAction={() => onSave(createQuestion())}
+      resolveLabel={i18n.common.confirm}
+      rejectAction={onCancel}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">

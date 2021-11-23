@@ -135,25 +135,21 @@ export default React.memo(function ReservationModalSingleChild({
     <AsyncFormModal
       mobileFullScreen
       title={i18n.unit.attendanceReservations.reservationModal.title}
-      resolve={{
-        action: (cancel) => {
-          if (validationResult.errors) {
-            setShowAllErrors(true)
-            return cancel()
-          } else {
-            return postReservations(validationResult.requestPayload)
-          }
-        },
-        onSuccess: () => {
-          onReload()
-          onClose()
-        },
-        label: i18n.common.confirm
+      resolveAction={(cancel) => {
+        if (validationResult.errors) {
+          setShowAllErrors(true)
+          return cancel()
+        } else {
+          return postReservations(validationResult.requestPayload)
+        }
       }}
-      reject={{
-        action: onClose,
-        label: i18n.common.cancel
+      onSuccess={() => {
+        onReload()
+        onClose()
       }}
+      resolveLabel={i18n.common.confirm}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
     >
       <H2>
         {i18n.unit.attendanceReservations.reservationModal.selectedChildren}

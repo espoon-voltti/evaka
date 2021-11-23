@@ -63,38 +63,35 @@ export default React.memo(function CreateOrEditTemplateModal({
       title={
         templateToEdit ? t.templateModal.editTitle : t.templateModal.createTitle
       }
-      resolve={{
-        action: () => {
-          setSubmitting(true)
-          void apiCall({
-            name,
-            valid: new FiniteDateRange(startDate, endDate),
-            language
-          }).then((res) => {
-            setSubmitting(false)
-            if (res.isSuccess) {
-              onSuccess(res.value)
-            } else if (res.isFailure) {
-              setErrorMessage({
-                resolveLabel: i18n.common.ok,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                text: (res?.errorCode && t.errorCodes[res.errorCode]) || '',
-                title: i18n.common.error.saveFailed,
-                type: 'error'
-              })
-            }
-          })
-        },
-        label: i18n.common.confirm,
-        disabled:
-          submitting ||
-          endDate.isEqualOrBefore(startDate) ||
-          name.trim().length === 0
+      resolveAction={() => {
+        setSubmitting(true)
+        void apiCall({
+          name,
+          valid: new FiniteDateRange(startDate, endDate),
+          language
+        }).then((res) => {
+          setSubmitting(false)
+          if (res.isSuccess) {
+            onSuccess(res.value)
+          } else if (res.isFailure) {
+            setErrorMessage({
+              resolveLabel: i18n.common.ok,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              text: (res?.errorCode && t.errorCodes[res.errorCode]) || '',
+              title: i18n.common.error.saveFailed,
+              type: 'error'
+            })
+          }
+        })
       }}
-      reject={{
-        action: onCancel,
-        label: i18n.common.cancel
-      }}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={
+        submitting ||
+        endDate.isEqualOrBefore(startDate) ||
+        name.trim().length === 0
+      }
+      rejectAction={onCancel}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">

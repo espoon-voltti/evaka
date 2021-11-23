@@ -66,12 +66,11 @@ function TemplateSelectionModal({
   return (
     <FormModal
       title={i18n.childInformation.vasu.init.chooseTemplate}
-      resolve={{
-        action: () => onSelect(templateId),
-        disabled: !templateId || loading,
-        label: i18n.common.select
-      }}
-      reject={{ action: onClose, label: i18n.common.cancel }}
+      resolveAction={() => onSelect(templateId)}
+      resolveDisabled={!templateId || loading}
+      resolveLabel={i18n.common.select}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
     >
       {templates.map((t) => (
         <Radio

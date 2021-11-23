@@ -118,15 +118,11 @@ function GroupCaretakersModal({
       title={existing ? i18n.groupCaretakers.edit : i18n.groupCaretakers.create}
       icon={existing ? faPen : faPlus}
       iconColour={'blue'}
-      resolve={{
-        action: submit,
-        label: i18n.common.confirm,
-        disabled: hasErrors || submitting
-      }}
-      reject={{
-        action: onReject,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submit}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={hasErrors || submitting}
+      rejectAction={onReject}
+      rejectLabel={i18n.common.cancel}
     >
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>

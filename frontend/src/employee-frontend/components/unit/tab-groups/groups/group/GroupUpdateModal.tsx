@@ -50,17 +50,13 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
       title={i18n.unit.groups.updateModal.title}
       icon={faPen}
       iconColour={'blue'}
-      resolve={{
-        action: submitForm,
-        label: i18n.common.confirm,
-        disabled:
-          data.name.trim().length === 0 ||
-          data.endDate?.isBefore(data.startDate)
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submitForm}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={
+        data.name.trim().length === 0 || data.endDate?.isBefore(data.startDate)
+      }
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <section>

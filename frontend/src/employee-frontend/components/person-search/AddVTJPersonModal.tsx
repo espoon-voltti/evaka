@@ -61,15 +61,11 @@ export default React.memo(function VTJModal({
       iconColour={'blue'}
       icon={faPlus}
       title={i18n.personSearch.addPersonFromVTJ.title}
-      resolve={{
-        action: onConfirm,
-        label: i18n.personSearch.addPersonFromVTJ.modalConfirmLabel,
-        disabled: !(person && person.isSuccess) || requestInFlight
-      }}
-      reject={{
-        action: closeModal,
-        label: i18n.common.cancel
-      }}
+      resolveAction={onConfirm}
+      resolveLabel={i18n.personSearch.addPersonFromVTJ.modalConfirmLabel}
+      resolveDisabled={!(person && person.isSuccess) || requestInFlight}
+      rejectAction={closeModal}
+      rejectLabel={i18n.common.cancel}
     >
       <ModalContent>
         <Label>

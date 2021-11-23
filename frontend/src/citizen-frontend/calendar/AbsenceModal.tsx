@@ -56,24 +56,20 @@ export default React.memo(function AbsenceModal({
     <AsyncFormModal
       mobileFullScreen
       title={i18n.calendar.absenceModal.title}
-      resolve={{
-        action: (cancel) => {
-          if (!request) {
-            setShowAllErrors(true)
-            return cancel()
-          }
-          return postAbsences(request)
-        },
-        onSuccess: () => {
-          close()
-          reload()
-        },
-        label: i18n.common.confirm
+      resolveAction={(cancel) => {
+        if (!request) {
+          setShowAllErrors(true)
+          return cancel()
+        }
+        return postAbsences(request)
       }}
-      reject={{
-        action: close,
-        label: i18n.common.cancel
+      onSuccess={() => {
+        close()
+        reload()
       }}
+      resolveLabel={i18n.common.confirm}
+      rejectAction={close}
+      rejectLabel={i18n.common.cancel}
     >
       <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
       <Gap size="xs" />

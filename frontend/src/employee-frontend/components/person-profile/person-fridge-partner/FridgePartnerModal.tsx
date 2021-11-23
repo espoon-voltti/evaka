@@ -140,15 +140,11 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
       }
       icon={partnership ? faPen : faUser}
       iconColour={'blue'}
-      resolve={{
-        action: onSubmit,
-        label: i18n.common.confirm,
-        disabled: !form.partner || validationErrors.length > 0
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={onSubmit}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={!form.partner || validationErrors.length > 0}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       {errorStatusCode === 409 && (
         <section className="error">

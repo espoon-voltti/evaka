@@ -84,11 +84,14 @@ function BackupPickup({ id }: BackupPickupProps) {
         clearUiMode()
       }
     }
+
     return (
       <FormModal
         title={i18n.childInformation.backupPickups.add}
-        reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-        resolve={{ action: () => saveBackupPickup(), label: i18n.common.save }}
+        resolveAction={saveBackupPickup}
+        resolveLabel={i18n.common.save}
+        rejectAction={clearUiMode}
+        rejectLabel={i18n.common.cancel}
       >
         <FixedSpaceColumn>
           <FixedSpaceColumn spacing={'xxs'}>
@@ -131,11 +134,14 @@ function BackupPickup({ id }: BackupPickupProps) {
         clearUiMode()
       }
     }
+
     return (
       <FormModal
         title={i18n.childInformation.backupPickups.edit}
-        reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-        resolve={{ action: () => saveBackupPickup(), label: i18n.common.save }}
+        resolveAction={clearUiMode}
+        resolveLabel={i18n.common.cancel}
+        rejectAction={saveBackupPickup}
+        rejectLabel={i18n.common.save}
       >
         <FixedSpaceColumn>
           <FixedSpaceColumn spacing={'xxs'}>

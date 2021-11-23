@@ -82,14 +82,10 @@ export default React.memo(function GroupModal({ unitId, reload }: Props) {
   return (
     <FormModal
       title={i18n.unit.groups.createModal.title}
-      resolve={{
-        action: submit,
-        label: i18n.unit.groups.createModal.confirmButton
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.unit.groups.createModal.cancelButton
-      }}
+      resolveAction={submit}
+      resolveLabel={i18n.unit.groups.createModal.confirmButton}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.unit.groups.createModal.cancelButton}
     >
       <FixedSpaceColumn spacing={'m'}>
         <div>
